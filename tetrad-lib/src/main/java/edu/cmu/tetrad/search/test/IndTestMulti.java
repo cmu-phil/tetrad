@@ -36,22 +36,29 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Pools together a set of independence tests using a specified method.
- *
- * @author Robert Tillman
- * @version $Id: $Id
+ * A class that represents a pooled independence test for multiple data sets.
  */
 public final class IndTestMulti implements IndependenceTest {
 
-    // The variables of the covariance matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // The independence test associated with each data set.
+    /**
+     * The independence test associated with each data set.
+     */
     private final List<IndependenceTest> independenceTests;
-    // Pooling method
+    /**
+     * Pooling method
+     */
     private final ResolveSepsets.Method method;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -75,15 +82,16 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns an Independence test for a sublist of the variables.
+     *
+     * @param vars The sublist of variables.
+     * @return an {@link IndependenceTest} object
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -122,52 +130,58 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     *
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level to set.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * <p>Getter for the field <code>variables</code>.</p>
+     * Retrieves the list of variables associated with this object.
      *
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return the list of variables associated with this object.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     *
+     * @param z A list of conditioning variables.
+     * @param x The variable x.
+     * @return True if variable x is independent of variable y given the conditioning variables z, false otherwise.
+     * @throws UnsupportedOperationException if the method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * <p>getData.</p>
+     * Retrieves the data set.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * @return the data set.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of this object, which includes the alpha value of the independence test.
      *
-     * @return a string representation of this test.
+     * @return the string representation of this object
      */
     public String toString() {
         return "Pooled Independence Test:  alpha = " + this.independenceTests.iterator().next().getAlpha();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns true if the test prints verbose output.
+     *
+     * @return True if the test prints verbose output, false otherwise.
      */
     @Override
     public boolean isVerbose() {
@@ -175,9 +189,9 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether this test will print verbose output.
+     * Sets whether verbose output should be printed during the test.
+     *
+     * @param verbose True to enable verbose output, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {

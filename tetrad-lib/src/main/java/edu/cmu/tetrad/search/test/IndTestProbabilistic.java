@@ -44,27 +44,49 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IndTestProbabilistic implements IndependenceTest {
 
-    // A cache of results for independence facts, used only if threshold is false.
+    /**
+     * A cache of results for independence facts, used only if threshold is false.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    //The data set for which conditional  independence judgments are requested.
+    /**
+     * The data set for which conditional  independence judgments are requested.
+     */
     private final DataSet data;
-    // The nodes of the data set.
+    /**
+     * The nodes of the data set.
+     */
     private final List<Node> nodes;
-    // Indices of the nodes.
+    /**
+     * Indices of the nodes.
+     */
     private final Map<Node, Integer> indices;
-    // A map from independence facts to their probabilities of independence.
+    /**
+     * A map from independence facts to their probabilities of independence.
+     */
     private final Map<IndependenceFact, Double> H;
-    // The BCInference object.
+    /**
+     * The BCInference object.
+     */
     private final BCInference bci;
-    // True if the independence test should be thresholded, false if it should be randomized.
+    /**
+     * True if the independence test should be thresholded, false if it should be randomized.
+     */
     private boolean threshold;
-    // The posterior probability of the last independence test.
+    /**
+     * The posterior probability of the last independence test.
+     */
     private double posterior;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The cutoff for the independence test.
+    /**
+     * The cutoff for the independence test.
+     */
     private double cutoff = 0.5;
-    // The prior equivalent sample size.
+    /**
+     * The prior equivalent sample size.
+     */
     private double priorEquivalentSampleSize = 10;
 
     /**
@@ -251,9 +273,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables of the data set.
+     * Returns the list of variables used in this object.
+     *
+     * @return A List of Node objects representing the variables used.
      */
     @Override
     public List<Node> getVariables() {
@@ -261,9 +283,10 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable with the given name.
+     * Retrieves the Node object that matches the given name from the list of nodes.
+     *
+     * @param name The name of the variable to retrieve.
+     * @return The Node object matching the given name, or null if no match is found.
      */
     @Override
     public Node getVariable(String name) {
@@ -275,7 +298,11 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether a given set of nodes, z, determines another node, y.
+     *
+     * @param z A Set of nodes representing the conditioning set.
+     * @param y The node for which determination is checked.
+     * @return true if z determines y, false otherwise.
      */
     @Override
     public boolean determines(Set<Node> z, Node y) {
@@ -283,7 +310,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the alpha parameter for the probabilistic test.
+     *
+     * @return The alpha parameter.
      */
     @Override
     public double getAlpha() {
@@ -291,7 +320,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the alpha parameter for the probabilistic test.
+     *
+     * @param alpha The alpha parameter to set.
      */
     @Override
     public void setAlpha(double alpha) {
@@ -299,9 +330,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the data set for which conditional independence judgments are requested.
+     * Returns the data model associated with this instance.
+     *
+     * @return The data model.
      */
     @Override
     public DataModel getData() {
@@ -327,9 +358,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if verbose output should be printed.
+     * Returns the verbose flag indicating whether verbose output should be printed.
+     *
+     * @return The verbose flag.
      */
     @Override
     public boolean isVerbose() {
@@ -337,9 +368,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets the verbose flag indicating whether verbose output should be printed.
+     *
+     * @param verbose true if verbose output should be printed, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -365,14 +396,22 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * <p>Setter for the field <code>priorEquivalentSampleSize</code>.</p>
+     * Sets the prior equivalent sample size for the independence test. The prior equivalent sample size is a parameter
+     * used in the calculation of the test statistic. A higher sample size will make the test more conservative, while a
+     * lower sample size will make the test more liberal.
      *
-     * @param priorEquivalentSampleSize a double
+     * @param priorEquivalentSampleSize the prior equivalent sample size to set
      */
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 
+    /**
+     * Sets up and initializes a BCInference object using the given DataSet.
+     *
+     * @param dataSet the DataSet object to be used for setting up the BCInference object
+     * @return the initialized BCInference object
+     */
     private BCInference setup(DataSet dataSet) {
         int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
 
@@ -395,6 +434,15 @@ public class IndTestProbabilistic implements IndependenceTest {
         return bci;
     }
 
+    /**
+     * Retrieves the list of row indices where all variables in `allVars` have non-null values in `dataSet`. If any
+     * variable has a null value for a particular row, the row is skipped.
+     *
+     * @param dataSet   The DataSet object containing the data.
+     * @param allVars   The list of variables to check for non-null values.
+     * @param nodesHash A mapping of variables to their corresponding indices in the DataSet.
+     * @return A List of Integer objects representing the row indices where all variables have non-null values.
+     */
     private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 

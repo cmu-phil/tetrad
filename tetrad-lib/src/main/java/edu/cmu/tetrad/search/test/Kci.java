@@ -17,7 +17,6 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
-import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -47,31 +46,55 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class Kci implements IndependenceTest {
 
-    // The supplied data set, standardized
+    /**
+     * The supplied data set, standardized
+     */
     private final DataSet data;
-    // Variables in data
+    /**
+     * Variables in data
+     */
     private final List<Node> variables;
     private final double[] h;
-    // A normal distribution with 1 degree of freedom.
+    /**
+     * A normal distribution with 1 degree of freedom.
+     */
     private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 0, 1);
-    // Convenience map from nodes to their indices in the list of variables.
+    /**
+     * Convenience map from nodes to their indices in the list of variables.
+     */
     private final Map<Node, Integer> hash;
-    // Record of independence facts
+    /**
+     * Record of independence facts
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The alpha level of the test.
+    /**
+     * The alpha level of the test.
+     */
     private double alpha;
-    // True if the approximation algorithms should be used instead of Theorems 3 or 4.
+    /**
+     * True if the approximation algorithms should be used instead of Theorems 3 or 4.
+     */
     private boolean approximate;
-    // Eigenvalues greater than this time the maximum will be kept.
+    /**
+     * Eigenvalues greater than this time the maximum will be kept.
+     */
     private double threshold = 0.01;
-    // Number of bostraps for Theorem 4 and Proposition 5.
+    /**
+     * Number of bostraps for Theorem 4 and Proposition 5.
+     */
     private int numBootstraps = 5000;
-    // Azzalini optimal kernel widths will be multiplied by this.
+    /**
+     * Azzalini optimal kernel widths will be multiplied by this.
+     */
     private double widthMultiplier = 1.0;
-    // Epsilon for Propositio 5.
+    /**
+     * Epsilon for Propositio 5.
+     */
     private double epsilon = 0.001;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -107,24 +130,19 @@ public class Kci implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
+     * @throws UnsupportedOperationException since not implemneted.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns True if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
+     * Checks the independence between two nodes given a set of conditioning variables.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @see IndependenceResult
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of conditioning variables.
+     * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -253,18 +271,21 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable by the given name.
+     * Returns the variable of the given name.
+     *
+     * @param name a {@link String} object representing the name of the variable to retrieve
+     * @return the Node object representing the variable with the given name
      */
     public Node getVariable(String name) {
         return this.data.getVariable(name);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if y is determined the variable in z.
+     * Determines the independence between a set of nodes and a target node.
+     *
+     * @param z The set of nodes representing the conditioning variables.
+     * @param y The target node.
+     * @return True if the conditioning variables z are independent of the target node y, false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
@@ -280,9 +301,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the alpha level for the test.
+     *
+     * @param alpha The alpha level to be set.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -308,10 +329,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * <p>getCov.</p>
+     * Returns the covariance matrix.
      *
-     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * @return The covariance matrix.
      */
     public ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -396,9 +416,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if verbose output is printed.
+     * Returns the value of the verbose flag.
+     *
+     * @return The value of the verbose flag.
      */
     @Override
     public boolean isVerbose() {
@@ -406,16 +426,16 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output is printed.
+     * Sets the verbosity of the method.
+     *
+     * @param verbose True if verbosity is enabled, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /*
+    /**
      * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
      * @return true just in case independence holds.
@@ -447,7 +467,7 @@ public class Kci implements IndependenceTest {
                 return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
             IndependenceResult result = new IndependenceResult(fact, false, 0.0, getAlpha());
             this.facts.put(fact, result);
             return result;
@@ -479,7 +499,7 @@ public class Kci implements IndependenceTest {
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
             boolean indep = false;
             IndependenceResult result = new IndependenceResult(fact, indep, 0.0, getAlpha());
             this.facts.put(fact, result);
@@ -487,15 +507,24 @@ public class Kci implements IndependenceTest {
         }
     }
 
+    /**
+     * Calculates the independence result using Theorem 4 from the paper.
+     *
+     * @param kx   The kernel matrix for node x.
+     * @param ky   The kernel matrix for node y.
+     * @param fact The independence fact.
+     * @param N    The sample size.
+     * @return The independence result.
+     */
     private IndependenceResult theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
 
         double T = (1.0 / N) * (kx.times(ky).trace());
 
         // Eigen decomposition of kx and ky.
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke(false);
         List<Double> evx = eigendecompositionx.getTopEigenvalues();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke(false);
         List<Double> evy = eigendecompositiony.getTopEigenvalues();
 
         // Calculate formula (9).
@@ -523,14 +552,23 @@ public class Kci implements IndependenceTest {
         return result;
     }
 
+    /**
+     * Calculates the independence test result for Proposition 5.
+     *
+     * @param kx   The matrix kx.
+     * @param ky   The matrix ky.
+     * @param fact The independence fact.
+     * @param N    The size of the input dataset.
+     * @return The independence result.
+     */
     private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
         double T = (1.0 / N) * kx.times(ky).trace();
 
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke(true);
         Matrix vx = eigendecompositionx.getV();
         Matrix dx = eigendecompositionx.getD();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke(true);
         Matrix vy = eigendecompositiony.getV();
         Matrix dy = eigendecompositiony.getD();
 
@@ -566,7 +604,7 @@ public class Kci implements IndependenceTest {
         } else {
 
             // Get top eigenvalues of that.
-            Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke();
+            Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke(false);
             List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
 
             // Calculate formulas (13) and (14).
@@ -592,23 +630,48 @@ public class Kci implements IndependenceTest {
         }
     }
 
+    /**
+     * Generates a series of integers from 0 to size-1.
+     *
+     * @param size The number of elements in the series.
+     * @return A list of integers representing the series.
+     */
     private List<Integer> series(int size) {
         List<Integer> series = new ArrayList<>();
         for (int i = 0; i < size; i++) series.add(i);
         return series;
     }
 
+    /**
+     * Calculates the centered matrix by performing matrix operations on the input matrices K and H.
+     *
+     * @param K The first matrix.
+     * @param H The second matrix.
+     * @return The resulting center matrix.
+     */
     private Matrix center(Matrix K, Matrix H) {
         return H.times(K).times(H);
     }
 
+    /**
+     * Returns the Chi-square sample value.
+     *
+     * @return The Chi-square sample value.
+     */
     private double getChisqSample() {
         double z = this.normal.sample();
         return z * z;
     }
 
-    // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
-    // using MAD.
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param x     The node for which the optimal bandwidth is calculated.
+     * @param _data The dataset from which the node's values are extracted.
+     * @param hash  A map that maps each node in the dataset to its corresponding index.
+     * @return The optimal bandwidth for node x.
+     */
     private double h(Node x, double[][] _data, Map<Node, Integer> hash) {
         double[] xCol = _data[hash.get(x)];
         double[] g = new double[xCol.length];
@@ -618,6 +681,15 @@ public class Kci implements IndependenceTest {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
+    /**
+     * Returns the top indices from the given array that have values greater than the threshold multiplied by the
+     * maximum value in the array.
+     *
+     * @param prod       The array to filter.
+     * @param allIndices The list of indices to consider.
+     * @param threshold  The threshold value.
+     * @return The list of top indices.
+     */
     private List<Integer> getTopIndices(double[] prod, List<Integer> allIndices, double threshold) {
         double maxEig = prod[allIndices.get(0)];
 
@@ -632,13 +704,30 @@ public class Kci implements IndependenceTest {
         return indices;
     }
 
+    /**
+     * Returns the symmetrized matrix of the given input matrix.
+     *
+     * @param kx The input matrix.
+     * @return The symmetrized matrix.
+     */
     private Matrix symmetrized(Matrix kx) {
         return (kx.plus(kx.transpose())).scalarMult(0.5);
     }
 
+    /**
+     * Calculates the kernel matrix based on the given parameters.
+     *
+     * @param _data           the data matrix
+     * @param x               the target node
+     * @param z               the list of other nodes
+     * @param widthMultiplier the width multiplier for the kernel
+     * @param hash            the map of nodes to their indices
+     * @param N               the number of data points
+     * @param _h              the bandwidth vector
+     * @return the calculated kernel matrix
+     */
     private Matrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier,
-                                Map<Node, Integer> hash,
-                                int N, double[] _h) {
+                                Map<Node, Integer> hash, int N, double[] _h) {
 
         List<Integer> _z = new ArrayList<>();
 
@@ -674,6 +763,13 @@ public class Kci implements IndependenceTest {
         return result;
     }
 
+    /**
+     * Returns the value of h calculated based on the given list of indices and bandwidth vector.
+     *
+     * @param _z The list of indices.
+     * @param _h The bandwidth vector.
+     * @return The calculated h value.
+     */
     private double getH(List<Integer> _z, double[] _h) {
         double h = 0;
 
@@ -687,12 +783,27 @@ public class Kci implements IndependenceTest {
         return h;
     }
 
+    /**
+     * Computes the value of the Gaussian kernel function for the given input value and width.
+     *
+     * @param z     The input value.
+     * @param width The width parameter of the Gaussian kernel.
+     * @return The result of the Gaussian kernel function.
+     */
     private double kernelGaussian(double z, double width) {
         z /= width;
         return exp(-z);
     }
 
-    // Euclidean distance.
+    /**
+     * Calculate the Euclidean distance between two data points based on specified columns.
+     *
+     * @param data The data matrix containing the data points.
+     * @param cols The list of column indices to be used for distance calculation.
+     * @param i    The index of the first data point.
+     * @param j    The index of the second data point.
+     * @return The Euclidean distance between the two data points.
+     */
     private double distance(double[][] data, List<Integer> cols, int i, int j) {
         double sum = 0.0;
 
@@ -704,6 +815,12 @@ public class Kci implements IndependenceTest {
         return sum;
     }
 
+    /**
+     * Retrieves the list of rows from the given DataSet.
+     *
+     * @param dataSet The DataSet from which to retrieve the rows.
+     * @return A List of integers representing the row numbers in the DataSet.
+     */
     private List<Integer> getRows(DataSet dataSet) {
         List<Integer> rows = new ArrayList<>();
 
@@ -714,12 +831,22 @@ public class Kci implements IndependenceTest {
         return rows;
     }
 
+    /**
+     * The Eigendecomposition class represents the decomposition of a square matrix into its eigenvalues and
+     * eigenvectors. It provides methods to retrieve the eigenvalues, eigenvectors, and the top eigenvalues.
+     */
     private class Eigendecomposition {
         private final Matrix k;
         private Matrix D;
         private Matrix V;
         private List<Double> topEigenvalues;
 
+        /**
+         * Construct a new Eigendecomposition object with the given matrix.
+         *
+         * @param k the matrix to be decomposed
+         * @throws IllegalArgumentException if the matrix is empty
+         */
         public Eigendecomposition(Matrix k) {
             if (k.getNumRows() == 0 || k.getNumColumns() == 0) {
                 throw new IllegalArgumentException("Empty matrix to decompose. Please don't do that to me.");
@@ -728,19 +855,40 @@ public class Kci implements IndependenceTest {
             this.k = k;
         }
 
+        /**
+         * Returns the matrix D.
+         *
+         * @return the matrix D
+         */
         public Matrix getD() {
             return this.D;
         }
 
+        /**
+         * Returns the matrix V.
+         *
+         * @return the matrix V
+         */
         public Matrix getV() {
             return this.V;
         }
 
+        /**
+         * Returns the list of top eigenvalues.
+         *
+         * @return the list of top eigenvalues
+         */
         public List<Double> getTopEigenvalues() {
             return this.topEigenvalues;
         }
 
-        public Eigendecomposition invoke() {
+        /**
+         * Performs eigendecomposition on a given matrix and optionally stores the eigenvectors.
+         *
+         * @param storeV  a flag indicating whether to store the eigenvectors
+         * @return the Eigendecomposition object on which this method is invoked
+         */
+        public Eigendecomposition invoke(boolean storeV) {
             List<Integer> topIndices;
 
             if (true) {
@@ -751,23 +899,25 @@ public class Kci implements IndependenceTest {
                 List<Integer> indx = series(arr.length); // 1 2 3...
                 topIndices = getTopIndices(arr, indx, Kci.this.threshold);
 
-                this.D = new Matrix(topIndices.size(), topIndices.size());
-
-                for (int i = 0; i < topIndices.size(); i++) {
-                    this.D.set(i, i, sqrt(arr[topIndices.get(i)]));
-                }
-
                 this.topEigenvalues = new ArrayList<>();
 
                 for (int t : topIndices) {
                     getTopEigenvalues().add(arr[t]);
                 }
 
-                this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+                if (storeV) {
+                    this.D = new Matrix(topIndices.size(), topIndices.size());
 
-                for (int i = 0; i < topIndices.size(); i++) {
-                    RealVector t = ed.getEigenvector(topIndices.get(i));
-                    this.V.assignColumn(i, new Vector(t.toArray()));
+                    for (int i = 0; i < topIndices.size(); i++) {
+                        this.D.set(i, i, sqrt(arr[topIndices.get(i)]));
+                    }
+
+                    this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+
+                    for (int i = 0; i < topIndices.size(); i++) {
+                        RealVector t = ed.getEigenvector(topIndices.get(i));
+                        this.V.assignColumn(i, new Vector(t.toArray()));
+                    }
                 }
             } else {
                 SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
@@ -777,19 +927,21 @@ public class Kci implements IndependenceTest {
                 List<Integer> indx = series(evxAll.length); // 1 2 3...
                 topIndices = getTopIndices(evxAll, indx, Kci.this.threshold);
 
-                D = new Matrix(topIndices.size(), topIndices.size());
+                if (storeV) {
+                    D = new Matrix(topIndices.size(), topIndices.size());
 
-                for (int i = 0; i < topIndices.size(); i++) {
-                    D.set(i, i, FastMath.sqrt(evxAll[topIndices.get(i)]));
-                }
+                    for (int i = 0; i < topIndices.size(); i++) {
+                        D.set(i, i, topEigenvalues.get(i));
+                    }
 
-                RealMatrix V0 = svd.getV();
+                    RealMatrix V0 = svd.getV();
 
-                V = new Matrix(V0.getRowDimension(), topIndices.size());
+                    V = new Matrix(V0.getRowDimension(), topIndices.size());
 
-                for (int i = 0; i < V.getNumColumns(); i++) {
-                    double[] t = V0.getColumn(topIndices.get(i));
-                    V.assignColumn(i, new Vector(t));
+                    for (int i = 0; i < V.getNumColumns(); i++) {
+                        double[] t = V0.getColumn(topIndices.get(i));
+                        V.assignColumn(i, new Vector(t));
+                    }
                 }
 
                 topEigenvalues = new ArrayList<>();
@@ -797,7 +949,6 @@ public class Kci implements IndependenceTest {
                 for (int t : topIndices) {
                     getTopEigenvalues().add(evxAll[t]);
                 }
-
             }
 
             return this;

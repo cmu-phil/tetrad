@@ -44,19 +44,38 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MsepTest implements IndependenceTest {
 
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * This variable stores a map that maps each node to a set of its ancestors.
+     */
     private Map<Node, Set<Node>> ancestorMap;
+    /**
+     * Represents the independence facts used for direct calculations of m-separation.
+     * This variable is of type IndependenceFacts.
+     */
     private IndependenceFacts independenceFacts;
-    // The graph for which this is a variable map.
+    /**
+     * The graph for which this is a variable map.
+     */
     private Graph graph;
-    //The list of observed variables (i.e. variables for observed nodes).
+    /**
+     * The list of observed variables (i.e. variables for observed nodes).
+     */
     private List<Node> observedVars;
-    // The list of translated observed variables (i.e. variables for observed nodes).
+    /**
+     * The list of translated observed variables (i.e. variables for observed nodes).
+     */
     private List<Node> _observedVars;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose = false;
-    // The "p-value" of the last test (this is 0 or 1).
+    /**
+     * The "p-value" of the last test (this is 0 or 1).
+     */
     private double pvalue = 0;
 
     /**
@@ -131,9 +150,11 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns a test over a subset of the variables.
+     * Conducts an independence test on a subset of variables.
+     *
+     * @param vars The sublist of variables to test independence on.
+     * @throws IllegalArgumentException If the subset is empty or contains variables that are not original variables.
+     * @return This IndependenceTest object.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -175,15 +196,15 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Checks the indicated m-separation fact, msep(x , y | z).
+     * Checks the independence between two nodes with respect to a set of conditioning nodes.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @see IndependenceResult
+     * @param x The first node to check independence for.
+     * @param y The second node to check independence for.
+     * @param z The set of conditioning nodes.
+     * @return The result of the independence test.
+     * @throws NullPointerException if the set of conditioning nodes is null or contains null elements.
+     * @throws IllegalArgumentException if x or y is not an observed variable.
+     * @throws RuntimeException if an undefined p-value is encountered during the test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -282,14 +303,19 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if a node is m-separated from a set of conditioning nodes.
+     *
+     * @param z The set of conditioning nodes.
+     * @param x1 The node to check independence for.
+     * @return True if the node is m-separated from the conditioning nodes, false otherwise.
+     * @throws UnsupportedOperationException if not implemented.
      */
     public boolean determines(List<Node> z, Node x1) {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
 
     /**
-     * Returns an alpha level, 0.5. This is an arbitrary nubmer that will help decide whether a pseudo p-value returned
+     * Returns an alpha level, 0.5. This is an arbitrary number that will help decide whether a pseudo p-value returned
      * by the test represents a dependence or an independence.
      *
      * @return 0.5.
@@ -299,16 +325,19 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the alpha level for the independence test.
+     *
+     * @param alpha The level of significance for the test.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException("Method mot implemented.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable with the given name.
+     * Returns the {@link Node} object with the given name.
+     *
+     * @param name the name of the variable to retrieve
+     * @return the Node object with the given name if found, null otherwise
      */
     public Node getVariable(String name) {
         for (Node variable : observedVars) {
@@ -339,10 +368,9 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * <p>getData.</p>
+     * Returns the data set used for the test.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
-     * @throws java.lang.UnsupportedOperationException Method doesn't make sense here.
+     * @return The data set used for the test.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("This is a m-separation test, no data available.");
@@ -358,9 +386,9 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets the verbosity level for the program.
+     *
+     * @param verbose True if verbose output should be printed, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

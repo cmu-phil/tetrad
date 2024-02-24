@@ -36,31 +36,51 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Checks d-separations in structural model using t-separations over indicators.
+ * Checks d-separations in a structural model using t-separations over indicators.
  *
  * @author Adam Brodie
  * @version $Id: $Id
  */
 public final class IndTestTrekSep implements IndependenceTest {
-    // The variables of the covariance matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The covariance matrix.
+    /**
+     * The covariance matrix.
+     */
     private final ICovarianceMatrix covMatrix;
-    // The latents in order. (Unmodifiable list.)
+    /**
+     * The latents in order. (Unmodifiable list.)
+     */
     private final List<Node> latents;
-    // The variables clusterings.
+    /**
+     * The variables clusterings.
+     */
     private final List<List<Node>> clustering;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> indexMap;
-    // A hash of nodes to names.
+    /**
+     * A hash of nodes to names.
+     */
     private final Map<String, Node> nameMap;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The variables of the covariance matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
     private List<Node> variables;
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
 
     /**
@@ -85,9 +105,11 @@ public final class IndTestTrekSep implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new independence test instance for a sublist of the variables.
+     * Determines independence between variables in a given subset.
+     *
+     * @param vars The sublist of variables to test for independence.
+     * @return An IndependenceTest object representing the result of the independence test.
+     * @throws IllegalArgumentException If the subset of variables is empty or contains variables that are not part of the original variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -114,14 +136,12 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Determines independence between variables x and y, given the set of variables z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x The first variable.
+     * @param y The second variable.
+     * @param z The set of variables.
+     * @return An IndependenceResult object representing the result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -187,10 +207,10 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level. Must be between 0.0 and 1.0 (inclusive).
+     * @throws IllegalArgumentException If the significance level is out of range.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -223,18 +243,22 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable with the given name.
+     * Gets the variable with the given name.
+     *
+     * @param name The name of the variable to get.
+     * @return The Node object representing the variable.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws UnsupportedOperationException.
+     * Determines the independence between a set of variables z and a variable x.
+     *
+     * @param z The set of variables to determine independence with x.
+     * @param x The variable to determine independence with z.
+     * @return true if the variable x is conditionally independent from the set of variables z, false otherwise.
+     * @throws UnsupportedOperationException if the covariance matrix is singular or not invertible.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -271,10 +295,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * <p>getData.</p>
+     * Gets the data set used for the independence test.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
-     * @throws java.lang.UnsupportedOperationException Always.
+     * @return The data set used for the independence test.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("Dataset not available.");
@@ -299,7 +322,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data sets used for the independence test.
+     *
+     * @return The list of data sets used for the independence test.
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -307,9 +332,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the sample size.
+     * Returns the sample size used in the covariance matrix.
+     *
+     * @return The sample size.
      */
     @Override
     public int getSampleSize() {
@@ -317,9 +342,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if verbose output should be printed.
+     * Checks whether verbose output is enabled.
+     *
+     * @return true if verbose output is enabled, false otherwise.
      */
     @Override
     public boolean isVerbose() {
@@ -327,23 +352,39 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets the verbose output flag.
+     *
+     * @param verbose True, if verbose output is enabled. False otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the sample size used in the covariance matrix.
+     *
+     * @return The sample size.
+     */
     private int sampleSize() {
         return covMatrix().getSampleSize();
     }
 
+    /**
+     * Returns the covariance matrix used in the independence test.
+     *
+     * @return The covariance matrix.
+     */
     private ICovarianceMatrix covMatrix() {
         return this.covMatrix;
     }
 
+    /**
+     * Creates a map of variable names to Node objects.
+     *
+     * @param variables The list of Node objects representing variables.
+     * @return A Map object that maps variable names to Node objects.
+     */
     private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
@@ -354,6 +395,13 @@ public final class IndTestTrekSep implements IndependenceTest {
         return nameMap;
     }
 
+    /**
+     * Constructs a map that maps each Node object from the "variables" and "latents" lists to an integer index.
+     *
+     * @param variables The list of Node objects representing variables.
+     * @param latents   The list of Node objects representing latent variables.
+     * @return A Map object that maps Node objects to their corresponding index.
+     */
     private Map<Node, Integer> indexMap(List<Node> variables, List<Node> latents) {
         Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 

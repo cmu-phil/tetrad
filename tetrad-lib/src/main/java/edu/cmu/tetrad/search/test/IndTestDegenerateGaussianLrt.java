@@ -192,15 +192,16 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Subsets the variables used in the independence test.
+     *
+     * @param vars The sublist of variables.
+     * @return The IndependenceTest object with subset of variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
      *
      * @param x  a {@link edu.cmu.tetrad.graph.Node} object
@@ -302,9 +303,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if y is determined the variable in z.
+     * Determines whether a given list of nodes z determines a node y.
+     *
+     * @param z The list of nodes z.
+     * @param y The node y.
+     * @return True if the list of nodes z determines y, false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -320,8 +323,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -348,8 +349,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns true iff verbose output should be printed.
      */
     @Override
@@ -358,8 +357,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override
@@ -398,6 +395,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         return new Ret(lik, dof);
     }
 
+    /**
+     * Returns a list of row indices that satisfy the given conditions.
+     *
+     * @param allVars A list of nodes representing the variables to be checked.
+     * @param nodesHash A map that associates each node with its corresponding index.
+     * @return A list of integers representing the row indices that satisfy the conditions.
+     */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
@@ -417,7 +421,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         return rows;
     }
 
-    // Subsample of the continuous mixedVariables conditioning on the given cols.
+    /**
+     * Calculates the covariance matrix for the given rows and columns.
+     *
+     * @param rows The list of row indices to include in the covariance calculation.
+     * @param cols The array of column indices to include in the covariance calculation.
+     * @return The covariance matrix for the selected rows and columns.
+     */
     private Matrix getCov(List<Integer> rows, int[] cols) {
         Matrix cov = new Matrix(cols.length, cols.length);
 

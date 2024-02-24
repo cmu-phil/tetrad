@@ -50,17 +50,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
-    // The variables of the covariance matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // The regressions.
+    /**
+     * The regressions.
+     */
     private final ArrayList<Regression> regressions;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The data sets.
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets;
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -97,15 +109,16 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns an Independence test for a sublist of the variables.
+     *
+     * @param vars The sublist of variables.
+     * @return an instance of IndependenceTest.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Determines whether x _||_ y | z.
      *
      * @param x  a {@link edu.cmu.tetrad.graph.Node} object
@@ -185,19 +198,19 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Gets the getModel significance level.
+     * This method returns the alpha significance cutoff value used in the independence test.
      *
-     * @return a double
+     * @return the alpha significance cutoff value
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the alpha significance cutoff value.
+     *
+     * @param alpha The alpha significance cutoff value.
+     * @throws IllegalArgumentException if the alpha value is outside the range [0, 1]
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -205,21 +218,24 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         this.alpha = alpha;
-//        this.thresh = Double.NaN;
     }
 
     /**
-     * <p>Getter for the field <code>variables</code>.</p>
+     * Returns the list of variables used in this method.
      *
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return The list of variables.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether the z nodes determine the x node.
+     *
+     * @param z The list of nodes to condition on.
+     * @param x The node to test determination for.
+     * @return True if node x is dependent on nodes z, False otherwise.
+     * @throws UnsupportedOperationException Always throws this exception.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
@@ -235,9 +251,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns teh covaraince matrix of the concatenated data.
+     * Returns the covariance matrix for the data sets.
+     *
+     * @return The covariance matrix of the standardized data sets.
      */
     @Override
     public ICovarianceMatrix getCov() {
@@ -251,9 +267,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a string representation of this test.
+     * @return A string representing the object.
      */
     public String toString() {
         return "Fisher Z, Concatenating Residuals";
@@ -269,14 +285,21 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output is printed.
+     * Sets the verbose output flag.
+     *
+     * @param verbose Whether verbose output should be printed or not.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Calculates the residuals for a given node and list of parents.
+     *
+     * @param node    The node for which residuals are calculated.
+     * @param parents The list of parent nodes for the calculation.
+     * @return The array of residuals.
+     */
     private double[] residuals(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
@@ -315,6 +338,13 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
 
+    /**
+     * Returns the variable with the given name from the list of variables.
+     *
+     * @param variables The list of variables to search in.
+     * @param name      The name of the variable to find.
+     * @return The variable with the given name, or null if it is not found.
+     */
     private Node getVariable(List<Node> variables, String name) {
         for (Node node : variables) {
             if (name.equals(node.getName())) {

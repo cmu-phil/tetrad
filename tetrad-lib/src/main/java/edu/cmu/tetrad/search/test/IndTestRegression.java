@@ -52,19 +52,33 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IndTestRegression implements IndependenceTest {
 
-    // The standard number formatter for Tetrad.
+    /**
+     * The standard number formatter for Tetrad.
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The correlation matrix.
+    /**
+     * The correlation matrix.
+     */
     private final DoubleMatrix2D data;
-    // The variables of the correlation matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the correlation matrix, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // The value of the Fisher's Z statistic associated with the las calculated partial correlation.
+    /**
+     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
+     */
     private boolean verbose;
 
     /**
@@ -87,23 +101,22 @@ public final class IndTestRegression implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new IndTestCramerT instance for a subset of the variables.
+     * Performs an independence test for a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return The independence test result.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         return null;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Checks the independence between two variables, given a set of conditioning variables.
      *
-     * @param xVar  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param yVar  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param zList a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param xVar The first variable to test for independence.
+     * @param yVar The second variable to test for independence.
+     * @param zList The set of conditioning variables.
+     * @return An IndependenceResult object containing the result of the independence test.
      */
     public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (facts.containsKey(new IndependenceFact(xVar, yVar, zList))) {
@@ -175,10 +188,10 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the significance level.
+     *
+     * @param alpha This level.
+     * @throws IllegalArgumentException if alpha is not within the range [0, 1].
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -189,10 +202,9 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * <p>Getter for the field <code>variables</code>.</p>
+     * Returns the list of variables associated with this object.
      *
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return the list of variables
      */
     public List<Node> getVariables() {
         return this.variables;
@@ -200,9 +212,9 @@ public final class IndTestRegression implements IndependenceTest {
 
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the Linear Regression Test object.
      *
-     * @return a {@link java.lang.String} object
+     * @return the string representation of the Linear Regression Test object
      */
     public String toString() {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
@@ -210,7 +222,12 @@ public final class IndTestRegression implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
+     * Determines if a variable xVar can be determined by a list of conditioning variables zList.
+     *
+     * @param zList The list of conditioning variables.
+     * @param xVar  The variable to test for determination.
+     * @return True if xVar is determined by zList, false otherwise.
+     * @throws NullPointerException if zList or any of its elements is null.
      */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
@@ -298,9 +315,9 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether the test prints verbose output.
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True, if verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
