@@ -2219,7 +2219,11 @@ public class Lofs {
      *
      * The kernel function calculates the value based on the input value z. If the absolute value
      * of z is greater than 1, the function returns 0. Otherwise, it returns the result of the
-     * calculation: (15 / 16) **/
+     * calculation: (15 / 16)
+     *
+     * @param z the input parameter
+     * @return the result of kernel5 function
+     */
     public double kernel5(double z) {
         if (abs(z) > 1) return 0;
         else return 15. / 16. * pow(1. - z * z, 2.);

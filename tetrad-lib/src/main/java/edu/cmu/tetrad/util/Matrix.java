@@ -671,6 +671,11 @@ public class Matrix implements TetradSerializable {
         }
     }
 
+    /**
+     * Calculates the sum of all elements in a matrix.
+     *
+     * @return the sum of all elements in the matrix
+     */
     public double zSum() {
         double sum = 0;
 

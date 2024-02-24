@@ -312,6 +312,11 @@ public final class MaxP {
         return false;
     }
 
+    /**
+     * Sets the verbose flag.
+     *
+     * @param verbose The boolean value indicating whether to enable verbose logging.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

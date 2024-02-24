@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
- * AnnotatedClass represents a class with its associated annotation.
+ * AnnotatedClass represents a class along with its associated annotation.
  *
  * @param <T> the type of the annotation
  */

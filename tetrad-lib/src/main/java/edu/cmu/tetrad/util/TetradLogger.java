@@ -579,13 +579,10 @@ public class TetradLogger {
     }
 
     /**
-     * This class represents an empty logger configuration that implements the TetradLoggerConfig interface.
-     * It specifies if the logger is active and provides methods to manage events and their activation status.
-     *
-     * @param active - a boolean indicating if the logger is active.
-     * @see TetradLoggerConfig
+     * Represents an empty logger configuration.
      */
     public record EmptyConfig(boolean active) implements TetradLoggerConfig {
+
         @Serial
         private static final long serialVersionUID = 23L;
 
@@ -597,7 +594,6 @@ public class TetradLogger {
         @SuppressWarnings("SameParameterValue")
         public EmptyConfig {
         }
-
 
         /**
          * Generates a simple exemplar of this class to test serialization.
