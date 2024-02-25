@@ -107,7 +107,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             permutationSearch.setKnowledge(this.knowledge);
             permutationSearch.setSeed(seed);
             Graph graph = permutationSearch.search();
-            LogUtilsSearch.stampWithScore(graph, score);
+//            LogUtilsSearch.stampWithScore(graph, score);
             LogUtilsSearch.stampWithBic(graph, dataModel);
             return graph;
         } else {
