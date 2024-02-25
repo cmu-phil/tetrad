@@ -96,7 +96,7 @@ public final class Tetrad implements PropertyChangeListener {
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        Tetrad.setLookAndFeel();
+//        Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
@@ -137,12 +137,6 @@ public final class Tetrad implements PropertyChangeListener {
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        // Set up the desktop.
-        this.desktop = new TetradDesktop();
-        getDesktop().addPropertyChangeListener(this);
-        JOptionUtils.setCenteringComp(getDesktop());
-        DesktopController.setReference(getDesktop());
-
         /*
          This sets up the frame. Note the order in which the next few steps
          happen. First, the frame is given a preferred size, so that if
@@ -172,6 +166,12 @@ public final class Tetrad implements PropertyChangeListener {
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left-hand corner of the screen.
         frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+
+        // Set up the desktop.
+        this.desktop = new TetradDesktop();
+        getDesktop().addPropertyChangeListener(this);
+        JOptionUtils.setCenteringComp(getDesktop());
+        DesktopController.setReference(getDesktop());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();

@@ -35,6 +35,8 @@ import java.awt.event.*;
 import java.util.prefs.Preferences;
 
 import static java.awt.Desktop.getDesktop;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The main menubar for Tetrad.
@@ -44,6 +46,14 @@ import static java.awt.Desktop.getDesktop;
  */
 final class TetradMenuBar extends JMenuBar {
     private static final long serialVersionUID = -2734606481426217430L;
+
+    private static final Map<String, String> lookAndFeelOptions = new HashMap<>();
+
+    static {
+        for (UIManager.LookAndFeelInfo lookAndFeelInfo : UIManager.getInstalledLookAndFeels()) {
+            lookAndFeelOptions.put(lookAndFeelInfo.getName(), lookAndFeelInfo.getClassName());
+        }
+    }
 
     /**
      * A reference to the tetrad desktop.
@@ -72,6 +82,7 @@ final class TetradMenuBar extends JMenuBar {
         add(loggingMenu);
         add(templateMenu);
         add(windowMenu);
+        add(createChangeLookAndFeelMenu());
         add(helpMenu);
 
 
@@ -81,6 +92,41 @@ final class TetradMenuBar extends JMenuBar {
         buildTemplateMenu(templateMenu);
         buildWindowMenu(windowMenu);
         buildHelpMenu(helpMenu);
+    }
+
+    private JMenu createChangeLookAndFeelMenu() {
+        JMenu menu = new JMenu("Look And Feel");
+
+        ButtonGroup lookAndFeelButtonGroup = new ButtonGroup();
+        lookAndFeelOptions.keySet().forEach(name -> {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(name, true);
+            item.setActionCommand(name);
+            item.addActionListener(evt -> performLookAndFeelAction(evt));
+
+            lookAndFeelButtonGroup.add(item);
+            menu.add(item);
+        });
+
+        changeLookAndFeel(lookAndFeelOptions.get(lookAndFeelButtonGroup.getSelection().getActionCommand()));
+
+        return menu;
+    }
+
+    private void performLookAndFeelAction(ActionEvent evt) {
+        JRadioButtonMenuItem selectedItem = (JRadioButtonMenuItem) evt.getSource();
+
+        String lookAndFeel = selectedItem.getText();
+        changeLookAndFeel(lookAndFeelOptions.get(lookAndFeel));
+        Tetrad.frame.pack();
+    }
+
+    private void changeLookAndFeel(String className) {
+        try {
+            UIManager.setLookAndFeel(className);
+            SwingUtilities.updateComponentTreeUI(Tetrad.frame);
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException exception) {
+            exception.printStackTrace(System.err);
+        }
     }
 
     private JMenuItem getSuggestionBoxItem(TetradDesktop desktop, JMenu helpMenu) {
