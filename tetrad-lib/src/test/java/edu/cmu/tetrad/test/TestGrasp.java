@@ -322,7 +322,6 @@ public final class TestGrasp {
 //        statistics.setWeight("MAS", 1.0);
 
         Comparison comparison = new Comparison();
-        comparison.setParallelized(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 //        comparison.setSortByUtility(true);
         comparison.setShowAlgorithmIndices(true);
@@ -2560,7 +2559,6 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-        comparison.setParallelized(true);
 
         comparison.compareFromSimulations(
                 "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
