@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSampling;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -17,13 +18,15 @@ import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-
+import edu.cmu.tetrad.util.TaskRunner;
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * BOSS-DC (Best Order Score Search Divide and Conquer)
@@ -40,6 +43,7 @@ import java.util.List;
 @Bootstrapping
 public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
+
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -81,43 +85,72 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        long seed = parameters.getLong(Params.SEED);
+        List<DataSet> dataSets = DataSampling.createDataSamples((DataSet) dataModel, parameters);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+        Graph graph;
+        if (Thread.currentThread().isInterrupted()) {
+            // release resources
+            dataSets.clear();
+            System.gc();
+
+            graph = new EdgeListGraph();
+        } else {
+            List<Callable<Graph>> tasks = new LinkedList<>();
+            for (DataSet dataSet : dataSets) {
+                tasks.add(() -> runSearch(dataSet, parameters));
             }
 
-            Score score = this.score.getScore(dataModel, parameters);
+            TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+            List<Graph> graphs = taskRunner.run(tasks);
 
-            edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
-
-            boss.setUseBes(parameters.getBoolean(Params.USE_BES));
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-            boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            PermutationSearch permutationSearch = new PermutationSearch(boss);
-            permutationSearch.setKnowledge(this.knowledge);
-            permutationSearch.setSeed(seed);
-            Graph graph = permutationSearch.search();
-            LogUtilsSearch.stampWithScore(graph, score);
-            LogUtilsSearch.stampWithBic(graph, dataModel);
-            return graph;
-        } else {
-            Boss algorithm = new Boss(this.score);
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, knowledge, parameters);
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            if (graphs.isEmpty()) {
+                graph = new EdgeListGraph();
+            } else {
+                if (parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                    this.bootstrapGraphs = graphs;
+                    graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
+                } else {
+                    graph = graphs.get(0);
+                }
+            }
         }
+
+        // release resources
+        dataSets.clear();
+        System.gc();
+
+        return graph;
+    }
+
+    private Graph runSearch(DataSet dataSet, Parameters parameters) {
+        long seed = parameters.getLong(Params.SEED);
+
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
+            }
+            dataSet = timeSeries;
+            knowledge = timeSeries.getKnowledge();
+        }
+
+        Score score = this.score.getScore(dataSet, parameters);
+
+        edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
+
+        boss.setUseBes(parameters.getBoolean(Params.USE_BES));
+        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+        boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        PermutationSearch permutationSearch = new PermutationSearch(boss);
+        permutationSearch.setKnowledge(this.knowledge);
+        permutationSearch.setSeed(seed);
+        Graph graph = permutationSearch.search();
+        LogUtilsSearch.stampWithScore(graph, score);
+        LogUtilsSearch.stampWithBic(graph, dataSet);
+
+        return graph;
     }
 
     /**
