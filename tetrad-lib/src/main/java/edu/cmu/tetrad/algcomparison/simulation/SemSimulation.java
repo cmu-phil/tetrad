@@ -104,7 +104,10 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates data sets for simulation based on the given parameters.
+     *
+     * @param parameters The parameters to use in the simulation.
+     * @param newModel   If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -112,18 +115,20 @@ public class SemSimulation implements Simulation {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
 
-        Graph graph = this.randomGraph.createGraph(parameters);
-
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
         this.ims = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
-            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
+        int numRuns = parameters.getInt(Params.NUM_RUNS);
+
+        Graph graph = this.randomGraph.createGraph(parameters);
+
+        for (int i = 0; i < numRuns; i++) {
+            boolean differentGraphs = parameters.getBoolean(Params.DIFFERENT_GRAPHS);
+
+            if (differentGraphs && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
             }
-
-            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
 
@@ -153,12 +158,16 @@ public class SemSimulation implements Simulation {
             }
 
             dataSet.setName("" + (i + 1));
+            this.graphs.add(graph);
             this.dataSets.add(dataSet);
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data model at the specified index from the list of data sets.
+     *
+     * @param index The index of the desired simulated data set.
+     * @return The data model at the specified index from the list of data sets.
      */
     @Override
     public DataModel getDataModel(int index) {
@@ -166,7 +175,10 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the true graph at the specified index.
+     *
+     * @param index The index of the desired true graph.
+     * @return The true graph at the specified index.
      */
     @Override
     public Graph getTrueGraph(int index) {
@@ -174,7 +186,9 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of the simulation.
+     *
+     * @return Returns a one-line description of the simulation, to be printed at the beginning of the report.
      */
     @Override
     public String getDescription() {
@@ -182,7 +196,9 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameters used by this method.
+     *
+     * @return A list of String names of parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -192,10 +208,7 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        if (this.im == null) {
         parameters.addAll(SemIm.getParameterNames());
-//        }
-
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -213,7 +226,9 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of data models.
+     *
+     * @return The number of data sets to simulate.
      */
     @Override
     public int getNumDataModels() {
@@ -221,7 +236,9 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the data set.
+     *
+     * @return The type of the data set (continuous, discrete, mixed, graph, covariance or all).
      */
     @Override
     public DataType getDataType() {
@@ -231,50 +248,20 @@ public class SemSimulation implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
-        SemPm pm = this.pm;
-        SemIm im = this.im;
-
-        if (pm == null) {
-            pm = new SemPm(graph);
-            this.pm = pm;
-        }
-
-        // If an im is already available, then we should use that im without creating new
-        // random parameter values.-JR 20231005
-        long seed = parameters.getLong(Params.SEED);
-
-        if (im != null) {
-
-            // If the seed is set and has not changed, then we should call RandomUtil
-            // methods the same number of times as we would have if we had created a new im.
-            if (seed != -1 && seed == this.seed) {
-                for (int i = 0; i < this.im.getNumRandomCalls(); i++) {
-                    RandomUtil.getInstance().nextNormal(0, 1);
-                }
-            }
-
-            this.im = im;
-        } else {
-
-            // Otherwise, we should create a new im with new random parameter values.
-            // -JR 20231005
-            im = new SemIm(pm, parameters);
-            this.im = im;
-        }
-
-        this.seed = seed;
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
         // Need this in case the SEM IM is given externally.
-        this.im.setParams(parameters);
+        im.setParams(parameters);
 
         this.ims.add(im);
-        return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
     /**
-     * <p>getSemIms.</p>
+     * Retrieves the list of SemIm objects.
      *
-     * @return a {@link java.util.List} object
+     * @return The list of SemIm objects.
      */
     public List<SemIm> getSemIms() {
         return ims;

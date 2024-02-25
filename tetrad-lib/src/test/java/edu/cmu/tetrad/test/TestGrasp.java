@@ -1560,7 +1560,7 @@ public final class TestGrasp {
         graph.addDirectedEdge(x4, x5);
         graph.addDirectedEdge(x1, x4);
 
-        System.out.println(graph);
+//        System.out.println(graph);
 
 //        IndTestMSep msep = new IndTestMSep(graph);
 //        GraphScore score = new GraphScore(graph);

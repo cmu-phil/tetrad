@@ -61,8 +61,8 @@ public final class GraphUtils {
         List<Node> children = graph.getChildren(errorNode);
 
         if (children.size() != 1) {
-            System.out.println("children of " + errorNode + " = " + children);
-            System.out.println(graph);
+//            System.out.println("children of " + errorNode + " = " + children);
+//            System.out.println(graph);
 
             throw new IllegalArgumentException("An error node should have only " + "one child, which is its associated node: " + errorNode);
         }
