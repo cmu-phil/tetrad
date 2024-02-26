@@ -62,10 +62,6 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
     /**
-     * A reference to the error terms menu item so it can be reset.
-     */
-    private JMenuItem errorTerms;
-    /**
      * The graphical editor for the SemIm.
      */
     private final GeneralizedSemImGraphicalEditor graphicalEditor;
@@ -73,6 +69,10 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * The graphical editor for the SemIm.
      */
     private final GeneralizedSemImListEditor listEditor;
+    /**
+     * A reference to the error terms menu item so it can be reset.
+     */
+    private JMenuItem errorTerms;
 
     /**
      * Constructs a GeneralizedSemImEditor with the specified GeneralizedSemEstimatorWrapper.
@@ -105,7 +105,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      *
      * @param wrapper the GeneralizedSemImWrapper to initialize the editor with
      * @throws IllegalArgumentException if the wrapper contains more than one Generalized SEM IM
-     * @throws NullPointerException if the Generalized SEM IM is null
+     * @throws NullPointerException     if the Generalized SEM IM is null
      */
     public GeneralizedSemImEditor(GeneralizedSemImWrapper wrapper) {
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
@@ -140,8 +140,8 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     }
 
     /**
-     * When the dialog closes, we want to close all generalized expression editors. We do this by
-     * detecting when the ancestor of this editor has been removed.
+     * When the dialog closes, we want to close all generalized expression editors. We do this by detecting when the
+     * ancestor of this editor has been removed.
      */
     private void initializeAncetorListener() {
         this.addAncestorListener(new AncestorListener() {
@@ -184,7 +184,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * Initializes the Tools menu in the menu bar.
      *
      * @param errorTerms the error terms menu item
-     * @param menuBar the menu bar to add the Tools menu to
+     * @param menuBar    the menu bar to add the Tools menu to
      */
     private void initializeToolsMenu(JMenuItem errorTerms, JMenuBar menuBar) {
         JMenuItem lengthCutoff = initializeLengthCutoffMenu(GeneralizedSemImEditor.this.graphicalEditor);
@@ -235,8 +235,8 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
             panel.setLayout(new BorderLayout());
             panel.add(b, BorderLayout.CENTER);
 
-            EditorWindow editorWindow
-                    = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemImEditor.this);
+            EditorWindow editorWindow = new EditorWindow(panel, "Apply Templates", "OK",
+                    false, GeneralizedSemImEditor.this);
 
             editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                 public void internalFrameClosing(InternalFrameEvent event) {
@@ -255,7 +255,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * Initializes the error terms menu item.
      *
      * @param wrapper The GeneralizedSemEstimatorWrapper object.
-     * @param shown A boolean indicating whether the error terms are shown or hidden.
+     * @param shown   A boolean indicating whether the error terms are shown or hidden.
      */
     private void initializeErrorTermsMenu(GeneralizedSemEstimatorWrapper wrapper, boolean shown) {
         this.errorTerms = new JMenuItem();
@@ -359,7 +359,8 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     }
 
     /**
-     * Retrieves the model edges to display from the workbench of the graphical editor associated with the current instance.
+     * Retrieves the model edges to display from the workbench of the graphical editor associated with the current
+     * instance.
      *
      * @return the model edges to display as a map of edges and their display settings
      */
