@@ -44,8 +44,6 @@ import org.apache.commons.math3.util.FastMath;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.sd;
-
 /**
  * Represents a generalized SEM instantiated model. The parameteric form of this model allows arbitrary equations for
  * variables. This instantiated model gives values for all of the parameters of the parameterized model.
@@ -308,17 +306,12 @@ public class GeneralizedSemIm implements Im, Simulator {
     public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
+        } else if (!this.pm.getGraph().paths().existsDirectedCycle()) {
+            return simulateDataRecursive(sampleSize, latentDataSaved);
+        } else {
+            return simulateDataFisher(sampleSize);
         }
-
-        return simulateDataFisher(sampleSize);
     }
-
-//    @Override
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
 
     private DataSet simulateTimeSeries(int sampleSize) {
         SemGraph semGraph = new SemGraph(getSemPm().getGraph());
@@ -411,8 +404,8 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
-        List<Node> variables = this.pm.getNodes();
-        Map<String, Double> std = new HashMap<>();
+        boolean printedUndefined = false;
+        boolean printedInfinite = false;
 
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -426,71 +419,71 @@ public class GeneralizedSemIm implements Im, Simulator {
             value = variableValues.get(term);
 
             if (value != null) {
-                return value * 2 / std.get(term);
+                return value;
             }
 
             throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
-        List<Node> continuousVariables = new LinkedList<>();
-        List<Node> nonErrorVariables = this.pm.getVariableNodes();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
-        // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : nonErrorVariables) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
+        double[][] all = new double[variableNodes.size()][sampleSize];
 
-            if (var.getNodeType() != NodeType.ERROR) {
-                continuousVariables.add(var);
-            }
-        }
+        List<Node> nodes = pm.getVariableNodes();
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
-
-        // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = this.pm.getGraph();
-        List<Node> tierOrdering = graph.getFullTierOrdering();
-
-        int[] tierIndices = new int[variables.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = nonErrorVariables.indexOf(tierOrdering.get(i));
-        }
+        pm.getGraph().paths().makeValidOrder(nodes);
 
         // Do the simulation.
-        for (int tier = 0; tier < variables.size(); tier++) {
-            double[] v = new double[sampleSize];
+        for (int row = 0; row < sampleSize; row++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                Node node = nodes.get(j);
+                Node error = this.pm.getErrorNode(node);
 
-            int col = tierIndices[tier];
+                if (error == null) {
+                    throw new NullPointerException();
+                }
 
-            if (col == -1) {
-                continue;
+                Expression errorExpression = this.pm.getNodeExpression(error);
+                double errorValue = errorExpression.evaluate(context);
+
+                if (Double.isNaN(errorValue)) {
+                    throw new IllegalArgumentException("Undefined errorValue for error expression: " + errorExpression);
+                }
+
+                variableValues.put(error.getName(), errorValue);
+
+                Expression nodeExpression = this.pm.getNodeExpression(node);
+                double nodevalue = nodeExpression.evaluate(context);
+
+                if (Double.isNaN(nodevalue)) {
+                    if (!printedUndefined) {
+                        System.out.println("Undefined errorValue.");
+                        printedUndefined = true;
+                    }
+                }
+
+                if (Double.isInfinite(nodevalue)) {
+                    if (!printedInfinite) {
+                        System.out.println("Infinite errorValue.");
+                        printedInfinite = true;
+                    }
+                }
+
+                variableValues.put(node.getName(), nodevalue);
+                all[j][row] = nodevalue;
             }
-
-            for (int row = 0; row < sampleSize; row++) {
-                variableValues.clear();
-
-                Node node = tierOrdering.get(tier);
-                Expression expression = this.pm.getNodeExpression(node);
-                double value = expression.evaluate(context);
-                v[row] = value;
-                variableValues.put(node.getName(), value);
-
-                fullDataSet.setDouble(row, col, value);
-            }
-
-            std.put(tierOrdering.get(tier).getName(), sd(v));
-
-//            for (int row = 0; row < sampleSize; row++) {
-//                fullDataSet.setDouble(row, col, 2v[row] / std);
-//            }
         }
 
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
         }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        return DataTransforms.restrictToMeasured(boxDataSet);
     }
 
 
