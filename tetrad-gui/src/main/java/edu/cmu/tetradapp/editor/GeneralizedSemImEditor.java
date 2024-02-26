@@ -50,8 +50,7 @@ import java.util.prefs.Preferences;
  * A JPanel class that represents an editor for GeneralizedSemIm objects. It implements the DelegatesEditing and
  * LayoutEditable interfaces.
  */
-public final class GeneralizedSemImEditor extends JPanel implements DelegatesEditing,
-        LayoutEditable {
+public final class GeneralizedSemImEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
     /**
      * The SemPm being edited.
