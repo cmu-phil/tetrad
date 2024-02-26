@@ -449,7 +449,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * Retrieves the names of the parameters required for a certain operation.
      *
-     * @return a List<String> containing the names of the parameters
+     * @return a list containing the names of the parameters
      */
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
