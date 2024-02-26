@@ -46,8 +46,8 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     /**
      * Represents a variable containing the independence facts.
      * <p>
-     * This variable is used in the {@link IndTestIndependenceFacts} class to check independence
-     * by looking up facts in the list of facts supplied in the constructor.
+     * This variable is used in the {@link IndTestIndependenceFacts} class to check independence by looking up facts in
+     * the list of facts supplied in the constructor.
      * </p>
      */
     private final IndependenceFacts facts;

@@ -257,8 +257,8 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * @param _z a set of variables to condition on
      * @param x  the variable to check for independence
      * @return true if variable x is independent of _z, false otherwise
-     * @throws NullPointerException      if _z or any element in _z is null
-     * @throws IllegalArgumentException  if any variable in _z or x was not used in the constructor
+     * @throws NullPointerException     if _z or any element in _z is null
+     * @throws IllegalArgumentException if any variable in _z or x was not used in the constructor
      */
     public boolean determines(Set<Node> _z, Node x) {
         if (_z == null) {

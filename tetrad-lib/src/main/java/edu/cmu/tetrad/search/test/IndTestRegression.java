@@ -113,8 +113,8 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * Checks the independence between two variables, given a set of conditioning variables.
      *
-     * @param xVar The first variable to test for independence.
-     * @param yVar The second variable to test for independence.
+     * @param xVar  The first variable to test for independence.
+     * @param yVar  The second variable to test for independence.
      * @param zList The set of conditioning variables.
      * @return An IndependenceResult object containing the result of the independence test.
      */

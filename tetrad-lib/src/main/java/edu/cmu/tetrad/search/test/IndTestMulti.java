@@ -130,7 +130,6 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     *
      * Sets the significance level for the independence test.
      *
      * @param alpha The significance level to set.

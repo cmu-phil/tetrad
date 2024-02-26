@@ -46,8 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
-     * The number format used for formatting numbers in the application.
-     * It is obtained from the application-wide NumberFormatUtil instance.
+     * The number format used for formatting numbers in the application. It is obtained from the application-wide
+     * NumberFormatUtil instance.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     /**

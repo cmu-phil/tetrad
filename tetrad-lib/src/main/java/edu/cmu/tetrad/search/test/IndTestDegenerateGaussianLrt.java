@@ -398,7 +398,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Returns a list of row indices that satisfy the given conditions.
      *
-     * @param allVars A list of nodes representing the variables to be checked.
+     * @param allVars   A list of nodes representing the variables to be checked.
      * @param nodesHash A map that associates each node with its corresponding index.
      * @return A list of integers representing the row indices that satisfy the conditions.
      */

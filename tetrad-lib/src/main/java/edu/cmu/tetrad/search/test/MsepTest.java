@@ -53,8 +53,8 @@ public class MsepTest implements IndependenceTest {
      */
     private Map<Node, Set<Node>> ancestorMap;
     /**
-     * Represents the independence facts used for direct calculations of m-separation.
-     * This variable is of type IndependenceFacts.
+     * Represents the independence facts used for direct calculations of m-separation. This variable is of type
+     * IndependenceFacts.
      */
     private IndependenceFacts independenceFacts;
     /**
@@ -153,8 +153,8 @@ public class MsepTest implements IndependenceTest {
      * Conducts an independence test on a subset of variables.
      *
      * @param vars The sublist of variables to test independence on.
-     * @throws IllegalArgumentException If the subset is empty or contains variables that are not original variables.
      * @return This IndependenceTest object.
+     * @throws IllegalArgumentException If the subset is empty or contains variables that are not original variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -202,9 +202,9 @@ public class MsepTest implements IndependenceTest {
      * @param y The second node to check independence for.
      * @param z The set of conditioning nodes.
      * @return The result of the independence test.
-     * @throws NullPointerException if the set of conditioning nodes is null or contains null elements.
+     * @throws NullPointerException     if the set of conditioning nodes is null or contains null elements.
      * @throws IllegalArgumentException if x or y is not an observed variable.
-     * @throws RuntimeException if an undefined p-value is encountered during the test.
+     * @throws RuntimeException         if an undefined p-value is encountered during the test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -305,7 +305,7 @@ public class MsepTest implements IndependenceTest {
     /**
      * Determines if a node is m-separated from a set of conditioning nodes.
      *
-     * @param z The set of conditioning nodes.
+     * @param z  The set of conditioning nodes.
      * @param x1 The node to check independence for.
      * @return True if the node is m-separated from the conditioning nodes, false otherwise.
      * @throws UnsupportedOperationException if not implemented.

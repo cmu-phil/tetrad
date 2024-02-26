@@ -251,7 +251,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * @param z The list of conditioning nodes.
      * @param x The variable x.
      * @return True if variable x is determined by the list of conditioning nodes, false otherwise.
-     * @throws NullPointerException if z or any node in z is null.
+     * @throws NullPointerException     if z or any node in z is null.
      * @throws IllegalArgumentException if any node in z is not used in the constructor.
      */
     public boolean determines(List<Node> z, Node x) {
@@ -371,8 +371,8 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining.'
+     * Returns the lower bound of percentages of observation of some category in the data, given some particular
+     * combination of values of conditioning variables, that coefs as 'determining.'
      *
      * @return The lower bound of percentages of observation.
      */

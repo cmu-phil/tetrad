@@ -885,7 +885,7 @@ public class Kci implements IndependenceTest {
         /**
          * Performs eigendecomposition on a given matrix and optionally stores the eigenvectors.
          *
-         * @param storeV  a flag indicating whether to store the eigenvectors
+         * @param storeV a flag indicating whether to store the eigenvectors
          * @return the Eigendecomposition object on which this method is invoked
          */
         public Eigendecomposition invoke(boolean storeV) {

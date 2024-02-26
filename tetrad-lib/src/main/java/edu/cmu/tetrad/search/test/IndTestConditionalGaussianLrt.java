@@ -99,8 +99,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * This method returns an instance of the IndependenceTest interface that can
-     * test the independence of a subset of variables.
+     * This method returns an instance of the IndependenceTest interface that can test the independence of a subset of
+     * variables.
      *
      * @param vars The sublist of variables to test for independence.
      * @return An instance of the IndependenceTest interface.
@@ -272,8 +272,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns a list of row indices where the values of the specified nodes are not missing or invalid.
      *
-     * @param allVars   The list of nodes to check.
-     * @param nodeHash  A map containing node-index pairs.
+     * @param allVars  The list of nodes to check.
+     * @param nodeHash A map containing node-index pairs.
      * @return A list of row indices.
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {

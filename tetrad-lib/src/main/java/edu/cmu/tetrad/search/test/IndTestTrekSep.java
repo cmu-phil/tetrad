@@ -109,7 +109,8 @@ public final class IndTestTrekSep implements IndependenceTest {
      *
      * @param vars The sublist of variables to test for independence.
      * @return An IndependenceTest object representing the result of the independence test.
-     * @throws IllegalArgumentException If the subset of variables is empty or contains variables that are not part of the original variables.
+     * @throws IllegalArgumentException If the subset of variables is empty or contains variables that are not part of
+     *                                  the original variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {

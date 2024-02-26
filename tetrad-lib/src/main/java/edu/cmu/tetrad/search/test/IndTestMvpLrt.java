@@ -107,8 +107,8 @@ public class IndTestMvpLrt implements IndependenceTest {
     /**
      * Determines whether two nodes are independent given a set of conditioning nodes.
      *
-     * @param x The first node.
-     * @param y The second node.
+     * @param x  The first node.
+     * @param y  The second node.
      * @param _z The set of conditioning nodes.
      * @return The result of the independence test.
      * @throws RuntimeException if an undefined p-value is encountered.

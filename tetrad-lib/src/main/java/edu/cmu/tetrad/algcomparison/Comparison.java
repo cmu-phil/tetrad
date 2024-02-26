@@ -1872,7 +1872,7 @@ public class Comparison {
         /**
          * <p>search.</p>
          *
-         * @param data  a {@link edu.cmu.tetrad.data.DataModel} object
+         * @param data       a {@link edu.cmu.tetrad.data.DataModel} object
          * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
          * @return a {@link edu.cmu.tetrad.graph.Graph} object
          */

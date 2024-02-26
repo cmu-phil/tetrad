@@ -515,8 +515,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns a string representation of the Fisher Z independence test.
-     * The string includes the value of alpha.
+     * Returns a string representation of the Fisher Z independence test. The string includes the value of alpha.
      *
      * @return A string representing the Fisher Z independence test.
      */
@@ -719,11 +718,12 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the partial correlation value between two nodes, given a set of conditioning variables and a list of rows.
+     * Returns the partial correlation value between two nodes, given a set of conditioning variables and a list of
+     * rows.
      *
-     * @param x The first node.
-     * @param y The second node.
-     * @param z The set of conditioning variables.
+     * @param x    The first node.
+     * @param y    The second node.
+     * @param z    The set of conditioning variables.
      * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
      * @return The partial correlation value.
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
@@ -733,9 +733,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the sample size.
-     * If the dataSet is not null, it returns the number of rows in the dataSet.
-     * Otherwise, it returns the sample size from the covariance matrix.
+     * Returns the sample size. If the dataSet is not null, it returns the number of rows in the dataSet. Otherwise, it
+     * returns the sample size from the covariance matrix.
      *
      * @return The sample size.
      */
@@ -788,8 +787,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Retrieves the rows from the dataSet that contain valid values for all variables.
      *
-     * @param allVars    the list of variables to check
-     * @param nodesHash  the map of variables to their corresponding indices in the dataSet
+     * @param allVars   the list of variables to check
+     * @param nodesHash the map of variables to their corresponding indices in the dataSet
      * @return a list of row indices that contain valid values for all variables
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {

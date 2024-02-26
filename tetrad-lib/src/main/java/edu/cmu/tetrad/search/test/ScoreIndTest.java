@@ -59,10 +59,10 @@ public class ScoreIndTest implements IndependenceTest {
     /**
      * Interface implemented by classes, instantiations of which can serve as data models in Tetrad. Data models may be
      * named if desired; if provided, these names will be used for display purposes.
-     *
+     * <p>
      * This interface is relatively free of methods, mainly because classes that can serve as data models in Tetrad are
-     * diverse, including continuous and discrete data sets, covariance and correlation matrices, graphs, and lists of other
-     * data models. So this is primarily a tagging interface.
+     * diverse, including continuous and discrete data sets, covariance and correlation matrices, graphs, and lists of
+     * other data models. So this is primarily a tagging interface.
      */
     private final DataModel data;
     /**

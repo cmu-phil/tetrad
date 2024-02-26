@@ -394,7 +394,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Initializes a new instance of the GeneralizedSemPm class by copying the properties of the provided GeneralizedSemPm object.
+     * Initializes a new instance of the GeneralizedSemPm class by copying the properties of the provided
+     * GeneralizedSemPm object.
      *
      * @param semPm The GeneralizedSemPm object to copy.
      */

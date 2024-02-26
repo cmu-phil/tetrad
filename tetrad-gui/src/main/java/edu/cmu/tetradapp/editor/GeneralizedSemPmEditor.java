@@ -175,7 +175,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     }
 
     /**
-     * Initializes and returns the length menu item. The length menu item represents the option for setting the formula cutoff length.
+     * Initializes and returns the length menu item. The length menu item represents the option for setting the formula
+     * cutoff length.
      *
      * @return The length menu item.
      */
@@ -188,12 +189,12 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     }
 
     /**
-     * Initializes the "Params" menu in the given menu bar and adds the templateMenu,
-     * lengthCutoff, and errorTerms menu items.
+     * Initializes the "Params" menu in the given menu bar and adds the templateMenu, lengthCutoff, and errorTerms menu
+     * items.
      *
      * @param templateMenu The JMenuItem representing the template menu item.
      * @param lengthCutoff The JMenuItem representing the length cutoff menu item.
-     * @param menuBar The JMenuBar to add the "Params" menu to.
+     * @param menuBar      The JMenuBar to add the "Params" menu to.
      */
     private void paramsMenuInitializer(JMenuItem templateMenu, JMenuItem lengthCutoff, JMenuBar menuBar) {
         JMenu params = new JMenu("Tools");
