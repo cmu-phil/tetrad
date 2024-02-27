@@ -608,7 +608,7 @@ class GeneralizedExpressionEditor extends JComponent {
     }
 
     /**
-     * Retrieves the expression tokens based on the provided parameters and expressions map.
+     * Retrieves the expression tokens based on the provided parameters and expression map.
      *
      * @param semPm          The GeneralizedSemPm object.
      * @param node           The Node object.
