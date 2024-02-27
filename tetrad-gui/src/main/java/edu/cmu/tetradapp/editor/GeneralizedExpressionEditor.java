@@ -545,7 +545,6 @@ class GeneralizedExpressionEditor extends JComponent {
                 document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle(color), true);
             }
         });
-
     }
 
     private String parameterString(ExpressionParser parser) {
