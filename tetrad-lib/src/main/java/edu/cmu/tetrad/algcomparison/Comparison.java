@@ -283,7 +283,7 @@ public class Comparison {
     /**
      * Compares the results from simulations using various algorithms and statistics.
      *
-     * @param resultsPath    The path to the results directory.
+     * @param resultsPath    The path to the result directory.
      * @param simulations    The Simulations object containing the simulations to compare.
      * @param outputFileName The name of the output file.
      * @param algorithms     The Algorithms object containing the algorithms to compare.
@@ -555,7 +555,7 @@ public class Comparison {
     }
 
     /**
-     * Saves the simulation data to files in the specified data path.
+     * Saves the simulation data to file in the specified data path.
      *
      * @param dataPath   the path where the data files will be saved
      * @param simulation the simulation object containing the data to be saved
@@ -973,9 +973,9 @@ public class Comparison {
      * @param statistics                  The Statistics object containing statistical measures to be computed.
      * @param numRuns                     The number of runs for each simulation.
      * @param stdout                      The PrintStream object for printing the progress.
-     * @return A 4-dimensional array of doubles containing the computed statistics. The dimensions are as follows: - 1st
-     * dimension: graph types (4 types in total) - 2nd dimension: algorithmSimulationWrappers size - 3rd dimension:
-     * statistics size + 1 (additional slot for storing total statistics) - 4th dimension: numRuns
+     * @return A 4-dimensional array of doubles containing the computed statistics. The dimensions are as follows: -
+     * first dimension: graph types (four types in total) - second dimension: algorithmSimulationWrappers size - third
+     * dimension: statistics size + one (additional slot for storing total statistics) - fourth dimension: numRuns
      */
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<SimulationWrapper> simulationWrappers, Statistics statistics,
@@ -1063,16 +1063,16 @@ public class Comparison {
     }
 
     /**
-     * Returns whether the sorting is done by utility.
+     * Returns whether utility does the sorting.
      *
-     * @return {@code true} if the sorting is done by utility, {@code false} otherwise.
+     * @return {@code true} if utility does the sorting, {@code false} otherwise.
      */
     public boolean isSortByUtility() {
         return this.sortByUtility;
     }
 
     /**
-     * Set the flag to determine if the sorting should be done by utility.
+     * Set the flag to determine if utility should do the sorting.
      *
      * @param sortByUtility a flag indicating whether to sort by utility or not
      */
@@ -1108,10 +1108,8 @@ public class Comparison {
     }
 
     /**
-     * Sets the value of 'savePags' flag.
-     * <p>
-     * This method is used to set the value of the 'savePags' flag, which indicates whether the pags should be saved or
-     * not.
+     * Sets the value of 'savePags' flag. This method is used to set the value of the 'savePags' flag, which indicates
+     * whether the pags should be saved or not.
      *
      * @param savePags a boolean value indicating whether to save the pags or not.
      */
@@ -1138,7 +1136,7 @@ public class Comparison {
     }
 
     /**
-     * Sets whether or not to save graphs.
+     * Sets whether to save graphs.
      *
      * @param saveGraphs true to save graphs, false otherwise
      */
