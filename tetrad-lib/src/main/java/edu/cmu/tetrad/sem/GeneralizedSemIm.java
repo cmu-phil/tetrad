@@ -495,7 +495,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * Simulates data by minimizing the surface defined by the given sample size and whether latent data is saved.
      *
-     * @param sampleSize The size of the sample to simulate.
+     * @param sampleSize      The size of the sample to simulate.
      * @param latentDataSaved Specifies whether the latent data should be saved.
      * @return The simulated data set.
      */
@@ -633,8 +633,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * Simulates data avoiding infinity values.
      *
-     * @param sampleSize            The number of data samples to simulate.
-     * @param latentDataSaved       Indicates whether the latent (unmeasured) data is saved in the result.
+     * @param sampleSize      The number of data samples to simulate.
+     * @param latentDataSaved Indicates whether the latent (unmeasured) data is saved in the result.
      * @return The simulated data as a DataSet object.
      * @throws IllegalArgumentException if undefined value is encountered during simulation.
      * @throws NullPointerException     if error node is null for any variable node.
@@ -805,7 +805,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
-                                                   double epsilon) {
+                                      double epsilon) {
         boolean printedUndefined = false;
         boolean printedInfinite = false;
 
@@ -1018,10 +1018,10 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * Simulates data for a given number of steps.
      *
-     * @param sampleSize The number of samples to generate.
+     * @param sampleSize      The number of samples to generate.
      * @param latentDataSaved Flag indicating whether to save latent data.
      * @return The generated dataset.
-     * @throws NullPointerException If an error node is null.
+     * @throws NullPointerException     If an error node is null.
      * @throws IllegalArgumentException If an expression evaluates to NaN or is undefined.
      */
     public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
