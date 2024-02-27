@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * <p>GrowShrinkTree class.</p>
  *
- * @author josephramsey
+ * @author bryanandrews
  * @version $Id: $Id
  */
 public class GrowShrinkTree {
@@ -100,14 +100,6 @@ public class GrowShrinkTree {
         return this.index.get(node);
     }
 
-//    public Double localScore() {
-//        return this.score.localScore(this.nodeIndex);
-//    }
-//
-//    public Double localScore(int[] X) {
-//        return this.score.localScore(this.nodeIndex, X);
-//    }
-
     /**
      * <p>localScore.</p>
      *
@@ -195,6 +187,10 @@ public class GrowShrinkTree {
         this.root = new GSTNode(this);
     }
 
+    /**
+     * Represents a node in the Grow Shrink Tree. Implements the Comparable interface for comparing nodes based on their
+     * grow score.
+     */
     private static class GSTNode implements Comparable<GSTNode> {
         private final GrowShrinkTree tree;
         private final Node add;

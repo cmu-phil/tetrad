@@ -192,12 +192,22 @@ public class Ftfc {
 
     }
 
+    /**
+     * Returns a list of all variables.
+     *
+     * @return A list of all variables.
+     */
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
         return _variables;
     }
 
+    /**
+     * Estimates the clusters using the SAG algorithm.
+     *
+     * @return A set of clusters found by the SAG algorithm.
+     */
     private Set<List<Integer>> estimateClustersSAG() {
         List<Integer> _variables = allVariables();
 
@@ -209,6 +219,12 @@ public class Ftfc {
 
     }
 
+    /**
+     * Finds pure pentads from the given list of variables.
+     *
+     * @param variables The list of variables to search for pure pentads.
+     * @return A set of pure pentads found from the given list of variables.
+     */
     private Set<List<Integer>> findPurepentads(List<Integer> variables) {
         if (variables.size() < 6) {
             return new HashSet<>();
@@ -260,6 +276,13 @@ public class Ftfc {
         return purePentads;
     }
 
+    /**
+     * Combines pure pentads with variables to create new clusters.
+     *
+     * @param purePentads The set of pure pentads.
+     * @param _variables  The list of variables.
+     * @return The set of combined clusters.
+     */
     private Set<List<Integer>> combinePurePentads(Set<List<Integer>> purePentads, List<Integer> _variables) {
         log("Growing pure pentads.", true);
         Set<List<Integer>> grown = new HashSet<>();
@@ -525,7 +548,12 @@ public class Ftfc {
         return out;
     }
 
-    // Finds clusters of size 6 or higher for the IntSextad first algorithm.
+    /**
+     * Finds clusters of size 6 or higher for the IntSextad first algorithm.
+     *
+     * @param _variables The list of variables to search for pure clusters.
+     * @return A set of pure clusters found from the given list of variables.
+     */
     private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<>();
 
@@ -581,6 +609,12 @@ public class Ftfc {
         return clusters;
     }
 
+    /**
+     * Adds other variables to the cluster if they meet certain conditions.
+     *
+     * @param _variables The list of variables to consider.
+     * @param cluster    The current cluster.
+     */
     private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
 
         O:
@@ -611,10 +645,16 @@ public class Ftfc {
         }
     }
 
-    //  Finds clusters of size 5 for the sextet-first algorithm.
+    /**
+     * Finds clusters of size 5 for the sextet-first algorithm.
+     *
+     * @param clusters  The current set of clusters.
+     * @param remaining The list of remaining variables.
+     * @param unionPure The set of variables that have been added to clusters.
+     * @return The set of clusters of size 5 found by the algorithm.
+     */
     private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> pentads = new HashSet<>();
-        Set<List<Integer>> _clusters = new HashSet<>(clusters);
 
         if (unionPure.isEmpty()) {
             return new HashSet<>();
@@ -670,7 +710,6 @@ public class Ftfc {
 
                 if (someVanish && allVanish) {
                     pentads.add(cluster);
-                    _clusters.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
 
@@ -688,6 +727,12 @@ public class Ftfc {
         return pentads;
     }
 
+    /**
+     * Calculates the significance of a cluster based on the cluster's chi-square value.
+     *
+     * @param cluster The list of variables in the cluster.
+     * @return The significance of the cluster.
+     */
     private double significance(List<Integer> cluster) {
         double chisq = getClusterChiSquare(cluster);
 
@@ -698,12 +743,24 @@ public class Ftfc {
         return 1.0 - q;
     }
 
+    /**
+     * Calculates the degrees of freedom based on the number of variables in a cluster.
+     *
+     * @param n The number of variables in the cluster.
+     * @return The calculated degrees of freedom.
+     */
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
         if (dof < 0) dof = 0;
         return dof;
     }
 
+    /**
+     * Returns a list of Node objects corresponding to the indices in the provided cluster.
+     *
+     * @param cluster The list of indices representing variables.
+     * @return A list of Node objects corresponding to the indices in the cluster.
+     */
     private List<Node> variablesForIndices(List<Integer> cluster) {
         List<Node> _cluster = new ArrayList<>();
 
@@ -714,6 +771,12 @@ public class Ftfc {
         return _cluster;
     }
 
+    /**
+     * Returns a list of Node objects corresponding to the indices in the provided cluster.
+     *
+     * @param clusters The list of indices representing variables, for each cluster.
+     * @return A list of Node objects corresponding to the indices in the cluster.
+     */
     private List<List<Node>> variablesForIndices(Set<List<Integer>> clusters) {
         List<List<Node>> variables = new ArrayList<>();
 
@@ -724,6 +787,12 @@ public class Ftfc {
         return variables;
     }
 
+    /**
+     * Determines if a sextet of variables is pure.
+     *
+     * @param sextet The list of indices representing variables in the sextet.
+     * @return True if the sextet is pure, false otherwise.
+     */
     private boolean pure(List<Integer> sextet) {
         if (zeroCorr(sextet, 5)) {
             return false;
@@ -752,11 +821,23 @@ public class Ftfc {
         return false;
     }
 
+    /**
+     * Calculates the chi-square value for a given cluster.
+     *
+     * @param cluster The list of variables in the cluster.
+     * @return The chi-square value for the cluster.
+     */
     private double getClusterChiSquare(List<Integer> cluster) {
         SemIm im = estimateClusterModel(cluster);
         return im.getChiSquare();
     }
 
+    /**
+     * Estimates the cluster model using the given sextet.
+     *
+     * @param sextet The list of indices representing variables in the sextet.
+     * @return The estimated cluster model.
+     */
     private SemIm estimateClusterModel(List<Integer> sextet) {
         Graph g = new EdgeListGraph();
         Node l1 = new GraphNode("L1");
@@ -786,6 +867,18 @@ public class Ftfc {
         return est.estimate();
     }
 
+    /**
+     * Constructs a List of six integers representing a sextet. The six integers must be unique.
+     *
+     * @param n1 the first integer
+     * @param n2 the second integer
+     * @param n3 the third integer
+     * @param n4 the fourth integer
+     * @param n5 the fifth integer
+     * @param n6 the sixth integer
+     * @return a List of six integers representing a sextet
+     * @throws IllegalArgumentException if the sextet elements are not unique
+     */
     private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
         List<Integer> sextet = new ArrayList<>();
         sextet.add(n1);
@@ -802,6 +895,17 @@ public class Ftfc {
         return sextet;
     }
 
+    /**
+     * Constructs a List of five integers representing a pentad. The five integers must be unique.
+     *
+     * @param n1 the first integer
+     * @param n2 the second integer
+     * @param n3 the third integer
+     * @param n4 the fourth integer
+     * @param n5 the fifth integer
+     * @return a List of five integers representing a pentad
+     * @throws IllegalArgumentException if the pentad elements are not unique
+     */
     private List<Integer> pentad(int n1, int n2, int n3, int n4, int n5) {
         List<Integer> pentad = new ArrayList<>();
         pentad.add(n1);
@@ -817,6 +921,12 @@ public class Ftfc {
         return pentad;
     }
 
+    /**
+     * Determines if a given sextet of variables "vanishes".
+     *
+     * @param sextet The list of indices representing variables in the sextet.
+     * @return True if the sextet vanishes, false otherwise.
+     */
     private boolean vanishes(List<Integer> sextet) {
         int n1 = sextet.get(0);
         int n2 = sextet.get(1);
@@ -831,6 +941,14 @@ public class Ftfc {
                 && vanishes(n6, n5, n4, n3, n2, n1);
     }
 
+    /**
+     * Checks if the correlation value between all pairs of variables in a given cluster is equal to zero for at least
+     * 'n' pairs.
+     *
+     * @param cluster The list of variables in the cluster.
+     * @param n       The minimum number of pairs with zero correlation required for the cluster to be considered.
+     * @return True if the cluster meets the requirement, false otherwise.
+     */
     private boolean zeroCorr(List<Integer> cluster, int n) {
         int count = 0;
 
@@ -847,6 +965,17 @@ public class Ftfc {
         return count >= n;
     }
 
+    /**
+     * Checks if the given numbers follow the vanishing pattern.
+     *
+     * @param n1 first number
+     * @param n2 second number
+     * @param n3 third number
+     * @param n4 fourth number
+     * @param n5 fifth number
+     * @param n6 sixth number
+     * @return true if the numbers follow the vanishing pattern; false otherwise
+     */
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
         Sextad t1 = new Sextad(n1, n2, n3, n4, n5, n6);
         Sextad t2 = new Sextad(n1, n5, n6, n2, n3, n4);
@@ -874,6 +1003,13 @@ public class Ftfc {
         return true;
     }
 
+    /**
+     * Converts a set of clusters represented by sets of nodes into a graph representation. Each cluster is represented
+     * by a latent node connected to its member nodes.
+     *
+     * @param clusters The set of clusters represented by sets of nodes.
+     * @return The graph representation of the clusters.
+     */
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph(this.variables);
 
@@ -897,6 +1033,13 @@ public class Ftfc {
         return graph;
     }
 
+    /**
+     * Converts a set of clusters represented by sets of integer indices into a graph representation. Each cluster is
+     * represented by a latent node connected to its member nodes.
+     *
+     * @param allClusters The set of clusters represented by sets of integer indices.
+     * @return The graph representation of the clusters.
+     */
     private Graph convertToGraph(Set<List<Integer>> allClusters) {
         Set<Set<Node>> _clustering = new HashSet<>();
 
@@ -913,6 +1056,12 @@ public class Ftfc {
         return convertSearchGraphNodes(_clustering);
     }
 
+    /**
+     * Calculates the union of all elements in the given set of clusters.
+     *
+     * @param pureClusters The set of clusters containing integer elements.
+     * @return The union of all elements in the given set of clusters.
+     */
     private Set<Integer> unionPure(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
 
@@ -923,6 +1072,12 @@ public class Ftfc {
         return unionPure;
     }
 
+    /**
+     * Logs the given message if the toLog parameter is true.
+     *
+     * @param s     The message to be logged.
+     * @param toLog Indicates whether the message should be logged or not.
+     */
     private void log(String s, boolean toLog) {
         if (toLog) {
             TetradLogger.getInstance().forceLogMessage(s);

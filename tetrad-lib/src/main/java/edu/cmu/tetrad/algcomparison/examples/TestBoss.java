@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.DirectLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -49,16 +50,16 @@ public class TestBoss {
      * @param args a {@link java.lang.String} object
      */
     public static void main(String... args) {
-        if (true) {
-            testGigaflops();
-            return;
-        }
+//        if (false) {
+//            testGigaflops();
+//            return;
+//        }
 
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 60);
-        parameters.set(Params.AVG_DEGREE, 10);
+        parameters.set(Params.NUM_MEASURES, 30);
+        parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
@@ -73,10 +74,10 @@ public class TestBoss {
 
         parameters.set(Params.USE_BES, false);
         parameters.set(Params.NUM_STARTS, 1);
-        parameters.set(Params.NUM_THREADS, 0);
+        parameters.set(Params.NUM_THREADS, 1);
         parameters.set(Params.USE_DATA_ORDER, false);
 
-        parameters.set(Params.VERBOSE, true);
+        parameters.set(Params.VERBOSE, false);
 
         Statistics statistics = new Statistics();
         statistics.add(new AdjacencyPrecision());
@@ -87,7 +88,7 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new DirectLingam(new SemBicScore()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
 //        algorithms.add(new Dagma());
 
@@ -101,8 +102,6 @@ public class TestBoss {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(false);
-
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);

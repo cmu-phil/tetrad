@@ -71,8 +71,32 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * constructor.
      */
     private int df;
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     */
     private double minCountPerCell = 1.0;
+    /**
+     * This variable represents whether verbose output should be printed.
+     * <p>
+     * The default value is false.
+     */
     private boolean verbose;
+    /**
+     * Represents the list of rows to be used for a test.
+     * <p>
+     * This variable is used in the class "IndTestChiSquare" to specify which rows of data should be used in the
+     * chi-square test. If the variable "rows" is set to null, all rows of the data will be used in the test.
+     * <p>
+     * The class "IndTestChiSquare" is a subclass of the "IndependenceTest" class, which is a superclass for all
+     * independence tests in the Tetrad library. It also implements the "RowsSettable" interface, which allows for
+     * setting the rows to be used for the test.
+     *
+     * @see IndTestChiSquare
+     * @see IndependenceTest
+     * @see RowsSettable
+     */
     private List<Integer> rows = null;
 
 
@@ -104,9 +128,11 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new IndTestChiSquare for a subset of the nodes.
+     * Checks conditional independence between variables in a subset.
+     *
+     * @param nodes The sublist of variables.
+     * @return An instance of IndependenceTest representing the test for conditional independence.
+     * @throws IllegalArgumentException If the subset of variables is empty or contains non-original nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
         if (nodes.isEmpty()) {
@@ -155,8 +181,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
      * @param x  a {@link edu.cmu.tetrad.graph.Node} object
@@ -222,9 +246,13 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns True if the variables z determining the variable z.
+     * Determines whether variable x is independent of variable y given a list of conditioning nodes.
+     *
+     * @param z The list of conditioning nodes.
+     * @param x The variable x.
+     * @return True if variable x is determined by the list of conditioning nodes, false otherwise.
+     * @throws NullPointerException     if z or any node in z is null.
+     * @throws IllegalArgumentException if any node in z is not used in the constructor.
      */
     public boolean determines(List<Node> z, Node x) {
         if (z == null) {
@@ -253,8 +281,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
                         "Variable " + i + "was not used in the constructor.");
             }
         }
-
-        //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
         boolean countDetermined =
                 this.chiSquareTest.isDetermined(testIndices, getDeterminationP());
@@ -290,8 +316,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -339,8 +363,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override
@@ -348,6 +370,12 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the lower bound of percentages of observation of some category in the data, given some particular
+     * combination of values of conditioning variables, that coefs as 'determining.'
+     *
+     * @return The lower bound of percentages of observation.
+     */
     private double getDeterminationP() {
         /*
          * The lower bound of percentages of observation of some category in the data, given some particular combination of
@@ -369,8 +397,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the rows used for the test. If null, all rows are used.
      */
     @Override
@@ -379,8 +405,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the rows to use for the test. If null, all rows are used.
      */
     @Override

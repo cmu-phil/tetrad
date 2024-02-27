@@ -66,7 +66,7 @@ public class TetradSerializableUtils {
      * to vouch for their safety. Unfortunately, such safety cannot be automatically checked. Class, for instance, <p>We
      * will move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
      */
-    private static final Class[] safelySerializableTypes = {
+    private static final Class<?>[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
             Matrix.class, Document.class, Normal.class, Uniform.class,
             BreitWigner.class, Beta.class, Vector.class, Number.class,
@@ -678,12 +678,12 @@ public class TetradSerializableUtils {
      * @return a reference to the public static serializableInstance() method of clazz, if there is one; otherwise,
      * returns null.
      */
-    private Method serializableInstanceMethod(Class clazz) {
+    private Method serializableInstanceMethod(Class<?> clazz) {
         Method[] methods = clazz.getMethods();
 
         for (Method method : methods) {
             if ("serializableInstance".equals(method.getName())) {
-                Class[] parameterTypes = method.getParameterTypes();
+                Class<?>[] parameterTypes = method.getParameterTypes();
 
                 if (!(parameterTypes.length == 0)) {
                     continue;

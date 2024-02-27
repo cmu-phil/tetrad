@@ -11,8 +11,15 @@ package edu.cmu.tetrad.search;
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see MarkovCheck
  */
 public enum ConditioningSetType {
+
+    /**
+     * Testing all possible independence facts implied by the graph.  Some independence facts obtained in this way may
+     * be for implied dependencies.
+     */
+    GLOBAL_MARKOV,
 
     /**
      * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph. Some
@@ -21,20 +28,15 @@ public enum ConditioningSetType {
     LOCAL_MARKOV,
 
     /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
-     * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
-     */
-    ORDERED_LOCAL_MARKOV,
-
-    /**
      * Conditioning on the Markov blanket of each variable in the graph. These are all conditional independence facts,
      * so no conditional dependence facts will be listed if this option is selected.
      */
     MARKOV_BLANKET,
 
     /**
-     * Testing all possible independence facts implied by the graph.  Some independence facts obtained in this way may
-     * be for implied dependencies.
+     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
+     * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
      */
-    GLOBAL_MARKOV
+    ORDERED_LOCAL_MARKOV
+
 }

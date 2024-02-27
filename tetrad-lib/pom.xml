@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.6.3</version>
+        <version>7.6.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>tetrad-lib</artifactId>
@@ -92,17 +92,6 @@
             <version>1.3.9</version>
         </dependency>
         <dependency>
-            <groupId>jdepend</groupId>
-            <artifactId>jdepend</artifactId>
-            <version>2.9.1</version>
-        </dependency>
-        <dependency>
-            <groupId>gov.nist.math</groupId>
-            <artifactId>jama</artifactId>
-            <version>1.0.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>javax.help</groupId>
             <artifactId>javahelp</artifactId>
             <version>2.0.05</version>
@@ -117,11 +106,6 @@
             <artifactId>json</artifactId>
             <version>20231013</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.4.0-b180830.0359</version>
         </dependency>
 
         <!-- For parsing Tetrad single-page HTML manual to get algorithm descriptions -->

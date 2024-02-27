@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
  * variable not in S, by applying a conditional G Square test. A description of such a test is given in Fienberg, "The
- * Analysis of Cross-Classified Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
+ * Analysis of Cross-Classified Categorical Data," 2nd edition. The formula for degrees of freedom used in this test is
  * equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
@@ -45,30 +45,52 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
-    // The standard number formatter for Tetrad.
+    /**
+     * The standard number formatter for Tetrad.
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The G Square tester.
+    /**
+     * The G Square tester.
+     */
     private final ChiSquareTest gSquareTest;
-    // The variables in the discrete data sets or which conditional independence judgements are desired.
+    /**
+     * The variables in the discrete data sets or which conditional independence judgements are desired.
+     */
     private final List<Node> variables;
-    // The dataset of discrete variables.
+    /**
+     * The dataset of discrete variables.
+     */
     private final DataSet dataSet;
-    // The significance level for the test.
+    /**
+     * The significance level for the test.
+     */
     private final double alpha;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The p value associated with the most recent call of isIndependent.
+    /**
+     * The p value associated with the most recent call of isIndependent.
+     */
     private double pValue;
-    // The lower bound of percentages of observation of some category in the data, given some particular combination of
-    // values of conditioning variables, that coefs as 'determining.'
+    /**
+     * The lower bound of percentages of observation of some category in the data, given some particular combination of
+     * values of conditioning variables, that coefs as 'determining.'
+     */
     private double determinationP = 0.99;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The minimum expected number of counts per conditional table for chi-square for that table and its degrees of
-    // freedom to be included in the overall chi-square and degrees of freedom. Note that this should not be too small,
-    // or the chi-square distribution will not be a good approximation to the distribution of the test statistic.
+    /**
+     * The minimum expected number of counts per conditional table for chi-square for that table and its degrees of
+     * freedom to be included in the overall chi-square and degrees of freedom. Note that this should not be too small,
+     * or the chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     */
     private double minCountPerCell = 1.0;
-    // The rows to use for the test. If null, all rows are used.
+    /**
+     * The rows to use for the test. If null, all rows are used.
+     */
     private List<Integer> rows = null;
 
     /**
@@ -100,9 +122,11 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new IndTestGSquare for a sublist of the variables.
+     * Performs an independence test on a subset of variables.
+     *
+     * @param vars the subset of variables to perform the test on
+     * @return the result of the independence test for the subset of variables
+     * @throws IllegalArgumentException if the subset of variables is empty
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -134,8 +158,6 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
      * @param x  a {@link edu.cmu.tetrad.graph.Node} object
@@ -203,8 +225,6 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -232,9 +252,13 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns a judgment whether the variables in z determine x.
+     * Determines whether variable x is independent of a set of variables _z.
+     *
+     * @param _z a set of variables to condition on
+     * @param x  the variable to check for independence
+     * @return true if variable x is independent of _z, false otherwise
+     * @throws NullPointerException     if _z or any element in _z is null
+     * @throws IllegalArgumentException if any variable in _z or x was not used in the constructor
      */
     public boolean determines(Set<Node> _z, Node x) {
         if (_z == null) {
@@ -312,9 +336,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns True if verbose output is printed.
+     * Returns whether verbose output is enabled or not.
+     *
+     * @return true if verbose output is enabled, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -322,9 +346,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output is printed.
+     * Sets the verbose flag to enable or disable verbose output.
+     *
+     * @param verbose true to enable verbose output, false to disable it.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -344,9 +368,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the rows used for the test. If null, all rows are used.
+     * Retrieves the list of rows to use for the test.
+     *
+     * @return The list of rows to use for the test.
      */
     @Override
     public List<Integer> getRows() {
@@ -354,9 +378,10 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the rows to use for the test. If null, all rows are used.
+     * Sets the list of rows to use for the test.
+     *
+     * @param rows The list of rows to use for the test.
+     * @throws IllegalArgumentException if any of the rows are out of bounds
      */
     @Override
     public void setRows(List<Integer> rows) {

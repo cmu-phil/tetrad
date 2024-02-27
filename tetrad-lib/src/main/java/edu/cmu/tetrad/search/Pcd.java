@@ -54,31 +54,53 @@ import java.util.Set;
  */
 public class Pcd implements IGraphSearch {
 
-    // The independence test used for the PC search.
+    /**
+     * The independence test used for the PC search.
+     */
     private final IndependenceTest independenceTest;
-    // The logger for this class. The config needs to be set.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // Forbidden and required edges for the search.
+    /**
+     * Forbidden and required edges for the search.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Sepset information accumulated in the search.
+    /**
+     * Sepset information accumulated in the search.
+     */
     private SepsetMap sepsets;
-    // The maximum number of nodes conditioned on in the search. The default it 1000.
+    /**
+     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     */
     private int depth = 1000;
-    // The graph that's constructed during the search.
+    /**
+     * The graph that's constructed during the search.
+     */
     private Graph graph;
-    // Elapsed time of the most recent search.
+    /**
+     * Elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+    /**
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+     */
     private boolean meekPreventCycles;
-    // In an enumeration of triple types, these are the collider triples.
+    /**
+     * In an enumeration of triple types, these are the collider triples.
+     */
     private Set<Triple> unshieldedColliders;
-    // In an enumeration of triple types, these are the noncollider triples.
+    /**
+     * In an enumeration of triple types, these are the noncollider triples.
+     */
     private Set<Triple> unshieldedNoncolliders;
-    // The number of independence tests in the last search.
+    /**
+     * The number of independence tests in the last search.
+     */
     private int numIndependenceTests;
-    // True iff the algorithm should be run with verbose output.
+    /**
+     * True iff the algorithm should be run with verbose output.
+     */
     private boolean verbose;
-    // True iff the algorithm should be run with False Discovery Rate tests.
+    /**
+     * True iff the algorithm should be run with False Discovery Rate tests.
+     */
     private boolean fdr;
 
     /**
@@ -97,45 +119,46 @@ public class Pcd implements IGraphSearch {
 
 
     /**
-     * <p>isMeekPreventCycles.</p>
+     * Returns whether the algorithm should prevent cycles during the search.
      *
-     * @return true, iff edges will not be added if they would create cycles.
+     * @return true if cycles should be prevented, false otherwise.
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
     }
 
     /**
-     * <p>Setter for the field <code>meekPreventCycles</code>.</p>
+     * Sets whether the algorithm should prevent cycles during the search.
      *
-     * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
+     * @param meekPreventCycles true if cycles should be prevented, false otherwise
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
-     * <p>Getter for the field <code>independenceTest</code>.</p>
+     * Retrieves the IndependenceTest used by this method.
      *
-     * @return the independence test being used in the search.
+     * @return The IndependenceTest used by this method.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * <p>Getter for the field <code>knowledge</code>.</p>
+     * Retrieves the Knowledge object used by this method.
      *
-     * @return the knowledge specification used in the search. Non-null.
+     * @return The Knowledge object used by this method.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
-     * Sets the knowledge specification to be used in the search. May not be null.
+     * Sets the knowledge object used by this method.
      *
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param knowledge The knowledge object used by this method.
+     * @throws NullPointerException if knowledge is null.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -216,11 +239,17 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
-     * <p>search.</p>
+     * Searches for a graph using the given IFas instance and list of nodes.
      *
-     * @param fas   a {@link edu.cmu.tetrad.search.IFas} object
-     * @param nodes a {@link java.util.List} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param fas   The IFas instance to use for the search.
+     * @param nodes The list of nodes to search for.
+     * @return The resultant graph. The returned graph will be a CPDAG if the independence information is consistent
+     * with the hypothesis that there are no latent common causes. It may, however, contain cycles or bidirected edges
+     * if this assumption is not born out, either due to the actual presence of latent common causes, or due to
+     * statistical errors in conditional independence judgments.
+     * @throws NullPointerException     If fas is null or if the independence test is null.
+     * @throws IllegalArgumentException If any of the given nodes is not in the domain of the independence test
+     *                                  provided.
      */
     public Graph search(IFas fas, List<Node> nodes) {
 
@@ -273,57 +302,54 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
-     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     * Returns the elapsed time in milliseconds since the start of the method.
      *
-     * @return the elapsed time of the search, in milliseconds.
+     * @return the elapsed time in milliseconds
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * <p>Getter for the field <code>unshieldedColliders</code>.</p>
+     * Retrieves the set of unshielded colliders in the graph returned by the method search().
      *
-     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
+     * @return The set of unshielded colliders. Non-null after search() is called.
      */
     public Set<Triple> getUnshieldedColliders() {
         return this.unshieldedColliders;
     }
 
     /**
-     * <p>Getter for the field <code>unshieldedNoncolliders</code>.</p>
+     * Retrieves the set of unshielded noncolliders in the graph returned by the method search().
      *
-     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
+     * @return The set of unshielded noncolliders. Non-null after search() is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
         return this.unshieldedNoncolliders;
     }
 
     /**
-     * <p>getAdjacencies.</p>
+     * Returns the set of adjacent edges in the graph.
      *
-     * @return the graph returned by <code>search()</code>. Non-null after <code>search</code> is called.
+     * @return The set of adjacent edges.
      */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
     /**
-     * <p>Getter for the field <code>numIndependenceTests</code>.</p>
+     * Retrieves the number of independence tests performed by the graph search.
      *
-     * @return the number of independence tests performed in the last search.
+     * @return The number of independence tests performed.
      */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
     /**
-     * <p>getNodes.</p>
+     * Retrieves the list of nodes in the graph.
      *
-     * @return the list of nodes in the graph returned by <code>search()</code>. Non-null after <code>search</code> is
-     * called.
+     * @return The list of nodes in the graph.
      */
     public List<Node> getNodes() {
         return this.graph.getNodes();
@@ -365,6 +391,12 @@ public class Pcd implements IGraphSearch {
         this.fdr = fdr;
     }
 
+    /**
+     * Enumerates the triples in the graph and classifies them as unshielded colliders or unshielded noncolliders.
+     * <p>
+     * The unshielded colliders and unshielded noncolliders are stored in the respective instance variables of the
+     * class.
+     */
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();

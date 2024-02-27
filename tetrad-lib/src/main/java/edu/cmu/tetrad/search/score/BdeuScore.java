@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
 import org.apache.commons.math3.special.Gamma;
 import org.apache.commons.math3.util.FastMath;
 
@@ -46,19 +45,33 @@ import java.util.List;
  */
 public class BdeuScore implements DiscreteScore {
 
-    // The discrete dataset.
+    /**
+     * The discrete dataset.
+     */
     private final int[][] data;
-    // The sample size of the data.
+    /**
+     * The sample size of the data.
+     */
     private final int sampleSize;
-    // The number of categories for each variable.
+    /**
+     * The number of categories for each variable.
+     */
     private final int[] numCategories;
-    // The discrete dataset.
+    /**
+     * The discrete dataset.
+     */
     private final DataSet dataSet;
-    // The variables of the dataset.
+    /**
+     * The variables of the dataset.
+     */
     private final List<Node> variables;
-    // The sample prior.
+    /**
+     * The sample prior.
+     */
     private double samplePrior = 1d;
-    // The structure prior.
+    /**
+     * The structure prior.
+     */
     private double structurePrior = 0d;
 
     /**
@@ -102,6 +115,13 @@ public class BdeuScore implements DiscreteScore {
         }
     }
 
+    /**
+     * Retrieves the row index corresponding to the given dimensions and values.
+     *
+     * @param dim    The dimensions of the array.
+     * @param values The values corresponding to each dimension.
+     * @return The row index.
+     */
     private static int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
@@ -112,9 +132,11 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Calculates the BDeu score of a node given its parents.
+     * Calculates the local score of a node given its parents.
+     *
+     * @param node    The node.
+     * @param parents The parents of the node.
+     * @return The local score of the node.
      */
     @Override
     public double localScore(int node, int[] parents) {
@@ -198,9 +220,12 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Calculates localScore(y | z, x) - localScore(y | z).
+     * Calculates the difference in local scores between two nodes y and x, when x is added to a set of nodes z.
+     *
+     * @param x A node.
+     * @param y The node.
+     * @param z A set of nodes.
+     * @return The difference in local scores between y and x added to z.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -208,9 +233,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables of the data.
+     * Retrieves the list of variables used in the object.
+     *
+     * @return A list of Node objects representing the variables used.
      */
     @Override
     public List<Node> getVariables() {
@@ -227,20 +252,19 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * For FGES, this determines whether an edge counts as an effect edge.
+     * Determines whether the bump exceeds zero.
      *
-     * @see Fges
+     * @param bump The bump value.
+     * @return {@code true} if the bump is greater than zero, otherwise {@code false}.
      */
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the dataset being analyzed.
+     * Retrieves the dataset associated with this BdeuScore object.
+     *
+     * @return The dataset.
      */
     @Override
     public DataSet getDataSet() {
@@ -248,18 +272,18 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the structure prior.
+     * Retrieves the structure prior associated with this BdeuScore object.
      *
-     * @return This prior.
+     * @return The structure prior.
      */
     public double getStructurePrior() {
         return this.structurePrior;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the structure prior
+     * Sets the structure prior for the BdeuScore object.
+     *
+     * @param structurePrior The structure prior to be set.
      */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
@@ -275,9 +299,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Set the sample prior
+     * Sets the sample prior for the BdeuScore object.
+     *
+     * @param samplePrior The sample prior to be set.
      */
     @Override
     public void setSamplePrior(double samplePrior) {
@@ -285,9 +309,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns a string representation of this score.
+     * Returns a string representation of this BDeu Score object.
+     *
+     * @return A string representation of this BDeu Score object.
      */
     @Override
     public String toString() {
@@ -296,9 +320,11 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the maximum degree of the BDeuScore object.
      * <p>
-     * Returns the needed max degree for some searches.
+     * The maximum degree is calculated as the ceiling value of the logarithm of the sample size.
+     *
+     * @return The maximum degree.
      */
     @Override
     public int getMaxDegree() {
@@ -306,19 +332,35 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * This score does not implement a method to decide whether a node is determined by its parents.
+     * Determines whether a set of nodes z determines a specific node y.
+     *
+     * @param z The set of nodes.
+     * @param y The node to be determined.
+     * @return {@code true} if the set of nodes z determines the node y, {@code false} otherwise.
+     * @throws UnsupportedOperationException The BDeu score does not implement a 'determines' method.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("The BDeu score does not implement a 'determines' method.");
     }
 
+    /**
+     * Retrieves the variable at the specified index.
+     *
+     * @param i The index of the variable to retrieve.
+     * @return The variable at the specified index.
+     */
     private DiscreteVariable getVariable(int i) {
         return (DiscreteVariable) this.variables.get(i);
     }
 
+    /**
+     * Retrieves the prior for the structure given the number of parents and total number of variables.
+     *
+     * @param numParents The number of parents.
+     * @param N          The total number of variables.
+     * @return The prior for the structure.
+     */
     private double getPriorForStructure(int numParents, int N) {
         double e = getStructurePrior();
         if (e == 0) return 0.0;

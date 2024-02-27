@@ -209,7 +209,9 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.pool = new ForkJoinPool(numThreads);
     }
 
-    // Used to find semidirected paths for cycle checking.
+    /**
+     * Used to find semidirected paths for cycle checking.
+     */
     private static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
@@ -317,7 +319,10 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * {@inheritDoc}
+     * Scores a Directed Acyclic Graph (DAG) based on its structure.
+     *
+     * @param dag The input DAG to be scored.
+     * @return The score of the DAG.
      */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
@@ -344,9 +349,9 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * <p>Getter for the field <code>out</code>.</p>
+     * Returns the output stream used for printing.
      *
-     * @return the output stream that output (except for log output) should be sent to.
+     * @return the output stream used for printing.
      */
     public PrintStream getOut() {
         return out;
@@ -415,7 +420,9 @@ public final class Fges implements IGraphSearch, DagScorer {
         return modelScore;
     }
 
-    //Sets the discrete scoring function to use.
+    /**
+     * Sets the discrete scoring function to use.
+     */
     private void setScore(Score score) {
         this.score = score;
 
@@ -438,6 +445,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         return chunk;
     }
 
+    /**
+     * Initializes the effectEdgesGraph using the given list of nodes.
+     *
+     * @param nodes The list of nodes.
+     */
     private void initializeEffectEdges(final List<Node> nodes) {
         long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
@@ -471,6 +483,23 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Performs the Forward Equivalent Search (FES) algorithm.
+     * <p>
+     * This algorithm searches for causal relationships in a directed acyclic graph (DAG) by iteratively examining each
+     * arrow and determining if it satisfies the FES conditions.
+     * <p>
+     * The FES algorithm follows these steps: - Re-evaluate the forward relationships of all variables in the graph -
+     * While there are still arrows to examine: - Get the first arrow from the sorted arrows list - Remove the arrow
+     * from the sorted arrows list - Retrieve the source (A) and target (B) nodes of the arrow - If A and B are already
+     * adjacent, skip this arrow and move to the next one - If the degree of A or B exceeds the maximum degree allowed,
+     * skip this arrow - If the N_A_Y_X value of A and B differs from the arrow's N_A_Y_X value, skip this arrow - If
+     * the set of T-neighbors of A and B differs from the arrow's T-neighbors value, skip this arrow - If the set of
+     * parents of B differs from the arrow's parents value, skip this arrow - If the insertion of the arrow creates a
+     * cycle or violates the FES conditions, skip this arrow - Insert the arrow into the graph with the appropriate bump
+     * value - Revert the graph to complete partial DAG (CPDAG) - Recalculate the forward relationships of the nodes
+     * involved in the insertion
+     */
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
@@ -523,6 +552,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Runs the Bes algorithm.
+     *
+     * @see Bes
+     */
     private void bes() {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
@@ -531,12 +565,20 @@ public final class Fges implements IGraphSearch, DagScorer {
         bes.bes(graph, variables);
     }
 
-    // Returns true if knowledge is not empty.
+    /**
+     * Checks if knowledge exists.
+     *
+     * @return true if knowledge exists, false otherwise.
+     */
     private boolean existsKnowledge() {
         return !knowledge.isEmpty();
     }
 
-    // Calculates new arrows based on changes in the graph for the forward search.
+    /**
+     * Reevaluates the forward direction of arrows for a set of nodes.
+     *
+     * @param nodes the set of nodes for which to reevaluate arrows
+     */
     private void reevaluateForward(final Set<Node> nodes) {
         class AdjTask implements Callable<Boolean> {
 
@@ -605,7 +647,6 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < nodes.size(); i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-//                break;
                 throw new RuntimeException("Interrupted");
             }
 
@@ -621,7 +662,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Calculates the new arrows for an a->b edge.
+    /**
+     * Calculates and adds forward arrows from node a to node b based on the given conditions.
+     *
+     * @param a the starting node
+     * @param b the ending node
+     */
     private void calculateArrowsForward(Node a, Node b) {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
@@ -731,19 +777,42 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Adds an arrow connecting two nodes in the specified direction.
+     *
+     * @param a          the starting node of the arrow
+     * @param b          the ending node of the arrow
+     * @param hOrT       the set of nodes representing heads or tails
+     * @param TNeighbors the set of nodes representing tail neighbors
+     * @param naYX       the set of nodes representing NA and YX
+     * @param parents    the set of parent nodes
+     * @param bump       the bump value of the arrow
+     */
     private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
         sortedArrows.add(arrow);
-//        System.out.println(arrow);
     }
 
+    /**
+     * Returns a set of common adjacent nodes between two given nodes.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return a set of common adjacent nodes
+     */
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
         return adj;
     }
 
-    // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
+    /**
+     * Get all adj that are connected to Y by an undirected edge and not adjacent to X.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return a list of T-neighbors of the two nodes
+     */
     private List<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
@@ -765,7 +834,17 @@ public final class Fges implements IGraphSearch, DagScorer {
         return tNeighbors;
     }
 
-    // Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
+    /**
+     * Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
+     *
+     * @param x           The starting node of the edge.
+     * @param y           The ending node of the edge.
+     * @param T           The set of nodes representing the graph.
+     * @param naYX        The set of nodes not adjacent to 'y' but adjacent to 'x'.
+     * @param parents     The set of parent nodes of 'x'.
+     * @param hashIndices The map of nodes to their corresponding indices.
+     * @return The evaluation score after inserting the edge between 'x' and 'y'.
+     */
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
@@ -774,7 +853,14 @@ public final class Fges implements IGraphSearch, DagScorer {
         return scoreGraphChange(x, y, set, hashIndices);
     }
 
-    // Do an actual insertion. (Definition 12 from Chickering, 2002).
+    /**
+     * Do an actual insertion. (Definition 12 from Chickering, 2002).
+     *
+     * @param x    the source node
+     * @param y    the target node
+     * @param T    a set of nodes to be updated
+     * @param bump a value used for updating the graph
+     */
     private void insert(Node x, Node y, Set<Node> T, double bump) {
         graph.addDirectedEdge(x, y);
 
@@ -802,8 +888,15 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Test if the candidate insertion is a valid operation
-// (Theorem 15 from Chickering, 2002).
+    /**
+     * Checks if inserting nodes into a graph conforms to certain conditions. (Theorem 15 from Chickering, 2002).
+     *
+     * @param x    the first node to be inserted
+     * @param y    the second node to be inserted
+     * @param T    the set of existing nodes
+     * @param naYX the set of nodes not adjacent to x or y
+     * @return true if inserting the nodes satisfies the conditions, false otherwise
+     */
     private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
         boolean violatesKnowledge = false;
 
@@ -825,7 +918,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         return isClique(union) && semidirectedPathCondition(y, x, union) && !violatesKnowledge;
     }
 
-    // Adds edges required by knowledge.
+    /**
+     * Adds the required edges to the provided graph based on the existing knowledge.
+     *
+     * @param graph the graph to which the required edges will be added
+     */
     private void addRequiredEdges(Graph graph) {
         if (!existsKnowledge()) {
             return;
@@ -855,7 +952,6 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-//                break;
                 throw new RuntimeException("Interrupted");
             }
 
@@ -915,9 +1011,13 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
-// direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
-// forbidden.
+    /**
+     * Checks if at least one node in the given subset is forbidden by knowledge.
+     *
+     * @param y      The node for which to check if it is forbidden by knowledge.
+     * @param subset The set of nodes to check against knowledge.
+     * @return True if at least one node in the subset is forbidden by knowledge, otherwise false.
+     */
     private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
@@ -927,8 +1027,13 @@ public final class Fges implements IGraphSearch, DagScorer {
         return false;
     }
 
-    // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-// directed edge).
+    /**
+     * Retrieves the set of nodes that are adjacent to node y and are also adjacent to node x.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return a set of nodes that are neighbors of both x and y
+     */
     private Set<Node> getNaYX(Node x, Node y) {
         List<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
@@ -950,7 +1055,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         return nayx;
     }
 
-    // Returns true iif the given set forms a clique in the given graph.
+    /**
+     * Checks if the given set of nodes forms a clique.
+     *
+     * @param nodes the set of nodes to check
+     * @return true if the given set of nodes forms a clique, false otherwise
+     */
     private boolean isClique(Set<Node> nodes) {
         List<Node> _nodes = new ArrayList<>(nodes);
         for (int i = 0; i < _nodes.size(); i++) {
@@ -964,7 +1074,17 @@ public final class Fges implements IGraphSearch, DagScorer {
         return true;
     }
 
-    // Returns true iff every semidirected path contains an element of cond.
+    /**
+     * Determines whether there exists a semi-directed path from a given source node to a target node that satisfies a
+     * set of conditions.
+     *
+     * @param from the source node
+     * @param to   the target node
+     * @param cond the set of conditions
+     * @return {@code true} if a semi-directed path from the source node to the target node exists that satisfies the
+     * conditions; {@code false} otherwise
+     * @throws IllegalArgumentException if the source node and the target node are the same
+     */
     private boolean semidirectedPathCondition(Node from, Node to, Set<Node> cond) {
         if (from == to) throw new IllegalArgumentException();
 
@@ -1003,7 +1123,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         return true;
     }
 
-    // Runs Meek rules on just the changed adj.
+    /**
+     * Reverts the graph to a completed partially directed acyclic graph (CPDAG) using Meek rules.
+     *
+     * @return the set of nodes in the CPDAG
+     */
     private Set<Node> revertToCpdag() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
@@ -1012,7 +1136,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         return rules.orientImplied(graph);
     }
 
-    // Maps adj to their indices for quick lookup.
+    /**
+     * Builds indexing for the given list of nodes.
+     *
+     * @param nodes the list of nodes to build indexing for
+     */
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
 
@@ -1023,12 +1151,16 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Calculates the score of a directed acyclic graph (DAG).
+     *
+     * @param dag          The DAG to be scored.
+     * @param recordScores Indicates whether or not to record the scores for each node in the graph.
+     * @return The total score of the DAG.
+     */
     private double scoreDag(Graph dag, boolean recordScores) {
         if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
-
-        // We will switch to using the score of the FGES search.
-//        Score score = this.score.defaultScore();
 
         double _score = 0;
 
@@ -1058,6 +1190,16 @@ public final class Fges implements IGraphSearch, DagScorer {
         return _score;
     }
 
+    /**
+     * Calculates the score graph change between two nodes.
+     *
+     * @param x           The first node.
+     * @param y           The second node.
+     * @param parents     The set of parent nodes.
+     * @param hashIndices A mapping of nodes to their corresponding indices.
+     * @return The score graph change between the two nodes.
+     * @throws IllegalArgumentException If x is the same as y or y is one of x's parents.
+     */
     private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
@@ -1080,6 +1222,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    /**
+     * Retrieves a list of variables.
+     *
+     * @return the list of variables
+     */
     private List<Node> getVariables() {
         return variables;
     }
@@ -1096,44 +1243,95 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * <p>Setter for the field <code>initialGraph</code>.</p>
+     * Sets the initial graph for the application.
      *
-     * @param initialGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param initialGraph the initial graph to be set
      */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
     }
 
     /**
-     * Internal.
+     * Enumeration representing the different modes for the Mode class.
+     * <p>
+     * This enumeration defines the different modes that can be used in the Mode class. The available modes are: -
+     * allowUnfaithfulness: This mode allows unfaithfulness in the results. - heuristicSpeedup: This mode applies a
+     * heuristic speedup strategy. - coverNoncolliders: This mode includes noncolliders in the coverage.
      */
     private enum Mode {
         allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
     }
 
+    /**
+     * This class represents the configuration of arrows.
+     */
     private static class ArrowConfig {
+
+        /**
+         * Sets the T set.
+         *
+         * @param t the set of Node objects for the T set.
+         */
         private Set<Node> T;
+
+        /**
+         * This variable represents a set of nodes. It is used in the ArrowConfig class to store the nayx set.
+         *
+         * @see ArrowConfig
+         */
         private Set<Node> nayx;
+
+        /**
+         * This variable represents a set of parent nodes.
+         */
         private Set<Node> parents;
 
+        /**
+         * Constructs a new ArrowConfig with the specified sets of nodes.
+         *
+         * @param T       The set of T nodes.
+         * @param nayx    The set of nayx nodes.
+         * @param parents The set of parent nodes.
+         */
         public ArrowConfig(Set<Node> T, Set<Node> nayx, Set<Node> parents) {
             this.setT(T);
             this.setNayx(nayx);
             this.setParents(parents);
         }
 
+        /**
+         * Sets the T set.
+         *
+         * @param t the set of Node objects for the T set.
+         */
         public void setT(Set<Node> t) {
             T = t;
         }
 
+        /**
+         * Sets the nayx set.
+         *
+         * @param nayx the set of Node objects for the nayx set
+         */
         public void setNayx(Set<Node> nayx) {
             this.nayx = nayx;
         }
 
+        /**
+         * Sets the parents of this node.
+         *
+         * @param parents the set of Node objects to set as parents
+         */
         public void setParents(Set<Node> parents) {
             this.parents = parents;
         }
 
+        /**
+         * Compares this ArrowConfig object with the specified object for equality.
+         *
+         * @param o the object to be compared for equality with this ArrowConfig
+         * @return true if the specified object is equal to this ArrowConfig, false otherwise
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -1142,28 +1340,86 @@ public final class Fges implements IGraphSearch, DagScorer {
             return T.equals(that.T) && nayx.equals(that.nayx) && parents.equals(that.parents);
         }
 
+        /**
+         * Returns the hash code value for this ArrowConfig object. The hashCode is calculated by computing a hash code
+         * for each of the T, nayx, and parents sets using the Objects .hash() method.
+         *
+         * @return the computed hash code value for this ArrowConfig object
+         * @see Objects#hash(Object...)
+         */
         @Override
         public int hashCode() {
             return Objects.hash(T, nayx, parents);
         }
     }
 
-    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
-// associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-// For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
-// See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-// as the "bump."
+    /**
+     * Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
+     * associated sets needed to make this determination. For both forward and backward direction, NaYX is needed. For
+     * the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed. See
+     * Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded as the
+     * "bump."
+     */
     private static class Arrow implements Comparable<Arrow> {
 
+        /**
+         * Represents the bump value for an Arrow object. The bump value determines the ordering of Arrow objects in a
+         * SortedSet. A higher bump value indicates a higher priority.
+         *
+         * @see Arrow
+         */
         private final double bump;
+
+        /**
+         * Represents a for a-$gt;b.
+         *
+         * @see Arrow
+         * @see Node
+         */
         private final Node a;
+
+        /**
+         * Represents b for a-&gt;b.
+         */
         private final Node b;
+
+        /**
+         * Represents a T set or an H set, depending on whehter we are running the forward or the backward search.
+         */
         private final Set<Node> hOrT;
+
+        /**
+         * Represents the NaYX set.
+         */
         private final Set<Node> naYX;
+
+        /**
+         * Represents the parents.
+         */
         private final Set<Node> parents;
+
+        /**
+         * A unique index.
+         */
         private final int index;
+
+        /**
+         * Represents the T-neighbors
+         */
         private Set<Node> TNeighbors;
 
+        /**
+         * Constructs a new instance of the Arrow class with the given parameters.
+         *
+         * @param bump    The bump value of the arrow.
+         * @param a       The first node of the arrow.
+         * @param b       The second node of the arrow.
+         * @param hOrT    The set of nodes representing H or T.
+         * @param capTorH The set of nodes representing Cap or H.
+         * @param naYX    The set of nodes representing Na or YX.
+         * @param parents The set of parent nodes.
+         * @param index   The index of the arrow.
+         */
         Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
             this.a = a;
@@ -1175,32 +1431,59 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.parents = parents;
         }
 
+        /**
+         * Retrieves the bump value of the Arrow.
+         *
+         * @return The bump value of the Arrow.
+         */
         public double getBump() {
             return bump;
         }
 
+        /**
+         * Retrieves the first node of the arrow.
+         *
+         * @return the first node of the arrow.
+         */
         public Node getA() {
             return a;
         }
 
+        /**
+         * Retrieves the second node of the arrow.
+         *
+         * @return the second node of the arrow.
+         */
         public Node getB() {
             return b;
         }
 
+        /**
+         * Retrieves the set of nodes representing H or T.
+         *
+         * @return The set of nodes representing H or T.
+         */
         Set<Node> getHOrT() {
             return hOrT;
         }
 
+        /**
+         * Retrieves the neighbors of b that are adjacent to a.
+         *
+         * @return The set of nodes representing NaYX.
+         */
         Set<Node> getNaYX() {
             return naYX;
         }
 
-        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commented out by default.
+        /**
+         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares to
+         * zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same bump), we
+         * need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables. The
+         * fastest way to do this is using a hash code, though it's still possible for two Arrows to have the same hash
+         * code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison not equal to
+         * zero by keeping a list. This last part is commented out by default.
+         */
         public int compareTo(@NotNull Arrow arrow) {
 
             final int compare = Double.compare(arrow.getBump(), getBump());
@@ -1212,32 +1495,66 @@ public final class Fges implements IGraphSearch, DagScorer {
             return compare;
         }
 
+        /**
+         * Returns a string representation of this Arrow object.
+         *
+         * @return a string representation of this Arrow object
+         */
         public String toString() {
             return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " TNeighbors = " + getTNeighbors() + " parents = " + parents + " naYX = " + naYX + ">";
         }
 
+        /**
+         * Retrieves the index of the Arrow.
+         *
+         * @return The index of the Arrow.
+         */
         public int getIndex() {
             return index;
         }
 
+        /**
+         * Retrieves the set of neighboring nodes of the Arrow that are represented as T.
+         *
+         * @return The set of neighboring nodes represented as T.
+         */
         public Set<Node> getTNeighbors() {
             return TNeighbors;
         }
 
+        /**
+         * Sets the neighbors of b that are not adjacent to a.
+         *
+         * @param TNeighbors The set of neighboring nodes represented as T.
+         */
         public void setTNeighbors(Set<Node> TNeighbors) {
             this.TNeighbors = TNeighbors;
         }
 
+        /**
+         * Retrieves the set of parent nodes.
+         *
+         * @return The set of parent nodes.
+         */
         public Set<Node> getParents() {
             return parents;
         }
     }
 
+    /**
+     * Represents a pair of evaluation values.
+     * <p>
+     * This class is used to store information about a set of nodes (T) and a bump value (bump). It is a private static
+     * class, meaning it is accessible only within the enclosing class.
+     */
     private static class EvalPair {
         Set<Node> T;
         double bump;
     }
 
+    /**
+     * A class representing a task for finding empty graphs in a given node list.
+     */
     class NodeTaskEmptyGraph implements Callable<Boolean> {
 
         private final int from;
@@ -1245,6 +1562,9 @@ public final class Fges implements IGraphSearch, DagScorer {
         private final List<Node> nodes;
         private final Set<Node> emptySet;
 
+        /**
+         * A class representing a task for finding empty graphs in a given node list.
+         */
         NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
             this.from = from;
             this.to = to;
@@ -1252,6 +1572,11 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.emptySet = emptySet;
         }
 
+        /**
+         * Executes the task for finding empty graphs in a given node list.
+         *
+         * @return true if the task completes successfully, false otherwise.
+         */
         @Override
         public Boolean call() {
             for (int i = from; i < to; i++) {
@@ -1266,7 +1591,6 @@ public final class Fges implements IGraphSearch, DagScorer {
                 for (int j = i + 1; j < nodes.size(); j++) {
                     if (Thread.interrupted()) {
                         pool.shutdownNow();
-//                        break;
                         throw new RuntimeException("Interrupted");
                     }
 

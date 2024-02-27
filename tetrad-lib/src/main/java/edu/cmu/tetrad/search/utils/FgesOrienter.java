@@ -1195,7 +1195,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
                 if (this.log) {
                     TetradLogger.getInstance().forceLogMessage("--- Directing " + oldEdge + " to " +
-                                        edge);
+                            edge);
                 }
 
                 if (this.verbose) {

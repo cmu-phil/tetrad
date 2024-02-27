@@ -129,7 +129,6 @@ public class TestSimulatedFmri2 {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
-        comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
         final String directory = "comparison_testing_nonconcat";

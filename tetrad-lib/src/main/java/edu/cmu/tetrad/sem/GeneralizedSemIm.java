@@ -41,23 +41,23 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.sd;
-
 /**
- * Represents a generalized SEM instantiated model. The parameteric form of this model allows arbitrary equations for
- * variables. This instantiated model gives values for all of the parameters of the parameterized model.
+ * Represents a generalized SEM-instantiated model. The parametric form of this model allows arbitrary equations for
+ * variables. This instantiated model gives values for all the parameters of the parameterized model.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class GeneralizedSemIm implements Im, Simulator {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * The wrapped PM, that holds all of the expressions and structure for the model.
+     * The wrapped PM, that holds all the expressions and structure for the model.
      */
     private final GeneralizedSemPm pm;
 
@@ -76,7 +76,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      * Constructs a new GeneralizedSemIm from the given GeneralizedSemPm by picking values for each of the
      * freeParameters from their initial distributions.
      *
-     * @param pm the GeneralizedSemPm. Includes all of the equations and distributions of the model.
+     * @param pm the GeneralizedSemPm. Includes all the equations and distributions of the model.
      */
     public GeneralizedSemIm(GeneralizedSemPm pm) {
         this.pm = new GeneralizedSemPm(pm);
@@ -107,7 +107,7 @@ public class GeneralizedSemIm implements Im, Simulator {
 
         Set<String> parameters = pm.getParameters();
 
-        // If there are any missing freeParameters, just ignore the sem IM.
+        // If there are any missing freeParameters, ignore the sem IM.
         for (String parameter : parameters) {
             Parameter paramObject = semPm.getParameter(parameter);
 
@@ -154,7 +154,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>setParameterValue.</p>
      *
-     * @param parameter The parameter whose values is to be set.
+     * @param parameter The parameter whose values are to be set.
      * @param value     The double value that <code>param</code> is to be set to.
      */
     public void setParameterValue(String parameter, double value) {
@@ -270,7 +270,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>toString.</p>
      *
-     * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
+     * @return a String representation of the IM, in this case, a list of freeParameters and their values.
      */
     public String toString() {
         List<String> parameters = new ArrayList<>(this.pm.getParameters());
@@ -305,20 +305,15 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * {@inheritDoc}
      */
-    public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
+        } else if (!this.pm.getGraph().paths().existsDirectedCycle()) {
+            return simulateDataRecursive(sampleSize, latentDataSaved);
+        } else {
+            return simulateDataFisher(sampleSize);
         }
-
-        return simulateDataFisher(sampleSize);
     }
-
-//    @Override
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
 
     private DataSet simulateTimeSeries(int sampleSize) {
         SemGraph semGraph = new SemGraph(getSemPm().getGraph());
@@ -363,11 +358,8 @@ public class GeneralizedSemIm implements Im, Simulator {
 
             value = variableValues.get(term);
 
-            if (value != null) {
-                return value;
-            } else {
-                return RandomUtil.getInstance().nextNormal(0, 1);
-            }
+            return Objects.requireNonNullElseGet(value, () ->
+                    RandomUtil.getInstance().nextNormal(0, 1));
         };
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
@@ -411,8 +403,8 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
-        List<Node> variables = this.pm.getNodes();
-        Map<String, Double> std = new HashMap<>();
+        boolean printedUndefined = false;
+        boolean printedInfinite = false;
 
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -426,65 +418,71 @@ public class GeneralizedSemIm implements Im, Simulator {
             value = variableValues.get(term);
 
             if (value != null) {
-                return value * 2 / std.get(term);
+                return value;
             }
 
             throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
-        List<Node> continuousVariables = new LinkedList<>();
-        List<Node> nonErrorVariables = this.pm.getVariableNodes();
+        List<Node> variableNodes = this.pm.getVariableNodes();
+        Map<Node, Integer> indices = new HashMap<>();
+        for (int i = 0; i < variableNodes.size(); i++) indices.put(variableNodes.get(i), i);
 
-        // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : nonErrorVariables) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
+        double[][] all = new double[variableNodes.size()][sampleSize];
 
-            if (var.getNodeType() != NodeType.ERROR) {
-                continuousVariables.add(var);
-            }
-        }
-
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
-
-        // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = this.pm.getGraph();
-        List<Node> tierOrdering = graph.getFullTierOrdering();
-
-        int[] tierIndices = new int[variables.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = nonErrorVariables.indexOf(tierOrdering.get(i));
-        }
+        List<Node> origVarOrder = pm.getVariableNodes();
+        List<Node> nodes = new ArrayList<>(origVarOrder);
+        pm.getGraph().paths().makeValidOrder(nodes);
 
         // Do the simulation.
-        for (int tier = 0; tier < variables.size(); tier++) {
-            double[] v = new double[sampleSize];
+        for (int row = 0; row < sampleSize; row++) {
+            for (Node node : nodes) {
+                Node error = this.pm.getErrorNode(node);
 
-            int col = tierIndices[tier];
+                if (error == null) {
+                    throw new NullPointerException();
+                }
 
-            if (col == -1) {
-                continue;
+                Expression errorExpression = this.pm.getNodeExpression(error);
+                double errorValue = errorExpression.evaluate(context);
+
+                if (Double.isNaN(errorValue)) {
+                    throw new IllegalArgumentException("Undefined errorValue for error expression: " + errorExpression);
+                }
+
+                variableValues.put(error.getName(), errorValue);
+
+                Expression nodeExpression = this.pm.getNodeExpression(node);
+                double nodeValue = nodeExpression.evaluate(context);
+
+                if (Double.isNaN(nodeValue)) {
+                    if (!printedUndefined) {
+                        System.out.println("Undefined errorValue.");
+                        printedUndefined = true;
+                    }
+                }
+
+                if (Double.isInfinite(nodeValue)) {
+                    if (!printedInfinite) {
+                        System.out.println("Infinite errorValue.");
+                        printedInfinite = true;
+                    }
+                }
+
+                variableValues.put(node.getName(), nodeValue);
+                all[indices.get(node)][row] = nodeValue;
             }
-
-            for (int row = 0; row < sampleSize; row++) {
-                variableValues.clear();
-
-                Node node = tierOrdering.get(tier);
-                Expression expression = this.pm.getNodeExpression(node);
-                double value = expression.evaluate(context);
-                v[row] = value;
-                variableValues.put(node.getName(), value);
-
-                fullDataSet.setDouble(row, col, value);
-            }
-
-            std.put(tierOrdering.get(tier).getName(), sd(v));
-
-//            for (int row = 0; row < sampleSize; row++) {
-//                fullDataSet.setDouble(row, col, 2v[row] / std);
-//            }
         }
+
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        BoxDataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
 
         if (latentDataSaved) {
             return fullDataSet;
@@ -495,11 +493,11 @@ public class GeneralizedSemIm implements Im, Simulator {
 
 
     /**
-     * <p>simulateDataMinimizeSurface.</p>
+     * Simulates data by minimizing the surface defined by the given sample size and whether latent data is saved.
      *
-     * @param sampleSize      a int
-     * @param latentDataSaved a boolean
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sampleSize      The size of the sample to simulate.
+     * @param latentDataSaved Specifies whether the latent data should be saved.
+     * @return The simulated data set.
      */
     public DataSet simulateDataMinimizeSurface(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();
@@ -633,11 +631,13 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>simulateDataAvoidInfinity.</p>
+     * Simulates data avoiding infinity values.
      *
-     * @param sampleSize      a int
-     * @param latentDataSaved a boolean
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sampleSize      The number of data samples to simulate.
+     * @param latentDataSaved Indicates whether the latent (unmeasured) data is saved in the result.
+     * @return The simulated data as a DataSet object.
+     * @throws IllegalArgumentException if undefined value is encountered during simulation.
+     * @throws NullPointerException     if error node is null for any variable node.
      */
     public DataSet simulateDataAvoidInfinity(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();
@@ -735,7 +735,7 @@ public class GeneralizedSemIm implements Im, Simulator {
                     Node node = variableNodes.get(i);
 
                     // If any of the variables hasn't converged or if any of the variable values has gone
-                    // outside of the bound (-1e6, 1e6), judge nonconvergence and pick another random starting point.
+                    // outside the bound (-1e6, 1e6), judge non-convergence and pick another random starting point.
                     if (!(FastMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
                         if (!(FastMath.abs(variableValues.get(node.getName())) < 1e6)) {
                             if (count < 1000) {
@@ -789,7 +789,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @param sampleSize The number of samples to be drawn. Must be a positive integer.
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
-    public synchronized DataSet simulateDataFisher(int sampleSize) {
+    public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-10);
     }
 
@@ -804,8 +804,8 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
-    public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
-                                                   double epsilon) {
+    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+                                      double epsilon) {
         boolean printedUndefined = false;
         boolean printedInfinite = false;
 
@@ -1016,11 +1016,13 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>simulateDataNSteps.</p>
+     * Simulates data for a given number of steps.
      *
-     * @param sampleSize      a int
-     * @param latentDataSaved a boolean
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sampleSize      The number of samples to generate.
+     * @param latentDataSaved Flag indicating whether to save latent data.
+     * @return The generated dataset.
+     * @throws NullPointerException     If an error node is null.
+     * @throws IllegalArgumentException If an expression evaluates to NaN or is undefined.
      */
     public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();

@@ -170,7 +170,7 @@ public class FasDci {
                 this.graph.removeEdge(_edge);
 
                 TetradLogger.getInstance().forceLogMessage("Removed " + _edge + " because it was " +
-                                "forbidden by background knowledge.");
+                        "forbidden by background knowledge.");
 
             }
         }

@@ -32,7 +32,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Translates a version of the FastICA algorithm used in R from Fortran into Java for use in Tetrad. This can be used in
- * various algorithms that assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D. There is one
+ * various algorithms that assume linearity and non-Gaussianity as for example, LiNGAM and LiNG-D. There is one
  * difference from the R, in that in R FastICA can operate over complex numbers, whereas here it is restricted to real
  * numbers. A useful reference is this:
  * <p>
@@ -98,7 +98,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
- * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
+ * The data matrix is then `whitened' by projecting the data onto its principle-component directions--i.e., X -&gt; XK
  * where K is a pre-whitening matrix. The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
@@ -357,11 +357,13 @@ public class FastIca {
         Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.getNumRows(); i++) {
-            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
+//            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
+            D.set(i, i, 1.0 / (D.get(i, i)));
         }
 
+        cov.sqrt();
+
         Matrix K = D.times(U.transpose());
-//        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
         K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
         Matrix X1 = K.times(this.X);
@@ -503,6 +505,14 @@ public class FastIca {
         return W;
     }
 
+    /**
+     * Computes the value of the function g(alpha, y) based on the selected function type.
+     *
+     * @param alpha The alpha parameter used for the function approximation.
+     * @param y     The input value.
+     * @return The computed value of g(alpha, y).
+     * @throws IllegalArgumentException if the function type is not configured.
+     */
     private double g(double alpha, double y) {
         if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
@@ -513,6 +523,12 @@ public class FastIca {
         }
     }
 
+    /**
+     * Calculates the mean of the elements in a given Vector.
+     *
+     * @param v The Vector containing the elements.
+     * @return The mean value of the elements in the Vector.
+     */
     private double mean(Vector v) {
         double sum = 0.0;
 
@@ -523,6 +539,12 @@ public class FastIca {
         return sum / v.size();
     }
 
+    /**
+     * Calculates the sum of squares of elements in a given Vector.
+     *
+     * @param v The Vector containing the elements.
+     * @return The sum of squares of the elements in the Vector.
+     */
     private double sumOfSquares(Vector v) {
         double sum = 0.0;
 
@@ -533,11 +555,30 @@ public class FastIca {
         return sum;
     }
 
+    /**
+     * Calculates the root mean square (RMS) of the elements in a given vector.
+     *
+     * @param w The vector containing the elements.
+     * @return The root mean square (RMS) of the elements in the vector.
+     */
     private double rms(Vector w) {
         double ssq = sumOfSquares(w);
         return FastMath.sqrt(ssq);
     }
 
+    /**
+     * This method implements the parallel Independent Component Analysis (ICA) algorithm.
+     *
+     * @param X             The input data matrix with rows representing cases and columns representing variables.
+     * @param numComponents The number of components to be extracted.
+     * @param tolerance     A positive scalar value indicating the convergence tolerance of the un-mixing matrix.
+     * @param alpha         The alpha constant in the range [1, 2] used in the approximation to neg-entropy when 'fun ==
+     *                      "logcosh"'.
+     * @param maxIterations The maximum number of iterations to allow.
+     * @param verbose       A boolean value indicating whether verbose output should be printed.
+     * @param wInit         The initial un-mixing matrix of dimension (numComponents, numComponents).
+     * @return The computed un-mixing matrix.
+     */
     private Matrix icaParallel(Matrix X, int numComponents,
                                double tolerance, double alpha,
                                int maxIterations, boolean verbose, Matrix wInit) {
@@ -624,6 +665,11 @@ public class FastIca {
         return W;
     }
 
+    /**
+     * Scales the input matrix by dividing each row by its root mean square (RMS).
+     *
+     * @param x The matrix to be scaled.
+     */
     private void scale(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
@@ -631,6 +677,11 @@ public class FastIca {
         }
     }
 
+    /**
+     * Centers each row of the given matrix by subtracting the mean of the row from each element.
+     *
+     * @param x The matrix to be centered.
+     */
     private void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i);

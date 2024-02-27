@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
  * @author Tyler Gibson
  * @version $Id: $Id
  */
-@SuppressWarnings("MethodMayBeStatic")
 public class TetradLogger {
 
 
@@ -99,29 +98,28 @@ public class TetradLogger {
 
 
     /**
-     * <p>getInstance.</p>
+     * Returns an instance of TetradLogger.
      *
-     * @return - instance
+     * @return an instance of TetradLogger
      */
     public static TetradLogger getInstance() {
         return TetradLogger.INSTANCE;
     }
 
-
     /**
-     * Adds the given listener to the logger.
+     * Adds a TetradLoggerListener to the TetradLogger. The listener will be notified whenever a logger configuration is
+     * set or reset.
      *
-     * @param l a {@link edu.cmu.tetrad.util.TetradLoggerListener} object
+     * @param l the TetradLoggerListener to add
      */
     public void addTetradLoggerListener(TetradLoggerListener l) {
         this.listeners.add(l);
     }
 
-
     /**
-     * Removes the given listener from the logger.
+     * Removes a TetradLoggerListener from the TetradLogger.
      *
-     * @param l a {@link edu.cmu.tetrad.util.TetradLoggerListener} object
+     * @param l the TetradLoggerListener to remove
      */
     @SuppressWarnings("UnusedDeclaration")
     public void removeTetradLoggerListener(TetradLoggerListener l) {
@@ -148,19 +146,6 @@ public class TetradLogger {
         }
     }
 
-
-    /**
-     * This can be used to tell the logger which events to log without having to first define a
-     * <code>TetradLoggerConfig</code>.
-     *
-     * @param events a {@link java.lang.String} object
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public void setEventsToLog(String... events) {
-        setTetradLoggerConfig(new DefaultTetradLoggerConfig(events));
-    }
-
-
     /**
      * If there is a pre-defined configuration for the given model it is set, otherwise an exception is thrown.
      *
@@ -181,7 +166,6 @@ public class TetradLogger {
     public void addTetradLoggerConfig(Class<?> model, TetradLoggerConfig config) {
         this.classConfigMap.put(model, config);
     }
-
 
     /**
      * <p>getLoggerForClass.</p>
@@ -208,7 +192,6 @@ public class TetradLogger {
         flush();
     }
 
-
     /**
      * States whether the logger is turned on or not.
      *
@@ -217,7 +200,6 @@ public class TetradLogger {
     public boolean isLogging() {
         return this.logging;
     }
-
 
     /**
      * Sets whether the logger is on or not.
@@ -228,7 +210,6 @@ public class TetradLogger {
         Preferences.userRoot().putBoolean("loggingActivated", logging);
         this.logging = logging;
     }
-
 
     /**
      * Flushes the writers.
@@ -277,6 +258,10 @@ public class TetradLogger {
      */
     public void forceLogMessage(String message) {
         if (this.logging) {
+            if (!this.writers.containsKey(System.out)) {
+                System.out.println(message);
+            }
+
             if (this.config == null) {
                 this.fireActivated(new EmptyConfig(true));
             }
@@ -329,8 +314,8 @@ public class TetradLogger {
     }
 
     /**
-     * Sets the next output stream to use it for logging, call <code>removeNextOutputStream</code> to remove it. This will
-     * create the next output file in the output directory and form a stream from it and add it to the logger.
+     * Sets the next output stream to use it for logging, call <code>removeNextOutputStream</code> to remove it. This
+     * will create the next output file in the output directory and form a stream from it and add it to the logger.
      *
      * @throws java.lang.IllegalStateException - Thrown if there is an error setting the stream, the message will state
      *                                         the nature of the error.
@@ -594,11 +579,10 @@ public class TetradLogger {
     }
 
     /**
-     * An empty config, where no event is active.
-     *
-     * @param active States whether the logger is active or not.
+     * Represents an empty logger configuration.
      */
     public record EmptyConfig(boolean active) implements TetradLoggerConfig {
+
         @Serial
         private static final long serialVersionUID = 23L;
 
@@ -610,7 +594,6 @@ public class TetradLogger {
         @SuppressWarnings("SameParameterValue")
         public EmptyConfig {
         }
-
 
         /**
          * Generates a simple exemplar of this class to test serialization.

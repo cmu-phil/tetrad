@@ -47,19 +47,33 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet data;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * Likelihood function
+     */
     private final ConditionalGaussianLikelihood likelihood;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The number of categories to discretize continuous variables into.
+    /**
+     * The number of categories to discretize continuous variables into.
+     */
     private int numCategoriesToDiscretize = 3;
 
     /**
@@ -85,15 +99,18 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * This method returns an instance of the IndependenceTest interface that can test the independence of a subset of
+     * variables.
+     *
+     * @param vars The sublist of variables to test for independence.
+     * @return An instance of the IndependenceTest interface.
+     * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
      * @param x  a {@link edu.cmu.tetrad.graph.Node} object
@@ -181,12 +198,15 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if y is determined the variable in z.
+     * Determines whether a given list of nodes (z) determines a node (y).
+     *
+     * @param z The list of nodes to check if they determine y.
+     * @param y The node to check if it is determined by z.
+     * @return True if z determines y, false otherwise.
+     * @throws UnsupportedOperationException if not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
-        return false; //stub
+        throw new UnsupportedOperationException("Determinism method not implemented.");
     }
 
     /**
@@ -199,8 +219,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -227,8 +245,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns true iff verbose output should be printed.
      */
     @Override
@@ -237,8 +253,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override
@@ -255,6 +269,13 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
+    /**
+     * Returns a list of row indices where the values of the specified nodes are not missing or invalid.
+     *
+     * @param allVars  The list of nodes to check.
+     * @param nodeHash A map containing node-index pairs.
+     * @return A list of row indices.
+     */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
         List<Integer> rows = new ArrayList<>();
 

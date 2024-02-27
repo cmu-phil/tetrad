@@ -32,9 +32,9 @@ import javax.swing.*;
  */
 public interface DelegatesEditing {
     /**
-     * <p>getEditDelegate.</p>
+     * Returns the editing delegate component.
      *
-     * @return a {@link javax.swing.JComponent} object
+     * @return the editing delegate component
      */
     JComponent getEditDelegate();
 }

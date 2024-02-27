@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BOSS-DC (Best Order Score Search Divide and Conquer)
+ * BOSS (Best Order Score Search)
  *
  * @author bryanandrews
  * @author josephramsey
@@ -82,6 +82,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
+        parameters.set(Params.NUM_THREADS, 4);
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {

@@ -62,39 +62,76 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class GraspFci implements IGraphSearch {
 
-    // The conditional independence test.
+    /**
+     * The conditional independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
+    /**
+     * The logger to use.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+    /**
+     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed = true;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
-    // The number of starts for GRaSP.
+    /**
+     * The number of starts for GRaSP.
+     */
     private int numStarts = 1;
-
-    // Whether to use Raskutti and Uhler's modification of GRaSP.
+    /**
+     * Whether to use Raskutti and Uhler's modification of GRaSP.
+     */
     private boolean useRaskuttiUhler = false;
-    // Whether to use data order.
+    /**
+     * Whether to use data order.
+     */
     private boolean useDataOrder = true;
-    // Whether to use score.
+    /**
+     * Whether to use score.
+     */
     private boolean useScore = true;
-    // Whether to use the discriminating path rule.
+    /**
+     * Whether to use the discriminating path rule.
+     */
     private boolean doDiscriminatingPathRule = true;
-    // Whether to use the ordered version of GRaSP.
+    /**
+     * Whether to use the ordered version of GRaSP.
+     */
     private boolean ordered = false;
-    // The depth for GRaSP.
+    /**
+     * The depth for GRaSP.
+     */
     private int depth = -1;
-    // The depth for singular variables.
+    /**
+     * The depth for singular variables.
+     */
     private int uncoveredDepth = 1;
-    // The depth for non-singular variables.
+    /**
+     * The depth for non-singular variables.
+     */
     private int nonSingularDepth = 1;
+    /**
+     * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
+     * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
+     *
+     * @see GraspFci#setSeed(long)
+     */
     private long seed = -1;
 
     /**
@@ -150,10 +187,8 @@ public final class GraspFci implements IGraphSearch {
         alg.bestOrder(variables);
         Graph graph = alg.getGraph(true); // Get the DAG
 
-//        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
-        // GFCI extra edge removal step...
         SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);

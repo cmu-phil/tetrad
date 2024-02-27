@@ -45,21 +45,38 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
-    // Formats as 0.0000.
+    /**
+     * The number format used for formatting numbers in the application. It is obtained from the application-wide
+     * NumberFormatUtil instance.
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The instance of CCI that is wrapped.
+    /**
+     * The instance of CCI that is wrapped.
+     */
     private final ConditionalCorrelationIndependence cci;
-    //The variables of the covariance data, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance data, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // Stores a reference to the data set passed in through the constructor.
+    /**
+     * Stores a reference to the data set passed in through the constructor.
+     */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The score of the last test.
+    /**
+     * The score of the last test.
+     */
     private double score = Double.NaN;
 
 
@@ -90,8 +107,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
      */
@@ -100,8 +115,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Checks the independence of x _||_ y | z
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -157,8 +170,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -182,7 +193,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether the nodes z determine x.
+     *
+     * @param z A list of Node objects representing the conditioning set.
+     * @param x The Node object to check independence for.
+     * @return True if the nodes z determine x, false otherwise.
+     * @throws UnsupportedOperationException Always throws this exception as the method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
@@ -216,8 +232,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {

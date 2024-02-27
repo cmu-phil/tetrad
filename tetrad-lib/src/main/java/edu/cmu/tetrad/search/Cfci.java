@@ -55,13 +55,11 @@ public final class Cfci implements IGraphSearch {
     private final List<Node> variables = new ArrayList<>();
     // The independence test.
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
     // The PAG being constructed.
     private Graph graph;
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
+    // Flag for the complete rule set, true if you should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // True iff the possible msep search is done.
     private boolean possibleMsepSearchDone = true;
@@ -204,7 +202,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the elapsed time ot the search.
+     * Returns the elapsed time to the search.
      *
      * @return This time.
      */
@@ -213,7 +211,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,..,zn}.
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,...,zn}.
      *
      * @return This map.
      */
@@ -427,7 +425,7 @@ public final class Cfci implements IGraphSearch {
     /**
      * Whether to do the discriminating path rule.
      *
-     * @return True iff the discriminating path rule is done.
+     * @return True, iff the discriminating path rule is done.
      */
     public boolean isPossibleMsepSearchDone() {
         return this.possibleMsepSearchDone;
@@ -436,7 +434,7 @@ public final class Cfci implements IGraphSearch {
     /**
      * Whether to do the discriminating path rule.
      *
-     * @param possibleMsepSearchDone True iff the discriminating path rule is done.
+     * @param possibleMsepSearchDone True, iff the discriminating path rule is done.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
