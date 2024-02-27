@@ -423,17 +423,18 @@ class GeneralizedExpressionEditor extends JComponent {
     //==================================================PUBLIC METHODS==========================================//
 
     /**
-     * <p>Getter for the field <code>expressionString</code>.</p>
+     * Retrieves the expression string.
      *
-     * @return the expression string (that is, the edited string, with error term appended if necessary, without
-     * "variable =" or "parameter ~". This is the final product of the editing.)
+     * @return The expression string.
      */
     public String getExpressionString() {
         return expressionString;
     }
 
     /**
-     * @return the next parameter in the sequence base1, base2,...the SEM PM has not used that.
+     * Retrieves the next parameter name that is not already used.
+     *
+     * @return The next parameter name.
      */
     private String nextParameterName() {
         Set<String> parameters = semPm.getParameters();
@@ -461,8 +462,12 @@ class GeneralizedExpressionEditor extends JComponent {
         return "b" + i;
     }
 
-    //==================================================PRIVATE METHODS=========================================//
-
+    /**
+     * Returns a comma-separated list of names for the given nodes.
+     *
+     * @param nodes The list of nodes to retrieve names from.
+     * @return A string that contains the names of the nodes, separated by commas.
+     */
     private String niceParentsList(List<Node> nodes) {
         List<String> nodeNames = new ArrayList<>();
 
@@ -485,6 +490,9 @@ class GeneralizedExpressionEditor extends JComponent {
         return buf.toString();
     }
 
+    /**
+     * Listens for changes in the expression and updates the related components accordingly.
+     */
     private void listen() {
         String expressionString = expressionTextPane.getText();
         String valueExpressionString;
@@ -539,6 +547,12 @@ class GeneralizedExpressionEditor extends JComponent {
         this.latestParser = parser;
     }
 
+    /**
+     * Sets the color of the given document using the specified color.
+     *
+     * @param document The StyledDocument to set the color for.
+     * @param color    The color to apply to the document.
+     */
     private void setDocumentColor(StyledDocument document, String color) {
         SwingUtilities.invokeLater(() -> {
             if (document != null) {
@@ -547,6 +561,12 @@ class GeneralizedExpressionEditor extends JComponent {
         });
     }
 
+    /**
+     * Retrieves a comma-separated list of parameter strings from the given ExpressionParser.
+     *
+     * @param parser The ExpressionParser to retrieve the parameter strings from.
+     * @return A string containing the comma-separated list of parameter strings.
+     */
     private String parameterString(ExpressionParser parser) {
         Result result = getResult(parser);
 
@@ -568,6 +588,12 @@ class GeneralizedExpressionEditor extends JComponent {
         return result.buf().toString();
     }
 
+    /**
+     * Retrieves the result of the expression evaluation.
+     *
+     * @param parser The ExpressionParser used to evaluate the expression.
+     * @return A Result object containing the list of parameters and the evaluation result.
+     */
     @NotNull
     private Result getResult(ExpressionParser parser) {
         Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
@@ -581,6 +607,14 @@ class GeneralizedExpressionEditor extends JComponent {
         return new Result(parametersList, buf);
     }
 
+    /**
+     * Retrieves the expression tokens based on the provided parameters and expressions map.
+     *
+     * @param semPm           The GeneralizedSemPm object.
+     * @param node            The Node object.
+     * @param expressionsMap  The Map containing the expressions and their corresponding tokens.
+     * @return An array of String representing the expression tokens.
+     */
     private String[] getExpressionTokens(GeneralizedSemPm semPm, Node node, Map<String, String> expressionsMap) {
         List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
 
@@ -597,6 +631,13 @@ class GeneralizedExpressionEditor extends JComponent {
         return expressionTokens;
     }
 
+    /**
+     * Retrieves the expression map containing the available expressions and their template forms.
+     *
+     * @param semPm The GeneralizedSemPm object.
+     * @param node  The Node object.
+     * @return A Map<String, String> containing the expressions as keys and their template forms as values.
+     */
     private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
         // form is on the right. You use a % for a new parameter. In case you want to change it.
@@ -668,6 +709,9 @@ class GeneralizedExpressionEditor extends JComponent {
         return expressionsMap;
     }
 
+    /**
+     * Represents the result of an expression evaluation.
+     */
     private record Result(List<String> parametersList, StringBuilder buf) {
     }
 }
