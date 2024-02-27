@@ -68,14 +68,6 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
-     * textfields can edit the model.)
-     */
-    private synchronized Parameters getParams() {
-        return this.params;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public void setParams(Parameters params) {
