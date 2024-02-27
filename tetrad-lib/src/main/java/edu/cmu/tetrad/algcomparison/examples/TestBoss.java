@@ -50,8 +50,8 @@ public class TestBoss {
      */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 1);
-        parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.NUM_RUNS, 5);
+        parameters.set(Params.DIFFERENT_GRAPHS, false);
         parameters.set(Params.NUM_MEASURES, 30);
         parameters.set(Params.AVG_DEGREE, 6);
         parameters.set(Params.SAMPLE_SIZE, 1000);
@@ -64,10 +64,10 @@ public class TestBoss {
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
-        parameters.set(Params.ALPHA, 1e-8);
+        parameters.set(Params.ALPHA, 0.001);
 
         parameters.set(Params.USE_BES, false);
-        parameters.set(Params.NUM_STARTS, 1);
+        parameters.set(Params.NUM_STARTS, 5);
         parameters.set(Params.NUM_THREADS, 6);
         parameters.set(Params.USE_DATA_ORDER, false);
 
@@ -86,7 +86,7 @@ public class TestBoss {
 //        algorithms.add(new DirectLingam(new SemBicScore()));
 //        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
-//        algorithms.add(new Boss(new FisherZScore()));
+        algorithms.add(new Boss(new FisherZScore()));
 //        algorithms.add(new Boss(new DGLRTScore()));
 
         Simulations simulations = new Simulations();

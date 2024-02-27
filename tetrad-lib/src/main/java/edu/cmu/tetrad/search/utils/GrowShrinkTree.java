@@ -33,7 +33,7 @@ public class GrowShrinkTree {
      */
     public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
-//         this.scoreDiff = score instanceof IndTestScore;
+//        this.scoreDiff = score instanceof IndTestScore;
         this.scoreDiff = true;
         this.index = index;
         this.node = node;
