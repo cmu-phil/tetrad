@@ -295,7 +295,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                     }
 
                     setStartsWithParametersTemplate("s", "U(-1.0, 1.0)");
-                    setStartsWithParametersEstimationInitializaationTemplate("s", "U(-1.5, 1.5)");
+                    setStartsWithParametersEstimationInitializationTemplate("s", "U(-1.5, 1.5)");
                 }
             }
 
@@ -308,7 +308,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                 Set<String> parameters = getReferencedParameters(node);
 
                 setStartsWithParametersTemplate("s", "U(1, 3)");
-                setStartsWithParametersEstimationInitializaationTemplate("s", "U(1, 3)");
+                setStartsWithParametersEstimationInitializationTemplate("s", "U(1, 3)");
 
                 for (String parameter : parameters) {
                     setParameterExpression(parameter, "U(1, 3)");
@@ -358,7 +358,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
                     setParameterExpression(parameter, "U(-1.0, 1.0)");
                     setStartsWithParametersTemplate(parameter.substring(0, 1), "U(-1.0, 1.0)");
-                    setStartsWithParametersEstimationInitializaationTemplate(parameter.substring(0, 1), "U(-1.5, 1.5)");
+                    setStartsWithParametersEstimationInitializationTemplate(parameter.substring(0, 1), "U(-1.5, 1.5)");
 
                     if (j < parents.size() - 1) {
                         buf.append(" + ");
@@ -381,7 +381,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                 setNodeExpression(getErrorNode(node), distributionFormula);
                 setParameterExpression(parameter, "U(0, 1)");
                 setStartsWithParametersTemplate(parameter.substring(0, 1), "U(0, 1)");
-                setStartsWithParametersEstimationInitializaationTemplate(parameter.substring(0, 1), "U(0, 1)");
+                setStartsWithParametersEstimationInitializationTemplate(parameter.substring(0, 1), "U(0, 1)");
             }
 
             this.variableNames = new ArrayList<>();
@@ -1084,20 +1084,20 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Retrieves the variables template.
+     * Retrieves the variable template.
      *
-     * @return the variables template
+     * @return the variable template
      */
     public String getVariablesTemplate() {
         return this.variablesTemplate;
     }
 
     /**
-     * Sets the variables template.
+     * Sets the variable template.
      *
      * @param variablesTemplate the template for variables
-     * @throws ParseException       if the variables template fails to parse
-     * @throws NullPointerException if the variables template is null
+     * @throws ParseException       if the variable template fails to parse
+     * @throws NullPointerException if the variable template is null
      */
     public void setVariablesTemplate(String variablesTemplate) throws ParseException {
         if (variablesTemplate == null) {
@@ -1112,19 +1112,19 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Returns the errors template string.
+     * Returns the error template string.
      *
-     * @return the errors template string
+     * @return the error template string
      */
     public String getErrorsTemplate() {
         return this.errorsTemplate;
     }
 
     /**
-     * Sets the errors template for the software.
+     * Sets the error template for the software.
      *
-     * @param errorsTemplate the string representation of the errors template
-     * @throws ParseException       if the errors template cannot be parsed successfully
+     * @param errorsTemplate the string representation of the error template
+     * @throws ParseException       if the error template cannot be parsed successfully
      * @throws NullPointerException if the errorsTemplate parameter is null
      */
     public void setErrorsTemplate(String errorsTemplate) throws ParseException {
@@ -1149,12 +1149,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the parameters template for the object.
+     * Sets the parameter template for the object.
      *
      * @param parametersTemplate the template string representing the parameters
      * @throws ParseException           if the given parameters template is not valid
-     * @throws NullPointerException     if the parameters template is null
-     * @throws IllegalArgumentException if the parameters template contains parameters
+     * @throws NullPointerException     if the parameter template is null
+     * @throws IllegalArgumentException if the parameter template contains parameters
      * @see ExpressionParser
      */
     public void setParametersTemplate(String parametersTemplate) throws ParseException {
@@ -1176,18 +1176,18 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Retrieves the parameters estimation initialization template.
+     * Retrieves the parameter estimation initialization template.
      *
-     * @return The parameters estimation initialization template as a {@code String}.
+     * @return The parameter estimation initialization template as a {@code String}.
      */
     public String getParametersEstimationInitializationTemplate() {
         return this.parametersEstimationInitializationTemplate;
     }
 
     /**
-     * Sets the template for parameters estimation initialization.
+     * Sets the template for parameter estimation initialization.
      *
-     * @param parametersTemplate the template string for parameters estimation initialization
+     * @param parametersTemplate the template string for parameter estimation initialization
      * @throws ParseException       if the provided parameters template is not parseable
      * @throws NullPointerException if the provided parameters template is null
      */
@@ -1204,7 +1204,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the parameters template for expressions that start with the specified string. If the startsWith parameter is
+     * Sets the parameter template for expressions that start with the specified string. If the startsWith parameter is
      * null or empty, the method does nothing. If the parametersTemplate parameter is null, a NullPointerException is
      * thrown. The method parses the parametersTemplate to ensure it is a valid expression. If the startsWith string
      * contains spaces, an IllegalArgumentException is thrown.
@@ -1236,16 +1236,16 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the parameters estimation initialization template for a given startsWith string.
+     * Sets the parameter estimation initialization template for a given startsWith string.
      *
      * @param startsWith                                 the string that the template should start with
-     * @param parametersEstimationInitializationTemplate the template for initializing the parameters estimation
+     * @param parametersEstimationInitializationTemplate the template for initializing the parameter estimation
      * @throws ParseException           if the template is unable to be parsed
      * @throws NullPointerException     if the parametersTemplate is null
      * @throws IllegalArgumentException if the startsWith string contains spaces
      */
-    public void setStartsWithParametersEstimationInitializaationTemplate(String startsWith,
-                                                                         String parametersEstimationInitializationTemplate)
+    public void setStartsWithParametersEstimationInitializationTemplate(String startsWith,
+                                                                        String parametersEstimationInitializationTemplate)
             throws ParseException {
         if (startsWith == null || startsWith.isEmpty()) {
             return;
@@ -1278,12 +1278,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * <p>getStartsWithParameterEstimationInitializatonTemplate.</p>
+     * Retrieves the initialization template for parameter estimation based on the provided starting string.
      *
-     * @param startsWith a {@link java.lang.String} object
-     * @return a {@link java.lang.String} object
+     * @param startsWith The starting string used to find the initialization template.
+     * @return The initialization template corresponding to the starting string.
      */
-    public String getStartsWithParameterEstimationInitializatonTemplate(String startsWith) {
+    public String getStartsWithParameterEstimationInitializationTemplate(String startsWith) {
         return this.startsWithParametersEstimationInitializationTemplates.get(startsWith);
     }
 

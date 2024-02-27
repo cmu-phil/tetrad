@@ -177,7 +177,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     updateEquationsDisplay();
                 } else if ("Estimation Starting Values".equals(item)) {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                    String template = getSemPm().getStartsWithParameterEstimationInitializationTemplate(startsWith);
                     if (template == null) {
                         template = getSemPm().getParametersEstimationInitializationTemplate();
                     }
@@ -217,7 +217,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 setParseText(template);
             } else if ("Estimation Starting Values".equals(item)) {
                 String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                String template = getSemPm().getStartsWithParameterEstimationInitializationTemplate(startsWith);
                 if (template == null) {
                     template = getSemPm().getParametersEstimationInitializationTemplate();
                 }
@@ -368,7 +368,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
 
-                    getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
+                    getSemPm().setStartsWithParametersEstimationInitializationTemplate(startsWith, template);
                 } catch (ParseException e) {
                     //
                 }
@@ -766,7 +766,7 @@ class GeneralizedTemplateEditor extends JComponent {
                         }
                     } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
                         if (!startsWithText.trim().isEmpty()) {
-                            getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
+                            getSemPm().setStartsWithParametersEstimationInitializationTemplate(startsWithText, expressionString);
                         }
                     }
                 }
