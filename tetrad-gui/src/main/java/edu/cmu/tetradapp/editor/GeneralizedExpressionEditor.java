@@ -25,7 +25,6 @@ import edu.cmu.tetrad.calculator.parser.ExpressionParser;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -35,8 +34,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
@@ -81,10 +78,6 @@ class GeneralizedExpressionEditor extends JComponent {
      */
     private final JCheckBox errorTermCheckBox;
     /**
-     * The color that selected text is being rendered. Either black or red.
-     */
-    private Color color = Color.BLACK;
-    /**
      * The start index of selected text.
      */
     private int start;
@@ -92,11 +85,6 @@ class GeneralizedExpressionEditor extends JComponent {
      * The width of the selected text.
      */
     private int stringWidth;
-    /**
-     * The time that the selected text should be colored. (Must do this all indirectly using a thread because we cannot
-     * listen to the text pane.)
-     */
-    private long recolorTime = MillisecondTimes.timeMillis();
     /**
      * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
      * most up-to-date list of parameters.
@@ -256,16 +244,11 @@ class GeneralizedExpressionEditor extends JComponent {
             }
         });
 
+        Style red = expressionTextPane.addStyle("Red", null);
+        StyleConstants.setForeground(red, Color.RED);
 
-        ColorThread thread = new ColorThread();
-        thread.start();
-
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentHidden(ComponentEvent componentEvent) {
-                thread.scheduleStop();
-            }
-        });
+        Style black = expressionTextPane.addStyle("Black", null);
+        StyleConstants.setForeground(black, Color.BLACK);
 
         expressionTextPane.setCaretPosition(expressionTextPane.getText().length());
 
@@ -311,14 +294,14 @@ class GeneralizedExpressionEditor extends JComponent {
         expressionString = semPm.getParameterExpressionString(parameter);
 
         StyleContext sc = new StyleContext();
-        DefaultStyledDocument doc = new DefaultStyledDocument(sc);
-        expressionTextPane = new JTextPane(doc);
+        StyledDocument document = new DefaultStyledDocument(sc);
+        expressionTextPane = new JTextPane(document);
         resultTextPane = new JTextArea(semPm.getParameterExpressionString(parameter));
 
         try {
             try {
                 // Add the text to the document
-                doc.insertString(0, semPm.getParameterExpressionString(parameter), null);
+                document.insertString(0, semPm.getParameterExpressionString(parameter), null);
             } catch (BadLocationException ignored) {
             }
         } catch (Exception e) {
@@ -399,7 +382,7 @@ class GeneralizedExpressionEditor extends JComponent {
         this.setLayout(new BorderLayout());
         this.add(b, BorderLayout.CENTER);
 
-        doc.addDocumentListener(new DocumentListener() {
+        document.addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent documentEvent) {
                 GeneralizedExpressionEditor.this.listen();
             }
@@ -412,19 +395,6 @@ class GeneralizedExpressionEditor extends JComponent {
                 GeneralizedExpressionEditor.this.listen();
             }
         });
-
-        ColorThread thread = new ColorThread();
-        thread.start();
-
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentHidden(ComponentEvent componentEvent) {
-                thread.scheduleStop();
-            }
-        });
-
-        this.setFocusCycleRoot(true);
-        expressionTextPane.grabFocus();
     }
 
     @NotNull
@@ -525,16 +495,16 @@ class GeneralizedExpressionEditor extends JComponent {
             if (!"".equals(expressionString)) {
                 parser.parseExpression(expressionString);
             }
-            this.color = Color.BLACK;
+            StyledDocument document = expressionTextPane.getStyledDocument();
             this.start = 0;
             this.stringWidth = expressionString.length();
-            this.recolorTime = MillisecondTimes.timeMillis();
+            setDocumentColor(document, "Black");
             valueExpressionString = expressionString;
         } catch (ParseException e) {
-            this.color = Color.RED;
+            StyledDocument document = expressionTextPane.getStyledDocument();
             this.start = e.getErrorOffset();
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = MillisecondTimes.timeMillis();
+            setDocumentColor(document, "Red");
             valueExpressionString = null;
         }
 
@@ -567,6 +537,15 @@ class GeneralizedExpressionEditor extends JComponent {
         }
 
         this.latestParser = parser;
+    }
+
+    private void setDocumentColor(StyledDocument document, String color) {
+        SwingUtilities.invokeLater(() -> {
+            if (document != null) {
+                document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle(color), true);
+            }
+        });
+
     }
 
     private String parameterString(ExpressionParser parser) {
@@ -692,40 +671,6 @@ class GeneralizedExpressionEditor extends JComponent {
 
     private record Result(List<String> parametersList, StringBuilder buf) {
     }
-
-    private class ColorThread extends Thread {
-        private boolean stop;
-
-        @Override
-        public void run() {
-            if (Thread.currentThread().isInterrupted()) return;
-
-            StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-            Style red = expressionTextPane.addStyle("Red", null);
-            StyleConstants.setForeground(red, Color.RED);
-
-            Style black = expressionTextPane.addStyle("Black", null);
-            StyleConstants.setForeground(black, Color.BLACK);
-
-            while (!stop) {
-                if (MillisecondTimes.timeMillis() < recolorTime) {
-                    continue;
-                }
-
-                if (color == Color.RED) {
-                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                } else if (color == Color.BLACK) {
-                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
-                }
-            }
-        }
-
-        public void scheduleStop() {
-            stop = true;
-        }
-    }
-
 }
 
 
