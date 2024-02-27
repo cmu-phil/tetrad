@@ -205,27 +205,29 @@ public class Comparison {
     }
 
     /**
-     * <p>generateReportFromExternalAlgorithms.</p>
+     * Generates a report from external algorithms.
      *
-     * @param dataPath    a {@link java.lang.String} object
-     * @param resultsPath a {@link java.lang.String} object
-     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataPath    - The path to the data file.
+     * @param resultsPath - The path to where the report will be saved.
+     * @param algorithms  - The algorithms to compare.
+     * @param statistics  - The statistics to include in the report.
+     * @param parameters  - The parameters to use for the algorithms.
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms, statistics, parameters);
     }
 
     /**
-     * <p>generateReportFromExternalAlgorithms.</p>
+     * Generates a report from external algorithms based on the given parameters.
      *
-     * @param dataPath       a {@link java.lang.String} object
-     * @param resultsPath    a {@link java.lang.String} object
-     * @param outputFileName a {@link java.lang.String} object
-     * @param algorithms     a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics     a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataPath       The path to the data files.
+     * @param resultsPath    The path to save the results.
+     * @param outputFileName The name of the output file.
+     * @param algorithms     The collection of algorithms to compare.
+     * @param statistics     The statistics to include in the report.
+     * @param parameters     The additional parameters for the algorithms.
+     * @throws IllegalArgumentException if any algorithm in the collection is not an instance of ExternalAlgorithm.
+     * @throws NullPointerException     if there are no files in the specified data path.
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms, Statistics statistics, Parameters parameters) {
 
@@ -266,27 +268,27 @@ public class Comparison {
     }
 
     /**
-     * <p>compareFromSimulations.</p>
+     * Compare simulation results using the provided parameters and write the comparison results to a file.
      *
-     * @param resultsPath a {@link java.lang.String} object
-     * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
-     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param resultsPath The path to write the comparison results file.
+     * @param simulations The simulations to compare results from.
+     * @param algorithms  The algorithms used in the simulations.
+     * @param statistics  The statistics used in the simulations.
+     * @param parameters  The parameters used in the simulations.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
     }
 
     /**
-     * Compares algorithms.
+     * Compares the results from simulations using various algorithms and statistics.
      *
-     * @param resultsPath    Path to the file where the output should be printed.
-     * @param simulations    The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms     The list of algorithms to be compared.
-     * @param statistics     The list of statistics on which to compare the algorithm, and their utility weights.
-     * @param outputFileName a {@link java.lang.String} object
-     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param resultsPath    The path to the results directory.
+     * @param simulations    The Simulations object containing the simulations to compare.
+     * @param outputFileName The name of the output file.
+     * @param algorithms     The Algorithms object containing the algorithms to compare.
+     * @param statistics     The Statistics object containing the statistics to use for comparison.
+     * @param parameters     The Parameters object containing the necessary parameters for the comparison.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
@@ -424,9 +426,6 @@ public class Comparison {
             this.out.println("Simulations:");
             this.out.println();
 
-//            if (simulationWrappers.size() == 1) {
-//                out.println(simulationWrappers.get(0).getDescription());
-//            } else {
             int i = 0;
 
             for (SimulationWrapper simulation : simulationWrappers) {
@@ -556,11 +555,11 @@ public class Comparison {
     }
 
     /**
-     * Saves simulationWrapper data.
+     * Saves the simulation data to files in the specified data path.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
-     * @param simulation The simulation used to generate the graphs and data.
-     * @param parameters The parameters to be used in the simulationWrapper.
+     * @param dataPath   the path where the data files will be saved
+     * @param simulation the simulation object containing the data to be saved
+     * @param parameters the parameters used in the simulation
      */
     public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
 
@@ -651,11 +650,11 @@ public class Comparison {
     }
 
     /**
-     * Saves simulationWrapper data.
+     * Saves the results of a single simulation to files.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
-     * @param simulation The simulation used to generate the graphs and data.
-     * @param parameters The parameters to be used in the simulationWrapper.
+     * @param dataPath   The path to the directory where the files will be saved.
+     * @param simulation The simulation object containing the data and graphs.
+     * @param parameters The parameters used for the simulation.
      */
     public void saveToFilesSingleSimulation(String dataPath, Simulation simulation, Parameters parameters) {
         File dir0 = new File(dataPath);
@@ -731,9 +730,10 @@ public class Comparison {
     }
 
     /**
-     * <p>configuration.</p>
+     * Generates a configuration file containing information about available algorithms, statistics, independence tests,
+     * scores, and simulations.
      *
-     * @param path a {@link java.lang.String} object
+     * @param path The path to save the configuration file.
      */
     public void configuration(String path) {
         try {
@@ -964,6 +964,19 @@ public class Comparison {
         return simulationWrappers;
     }
 
+    /**
+     * Calculates statistics for algorithm simulations.
+     *
+     * @param algorithmSimulationWrappers A list of AlgorithmSimulationWrapper objects representing the algorithm
+     *                                    simulations.
+     * @param simulationWrappers          A list of SimulationWrapper objects representing the simulations.
+     * @param statistics                  The Statistics object containing statistical measures to be computed.
+     * @param numRuns                     The number of runs for each simulation.
+     * @param stdout                      The PrintStream object for printing the progress.
+     * @return A 4-dimensional array of doubles containing the computed statistics. The dimensions are as follows: - 1st
+     * dimension: graph types (4 types in total) - 2nd dimension: algorithmSimulationWrappers size - 3rd dimension:
+     * statistics size + 1 (additional slot for storing total statistics) - 4th dimension: numRuns
+     */
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<SimulationWrapper> simulationWrappers, Statistics statistics,
                                      int numRuns, PrintStream stdout) {
@@ -996,108 +1009,111 @@ public class Comparison {
     }
 
     /**
-     * <p>isShowSimulationIndices.</p>
+     * Checks if the simulation indices are currently being shown.
      *
-     * @return a boolean
+     * @return true if the simulation indices are being shown, false otherwise
      */
     public boolean isShowSimulationIndices() {
         return this.showSimulationIndices;
     }
 
     /**
-     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
+     * Sets whether to show simulation indices or not.
      *
-     * @param showSimulationIndices a boolean
+     * @param showSimulationIndices true to show simulation indices, false otherwise
      */
     public void setShowSimulationIndices(boolean showSimulationIndices) {
         this.showSimulationIndices = showSimulationIndices;
     }
 
     /**
-     * <p>isShowAlgorithmIndices.</p>
+     * Indicates whether the algorithm indices should be shown.
      *
-     * @return a boolean
+     * @return {@code true} if the algorithm indices should be shown, {@code false} otherwise.
      */
     public boolean isShowAlgorithmIndices() {
         return this.showAlgorithmIndices;
     }
 
     /**
-     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
+     * Sets whether to show algorithm indices.
      *
-     * @param showAlgorithmIndices a boolean
+     * @param showAlgorithmIndices true to show algorithm indices, false otherwise
      */
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
-     * <p>isShowUtilities.</p>
+     * Checks if the utilities are currently being shown.
      *
-     * @return True iff a column of utilities marked "W" should be shown in the output.
+     * @return true if the utilities are being shown, false otherwise.
      */
     public boolean isShowUtilities() {
         return this.showUtilities;
     }
 
     /**
-     * <p>Setter for the field <code>showUtilities</code>.</p>
+     * Sets the value of the showUtilities property.
      *
-     * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
+     * @param showUtilities the new value for the showUtilities property
      */
     public void setShowUtilities(boolean showUtilities) {
         this.showUtilities = showUtilities;
     }
 
     /**
-     * <p>isSortByUtility.</p>
+     * Returns whether the sorting is done by utility.
      *
-     * @return True iff the output should be sorted by utility.
+     * @return {@code true} if the sorting is done by utility, {@code false} otherwise.
      */
     public boolean isSortByUtility() {
         return this.sortByUtility;
     }
 
     /**
-     * <p>Setter for the field <code>sortByUtility</code>.</p>
+     * Set the flag to determine if the sorting should be done by utility.
      *
-     * @param sortByUtility true iff the output should be sorted by utility.
+     * @param sortByUtility a flag indicating whether to sort by utility or not
      */
     public void setSortByUtility(boolean sortByUtility) {
         this.sortByUtility = sortByUtility;
     }
 
     /**
-     * <p>isSaveCPDAGs.</p>
+     * Checks if the CPDAGs are saved.
      *
-     * @return True if CPDAGs should be saved out.
+     * @return true if the CPDAGs are saved, false otherwise.
      */
     public boolean isSaveCPDAGs() {
         return this.saveCPDAGs;
     }
 
     /**
-     * <p>Setter for the field <code>saveCPDAGs</code>.</p>
+     * Sets whether to save CPDAGs.
      *
-     * @param saveCPDAGs True if CPDAGs should be saved out.
+     * @param saveCPDAGs indicates whether to save CPDAGs or not
      */
     public void setSaveCPDAGs(boolean saveCPDAGs) {
         this.saveCPDAGs = saveCPDAGs;
     }
 
     /**
-     * <p>isSavePags.</p>
+     * Checks if the "savePags" variable is true or false.
      *
-     * @return True if CPDAGs should be saved out.
+     * @return true if the "savePags" variable is true, false otherwise.
      */
     public boolean isSavePags() {
         return this.savePags;
     }
 
     /**
-     * <p>Setter for the field <code>savePags</code>.</p>
+     * Sets the value of 'savePags' flag.
+     * <p>
+     * This method is used to set the value of the 'savePags' flag, which indicates whether the pags should be saved or
+     * not.
      *
-     * @param savePags a boolean
+     * @param savePags a boolean value indicating whether to save the pags or not.
      */
     public void setSavePags(boolean savePags) {
         this.savePags = savePags;
@@ -1113,36 +1129,37 @@ public class Comparison {
     }
 
     /**
-     * <p>Setter for the field <code>saveData</code>.</p>
+     * Sets the flag indicating whether to save data.
      *
-     * @param saveData a boolean
+     * @param saveData true if data should be saved, false otherwise
      */
     public void setSaveData(boolean saveData) {
         this.saveData = saveData;
     }
 
     /**
-     * <p>Setter for the field <code>saveGraphs</code>.</p>
+     * Sets whether or not to save graphs.
      *
-     * @param saveGraphs True if all graphs should be saved to files.
+     * @param saveGraphs true to save graphs, false otherwise
      */
     public void setSaveGraphs(boolean saveGraphs) {
         this.saveGraphs = saveGraphs;
     }
 
     /**
-     * The type of graph the results are compared to.
+     * Returns the ComparisonGraph instance.
      *
-     * @return a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
+     * @return the ComparisonGraph instance
      */
     public ComparisonGraph getComparisonGraph() {
         return this.comparisonGraph;
     }
 
     /**
-     * The type of graph the results are compared to.
+     * Sets the comparison graph.
      *
-     * @param comparisonGraph a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
+     * @param comparisonGraph the comparison graph to be set
+     * @throws NullPointerException if the comparison graph is null
      */
     public void setComparisonGraph(ComparisonGraph comparisonGraph) {
         if (comparisonGraph == null) {
@@ -1256,7 +1273,6 @@ public class Comparison {
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
-//        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
         long stop = MillisecondTimes.cpuTimeMillis();
 
@@ -1373,7 +1389,6 @@ public class Comparison {
             out.close();
 
             PrintStream outElapsed = new PrintStream(fileElapsed);
-//            stdout.println("Saving graph to " + file.getAbsolutePath());
             outElapsed.println(elapsed);
             outElapsed.close();
         } catch (FileNotFoundException e) {
@@ -1708,11 +1723,6 @@ public class Comparison {
     public enum ComparisonGraph {
 
         /**
-         * Constant for the true DAG.
-         */
-        true_DAG,
-
-        /**
          * Constant for the CPDAG of the true DAG.
          */
         CPDAG_of_the_true_DAG,
@@ -1720,11 +1730,44 @@ public class Comparison {
         /**
          * Constant for the PAG of the true DAG.
          */
-        PAG_of_the_true_DAG
+        PAG_of_the_true_DAG,
+
+        /**
+         * Constant for the true DAG.
+         */
+        true_DAG
+
     }
 
+    /**
+     * The Mode class represents different calculation modes for a given dataset.
+     */
     private enum Mode {
-        Average, StandardDeviation, MinValue, MaxValue, MedianValue
+        /**
+         * Represents the average calculation mode.
+         */
+        Average,
+
+        /**
+         * Represents the calculation mode for finding the maximum value in a dataset.
+         */
+        MaxValue,
+
+        /**
+         * The MedianValue class represents a calculation mode for finding the median value in a dataset.
+         */
+        MedianValue,
+
+        /**
+         * Represents the calculation mode for finding the minimum value in a dataset.
+         */
+        MinValue,
+
+        /**
+         * Represents the standard deviation calculation mode.
+         */
+        StandardDeviation
+
     }
 
     /**
