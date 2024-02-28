@@ -1036,7 +1036,12 @@ public final class StatUtils {
         double covXY = StatUtils.sxy(array1, array2, N);
         double covXX = StatUtils.sxy(array1, array1, N);
         double covYY = StatUtils.sxy(array2, array2, N);
-        return (covXY / (sqrt(covXX) * sqrt(covYY)));
+        double r = covXY / (sqrt(covXX) * sqrt(covYY));
+
+        if (r < -1) r = -1;
+        if (r > 1) r = 1;
+
+        return r;
     }
 
     /**
@@ -2029,7 +2034,10 @@ public final class StatUtils {
      */
     public static double partialCorrelationPrecisionMatrix(Matrix submatrix) throws SingularMatrixException {
         Matrix inverse = submatrix.inverse();
-        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        if (r < -1) r = -1;
+        if (r > 1) r = 1;
+        return r;
     }
 
     /**

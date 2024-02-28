@@ -535,15 +535,20 @@ class GeneralizedTemplateEditor extends JComponent {
     //==============================================PRIVATE METHODS============================================//
 
     private void setParseText(String text) {
-        try {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
 
-            // Add the text to the document
-            this.expressionTextDoc.remove(0, this.expressionTextPane.getText().length());
-            this.expressionTextDoc.insertString(0, text, null);
-        } catch (BadLocationException e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
-            throw new RuntimeException(e);
-        }
+                    // Add the text to the document
+                    expressionTextDoc.remove(0, expressionTextPane.getText().length());
+                    expressionTextDoc.insertString(0, text, null);
+                } catch (BadLocationException e) {
+                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     private void applyChanges() {

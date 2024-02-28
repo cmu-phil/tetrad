@@ -531,17 +531,20 @@ class GeneralizedExpressionEditor extends JComponent {
 
                 this.expressionString = formula;
 
-                if (this.node.getNodeType() == NodeType.ERROR) {
-                    this.resultTextPane.setText(this.node + " ~ " + formula);
-                } else {
-                    this.resultTextPane.setText(this.node + " = " + formula);
-                }
+                SwingUtilities.invokeLater(() -> {
+                    if (node.getNodeType() == NodeType.ERROR) {
+                        resultTextPane.setText(node + " ~ " + expressionString);
+                    } else {
+                        resultTextPane.setText(node + " = " + expressionString);
+                    }
+                });
+
             } else if (this.parameter != null) {
                 this.expressionString = formula;
-                this.resultTextPane.setText(this.parameter + " ~ " + formula);
+                SwingUtilities.invokeLater(() -> resultTextPane.setText(parameter + " ~ " + expressionString));
             }
 
-            this.referencedParametersLabel.setText("Parameters:  " + parameterString(parser));
+            SwingUtilities.invokeLater(() -> referencedParametersLabel.setText("Parameters:  " + parameterString(parser)));
         }
 
         this.latestParser = parser;
