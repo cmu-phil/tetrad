@@ -211,7 +211,7 @@ public class GeneralSemSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
+        return "General SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**

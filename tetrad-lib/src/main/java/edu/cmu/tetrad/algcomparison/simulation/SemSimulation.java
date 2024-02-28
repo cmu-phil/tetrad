@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The GeneralSemSimulation class represents a simulation using a structural equation model (SEM).
- * It allows for simulation of data sets based on different parameter settings and graph structures.
+ * This class represents a Simulation using Structural Equation Modeling (SEM).
  */
 public class SemSimulation implements Simulation {
     @Serial
@@ -40,14 +39,7 @@ public class SemSimulation implements Simulation {
     private SemPm pm;
 
     /**
-     * Represents a SemIm object.
-     *
-     * <p>
-     * This variable is an instance of the SemIm class, which is used for simulation in the GeneralSemSimulation class.
-     * </p>
-     *
-     * @see edu.cmu.tetrad.sem.SemIm
-     * @see SemSimulation
+     * Represents a SemIm object used for simulation.
      */
     private SemIm im;
 
@@ -208,7 +200,7 @@ public class SemSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
+        return "Linear SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -248,7 +240,7 @@ public class SemSimulation implements Simulation {
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
      */
-    private synchronized DataSet simulate(SemIm im, Parameters parameters) {
+    private DataSet simulate(SemIm im, Parameters parameters) {
         this.ims.add(this.im);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
