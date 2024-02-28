@@ -6,28 +6,25 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SEM simulation.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * This class represents a Simulation using Structural Equation Modeling (SEM).
  */
 public class SemSimulation implements Simulation {
-
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -42,7 +39,7 @@ public class SemSimulation implements Simulation {
     private SemPm pm;
 
     /**
-     * The SEM IM.
+     * Represents a SemIm object used for simulation.
      */
     private SemIm im;
 
@@ -62,52 +59,50 @@ public class SemSimulation implements Simulation {
     private List<SemIm> ims = new ArrayList<>();
 
     /**
-     * The seed.
-     */
-    private long seed = -1L;
-
-    /**
-     * <p>Constructor for SemSimulation.</p>
+     * Constructs a SemSimulation object with the given RandomGraph object.
      *
-     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param graph the RandomGraph object used for simulation.
+     * @throws NullPointerException if graph is null.
      */
     public SemSimulation(RandomGraph graph) {
+        if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
 
     /**
-     * <p>Constructor for SemSimulation.</p>
+     * Initializes a SemSimulation with the given SemPm object.
      *
-     * @param pm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param pm the SemPm object used for simulation.
+     * @throws NullPointerException if pm is null.
      */
     public SemSimulation(SemPm pm) {
+        if (pm == null) throw new NullPointerException("PM is null.");
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.randomGraph = new SingleGraph(graph);
         this.pm = pm;
+        this.im = null;
     }
 
     /**
-     * <p>Constructor for SemSimulation.</p>
+     * Constructs a GeneralSemSimulation object with the given SemIm object.
      *
-     * @param im a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param im the SemIm object used for simulation
      */
     public SemSimulation(SemIm im) {
+        if (im == null) throw new NullPointerException("IM is null.");
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
-        Graph graph2 = new EdgeListGraph(graph);
-        this.randomGraph = new SingleGraph(graph2);
-        this.im = new SemIm(im);
-        this.pm = new SemPm(im.getSemPm());
-        this.ims = new ArrayList<>();
-        this.ims.add(im);
+        this.randomGraph = new SingleGraph(graph);
+        this.pm = im.getSemPm();
+        this.im = im;
     }
 
     /**
-     * Creates data sets for simulation based on the given parameters.
+     * Creates data sets for simulation based on the given parameters and model reuse preference.
      *
      * @param parameters The parameters to use in the simulation.
-     * @param newModel   If true, a new model is created. If false, the model is reused.
+     * @param newModel If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -115,67 +110,49 @@ public class SemSimulation implements Simulation {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
 
+        Graph graph = this.randomGraph.createGraph(parameters);
+
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
         this.ims = new ArrayList<>();
 
-        int numRuns = parameters.getInt(Params.NUM_RUNS);
-
-        Graph graph = this.randomGraph.createGraph(parameters);
-
-        for (int i = 0; i < numRuns; i++) {
-            boolean differentGraphs = parameters.getBoolean(Params.DIFFERENT_GRAPHS);
-
-            if (differentGraphs && i > 0) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
-            DataSet dataSet = simulate(graph, parameters);
+            SemPm pm = this.pm;
+            SemIm im = this.im;
 
-            if (parameters.getBoolean(Params.STANDARDIZE)) {
-                dataSet = DataTransforms.standardizeData(dataSet);
+            if (this.pm == null) {
+                pm = new SemPm(graph);
             }
 
-            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
-
-            if (variance > 0) {
-                for (int k = 0; k < dataSet.getNumRows(); k++) {
-                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        double d = dataSet.getDouble(k, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
-                        dataSet.setDouble(k, j, d + norm);
-                    }
-                }
+            if (this.im == null) {
+                im = new SemIm(pm, parameters);
             }
 
-            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataTransforms.shuffleColumns(dataSet);
-            }
-
-            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
-                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
-            }
-
+            DataSet dataSet = simulate(im, parameters);
+            dataSet = postProcess(parameters, dataSet);
             dataSet.setName("" + (i + 1));
+
             this.graphs.add(graph);
-            this.dataSets.add(dataSet);
+            this.ims.add(im);
+            this.dataSets.add(DataTransforms.restrictToMeasured(dataSet));
         }
     }
 
     /**
-     * Retrieves the data model at the specified index from the list of data sets.
+     * Retrieves the list of SemIm objects used for simulation.
      *
-     * @param index The index of the desired simulated data set.
-     * @return The data model at the specified index from the list of data sets.
+     * @return The list of SemIm objects.
      */
-    @Override
-    public DataModel getDataModel(int index) {
-        return this.dataSets.get(index);
+    public List<SemIm> getIms() {
+        return this.ims;
     }
 
     /**
-     * Retrieves the true graph at the specified index.
+     * Returns the true graph at the specified index.
      *
      * @param index The index of the desired true graph.
      * @return The true graph at the specified index.
@@ -186,19 +163,50 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * Returns the description of the simulation.
+     * Returns the number of data models.
      *
-     * @return Returns a one-line description of the simulation, to be printed at the beginning of the report.
+     * @return The number of data sets to simulate.
      */
     @Override
-    public String getDescription() {
-        return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
+    public int getNumDataModels() {
+        return this.dataSets.size();
     }
 
     /**
-     * Retrieves the parameters used by this method.
+     * Returns the data model at the specified index.
      *
-     * @return A list of String names of parameters.
+     * @param index The index of the desired simulated data set.
+     * @return The data model at the specified index.
+     */
+    @Override
+    public DataModel getDataModel(int index) {
+        return this.dataSets.get(index);
+    }
+
+    /**
+     * Returns the data type of the data set.
+     *
+     * @return The type of the data set--continuous if all continuous variables, discrete if all discrete variables;
+     * otherwise, mixed.
+     */
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+
+    /**
+     * Returns the description of the simulation.
+     *
+     * @return a short, one-line description of the simulation.
+     */
+    public String getDescription() {
+        return "Linear SEM simulation using " + this.randomGraph.getDescription();
+    }
+
+    /**
+     * Retrieves the parameters required for the simulation.
+     *
+     * @return A list of String names representing the parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -226,44 +234,52 @@ public class SemSimulation implements Simulation {
     }
 
     /**
-     * Returns the number of data models.
+     * Simulates a data set based on the given SemIm and Parameters.
      *
-     * @return The number of data sets to simulate.
+     * @param im the SemIm object used for simulation
+     * @param parameters the parameters to use in the simulation
+     * @return a DataSet object representing the simulated data
      */
-    @Override
-    public int getNumDataModels() {
-        return this.dataSets.size();
+    private DataSet simulate(SemIm im, Parameters parameters) {
+        this.ims.add(this.im);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 
     /**
-     * Returns the data type of the data set.
+     * Performs post-processing on a given dataset based on the provided parameters.
      *
-     * @return The type of the data set (continuous, discrete, mixed, graph, covariance or all).
+     * @param parameters The parameters used for post-processing.
+     * @param dataSet The dataset to be post-processed.
+     * @return The post-processed dataset.
      */
-    @Override
-    public DataType getDataType() {
-        return DataType.Continuous;
-    }
+    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
+        if (parameters.getBoolean(Params.STANDARDIZE)) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
+        if (variance > 0) {
+            for (int k = 0; k < dataSet.getNumRows(); k++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(k, j);
+                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    dataSet.setDouble(k, j, d + norm);
+                }
+            }
+        }
 
-        // Need this in case the SEM IM is given externally.
-        im.setParams(parameters);
+        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+            dataSet = DataTransforms.shuffleColumns(dataSet);
+        }
 
-        this.ims.add(im);
-        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
-    }
+        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+        }
 
-    /**
-     * Retrieves the list of SemIm objects.
-     *
-     * @return The list of SemIm objects.
-     */
-    public List<SemIm> getSemIms() {
-        return ims;
+        dataSet = DataTransforms.restrictToMeasured(dataSet);
+
+        return dataSet;
     }
 }

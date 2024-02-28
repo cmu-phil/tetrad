@@ -96,10 +96,11 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>Constructor for GeneralizedSemIm.</p>
+     * Initializes a GeneralizedSemIm object by applying values to free parameters from the given GeneralizedSemPm and
+     * SemIm.
      *
-     * @param pm    a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
-     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param pm    The GeneralizedSemPm object that contains the equations and distributions of the model.
+     * @param semIm The SemIm object to apply values from.
      */
     public GeneralizedSemIm(GeneralizedSemPm pm, SemIm semIm) {
         this(pm);
@@ -143,9 +144,9 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>getGeneralizedSemPm.</p>
+     * Retrieves the GeneralizedSemPm object associated with this GeneralizedSemIm.
      *
-     * @return a copy of the stored GeneralizedSemPm.
+     * @return The GeneralizedSemPm object.
      */
     public GeneralizedSemPm getGeneralizedSemPm() {
         return new GeneralizedSemPm(this.pm);
@@ -170,10 +171,12 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>getParameterValue.</p>
+     * Retrieves the value of a parameter in the model.
      *
-     * @param parameter The parameter whose value is to be retrieved.
-     * @return The retrieved value.
+     * @param parameter The name of the parameter to retrieve.
+     * @return The value of the parameter.
+     * @throws NullPointerException     If the parameter name is null.
+     * @throws IllegalArgumentException If the parameter name is not present in the model.
      */
     public double getParameterValue(String parameter) {
         if (parameter == null) {
@@ -188,10 +191,10 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>getNodeSubstitutedString.</p>
+     * Retrieves the substituted string representation of a given Node.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
+     * @param node The Node whose expression is being evaluated.
+     * @return The substituted expression string for the Node, or null if the expression is null.
      */
     public String getNodeSubstitutedString(Node node) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -222,12 +225,12 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>getNodeSubstitutedString.</p>
+     * Retrieves the substituted string representation of a given Node.
      *
-     * @param node              The node whose expression is being evaluated.
-     * @param substitutedValues A mapping from Strings parameter names to Double values; these values will be
-     *                          substituted for the stored values where applicable.
-     * @return the expression string with values substituted for freeParameters.
+     * @param node              The Node whose expression is being evaluated.
+     * @param substitutedValues A map of substituted values for parameters.
+     * @return The substituted expression string for the Node.
+     * @throws NullPointerException if the node or substitutedValues is null.
      */
     public String getNodeSubstitutedString(Node node, Map<String, Double> substitutedValues) {
         if (node == null) {
@@ -268,9 +271,9 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a String representation of the IM, in this case, a list of freeParameters and their values.
+     * @return a string representation of the object.
      */
     public String toString() {
         List<String> parameters = new ArrayList<>(this.pm.getParameters());
@@ -303,7 +306,11 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * {@inheritDoc}
+     * Simulates data based on the given parameters.
+     *
+     * @param sampleSize      The number of rows to simulate.
+     * @param latentDataSaved If true, latent variables are saved in the data set.
+     * @return A DataSet object representing the simulated data.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.pm.getGraph().isTimeLagModel()) {
@@ -427,16 +434,12 @@ public class GeneralizedSemIm implements Im, Simulator {
         List<Node> variableNodes = this.pm.getVariableNodes();
         Map<Node, Integer> indices = new HashMap<>();
         for (int i = 0; i < variableNodes.size(); i++) indices.put(variableNodes.get(i), i);
-
         double[][] all = new double[variableNodes.size()][sampleSize];
-
-        List<Node> origVarOrder = pm.getVariableNodes();
-        List<Node> nodes = new ArrayList<>(origVarOrder);
-        pm.getGraph().paths().makeValidOrder(nodes);
+        List<Node> order = pm.getGraph().paths().getValidOrder(variableNodes, true);
 
         // Do the simulation.
         for (int row = 0; row < sampleSize; row++) {
-            for (Node node : nodes) {
+            for (Node node : order) {
                 Node error = this.pm.getErrorNode(node);
 
                 if (error == null) {

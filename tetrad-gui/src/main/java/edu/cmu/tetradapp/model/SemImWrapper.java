@@ -109,7 +109,7 @@ public class SemImWrapper implements SessionModel {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
         }
 
-        this.semIms = ((SemSimulation) _simulation).getSemIms();
+        this.semIms = ((SemSimulation) _simulation).getIms();
 
         if (this.semIms == null) {
             throw new NullPointerException("It looks like you have not done a simulation.");
