@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The GeneralSemSimulation class represents a simulation using a generalized structural equation model (SEM).
- * It allows for simulation of data sets based on different parameter settings and graph structures.
+ * The GeneralSemSimulation class represents a simulation using a generalized structural equation model (SEM). It allows
+ * for simulation of data sets based on different parameter settings and graph structures.
  */
 public class GeneralSemSimulation implements Simulation {
     @Serial
@@ -42,14 +42,7 @@ public class GeneralSemSimulation implements Simulation {
     private GeneralizedSemPm pm;
 
     /**
-     * Represents a GeneralizedSemIm object.
-     *
-     * <p>
-     * This variable is an instance of the GeneralizedSemIm class, which is used for simulation in the GeneralSemSimulation class.
-     * </p>
-     *
-     * @see GeneralizedSemIm
-     * @see GeneralSemSimulation
+     * Represents the GeneralizedSemIm object used for simulation.
      */
     private GeneralizedSemIm im;
 
@@ -109,10 +102,48 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     /**
+     * Performs post-processing on a given dataset based on the provided parameters.
+     *
+     * @param parameters The parameters used for post-processing.
+     * @param dataSet    The dataset to be post-processed.
+     * @return The post-processed dataset.
+     */
+    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
+        if (parameters.getBoolean(Params.STANDARDIZE)) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        }
+
+        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+
+        if (variance > 0) {
+            for (int k = 0; k < dataSet.getNumRows(); k++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(k, j);
+                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    dataSet.setDouble(k, j, d + norm);
+                }
+            }
+        }
+
+        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+            dataSet = DataTransforms.shuffleColumns(dataSet);
+        }
+
+        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+        }
+
+        dataSet = DataTransforms.restrictToMeasured(dataSet);
+
+        return dataSet;
+    }
+
+    /**
      * Creates data sets for simulation based on the given parameters and model reuse preference.
      *
      * @param parameters The parameters to use in the simulation.
-     * @param newModel If true, a new model is created. If false, the model is reused.
+     * @param newModel   If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -247,7 +278,7 @@ public class GeneralSemSimulation implements Simulation {
     /**
      * Simulates a data set based on the given GeneralizedSemIm and Parameters.
      *
-     * @param im the GeneralizedSemIm object used for simulation
+     * @param im         the GeneralizedSemIm object used for simulation
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
      */
@@ -297,43 +328,5 @@ public class GeneralSemSimulation implements Simulation {
         }
 
         return pm;
-    }
-
-    /**
-     * Performs post-processing on a given dataset based on the provided parameters.
-     *
-     * @param parameters The parameters used for post-processing.
-     * @param dataSet The dataset to be post-processed.
-     * @return The post-processed dataset.
-     */
-    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
-        if (parameters.getBoolean(Params.STANDARDIZE)) {
-            dataSet = DataTransforms.standardizeData(dataSet);
-        }
-
-        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
-
-        if (variance > 0) {
-            for (int k = 0; k < dataSet.getNumRows(); k++) {
-                for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                    double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
-                    dataSet.setDouble(k, j, d + norm);
-                }
-            }
-        }
-
-        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-            dataSet = DataTransforms.shuffleColumns(dataSet);
-        }
-
-        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
-            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
-        }
-
-        dataSet = DataTransforms.restrictToMeasured(dataSet);
-
-        return dataSet;
     }
 }
