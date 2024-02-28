@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
@@ -39,9 +40,7 @@ import java.util.prefs.Preferences;
 
 
 /**
- * Opens a session from a file.
- *
- * @author josephramsey
+ * Represents an action to load a session from a file. Extends AbstractAction class.
  */
 final class LoadSessionAction extends AbstractAction {
 
@@ -53,14 +52,11 @@ final class LoadSessionAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the action of opening a session from a file.
+     * Opens a session file and loads it into Tetrad.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
-
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
 
         // select a file to open using the file chooser
         JFileChooser chooser = new JFileChooser();
@@ -82,7 +78,6 @@ final class LoadSessionAction extends AbstractAction {
         }
 
         File file = chooser.getSelectedFile();
-//        final File file = EditorUtils.ensureSuffix(file0, "tet");
 
         if (file == null) {
             return;
@@ -128,7 +123,7 @@ final class LoadSessionAction extends AbstractAction {
 
                             throw e1;
                         } catch (Exception e2) {
-                            e2.printStackTrace();
+                            TetradLogger.getInstance().forceLogMessage("Exception: " + e2.getMessage());
                         }
                     } else if (o instanceof SessionWrapper) {
                         sessionWrapper = (SessionWrapper) o;
@@ -166,7 +161,6 @@ final class LoadSessionAction extends AbstractAction {
                 } catch (FileNotFoundException ex) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
@@ -175,14 +169,16 @@ final class LoadSessionAction extends AbstractAction {
         new MyWatchedProcess();
     }
 
-
+    /**
+     * Represents a decompressible input stream for deserializing objects.
+     */
     public static class DecompressibleInputStream extends ObjectInputStream {
 
         public DecompressibleInputStream(InputStream in) throws IOException {
             super(in);
         }
 
-        public Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        public Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
             String remappedClassName = mapToCurrentPackageName(desc.getName());
             return Class.forName(remappedClassName);
         }
