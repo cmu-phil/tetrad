@@ -427,16 +427,12 @@ public class GeneralizedSemIm implements Im, Simulator {
         List<Node> variableNodes = this.pm.getVariableNodes();
         Map<Node, Integer> indices = new HashMap<>();
         for (int i = 0; i < variableNodes.size(); i++) indices.put(variableNodes.get(i), i);
-
         double[][] all = new double[variableNodes.size()][sampleSize];
-
-        List<Node> origVarOrder = pm.getVariableNodes();
-        List<Node> nodes = new ArrayList<>(origVarOrder);
-        pm.getGraph().paths().makeValidOrder(nodes);
+        List<Node> order = pm.getGraph().paths().getValidOrder(variableNodes, true);
 
         // Do the simulation.
         for (int row = 0; row < sampleSize; row++) {
-            for (Node node : nodes) {
+            for (Node node : order) {
                 Node error = this.pm.getErrorNode(node);
 
                 if (error == null) {
