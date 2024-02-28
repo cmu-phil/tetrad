@@ -828,10 +828,14 @@ public final class MatrixUtils {
         Matrix corr = m.like();
 
         for (int i = 0; i < m.getNumRows(); i++) {
-            for (int j = i + 1; j < m.getNumColumns(); j++) {
+            for (int j = 0; j < m.getNumColumns(); j++) {
                 double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
+
+                if (v < -1) v = -1;
+                if (v > 1) v = 1;
+
                 corr.set(i, j, v);
-                corr.set(j, i, v);
+//                corr.set(j, i, v);
             }
         }
 
