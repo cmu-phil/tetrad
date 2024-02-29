@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -61,6 +62,14 @@ public class MarkovCheck {
      * The results of the Markov check for the dependent case.
      */
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
+    /**
+     * True just in case the given graph is a CPDAG (completed partially directed acyclic graph).
+     */
+    private final boolean isCpdag;
+    /**
+     * This stores the dataset from the independence test provided.
+     */
+    private final DataSet dataSet;
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -151,10 +160,12 @@ public class MarkovCheck {
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+        this.isCpdag = graph.paths().isLegalCpdag();
         this.independenceTest = independenceTest;
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
         this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
+        this.dataSet = (DataSet) independenceTest.getData();
     }
 
     /**
@@ -169,7 +180,6 @@ public class MarkovCheck {
         for (Node node : variables) {
             if (node == null) throw new NullPointerException("Null node in graph.");
         }
-
 
         MsepTest msepTest = new MsepTest(graph);
 
@@ -196,16 +206,37 @@ public class MarkovCheck {
                         continue;
                     }
 
+                    IndependenceFact fact = new IndependenceFact(x, y, z);
+
                     if (msepTest.isMSeparated(x, y, z)) {
-                        msep.add(new IndependenceFact(x, y, z));
+                        msep.add(fact);
                     } else {
-                        mconn.add(new IndependenceFact(x, y, z));
+                        mconn.add(fact);
                     }
                 }
             }
         }
 
         return new AllSubsetsIndependenceFacts(msep, mconn);
+    }
+
+    /**
+     * Calculates the minimum IDA beta value for a given causal relationship between two nodes.
+     *
+     * @param x the cause node
+     * @param y the effect node
+     * @return the minimum IDA beta value
+     * @throws IllegalArgumentException if the graph is not a CPDAG (partially directed acyclic graph)
+     */
+    public double getMinBeta(Node x, Node y) {
+        if (!isCpdag) {
+            throw new IllegalArgumentException("Can only calculate minimum IDA beta values for CPDAGs.");
+        }
+
+        List<Node> possibleCauses = new ArrayList<>();
+        possibleCauses.add(x);
+        Ida ida = new Ida(dataSet, graph, possibleCauses);
+        return ida.calculateMinimumEffectsOnY(y).get(x);
     }
 
     /**
@@ -302,7 +333,8 @@ public class MarkovCheck {
                         continue;
                     }
 
-                    allIndependenceFacts.add(new IndependenceFact(x, y, z));
+                    IndependenceFact fact = new IndependenceFact(x, y, z);
+                    allIndependenceFacts.add(fact);
                 }
             }
 
@@ -794,7 +826,7 @@ public class MarkovCheck {
         if (parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
-            List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = null;
+            List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults;
             theseResults = pool.invokeAll(tasks);
 
             for (Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> future : theseResults) {
@@ -935,7 +967,14 @@ public class MarkovCheck {
     }
 
     /**
-     * A single record of the results of the Markov check.
+     * Indicates whether the graph is a legal CPDAG.
+     */
+    public boolean isCpdag() {
+        return isCpdag;
+    }
+
+    /**
+     * A single record for the results of the Markov check.
      *
      * @param adInd       The Anderson-Darling p-value for the independent case.
      * @param adDep       The Anderson-Darling p-value for the dependent case.

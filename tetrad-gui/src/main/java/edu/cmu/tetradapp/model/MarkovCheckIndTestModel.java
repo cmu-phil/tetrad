@@ -211,7 +211,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * Returns the results of the Markov check.
      *
-     * @param indep whether to return the results for the independence test or the dependence test.
+     * @param indep whether to return the results for the independence test (true) or the dependence test (false).
      * @return the results of the Markov check.
      */
     public List<IndependenceResult> getResults(boolean indep) {

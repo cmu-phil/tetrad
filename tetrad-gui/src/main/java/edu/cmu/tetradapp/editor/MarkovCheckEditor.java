@@ -582,13 +582,15 @@ public class MarkovCheckEditor extends JPanel {
                     return "Test Result";
                 } else if (column == 3) {
                     return "P-value or Bump";
+                } else if (model.getMarkovCheck().isCpdag() && column == 4) {
+                    return "Min Beta";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return 4;
+                return model.getMarkovCheck().isCpdag() ? 5 : 4;
             }
 
             public int getRowCount() {
@@ -632,6 +634,14 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 3) {
                     return nf.format(result.getPValue());
+                }
+
+                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
+                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
+                    Node x = fact.getX();
+                    Node y = fact.getY();
+                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
+                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
                 }
 
                 return null;
@@ -755,22 +765,24 @@ public class MarkovCheckEditor extends JPanel {
                     return "Test Result";
                 } else if (column == 3) {
                     return "P-value or Bump";
+                } else if (model.getMarkovCheck().isCpdag() && column == 4) {
+                    return "Min Beta";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return 4;
+                return model.getMarkovCheck().isCpdag() ? 5 : 4;
             }
 
             public int getRowCount() {
-                List<IndependenceResult> results = model.getResults(true);
+                List<IndependenceResult> results = model.getResults(false);
                 return results.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(true).size()) {
+                if (rowIndex > model.getResults(false).size()) {
                     return null;
                 }
 
@@ -778,10 +790,10 @@ public class MarkovCheckEditor extends JPanel {
                     return rowIndex + 1;
                 }
 
-                IndependenceResult result = model.getResults(true).get(rowIndex);
+                IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 1) {
-                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
+                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
                     List<Node> Z = new ArrayList<>(fact.getZ());
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
                     return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
@@ -805,6 +817,14 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 3) {
                     return nf.format(result.getPValue());
+                }
+
+                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
+                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
+                    Node x = fact.getX();
+                    Node y = fact.getY();
+                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
+                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
                 }
 
                 return null;
