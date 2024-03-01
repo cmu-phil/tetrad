@@ -967,7 +967,9 @@ public class MarkovCheck {
     }
 
     /**
-     * Indicates whether the graph is a legal CPDAG.
+     * Checks whether the given graph is a CPDAG (Completed Partially Directed Acyclic Graph).
+     *
+     * @return true if the graph is a CPDAG, false otherwise
      */
     public boolean isCpdag() {
         return isCpdag;
