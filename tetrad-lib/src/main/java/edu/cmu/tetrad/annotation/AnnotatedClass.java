@@ -21,16 +21,38 @@ package edu.cmu.tetrad.annotation;
 import java.io.Serial;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 /**
  * AnnotatedClass represents a class along with its associated annotation.
- *
- * @param <T> the type of the annotation
  */
-public record AnnotatedClass<T extends Annotation>(Class<?> clazz, T annotation) implements Serializable {
+public final class AnnotatedClass<T extends Annotation> implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 5060798016477163171L;
+
+    /**
+     * Represents a Class used as a parameter to an AnnotatedClass object.
+     * It is stored as a private final member in the AnnotatedClass class.
+     *
+     * <p>
+     * Example usage:
+     * </p>
+     *
+     * <pre>
+     * AnnotatedClass&lt;MyAnnotation&gt; annotatedClass = new AnnotatedClass&lt;&gt;(MyClass.class, myAnnotation);
+     * Class&lt;?&gt; clazz = annotatedClass.clazz();
+     * </pre>
+     *
+     * @see AnnotatedClass
+     */
+    private final Class<?> clazz;
+
+    /**
+     * AnnotatedClass represents a class along with its associated annotation.
+     */
+    private final T annotation;
+
 
     /**
      * Creates an annotated class.
@@ -38,7 +60,9 @@ public record AnnotatedClass<T extends Annotation>(Class<?> clazz, T annotation)
      * @param clazz      class
      * @param annotation annotation
      */
-    public AnnotatedClass {
+    public AnnotatedClass(Class<?> clazz, T annotation) {
+        this.clazz = clazz;
+        this.annotation = annotation;
     }
 
     /**
@@ -46,7 +70,6 @@ public record AnnotatedClass<T extends Annotation>(Class<?> clazz, T annotation)
      *
      * @return class
      */
-    @Override
     public Class<?> clazz() {
         return this.clazz;
     }
@@ -56,9 +79,30 @@ public record AnnotatedClass<T extends Annotation>(Class<?> clazz, T annotation)
      *
      * @return annotation
      */
-    @Override
     public T annotation() {
         return this.annotation;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        @SuppressWarnings("rawtypes") var that = (AnnotatedClass) obj;
+        return Objects.equals(this.clazz, that.clazz) &&
+                Objects.equals(this.annotation, that.annotation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz, annotation);
+    }
+
+    @Override
+    public String toString() {
+        return "AnnotatedClass[" +
+                "clazz=" + clazz + ", " +
+                "annotation=" + annotation + ']';
+    }
+
 
 }
