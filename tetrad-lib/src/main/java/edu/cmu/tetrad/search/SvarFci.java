@@ -326,17 +326,12 @@ public final class SvarFci implements IGraphSearch {
      * @param condSet The set of conditioning nodes.
      */
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, Set<Node> condSet) {
-        System.out.println("Entering removeSimilarPairs method...");
-        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
-
         if (x.getName().equals("time") || y.getName().equals("time")) {
-            System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
 
         for (Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
-                System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }

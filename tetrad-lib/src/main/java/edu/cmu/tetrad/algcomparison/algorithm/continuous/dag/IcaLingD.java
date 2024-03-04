@@ -66,10 +66,10 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
             TetradLogger.getInstance().forceLogMessage("STABLE MODELS:\n");
 
             for (Matrix bHat : bHats) {
-                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
                 boolean stable = edu.cmu.tetrad.search.IcaLingD.isStable(bHat);
 
                 if (stable) {
+                    TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
                     Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
                     TetradLogger.getInstance().forceLogMessage(bHat.toString());
                     TetradLogger.getInstance().forceLogMessage(graph.toString());

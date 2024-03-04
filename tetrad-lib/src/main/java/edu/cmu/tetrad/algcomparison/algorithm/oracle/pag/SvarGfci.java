@@ -105,7 +105,6 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
             edu.cmu.tetrad.search.SvarGfci search = new edu.cmu.tetrad.search.SvarGfci(this.test.getTest(dataModel, parameters),
                     this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
-
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();

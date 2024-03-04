@@ -694,7 +694,6 @@ public final class LargeScaleSimulation {
 
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y, Knowledge knowledge) {
-        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
@@ -720,15 +719,6 @@ public final class LargeScaleSimulation {
                 indy_comp = i;
                 break;
             }
-        }
-
-        System.out.println("original independence: " + x + " and " + y);
-
-        if (indx_comp == -1) {
-            System.out.println("WARNING: indx_comp = -1!!!! ");
-        }
-        if (indy_comp == -1) {
-            System.out.println("WARNING: indy_comp = -1!!!! ");
         }
 
         List<Node> simListX = new ArrayList<>();
@@ -764,7 +754,6 @@ public final class LargeScaleSimulation {
             }
             x1 = this.graph.getNode(A);
             y1 = this.graph.getNode(B);
-            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
             simListX.add(x1);
             simListY.add(y1);
         }

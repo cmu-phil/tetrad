@@ -101,6 +101,8 @@ public final class SvarGfci implements IGraphSearch {
      * @return a PAG.
      */
     public Graph search() {
+        independenceTest.setVerbose(verbose);
+
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("Starting svarGFCI algorithm.");
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
@@ -148,9 +150,7 @@ public final class SvarGfci implements IGraphSearch {
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (this.sepsets.getSepset(a, c) != null) {
                         this.graph.removeEdge(a, c);
-                        //  removing similar edges to enforce repeating structure **/
                         removeSimilarEdges(a, c);
-                        //  **/
                     }
                 }
             }
@@ -221,7 +221,7 @@ public final class SvarGfci implements IGraphSearch {
      * using the covariance matrix. The penalty discount is set to a default value of 2. - If the data set is
      * continuous, the score is set to SemBicScore using a new CovarianceMatrix created from the data set. The penalty
      * discount is set to a default value of 2. - If the data set is discrete, the score is set to BdeuScore using the
-     * data set. The sample prior is set to a default value of 10 and the structure prior is set to a default value of
+     * data set. The sample prior is set to a default value of 10, and the structure prior is set to a default value of
      * 1. Otherwise, an IllegalArgumentException is thrown since mixed data is not supported.
      */
     private void chooseScore() {
@@ -299,10 +299,8 @@ public final class SvarGfci implements IGraphSearch {
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                        //  orienting similar pairs to enforce repeating structure **/
                         orientSimilarPairs(this.graph, this.knowledge, a, b);
                         orientSimilarPairs(this.graph, this.knowledge, c, b);
-                        //  **/
                     }
                 }
             }
@@ -328,7 +326,6 @@ public final class SvarGfci implements IGraphSearch {
             Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
             Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
-
             if (from == null || to == null) {
                 continue;
             }
@@ -337,11 +334,14 @@ public final class SvarGfci implements IGraphSearch {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
+
+            if (verbose) {
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
+            }
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
@@ -361,8 +361,11 @@ public final class SvarGfci implements IGraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
+
+            if (verbose) {
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
+            }
         }
 
         if (verbose) {
@@ -399,8 +402,6 @@ public final class SvarGfci implements IGraphSearch {
         while (itx.hasNext() && ity.hasNext()) {
             Node x1 = itx.next();
             Node y1 = ity.next();
-            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
-            System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = this.graph.getEdge(x1, y1);
             this.graph.removeEdge(oldxy);
         }
@@ -418,7 +419,6 @@ public final class SvarGfci implements IGraphSearch {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }
-        System.out.println("Entering orient similar pairs method for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
@@ -443,34 +443,29 @@ public final class SvarGfci implements IGraphSearch {
             }
         }
 
-        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
-        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
-
         for (i = 0; i < ntiers - tier_diff; ++i) {
             if (knowledge.getTier(i).size() == 1) continue;
-            String A;
-            Node x1;
-            String B;
-            Node y1;
             if (indx_tier >= indy_tier) {
                 List<String> tmp_tier1 = knowledge.getTier(i + tier_diff);
                 List<String> tmp_tier2 = knowledge.getTier(i);
-                A = tmp_tier1.get(indx_comp);
-                B = tmp_tier2.get(indy_comp);
+                String A = tmp_tier1.get(indx_comp);
+                String B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = this.independenceTest.getVariable(A);
-                y1 = this.independenceTest.getVariable(B);
+                Node x1 = this.independenceTest.getVariable(A);
+                Node y1 = this.independenceTest.getVariable(B);
 
                 if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-                    System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, Endpoint.ARROW);
-                    System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orient edge " + graph.getEdge(x1, y1).toString());
+                        TetradLogger.getInstance().forceLogMessage(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
+                    }
                 }
             }
         }
-
     }
 
     /**
@@ -482,11 +477,10 @@ public final class SvarGfci implements IGraphSearch {
      */
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
-        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-//        System.out.println("Knowledge within returnSimilar : " + knowledge);
+
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
@@ -510,12 +504,6 @@ public final class SvarGfci implements IGraphSearch {
                 break;
             }
         }
-
-        System.out.println("original independence: " + x + " and " + y);
-
-        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
-        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
-
 
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
@@ -542,7 +530,6 @@ public final class SvarGfci implements IGraphSearch {
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
             x1 = this.graph.getNode(A);
             y1 = this.graph.getNode(B);
-            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
             simListX.add(x1);
             simListY.add(y1);
         }

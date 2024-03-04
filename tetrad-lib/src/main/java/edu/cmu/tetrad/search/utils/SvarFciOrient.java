@@ -1053,7 +1053,6 @@ public final class SvarFciOrient {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }
-        System.out.println("Entering orient similar pairs method for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
