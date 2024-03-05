@@ -391,11 +391,11 @@ public class IcaLingD {
 
         entries.sort(Comparator.comparingDouble(o -> o));
 
-        double _spineTheshold = entries.get((int) (entries.size() * spineThreshold));
+        double _spineThreshold = entries.get((int) (entries.size() * spineThreshold));
 
         for (int i = 0; i < W.getNumRows(); i++) {
             for (int j = 0; j < W.getNumColumns(); j++) {
-                if (abs(W.get(i, j)) < _spineTheshold) {
+                if (abs(W.get(i, j)) < _spineThreshold) {
                     W.set(i, j, 0);
                 }
             }
@@ -403,7 +403,7 @@ public class IcaLingD {
 
         System.out.println("Trimmed W = " + W);
 
-        List<PermutationMatrixPair> pairs = pairsNRook(W, spineThreshold);
+        List<PermutationMatrixPair> pairs = pairsNRook(W, _spineThreshold);
 
         if (pairs.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
