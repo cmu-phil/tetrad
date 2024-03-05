@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -7,7 +8,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -17,7 +17,6 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
     @Serial
@@ -53,11 +52,6 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * Constructs a new conservative FCI algorithm.
@@ -80,45 +74,34 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
      * Runs the conservative FCI search.
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+    public Graph runSearch(DataSet dataModel, Parameters parameters) {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet dataSet = (DataSet) dataModel;
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
             }
-
-            edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataModel, parameters));
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            return search.search();
-        } else {
-            Cfci algorithm = new Cfci(this.test);
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            dataModel = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataModel, parameters));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
+        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        return search.search();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the comparison graph.
+     * Retrieves the comparison graph by converting the given true directed graph into
+     * a partially directed graph (PAG) using the DAG to PAG transformation.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph as a partially directed graph (PAG).
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -136,9 +119,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the data type that the algorithm can handle.
+     * Retrieves the data type required by the search algorithm.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -146,9 +129,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the parameters of the algorithm.
+     * Returns the list of parameters used by the algorithm.
+     *
+     * @return The list of parameters used by the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -165,9 +148,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the knowledge.
+     *
+     * @return The knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -175,9 +158,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the knowledge.
+     * Sets the knowledge object for the algorithm.
+     *
+     * @param knowledge a knowledge object
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -185,9 +168,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the independence test.
+     * Retrieves the IndependenceWrapper used by the algorithm.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -195,22 +178,12 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the independence wrapper.
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test the independence wrapper to set
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the bootstrap graphs.
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

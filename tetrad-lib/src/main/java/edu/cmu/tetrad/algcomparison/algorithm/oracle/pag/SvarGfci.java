@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -10,7 +11,6 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.TimeSeries;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -20,18 +20,14 @@ import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SvarFCI.
- *
- * @author josephramsey
- * @author danielmalinsky
- * @version $Id: $Id
+ * SvarGfci class is an implementation of the SVAR GFCI algorithm.
+ * It is used to learn causal relationships from time series data.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SvarGFCI",
@@ -40,7 +36,7 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         UsesScoreWrapper, ReturnsBootstrapGraphs {
 
     @Serial
@@ -62,12 +58,6 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     private Knowledge knowledge;
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-
-    /**
      * <p>Constructor for SvarGfci.</p>
      */
     public SvarGfci() {
@@ -85,46 +75,38 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Runs a search algorithm on the given data set using the specified parameters.
+     *
+     * @param dataSet     the data set containing the variables to search over
+     * @param parameters  the parameters specifying the search configuration
+     * @return the resulting graph representing the discovered relationships
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
             }
-
-            dataModel.setKnowledge(this.knowledge);
-            edu.cmu.tetrad.search.SvarGfci search = new edu.cmu.tetrad.search.SvarGfci(this.test.getTest(dataModel, parameters),
-                    this.score.getScore(dataModel, parameters));
-            search.setKnowledge(this.knowledge);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            return search.search();
-        } else {
-            SvarGfci algorithm = new SvarGfci(this.test, this.score);
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            dataSet = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        dataSet.setKnowledge(this.knowledge);
+        edu.cmu.tetrad.search.SvarGfci search = new edu.cmu.tetrad.search.SvarGfci(this.test.getTest(dataSet, parameters),
+                this.score.getScore(dataSet, parameters));
+        search.setKnowledge(this.knowledge);
+
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        return search.search();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -132,16 +114,18 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns a description of this method.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of this method.
      */
     public String getDescription() {
         return "SavrGFCI (SVAR GFCI) using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that this method requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by this method.
      */
     @Override
     public DataType getDataType() {
@@ -149,7 +133,14 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters required by this method.
+     * The parameters include:
+     * - FAITHFULNESS_ASSUMED
+     * - MAX_INDEGREE
+     * - TIME_LAG
+     * - VERBOSE
+     *
+     * @return the list of parameters required by this method
      */
     @Override
     public List<String> getParameters() {
@@ -165,7 +156,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the knowledge associated with this object.
+     *
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -173,7 +166,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge the knowledge object to set
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -181,7 +176,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper object associated with this algorithm.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -189,7 +186,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test the independence wrapper to set
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
@@ -197,7 +196,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper object associated with this algorithm.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -205,18 +206,12 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for the algorithm.
+     *
+     * @param score the score wrapper to set
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

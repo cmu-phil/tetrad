@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -20,7 +21,6 @@ import edu.cmu.tetrad.search.BFci;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class Bfci implements Algorithm, UsesScoreWrapper,
+public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs {
 
     @Serial
@@ -67,11 +67,6 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-    /**
      * No-arg constructor. Used for reflection; do not delete.
      */
     public Bfci() {
@@ -90,51 +85,46 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the given dataset and parameters and returns the resulting graph.
+     *
+     * @param dataSet    the dataset to run the search on
+     * @param parameters the parameters used for the search algorithm
+     * @return the graph resulting from the search algorithm
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
             }
-
-            BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-
-            search.setSeed(parameters.getLong(Params.SEED));
-            search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
-            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            search.setKnowledge(knowledge);
-
-            search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-
-            return search.search();
-        } else {
-            Bfci algorithm = new Bfci(this.test, this.score);
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            dataSet = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        BFci search = new BFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+
+        search.setSeed(parameters.getLong(Params.SEED));
+        search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        search.setKnowledge(knowledge);
+
+        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
+        return search.search();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph generated by applying the DAG-to-PAG transformation to the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph generated by applying the DAG-to-PAG transformation.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -142,7 +132,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the BFCI (Best-order FCI) algorithm using the description of its independence test and score.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -151,7 +143,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return the data type required by the search algorithm
      */
     @Override
     public DataType getDataType() {
@@ -159,7 +153,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters used for the BFCI (Best-order FCI) algorithm.
+     *
+     * @return the list of parameters used for the BFCI algorithm
      */
     @Override
     public List<String> getParameters() {
@@ -183,7 +179,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with the algorithm.
+     *
+     * @return the knowledge associated with the algorithm
      */
     @Override
     public Knowledge getKnowledge() {
@@ -191,7 +189,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with the algorithm.
+     *
+     * @param knowledge a knowledge object
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -199,7 +199,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the IndependenceWrapper associated with this Bfci algorithm.
+     *
+     * @return the IndependenceWrapper object
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -207,7 +209,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the IndependenceWrapper object for this algorithm.
+     *
+     * @param test the IndependenceWrapper object to set
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
@@ -215,7 +219,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper associated with this algorithm.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -223,18 +229,12 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for this algorithm.
+     *
+     * @param score the score wrapper to set
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -31,10 +32,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * GFCI.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The Gfci class represents the Greedy Fast Causal Inference algorithm.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GFCI",
@@ -42,7 +40,7 @@ import java.util.concurrent.Callable;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper,
+public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
     @Serial
@@ -64,26 +62,16 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-    /**
-     * <p>
-     * Constructor for Gfci.</p>
+     * The Gfci class represents the Greedy Fast Causal Inference algorithm.
      */
     public Gfci() {
     }
 
     /**
-     * <p>
-     * Constructor for Gfci.</p>
+     * Constructs a new instance of Gfci with the given IndependenceWrapper and ScoreWrapper.
      *
-     * @param test a
-     * {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper}
-     * object
-     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper}
-     * object
+     * @param test  The IndependenceWrapper object to associate with this Gfci instance.
+     * @param score The ScoreWrapper object to associate with this Gfci instance.
      */
     public Gfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
@@ -91,48 +79,13 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm to infer the causal graph given a dataset and specified parameters.
+     *
+     * @param dataSet The dataset containing the observational data.
+     * @param parameters The parameters to configure the search algorithm.
+     * @return The inferred causal graph.
      */
-    @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        List<DataSet> dataSets = DataSampling.createDataSamples((DataSet) dataModel, parameters);
-
-        Graph graph;
-        if (Thread.currentThread().isInterrupted()) {
-            // release resources
-            dataSets.clear();
-            System.gc();
-
-            graph = new EdgeListGraph();
-        } else {
-            List<Callable<Graph>> tasks = new LinkedList<>();
-            for (DataSet dataSet : dataSets) {
-                tasks.add(() -> runSearch(dataSet, parameters));
-            }
-
-            TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            List<Graph> graphs = taskRunner.run(tasks);
-
-            if (graphs.isEmpty()) {
-                graph = new EdgeListGraph();
-            } else {
-                if (parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
-                    this.bootstrapGraphs = graphs;
-                    graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
-                } else {
-                    graph = graphs.get(0);
-                }
-            }
-        }
-
-        // release resources
-        dataSets.clear();
-        System.gc();
-
-        return graph;
-    }
-
-    private Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataSet dataSet, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
@@ -162,7 +115,10 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph by transforming the true directed graph (if there is one) into a partially directed acyclic graph (PAG).
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph in the form of a partially directed acyclic graph (PAG).
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -170,7 +126,10 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the GFCI (Greedy Fast Causal Inference) algorithm
+     * using the description of the independence test and score associated with it.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -179,7 +138,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type required for the search algorithm.
+     *
+     * @return The data type required for the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -187,7 +148,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters used to configure the search algorithm.
+     *
+     * @return The list of parameters used to configure the search algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -207,7 +170,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the Knowledge object associated with this instance.
+     *
+     * @return The Knowledge object associated with this instance.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -215,7 +180,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the Knowledge object associated with this instance.
+     *
+     * @param knowledge The Knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -223,7 +190,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper associated with this instance.
+     *
+     * @return The ScoreWrapper associated with this instance.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -231,7 +200,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for the algorithm.
+     *
+     * @param score the score wrapper.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -239,7 +210,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the independence wrapper associated with this instance.
+     *
+     * @return The independence wrapper.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -247,18 +220,12 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test the independence wrapper to set
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

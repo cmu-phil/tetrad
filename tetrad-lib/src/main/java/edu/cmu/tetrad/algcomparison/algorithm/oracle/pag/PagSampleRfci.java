@@ -1,11 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -32,7 +33,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSampleRfci implements Algorithm, HasKnowledge {
+public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
     /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
@@ -78,10 +79,14 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     private Knowledge knowledge;
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the given data set and parameters.
+     *
+     * @param dataSet    the data set to perform the search on
+     * @param parameters the parameters for the search algorithm
+     * @return the graph resulting from the search algorithm
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph runSearch(DataSet dataSet, Parameters parameters) {
         edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci pagSamplingRfci = new edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci(SimpleDataLoader.getDiscreteDataSet(dataSet));
 
         // PAG-Sampling-RFCI parameters
@@ -102,7 +107,10 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the comparison graph based on the true directed graph.
+     *
+     * @param graph The true directed graph.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -111,7 +119,9 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the method.
+     *
+     * @return The description of the method.
      */
     @Override
     public String getDescription() {
@@ -119,7 +129,9 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type associated with the method.
+     *
+     * @return the data type of the method, which is discrete.
      */
     @Override
     public DataType getDataType() {
@@ -127,7 +139,9 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters for the method.
+     *
+     * @return the list of parameters for the method
      */
     @Override
     public List<String> getParameters() {
@@ -141,7 +155,9 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with this method.
+     *
+     * @return The knowledge associated with this method.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -149,7 +165,9 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this method.
+     *
+     * @param knowledge the knowledge object to be set
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {

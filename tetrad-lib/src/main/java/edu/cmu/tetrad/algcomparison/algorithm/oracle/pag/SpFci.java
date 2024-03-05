@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -9,7 +10,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -17,7 +17,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.io.Serial;
@@ -42,14 +41,14 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     *
+     * The independence wrapper used for testing the independence between variables in a dataset.
      */
     private IndependenceWrapper test;
 
@@ -64,23 +63,20 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-
-    /**
-     * <p>Constructor for SpFci.</p>
+     * The SpFci class represents a specific algorithm for structural learning called
+     * "Conditional Independence Test-based Fast Causal Inference" (SpFci).
+     * This class extends the AbstractBootstrapAlgorithm class and implements
+     * the Algorithm, UsesScoreWrapper, and TakesIndependenceWrapper interfaces.
      */
     public SpFci() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for SpFci.</p>
+     * Constructor for the SpFci class.
      *
-     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
-     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param test The IndependenceWrapper object to be used for the algorithm.
+     * @param score The ScoreWrapper object to be used for the algorithm.
      */
     public SpFci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
@@ -88,38 +84,34 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Executes a search algorithm to infer the causal graph structure from a given data model
+     *
+     * @param dataModel   The data model representing the observed variables and their relationships
+     * @param parameters  The parameters for the search algorithm
+     * @return The inferred causal graph structure
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-            search.setKnowledge(this.knowledge);
-            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+    public Graph runSearch(DataSet dataModel, Parameters parameters) {
+        edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        search.setKnowledge(this.knowledge);
+        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
+        Object obj = parameters.get(Params.PRINT_STREAM);
 
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            return search.search();
-        } else {
-            SpFci algorithm = new SpFci(this.test, this.score);
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+        if (obj instanceof PrintStream) {
+            search.setOut((PrintStream) obj);
         }
+
+        return search.search();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the comparison graph created by converting a true directed graph into a partially directed acyclic graph (PAG).
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph as a partially directed acyclic graph (PAG).
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -127,7 +119,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return The description of this algorithm.
      */
     @Override
     public String getDescription() {
@@ -136,7 +130,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The DataType of this algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -144,7 +140,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters used by the method.
+     *
+     * @return A List of strings representing the parameters used by the method.
      */
     @Override
     public List<String> getParameters() {
@@ -165,7 +163,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge object associated with this algorithm.
+     *
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -173,7 +173,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge object associated with this algorithm.
+     *
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -181,7 +183,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper associated with this algorithm.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -189,7 +193,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the IndependenceWrapper object for the algorithm.
+     *
+     * @param test the IndependenceWrapper object to be set.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
@@ -197,7 +203,9 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper object associated with this algorithm.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -205,18 +213,12 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the ScoreWrapper object for the algorithm.
+     *
+     * @param score the score wrapper.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

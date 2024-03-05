@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
@@ -7,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -32,7 +34,7 @@ import java.util.List;
         dataType = DataType.Discrete
 )
 @Experimental
-public class RfciBsc implements Algorithm, HasKnowledge {
+public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -46,9 +48,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the knowledge.
+     * Retrieves the knowledge associated with this object.
+     *
+     * @return The knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -56,9 +58,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the knowledge.
+     * Sets the knowledge object.
+     *
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -66,12 +68,14 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the RFCI-BSC search.
+     * Runs a search algorithm using a given dataset and parameters.
+     *
+     * @param dataSet    The dataset to run the search on.
+     * @param parameters The parameters for the search algorithm.
+     * @return The resulting graph from the search algorithm.
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph runSearch(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -95,9 +99,10 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the comparison graph.
+     * Retrieves the comparison graph from the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The true PAG.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
