@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -7,7 +8,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
+public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -52,11 +51,6 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * Constructs a new BOSS algorithm.
@@ -80,45 +74,36 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
      * Runs the BOSS algorithm.
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
         parameters.set(Params.NUM_THREADS, 4);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
             }
-
-            Score score = this.score.getScore(dataModel, parameters);
-
-            edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
-
-            boss.setUseBes(parameters.getBoolean(Params.USE_BES));
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-            boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            PermutationSearch permutationSearch = new PermutationSearch(boss);
-            permutationSearch.setKnowledge(this.knowledge);
-            permutationSearch.setSeed(seed);
-            Graph graph = permutationSearch.search();
-            LogUtilsSearch.stampWithScore(graph, score);
-            LogUtilsSearch.stampWithBic(graph, dataModel);
-            return graph;
-        } else {
-            Boss algorithm = new Boss(this.score);
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, knowledge, parameters);
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            dataSet = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        Score myScore = this.score.getScore(dataSet, parameters);
+
+        edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
+
+        boss.setUseBes(parameters.getBoolean(Params.USE_BES));
+        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+        boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        PermutationSearch permutationSearch = new PermutationSearch(boss);
+        permutationSearch.setKnowledge(this.knowledge);
+        permutationSearch.setSeed(seed);
+        Graph graph = permutationSearch.search();
+        LogUtilsSearch.stampWithScore(graph, myScore);
+        LogUtilsSearch.stampWithBic(graph, dataSet);
+
+        return graph;
     }
 
     /**
@@ -212,13 +197,4 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         this.knowledge = knowledge;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the bootstrap graphs.
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }
