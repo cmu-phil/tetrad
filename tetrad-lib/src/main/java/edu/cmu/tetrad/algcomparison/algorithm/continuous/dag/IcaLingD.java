@@ -54,13 +54,15 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
             Matrix W = edu.cmu.tetrad.search.IcaLingD.estimateW(data, maxIter, tol, alpha);
 
+            System.out.println("W = " + W);
+
             edu.cmu.tetrad.search.IcaLingD icaLingD = new edu.cmu.tetrad.search.IcaLingD();
             icaLingD.setBThreshold(bThreshold);
             icaLingD.setSpineThreshold(spineThreshold);
             List<Matrix> bHats = icaLingD.fitW(W);
             Set<Graph> _graphs = new HashSet<>();
             Map<Graph, Matrix> _bHats = new HashMap<>();
-            List<Graph> stableGraphs = new ArrayList<>();
+            Set<Graph> _stableGraphs = new HashSet<>();
 
             for (Matrix bHat : bHats) {
                 Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
@@ -68,13 +70,14 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
                 _bHats.put(graph, bHat);
 
                 if (edu.cmu.tetrad.search.IcaLingD.isStable(bHat)) {
-                    stableGraphs.add(graph);
+                    _stableGraphs.add(graph);
                 }
             }
 
             List<Graph> graphs = new ArrayList<>(_graphs);
+            List<Graph> stableGraphs = new ArrayList<>(_stableGraphs);
             graphs.sort(Comparator.comparingInt(Graph::getNumEdges));
-            stableGraphs.sort(Comparator.comparingInt(Graph::getNumEdges));
+            stableGraphs.sort(Comparator.comparingDouble(Graph::getNumEdges));
 
             int count = 0;
 

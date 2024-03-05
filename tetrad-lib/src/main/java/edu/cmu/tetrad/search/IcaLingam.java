@@ -127,7 +127,7 @@ public class IcaLingam {
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
-        PermutationMatrixPair bestPair = IcaLingD.hungarianDiagonal(W);
+        PermutationMatrixPair bestPair = IcaLingD.hungarianDiagonal(W.transpose());
         Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair, abs(bThreshold));
 
         if (acyclicityGuaranteed) {
