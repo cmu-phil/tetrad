@@ -14,8 +14,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * LiNG-D.
@@ -59,30 +58,37 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
             icaLingD.setBThreshold(bThreshold);
             icaLingD.setSpineThreshold(spineThreshold);
             List<Matrix> bHats = icaLingD.fitW(W);
-
-            int count = 0;
-
-            Graph outGraph = null;
-            TetradLogger.getInstance().forceLogMessage("STABLE MODELS:\n");
+            Set<Graph> _graphs = new HashSet<>();
+            Map<Graph, Matrix> _bHats = new HashMap<>();
+            List<Graph> stableGraphs = new ArrayList<>();
 
             for (Matrix bHat : bHats) {
-                boolean stable = edu.cmu.tetrad.search.IcaLingD.isStable(bHat);
+                Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
+                _graphs.add(graph);
+                _bHats.put(graph, bHat);
 
-                if (stable) {
-                    TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
-                    Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
-                    TetradLogger.getInstance().forceLogMessage(bHat.toString());
-                    TetradLogger.getInstance().forceLogMessage(graph.toString());
-
-                    if (outGraph == null) outGraph = graph;
+                if (edu.cmu.tetrad.search.IcaLingD.isStable(bHat)) {
+                    stableGraphs.add(graph);
                 }
             }
 
-            if (outGraph == null) {
-                TetradLogger.getInstance().forceLogMessage("## There were no stable models.##");
+            List<Graph> graphs = new ArrayList<>(_graphs);
+            graphs.sort(Comparator.comparingInt(Graph::getNumEdges));
+            stableGraphs.sort(Comparator.comparingInt(Graph::getNumEdges));
+
+            int count = 0;
+
+            for (Graph graph : graphs) {
+                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + "  Stable = " + stableGraphs.contains(graph));
+                TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
+                TetradLogger.getInstance().forceLogMessage(graph.toString());
             }
 
-            return outGraph;
+            if (stableGraphs.isEmpty()) {
+                TetradLogger.getInstance().forceLogMessage("## There were no stable models. ##");
+            }
+
+            return stableGraphs.isEmpty() ? new EdgeListGraph() : stableGraphs.get(0);
         } else {
             IcaLingD algorithm = new IcaLingD();
 
