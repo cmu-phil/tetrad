@@ -1,15 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.statistic.BicEst;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -20,14 +19,11 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
  * FGES (the heuristic version).
@@ -41,7 +37,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs {
+public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -67,11 +63,6 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
     private Algorithm algorithm = null;
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-    /**
      * <p>Constructor for Fges.</p>
      */
     public Fges() {
@@ -87,72 +78,50 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         this.score = score;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
             }
-
-            if (this.algorithm != null) {
-                Graph _graph = this.algorithm.search(dataModel, parameters);
-
-                if (_graph != null) {
-                    this.externalGraph = _graph;
-                }
-            }
-
-            Score score = this.score.getScore(dataModel, parameters);
-            Graph graph;
-
-            edu.cmu.tetrad.search.Fges search
-                    = new edu.cmu.tetrad.search.Fges(score);
-//            search.setInitialGraph(externalGraph);
-            search.setBoundGraph(externalGraph);
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
-            search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
-            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-
-            Object obj = parameters.get(Params.PRINT_STREAM);
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            graph = search.search();
-
-            LogUtilsSearch.stampWithScore(graph, score);
-            LogUtilsSearch.stampWithBic(graph, dataModel);
-            return graph;
-        } else {
-            Fges fges = new Fges(this.score);
-            if (this.algorithm != null) {
-                fges.setExternalGraph(this.algorithm);
-            }
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data, fges,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            dataSet = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        if (this.algorithm != null) {
+            Graph _graph = this.algorithm.search(dataSet, parameters);
+
+            if (_graph != null) {
+                this.externalGraph = _graph;
+            }
+        }
+
+        Score myScore = this.score.getScore(dataSet, parameters);
+        Graph graph;
+
+        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
+//            search.setInitialGraph(externalGraph);
+        search.setBoundGraph(externalGraph);
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
+        search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+        search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
+        search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+        search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+
+        Object obj = parameters.get(Params.PRINT_STREAM);
+        if (obj instanceof PrintStream ps) {
+            search.setOut(ps);
+        }
+
+        graph = search.search();
+
+        LogUtilsSearch.stampWithScore(graph, myScore);
+        LogUtilsSearch.stampWithBic(graph, dataSet);
+
+        return graph;
     }
 
     /**
@@ -237,11 +206,4 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         this.algorithm = algorithm;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }
