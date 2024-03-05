@@ -182,7 +182,7 @@ public final class SessionEditorNode extends DisplayNode {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] modelClasses(String boxType) {
+    private static Class<?>[] modelClasses(String boxType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(boxType);
         if (nodeConfig == null) {

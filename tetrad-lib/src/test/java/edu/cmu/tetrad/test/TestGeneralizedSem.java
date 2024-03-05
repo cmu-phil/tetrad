@@ -118,7 +118,8 @@ public class TestGeneralizedSem {
 
             print(pm);
 
-            assertEquals("Split(-1.0,-.5,.5,1.0)", pm.getParameterExpressionString(b1));
+            String parameterExpressionString = pm.getParameterExpressionString(b1);
+            assertEquals("U(-1.0, 1.0)", parameterExpressionString);
             pm.setParameterExpression(b1, "N(0, 2)");
             assertEquals("N(0, 2)", pm.getParameterExpressionString(b1));
 

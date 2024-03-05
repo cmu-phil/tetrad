@@ -9,8 +9,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.Serial;
 
 /**
- * Stores a single conditional independence result, e.g., whether X _||_ Y | Z1,..,Zn holds or does not, and the p-value
- * of the test.
+ * Stores a single conditional independence result, e.g., whether X _||_ Y | Z1,...,Zn holds or does not, and the
+ * p-value of the test.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -39,7 +39,6 @@ public final class IndependenceResult implements TetradSerializable {
      * score.
      */
     private final double score;
-
     /**
      * Whether the result is valid or not. A test is not valid if the test is not able to determine whether the fact
      * holds or not.
@@ -89,7 +88,7 @@ public final class IndependenceResult implements TetradSerializable {
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(new IndependenceFact(
                 new ContinuousVariable("X"), new ContinuousVariable("Y")),
-                true, 0.0001, 1.0);
+                true, 0.0001, 0.0, true);
     }
 
     /**
@@ -103,9 +102,9 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns whether the fact holds--i.e., if the judgment is for independence.
+     * Returns true if the judgment is for independence, false if for dependence.
      *
-     * @return True if the fact holds, false if ot.
+     * @return True if the fact holds, false if not.
      * @see #isDependent()
      */
     public boolean isIndependent() {
@@ -113,8 +112,8 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns whether the fact fails to hold--i.e., if the judgment is for dependence. This is the negation of
-     * isIndependent.
+     * Returns whether the fact fails to hold--i.e. if the judgment is for dependence. This is the negation of
+     * isIndependent().
      *
      * @return True if the fact does not, false if it does.
      * @see #isIndependent()

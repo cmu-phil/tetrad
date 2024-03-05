@@ -39,8 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables and then uses a non-Gaussian
- * orientation method to orient the undirected edges. The reference is as follows:
+ * Implements an algorithm which first finds a CPDAG for the variables and then uses a non-Gaussian orientation method
+ * to orient the undirected edges. The reference is as follows:
  * <p>
  * Hoyer et al., "Causal discovery of linear acyclic models with arbitrary distributions," UAI 2008.
  * <p>
@@ -54,6 +54,9 @@ import java.util.List;
  * non-Gaussian orientation method.
  * <p>
  * This class is not configured to respect knowledge of forbidden and required edges.
+ * <p>
+ * We may replace this class in the future by one which allows the user to specify an arbitrary CPDAG algorithm and an
+ * arbitrary method for orienting the undirected edges.
  *
  * @author peterspirtes
  * @author patrickhoyer

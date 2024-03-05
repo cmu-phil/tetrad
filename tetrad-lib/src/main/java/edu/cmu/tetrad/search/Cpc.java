@@ -54,7 +54,7 @@ import java.util.Set;
  * ambiguous triple whether it should be a collider or a noncollider and then run the Meek rules given the result of
  * these decisions.</p>
  *
- * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p> *
+ * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.</p>
@@ -66,22 +66,70 @@ import java.util.Set;
  * @see edu.cmu.tetrad.search.utils.MeekRules
  */
 public final class Cpc implements IGraphSearch {
+    /**
+     * The independenceTest variable represents an oracle that provides information about conditional independence.
+     */
     private final IndependenceTest independenceTest;
-    private final TetradLogger logger = TetradLogger.getInstance();
+    /**
+     * An instance variable that holds the knowledge specification used in the search.
+     */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * Represents a graph.
+     */
     private Graph graph;
+    /**
+     * The elapsed time of the search in milliseconds, after the {@code search()} method has been run.
+     */
     private long elapsedTime;
+    /**
+     * Set of collider triples.
+     */
     private Set<Triple> colliderTriples;
+    /**
+     * Set of noncollider triples.
+     */
     private Set<Triple> noncolliderTriples;
+    /**
+     * Set containing ambiguous triples found during the most recent run of the algorithm. Ambiguous triples are triples
+     * in the form (x, y, z), y is in some sepset of (x, z) but not in some other sepset of (x, z).
+     */
     private Set<Triple> ambiguousTriples;
+    /**
+     * Private variable that holds a map for x _||_ y | z1,..,zn from {x, y} to {z1,...,zn}.
+     */
     private SepsetMap sepsets;
+    /**
+     * Represents the depth of the search, which is the maximum number of variables conditioned on in any conditional
+     * independence test.
+     */
     private int depth = 1000;
+    /**
+     * Indicates whether the stable adjacency search should be used.
+     */
     private boolean stable = true;
+    /**
+     * This variable determines whether edges will not be added if they would create cycles.
+     */
     private boolean meekPreventCycles = true;
+    /**
+     * The `conflictRule` variable represents the conflict rule used for resolving collider orientation conflicts during
+     * the search. It is an enum value defined in the `PcCommon` class.
+     *
+     * @see PcCommon.ConflictRule
+     */
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    /**
+     * Determines whether verbose output should be printed.
+     */
     private boolean verbose = false;
+    /**
+     * This variable represents the type of PC heuristic used in the search algorithm. The default value is
+     * PcCommon.PcHeuristicType.NONE.
+     *
+     * @see PcCommon.PcHeuristicType
+     */
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -96,7 +144,6 @@ public final class Cpc implements IGraphSearch {
 
         this.independenceTest = independenceTest;
     }
-
 
     /**
      * Runs CPC starting with a fully connected graph over all the variables in the domain of the independence test. See
@@ -319,7 +366,9 @@ public final class Cpc implements IGraphSearch {
         this.pcHeuristicType = pcHeuristicType;
     }
 
-
+    /**
+     * Logs the collider triples, noncollider triples, and ambiguous triples if the verbose mode is enabled.
+     */
     private void logTriples() {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("\nCollider triples:");

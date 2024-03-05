@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -13,7 +14,6 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
@@ -33,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 @Bootstrapping
 @Experimental
-public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
+public class GesMe extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -47,12 +47,6 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
      * The bootstrap graphs.
      */
     private boolean compareToTrue;
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
 
     /**
      * <p>Constructor for GesMe.</p>
@@ -70,150 +64,129 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         setCompareToTrue(compareToTrueGraph);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-//          dataSet = DataUtils.center((DataSet) dataSet);
-            CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
+    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+//        dataSet = DataUtils.center((DataSet) dataSet);
+        CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
 
-            edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
-            analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
-            analysis.setNumFactors(parameters.getInt("numFactors"));
-//            analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
+        edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
+        analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
+        analysis.setNumFactors(parameters.getInt("numFactors"));
+//        analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
 
-            Matrix unrotated = analysis.successiveResidual();
-            Matrix rotated = analysis.successiveFactorVarimax(unrotated);
+        Matrix unrotated = analysis.successiveResidual();
+        Matrix rotated = analysis.successiveFactorVarimax(unrotated);
 
-            if (parameters.getBoolean(Params.VERBOSE)) {
-                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-                String output = "Unrotated Factor Loading Matrix:\n";
+            String output = "Unrotated Factor Loading Matrix:\n";
 
-                output += tableString(unrotated, nf, Double.POSITIVE_INFINITY);
+            output += tableString(unrotated, nf, Double.POSITIVE_INFINITY);
 
-                if (unrotated.getNumColumns() != 1) {
-                    output += "\n\nRotated Matrix (using sequential varimax):\n";
-                    output += tableString(rotated, nf, parameters.getDouble("fa_threshold"));
-                }
-
-                System.out.println(output);
-                TetradLogger.getInstance().forceLogMessage(output);
+            if (unrotated.getNumColumns() != 1) {
+                output += "\n\nRotated Matrix (using sequential varimax):\n";
+                output += tableString(rotated, nf, parameters.getDouble("fa_threshold"));
             }
 
-            Matrix L;
-
-            if (parameters.getBoolean("useVarimax")) {
-                L = rotated;
-            } else {
-                L = unrotated;
-            }
-
-
-            Matrix residual = analysis.getResidual();
-
-            ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), L.times(L.transpose()),
-                    covarianceMatrix.getSampleSize());
-
-            System.out.println(covFa);
-
-            double[] vars = covarianceMatrix.getMatrix().diag().toArray();
-            List<Integer> indices = new ArrayList<>();
-            for (int i = 0; i < vars.length; i++) {
-                indices.add(i);
-            }
-
-            indices.sort((o1, o2) -> -Double.compare(vars[o1], vars[o2]));
-
-            NumberFormat nf = new DecimalFormat("0.000");
-
-            for (Integer index : indices) {
-                System.out.println(nf.format(vars[index]) + " ");
-            }
-
-            System.out.println();
-
-            int n = vars.length;
-
-            int cutoff = (int) (n * ((sqrt(8 * n + 1) - 1) / (2 * n)));
-
-            List<Node> nodes = covarianceMatrix.getVariables();
-
-            List<Node> leaves = new ArrayList<>();
-
-            for (int i = 0; i < cutoff; i++) {
-                leaves.add(nodes.get(indices.get(i)));
-            }
-
-            Knowledge knowledge2 = new Knowledge();
-
-            for (Node v : nodes) {
-                if (leaves.contains(v)) {
-                    knowledge2.addToTier(2, v.getName());
-                } else {
-                    knowledge2.addToTier(1, v.getName());
-                }
-            }
-
-            knowledge2.setTierForbiddenWithin(2, true);
-
-            System.out.println("knowledge2 = " + knowledge2);
-
-            Score score = this.score.getScore(covFa, parameters);
-
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-
-            if (parameters.getBoolean("enforceMinimumLeafNodes")) {
-                search.setKnowledge(knowledge2);
-            }
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
-            search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
-
-            Object obj = parameters.get(Params.PRINT_STREAM);
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            if (parameters.getBoolean(Params.VERBOSE)) {
-//                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-                String output = "Unrotated Factor Loading Matrix:\n";
-                double threshold = parameters.getDouble("fa_threshold");
-
-                output += tableString(L, nf, Double.POSITIVE_INFINITY);
-
-                if (L.getNumColumns() != 1) {
-                    output += "\n\nL:\n";
-                    output += tableString(L, nf, threshold);
-                }
-
-                System.out.println(output);
-                TetradLogger.getInstance().forceLogMessage(output);
-            }
-
-            System.out.println("residual = " + residual);
-
-            return search.search();
-        } else {
-            GesMe algorithm = new GesMe(this.compareToTrue);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data,
-                    algorithm,
-                    new Knowledge(),
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            System.out.println(output);
+            TetradLogger.getInstance().forceLogMessage(output);
         }
+
+        Matrix L;
+
+        if (parameters.getBoolean("useVarimax")) {
+            L = rotated;
+        } else {
+            L = unrotated;
+        }
+
+        Matrix residual = analysis.getResidual();
+
+        ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), L.times(L.transpose()),
+                covarianceMatrix.getSampleSize());
+
+        System.out.println(covFa);
+
+        double[] vars = covarianceMatrix.getMatrix().diag().toArray();
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < vars.length; i++) {
+            indices.add(i);
+        }
+
+        indices.sort((o1, o2) -> -Double.compare(vars[o1], vars[o2]));
+
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        for (Integer index : indices) {
+            System.out.println(nf.format(vars[index]) + " ");
+        }
+
+        System.out.println();
+
+        int n = vars.length;
+
+        int cutoff = (int) (n * ((sqrt(8 * n + 1) - 1) / (2 * n)));
+
+        List<Node> nodes = covarianceMatrix.getVariables();
+
+        List<Node> leaves = new ArrayList<>();
+
+        for (int i = 0; i < cutoff; i++) {
+            leaves.add(nodes.get(indices.get(i)));
+        }
+
+        Knowledge knowledge2 = new Knowledge();
+
+        for (Node v : nodes) {
+            if (leaves.contains(v)) {
+                knowledge2.addToTier(2, v.getName());
+            } else {
+                knowledge2.addToTier(1, v.getName());
+            }
+        }
+
+        knowledge2.setTierForbiddenWithin(2, true);
+
+        System.out.println("knowledge2 = " + knowledge2);
+
+        Score myScore = this.score.getScore(covFa, parameters);
+
+        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
+        search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+
+        if (parameters.getBoolean("enforceMinimumLeafNodes")) {
+            search.setKnowledge(knowledge2);
+        }
+
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+        search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
+
+        Object obj = parameters.get(Params.PRINT_STREAM);
+        if (obj instanceof PrintStream ps) {
+            search.setOut(ps);
+        }
+
+        if (parameters.getBoolean(Params.VERBOSE)) {
+//            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            String output = "Unrotated Factor Loading Matrix:\n";
+            double threshold = parameters.getDouble("fa_threshold");
+
+            output += tableString(L, nf, Double.POSITIVE_INFINITY);
+
+            if (L.getNumColumns() != 1) {
+                output += "\n\nL:\n";
+                output += tableString(L, nf, threshold);
+            }
+
+            System.out.println(output);
+            TetradLogger.getInstance().forceLogMessage(output);
+        }
+
+        System.out.println("residual = " + residual);
+
+        return search.search();
     }
 
     /**
@@ -297,11 +270,4 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

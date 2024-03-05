@@ -122,17 +122,7 @@ public class SemPmWrapper implements SessionModel {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation.");
         }
 
-        semIms = ((SemSimulation) _simulation).getSemIms();
-
-        if (semIms == null) {
-            throw new NullPointerException("It looks like you have not done a simulation.");
-        }
-
         this.semPms = new ArrayList<>();
-
-        for (SemIm semIm : semIms) {
-            this.semPms.add(semIm.getSemPm());
-        }
 
         this.numModels = simulation.getDataModelList().size();
         this.modelIndex = 0;

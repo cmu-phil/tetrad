@@ -55,27 +55,41 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IndTestHsic implements IndependenceTest {
 
-    // Number format for printing p-values.
+    /**
+     * Number format for printing p-values.
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The variables of the covariance matrix, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // Stores a reference to the dataset being analyzed.
+    /**
+     * Stores a reference to the dataset being analyzed.
+     */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // The cutoff value for 'alpha'
-    private double thresh = Double.NaN;
-    // A stored p value, if the deterministic test was used.
-    private double pValue = Double.NaN;
-    // The regularizer
+    /**
+     * The regularizer
+     */
     private double regularizer = 0.0001;
-    // Number of permutations to approximate the null distribution
+    /**
+     * Number of permutations to approximate the null distribution
+     */
     private int perms = 100;
-    // Use incomplete Choleksy decomposition to calculate Gram matrices
+    /**
+     * Use incomplete Choleksy decomposition to calculate Gram matrices
+     */
     private double useIncompleteCholesky = 1e-18;
-    // Whether to print verbose output.
+    /**
+     * Whether to print verbose output.
+     */
     private boolean verbose;
 
 
@@ -116,9 +130,11 @@ public final class IndTestHsic implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new IndTestHsic instance for a subset of the variables.
+     * Subset of variables for independence testing.
+     *
+     * @param vars The list of variables for the subset.
+     * @return An IndependenceTest object representing the subset for independence testing.
+     * @throws IllegalArgumentException If the subset is empty or contains variables not in the original set.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -143,8 +159,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
      * @param y  a {@link edu.cmu.tetrad.graph.Node} object
@@ -307,15 +321,16 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         evalCdf /= this.perms;
-        this.pValue = 1.0 - evalCdf;
+        // A stored p value, if the deterministic test was used.
+        double pValue = 1.0 - evalCdf;
 
-        if (Double.isNaN(this.pValue)) {
+        if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
                     LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         // reject if pvalue <= alpha
-        boolean independent = this.pValue <= this.alpha;
+        boolean independent = pValue <= this.alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -324,7 +339,7 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
         facts.put(new IndependenceFact(x, y, _z), result);
         return result;
     }
@@ -556,7 +571,6 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         this.alpha = alpha;
-        this.thresh = Double.NaN;
     }
 
     /**
@@ -570,9 +584,10 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the variable with the given name.
+     *
+     * @param name The name of the variable to retrieve.
+     * @return The variable with the given name, or null if no variable with that name is found.
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -604,17 +619,36 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     *
+     * @param z A list of conditioning variables.
+     * @param x The variable x to be tested.
+     * @return True if variable x is independent of variable y given the conditioning variables z, false otherwise.
+     * @throws UnsupportedOperationException This method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }
 
 
+    /**
+     * Returns the sample size of the data set.
+     *
+     * @return The number of rows in the data set.
+     */
     private int sampleSize() {
         return this.dataSet.getNumRows();
     }
 
+    /**
+     * Computes the product of two matrices at a specific entry.
+     *
+     * @param X The first matrix.
+     * @param Y The second matrix.
+     * @param i The row index of the entry.
+     * @param j The column index of the entry.
+     * @return The product of the matrices at the specified entry.
+     */
     private double matrixProductEntry(Matrix X, Matrix Y, int i, int j) {
         double entry = 0.0;
         for (int k = 0; k < X.getNumColumns(); k++) {
@@ -624,16 +658,18 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Determines if the verbose mode is enabled.
      *
-     * @return a boolean
+     * @return true if the verbose mode is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose mode for the IndTestHsic class.
+     *
+     * @param verbose true to enable verbose mode, false to disable it.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

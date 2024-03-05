@@ -50,29 +50,51 @@ import java.util.*;
  */
 public class Fasd implements IFas {
 
-    // The independence test. This should be appropriate to the types
+    /**
+     * The independence test. This should be appropriate to the types
+     */
     private final IndependenceTest test;
-    // The logger, by default the empty logger.
+    /**
+     * The logger, by default the empty logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The number formatter.
+    /**
+     * The number formatter.
+     */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
-    // It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
+    /**
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
+     * It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
+     */
     private final Graph graph;
-    // Specification of which edges are forbidden or required.
+    /**
+     * Specification of which edges are forbidden or required.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-    // be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
+    /**
+     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
+     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
+     */
     private int depth = 1000;
-    // The number of independence tests.
+    /**
+     * The number of independence tests.
+     */
     private int numIndependenceTests;
-    // The sepsets found during the search.
+    /**
+     * The sepsets found during the search.
+     */
     private SepsetMap sepset = new SepsetMap();
-    // The depth 0 graph, specified initially.
+    /**
+     * The depth 0 graph, specified initially.
+     */
     private Graph externalGraph;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
-    // The output stream.
+    /**
+     * The output stream.
+     */
     private PrintStream out = System.out;
 
     /**
@@ -146,9 +168,10 @@ public class Fasd implements IFas {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the maximum number of variables conditioned on in any test.
+     * Sets the depth of the search.
+     *
+     * @param depth The maximum search depth. Must be -1 (unlimited) or >= 0.
+     * @throws IllegalArgumentException if depth is less than -1
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -160,9 +183,10 @@ public class Fasd implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the knowledge to be used in the search.
+     * Sets the knowledge for this object.
+     *
+     * @param knowledge The knowledge to set. Cannot be null.
+     * @throws NullPointerException If knowledge is null.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -200,27 +224,27 @@ public class Fasd implements IFas {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Returns the current value of the verbose flag.
      *
-     * @return a boolean
+     * @return true if verbose output is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output will be printed.
+     * Sets the verbose flag to control verbose output.
+     *
+     * @param verbose True, if verbose output is enabled. False otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the elapsed time.
+     * Returns the elapsed time of the method execution.
+     *
+     * @return the elapsed time in milliseconds
      */
     @Override
     public long getElapsedTime() {
@@ -228,9 +252,9 @@ public class Fasd implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the nodes being searched over.
+     * Retrieves the list of nodes from the current object.
+     *
+     * @return A list of Node objects representing the nodes in this object.
      */
     @Override
     public List<Node> getNodes() {
@@ -238,9 +262,10 @@ public class Fasd implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns an empty list. Not used.
+     * Retrieves a list of ambiguous triples for the given node.
+     *
+     * @param node The node for which to retrieve the ambiguous triples.
+     * @return A list of Triple objects representing the ambiguous triples.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -248,15 +273,24 @@ public class Fasd implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the output to send prints to.
+     * Sets the output stream for this object.
+     *
+     * @param out The output stream to be set.
      */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Searches for adjacencies at depth 0 in the given list of nodes using the provided independence test and
+     * adjacencies map.
+     *
+     * @param nodes       The list of nodes.
+     * @param test        The independence test to use.
+     * @param adjacencies The map of adjacencies.
+     * @return True if there are free degrees in the graph after the search, false otherwise.
+     */
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
         Set<Node> empty = Collections.emptySet();
         for (int i = 0; i < nodes.size(); i++) {
@@ -324,6 +358,13 @@ public class Fasd implements IFas {
                         > 0;
     }
 
+    /**
+     * Calculates the free degree of a graph.
+     *
+     * @param nodes       The list of nodes in the graph.
+     * @param adjacencies The map of adjacencies for each node.
+     * @return The maximum free degree in the graph.
+     */
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
         int max = 0;
 
@@ -343,6 +384,13 @@ public class Fasd implements IFas {
         return max;
     }
 
+    /**
+     * Checks if a given edge between two nodes is forbidden based on background knowledge.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     * @return True if the edge is forbidden, false otherwise.
+     */
     private boolean forbiddenEdge(Node x, Node y) {
         String name1 = x.getName();
         String name2 = y.getName();
@@ -359,6 +407,16 @@ public class Fasd implements IFas {
         return false;
     }
 
+    /**
+     * Search for adjacencies at a given depth in the given list of nodes using the provided independence test and
+     * adjacencies map.
+     *
+     * @param nodes       The list of nodes.
+     * @param test        The independence test to use.
+     * @param adjacencies The map of adjacencies.
+     * @param depth       The depth of the search.
+     * @return True if there are free degrees in the graph after the search, false otherwise.
+     */
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         int count = 0;
 
@@ -416,6 +474,14 @@ public class Fasd implements IFas {
         return freeDegree(nodes, adjacencies) > depth;
     }
 
+    /**
+     * Returns a list of possible parent nodes for a given node based on the adjacency list and knowledge.
+     *
+     * @param x         The node for which to find possible parent nodes.
+     * @param adjx      The adjacency list of the given node.
+     * @param knowledge The knowledge object containing background knowledge.
+     * @return A list of possible parent nodes for the given node.
+     */
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
@@ -432,6 +498,15 @@ public class Fasd implements IFas {
         return possibleParents;
     }
 
+    /**
+     * Returns whether a given node 'z' is a possible parent node of node 'x' based on the adjacency list and background
+     * knowledge.
+     *
+     * @param z         The node to check if it is a possible parent of 'x'.
+     * @param x         The node for which to find possible parent nodes.
+     * @param knowledge The knowledge object containing background knowledge.
+     * @return true if 'z' is a possible parent of 'x', false otherwise.
+     */
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }

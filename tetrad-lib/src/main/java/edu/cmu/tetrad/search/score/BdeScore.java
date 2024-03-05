@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
@@ -44,7 +43,9 @@ import java.util.List;
  */
 public class BdeScore implements DiscreteScore {
 
-    // The discrete dataset.
+    /**
+     * The discrete dataset.
+     */
     private final DataSet dataSet;
 
     /**
@@ -162,15 +163,22 @@ public class BdeScore implements DiscreteScore {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the dataset being analyzed.
+     * Returns the DataSet associated with this method.
+     *
+     * @return The DataSet object.
      */
     @Override
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Returns the index of a row in a multidimensional array based on the given dimensions and values.
+     *
+     * @param dim    The dimensions for each axis.
+     * @param values The values for each axis.
+     * @return The index of the row.
+     */
     private int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
@@ -181,23 +189,27 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the structure prior for the BDe score.
+     *
+     * @param structurePrior The structure prior value.
      */
     public void setStructurePrior(double structurePrior) {
         throw new UnsupportedOperationException("BDe does not use a structure prior.");
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the sample prior for the BDe score.
+     *
+     * @param samplePrior The sample prior value.
      */
     public void setSamplePrior(double samplePrior) {
         throw new UnsupportedOperationException("BDe does not use a sample prior.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables of the dataset.
+     * Returns the variables present in the DataSet associated with this method.
+     *
+     * @return A list of Node objects representing the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -205,21 +217,19 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the sample size of the data.
+     * Returns the sample size of the data set.
      *
-     * @return This size.
+     * @return The sample size.
      */
     public int getSampleSize() {
         return this.dataSet.getNumRows();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns a judgment of whether the given bump in score allows one to conclude that the edge is an "effect edge"
-     * for FGES.
+     * Determines if an edge has an effect.
      *
-     * @see Fges
+     * @param bump The bump value.
+     * @return true if the bump value is greater than -20, false otherwise.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -227,9 +237,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the maximum degree of the graphs as they're searched.
+     * Gets the maximum degree of the BDe Score.
+     *
+     * @return The maximum degree.
      */
     @Override
     public int getMaxDegree() {
@@ -237,28 +247,42 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns "BDe Score".
+     * Returns a string representation of the object.
+     *
+     * @return A string representation of the object.
      */
     @Override
     public String toString() {
         return "BDe Score";
     }
 
+    /**
+     * Returns the sample size of the data set.
+     *
+     * @return The sample size.
+     */
     private int sampleSize() {
         return dataSet().getNumRows();
     }
 
+    /**
+     * Returns the number of categories for a given variable index.
+     *
+     * @param i The index of the variable.
+     * @return The number of categories for the variable.
+     */
     private int numCategories(int i) {
         return ((DiscreteVariable) dataSet().getVariable(i)).getNumCategories();
     }
 
+    /**
+     * Returns the DataSet associated with this method.
+     *
+     * @return The DataSet object.
+     */
     private DataSet dataSet() {
         return this.dataSet;
     }
-
-
 }
 
 

@@ -47,11 +47,17 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @version $Id: $Id
  */
 public class DirectLingam {
-    // the data set
+    /**
+     * the data set
+     */
     private final DataSet dataset;
-    // the variables
+    /**
+     * the variables
+     */
     private final List<Node> variables;
-    // the grow-shrink trees
+    /**
+     * the grow-shrink trees
+     */
     private final Map<Node, GrowShrinkTree> gsts;
 
     /**
@@ -109,6 +115,13 @@ public class DirectLingam {
         return g;
     }
 
+    /**
+     * Returns the next node in the list U that minimizes the objective function.
+     *
+     * @param U the list of nodes
+     * @param R a map of nodes to residuals
+     * @return the next node in the list U that minimizes the objective function
+     */
     private Node getNext(List<Node> U, Map<Node, double[]> R) {
         Node m = U.get(0);
         double best = Double.POSITIVE_INFINITY;
@@ -136,6 +149,11 @@ public class DirectLingam {
         return m;
     }
 
+    /**
+     * Standardizes an array of doubles.
+     *
+     * @param x the array of doubles to be standardized
+     */
     private void standardize(double[] x) {
         int n = x.length;
         double mu = 0;
@@ -154,6 +172,13 @@ public class DirectLingam {
         }
     }
 
+    /**
+     * Calculates the residuals between two arrays.
+     *
+     * @param x the first array
+     * @param y the second array
+     * @return an array of residuals
+     */
     private double[] residuals(double[] x, double[] y) {
         int n = x.length;
         double cov = 0;

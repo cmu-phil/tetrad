@@ -47,17 +47,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IndTestMvpLrt implements IndependenceTest {
 
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet data;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * Likelihood function
+     */
     private final MvpLikelihood likelihood;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * A cache of results for independence facts.
+     */
+    private final Map<IndependenceFact, IndependenceResult> facts;
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -79,29 +91,27 @@ public class IndTestMvpLrt implements IndependenceTest {
         }
 
         this.alpha = alpha;
+        facts = new ConcurrentHashMap<>();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns an independence test for a sublist of the searchVariables.
+     * Returns an Independence test for a sublist of the variables.
      *
-     * @see IndependenceTest
+     * @param vars The sublist of variables.
+     * @return The IndependenceTest object for the sublist of variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns an independence result for x _||_ y | z.
+     * Determines whether two nodes are independent given a set of conditioning nodes.
      *
-     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @see IndependenceResult
+     * @param x  The first node.
+     * @param y  The second node.
+     * @param _z The set of conditioning nodes.
+     * @return The result of the independence test.
+     * @throws RuntimeException if an undefined p-value is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -189,7 +199,12 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether two nodes are independent given a set of conditioning nodes.
+     *
+     * @param z The set of conditioning nodes.
+     * @param y The second node.
+     * @return true if the two nodes are independent, false otherwise.
+     * @throws UnsupportedOperationException if the method is not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -206,9 +221,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the significance level of the independence test.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -224,9 +239,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if verbose output is printed.
+     * Returns whether verbose output should be printed.
+     *
+     * @return true if verbose output should be printed, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -234,9 +249,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns whether verbose output should be printed.
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose true if verbose output should be printed, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {

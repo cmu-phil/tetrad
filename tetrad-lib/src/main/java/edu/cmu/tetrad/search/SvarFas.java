@@ -27,11 +27,11 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -60,30 +60,48 @@ import java.util.*;
  */
 public class SvarFas implements IFas {
 
-    // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
-    // It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
+    /**
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
+     * It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
+     */
     private final Graph graph;
-    //The independence test. This should be appropriate to the types
+    /**
+     * The independence test. This should be appropriate to the types
+     */
     private final IndependenceTest test;
-    // The logger, by default the empty logger.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The number formatter.
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
-    // Specification of which edges are forbidden or required.
+    /**
+     * Private final variable that holds the number format.
+     */
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
+     * Specification of which edges are forbidden or required.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-    // be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
+    /**
+     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
+     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
+     */
     private int depth = 1000;
-    // The number of independence tests.
+    /**
+     * The number of independence tests.
+     */
     private int numIndependenceTests;
-    // The sepsets found during the search.
+    /**
+     * The sepsets found during the search.
+     */
     private SepsetMap sepset = new SepsetMap();
-    // The depth 0 graph, specified initially.
+    /**
+     * The depth 0 graph, specified initially.
+     */
     private Graph externalGraph;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
-    // The output stream for printing.
-    private PrintStream out = System.out;
+    /**
+     * The output stream for printing.
+     */
+    private PrintStream out;
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -93,6 +111,7 @@ public class SvarFas implements IFas {
     public SvarFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
+        out = System.out;
     }
 
     /**
@@ -203,16 +222,16 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets the verbosity of the program.
+     *
+     * @param verbose True if verbosity is enabled, False otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * @throws javax.help.UnsupportedOperationException since not implementedd.
      */
     @Override
     public long getElapsedTime() {
@@ -220,9 +239,9 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the nodes of the test.
+     * Retrieves the list of nodes from the current object.
+     *
+     * @return The list of nodes.
      */
     @Override
     public List<Node> getNodes() {
@@ -230,7 +249,10 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of ambiguous triples involving the given node.
+     *
+     * @param node The node.
+     * @return The list of ambiguous triples involving the given node.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -238,17 +260,23 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the output stream for printing, default is System.out.
+     * Sets the output stream for printing.
      *
-     * @see PrintStream
+     * @param out The output stream to be set.
      */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Searches for nodes at depth 0.
+     *
+     * @param nodes       the list of nodes
+     * @param test        the independence test
+     * @param adjacencies the map of adjacencies
+     * @return true if there is a free degree, false otherwise
+     */
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
         Set<Node> empty = Collections.emptySet();
         List<Node> simListX = new ArrayList<>();
@@ -310,9 +338,7 @@ public class SvarFas implements IFas {
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
-//                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
                 if (result.isIndependent() && noEdgeRequired) {
-//                    if (!getSepsets().isReturnEmptyIfNotSet()) {
                     getSepsets().set(x, y, empty);
                     System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
                     List<List<Node>> simList = returnSimilarPairs(test, x, y);
@@ -373,6 +399,13 @@ public class SvarFas implements IFas {
         return freeDegree(nodes, adjacencies) > 0;
     }
 
+    /**
+     * Calculates the maximum free degree of a list of nodes given their adjacencies.
+     *
+     * @param nodes       The list of nodes.
+     * @param adjacencies The map of adjacencies for each node.
+     * @return The maximum free degree of the nodes.
+     */
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
         int max = 0;
 
@@ -392,6 +425,13 @@ public class SvarFas implements IFas {
         return max;
     }
 
+    /**
+     * Checks if an edge between two nodes is forbidden based on background knowledge.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     * @return True if the edge is forbidden, false otherwise.
+     */
     private boolean forbiddenEdge(Node x, Node y) {
         String name1 = x.getName();
         String name2 = y.getName();
@@ -408,6 +448,15 @@ public class SvarFas implements IFas {
         return false;
     }
 
+    /**
+     * Searches for nodes at a specific depth.
+     *
+     * @param nodes       The list of nodes.
+     * @param test        The independence test.
+     * @param adjacencies The map of adjacencies.
+     * @param depth       The depth to search for.
+     * @return True if there is a free degree, false otherwise.
+     */
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         int count = 0;
 
@@ -462,6 +511,14 @@ public class SvarFas implements IFas {
         return freeDegree(nodes, adjacencies) > depth;
     }
 
+    /**
+     * Returns a list of possible parents for a given node.
+     *
+     * @param x         The node.
+     * @param adjx      The list of adjacent nodes.
+     * @param knowledge The knowledge of the search.
+     * @return A list of possible parents for the node.
+     */
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
@@ -478,11 +535,28 @@ public class SvarFas implements IFas {
         return possibleParents;
     }
 
+    /**
+     * Checks if the given node z is a possible parent of node x based on the provided knowledge.
+     *
+     * @param z         The node to check if it is a possible parent.
+     * @param x         The node whose parent is being checked.
+     * @param knowledge The knowledge used for the check.
+     * @return True if z is a possible parent of x, false otherwise.
+     */
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+    /**
+     * Removes pairs of nodes from the adjacencies map that have similar structure knowledge based on the given test and
+     * conditions. removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+     *
+     * @param adjacencies The map of nodes and their adjacent nodes.
+     * @param test        The independence test used to retrieve variables.
+     * @param x           The first node in the pair.
+     * @param y           The second node in the pair.
+     * @param condSet     The set of nodes used for conditional independence test.
+     */
     private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
@@ -613,8 +687,15 @@ public class SvarFas implements IFas {
         }
     }
 
-
-    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+    /**
+     * Returns a list of similar pairs of nodes based on the provided independence test, Node x, and Node y.
+     * returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+     *
+     * @param test the independence test to be used
+     * @param x    the first Node
+     * @param y    the second Node
+     * @return a list of similar pairs of nodes
+     */
     private List<List<Node>> returnSimilarPairs(IndependenceTest test, Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
@@ -686,6 +767,12 @@ public class SvarFas implements IFas {
         return (pairList);
     }
 
+    /**
+     * Returns the name of the object without any additional lag.x``
+     *
+     * @param obj The object whose name needs to be extracted.
+     * @return The name of the object without any additional lag.
+     */
     private String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {

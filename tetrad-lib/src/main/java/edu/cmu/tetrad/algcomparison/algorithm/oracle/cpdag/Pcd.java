@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -25,7 +25,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @Bootstrapping
-public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -35,61 +36,37 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-    /**
      * <p>Constructor for Pcd.</p>
      */
     public Pcd() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ScoreIndTest test;
+    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+        ScoreIndTest test;
 
-            if (dataSet instanceof ICovarianceMatrix) {
-                SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
-                score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-                score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
-                test = new ScoreIndTest(score);
-            } else if (dataSet instanceof DataSet) {
-                SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
-                score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-                score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
-                test = new ScoreIndTest(score);
-            } else {
-                throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
-            }
-
-            edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph search1 = search.search();
-            LogUtilsSearch.stampWithBic(search1, dataSet);
-            return search1;
+        if (dataSet instanceof ICovarianceMatrix) {
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
+            test = new ScoreIndTest(score);
+        } else if (dataSet instanceof DataSet) {
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
+            test = new ScoreIndTest(score);
         } else {
-            Pcd algorithm = new Pcd();
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data,
-                    algorithm,
-                    knowledge,
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
         }
+
+        edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        Graph search1 = search.search();
+        LogUtilsSearch.stampWithBic(search1, dataSet);
+
+        return search1;
     }
 
     /**
@@ -147,11 +124,4 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
         this.knowledge = new Knowledge(knowledge);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

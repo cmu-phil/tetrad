@@ -54,25 +54,41 @@ import java.util.*;
  * @see Knowledge
  */
 public final class Rfci implements IGraphSearch {
-    // The variables to search over (optional)
+    /**
+     * The variables to search over (optional)
+     */
     private final List<Node> variables = new ArrayList<>();
-    // The independence test to use.
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The RFCI-PAG being constructed.
+    /**
+     * The RFCI-PAG being constructed.
+     */
     private Graph graph;
-    // The SepsetMap being constructed.
+    /**
+     * The SepsetMap being constructed.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // The depth for the fast adjacency search.
+    /**
+     * The depth for the fast adjacency search.
+     */
     private int depth = -1;
-    // Elapsed time of last search.
+    /**
+     * Elapsed time of last search.
+     */
     private long elapsedTime;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -118,7 +134,6 @@ public final class Rfci implements IGraphSearch {
         }
         this.variables.removeAll(remVars);
     }
-
 
     /**
      * Runs the search and returns the RFCI PAG.
@@ -245,7 +260,6 @@ public final class Rfci implements IGraphSearch {
         this.knowledge = new Knowledge(knowledge);
     }
 
-
     /**
      * Returns the maximum length of any discriminating path, or -1 of unlimited.
      *
@@ -301,16 +315,14 @@ public final class Rfci implements IGraphSearch {
         return this.sepsets.get(i, k);
     }
 
-    ////////////////////////////////////////////
-    // RFCI Algorithm 4.4 (Colombo et al, 2012)
-    // Orient colliders
-    ////////////////////////////////////////////
+    /**
+     * RFCI Algorithm 4.4 (Colombo et al, 2012) Orient colliders
+     */
     private void ruleR0_RFCI(List<Node[]> rTuples) {
         List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = this.graph.getNodes();
 
-        ///////////////////////////////
         // process tuples in rTuples
         while (!rTuples.isEmpty()) {
             Node[] thisTuple = rTuples.remove(0);
@@ -420,7 +432,6 @@ public final class Rfci implements IGraphSearch {
             }
         }
 
-        ///////////////////////////////////////////////////////
         // orient colliders (similar to original FCI ruleR0)
         for (Node[] thisTuple : lTuples) {
             Node i = thisTuple[0];
@@ -451,9 +462,9 @@ public final class Rfci implements IGraphSearch {
 
     }
 
-    ////////////////////////////////////////////////
-    // collect in rTupleList all unshielded tuples
-    ////////////////////////////////////////////////
+    /**
+     * collect in rTupleList all unshielded tuples
+     */
     private List<Node[]> getRTuples() {
         List<Node[]> rTuples = new ArrayList<>();
         List<Node> nodes = this.graph.getNodes();
@@ -484,10 +495,10 @@ public final class Rfci implements IGraphSearch {
         return (rTuples);
     }
 
-    /////////////////////////////////////////////////////////////////////////////
-    // set the sepSet of x and y to the minimal such subset of the given sepSet
-    // and remove the edge <x, y> if background knowledge allows
-    /////////////////////////////////////////////////////////////////////////////
+    /**
+     * set the sepSet of x and y to the minimal such subset of the given sepSet and remove the edge <x, y> if background
+     * knowledge allows
+     */
     private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
         Set<Node> empty = Collections.emptySet();
         boolean independent;

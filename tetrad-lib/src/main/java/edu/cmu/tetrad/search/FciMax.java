@@ -321,6 +321,11 @@ public final class FciMax implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
+    /**
+     * Retrieves an instance of FciOrient with all necessary parameters set.
+     *
+     * @return A new instance of FciOrient.
+     */
     @NotNull
     private FciOrient getFciOrient() {
         FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
@@ -334,6 +339,11 @@ public final class FciMax implements IGraphSearch {
         return fciOrient;
     }
 
+    /**
+     * Adds colliders to the given graph.
+     *
+     * @param graph The graph to which colliders should be added.
+     */
     private void addColliders(Graph graph) {
         Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
@@ -395,6 +405,13 @@ public final class FciMax implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs the DO operation on a node in the graph.
+     *
+     * @param graph  The graph containing the nodes.
+     * @param scores The map of node triples to scores.
+     * @param b      The node on which to perform the DO operation.
+     */
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 

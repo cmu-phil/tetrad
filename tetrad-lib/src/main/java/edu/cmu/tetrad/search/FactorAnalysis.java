@@ -47,15 +47,25 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @version $Id: $Id
  */
 public class FactorAnalysis {
-    // the covariance matrix
+    /**
+     * the covariance matrix
+     */
     private final CovarianceMatrix covariance;
-    // method-specific fields that get used
+    /**
+     * method-specific fields that get used
+     */
     private LinkedList<Matrix> factorLoadingVectors;
-    // the threshold for the algorithm
+    /**
+     * the threshold for the algorithm
+     */
     private double threshold = 0.001;
-    // the number of factors to find
+    /**
+     * the number of factors to find
+     */
     private int numFactors = 2;
-    // the residual matrix
+    /**
+     * the residual matrix
+     */
     private Matrix residual;
 
     /**
@@ -76,8 +86,9 @@ public class FactorAnalysis {
         this.covariance = new CovarianceMatrix(dataSet);
     }
 
-    //designed for normalizing a vector.
-    //as usual, vectors are treated as matrices to simplify operations elsewhere
+    /**
+     * designed for normalizing a vector. as usual, vectors are treated as matrices to simplify operations elsewhere
+     */
     private static Matrix normalizeRows(Matrix matrix) {
         LinkedList<Matrix> normalizedRows = new LinkedList<>();
         for (int i = 0; i < matrix.getNumRows(); i++) {
@@ -100,11 +111,24 @@ public class FactorAnalysis {
         return result;
     }
 
+    /**
+     * Normalizes a vector.
+     *
+     * @param vector The vector to be normalized.
+     * @return The normalized vector.
+     */
     private static Matrix normalizeVector(Matrix vector) {
         double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
         return vector.scalarMult(1.0 / scalar);
     }
 
+    /**
+     * Calculates the matrix exponentiation of a given matrix with the specified exponent.
+     *
+     * @param matrix   The matrix to be exponentiated.
+     * @param exponent The exponent to raise the matrix to.
+     * @return The result of the matrix exponentiation.
+     */
     private static Matrix matrixExp(Matrix matrix, double exponent) {
         Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
         for (int i = 0; i < matrix.getNumRows(); i++) {

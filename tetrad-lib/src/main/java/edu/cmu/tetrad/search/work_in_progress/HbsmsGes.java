@@ -338,7 +338,7 @@ public final class HbsmsGes implements Hbsms {
                         double evalScore = scoreGraph(graph2).getScore();
 
                         TetradLogger.getInstance().forceLogMessage("Trying to add " + _x + "-->" + _y + " evalScore = " +
-                                                evalScore);
+                                evalScore);
 
                         if (!(evalScore > bestScore && evalScore > score)) {
                             continue;

@@ -315,8 +315,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
             if (numMissing > this.maxMissing) {
                 TetradLogger.getInstance().forceLogMessage("classification(" + k + ") = " +
-                                "not done since number of missing values too high " +
-                                "(" + numMissing + ").");
+                        "not done since number of missing values too high " +
+                        "(" + numMissing + ").");
                 continue;
             }
 

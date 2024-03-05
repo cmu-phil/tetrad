@@ -8,10 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
@@ -34,15 +31,25 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see NodeEffects
  */
 public class Ida {
-    // The dataset being searched over.
+    /**
+     * The dataset being searched over.
+     */
     private final DataSet dataSet;
-    // The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+    /**
+     * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+     */
     private final Graph cpdag;
-    // The possible causes to be considered.
+    /**
+     * The possible causes to be considered.
+     */
     private final List<Node> possibleCauses;
-    // A map from node names to indices in the covariance matrix.
+    /**
+     * A map from node names to indices in the covariance matrix.
+     */
     private final Map<String, Integer> nodeIndices;
-    // The covariance matrix for the dataset.
+    /**
+     * The covariance matrix for the dataset.
+     */
     private final ICovarianceMatrix allCovariances;
 
     /**
@@ -93,12 +100,13 @@ public class Ida {
     }
 
     /**
-     * Calculates the true effect of (x, y) given the true DAG (which must be provided).
+     * Calculates the true effect of node x on node y in a given graph.
      *
-     * @param trueDag The true DAG.
-     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
-     * @return The true effect of (x, y).
+     * @param x       The first node.
+     * @param y       The second node.
+     * @param trueDag The graph representing the true underlying causal structure.
+     * @return The true effect of x on y.
+     * @throws IllegalArgumentException If x is equal to y.
      */
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
@@ -202,7 +210,7 @@ public class Ida {
                     effects.add(abs(getBeta(regressors, y)));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
         }
 

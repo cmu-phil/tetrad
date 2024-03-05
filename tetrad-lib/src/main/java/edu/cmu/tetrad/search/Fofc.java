@@ -184,8 +184,6 @@ public class Fofc {
         System.out.println("allClusters = " + allClusters);
         System.out.println("this.clusters = " + this.clusters);
 
-//        if (allClusters.isEmpty()) return new EdgeListGraph();
-
         ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
         clusterSignificance.printClusterPValues(allClusters);
 
@@ -229,7 +227,12 @@ public class Fofc {
         this.verbose = verbose;
     }
 
-    // renjiey
+    /**
+     * Returns the index of the variable that occurs most frequently in the given array. (renjiey).
+     *
+     * @param outliers An array of integers representing variables.
+     * @return The index of the most frequently occurring variable.
+     */
     private int findFrequentestIndex(Integer[] outliers) {
         Map<Integer, Integer> map = new HashMap<>();
 
@@ -257,11 +260,11 @@ public class Fofc {
         return (key);
     }
 
-    // This is the main function. It removes variables in the data such that the remaining
-    // correlation matrix does not contain extreme value
-    // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
-    // Output: and dynamic array of removed variables
-    // renjiey
+    /**
+     * This is the main function. It removes variables in the data such that the remaining correlation matrix does not
+     * contain extreme value Inputs: correlation matrix, upper and lower bound for unacceptable correlations Output: and
+     * dynamic array of removed variables renjiey
+     */
     private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
                                                double percentBound) {
         Integer[] outlier = new Integer[correlationMatrix.getNumRows() * (correlationMatrix.getNumRows() - 1)];
@@ -315,7 +318,12 @@ public class Fofc {
         return (removedVariables);
     }
 
-    // renjiey
+    /**
+     * Removes the elements with zero index from the given integer array. (renjiey)
+     *
+     * @param outlier The array of integers.
+     * @return The updated array with zero index elements removed.
+     */
     private Integer[] removeZeroIndex(Integer[] outlier) {
         List<Integer> list = new ArrayList<>();
         Collections.addAll(list, outlier);
@@ -327,7 +335,11 @@ public class Fofc {
         return list.toArray(new Integer[1]);
     }
 
-    // This is the main algorithm.
+    /**
+     * Estimates clusters using the triples-first algorithm.
+     *
+     * @return A set of lists of integers representing the clusters.
+     */
     private Set<List<Integer>> estimateClustersTriplesFirst() {
         List<Integer> _variables = allVariables();
 
@@ -346,12 +358,22 @@ public class Fofc {
 
     }
 
+    /**
+     * Retrieves a list of all variables.
+     *
+     * @return A list of integers representing all variables.
+     */
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
         return _variables;
     }
 
+    /**
+     * Estimates clusters using the tetrads-first algorithm.
+     *
+     * @return A set of lists of integers representing the clusters.
+     */
     private Set<List<Integer>> estimateClustersTetradsFirst() {
         List<Integer> _variables = allVariables();
 
@@ -363,6 +385,12 @@ public class Fofc {
 
     }
 
+    /**
+     * Finds pure triples from the given list of variables.
+     *
+     * @param allVariables The list of integers representing all variables.
+     * @return A set of sets of integers representing the pure triples.
+     */
     private Set<Set<Integer>> findPuretriples(List<Integer> allVariables) {
         if (allVariables.size() < 4) {
             return new HashSet<>();
@@ -418,6 +446,13 @@ public class Fofc {
         return puretriples;
     }
 
+    /**
+     * Combines pure triples with given variables.
+     *
+     * @param puretriples The set of pure triples.
+     * @param _variables  The list of variables.
+     * @return A set of combined clusters.
+     */
     private Set<Set<Integer>> combinePuretriples(Set<Set<Integer>> puretriples, List<Integer> _variables) {
         log("Growing pure triples.");
         Set<Set<Integer>> grown = new HashSet<>();
@@ -789,6 +824,12 @@ public class Fofc {
         return clusters;
     }
 
+    /**
+     * Adds other variables to the given cluster if they satisfy certain conditions.
+     *
+     * @param _variables The list of available variables.
+     * @param cluster    The current cluster.
+     */
     private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
         O:
         for (int o : _variables) {
@@ -818,17 +859,22 @@ public class Fofc {
                 }
             }
 
-//            if (found) {
             log("Extending by " + this.variables.get(o));
             cluster.add(o);
-//            }
         }
     }
 
+    /**
+     * Determines if adding a new cluster to the existing clusters would result in an insignificant model.
+     *
+     * @param clusters  The set of existing clusters.
+     * @param cluster   The new cluster to be added.
+     * @param variable  The list of variables.
+     * @param dataModel The data model to be used in significance calculations.
+     * @return True if adding the new cluster would result in an insignificant model, false otherwise.
+     */
     private boolean modelInsignificantWithNewCluster(Set<List<Integer>> clusters, List<Integer> cluster,
                                                      List<Node> variable, DataModel dataModel) {
-//        if (true) return false;
-
         List<List<Integer>> __clusters = new ArrayList<>(clusters);
         __clusters.add(cluster);
 
@@ -843,7 +889,13 @@ public class Fofc {
         return significance3 < this.alpha;
     }
 
-    //  Finds clusters of size 3 3or the quartet-first algorithm.
+    /**
+     * Finds clusters of size 3 3or the quartet-first algorithm.
+     *
+     * @param remaining The list of remaining variables.
+     * @param unionPure The set of union pure variables.
+     * @return A set of lists of integers representing the mixed clusters.
+     */
     private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<>();
 
@@ -918,12 +970,24 @@ public class Fofc {
         return triples;
     }
 
+    /**
+     * Calculate the degrees of freedom for Drton's method.
+     *
+     * @param n The number of variables.
+     * @return The number of degrees of freedom.
+     */
     private int dofDrton(int n) {
         int dof = ((n - 2) * (n - 3)) / 2 - 2;
         if (dof < 0) dof = 0;
         return dof;
     }
 
+    /**
+     * Determines if a given quartet of variables satisfies the conditions for being considered pure.
+     *
+     * @param quartet The list of integers representing a quartet of variables.
+     * @return True if the quartet is pure, false otherwise.
+     */
     private boolean pure(List<Integer> quartet) {
         if (zeroCorr(quartet)) {
             return false;
@@ -950,6 +1014,16 @@ public class Fofc {
         return false;
     }
 
+    /**
+     * Constructs a quartet from four given integers.
+     *
+     * @param n1 The first integer.
+     * @param n2 The second integer.
+     * @param n3 The third integer.
+     * @param n4 The fourth integer.
+     * @return A list containing the four integers in the order they were passed in.
+     * @throws IllegalArgumentException If any of the integers are duplicated.
+     */
     private List<Integer> quartet(int n1, int n2, int n3, int n4) {
         List<Integer> quartet = new ArrayList<>();
         quartet.add(n1);
@@ -963,6 +1037,15 @@ public class Fofc {
         return quartet;
     }
 
+    /**
+     * Constructs a {@link List} of integers representing a triple.
+     *
+     * @param n1 The first integer.
+     * @param n2 The second integer.
+     * @param n3 The third integer.
+     * @return A {@link List} containing the three integers in the order they were passed in.
+     * @throws IllegalArgumentException If any of the integers are duplicated.
+     */
     private List<Integer> triple(int n1, int n2, int n3) {
         List<Integer> triple = new ArrayList<>();
         triple.add(n1);
@@ -975,6 +1058,12 @@ public class Fofc {
         return triple;
     }
 
+    /**
+     * Determines if the quartet of variables vanishes based on the test type.
+     *
+     * @param quartet The list of integers representing the quartet of variables.
+     * @return True if the quartet vanishes, false otherwise.
+     */
     private boolean vanishes(List<Integer> quartet) {
         int n1 = quartet.get(0);
         int n2 = quartet.get(1);
@@ -984,6 +1073,12 @@ public class Fofc {
         return vanishes(n1, n2, n3, n4);
     }
 
+    /**
+     * Checks if a given cluster has zero correlation among its variables.
+     *
+     * @param cluster The list of integers representing the cluster.
+     * @return True if the cluster has zero correlation, false otherwise.
+     */
     private boolean zeroCorr(List<Integer> cluster) {
         int count = 0;
 
@@ -1000,6 +1095,15 @@ public class Fofc {
         return count >= 1;
     }
 
+    /**
+     * Determines if the quartet of variables vanishes based on the test type.
+     *
+     * @param x The first variable index.
+     * @param y The second variable index.
+     * @param z The third variable index.
+     * @param w The fourth variable index.
+     * @return True if the quartet vanishes, false otherwise.
+     */
     private boolean vanishes(int x, int y, int z, int w) {
         if (this.testType == BpcTestType.TETRAD_DELTA) {
             Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
@@ -1013,6 +1117,12 @@ public class Fofc {
         throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
     }
 
+    /**
+     * Converts search graph nodes to a Graph object.
+     *
+     * @param clusters The set of sets of Node objects representing the clusters.
+     * @return A Graph object representing the search graph nodes.
+     */
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph();
 
@@ -1034,6 +1144,12 @@ public class Fofc {
         return graph;
     }
 
+    /**
+     * Converts search graph nodes to a Graph object.
+     *
+     * @param allClusters The set of sets of Node objects representing the clusters.
+     * @return A Graph object representing the search graph nodes.
+     */
     private Graph convertToGraph(Set<List<Integer>> allClusters) {
         Set<Set<Node>> _clustering = new HashSet<>();
 
@@ -1050,6 +1166,12 @@ public class Fofc {
         return convertSearchGraphNodes(_clustering);
     }
 
+    /**
+     * Returns the union of all integers in the given list of clusters.
+     *
+     * @param pureClusters The set of clusters, where each cluster is represented as a list of integers.
+     * @return A set containing the union of all integers in the clusters.
+     */
     private Set<Integer> unionPure(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
 
@@ -1060,6 +1182,11 @@ public class Fofc {
         return unionPure;
     }
 
+    /**
+     * Logs a message if the verbose flag is set to true.
+     *
+     * @param s The message to log.
+     */
     private void log(String s) {
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage(s);

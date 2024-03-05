@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -7,7 +8,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -18,7 +18,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.io.Serial;
@@ -37,7 +36,7 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
+public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
 
     @Serial
@@ -52,11 +51,6 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * The targets.
@@ -79,63 +73,48 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         this.score = score;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            int trimmingStyle = parameters.getInt(Params.TRIMMING_STYLE);
+    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+        int trimmingStyle = parameters.getInt(Params.TRIMMING_STYLE);
 
-            Score score = this.score.getScore(dataSet, parameters);
-            edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
-            search.setNumExpansions(parameters.getInt(Params.NUMBER_OF_EXPANSIONS));
-            search.setTrimmingStyle(trimmingStyle);
-            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        Score myScore = this.score.getScore(dataSet, parameters);
+        edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(myScore);
+        search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+        search.setNumExpansions(parameters.getInt(Params.NUMBER_OF_EXPANSIONS));
+        search.setTrimmingStyle(trimmingStyle);
+        search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            String string = parameters.getString(Params.TARGETS);
-            String[] _targets;
-
-            if (string.contains(",")) {
-                _targets = string.split(",");
-            } else {
-                _targets = string.split(" ");
-            }
-
-            List<Node> targets = new ArrayList<>();
-
-            for (String _target : _targets) {
-                Node variable = dataSet.getVariable(_target);
-
-                if (variable == null) {
-                    throw new IllegalArgumentException("Target not in data: " + _target);
-                }
-
-                targets.add(variable);
-            }
-
-            this.targets = targets;
-
-            return search.search(targets);
-        } else {
-            FgesMb fgesMb = new FgesMb(this.score);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb,
-                    knowledge, parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+        Object obj = parameters.get(Params.PRINT_STREAM);
+        if (obj instanceof PrintStream ps) {
+            search.setOut(ps);
         }
+
+        String string = parameters.getString(Params.TARGETS);
+        String[] _targets;
+
+        if (string.contains(",")) {
+            _targets = string.split(",");
+        } else {
+            _targets = string.split(" ");
+        }
+
+        List<Node> myTargets = new ArrayList<>();
+
+        for (String _target : _targets) {
+            Node variable = dataSet.getVariable(_target);
+
+            if (variable == null) {
+                throw new IllegalArgumentException("Target not in data: " + _target);
+            }
+
+            myTargets.add(variable);
+        }
+
+        this.targets = myTargets;
+
+        return search.search(myTargets);
     }
 
     /**
@@ -214,11 +193,4 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         this.score = score;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

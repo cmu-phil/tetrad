@@ -312,7 +312,7 @@ public class SimpleDataLoader {
 
                 if ("".equals(literal)) {
                     TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a "
-                                        + "covariance value--ignoring.");
+                            + "covariance value--ignoring.");
                     continue;
                 }
 

@@ -31,6 +31,7 @@ import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
 /**
+ * A utility for resampling dataset.
  *
  * Feb 20, 2024 6:57:28 PM
  *
@@ -151,7 +152,7 @@ public final class DataSampling {
     }
 
     /**
-     * Efficient way to shuffle an array.
+     * In-line array shuffle.
      *
      * @param array the array to shuffle
      * @param randomGenerator random number generator (optional)
@@ -159,21 +160,21 @@ public final class DataSampling {
     private static void shuffle(int[] array, RandomGenerator randomGenerator) {
         if (randomGenerator == null) {
             for (int i = 0; i < array.length - 1; i++) {
-                int currIndex = array[i];
                 int randIndex = RandomUtil.getInstance().nextInt(array.length - i) + i;
 
                 // swap
+                int currValue = array[i];
                 array[i] = array[randIndex];
-                array[randIndex] = currIndex;
+                array[randIndex] = currValue;
             }
         } else {
             for (int i = 0; i < array.length - 1; i++) {
-                int currIndex = array[i];
                 int randIndex = randomGenerator.nextInt(array.length - i) + i;
 
                 // swap
+                int currValue = array[i];
                 array[i] = array[randIndex];
-                array[randIndex] = currIndex;
+                array[randIndex] = currValue;
             }
         }
     }

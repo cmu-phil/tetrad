@@ -41,22 +41,8 @@ public class LogDataUtils {
 
         if (list.size() == 1) {
             TetradLogger.getInstance().forceLogMessage("\nThere is one data set in this box.");
-
-            if (true) {
-                String message = list.get(0).toString();
-                TetradLogger.getInstance().forceLogMessage(message);
-            }
         } else {
             TetradLogger.getInstance().forceLogMessage("\nThere are " + list.size() + " data sets in this box.");
-
-
-            for (int i = 0; i < list.size(); i++) {
-                TetradLogger.getInstance().forceLogMessage("\nData set # " + (i + 1));
-
-                if (true) {
-                    TetradLogger.getInstance().forceLogMessage("" + list.get(i));
-                }
-            }
         }
     }
 }

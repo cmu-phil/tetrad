@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.StringTextField;
 import org.jetbrains.annotations.NotNull;
@@ -64,11 +63,11 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private final DefaultStyledDocument expressionTextDoc;
     /**
-     * g The generalized SEM PM that's being edited.
+     * The generalized SEM PM that's being edited.
      */
     private final GeneralizedSemPm semPm;
     /**
-     *
+     * Represents a combo box used for user selection.
      */
     private final JComboBox<String> combo = new JComboBox<>();
     /**
@@ -80,10 +79,6 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private final Box equationsBox;
     /**
-     * The color that selected text is being rendered. Either black or red.
-     */
-    private Color color = Color.BLACK;
-    /**
      * The start index of selected text.
      */
     private int start;
@@ -91,11 +86,6 @@ class GeneralizedTemplateEditor extends JComponent {
      * The width of the selected text.
      */
     private int stringWidth;
-    /**
-     * The time that the selected text should be colored. (Must do this all indirectly using a thread because we cannot
-     * saveTemplate to the text pane.)
-     */
-    private long recolorTime = MillisecondTimes.timeMillis();
     /**
      * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
      * most up-to-date list of parameters.
@@ -177,7 +167,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     updateEquationsDisplay();
                 } else if ("Estimation Starting Values".equals(item)) {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                    String template = getSemPm().getStartsWithParameterEstimationInitializationTemplate(startsWith);
                     if (template == null) {
                         template = getSemPm().getParametersEstimationInitializationTemplate();
                     }
@@ -217,7 +207,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 setParseText(template);
             } else if ("Estimation Starting Values".equals(item)) {
                 String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                String template = getSemPm().getStartsWithParameterEstimationInitializationTemplate(startsWith);
                 if (template == null) {
                     template = getSemPm().getParametersEstimationInitializationTemplate();
                 }
@@ -289,22 +279,11 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         });
 
-        ColorThread thread = new ColorThread(expressionTextPane, this);
-        thread.start();
+        Style red = expressionTextPane.addStyle("Red", null);
+        StyleConstants.setForeground(red, Color.RED);
 
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                //To change the body of implemented methods, use File | Settings | File Templates.
-            }
-
-            public void ancestorRemoved(AncestorEvent event) {
-                thread.scheduleStop();
-            }
-
-            public void ancestorMoved(AncestorEvent event) {
-                //To change the body of implemented methods, use File | Settings | File Templates.
-            }
-        });
+        Style black = expressionTextPane.addStyle("Black", null);
+        StyleConstants.setForeground(black, Color.BLACK);
 
         this.expressionTextPane.setCaretPosition(this.expressionTextPane.getText().length());
 
@@ -368,7 +347,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
 
-                    getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
+                    getSemPm().setStartsWithParametersEstimationInitializationTemplate(startsWith, template);
                 } catch (ParseException e) {
                     //
                 }
@@ -387,13 +366,13 @@ class GeneralizedTemplateEditor extends JComponent {
             String signature;
 
             if ("-New Parameter-".equals(token)) {
-                signature = nextParameterName("b");
+                signature = nextParameterName();
             } else {
                 signature = expressionsMap.get(token);
             }
 
             while (signature.contains("%")) {
-                signature = signature.replaceFirst("%", nextParameterName("b"));
+                signature = signature.replaceFirst("%", nextParameterName());
             }
 
             GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
@@ -521,7 +500,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
     //===============================================PUBLIC METHODS===========================================//
 
-    private String nextParameterName(String base) {
+    private String nextParameterName() {
         Set<String> parameters = getSemPm().getParameters();
         parameters.addAll(this.latestParser.getParameters());
 
@@ -530,7 +509,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
         loop:
         while (true) {
-            String name = base + (++i);
+            String name = "b" + (++i);
 
             for (String parameter : parameters) {
                 if (parameter.equals(name)) {
@@ -541,7 +520,7 @@ class GeneralizedTemplateEditor extends JComponent {
             break;
         }
 
-        return base + i;
+        return "b" + i;
     }
 
     /**
@@ -556,15 +535,17 @@ class GeneralizedTemplateEditor extends JComponent {
     //==============================================PRIVATE METHODS============================================//
 
     private void setParseText(String text) {
-        try {
+        SwingUtilities.invokeLater(() -> {
+            try {
 
-            // Add the text to the document
-            this.expressionTextDoc.remove(0, this.expressionTextPane.getText().length());
-            this.expressionTextDoc.insertString(0, text, null);
-        } catch (BadLocationException e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
-            throw new RuntimeException(e);
-        }
+                // Add the text to the document
+                expressionTextDoc.remove(0, expressionTextPane.getText().length());
+                expressionTextDoc.insertString(0, text, null);
+            } catch (BadLocationException e) {
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void applyChanges() {
@@ -743,7 +724,6 @@ class GeneralizedTemplateEditor extends JComponent {
 
     private void listen() {
         String expressionString = this.expressionTextPane.getText();
-
         ExpressionParser parser = new ExpressionParser();
 
         try {
@@ -751,10 +731,11 @@ class GeneralizedTemplateEditor extends JComponent {
                 parser.parseExpression(expressionString);
             }
 
-            this.color = Color.BLACK;
+            StyledDocument document = expressionTextPane.getStyledDocument();
+            setDocumentColor(document, "Black");
+
             this.start = 0;
             this.stringWidth = expressionString.length();
-            this.recolorTime = MillisecondTimes.timeMillis();
 
             String startsWithText = this.startsWithField.getValue().trim();
 
@@ -766,63 +747,27 @@ class GeneralizedTemplateEditor extends JComponent {
                         }
                     } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
                         if (!startsWithText.trim().isEmpty()) {
-                            getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
+                            getSemPm().setStartsWithParametersEstimationInitializationTemplate(startsWithText, expressionString);
                         }
                     }
                 }
             }
         } catch (ParseException e) {
-            this.color = Color.RED;
             this.start = e.getErrorOffset();
+            StyledDocument document = expressionTextPane.getStyledDocument();
+            setDocumentColor(document, "Red");
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = MillisecondTimes.timeMillis();
         }
 
         this.latestParser = parser;
     }
 
-    private static class ColorThread extends Thread {
-        private final JTextPane expressionTextPane;
-        private final GeneralizedTemplateEditor templateEditor;
-        private boolean stop;
-
-        public ColorThread(JTextPane expressionTextPane, GeneralizedTemplateEditor templateEditor) {
-            this.expressionTextPane = expressionTextPane;
-            this.templateEditor = templateEditor;
-        }
-
-        @Override
-        public void run() {
-            StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-            Style red = expressionTextPane.addStyle("Red", null);
-            StyleConstants.setForeground(red, Color.RED);
-
-            Style black = expressionTextPane.addStyle("Black", null);
-            StyleConstants.setForeground(black, Color.BLACK);
-
-            while (!this.stop) {
-                if (MillisecondTimes.timeMillis() < templateEditor.recolorTime) {
-                    continue;
-                }
-
-                if (templateEditor.color.equals(Color.RED)) {
-                    document.setCharacterAttributes(templateEditor.start, templateEditor.stringWidth, templateEditor.expressionTextPane.getStyle("Red"), true);
-                } else if (templateEditor.color == Color.BLACK) {
-                    document.setCharacterAttributes(templateEditor.start, templateEditor.stringWidth, templateEditor.expressionTextPane.getStyle("Black"), true);
-                }
-
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    System.out.println(e.getMessage());
-                }
+    private void setDocumentColor(StyledDocument document, String color) {
+        SwingUtilities.invokeLater(() -> {
+            if (document != null) {
+                document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle(color), true);
             }
-        }
-
-        public void scheduleStop() {
-            this.stop = true;
-        }
+        });
     }
 }
 
