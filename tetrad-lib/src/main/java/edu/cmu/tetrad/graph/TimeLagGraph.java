@@ -1112,7 +1112,7 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * This class represents a NodeId, which consists of the name of the node and its lag.
      */
     public static class NodeId {
         /**

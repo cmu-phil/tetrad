@@ -79,7 +79,12 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this AlgorithmModel object with the specified AlgorithmModel object for order.
+     * The comparison is based on the names of the AlgorithmModel objects.
+     *
+     * @param other the object to be compared
+     * @return a negative integer, zero, or a positive integer as this object is less than,
+     *         equal to, or greater than the specified object.
      */
     @Override
     public int compareTo(AlgorithmModel other) {
@@ -87,7 +92,9 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
      */
     @Override
     public String toString() {

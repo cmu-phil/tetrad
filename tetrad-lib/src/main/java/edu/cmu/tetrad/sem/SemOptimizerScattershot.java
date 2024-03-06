@@ -62,10 +62,12 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
-     * freeParameters of the Sem.
+     * Optimizes the given SemIm object.
+     *
+     * @param semIm The unoptimized SemIm object to be optimized.
+     * @throws NullPointerException If the sample covariance matrix of semIm is null.
+     * @throws IllegalArgumentException If the sample covariance matrix contains missing values.
+     * @throws NullPointerException If the minimal score SEM could not be found.
      */
     public void optimize(SemIm semIm) {
         Matrix sampleCovar = semIm.getSampleCovar();
@@ -127,7 +129,9 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of restarts used during optimization.
+     *
+     * @return The number of restarts.
      */
     @Override
     public int getNumRestarts() {
@@ -135,7 +139,9 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the number of restarts used during optimization.
+     *
+     * @param numRestarts The number of restarts to set.
      */
     @Override
     public void setNumRestarts(int numRestarts) {

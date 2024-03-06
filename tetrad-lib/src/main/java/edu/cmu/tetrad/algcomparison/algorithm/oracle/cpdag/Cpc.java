@@ -76,7 +76,11 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph based on the given data model and parameters.
+     *
+     * @param dataModel    The data set to run the search on.
+     * @param parameters   The parameters of the search.
+     * @return The resulting graph.
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
@@ -133,7 +137,10 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -142,7 +149,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short description of the method.
+     *
+     * @return The description of the method.
      */
     @Override
     public String getDescription() {
@@ -150,7 +159,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type required by the search algorithm.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -158,7 +169,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters used in the search algorithm.
+     *
+     * @return The list of parameters used in the search algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -174,7 +187,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with the algorithm.
+     *
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -182,7 +197,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with the algorithm.
+     *
+     * @param knowledge a knowledge object.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -190,7 +207,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper associated with this algorithm.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -198,7 +217,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test the independence wrapper.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
@@ -206,7 +227,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the BootstrapGraphs associated with this algorithm.
+     *
+     * @return The list of BootstrapGraphs.
      */
     @Override
     public List<Graph> getBootstrapGraphs() {

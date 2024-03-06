@@ -79,7 +79,11 @@ public class Gamma implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the index'th parameter to the given value.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; number of parameters.
+     * @param value The value to set the parameter to.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public void setParameter(int index, double value) {
         if (index == 0) {
@@ -92,7 +96,11 @@ public class Gamma implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the index'th parameter of the Gamma distribution.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; number of parameters.
+     * @return The value of the parameter specified by the index.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -105,7 +113,11 @@ public class Gamma implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the name of the index'th parameter, for display purposes.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; number of parameters.
+     * @return The name of the parameter specified by the index.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public String getParameterName(int index) {
         if (index == 0) {

@@ -98,7 +98,9 @@ public class NoteModel implements SessionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the name of the session model.
+     *
+     * @param name the name of the session model.
      */
     public void setName(String name) {
         this.name = name;

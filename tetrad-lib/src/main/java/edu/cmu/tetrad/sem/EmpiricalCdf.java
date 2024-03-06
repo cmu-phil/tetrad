@@ -49,7 +49,10 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the cumulative probability of a given value in the empirical cumulative distribution function (CDF).
+     *
+     * @param x the point at which the CDF is evaluated
+     * @return the cumulative probability of the given value in the empirical CDF
      */
     public double cumulativeProbability(double x) {
         int count = 0;
@@ -66,7 +69,10 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the probability mass function (PMF) at a given value in the empirical cumulative distribution function (CDF).
+     *
+     * @param v the point at which the PMF is evaluated
+     * @return the probability mass function at the given value in the empirical CDF
      */
     @Override
     public double probability(double v) {

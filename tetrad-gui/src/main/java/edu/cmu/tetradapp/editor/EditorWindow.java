@@ -88,7 +88,14 @@ public class EditorWindow extends JInternalFrame
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this EditorWindow object with the specified object for order. The specified
+     * object must also be an EditorWindow object. This method compares the names of the
+     * EditorWindow objects in lexicographic order.
+     *
+     * @param o the object to be compared.
+     * @return a negative integer, zero, or a positive integer as this object is less than,
+     * equal to, or greater than the specified object.
+     * @throws ClassCastException if the specified object is not an EditorWindow.
      */
     @Override
     public int compareTo(@NotNull Object o) {

@@ -36,6 +36,13 @@ import java.nio.file.StandardOpenOption;
 public class MetadataFileWriter implements MetadataWriter {
 
     /**
+     * The MetadataFileWriter class is responsible for writing metadata to a file or as a string.
+     */
+    public MetadataFileWriter() {
+
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Writes the metadata as a string.

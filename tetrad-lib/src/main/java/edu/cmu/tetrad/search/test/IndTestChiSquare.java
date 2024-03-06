@@ -353,9 +353,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns true if verbose output should be printed.
+     * Returns the value of the verbose flag.
+     *
+     * @return true if verbose output is enabled, false otherwise.
      */
     @Override
     public boolean isVerbose() {

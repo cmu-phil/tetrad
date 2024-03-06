@@ -122,9 +122,10 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Responds to "exitProgram" property change events by disposing of the Tetrad IV frame and exiting if possible.
+     * This method is called when a property value changes. It checks if the property name is "exitProgram"
+     * and if so, it calls the exitApplication() method.
+     *
+     * @param e A PropertyChangeEvent object describing the event source and the property that has changed.
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {

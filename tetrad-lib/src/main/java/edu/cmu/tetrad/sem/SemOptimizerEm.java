@@ -147,7 +147,11 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Optimizes the provided SEM (structural equation model) by performing parameter estimation.
+     *
+     * @param semIm The unoptimized SEM to be optimized.
+     * @throws NullPointerException     If the sample covariance matrix has not been set.
+     * @throws IllegalArgumentException If the sample covariance matrix contains missing values.
      */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
@@ -235,7 +239,9 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of restarts used in the optimization process.
+     *
+     * @return The number of restarts.
      */
     @Override
     public int getNumRestarts() {
@@ -243,7 +249,9 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the number of restarts used in the optimization process.
+     *
+     * @param numRestarts the number of restarts
      */
     @Override
     public void setNumRestarts(int numRestarts) {

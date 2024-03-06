@@ -128,42 +128,70 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a bidirectional edge between two nodes to the graph.
+     *
+     * @param node1 the first node to connect
+     * @param node2 the second node to connect
+     * @return true if the edge was successfully added, false otherwise
      */
     public boolean addBidirectedEdge(Node node1, Node node2) {
         return this.graph.addBidirectedEdge(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a directed edge between two nodes.
+     *
+     * @param node1 the first node to be connected (source node)
+     * @param node2 the second node to be connected (target node)
+     * @return true if the directed edge was successfully added, false otherwise
      */
     public boolean addDirectedEdge(Node node1, Node node2) {
         return addEdge(Edges.directedEdge(node1, node2));
     }
 
     /**
-     * {@inheritDoc}
+     * Adds an undirected edge between two nodes.
+     *
+     * @param node1 The first node involved in the edge.
+     * @param node2 The second node involved in the edge.
+     * @return True if the edge was successfully added, false otherwise.
+     * @throws UnsupportedOperationException if the operation is disallowed for a Directed Acyclic Graph (DAG).
      */
     public boolean addUndirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a nondirected edge between two nodes in the graph.
+     *
+     * @param node1 The first node to connect.
+     * @param node2 The second node to connect.
+     * @return Returns true if the nondirected edge was added successfully.
+     * @throws UnsupportedOperationException Thrown if the graph is a directed acyclic graph (DAG).
      */
     public boolean addNondirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a partially oriented edge between two nodes.
+     *
+     * @param node1 The first node involved in the edge. Must be a {@link Node} object.
+     * @param node2 The second node involved in the edge. Must be a {@link Node} object.
+     * @return True if the edge was added successfully, false otherwise.
+     * @throws UnsupportedOperationException If the graph is a Directed Acyclic Graph (DAG), this operation is not allowed.
      */
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a directed edge to the DAG (Directed Acyclic Graph).
+     *
+     * @param edge The Edge object to be added.
+     * @return Returns true if the edge was successfully added to the DAG, false otherwise.
+     * @throws IllegalArgumentException if the given edge is not a directed edge.
+     * @throws IllegalArgumentException if adding the edge would create a cycle in the DAG.
      */
     public boolean addEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
@@ -181,14 +209,19 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a node to the graph.
+     *
+     * @param node - The node to be added to the graph.
+     * @return true if the node was successfully added to the graph, false otherwise.
      */
     public boolean addNode(Node node) {
         return this.graph.addNode(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a PropertyChangeListener to this object.
+     *
+     * @param e the PropertyChangeListener to be added
      */
     public void addPropertyChangeListener(PropertyChangeListener e) {
         this.graph.addPropertyChangeListener(e);
@@ -202,21 +235,30 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the graph contains the specified edge.
+     *
+     * @param edge the edge to be checked.
+     * @return true if the graph contains the edge, false otherwise.
      */
     public boolean containsEdge(Edge edge) {
         return this.graph.containsEdge(edge);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the specified node is contained in the graph.
+     *
+     * @param node the node to check if contained in the graph
+     * @return true if the node is contained in the graph, false otherwise
      */
     public boolean containsNode(Node node) {
         return this.graph.containsNode(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this graph with the specified object for equality.
+     *
+     * @param o the object to be compared with this graph
+     * @return true if the specified object is equal to this graph, false otherwise
      */
     public boolean equals(Object o) {
         if (!(o instanceof Graph)) return false;
@@ -224,28 +266,41 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * This method fully connects a Directed Acyclic Graph (DAG) with a single endpoint type.
+     *
+     * @param endpoint the endpoint to be fully connected
+     * @throws UnsupportedOperationException if the DAG has a single endpoint type
      */
     public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException("Cannot fully connect a DAG with a single endpoint type.");
     }
 
     /**
-     * {@inheritDoc}
+     * Reorients all edges in a directed acyclic graph (DAG) with a single specified endpoint type.
+     *
+     * @param endpoint the endpoint type to reorient the edges with.
+     *                 It should be a valid {@link Endpoint} object.
+     * @throws UnsupportedOperationException if the DAG does not have a single endpoint type, i.e., it is not a DAG.
      */
     public void reorientAllWith(Endpoint endpoint) {
         throw new UnsupportedOperationException("Cannot reorient all edges in a DAG with a single endpoint type.");
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the adjacent nodes of a given node in the graph.
+     *
+     * @param node The node for which to retrieve the adjacent nodes.
+     * @return A list of adjacent nodes to the given node.
      */
     public List<Node> getAdjacentNodes(Node node) {
         return this.graph.getAdjacentNodes(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of children nodes for the given node.
+     *
+     * @param node The node for which to retrieve the children.
+     * @return A list of children nodes.
      */
     public List<Node> getChildren(Node node) {
         return this.graph.getChildren(node);
@@ -261,28 +316,43 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the edge between two given nodes in the graph.
+     *
+     * @param node1 The first node {@link Node} in the edge.
+     * @param node2 The second node {@link Node} in the edge.
+     * @return The {@link Edge} between the given nodes.
      */
     public Edge getEdge(Node node1, Node node2) {
         return this.graph.getEdge(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the directed edge between two nodes in the graph.
+     *
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return The directed edge between the two nodes, or null if there is no such edge.
      */
     public Edge getDirectedEdge(Node node1, Node node2) {
         return this.graph.getDirectedEdge(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of edges connected to the given node.
+     *
+     * @param node a {@link Node} object representing the node
+     * @return a list of {@link Edge} objects connected to the node
      */
     public List<Edge> getEdges(Node node) {
         return this.graph.getEdges(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of edges between two nodes.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return a list of edges between the two nodes
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         return this.graph.getEdges(node1, node2);
@@ -298,28 +368,41 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Gets the endpoint between two nodes in the graph.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return the endpoint between the two nodes
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return this.graph.getEndpoint(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the indegree of the given node in the graph.
+     *
+     * @param node the node whose indegree is to be determined
+     * @return the indegree of the given node
      */
     public int getIndegree(Node node) {
         return this.graph.getIndegree(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the degree of a given Node in the graph.
+     *
+     * @param node a {@link Node} object representing the node
+     * @return an integer representing the degree of the node
      */
     public int getDegree(Node node) {
         return this.graph.getDegree(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a node from the graph by its name.
+     *
+     * @param name the name of the node to be retrieved
+     * @return the node object, or null if not found
      */
     public Node getNode(String name) {
         return this.graph.getNode(name);
@@ -335,7 +418,9 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the list of nodes in the graph.
+     *
+     * @param nodes a list of nodes to be set in the graph. Must not be null.
      */
     public void setNodes(List<Node> nodes) {
         this.graph.setNodes(nodes);
@@ -360,7 +445,10 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of edges connected to the specified node.
+     *
+     * @param node a {@link Node} object representing the node of interest
+     * @return the number of edges connected to the specified node
      */
     public int getNumEdges(Node node) {
         return this.graph.getNumEdges(node);
@@ -376,21 +464,31 @@ public final class Dag implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the outdegree of a given node.
+     *
+     * @param node a {@link Node} object representing the node whose outdegree is to be retrieved
+     * @return an integer value representing the outdegree of the node
      */
     public int getOutdegree(Node node) {
         return this.graph.getOutdegree(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parents of a given Node in the graph.
+     *
+     * @param node The Node for which to retrieve the parents.
+     * @return A List of Nodes representing the parents.
      */
     public List<Node> getParents(Node node) {
         return this.graph.getParents(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if two nodes are adjacent in the graph.
+     *
+     * @param node1 The first node to check adjacency for. (NonNull)
+     * @param node2 The second node to check adjacency for. (NonNull)
+     * @return true if the nodes are adjacent, false otherwise.
      */
     public boolean isAdjacentTo(Node node1, Node node2) {
         return this.graph.isAdjacentTo(node1, node2);

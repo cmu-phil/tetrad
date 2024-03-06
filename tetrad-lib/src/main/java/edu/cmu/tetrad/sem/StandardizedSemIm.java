@@ -615,10 +615,11 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * A convenience method, in case we want to change out mind about how to simulate. For instance, it's unclear yet
-     * whether we can allow nongaussian errors, so we don't know yet whether the reduced form method is needed.
+     * Simulates a data set with the given number of rows and option to save latent variables.
+     *
+     * @param sampleSize      The number of rows to simulate.
+     * @param latentDataSaved If true, latent variables are saved in the data set.
+     * @return The simulated data set.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);

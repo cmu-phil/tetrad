@@ -112,7 +112,10 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the probability of a given assertion.
+     *
+     * @param assertion The proposition to evaluate.
+     * @return The probability of the given assertion.
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];

@@ -74,7 +74,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph based on the given data sets and parameters.
+     *
+     * @param dataSets   The data sets to search on.
+     * @param parameters The parameters to use for the search.
+     * @return A Graph object representing the search result.
      */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
@@ -151,7 +155,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph based on the given data set and parameters.
+     *
+     * @param dataSet    The data set to run the search on.
+     * @param parameters The parameters of the search.
+     * @return A Graph object representing the search result.
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -172,7 +180,10 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph based on the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -180,7 +191,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the description of the algorithm.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -188,7 +201,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the algorithm.
+     *
+     * @return The data type of the algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -196,7 +211,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameters required by the Images algorithm.
+     *
+     * @return A list of strings representing the parameters required by the Images algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -214,7 +231,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with this instance.
+     *
+     * @return The Knowledge object representing the knowledge associated with this instance.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -222,7 +241,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this instance.
+     *
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -230,7 +251,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the score wrapper associated with this instance.
+     *
+     * @return The ScoreWrapper object representing the score wrapper associated with this instance.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -238,7 +261,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper associated with this instance.
+     *
+     * @param score The ScoreWrapper object representing the score wrapper to be set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -246,7 +271,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the IndependenceWrapper for the algorithm.
+     *
+     * @param test The IndependenceWrapper to be set.
      */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {

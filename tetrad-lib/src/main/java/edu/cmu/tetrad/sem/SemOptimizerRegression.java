@@ -90,9 +90,11 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Fit the freeParameters by doing local regressions.
+     * Optimizes the given Sem object by estimating parameter values using the sample covariance matrix.
+     *
+     * @param semIm The unoptimized Sem (will be optimized).
+     * @throws IllegalArgumentException if the number of restarts is not 1.
+     * @throws NullPointerException if the sample covariance matrix has not been set.
      */
     public void optimize(SemIm semIm) {
         if (this.numRestarts != 1) {
@@ -147,7 +149,9 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the number of restarts used during optimization.
+     *
+     * @return The number of restarts as an integer.
      */
     @Override
     public int getNumRestarts() {
@@ -155,7 +159,9 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the number of restarts used during optimization.
+     *
+     * @param numRestarts The number of restarts as an integer.
      */
     @Override
     public void setNumRestarts(int numRestarts) {

@@ -244,7 +244,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
+     * Launches the editor associates with this node.
      */
     @Override
     public void doDoubleClickAction() {
@@ -252,8 +252,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Launches the editor associates with this node.
      */
     @Override
@@ -360,8 +358,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the selection status of the node.
      */
     @Override

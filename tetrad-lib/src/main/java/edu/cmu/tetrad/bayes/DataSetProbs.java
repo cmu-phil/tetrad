@@ -126,7 +126,10 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the probability of the given assertion being true in the dataset.
+     *
+     * @param assertion The proposition to be evaluated. It should be of type {@link Proposition}.
+     * @return The probability of the assertion being true as a double value.
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
@@ -154,7 +157,13 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the conditional probability of the given assertion being true, given the condition, in the dataset.
+     *
+     * @param assertion a Proposition object representing the assertion.
+     * @param condition a Proposition object representing the condition.
+     * @return the conditional probability of the assertion being true, given the condition, as a double value.
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM or if the assertion variable and data variables are different or in a different
+     * order.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

@@ -55,7 +55,10 @@ public class SessionFileTransferHandler extends TransferHandler {
 //    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
     /**
-     * {@inheritDoc}
+     * Determines whether the transfer represented by the given support object can be imported.
+     *
+     * @param support the object containing the details of the transfer, not null
+     * @return true if the transfer can be imported, false otherwise
      */
     @Override
     public boolean canImport(TransferSupport support) {
@@ -69,7 +72,10 @@ public class SessionFileTransferHandler extends TransferHandler {
     }
 
     /**
-     * {@inheritDoc}
+     * Imports the data from a transferred file into the session.
+     *
+     * @param support the object containing the details of the transfer, not null.
+     * @return true if the data is successfully imported into the session, false otherwise.
      */
     @Override
     public boolean importData(TransferSupport support) {

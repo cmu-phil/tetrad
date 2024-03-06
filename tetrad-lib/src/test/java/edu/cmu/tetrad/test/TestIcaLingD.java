@@ -106,7 +106,6 @@ public class TestIcaLingD {
         System.out.println("LiNG-D");
         IcaLingD icaLingD = new IcaLingD();
         icaLingD.setBThreshold(bThreshold);
-        icaLingD.setVerbose(true);
         List<Matrix> bHats = icaLingD.fit(dataSet);
 
         if (bHats.isEmpty()) {

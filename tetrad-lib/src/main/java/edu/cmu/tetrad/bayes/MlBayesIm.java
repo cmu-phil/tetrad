@@ -279,7 +279,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the Node at the specified index.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the Node at the specified index.
      */
     public Node getNode(int nodeIndex) {
         return this.nodes[nodeIndex];
@@ -296,7 +299,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Gets the index of a given node within an array of nodes.
+     *
+     * @param node the given node.
+     * @return the index of the node in the array of nodes, or -1 if not found.
      */
     public int getNodeIndex(Node node) {
         for (int i = 0; i < this.nodes.length; i++) {
@@ -350,35 +356,52 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of columns of a node at the given index.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the number of columns of the node at the given index.
      */
     public int getNumColumns(int nodeIndex) {
         return this.probs[nodeIndex][0].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of rows in the provided node at the given index.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the number of rows in the node.
      */
     public int getNumRows(int nodeIndex) {
         return this.probs[nodeIndex].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of parents of the given node.
+     *
+     * @param nodeIndex the index of the node to get the number of parents for.
+     * @return the number of parents of the given node.
      */
     public int getNumParents(int nodeIndex) {
         return this.parents[nodeIndex].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the parent of a node given its index and parent index.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
+     * @return the parent of the node.
      */
     public int getParent(int nodeIndex, int parentIndex) {
         return this.parents[nodeIndex][parentIndex];
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the dimension of the parent at the given node index and parent index.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
+     * @return the dimension of the parent at the given node index and parent index.
      */
     public int getParentDim(int nodeIndex, int parentIndex) {
         return this.parentDims[nodeIndex][parentIndex];
