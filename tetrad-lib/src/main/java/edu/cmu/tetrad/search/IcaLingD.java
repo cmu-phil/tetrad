@@ -39,7 +39,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
@@ -60,7 +62,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *     <li>There is no unobserved confounding.</li>
  * </ol>
  * <p>
- * lower bound of the absolute value of the coefficients in the W matrix.
+ * lower bound of the absolute value for the coefficients in the W matrix.
  * <p>
  * Under these assumptions, the method estimates a matrix W such that WX = e, where
  * X is the data matrix, e is a matrix of noise, and W is a matrix of coefficients.
@@ -73,15 +75,15 @@ import static org.apache.commons.math3.util.FastMath.*;
  * threshold for entries in W to be included in possible diagonals, which
  * is the lowest number in absolute value that a W matrix entry can take
  * to be part of a diagonal; the implied permutations is the permutations
- * that permutes rows so that these combination lies along the their
+ * that permutes rows so that these combination lies along their
  * respective diagonals in W, which are then scaled, and the separate
  * satisfactory B Hat matrices reported.
  * <p>
- * ICA-LiNG-D, which takes this W as an impute, is a method for estimating
+ * ICA-LiNG-D, which takes this W as an input, is a method for estimating
  * a directed graph (DG) from a dataset. The graph is estimated by finding a
- * permutation of the columns of the dataset so that the resulting matrix has
+ * permutation for the columns of the dataset so that the resulting matrix has
  * a strong diagonal. This permutation is then used to estimate a DG. The method
- * is an relaxation of LiNGAM, which estimates a DAG from a dataset using
+ * is a relaxation of LiNGAM, which estimates a DAG from a dataset using
  * independent components analysis (ICA). LiNG-D is particularly useful when the
  * underlying data may have multiple consistent cyclic models.
  * <p>
@@ -96,10 +98,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see IcaLingam
  */
 public class IcaLingD {
-    /**
-     * The threshold for the spine of the W matrix.
-     */
-    private double spineThreshold = 0.5;
+
     /**
      * The threshold to use for set small elements to zero in the B Hat matrices.
      */
@@ -114,7 +113,7 @@ public class IcaLingD {
     /**
      * Determines whether a BHat matrix parses to an acyclic graph.
      *
-     * @param scaledBHat The BHat matrix..
+     * @param scaledBHat The BHat matrix.
      * @return a boolean
      */
     public static boolean isAcyclic(Matrix scaledBHat) {
@@ -167,9 +166,9 @@ public class IcaLingD {
         fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result = fastIca.findComponents();
 
-//        Matrix S = result.getS();
-//
+
         // To check to make sure ICA is working, print the following. Should have X = AS and cov = I.
+//        Matrix S = result.getS();
 //        System.out.println("X = " + X);
 //        System.out.println("AS = " + result.getW().inverse().times(result.getS()));
 //        Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
@@ -280,31 +279,20 @@ public class IcaLingD {
      * Returns the BHat matrix, permuted to the variable order of the original data and scaled so that the diagonal
      * consists only of 1's.
      *
-     * @param pair       The (column permutation, thresholded, column permuted W matrix) pair.
-     * @param bThreshold Valued in the BHat matrix less than this in absolute value are set to 0.
+     * @param pair The (column permutation, thresholded, column permuted W matrix) pair.
      * @return The estimated B Hat matrix for this pair.
      * @see PermutationMatrixPair
      */
-    public static Matrix getScaledBHat(PermutationMatrixPair pair, double bThreshold) {
-
+    public static Matrix getScaledBHat(PermutationMatrixPair pair) {
         Matrix WTilde = pair.getPermutedMatrix().transpose();
-        System.out.println("WTilde = " + WTilde);
-
         WTilde = IcaLingD.scale(WTilde);
-        System.out.println("WTilde scaled = " + WTilde);
-
         int p = WTilde.getNumColumns();
         Matrix BHat = Matrix.identity(p).minus(WTilde);
-//        BHat = threshold(BHat, abs(bThreshold));
 
         System.out.println("BHat = " + BHat);
 
         int[] perm = pair.getRowPerm();
         int[] inverse = IcaLingD.inversePermutation(perm);
-
-        int[] noperm = new int[perm.length];
-        for (int i = 0; i < noperm.length; i++) noperm[i] = i;
-
 
         PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
         return inversePair.getPermutedMatrix();
@@ -347,7 +335,7 @@ public class IcaLingD {
      * Generates a list of PermutationMatrixPairs by finding all possible column permutations of the input matrix W.
      * Each PermutationMatrixPair has a column permutation and the original matrix W.
      *
-     * @param W              The input matrix.
+     * @param W The input matrix.
      * @return A list of PermutationMatrixPairs.
      */
     @NotNull
@@ -424,7 +412,7 @@ public class IcaLingD {
         List<Matrix> results = new ArrayList<>();
 
         for (PermutationMatrixPair pair : pairs) {
-            Matrix bHat = IcaLingD.getScaledBHat(pair, bThreshold);
+            Matrix bHat = IcaLingD.getScaledBHat(pair);
             results.add(bHat);
         }
 
@@ -439,17 +427,6 @@ public class IcaLingD {
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
         this.bThreshold = bThreshold;
-    }
-
-    /**
-     * Sets the threshold used to prune the matrix for the purpose of searching for alternative strong diagonals.
-     *
-     * @param spineThreshold The threshold, a non-negative number.
-     */
-    public void setSpineThreshold(double spineThreshold) {
-        if (spineThreshold < 0)
-            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
-        this.spineThreshold = spineThreshold;
     }
 }
 

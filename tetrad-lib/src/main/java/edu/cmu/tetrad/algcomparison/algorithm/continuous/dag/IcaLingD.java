@@ -17,9 +17,8 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * IcaLingD is an implementation of the Algorithm interface that performs the
- * ICA-LiNG-D algorithm for discovering the underlying causal structure of
- * continuous data.
+ * IcaLingD is an implementation of the Algorithm interface that performs the ICA-LiNG-D algorithm for discovering the
+ * underlying causal structure of continuous data.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "ICA-LiNG-D",
@@ -39,8 +38,8 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
-     * Runs a search on the provided data set using the given parameters. All stable and unstable graphs are printed
-     * to the console along with their B matrices.
+     * Runs a search on the provided data set using the given parameters. All stable and unstable graphs are printed to
+     * the console along with their B matrices.
      *
      * @param dataSet    The data set to run the search on.
      * @param parameters The parameters of the search.
@@ -59,7 +58,6 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
             edu.cmu.tetrad.search.IcaLingD icaLingD = new edu.cmu.tetrad.search.IcaLingD();
             icaLingD.setBThreshold(bThreshold);
-            icaLingD.setSpineThreshold(bThreshold);
             List<Matrix> bHats = icaLingD.getScaledBHats(W);
             Set<Graph> _graphs = new HashSet<>();
             Map<Graph, Matrix> _bHats = new HashMap<>();

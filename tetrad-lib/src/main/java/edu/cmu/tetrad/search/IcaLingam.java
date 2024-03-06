@@ -91,9 +91,8 @@ public class IcaLingam {
      */
     public Matrix getAcyclicTrimmedBHat(Matrix W) {
         PermutationMatrixPair bestPair = IcaLingD.maximizeDiagonal(W);
-        Matrix WTilde = bestPair.getPermutedMatrix().transpose();
-        WTilde = IcaLingD.scale(WTilde);
-        Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair, abs(bThreshold));
+        Matrix WTilde = bestPair.getPermutedMatrix();
+        Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair);
 
         class Record {
             double coef;

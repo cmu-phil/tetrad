@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 /**
  * Stores a matrix together with a row and column permutation. if either of these is null in the constructor, the
- * identity permtuation will be used. Returns the matrix permuted by these row and column permutations.
+ * identity permuation will be used. Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
  * @version $Id: $Id
