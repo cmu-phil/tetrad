@@ -1861,7 +1861,7 @@ public class Paths implements TetradSerializable {
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPathFromTo(node, node)) {
-                TetradLogger.getInstance().forceLogMessage("Cycle found at node " + node.getName() + ".");
+//                TetradLogger.getInstance().forceLogMessage("Cycle found at node " + node.getName() + ".");
                 return true;
             }
         }

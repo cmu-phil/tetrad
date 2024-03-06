@@ -150,6 +150,9 @@ public class IcaLingD {
             TetradLogger.getInstance().forceLogMessage(node.getName() + ": p = " + nf.format(p));
         }
 
+        // Please note, the ICA algorithm uses data formatted as p x N where p is the number of variables and N is
+        // the sample size. Since Tetrad otherwise uses N x p, we need to transpose the data and then transpose
+        // the W matrix back at the end to adjust.
         TetradLogger.getInstance().forceLogMessage("");
 
         Matrix X = data.getDoubleData();
@@ -162,8 +165,17 @@ public class IcaLingD {
         fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setRowNorm(false);
         fastIca.setAlpha(fastIcaA);
-        FastIca.IcaResult result11 = fastIca.findComponents();
-        return result11.getW();
+        FastIca.IcaResult result = fastIca.findComponents();
+
+//        Matrix S = result.getS();
+//
+        // To check to make sure ICA is working, print the following. Should have X = AS and cov = I.
+//        System.out.println("X = " + X);
+//        System.out.println("AS = " + result.getW().inverse().times(result.getS()));
+//        Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
+//        System.out.println("cov = " + cov);
+
+        return result.getW().transpose();
     }
 
     /**
@@ -196,8 +208,8 @@ public class IcaLingD {
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      * @see PermutationMatrixPair
      */
-    public static PermutationMatrixPair hungarianDiagonal(Matrix W) {
-        return hungarian(W);
+    public static PermutationMatrixPair maximizeDiagonal(Matrix W) {
+        return maximizeDiagonalSum(W);
     }
 
     /**
@@ -274,12 +286,26 @@ public class IcaLingD {
      * @see PermutationMatrixPair
      */
     public static Matrix getScaledBHat(PermutationMatrixPair pair, double bThreshold) {
+
         Matrix WTilde = pair.getPermutedMatrix().transpose();
+        System.out.println("WTilde = " + WTilde);
+
         WTilde = IcaLingD.scale(WTilde);
-        Matrix BHat = Matrix.identity(WTilde.getNumColumns()).minus(WTilde);
-        BHat = threshold(BHat, abs(bThreshold));
+        System.out.println("WTilde scaled = " + WTilde);
+
+        int p = WTilde.getNumColumns();
+        Matrix BHat = Matrix.identity(p).minus(WTilde);
+//        BHat = threshold(BHat, abs(bThreshold));
+
+        System.out.println("BHat = " + BHat);
+
         int[] perm = pair.getRowPerm();
         int[] inverse = IcaLingD.inversePermutation(perm);
+
+        int[] noperm = new int[perm.length];
+        for (int i = 0; i < noperm.length; i++) noperm[i] = i;
+
+
         PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
         return inversePair.getPermutedMatrix();
     }
@@ -291,7 +317,7 @@ public class IcaLingD {
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      */
     @NotNull
-    private static PermutationMatrixPair hungarian(Matrix W) {
+    private static PermutationMatrixPair maximizeDiagonalSum(Matrix W) {
         double[][] costMatrix = new double[W.getNumRows()][W.getNumColumns()];
 
         for (int i = 0; i < W.getNumRows(); i++) {
@@ -304,11 +330,15 @@ public class IcaLingD {
             }
         }
 
+        System.out.println("Cost matrix = " + new Matrix(costMatrix));
+
         HungarianAlgorithm alg = new HungarianAlgorithm(costMatrix);
         int[][] assignment = alg.findOptimalAssignment();
 
         int[] perm = new int[assignment.length];
         for (int i = 0; i < perm.length; i++) perm[i] = assignment[i][1];
+
+        System.out.println("Perm = " + Arrays.toString(perm));
 
         return new PermutationMatrixPair(W, perm, null);
     }
@@ -318,12 +348,10 @@ public class IcaLingD {
      * Each PermutationMatrixPair has a column permutation and the original matrix W.
      *
      * @param W              The input matrix.
-     * @param spineThreshold The threshold value to determine if a position in W is allowable (abs(W(i, j)) >
-     *                       spineThreshold). Should be a non-negative value.
      * @return A list of PermutationMatrixPairs.
      */
     @NotNull
-    private static List<PermutationMatrixPair> pairsNRook(Matrix W, double spineThreshold) {
+    private static List<PermutationMatrixPair> pairsNRook(Matrix W) {
         boolean[][] allowablePositions = new boolean[W.getNumRows()][W.getNumColumns()];
 
         for (int i = 0; i < W.getNumRows(); i++) {
@@ -333,10 +361,10 @@ public class IcaLingD {
         }
 
         List<PermutationMatrixPair> pairs = new ArrayList<>();
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+        List<int[]> colPerms = NRooks.nRooks(allowablePositions);
 
-        for (int[] colPermutation : colPermutations) {
-            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
+        for (int[] colPerm : colPerms) {
+            pairs.add(new PermutationMatrixPair(W, null, colPerm));
         }
 
         return pairs;
@@ -366,7 +394,7 @@ public class IcaLingD {
      */
     public List<Matrix> fit(DataSet D) {
         Matrix W = IcaLingD.estimateW(D, 10000, 1e-6, 1.1);
-        return fitW(W);
+        return getScaledBHats(W);
     }
 
     /**
@@ -376,34 +404,18 @@ public class IcaLingD {
      * @param W The W matrix to be used.
      * @return A list of estimated B Hat matrices generated by LiNG-D.
      */
-    public List<Matrix> fitW(Matrix W) {
-        W = new Matrix(W.transpose());
-
-        System.out.println("W = " + W);
-
-        LinkedList<Double> entries = new LinkedList<>();
+    public List<Matrix> getScaledBHats(Matrix W) {
+        W = new Matrix(W);
 
         for (int i = 0; i < W.getNumRows(); i++) {
             for (int j = 0; j < W.getNumColumns(); j++) {
-                entries.add(W.get(i, j));
-            }
-        }
-
-        entries.sort(Comparator.comparingDouble(o -> o));
-
-        double _spineThreshold = entries.get((int) (entries.size() * spineThreshold));
-
-        for (int i = 0; i < W.getNumRows(); i++) {
-            for (int j = 0; j < W.getNumColumns(); j++) {
-                if (abs(W.get(i, j)) < _spineThreshold) {
+                if (abs(W.get(i, j)) < bThreshold) {
                     W.set(i, j, 0);
                 }
             }
         }
 
-        System.out.println("Trimmed W = " + W);
-
-        List<PermutationMatrixPair> pairs = pairsNRook(W, _spineThreshold);
+        List<PermutationMatrixPair> pairs = pairsNRook(W);
 
         if (pairs.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
