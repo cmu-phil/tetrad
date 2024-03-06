@@ -166,9 +166,6 @@ public class IcaLingD {
         fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result = fastIca.findComponents();
 
-
-
-
         return result.getW().transpose();
     }
 
