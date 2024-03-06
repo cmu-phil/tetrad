@@ -360,7 +360,6 @@ public class FastIca {
 
             // Need to take square roots to make sure the S vectors are uncorrelated here...
             D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
-//            D.set(i, i, 1.0 / (D.get(i, i)));
         }
 
         cov.sqrt();
@@ -531,7 +530,7 @@ public class FastIca {
      * @param v The Vector containing the elements.
      * @return The mean value of the elements in the Vector.
      */
-    private double mean(Vector v) {
+    private static double mean(Vector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -684,7 +683,7 @@ public class FastIca {
      *
      * @param x The matrix to be centered.
      */
-    private void center(Matrix x) {
+    public static void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i);
             double mean = mean(u);

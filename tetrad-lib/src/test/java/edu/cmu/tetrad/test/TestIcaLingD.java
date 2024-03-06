@@ -25,13 +25,14 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.FastIca;
 import edu.cmu.tetrad.search.IcaLingD;
 import edu.cmu.tetrad.search.IcaLingam;
 import edu.cmu.tetrad.search.utils.NRooks;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.*;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -103,10 +104,8 @@ public class TestIcaLingD {
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
-        double spineThreshold = 0.5;
         IcaLingD icaLingD = new IcaLingD();
         icaLingD.setBThreshold(bThreshold);
-        icaLingD.setSpineThreshold(spineThreshold);
         List<Matrix> bHats = icaLingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
@@ -155,6 +154,52 @@ public class TestIcaLingD {
 
         // There should be 4 solutions.
         assertEquals(4, solutions.size());
+    }
+
+    /**
+     * This method is used to test the functionality of the class FastIca. The ICA algorithm should start with a given
+     * centered p x N dataset matrix X and return an ICA decomposition X = AS, where A = W^-1 and S consists of
+     * independent vectors (which we can test by making sure cov(S) = I).
+     */
+    @Test
+    public void testIca() {
+        RandomUtil.getInstance().setSeed(492939492L);
+
+        Graph g = RandomGraph.randomDag(10, 0, 10,
+                100, 100, 100, false);
+
+        Parameters parameters = new Parameters();
+
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
+        parameters.set(Params.SIMULATION_PARAM1, 1);
+
+        // Make a random dataset.
+        SemPm pm = new SemPm(g);
+        SemIm im = new SemIm(pm, parameters);
+
+        DataSet dataSet = im.simulateData(1000, false);
+
+        // Get the matrix of data out of this, and transpose it, because FastIca is expecting p x N.
+        Matrix X = dataSet.getDoubleData().transpose();
+
+        // Center it.
+        FastIca.center(X);
+
+        // Run Fast ICA and get the result.
+        FastIca ica = new FastIca(X, X.getNumRows());
+        FastIca.IcaResult result = ica.findComponents();
+
+        // To check to make sure ICA is working, print the following. Should have X = AS and cov = I.
+        // That is, in case you're the forgetful version of Joe looking at this in the future, ICA
+        // should decompose a matrix as X = AS, where S consists of independent vectors, which we can
+        // test by making sure the off-diagonal entries of cov(S) are zero.
+        int p = X.getNumRows();
+        Matrix S = result.getS();
+        Matrix A = result.getW().inverse();
+        Matrix AS = A.times(S);
+        Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
+        assertTrue(X.equals(AS, 0.001));
+        assertTrue(cov.equals(Matrix.identity(p), 0.001));
     }
 }
 

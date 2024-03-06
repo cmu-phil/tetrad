@@ -167,12 +167,7 @@ public class IcaLingD {
         FastIca.IcaResult result = fastIca.findComponents();
 
 
-        // To check to make sure ICA is working, print the following. Should have X = AS and cov = I.
-//        Matrix S = result.getS();
-//        System.out.println("X = " + X);
-//        System.out.println("AS = " + result.getW().inverse().times(result.getS()));
-//        Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
-//        System.out.println("cov = " + cov);
+
 
         return result.getW().transpose();
     }
