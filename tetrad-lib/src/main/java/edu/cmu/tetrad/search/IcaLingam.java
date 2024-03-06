@@ -66,6 +66,8 @@ public class IcaLingam {
      */
     private double bThreshold = 0.1;
 
+    private boolean verbose = false;
+
     /**
      * Constructor.
      */
@@ -79,7 +81,7 @@ public class IcaLingam {
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
     public Matrix fit(DataSet D) {
-        Matrix W = IcaLingD.estimateW(D, 5000, 1e-6, 1.2);
+        Matrix W = IcaLingD.estimateW(D, 5000, 1e-6, 1.2, true);
         return getAcyclicTrimmedBHat(W);
     }
 
@@ -90,8 +92,8 @@ public class IcaLingam {
      * @return The trimmed BHat matrix in an acyclic form.
      */
     public Matrix getAcyclicTrimmedBHat(Matrix W) {
+        W = new Matrix(W);
         PermutationMatrixPair bestPair = IcaLingD.maximizeDiagonal(W);
-        Matrix WTilde = bestPair.getPermutedMatrix();
         Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair);
 
         class Record {
@@ -125,7 +127,11 @@ public class IcaLingam {
                 scaledBHat.set(coef.i, coef.j, 0.0);
                 continue;
             } else if (IcaLingD.isAcyclic(scaledBHat)) {
-                TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
+                }
+
                 trimmed = scaledBHat;
                 break;
             }
@@ -144,6 +150,10 @@ public class IcaLingam {
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
         this.bThreshold = bThreshold;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

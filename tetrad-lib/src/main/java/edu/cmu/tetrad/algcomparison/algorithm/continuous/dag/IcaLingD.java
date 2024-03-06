@@ -54,7 +54,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
             double bThreshold = parameters.getDouble(Params.THRESHOLD_B);
 
-            Matrix W = edu.cmu.tetrad.search.IcaLingD.estimateW(data, maxIter, tol, alpha);
+            Matrix W = edu.cmu.tetrad.search.IcaLingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
 
             edu.cmu.tetrad.search.IcaLingD icaLingD = new edu.cmu.tetrad.search.IcaLingD();
             icaLingD.setBThreshold(bThreshold);
@@ -81,9 +81,13 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
             int count = 0;
 
             for (Graph graph : graphs) {
-                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + "  Stable = " + stableGraphs.contains(graph));
-                TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
-                TetradLogger.getInstance().forceLogMessage(graph.toString());
+                if (parameters.getBoolean(Params.VERBOSE)) {
+                    TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + "  Stable = " + stableGraphs.contains(graph));
+                    TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
+                    TetradLogger.getInstance().forceLogMessage(graph.toString());
+                } else {
+                    TetradLogger.getInstance().forceLogMessage("To see separate models, their stabilities, and the BHat matrices, turn the verbose flag on");
+                }
             }
 
             if (stableGraphs.isEmpty()) {

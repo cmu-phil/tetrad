@@ -57,13 +57,17 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
 
-            Matrix W = IcaLingD.estimateW(data, maxIter, tol, alpha);
+            Matrix W = IcaLingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
             edu.cmu.tetrad.search.IcaLingam icaLingam = new edu.cmu.tetrad.search.IcaLingam();
+            icaLingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
             icaLingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
             Matrix bHat = icaLingam.getAcyclicTrimmedBHat(W);
             Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
-            TetradLogger.getInstance().forceLogMessage("BHat = " + bHat);
-            TetradLogger.getInstance().forceLogMessage("Graph = " + graph);
+
+            if (parameters.getBoolean(Params.VERBOSE)) {
+                TetradLogger.getInstance().forceLogMessage("BHat = " + bHat);
+                TetradLogger.getInstance().forceLogMessage("Graph = " + graph);
+            }
 
             LogUtilsSearch.stampWithBic(graph, dataSet);
             return graph;

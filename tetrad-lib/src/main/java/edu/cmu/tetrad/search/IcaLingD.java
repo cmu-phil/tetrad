@@ -127,6 +127,10 @@ public class IcaLingD {
         return !g.paths().existsDirectedCycle();
     }
 
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
+        return estimateW(data, fastIcaMaxIter, fastIcaTolerance, fastIcaA, false);
+    }
+
     /**
      * Estimates the W matrix using FastICA. Assumes the "parallel" option, using the "exp" function.
      *
@@ -136,24 +140,25 @@ public class IcaLingD {
      * @param fastIcaA         Alpha for ICA.
      * @return The estimated W matrix.
      */
-    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA, boolean verbose) {
         double[][] _data = data.getDoubleData().transpose().toArray();
-        TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
-        TetradLogger.getInstance().forceLogMessage("");
 
-        for (int i = 0; i < _data.length; i++) {
-            Node node = data.getVariable(i);
-            AndersonDarlingTest test = new AndersonDarlingTest(_data[i]);
-            double p = test.getP();
-            NumberFormat nf = new DecimalFormat("0.000");
-            TetradLogger.getInstance().forceLogMessage(node.getName() + ": p = " + nf.format(p));
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
+            TetradLogger.getInstance().forceLogMessage("");
+
+            for (int i = 0; i < _data.length; i++) {
+                Node node = data.getVariable(i);
+                AndersonDarlingTest test = new AndersonDarlingTest(_data[i]);
+                double p = test.getP();
+                NumberFormat nf = new DecimalFormat("0.000");
+                TetradLogger.getInstance().forceLogMessage(node.getName() + ": p = " + nf.format(p));
+            }
         }
 
         // Please note, the ICA algorithm uses data formatted as p x N where p is the number of variables and N is
         // the sample size. Since Tetrad otherwise uses N x p, we need to transpose the data and then transpose
         // the W matrix back at the end to adjust.
-        TetradLogger.getInstance().forceLogMessage("");
-
         Matrix X = data.getDoubleData();
         X = DataTransforms.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.getNumRows());
@@ -281,8 +286,6 @@ public class IcaLingD {
         int p = WTilde.getNumColumns();
         Matrix BHat = Matrix.identity(p).minus(WTilde);
 
-        System.out.println("BHat = " + BHat);
-
         int[] perm = pair.getRowPerm();
         int[] inverse = IcaLingD.inversePermutation(perm);
 
@@ -310,15 +313,11 @@ public class IcaLingD {
             }
         }
 
-        System.out.println("Cost matrix = " + new Matrix(costMatrix));
-
         HungarianAlgorithm alg = new HungarianAlgorithm(costMatrix);
         int[][] assignment = alg.findOptimalAssignment();
 
         int[] perm = new int[assignment.length];
         for (int i = 0; i < perm.length; i++) perm[i] = assignment[i][1];
-
-        System.out.println("Perm = " + Arrays.toString(perm));
 
         return new PermutationMatrixPair(W, perm, null);
     }
@@ -373,7 +372,7 @@ public class IcaLingD {
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
     public List<Matrix> fit(DataSet D) {
-        Matrix W = IcaLingD.estimateW(D, 10000, 1e-6, 1.1);
+        Matrix W = IcaLingD.estimateW(D, 10000, 1e-6, 1.1, true);
         return getScaledBHats(W);
     }
 
