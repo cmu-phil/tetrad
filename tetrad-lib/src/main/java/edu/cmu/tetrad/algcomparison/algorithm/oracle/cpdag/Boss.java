@@ -3,11 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -38,7 +40,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, HasKnowledge,
-        ReturnsBootstrapGraphs {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -74,20 +76,24 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
      * Runs the BOSS algorithm.
      */
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
         parameters.set(Params.NUM_THREADS, 4);
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-            if (dataSet.getName() != null) {
-                timeSeries.setName(dataSet.getName());
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
-            dataSet = timeSeries;
+
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataModel.getName() != null) {
+                timeSeries.setName(dataModel.getName());
+            }
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
-        Score myScore = this.score.getScore(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
 
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
 
@@ -101,7 +107,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         permutationSearch.setSeed(seed);
         Graph graph = permutationSearch.search();
         LogUtilsSearch.stampWithScore(graph, myScore);
-        LogUtilsSearch.stampWithBic(graph, dataSet);
+        LogUtilsSearch.stampWithBic(graph, dataModel);
 
         return graph;
     }

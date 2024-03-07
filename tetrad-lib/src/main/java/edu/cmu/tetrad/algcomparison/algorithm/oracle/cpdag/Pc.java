@@ -3,11 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -37,7 +39,8 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
+public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -68,13 +71,17 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
@@ -102,7 +109,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
                 throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
-        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMeekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
@@ -112,7 +119,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
         search.setConflictRule(conflictRule);
         Graph graph = search.search();
-        stampWithBic(graph, dataSet);
+        stampWithBic(graph, dataModel);
 
         return graph;
     }

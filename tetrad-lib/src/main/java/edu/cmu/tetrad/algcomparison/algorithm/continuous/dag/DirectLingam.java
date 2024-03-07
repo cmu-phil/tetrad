@@ -1,12 +1,16 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
@@ -14,7 +18,6 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
+public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -42,11 +45,6 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
      * The score.
      */
     private ScoreWrapper score;
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * <p>Constructor for DirectLingam.</p>
@@ -67,31 +65,19 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     /**
      * {@inheritDoc}
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
-            Score score = this.score.getScore(dataSet, parameters);
-
-            edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
-            Graph graph = search.search();
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
-            LogUtilsSearch.stampWithBic(graph, dataSet);
-            return graph;
-        } else {
-            DirectLingam algorithm = new DirectLingam();
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data,
-                    algorithm,
-                    new Knowledge(),
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return search.search();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
         }
+
+        DataSet data = SimpleDataLoader.getContinuousDataSet(dataModel);
+        Score score = this.score.getScore(dataModel, parameters);
+
+        edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
+        Graph graph = search.search();
+        TetradLogger.getInstance().forceLogMessage(graph.toString());
+        LogUtilsSearch.stampWithBic(graph, dataModel);
+        return graph;
     }
 
     /**
@@ -127,14 +113,6 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.VERBOSE);
         return parameters;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 
     /**

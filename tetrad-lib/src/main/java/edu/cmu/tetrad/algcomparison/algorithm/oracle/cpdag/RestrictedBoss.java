@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -59,7 +60,11 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algori
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
         String string = parameters.getString(Params.TARGETS);
         String[] _targets;
 

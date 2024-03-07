@@ -6,10 +6,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
@@ -86,7 +83,11 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
      * @return the graph resulting from the search algorithm
      */
     @Override
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataSet, Parameters parameters) {
+        if (!(dataSet instanceof DataSet && dataSet.isDiscrete())) {
+            throw new IllegalArgumentException("Expecting a discrete dataset.");
+        }
+
         edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci pagSamplingRfci = new edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci(SimpleDataLoader.getDiscreteDataSet(dataSet));
 
         // PAG-Sampling-RFCI parameters

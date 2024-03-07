@@ -70,13 +70,17 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
     /**
      * Runs a search algorithm using a given dataset and parameters.
      *
-     * @param dataSet    The dataset to run the search on.
+     * @param dataModel    The dataset to run the search on.
      * @param parameters The parameters for the search algorithm.
      * @return The resulting graph from the search algorithm.
      */
     @Override
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet && dataModel.isDiscrete())) {
+            throw new IllegalArgumentException("Expecting a discrete dataset.");
+        }
+
+        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));

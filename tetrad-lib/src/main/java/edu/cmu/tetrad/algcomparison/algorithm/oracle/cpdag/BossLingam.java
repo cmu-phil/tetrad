@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -69,7 +70,11 @@ public class BossLingam extends AbstractBootstrapAlgorithm implements Algorithm,
      * Runs the BOSS-LiNGAM algorithm.
      */
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {

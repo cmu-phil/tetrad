@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -25,7 +26,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @Bootstrapping
-public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -42,16 +44,16 @@ public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         ScoreIndTest test;
 
-        if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
+        if (dataModel instanceof ICovarianceMatrix) {
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataModel);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
             test = new ScoreIndTest(score);
-        } else if (dataSet instanceof DataSet) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
+        } else if (dataModel instanceof DataSet) {
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataModel));
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
             test = new ScoreIndTest(score);
@@ -64,7 +66,7 @@ public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph search1 = search.search();
-        LogUtilsSearch.stampWithBic(search1, dataSet);
+        LogUtilsSearch.stampWithBic(search1, dataModel);
 
         return search1;
     }

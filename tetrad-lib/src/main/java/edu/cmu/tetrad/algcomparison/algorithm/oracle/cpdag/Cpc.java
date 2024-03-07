@@ -3,11 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -38,7 +40,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 )
 @Bootstrapping
 public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -70,41 +72,38 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
         PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 ->
-                PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 ->
-                PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 ->
-                PcCommon.ConflictRule.OVERWRITE_EXISTING;
+            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
             default ->
-                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
         PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 ->
-                PcCommon.PcHeuristicType.NONE;
-            case 1 ->
-                PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 ->
-                PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 ->
-                PcCommon.PcHeuristicType.HEURISTIC_3;
+            case 0 -> PcCommon.PcHeuristicType.NONE;
+            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
+            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
+            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
             default ->
-                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
-        edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.meekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
         search.setPcHeuristicType(pcHeuristicType);
@@ -112,7 +111,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setKnowledge(knowledge);
         search.setConflictRule(conflictRule);
         Graph graph = search.search();
-        stampWithBic(graph, dataSet);
+        stampWithBic(graph, dataModel);
 
         return graph;
     }

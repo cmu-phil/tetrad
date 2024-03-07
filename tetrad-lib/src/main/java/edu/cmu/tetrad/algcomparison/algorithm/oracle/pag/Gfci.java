@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -41,7 +42,7 @@ import java.util.concurrent.Callable;
 )
 @Bootstrapping
 public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -81,21 +82,25 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the search algorithm to infer the causal graph given a dataset and specified parameters.
      *
-     * @param dataSet The dataset containing the observational data.
+     * @param dataModel The dataset containing the observational data.
      * @param parameters The parameters to configure the search algorithm.
      * @return The inferred causal graph.
      */
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
-        GFci search = new GFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+        GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);

@@ -3,11 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -37,7 +39,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
-        ReturnsBootstrapGraphs {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -74,10 +76,10 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         int trimmingStyle = parameters.getInt(Params.TRIMMING_STYLE);
 
-        Score myScore = this.score.getScore(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
         edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(myScore);
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setNumExpansions(parameters.getInt(Params.NUMBER_OF_EXPANSIONS));
@@ -103,7 +105,7 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Has
         List<Node> myTargets = new ArrayList<>();
 
         for (String _target : _targets) {
-            Node variable = dataSet.getVariable(_target);
+            Node variable = dataModel.getVariable(_target);
 
             if (variable == null) {
                 throw new IllegalArgumentException("Target not in data: " + _target);

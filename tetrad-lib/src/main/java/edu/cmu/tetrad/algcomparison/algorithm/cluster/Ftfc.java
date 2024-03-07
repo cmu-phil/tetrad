@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -10,7 +12,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
+        TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -48,45 +50,34 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov;
+    public Graph runSearch(DataModel dataSet, Parameters parameters) {
+        ICovarianceMatrix cov;
 
-            if (dataSet instanceof DataSet) {
-                boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-                cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
-            } else if (dataSet instanceof ICovarianceMatrix) {
-                cov = (ICovarianceMatrix) dataSet;
-            } else {
-                throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
-            }
-
-            double alpha = parameters.getDouble(Params.ALPHA);
-
-            boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            edu.cmu.tetrad.search.Ftfc.Algorithm algorithm;
-
-            if (gap) {
-                algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.GAP;
-            } else {
-                algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.SAG;
-            }
-
-            edu.cmu.tetrad.search.Ftfc search
-                    = new edu.cmu.tetrad.search.Ftfc(cov, algorithm, alpha);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            return search.search();
+        if (dataSet instanceof DataSet) {
+            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+            cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
+        } else if (dataSet instanceof ICovarianceMatrix) {
+            cov = (ICovarianceMatrix) dataSet;
         } else {
-            Ftfc algorithm = new Ftfc();
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
         }
+
+        double alpha = parameters.getDouble(Params.ALPHA);
+
+        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
+        edu.cmu.tetrad.search.Ftfc.Algorithm algorithm;
+
+        if (gap) {
+            algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.GAP;
+        } else {
+            algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.SAG;
+        }
+
+        edu.cmu.tetrad.search.Ftfc search
+                = new edu.cmu.tetrad.search.Ftfc(cov, algorithm, alpha);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        return search.search();
     }
 
     /**

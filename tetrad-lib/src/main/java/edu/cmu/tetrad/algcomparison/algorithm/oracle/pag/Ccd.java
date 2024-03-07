@@ -3,10 +3,12 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -30,7 +32,8 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
+public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -58,14 +61,14 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     /**
      * Runs the CCD (Cyclic Causal Discovery) search algorithm on the given data set using the specified parameters.
      *
-     * @param dataSet    the data set to search on
+     * @param dataModel    the data set to search on
      * @param parameters the parameters for the search algorithm
      * @return the resulting graph from the search
      */
     @Override
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
-                test.getTest(dataSet, parameters));
+                test.getTest(dataModel, parameters));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
 
         return search.search();

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -10,6 +11,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -40,7 +42,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs {
+        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -78,18 +80,22 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
-        Score myScore = this.score.getScore(dataSet, parameters);
-        IndependenceTest myTest = this.test.getTest(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
+        IndependenceTest myTest = this.test.getTest(dataModel, parameters);
 
         myTest.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(myTest, myScore);
@@ -110,9 +116,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         grasp.bestOrder(myScore.getVariables());
         Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
-        LogUtilsSearch.stampWithBic(graph, dataSet);
-
-        LogUtilsSearch.stampWithBic(graph, dataSet);
+        LogUtilsSearch.stampWithBic(graph, dataModel);
 
         return graph;
     }

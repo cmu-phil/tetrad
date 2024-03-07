@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -10,6 +11,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -44,7 +46,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs {
+        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -85,23 +87,27 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
     /**
      * Runs a search algorithm to find a graph structure based on a given data set and parameters.
      *
-     * @param dataSet the data set to be used for the search algorithm
+     * @param dataModel the data set to be used for the search algorithm
      * @param parameters the parameters for the search algorithm
      * @return the graph structure found by the search algorithm
      */
     @Override
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
-        IndependenceTest test = this.test.getTest(dataSet, parameters);
-        Score score = this.score.getScore(dataSet, parameters);
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
+        Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.GraspFci search = new edu.cmu.tetrad.search.GraspFci(test, score);

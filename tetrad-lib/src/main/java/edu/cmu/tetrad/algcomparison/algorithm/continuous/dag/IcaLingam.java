@@ -45,7 +45,11 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
     /**
      * {@inheritDoc}
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalStateException("Expecting a dataset.");
+        }
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
 

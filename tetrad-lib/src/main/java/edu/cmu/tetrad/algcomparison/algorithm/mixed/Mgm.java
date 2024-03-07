@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -27,7 +28,7 @@ import java.util.List;
         algoType = AlgType.produce_undirected_graphs
 )
 @Bootstrapping
-public class Mgm implements Algorithm {
+public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -42,19 +43,19 @@ public class Mgm implements Algorithm {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel ds, Parameters parameters) {
-        if (!(ds instanceof DataSet _data)) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalArgumentException("Expecting tabular data for MGM.");
         }
 
-        for (int j = 0; j < _data.getNumColumns(); j++) {
-            for (int i = 0; i < _data.getNumRows(); i++) {
-                if (ds.getVariables().get(j) instanceof ContinuousVariable) {
-                    if (Double.isNaN(_data.getDouble(i, j))) {
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
+                    if (Double.isNaN(dataSet.getDouble(i, j))) {
                         throw new IllegalArgumentException("Please remove or impute missing values.");
                     }
-                } else if (ds.getVariables().get(j) instanceof DiscreteVariable) {
-                    if (_data.getDouble(i, j) == -99) {
+                } else if (dataSet.getVariables().get(j) instanceof DiscreteVariable) {
+                    if (dataSet.getDouble(i, j) == -99) {
                         throw new IllegalArgumentException("Please remove or impute missing values.");
                     }
                 }
@@ -62,7 +63,7 @@ public class Mgm implements Algorithm {
         }
 
         // Notify the user that you need at least one continuous and one discrete variable to run MGM
-        List<Node> variables = ds.getVariables();
+        List<Node> variables = dataSet.getVariables();
         boolean hasContinuous = false;
         boolean hasDiscrete = false;
 
@@ -81,7 +82,7 @@ public class Mgm implements Algorithm {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _ds = SimpleDataLoader.getMixedDataSet(ds);
+            DataSet _ds = SimpleDataLoader.getMixedDataSet(dataSet);
 
             double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
             double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
@@ -99,9 +100,8 @@ public class Mgm implements Algorithm {
         } else {
             Mgm algorithm = new Mgm();
 
-            DataSet data = (DataSet) ds;
             GeneralResamplingTest search = new GeneralResamplingTest(
-                    data,
+                    dataSet,
                     algorithm,
                     new Knowledge(),
                     parameters

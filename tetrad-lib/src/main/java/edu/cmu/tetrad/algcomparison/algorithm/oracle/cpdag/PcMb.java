@@ -3,11 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -36,7 +38,8 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
+public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -72,8 +75,8 @@ public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
-        IndependenceTest myTest = this.test.getTest(dataSet, parameters);
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        IndependenceTest myTest = this.test.getTest(dataModel, parameters);
         edu.cmu.tetrad.search.PcMb search = new edu.cmu.tetrad.search.PcMb(myTest, parameters.getInt(Params.DEPTH));
         List<Node> myTargets = targets(myTest, parameters.getString(Params.TARGETS));
         this.targets = myTargets;

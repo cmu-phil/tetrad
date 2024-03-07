@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSampling;
 import edu.cmu.tetrad.data.DataSet;
@@ -46,13 +47,21 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
      */
     private final List<Graph> bootstrapGraphs = new LinkedList<>();
 
-    protected abstract Graph runSearch(DataSet dataSet, Parameters parameters);
+    protected abstract Graph runSearch(DataModel dataSet, Parameters parameters);
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
+        if (dataModel instanceof CovarianceMatrix) {
+            if (this instanceof TakesCovarianceMatrix) {
+                runSearch(dataModel, parameters);
+            } else {
+                throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
+            }
+        }
+
         List<DataSet> dataSets = DataSampling.createDataSamples((DataSet) dataModel, parameters);
 
         Graph graph;

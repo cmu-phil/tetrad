@@ -3,12 +3,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -37,7 +39,8 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs {
+public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -79,29 +82,32 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
         if (this.algorithm != null) {
-            Graph _graph = this.algorithm.search(dataSet, parameters);
+            Graph _graph = this.algorithm.search(dataModel, parameters);
 
             if (_graph != null) {
                 this.externalGraph = _graph;
             }
         }
 
-        Score myScore = this.score.getScore(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
         Graph graph;
 
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
-//            search.setInitialGraph(externalGraph);
         search.setBoundGraph(externalGraph);
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -119,7 +125,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         graph = search.search();
 
         LogUtilsSearch.stampWithScore(graph, myScore);
-        LogUtilsSearch.stampWithBic(graph, dataSet);
+        LogUtilsSearch.stampWithBic(graph, dataModel);
 
         return graph;
     }

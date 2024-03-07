@@ -1,9 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.other;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -11,7 +15,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -31,7 +34,7 @@ import java.util.List;
 //)
 @Bootstrapping
 @Experimental
-public class Glasso implements Algorithm {
+public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -39,55 +42,46 @@ public class Glasso implements Algorithm {
     /**
      * {@inheritDoc}
      */
-    public Graph search(DataModel ds, Parameters parameters) {
-        DataSet _data = (DataSet) ds;
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
+        }
 
-        for (int j = 0; j < _data.getNumColumns(); j++) {
-            for (int i = 0; i < _data.getNumRows(); i++) {
-                if (Double.isNaN(_data.getDouble(i, j))) {
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                if (Double.isNaN(dataSet.getDouble(i, j))) {
                     throw new IllegalArgumentException("Please remove or impute missing values.");
                 }
             }
         }
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Matrix cov = new Matrix(SimpleDataLoader.getContinuousDataSet(ds)
-                    .getCovarianceMatrix().toArray());
+        Matrix cov = new Matrix(SimpleDataLoader.getContinuousDataSet(dataSet)
+                .getCovarianceMatrix().toArray());
 
-            edu.cmu.tetrad.search.work_in_progress.Glasso glasso = new edu.cmu.tetrad.search.work_in_progress.Glasso(cov);
-            glasso.setMaxit(parameters.getInt(Params.MAXIT));
-            glasso.setIa(parameters.getBoolean(Params.IA));
-            glasso.setIs(parameters.getBoolean(Params.IS));
-            glasso.setItr(parameters.getBoolean(Params.ITR));
-            glasso.setIpen(parameters.getBoolean(Params.IPEN));
-            glasso.setThr(parameters.getDouble(Params.THR));
-            glasso.setRhoAllEqual(1.0);
+        edu.cmu.tetrad.search.work_in_progress.Glasso glasso = new edu.cmu.tetrad.search.work_in_progress.Glasso(cov);
+        glasso.setMaxit(parameters.getInt(Params.MAXIT));
+        glasso.setIa(parameters.getBoolean(Params.IA));
+        glasso.setIs(parameters.getBoolean(Params.IS));
+        glasso.setItr(parameters.getBoolean(Params.ITR));
+        glasso.setIpen(parameters.getBoolean(Params.IPEN));
+        glasso.setThr(parameters.getDouble(Params.THR));
+        glasso.setRhoAllEqual(1.0);
 
-            edu.cmu.tetrad.search.work_in_progress.Glasso.Result result = glasso.search();
-            Matrix wwi = new Matrix(result.getWwi().toArray());
+        edu.cmu.tetrad.search.work_in_progress.Glasso.Result result = glasso.search();
+        Matrix wwi = new Matrix(result.getWwi().toArray());
 
-            List<Node> variables = ds.getVariables();
-            Graph resultGraph = new EdgeListGraph(variables);
+        List<Node> variables = dataSet.getVariables();
+        Graph resultGraph = new EdgeListGraph(variables);
 
-            for (int i = 0; i < variables.size(); i++) {
-                for (int j = i + 1; j < variables.size(); j++) {
-                    if (wwi.get(i, j) != 0.0 && wwi.get(i, j) != 0.0) {
-                        resultGraph.addUndirectedEdge(variables.get(i), variables.get(j));
-                    }
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                if (wwi.get(i, j) != 0.0 && wwi.get(i, j) != 0.0) {
+                    resultGraph.addUndirectedEdge(variables.get(i), variables.get(j));
                 }
             }
-
-            return resultGraph;
-        } else {
-            Glasso algorithm = new Glasso();
-
-            DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    new Knowledge(), parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
         }
+
+        return resultGraph;
     }
 
     /**

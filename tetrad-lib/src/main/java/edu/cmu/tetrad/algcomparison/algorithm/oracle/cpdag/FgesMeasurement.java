@@ -53,7 +53,11 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
     }
 
     @Override
-    protected Graph runSearch(DataSet dataSet, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
         dataSet = dataSet.copy();
 
         dataSet = DataTransforms.standardizeData(dataSet);

@@ -1,5 +1,6 @@
-package edu.cmu.tetrad.algcomparison.algorithm.multi;
+package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -40,7 +41,7 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
+public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -97,12 +98,14 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet _data = (DataSet) dataSet;
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalStateException("Expecting a dataset.");
+        }
 
-        for (int j = 0; j < _data.getNumColumns(); j++) {
-            for (int i = 0; i < _data.getNumRows(); i++) {
-                if (Double.isNaN(_data.getDouble(i, j))) {
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                if (Double.isNaN(dataSet.getDouble(i, j))) {
                     throw new IllegalArgumentException("Please remove or impute missing values.");
                 }
             }

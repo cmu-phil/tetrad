@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -46,7 +47,8 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
-        TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs {
+        TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs,
+        TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -87,22 +89,26 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     /**
      * Runs the search algorithm using the given dataset and parameters and returns the resulting graph.
      *
-     * @param dataSet    the dataset to run the search on
+     * @param dataModel    the data model to run the search on
      * @param parameters the parameters used for the search algorithm
      * @return the graph resulting from the search algorithm
      */
     @Override
-    public Graph runSearch(DataSet dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+            }
+
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            dataSet = timeSeries;
+            dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();
         }
 
-        BFci search = new BFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+        BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
         search.setSeed(parameters.getLong(Params.SEED));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));

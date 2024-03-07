@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -29,7 +30,7 @@ import java.util.List;
 //        algoType = AlgType.orient_pairwise
 //)
 @Bootstrapping
-public class R1 implements Algorithm, TakesExternalGraph {
+public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesExternalGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -63,7 +64,11 @@ public class R1 implements Algorithm, TakesExternalGraph {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
+        }
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             Graph graph = this.algorithm.search(dataSet, parameters);
 
