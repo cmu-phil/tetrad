@@ -17,8 +17,10 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * IcaLingD is an implementation of the Algorithm interface that performs the ICA-LiNG-D algorithm for discovering the
- * underlying causal structure of continuous data.
+ * IcaLingD is an implementation of the Algorithm interface that performs the ICA-LiNG-D algorithm for discovering
+ * causal models for the linear non-Gaussian case where the underying model might be cyclic.
+ *
+ * @see edu.cmu.tetrad.search.IcaLingD
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "ICA-LiNG-D",
@@ -38,12 +40,12 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
-     * Runs a search on the provided data set using the given parameters. All stable and unstable graphs are printed to
-     * the console along with their B matrices.
+     * Runs a search on the provided data set using the given parameters. If verbose is set to true, all stable and
+     * unstable graphs are printed to the console along with their B matrices.
      *
      * @param dataSet    The data set to run the search on.
      * @param parameters The parameters of the search.
-     * @return The first stable graph returned, otherwise and empty graph.
+     * @return One of the stable graphs, otherwise and empty graph.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -53,41 +55,51 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
             double bThreshold = parameters.getDouble(Params.THRESHOLD_B);
+            double wThreshold = parameters.getDouble(Params.THRESHOLD_W);
 
             Matrix W = edu.cmu.tetrad.search.IcaLingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
 
             edu.cmu.tetrad.search.IcaLingD icaLingD = new edu.cmu.tetrad.search.IcaLingD();
             icaLingD.setBThreshold(bThreshold);
+            icaLingD.setWThreshold(wThreshold);
             List<Matrix> bHats = icaLingD.getScaledBHats(W);
-            Set<Graph> _graphs = new HashSet<>();
+            Set<Graph> _unstableGraphs = new HashSet<>();
             Map<Graph, Matrix> _bHats = new HashMap<>();
             Set<Graph> _stableGraphs = new HashSet<>();
 
             for (Matrix bHat : bHats) {
                 Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
-                _graphs.add(graph);
+                _unstableGraphs.add(graph);
                 _bHats.put(graph, bHat);
 
                 if (edu.cmu.tetrad.search.IcaLingD.isStable(bHat)) {
                     _stableGraphs.add(graph);
+                } else {
+                    _unstableGraphs.add(graph);
                 }
             }
 
-            List<Graph> graphs = new ArrayList<>(_graphs);
+            List<Graph> unstableGraphs = new ArrayList<>(_unstableGraphs);
             List<Graph> stableGraphs = new ArrayList<>(_stableGraphs);
-            graphs.sort(Comparator.comparingInt(Graph::getNumEdges));
+            unstableGraphs.sort(Comparator.comparingInt(Graph::getNumEdges));
             stableGraphs.sort(Comparator.comparingDouble(Graph::getNumEdges));
 
             int count = 0;
 
-            for (Graph graph : graphs) {
-                if (parameters.getBoolean(Params.VERBOSE)) {
-                    TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + "  Stable = " + stableGraphs.contains(graph));
+            if (parameters.getBoolean(Params.VERBOSE)) {
+                for (Graph graph : unstableGraphs) {
+                    TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + " Stable = False");
                     TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
                     TetradLogger.getInstance().forceLogMessage(graph.toString());
-                } else {
-                    TetradLogger.getInstance().forceLogMessage("To see separate models, their stabilities, and the BHat matrices, turn the verbose flag on");
                 }
+            } else if (!unstableGraphs.isEmpty()) {
+                TetradLogger.getInstance().forceLogMessage("To see unstable models and and their B matrices, set the verbose flag to true");
+            }
+
+            for (Graph graph : stableGraphs) {
+                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + " Stable = True");
+                TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
+                TetradLogger.getInstance().forceLogMessage(graph.toString());
             }
 
             if (stableGraphs.isEmpty()) {
@@ -125,7 +137,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "LiNG-D (Linear Non-Gaussian Discovery";
+        return "LiNG-D (Linear Non-Gaussian Discovery)";
     }
 
     /**
@@ -151,6 +163,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.THRESHOLD_W);
         return parameters;
     }
 

@@ -219,7 +219,7 @@ public final class Params {
     /**
      * Constant <code>THRESHOLD_SPINE="thresholdSpine"</code>
      */
-    public static final String THRESHOLD_SPINE = "thresholdSpine";
+    public static final String THRESHOLD_W = "thresholdW";
     /**
      * Constant <code>ORIENTATION_ALPHA="orientationAlpha"</code>
      */

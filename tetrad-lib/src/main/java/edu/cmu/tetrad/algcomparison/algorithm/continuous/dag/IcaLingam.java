@@ -5,10 +5,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IcaLingD;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
@@ -22,8 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * IcaLingam class implements the Algorithm and ReturnsBootstrapGraphs interface.
- * It provides the implementation of the ICA-LiNGAM algorithm for causal discovery.
+ * IcaLingam class implements the Algorithm and ReturnsBootstrapGraphs interface. It provides the implementation of the
+ * ICA-LiNGAM algorithm for causal discovery.
+ *
+ * @see edu.cmu.tetrad.search.IcaLingam
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "ICA-LiNGAM",
