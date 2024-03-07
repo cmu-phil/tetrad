@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SvarGfci class is an implementation of the SVAR GFCI algorithm.
- * It is used to learn causal relationships from time series data.
+ * SvarGfci class is an implementation of the SVAR GFCI algorithm. It is used to learn causal relationships from time
+ * series data.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SvarGFCI",
@@ -79,8 +79,8 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
     /**
      * Runs a search algorithm on the given data set using the specified parameters.
      *
-     * @param dataModel     the data set containing the variables to search over
-     * @param parameters  the parameters specifying the search configuration
+     * @param dataModel  the data set containing the variables to search over
+     * @param parameters the parameters specifying the search configuration
      * @return the resulting graph representing the discovered relationships
      */
     @Override
@@ -139,12 +139,8 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
     }
 
     /**
-     * Returns the list of parameters required by this method.
-     * The parameters include:
-     * - FAITHFULNESS_ASSUMED
-     * - MAX_INDEGREE
-     * - TIME_LAG
-     * - VERBOSE
+     * Returns the list of parameters required by this method. The parameters include: - FAITHFULNESS_ASSUMED -
+     * MAX_INDEGREE - TIME_LAG - VERBOSE
      *
      * @return the list of parameters required by this method
      */

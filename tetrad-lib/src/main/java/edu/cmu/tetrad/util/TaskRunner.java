@@ -18,25 +18,21 @@
  */
 package edu.cmu.tetrad.util;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.*;
+
 /**
  * This class is for running a list of tasks that implement Callable.
- *
+ * <p>
  * Feb 23, 2024 8:41:11 PM
  *
- * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  * @param <T>
+ * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
 public class TaskRunner<T> {
 
@@ -86,8 +82,7 @@ public class TaskRunner<T> {
     }
 
     /**
-     * Shutdown the pool. Wait at least 1 minute before forcefully shutdown the
-     * pool.
+     * Shutdown the pool. Wait at least 1 minute before forcefully shutdown the pool.
      *
      * @param pool
      */

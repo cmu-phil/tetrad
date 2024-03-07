@@ -48,9 +48,8 @@ public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
 
     /**
      * Represents the private variable `knowledge` in the class `SvarFci`.
-     *
-     * This variable stores the knowledge used by the `SvarFci` algorithm.
-     * The type of `knowledge` is `Knowledge`.
+     * <p>
+     * This variable stores the knowledge used by the `SvarFci` algorithm. The type of `knowledge` is `Knowledge`.
      *
      * @see SvarFci
      * @see Knowledge
@@ -75,7 +74,7 @@ public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
     /**
      * Executes the search algorithm to find a graph structure that best fits the given dataset and parameters.
      *
-     * @param dataModel    The dataset to perform the search on.
+     * @param dataModel  The dataset to perform the search on.
      * @param parameters The parameters to configure the search.
      * @return The graph structure that best fits the dataset.
      */
@@ -115,8 +114,8 @@ public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
     }
 
     /**
-     * Returns the description of the method. The description is a combination of "SvarFCI (SVAR Fast Causal Inference) using"
-     * and the description of the independence test object.
+     * Returns the description of the method. The description is a combination of "SvarFCI (SVAR Fast Causal Inference)
+     * using" and the description of the independence test object.
      *
      * @return the description of the method.
      */

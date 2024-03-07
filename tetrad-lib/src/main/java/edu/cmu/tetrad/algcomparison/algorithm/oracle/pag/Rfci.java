@@ -73,8 +73,8 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the search algorithm on the given data model and parameters.
      *
-     * @param dataModel   The data model to search on.
-     * @param parameters  The parameters for the search.
+     * @param dataModel  The data model to search on.
+     * @param parameters The parameters for the search.
      * @return The resulting graph from the search algorithm.
      */
     @Override

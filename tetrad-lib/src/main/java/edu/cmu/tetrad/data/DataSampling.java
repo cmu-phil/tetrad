@@ -23,16 +23,17 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.IntStream;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 /**
  * A utility for resampling dataset.
- *
+ * <p>
  * Feb 20, 2024 6:57:28 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -45,7 +46,7 @@ public final class DataSampling {
     /**
      * Create a list of dataset resampled from the given dataset.
      *
-     * @param dataSet dataset to resample
+     * @param dataSet    dataset to resample
      * @param parameters bootstrap-related parameters
      * @return a list of resampled dataset
      */
@@ -68,8 +69,8 @@ public final class DataSampling {
     /**
      * Create a list of dataset resampled from the given dataset.
      *
-     * @param dataSet dataset to resample
-     * @param parameters bootstrap-related parameters
+     * @param dataSet         dataset to resample
+     * @param parameters      bootstrap-related parameters
      * @param randomGenerator random number generator (optional)
      * @return a list of resampled dataset
      */
@@ -104,8 +105,8 @@ public final class DataSampling {
     /**
      * Get the unique, randomly-selected row indexes of the dataset.
      *
-     * @param dataSet dataset to select rows from
-     * @param sampleSize number of rows to select
+     * @param dataSet         dataset to select rows from
+     * @param sampleSize      number of rows to select
      * @param randomGenerator random number generator (optional)
      * @return unique, randomly-selected row indexes
      */
@@ -129,8 +130,8 @@ public final class DataSampling {
     /**
      * Get the non-unique, randomly-selected row indexes of the dataset.
      *
-     * @param dataSet dataset to select rows from
-     * @param sampleSize number of rows to select
+     * @param dataSet         dataset to select rows from
+     * @param sampleSize      number of rows to select
      * @param randomGenerator random number generator (optional)
      * @return non-unique, randomly-selected row indexes
      */
@@ -154,7 +155,7 @@ public final class DataSampling {
     /**
      * In-line array shuffle.
      *
-     * @param array the array to shuffle
+     * @param array           the array to shuffle
      * @param randomGenerator random number generator (optional)
      */
     private static void shuffle(int[] array, RandomGenerator randomGenerator) {

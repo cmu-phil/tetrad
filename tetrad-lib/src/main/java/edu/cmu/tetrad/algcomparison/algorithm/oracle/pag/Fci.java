@@ -71,8 +71,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     /**
      * Runs a search algorithm to find a graph based on the given data model and parameters.
      *
-     * @param dataModel   the data model containing the dataset
-     * @param parameters  the parameters for the search algorithm
+     * @param dataModel  the data model containing the dataset
+     * @param parameters the parameters for the search algorithm
      * @return the resulting graph
      */
     @Override
@@ -126,8 +126,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * Returns a short, one-line description of this algorithm.
-     * The description includes the description of the independence test used by this algorithm.
+     * Returns a short, one-line description of this algorithm. The description includes the description of the
+     * independence test used by this algorithm.
      *
      * @return The description of the algorithm.
      */
@@ -188,8 +188,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * Retrieves the {@link IndependenceWrapper} object associated with this method.
-     * This method is used to get the independence test used by the algorithm.
+     * Retrieves the {@link IndependenceWrapper} object associated with this method. This method is used to get the
+     * independence test used by the algorithm.
      *
      * @return The IndependenceWrapper object associated with this method.
      */

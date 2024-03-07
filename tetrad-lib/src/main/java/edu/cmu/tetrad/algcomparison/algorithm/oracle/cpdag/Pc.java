@@ -86,27 +86,20 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         }
 
         PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 ->
-                PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 ->
-                PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 ->
-                PcCommon.ConflictRule.OVERWRITE_EXISTING;
+            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
             default ->
-                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
         PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 ->
-                PcCommon.PcHeuristicType.NONE;
-            case 1 ->
-                PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 ->
-                PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 ->
-                PcCommon.PcHeuristicType.HEURISTIC_3;
+            case 0 -> PcCommon.PcHeuristicType.NONE;
+            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
+            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
+            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
             default ->
-                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));

@@ -10,7 +10,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -74,16 +73,12 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 ->
-                PcCommon.PcHeuristicType.NONE;
-            case 1 ->
-                PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 ->
-                PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 ->
-                PcCommon.PcHeuristicType.HEURISTIC_3;
+            case 0 -> PcCommon.PcHeuristicType.NONE;
+            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
+            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
+            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
             default ->
-                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
         edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataModel, parameters));

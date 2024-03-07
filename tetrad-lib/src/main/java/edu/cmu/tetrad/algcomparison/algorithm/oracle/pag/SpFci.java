@@ -66,9 +66,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The SpFci class represents a specific algorithm for structural learning called
-     * "Conditional Independence Test-based Fast Causal Inference" (SpFci).
-     * This class extends the AbstractBootstrapAlgorithm class and implements
+     * The SpFci class represents a specific algorithm for structural learning called "Conditional Independence
+     * Test-based Fast Causal Inference" (SpFci). This class extends the AbstractBootstrapAlgorithm class and implements
      * the Algorithm, UsesScoreWrapper, and TakesIndependenceWrapper interfaces.
      */
     public SpFci() {
@@ -78,7 +77,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     /**
      * Constructor for the SpFci class.
      *
-     * @param test The IndependenceWrapper object to be used for the algorithm.
+     * @param test  The IndependenceWrapper object to be used for the algorithm.
      * @param score The ScoreWrapper object to be used for the algorithm.
      */
     public SpFci(IndependenceWrapper test, ScoreWrapper score) {
@@ -89,8 +88,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     /**
      * Executes a search algorithm to infer the causal graph structure from a given data model
      *
-     * @param dataModel   The data model representing the observed variables and their relationships
-     * @param parameters  The parameters for the search algorithm
+     * @param dataModel  The data model representing the observed variables and their relationships
+     * @param parameters The parameters for the search algorithm
      * @return The inferred causal graph structure
      */
     @Override
@@ -124,7 +123,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     }
 
     /**
-     * Returns the comparison graph created by converting a true directed graph into a partially directed acyclic graph (PAG).
+     * Returns the comparison graph created by converting a true directed graph into a partially directed acyclic graph
+     * (PAG).
      *
      * @param graph The true directed graph, if there is one.
      * @return The comparison graph as a partially directed acyclic graph (PAG).

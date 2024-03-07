@@ -9,7 +9,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -17,7 +16,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,7 +59,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     /**
      * Runs the CCD (Cyclic Causal Discovery) search algorithm on the given data set using the specified parameters.
      *
-     * @param dataModel    the data set to search on
+     * @param dataModel  the data set to search on
      * @param parameters the parameters for the search algorithm
      * @return the resulting graph from the search
      */
@@ -86,8 +84,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
-     * Returns a short, one-line description of this algorithm.
-     * This description will be printed in the report.
+     * Returns a short, one-line description of this algorithm. This description will be printed in the report.
      *
      * @return The description of this algorithm.
      */
@@ -107,8 +104,8 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
-     * Retrieves the parameters for the search algorithm. This method combines the parameters obtained from the underlying
-     * test with additional parameters specific to the CCD (Cyclic Causal Discovery) algorithm.
+     * Retrieves the parameters for the search algorithm. This method combines the parameters obtained from the
+     * underlying test with additional parameters specific to the CCD (Cyclic Causal Discovery) algorithm.
      *
      * @return A list of String names for parameters.
      */

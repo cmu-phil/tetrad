@@ -12,25 +12,20 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSampling;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TaskRunner;
+
 import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * The Gfci class represents the Greedy Fast Causal Inference algorithm.
@@ -82,7 +77,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the search algorithm to infer the causal graph given a dataset and specified parameters.
      *
-     * @param dataModel The dataset containing the observational data.
+     * @param dataModel  The dataset containing the observational data.
      * @param parameters The parameters to configure the search algorithm.
      * @return The inferred causal graph.
      */
@@ -120,7 +115,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Retrieves the comparison graph by transforming the true directed graph (if there is one) into a partially directed acyclic graph (PAG).
+     * Retrieves the comparison graph by transforming the true directed graph (if there is one) into a partially
+     * directed acyclic graph (PAG).
      *
      * @param graph The true directed graph, if there is one.
      * @return The comparison graph in the form of a partially directed acyclic graph (PAG).
@@ -131,8 +127,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns a description of the GFCI (Greedy Fast Causal Inference) algorithm
-     * using the description of the independence test and score associated with it.
+     * Returns a description of the GFCI (Greedy Fast Causal Inference) algorithm using the description of the
+     * independence test and score associated with it.
      *
      * @return The description of the algorithm.
      */

@@ -102,8 +102,8 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Retrieves the comparison graph by converting the given true directed graph into
-     * a partially directed graph (PAG) using the DAG to PAG transformation.
+     * Retrieves the comparison graph by converting the given true directed graph into a partially directed graph (PAG)
+     * using the DAG to PAG transformation.
      *
      * @param graph The true directed graph, if there is one.
      * @return The comparison graph as a partially directed graph (PAG).

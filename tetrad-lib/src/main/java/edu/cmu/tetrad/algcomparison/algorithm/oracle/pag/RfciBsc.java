@@ -70,7 +70,7 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
     /**
      * Runs a search algorithm using a given dataset and parameters.
      *
-     * @param dataModel    The dataset to run the search on.
+     * @param dataModel  The dataset to run the search on.
      * @param parameters The parameters for the search algorithm.
      * @return The resulting graph from the search algorithm.
      */

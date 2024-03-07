@@ -33,7 +33,10 @@ import edu.cmu.tetrad.search.IcaLingam;
 import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.Arrays;

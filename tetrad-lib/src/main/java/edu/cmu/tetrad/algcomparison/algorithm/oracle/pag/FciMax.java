@@ -71,8 +71,8 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     /**
      * Runs a search algorithm to discover the causal graph structure.
      *
-     * @param dataModel   the data set on which the search algorithm will be performed
-     * @param parameters  the parameters for the search algorithm
+     * @param dataModel  the data set on which the search algorithm will be performed
+     * @param parameters the parameters for the search algorithm
      * @return the discovered causal graph structure
      */
     @Override
@@ -134,8 +134,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Returns the data type that the search requires, whether continuous,
-     * discrete, or mixed.
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
      *
      * @return the data type required for the search
      */
@@ -145,8 +144,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Returns the list of parameters used by the method.
-     * The parameters are returned as a List of Strings.
+     * Returns the list of parameters used by the method. The parameters are returned as a List of Strings.
      *
      * @return a List of Strings representing the parameters used by the method.
      */

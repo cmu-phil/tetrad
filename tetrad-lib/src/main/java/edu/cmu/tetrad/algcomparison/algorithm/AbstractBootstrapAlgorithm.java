@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TaskRunner;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +36,7 @@ import java.util.concurrent.Callable;
 
 /**
  * This is a base class for bootstrap algorithms.
- *
+ * <p>
  * Mar 4, 2024 5:05:28 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -55,7 +56,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (dataModel instanceof CovarianceMatrix) {
-            if (    this instanceof TakesCovarianceMatrix) {
+            if (this instanceof TakesCovarianceMatrix) {
                 return runSearch(dataModel, parameters);
             } else {
                 throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
