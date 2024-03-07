@@ -108,9 +108,9 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the name of this editor.
+     * Sets the name of the editor.
+     *
+     * @param name The name to be set.
      */
     public final void setName(String name) {
         String oldName = getName();
@@ -135,9 +135,10 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
-     * <p>getGraph.</p>
+     * Returns the graph from the workbench, if it exists.
+     * Otherwise, it returns a new instance of EdgeListGraph.
      *
-     * @return the graph.
+     * @return the graph from the workbench or a new EdgeListGraph
      */
     public Graph getGraph() {
         if (this.workbench != null) {
@@ -147,9 +148,10 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Not supported.
+     * Sets the graph of the search editor.
+     *
+     * @param g The graph to be set.
+     * @throws UnsupportedOperationException if trying to set the graph on a search editor.
      */
     public void setGraph(Graph g) {
         this.workbench.setGraph(g);
