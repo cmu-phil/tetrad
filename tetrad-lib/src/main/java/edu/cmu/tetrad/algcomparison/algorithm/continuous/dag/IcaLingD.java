@@ -18,7 +18,7 @@ import java.util.*;
 
 /**
  * IcaLingD is an implementation of the Algorithm interface that performs the ICA-LiNG-D algorithm for discovering
- * causal models for the linear non-Gaussian case where the underying model might be cyclic.
+ * causal models for the linear non-Gaussian case where the underlying model might be cyclic.
  *
  * @see edu.cmu.tetrad.search.IcaLingD
  */
