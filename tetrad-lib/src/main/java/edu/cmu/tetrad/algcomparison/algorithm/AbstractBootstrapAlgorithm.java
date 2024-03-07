@@ -56,7 +56,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (dataModel instanceof CovarianceMatrix) {
             if (this instanceof TakesCovarianceMatrix) {
-                runSearch(dataModel, parameters);
+                return runSearch(dataModel, parameters);
             } else {
                 throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
             }
