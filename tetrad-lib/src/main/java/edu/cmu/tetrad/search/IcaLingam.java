@@ -194,7 +194,6 @@ public class IcaLingam {
             if (dummyGraph.paths().existsDirectedPathFromTo(node, node)) {
                 return true;
             } else {
-                System.out.println("Removing " + node.getName());
                 dummyCyclicNodes.remove(node);
             }
         }
