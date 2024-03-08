@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.algcomparison.statistic.LegalPag;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -154,6 +156,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Checks if the graph passed as parameter is a legal directed acyclic graph (DAG).
+     *
+     * @return true if the graph is a legal DAG, false otherwise.
+     */
+    public boolean isLegalDag() {
+        return GraphUtils.isDag(graph);
+    }
+
+    /**
      * Checks if the current graph is a legal CPDAG (completed partially directed acyclic graph).
      *
      * @return true if the graph is a legal CPDAG, false otherwise.
@@ -180,6 +191,24 @@ public class Paths implements TetradSerializable {
             System.out.println(e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Checks if the given graph is a legal mag.
+     *
+     * @return true if the graph is a legal mag, false otherwise
+     */
+    public boolean isLegalMag() {
+        return GraphSearchUtils.isLegalMag(graph).isLegalMag();
+    }
+
+    /**
+     * Checks if the given Directed Acyclic Graph (DAG) is a Legal Partial Ancestral Graph (PAG).
+     *
+     * @return true if the graph is a Legal PAG, false otherwise
+     */
+    public boolean isLegalPag() {
+        return GraphSearchUtils.isLegalPag(graph).isLegalPag();
     }
 
     /**
