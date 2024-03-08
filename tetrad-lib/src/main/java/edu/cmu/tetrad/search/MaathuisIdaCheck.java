@@ -26,7 +26,7 @@ import java.util.*;
  * @version $Id: $Id
  * @see Ida
  */
-public class CpdagIdaCheck {
+public class MaathuisIdaCheck {
 
     /**
      * Represents a data set used in the IDA check.
@@ -58,7 +58,7 @@ public class CpdagIdaCheck {
     /**
      * Constructs a new IDA check for the given CPDAG and data set.
      */
-    public CpdagIdaCheck(Graph cpdag, DataSet dataSet) {
+    public MaathuisIdaCheck(Graph cpdag, DataSet dataSet) {
         if (!cpdag.paths().isLegalCpdag()) {
             throw new IllegalArgumentException("Expecting a CPDAG.");
         }
