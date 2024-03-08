@@ -22,12 +22,15 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 
@@ -62,11 +65,28 @@ import static org.apache.commons.math3.util.FastMath.abs;
 public class IcaLingam {
 
     /**
+     * Represents a set of Node objects for the dummy graph that are cyclic.
+     */
+    private Set<Node> dummyCyclicNodes;
+    /**
      * The threshold to use for set small elements to zero in the B Hat matrices.
      */
     private double bThreshold = 0.1;
 
+    /**
+     * A boolean indicating whether to print verbose output.
+     */
     private boolean verbose = false;
+
+    /**
+     * Represents a dummy graph.
+     */
+    private static Graph dummyGraph;
+
+    /**
+     * Represents a list of Node objects for the dummy graph.
+     */
+    private static ArrayList<Node> dummyVars;
 
     /**
      * Constructor.
@@ -95,6 +115,10 @@ public class IcaLingam {
         W = new Matrix(W);
         PermutationMatrixPair bestPair = IcaLingD.maximizeDiagonal(W);
         Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair);
+
+        if (isAcyclic(scaledBHat)) {
+            return scaledBHat;
+        }
 
         class Record {
             double coef;
@@ -125,8 +149,10 @@ public class IcaLingam {
 
             if (coef.coef < bThreshold) {
                 scaledBHat.set(coef.i, coef.j, 0.0);
+                Edge edge = dummyGraph.getDirectedEdge(dummyVars.get(coef.j), dummyVars.get(coef.i));
+                dummyGraph.removeEdge(edge);
                 continue;
-            } else if (IcaLingD.isAcyclic(scaledBHat)) {
+            } else if (!existsDirectedCycle()) {
 
                 if (verbose) {
                     TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
@@ -137,9 +163,43 @@ public class IcaLingam {
             }
 
             scaledBHat.set(coef.i, coef.j, 0.0);
+            Edge edge = dummyGraph.getDirectedEdge(dummyVars.get(coef.j), dummyVars.get(coef.i));
+            dummyGraph.removeEdge(edge);
         }
 
         return trimmed;
+    }
+
+    /**
+     * Determines whether a BHat matrix parses to an acyclic graph.
+     *
+     * @param scaledBHat The BHat matrix.
+     * @return a boolean
+     */
+    public boolean isAcyclic(Matrix scaledBHat) {
+        dummyVars = new ArrayList<>();
+
+        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
+            dummyVars.add(new GraphNode("" + i));
+        }
+
+        dummyCyclicNodes = new HashSet<>(dummyVars);
+
+        dummyGraph = IcaLingD.makeGraph(scaledBHat, dummyVars);
+        return !dummyGraph.paths().existsDirectedCycle();
+    }
+
+    private boolean existsDirectedCycle() {
+        for (Node node : new HashSet<>(dummyCyclicNodes)) {
+            if (dummyGraph.paths().existsDirectedPathFromTo(node, node)) {
+                return true;
+            } else {
+                System.out.println("Removing " + node.getName());
+                dummyCyclicNodes.remove(node);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -152,6 +212,11 @@ public class IcaLingam {
         this.bThreshold = bThreshold;
     }
 
+    /**
+     * A boolean indicating whether to print verbose output.
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
