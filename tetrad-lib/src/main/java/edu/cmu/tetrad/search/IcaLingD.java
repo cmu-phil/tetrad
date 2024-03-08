@@ -112,7 +112,7 @@ public class IcaLingD {
         List<Node> dummyVars = new ArrayList<>();
 
         for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-            dummyVars.add(new GraphNode("dummy" + i));
+            dummyVars.add(new GraphNode("" + i));
         }
 
         Graph g = makeGraph(scaledBHat, dummyVars);
