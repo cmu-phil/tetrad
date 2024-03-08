@@ -48,6 +48,11 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
             throw new IllegalArgumentException("Expecting tabular data for MGM.");
         }
 
+        if (!dataSet.isMixed()) {
+            throw new IllegalArgumentException("Expecting mixed data for MGM--at least one discrete column and at least" +
+                    " one continuous column.");
+        }
+
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {

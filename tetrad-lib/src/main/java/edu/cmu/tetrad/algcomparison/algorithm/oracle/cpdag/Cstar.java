@@ -85,37 +85,21 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         edu.cmu.tetrad.search.Cstar cStaR = new edu.cmu.tetrad.search.Cstar(test, score, parameters);
 
-        CpdagAlgorithm algorithm;
+        CpdagAlgorithm algorithm = switch (parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM)) {
+            case 1 -> CpdagAlgorithm.PC_STABLE;
+            case 2 -> CpdagAlgorithm.FGES;
+            case 3 -> CpdagAlgorithm.BOSS;
+            case 4 -> CpdagAlgorithm.RESTRICTED_BOSS;
+            default ->
+                    throw new IllegalArgumentException("Unknown CPDAG algorithm: " + parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM));
+        };
 
-        switch (parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM)) {
-            case 1:
-                algorithm = CpdagAlgorithm.PC_STABLE;
-                break;
-            case 2:
-                algorithm = CpdagAlgorithm.FGES;
-                break;
-            case 3:
-                algorithm = CpdagAlgorithm.BOSS;
-                break;
-            case 4:
-                algorithm = CpdagAlgorithm.RESTRICTED_BOSS;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown CPDAG algorithm: " + parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM));
-        }
-
-        SampleStyle sampleStyle;
-
-        switch (parameters.getInt(Params.SAMPLE_STYLE)) {
-            case 1:
-                sampleStyle = SampleStyle.SUBSAMPLE;
-                break;
-            case 2:
-                sampleStyle = SampleStyle.BOOTSTRAP;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown sample style: " + parameters.getInt(Params.SAMPLE_STYLE));
-        }
+        SampleStyle sampleStyle = switch (parameters.getInt(Params.SAMPLE_STYLE)) {
+            case 1 -> SampleStyle.SUBSAMPLE;
+            case 2 -> SampleStyle.BOOTSTRAP;
+            default ->
+                    throw new IllegalArgumentException("Unknown sample style: " + parameters.getInt(Params.SAMPLE_STYLE));
+        };
 
         int topBracket = parameters.getInt(Params.TOP_BRACKET);
 
