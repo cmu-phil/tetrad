@@ -65,6 +65,14 @@ import static org.apache.commons.math3.util.FastMath.abs;
 public class IcaLingam {
 
     /**
+     * Represents a dummy graph.
+     */
+    private static Graph dummyGraph;
+    /**
+     * Represents a list of Node objects for the dummy graph.
+     */
+    private static ArrayList<Node> dummyVars;
+    /**
      * Represents a set of Node objects for the dummy graph that are cyclic.
      */
     private Set<Node> dummyCyclicNodes;
@@ -72,21 +80,10 @@ public class IcaLingam {
      * The threshold to use for set small elements to zero in the B Hat matrices.
      */
     private double bThreshold = 0.1;
-
     /**
      * A boolean indicating whether to print verbose output.
      */
     private boolean verbose = false;
-
-    /**
-     * Represents a dummy graph.
-     */
-    private static Graph dummyGraph;
-
-    /**
-     * Represents a list of Node objects for the dummy graph.
-     */
-    private static ArrayList<Node> dummyVars;
 
     /**
      * Constructor.

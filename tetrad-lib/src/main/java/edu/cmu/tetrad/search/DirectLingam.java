@@ -80,6 +80,45 @@ public class DirectLingam {
     }
 
     /**
+     * Calculates the maximum entropy approximation for the given array of values.
+     *
+     * @param x the array of values
+     * @return the maximum entropy approximation
+     */
+    public static double maxEntApprox(double[] x) {
+        x = StatUtils.standardizeData(x);
+
+        final double k1 = 79.047;
+        double k2 = 36 / (8 * sqrt(3) - 9);
+        final double gamma = 0.37457;
+        double gaussianEntropy = (log(2.0 * PI) / 2.0) + 1.0 / 2.0;
+
+        // This is negentropy
+        double b1 = 0.0;
+
+        for (double aX1 : x) {
+
+            // First term for the Taylor expansion of logcosh.
+            b1 += aX1 * aX1 / 2.0;
+        }
+
+        b1 /= x.length;
+
+        double b2 = 0.0;
+
+        for (double aX : x) {
+            b2 += aX * exp(-(aX * aX) / 2);
+        }
+
+        b2 /= x.length;
+
+        double d = b1 - gamma;
+        double negentropy = k1 * (d * d) + k2 * (b2 * b2);
+
+        return gaussianEntropy - negentropy;
+    }
+
+    /**
      * Performs the search. Returns a graph.
      *
      * @return a graph
@@ -197,44 +236,5 @@ public class DirectLingam {
         }
 
         return r;
-    }
-
-    /**
-     * Calculates the maximum entropy approximation for the given array of values.
-     *
-     * @param x the array of values
-     * @return the maximum entropy approximation
-     */
-    public static double maxEntApprox(double[] x) {
-        x = StatUtils.standardizeData(x);
-
-        final double k1 = 79.047;
-        double k2 = 36 / (8 * sqrt(3) - 9);
-        final double gamma = 0.37457;
-        double gaussianEntropy = (log(2.0 * PI) / 2.0) + 1.0 / 2.0;
-
-        // This is negentropy
-        double b1 = 0.0;
-
-        for (double aX1 : x) {
-
-            // First term for the Taylor expansion of logcosh.
-            b1 += aX1 * aX1 / 2.0;
-        }
-
-        b1 /= x.length;
-
-        double b2 = 0.0;
-
-        for (double aX : x) {
-            b2 += aX * exp(-(aX * aX) / 2);
-        }
-
-        b2 /= x.length;
-
-        double d = b1 - gamma;
-        double negentropy = k1 * (d * d) + k2 * (b2 * b2);
-
-        return gaussianEntropy - negentropy;
     }
 }
