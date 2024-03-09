@@ -32,6 +32,13 @@ import edu.cmu.tetrad.graph.Node;
  * @version $Id: $Id
  */
 public final class DirichletEstimator {
+
+    /**
+     * Creates a new instance of DirichletEstimator.
+     */
+    public DirichletEstimator() {
+    }
+
     /**
      * <p>estimate.</p>
      *

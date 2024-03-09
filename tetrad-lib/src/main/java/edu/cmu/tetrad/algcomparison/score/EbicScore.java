@@ -37,6 +37,13 @@ public class EbicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
+     * Initializes a new instance of the EbicScore class.
+     */
+    public EbicScore() {
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override

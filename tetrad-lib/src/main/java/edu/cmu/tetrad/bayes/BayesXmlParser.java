@@ -40,6 +40,12 @@ import java.util.*;
 public final class BayesXmlParser {
 
     /**
+     * A parser for Bayes XML files.
+     */
+    public BayesXmlParser() {
+    }
+
+    /**
      * The names of the variables in the Bayes net.
      */
     private Map<String, Node> namesToVars;

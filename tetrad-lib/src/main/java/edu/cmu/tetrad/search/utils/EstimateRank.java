@@ -36,6 +36,13 @@ import java.util.Arrays;
 public class EstimateRank {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private EstimateRank() {
+
+    }
+
+    /**
      * Compute canonical correlations from data.
      *
      * @param A an array of {@link double} objects

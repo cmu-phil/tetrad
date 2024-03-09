@@ -27,6 +27,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataTransforms {
 
+    /**
+     * Prevent instantiation.
+     */
+    private DataTransforms() {
+    }
 
     /**
      * Log or unlog data

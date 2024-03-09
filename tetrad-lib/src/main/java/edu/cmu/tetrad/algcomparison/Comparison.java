@@ -139,6 +139,23 @@ public class Comparison {
     private boolean tabDelimitedTables = false;
 
     /**
+     * Initializes a new instance of the Comparison class.
+     *
+     * By default, the saveGraphs property is set to true.
+     * The showSimulationIndices, showAlgorithmIndices, showUtilities, and sortByUtility properties are all set to false.
+     *
+     * Usage:
+     * Comparison comparison = new Comparison();
+     */
+    public Comparison() {
+        this.saveGraphs = true;
+        this.showSimulationIndices = false;
+        this.showAlgorithmIndices = false;
+        this.showUtilities = false;
+        this.sortByUtility = false;
+    }
+
+    /**
      * Sets the number of threads to be used for the concurrent execution.
      *
      * @param numThreads the number of threads to be set

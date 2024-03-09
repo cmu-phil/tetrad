@@ -763,7 +763,10 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * A record for the covariance matrix and the regression coefficients.
+     * Represents a covariance matrix and regression coefficients.
+     *
+     * @param cov The covariance matrix.
+     * @param b   The regression coefficients.
      */
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }

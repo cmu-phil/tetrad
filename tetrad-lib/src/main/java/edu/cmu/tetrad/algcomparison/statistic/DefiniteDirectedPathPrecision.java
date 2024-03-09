@@ -17,6 +17,12 @@ public class DefiniteDirectedPathPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DefiniteDirectedPathPrecision class.
+     */
+    public DefiniteDirectedPathPrecision() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -29,6 +29,12 @@ public class DiscreteBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DiscreteBicScore class.
+     */
+    public DiscreteBicScore() {
+    }
+
+    /**
      * The data set.
      */
     private DataModel dataSet;

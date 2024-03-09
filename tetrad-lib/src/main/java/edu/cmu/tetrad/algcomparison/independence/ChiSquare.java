@@ -30,6 +30,12 @@ public class ChiSquare implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the ChiSquare class.
+     */
+    public ChiSquare() {
+    }
+
+    /**
      * Retrieves an instance of the IndependenceTest interface that performs a Chi Square Test for independence.
      *
      * @param dataSet    The data set to test independence against.

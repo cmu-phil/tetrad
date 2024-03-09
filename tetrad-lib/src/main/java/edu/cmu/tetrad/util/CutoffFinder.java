@@ -32,6 +32,13 @@ package edu.cmu.tetrad.util;
 public class CutoffFinder {
 
     /**
+     * Prevents instantiation.
+     */
+    private CutoffFinder() {
+
+    }
+
+    /**
      * Assumes f is a positive symmetric function between x1 and x2 about 0. Integrates from 0 in the direction of x2 in
      * intervals of deltaX until an area of .5 * (1 - alpha) has been accumulated. Returns the x value at the iteration
      * where this amount of area has been accumulated.

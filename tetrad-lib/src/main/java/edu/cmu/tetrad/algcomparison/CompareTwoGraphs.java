@@ -25,6 +25,12 @@ import static java.util.Collections.sort;
 public class CompareTwoGraphs {
 
     /**
+     * No constructor for utility class.
+     */
+    private CompareTwoGraphs() {
+    }
+
+    /**
      * Returns an edgewise comparison of two graphs. This says, edge by edge, what the differences and similarities are
      * between the two graphs.
      *

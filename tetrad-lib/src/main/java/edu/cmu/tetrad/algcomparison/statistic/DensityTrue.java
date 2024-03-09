@@ -16,6 +16,12 @@ public class DensityTrue implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DensityTrue class.
+     */
+    public DensityTrue() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

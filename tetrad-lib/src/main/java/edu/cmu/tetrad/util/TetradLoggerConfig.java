@@ -32,7 +32,6 @@ import java.util.List;
  */
 public interface TetradLoggerConfig extends TetradSerializable {
 
-
     /**
      * States whether the event associated with the given id is active, that is whether it should be logged or not.
      *
@@ -52,9 +51,9 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
     /**
-     * <p>getSupportedEvents.</p>
+     * Retrieves the list of supported events.
      *
-     * @return - events
+     * @return the list of supported events
      */
     List<Event> getSupportedEvents();
 
@@ -68,16 +67,16 @@ public interface TetradLoggerConfig extends TetradSerializable {
     void setEventActive(String id, boolean active);
 
     /**
-     * <p>copy.</p>
+     * Creates a copy of the TetradLoggerConfig object.
      *
-     * @return a copy of this configuration.
+     * @return a copy of the TetradLoggerConfig object
      */
     TetradLoggerConfig copy();
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a string representation.
+     * @return the string representation of the object
      */
     String toString();
 
@@ -88,20 +87,20 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
         /**
-         * @return the Sting ID fo the event.
+         * Returns the ID of the event.
+         *
+         * @return the ID of the event
          */
         String getId();
 
 
         /**
-         * @return the String description of the event.
+         * Returns the description of the event.
+         *
+         * @return the description of the event
          */
         String getDescription();
-
-
     }
-
-
 }
 
 

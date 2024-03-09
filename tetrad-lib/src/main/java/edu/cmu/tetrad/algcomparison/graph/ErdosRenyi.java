@@ -19,6 +19,12 @@ public class ErdosRenyi implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the ErdosRenyi class.
+     */
+    public ErdosRenyi() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

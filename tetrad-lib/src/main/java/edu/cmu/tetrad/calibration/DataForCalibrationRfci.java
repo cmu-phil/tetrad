@@ -57,6 +57,12 @@ public class DataForCalibrationRfci {
     private PrintWriter outPag;
 
     /**
+     * Constant <code>NEWLINE="System.getProperty(line.separator)"</code>
+     */
+    private DataForCalibrationRfci() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects

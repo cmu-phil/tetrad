@@ -48,6 +48,12 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
      */
     private final List<Graph> bootstrapGraphs = new LinkedList<>();
 
+    /**
+     * This is a base class for bootstrap algorithms.
+     */
+    protected AbstractBootstrapAlgorithm() {
+    }
+
     protected abstract Graph runSearch(DataModel dataSet, Parameters parameters);
 
     /**

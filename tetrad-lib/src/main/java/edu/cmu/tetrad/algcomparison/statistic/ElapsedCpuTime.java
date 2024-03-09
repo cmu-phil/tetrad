@@ -18,6 +18,12 @@ public class ElapsedCpuTime implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the ElapsedCpuTime class.
+     */
+    public ElapsedCpuTime() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -58,6 +58,13 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
+     * Initializes a new instance of the DegenerateGaussianBicScore class.
+     */
+    public DegenerateGaussianBicScore() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

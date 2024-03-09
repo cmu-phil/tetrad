@@ -31,7 +31,7 @@ import java.util.concurrent.*;
  * <p>
  * Feb 23, 2024 8:41:11 PM
  *
- * @param <T>
+ * @param <T> the type of the result of the tasks
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
 public class TaskRunner<T> {

@@ -29,6 +29,12 @@ public class BdeuScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the test.
+     */
+    public BdeuScore() {
+    }
+
+    /**
      * The data set.
      */
     private DataModel dataSet;

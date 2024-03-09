@@ -19,6 +19,13 @@ public class DefiniteDirectedPathRecall implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DefiniteDirectedPathRecall class.
+     */
+    public DefiniteDirectedPathRecall() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

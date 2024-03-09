@@ -33,6 +33,14 @@ public class BdeuTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the test.
+     */
+    public BdeuTest() {
+
+    }
+
+
+    /**
      * {@inheritDoc}
      * <p>
      * Returns the test.

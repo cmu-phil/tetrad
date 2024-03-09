@@ -30,6 +30,12 @@ import java.util.List;
 public class Comparison {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Comparison() {
+    }
+
+    /**
      * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data, printing out error
      * statistics.
      *

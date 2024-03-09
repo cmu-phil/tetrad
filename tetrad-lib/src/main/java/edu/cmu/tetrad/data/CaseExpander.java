@@ -31,6 +31,13 @@ package edu.cmu.tetrad.data;
  */
 public final class CaseExpander implements DataFilter {
 
+    /**
+     * Initializes a new instance of the CaseExpander class.
+     */
+    public CaseExpander() {
+
+    }
+
     private static DataSet expand(DataSet dataSet) {
         int rows = 0;
 

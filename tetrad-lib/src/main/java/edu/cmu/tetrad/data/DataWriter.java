@@ -40,6 +40,12 @@ import java.util.List;
 public final class DataWriter {
 
     /**
+     * Prevents instantiation.
+     */
+    private DataWriter() {
+    }
+
+    /**
      * Writes a dataset to file. The dataset may have continuous and/or discrete columns. Note that <code>out</code> is
      * not closed by this method, so the close method on <code>out</code> will need to be called externally.
      *

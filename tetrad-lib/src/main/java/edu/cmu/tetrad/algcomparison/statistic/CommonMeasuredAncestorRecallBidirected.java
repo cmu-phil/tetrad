@@ -23,6 +23,12 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the CommonMeasuredAncestorRecallBidirected class.
+     */
+    public CommonMeasuredAncestorRecallBidirected() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

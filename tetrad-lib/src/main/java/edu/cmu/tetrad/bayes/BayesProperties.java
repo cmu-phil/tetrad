@@ -81,6 +81,14 @@ public final class BayesProperties {
     private double likelihood;
 
     /**
+     * Prevents instantiation.
+     * @throws UnsupportedOperationException if called.
+     */
+    private BayesProperties(){
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Constructs a new BayesProperties object for the given data set.
      *
      * @param dataSet The data set.
@@ -296,9 +304,16 @@ public final class BayesProperties {
     }
 
     /**
-     * Returns the number of categories for the given variable.
+     * The LikelihoodRet class represents the result of a likelihood ratio test.
+     * It contains the p-value, BIC, chi-squared statistic, and degrees of freedom.
      */
     public static class LikelihoodRet {
+
+        /**
+         * Constructs a new LikelihoodRet object.
+         */
+        public LikelihoodRet() {
+        }
 
         /**
          * The p-value.

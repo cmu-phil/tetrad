@@ -45,6 +45,12 @@ public class BiolinguaRunner {
     static float kp = (float) 3;
 
     /**
+     * Initializes a new instance of the BiolinguaRunner class.
+     */
+    public BiolinguaRunner() {
+    }
+
+    /**
      * Displays usage information for this program (moves line options)
      */
     static void usageInfo(boolean welcome) {

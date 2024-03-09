@@ -16,6 +16,13 @@ import java.util.List;
 public class ComparisonScript {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private ComparisonScript() {
+
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object

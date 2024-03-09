@@ -32,6 +32,13 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
 public final class DisplayNameHandler {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private DisplayNameHandler() {
+
+    }
+
+    /**
      * Converts the given lagged factor into a display string.
      *
      * @param laggedFactor a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object

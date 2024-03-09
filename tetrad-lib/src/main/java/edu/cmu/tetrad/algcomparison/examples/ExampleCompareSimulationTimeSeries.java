@@ -40,6 +40,13 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class ExampleCompareSimulationTimeSeries {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleCompareSimulationTimeSeries() {
+    }
+
     /**
      * <p>main.</p>
      *
