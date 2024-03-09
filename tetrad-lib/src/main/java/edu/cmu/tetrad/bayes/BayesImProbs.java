@@ -154,7 +154,10 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the probability of a given proposition.
+     *
+     * @param assertion the proposition for which we want to calculate the probability
+     * @return the probability of the given proposition
      */
     public double getProb(Proposition assertion) {
 
@@ -201,7 +204,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion the proposition representing the assertion
+     * @param condition the proposition representing the condition
+     * @return the conditional probability of the assertion given the condition
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

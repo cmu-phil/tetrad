@@ -53,16 +53,51 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndTestMixedMultipleTTest implements IndependenceTest {
+    /**
+     * The original data set.
+     */
     private final DataSet originalData;
+    /**
+     * The searchVariables.
+     */
     private final List<Node> searchVariables;
+    /**
+     * The modified data set.
+     */
     private final DataSet internalData;
+    /**
+     * A map from searchVariables to their dummy variables.
+     */
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    /**
+     * The logistic regression.
+     */
     private final LogisticRegression logisticRegression;
+    /**
+     * The regression.
+     */
     private final RegressionDataset regression;
-    int[] _rows;
+    /**
+     * The rows.
+     */
+    private int[] _rows;
+    /**
+     * The significance level of the test.
+     */
     private double alpha;
+    /**
+     * The probability associated with the most recently executed independence test.
+     */
     private double lastP;
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * Represents a boolean flag indicating whether linear dependencies should be preferred in the independence test.
+     * If set to true, the test will prioritize linear dependencies over other types of dependencies.
+     * If set to false, the test will consider all types of dependencies equally.
+     */
     private boolean preferLinear = true;
 
     /**
@@ -99,19 +134,21 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     *
+     * @param vars The sublist of variables.
+     * @return an IndependenceTest object
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Checks for independence between two nodes.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x the first node to check independence for
+     * @param y the second node to check independence for
+     * @param z a set of conditioning nodes
+     * @return the result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
@@ -132,46 +169,42 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * <p>getPValue.</p>
+     * Returns the p-value from the last independence test.
      *
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * @return the p-value
      */
     public double getPValue() {
         return this.lastP; //STUB
     }
 
     /**
-     * <p>getVariables.</p>
+     * Retrieves the list of variables used in the original data set.
+     * Note that it returns the variables from the original data set, not the modified dataset.
      *
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
-     * relations.
+     * @return The list of variables from the original data set.
      */
     public List<Node> getVariables() {
         return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
     /**
-     * {@inheritDoc}
+     * @throws UnsupportedOperationException since not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * <p>Getter for the field <code>alpha</code>.</p>
-     *
-     * @return a double
-     * @throws java.lang.UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException since not implemented.
      */
     public double getAlpha() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -187,9 +220,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a string representation of this test.
+     * @return This.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -206,9 +239,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets whether this test will print verbose output.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

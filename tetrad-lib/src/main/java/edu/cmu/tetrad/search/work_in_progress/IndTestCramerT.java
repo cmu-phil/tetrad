@@ -138,9 +138,11 @@ public final class IndTestCramerT implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new IndTestCramerT instance for a subset of the variables.
+     * This method performs an independence test based on a given sublist of variables.
+     *
+     * @param vars The sublist of variables to perform the independence test on.
+     * @return An IndependenceTest object representing the results of the test.
+     * @throws IllegalArgumentException If the sublist of variables is empty or contains variables that are not original variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -167,14 +169,15 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Checks the independence between two nodes given a set of conditioning nodes.
      *
-     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x The first node.
+     * @param y The second node.
+     * @param _z The set of conditioning nodes.
+     * @return The result of the independence check.
+     * @throws NullPointerException If _z is null or contains null elements.
+     * @throws IllegalArgumentException If the submatrix contains missing values.
+     * @throws RuntimeException If the submatrix is singular or the p-value is undefined.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
@@ -270,9 +273,12 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * <p>getPValue.</p>
+     * Calculates the p-value for the independence test.
+     * The p-value is calculated by integrating the probability density function (pdf)
+     * over the range of storedR (absolute value) to 1.0 with 100 intervals,
+     * and then multiplying the result by 2.0.
      *
-     * @return the probability associated with the most recently computed independence test.
+     * @return the p-value for the independence test.
      */
     public double getPValue() {
         return 2.0 * Integrator.getArea(pdf(), FastMath.abs(this.storedR), 1.0, 100);
@@ -288,9 +294,10 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level for future tests.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level, must be between 0.0 and 1.0 (inclusive).
+     * @throws IllegalArgumentException If the significance level is out of range.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -305,17 +312,21 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * <p>Getter for the field <code>variables</code>.</p>
+     * Retrieves the list of variables used in the independence test.
      *
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return A list of Node objects representing the variables used in the test.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether the given variables are conditionally independent.
+     *
+     * @param z The set of conditioning nodes.
+     * @param x The target node.
+     * @return true if the variables are conditionally independent, false otherwise.
+     * @throws UnsupportedOperationException If a matrix operation fails.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -353,18 +364,18 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * <p>getData.</p>
+     * Retrieves the dataset used in the independence test.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return The dataset used in the independence test.
      */
     public DataSet getData() {
         return this.dataSet;
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a string representation of this test.
+     * @return A string representation of the object.
      */
     public String toString() {
         return "Partial Correlation T Test, alpha = " + IndTestCramerT.nf.format(getAlpha());
@@ -405,16 +416,18 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Determines if verbose output is enabled or disabled.
      *
-     * @return a boolean
+     * @return true if verbose output is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose flag to determine if verbose output should be enabled or disabled.
+     *
+     * @param verbose True if the verbose output should be enabled, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

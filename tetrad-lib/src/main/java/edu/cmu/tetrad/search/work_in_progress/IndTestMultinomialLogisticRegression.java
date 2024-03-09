@@ -51,15 +51,47 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndTestMultinomialLogisticRegression implements IndependenceTest {
+    /**
+     * The original data set.
+     */
     private final DataSet originalData;
+    /**
+     * The searchVariables over which this independence checker is capable of determining independence relations.
+     */
     private final List<Node> searchVariables;
+    /**
+     * This variable represents a DataSet object that holds the internal data used in the class.
+     */
     private final DataSet internalData;
+    /**
+     * A private final map that stores the variables per node in a HashMap.
+     * The keys of the map are instances of Node class, and the values are the corresponding list of Node objects.
+     * This map is used in the class IndTestMultinomialLogisticRegression.
+     */
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    /**
+     * A private final LogisticRegression object that is used in the class IndTestMultinomialLogisticRegression.
+     */
     private final LogisticRegression logisticRegression;
+    /**
+     * A private final RegressionDataset object that is used in the class IndTestMultinomialLogisticRegression.
+     */
     private final RegressionDataset regression;
-    int[] _rows;
+    /**
+     * Private field to hold an array of integers representing rows.
+     */
+    private int[] _rows;
+    /**
+     * A private double field that holds the value of alpha.
+     */
     private double alpha;
+    /**
+     * A private double field that holds the value of the last p-value.
+     */
     private double lastP;
+    /**
+     * A private boolean field that holds the value of verbose.
+     */
     private boolean verbose;
 
     /**
@@ -87,19 +119,23 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Performs an independence test for a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return An object of type IndependenceTest.
+     * @throws UnsupportedOperationException if the independence subset feature is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Checks for independence between two nodes, given a set of conditioning nodes.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of conditioning nodes.
+     * @return An object of type IndependenceResult indicating the independence relationship between x and y, given z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable) {
@@ -322,44 +358,47 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
+     * Determines if Node y is determined by the given list of Nodes z.
+     *
+     * @param z The list of Nodes to condition on.
+     * @param y The Node to be determined.
+     * @return True if y is determined by z, false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * <p>Getter for the field <code>alpha</code>.</p>
+     * Retrieves the significance level of the independence test.
      *
-     * @return the significance level of the independence test.
-     * @throws java.lang.UnsupportedOperationException if there is no significance level.
+     * @return The significance level.
      */
     public double getAlpha() {
         return this.alpha; //STUB
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * <p>getData.</p>
+     * Retrieves the original data used for the independence test.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return The original DataSet object used for the independence test.
      */
     public DataSet getData() {
         return this.originalData;
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object.
      *
-     * @return a string representation of this test.
+     * @return a string representation of the object.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -367,16 +406,18 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Returns true if the test prints verbose output.
      *
-     * @return a boolean
+     * @return True if the case.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

@@ -107,23 +107,23 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Creates a new independence test instance for a subset of the variables.
+     * Performs an independence test on a subset of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return An IndependenceTest object representing the result of the test.
+     * @throws UnsupportedOperationException This method is not implemented and will always throw an UnsupportedOperationException.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Checks the independence between two nodes, given a set of conditioning nodes.
      *
-     * @param x0  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y0  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z0 a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x0  First node to check independence for.
+     * @param y0  Second node to check independence for.
+     * @param _z0 Set of conditioning nodes.
+     * @return An IndependenceResult object representing the result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x0, Node y0, Set<Node> _z0) {
 
@@ -190,28 +190,28 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * <p>getPValue.</p>
+     * Calculates the p-value for the independence test.
      *
-     * @return the probability associated with the most recently computed independence test.
+     * @return The p-value of the independence test.
      */
     public double getPValue() {
         return 2.0 * (1.0 - this.normal.cumulativeProbability(abs(this.fisherZ)));
     }
 
     /**
-     * Gets the getModel significance level.
+     * Retrieves the alpha level of the Independence Test.
      *
-     * @return a double
+     * @return The alpha level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Set the alpha level for the significance of the test.
+     *
+     * @param alpha The alpha level for the significance of the test. Must be a value between 0.0 and 1.0, inclusive.
+     * @throws IllegalArgumentException if the alpha value is out of range.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -223,19 +223,19 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * <p>Getter for the field <code>variables</code>.</p>
+     * Retrieves the list of variables used in the independence test.
      *
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return The list of variables used in the independence test.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * <p>Setter for the field <code>variables</code>.</p>
+     * Sets the variables used in the independence test.
      *
-     * @param variables a {@link java.util.List} object
+     * @param variables A list of Nodes representing the variables to be used in the test.
+     * @throws IllegalArgumentException if the number of variables is different from the current number of variables in the test.
      */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
@@ -244,17 +244,22 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the node associated with the given variable name.
+     *
+     * @param name a {@link String} object representing the variable name.
+     * @return the node associated with the variable name.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
-     * UnsupportedOperationException.
+     * Determines if there exists a causal relationship between the nodes in z and node x.
+     *
+     * @param z The list of nodes representing the potential causes.
+     * @param x The node representing the potential effect.
+     * @return true if there exists a causal relationship between the nodes in z and node x, false otherwise.
+     * @throws UnsupportedOperationException if the method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -281,9 +286,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * <p>Getter for the field <code>data</code>.</p>
+     * Retrieve the data set used in the independence test.
      *
-     * @return the data set being analyzed.
+     * @return The data set.
      */
     public DataSet getData() {
         return this.dataSet;
@@ -292,9 +297,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the Fisher Z object.
      *
-     * @return a string representation of this test.
+     * @return A string representation of the Fisher Z object.
      */
     public String toString() {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
@@ -320,7 +325,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data sets used in the independence test.
+     *
+     * @return A list of data sets.
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -333,7 +340,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the sample size of the covariance matrix.
+     *
+     * @return The sample size.
      */
     @Override
     public int getSampleSize() {
@@ -341,16 +350,18 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Returns whether the verbose mode is enabled.
      *
-     * @return a boolean
+     * @return true if verbose mode is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose mode to either enabled or disabled.
+     *
+     * @param verbose True if verbose mode is enabled, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

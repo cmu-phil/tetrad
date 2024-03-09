@@ -259,7 +259,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion The proposition representing the assertion.
+     * @param condition The proposition representing the condition.
+     * @return The conditional probability of the assertion given the condition.
+     * @throws IllegalArgumentException If the assertion and condition are not for the same Bayes IM.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

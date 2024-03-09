@@ -45,18 +45,32 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class IndTestMnlrLr implements IndependenceTest {
+    /**
+     * The data set.
+     */
     private final DataSet data;
+    /**
+     * A map from searchVariables to their indices in the data set.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * The likelihood function.
+     */
     private final MnlrLikelihood likelihood;
+    /**
+     * The significance level of the test.
+     */
     private double alpha;
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
-     * <p>Constructor for IndTestMnlrLr.</p>
+     * Constructs a new independence test for the given data set and significance level.
      *
-     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param alpha a double
+     * @param data  the data set.
+     * @param alpha the significance level.
      */
     public IndTestMnlrLr(DataSet data, double alpha) {
         this.data = data;
@@ -74,19 +88,23 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * This method returns an independence test for a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return An object of type IndependenceTest.
+     * @throws UnsupportedOperationException If this feature is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Checks the independence between two nodes given a set of conditioning nodes.
      *
-     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x the first node
+     * @param y the second node
+     * @param _z the set of conditioning nodes
+     * @return the result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
 
@@ -169,44 +187,47 @@ public class IndTestMnlrLr implements IndependenceTest {
 
 
     /**
-     * {@inheritDoc}
+     * Determines the independence relation between a list of conditioning nodes and a target node.
+     *
+     * @param z The list of conditioning nodes.
+     * @param y The target node.
+     * @return true if the target node is independent of the conditioning nodes; false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * <p>Getter for the field <code>alpha</code>.</p>
+     * Returns the significance level of the independence test.
      *
-     * @return the significance level of the independence test.
-     * @throws java.lang.UnsupportedOperationException if there is no significance level.
+     * @return The significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level to set.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * Returns the data.
+     * Returns the dataset.
      *
-     * @return This.
+     * @return The dataset.
      */
     public DataSet getData() {
         return this.data;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns whether verbose output should be printed.
+     * Determines if the test prints verbose output.
+     *
+     * @return True if the test prints verbose output, false otherwise.
      */
     @Override
     public boolean isVerbose() {
@@ -214,9 +235,9 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets whether this test will print verbose output.
+     *
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -224,9 +245,9 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of this object.
      *
-     * @return a {@link java.lang.String} object
+     * @return the string representation of this object.
      */
     public String toString() {
         return "IndTestMnlrLr";

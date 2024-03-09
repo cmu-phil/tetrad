@@ -187,7 +187,10 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the probability for the given proposition assertion.
+     *
+     * @param assertion The proposition assertion for which to calculate the probability.
+     * @return The probability for the given proposition assertion.
      */
     public double getProb(Proposition assertion) {
 
@@ -228,7 +231,12 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion the proposition assertion for which to calculate the probability
+     * @param condition the proposition condition
+     * @return the conditional probability of the assertion given the condition
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

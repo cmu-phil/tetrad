@@ -101,10 +101,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     //==========================CONSTRUCTORS=============================//
 
     /**
-     * <p>Constructor for IndTestFisherZPercentIndependent.</p>
+     * Initializes an object of the class IndTestFisherZPercentIndependent.
      *
-     * @param dataSets a {@link java.util.List} object
-     * @param alpha    a double
+     * @param dataSets The list of data sets to be used for the independence test.
+     * @param alpha The significance level for the independence test. Must be between 0.0 and 1.0 (inclusive).
+     * @throws IllegalArgumentException If alpha is not within the valid range.
      */
     public IndTestFisherZPercentIndependent(List<DataSet> dataSets, double alpha) {
         this.dataSets = dataSets;
@@ -138,19 +139,22 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * {@inheritDoc}
+     * Performs an independence test on a subset of variables.
+     *
+     * @param vars The sublist of variables to test for independence.
+     * @return The result of the independence test.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Checks the independence between two nodes x and y given a set of conditioning nodes z.
      *
-     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x   The first node.
+     * @param y   The second node.
+     * @param _z  The set of conditioning nodes.
+     * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         try {
@@ -225,10 +229,10 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level to set. Must be between 0.0 and 1.0 (inclusive).
+     * @throws IllegalArgumentException if alpha is not within the valid range.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -249,31 +253,30 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
-     * @return the variable with the given name.
-     */
-
-
-    /**
-     * {@inheritDoc}
+     * Determines the independence between a list of conditioning variables (z) and a target variable (x).
+     *
+     * @param z The list of conditioning variables.
+     * @param x The target variable.
+     * @return True if the target variable is independent of the conditioning variables, otherwise False.
+     * @throws UnsupportedOperationException if the operation is not supported.
      */
     public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * <p>Getter for the field <code>data</code>.</p>
+     * Retrieves the data set from the method.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
-     * @throws java.lang.UnsupportedOperationException if any.
+     * @return The data set obtained.
      */
     public DataSet getData() {
         return DataTransforms.concatenate(this.dataSets);
     }
 
     /**
-     * <p>getCov.</p>
+     * Retrieves the covariance matrix.
      *
-     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @return The covariance matrix.
      */
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
@@ -282,11 +285,13 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             _dataSets.add(DataTransforms.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataTransforms.concatenate(this.dataSets));
+        return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of data sets.
+     *
+     * @return The list of data sets.
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -294,7 +299,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the sample size of the data set.
+     *
+     * @return The sample size of the data set.
      */
     @Override
     public int getSampleSize() {
@@ -302,36 +309,37 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of this object.
      *
-     * @return a string representation of this test.
+     * @return The string representation of this object.
      */
     public String toString() {
         return "Fisher Z, Percent Independent";
     }
 
     /**
-     * <p>Getter for the field <code>rows</code>.</p>
+     * Retrieves the array of row indices.
      *
-     * @return an array of {@link int} objects
+     * @return The array of row indices represented by an int array.
      */
     public int[] getRows() {
         return this.rows;
     }
 
     /**
-     * <p>Getter for the field <code>percent</code>.</p>
+     * Returns the percentage value.
      *
-     * @return a double
+     * @return The percentage value.
      */
     public double getPercent() {
         return this.percent;
     }
 
     /**
-     * <p>Setter for the field <code>percent</code>.</p>
+     * Sets the percentage value.
      *
-     * @param percent a double
+     * @param percent The percentage value to set. Must be between 0.0 and 1.0 (inclusive).
+     * @throws IllegalArgumentException if percent is not within the valid range.
      */
     public void setPercent(double percent) {
         if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
@@ -339,25 +347,27 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
-     * <p>Setter for the field <code>fdr</code>.</p>
+     * Sets the value of the fdr field.
      *
-     * @param fdr a boolean
+     * @param fdr The new value of the fdr field.
      */
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Returns the value of the verbose flag.
      *
-     * @return a boolean
+     * @return True if verbose mode is enabled, False otherwise.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose flag.
+     *
+     * @param verbose True if verbose mode is enabled, False otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

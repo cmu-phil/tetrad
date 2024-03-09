@@ -53,7 +53,12 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm and returns the resulting graph.
+     *
+     * @param dataModel   The data model containing the variables.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The resulting graph.
+     * @throws IllegalArgumentException if the check type parameter is unexpected.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -138,7 +143,10 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * This method returns a comparison graph that is obtained from the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph obtained by applying the CPDAG algorithm to the true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -146,7 +154,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -154,7 +164,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -162,7 +174,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters for the search algorithm.
+     *
+     * @return The list of parameters for the search algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -181,7 +195,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the knowledge associated with this object.
+     *
+     * @return the knowledge associated with this object
      */
     @Override
     public Knowledge getKnowledge() {
@@ -189,7 +205,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge a knowledge object
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
