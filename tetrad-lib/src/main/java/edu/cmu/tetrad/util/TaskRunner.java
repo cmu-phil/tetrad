@@ -92,11 +92,12 @@ public class TaskRunner<T> {
     /**
      * Shuts down an ExecutorService and awaits its termination.
      * <p>
-     * This method gracefully shuts down the ExecutorService by calling {@link ExecutorService#shutdown()} and then waits
-     * for the termination of all tasks for a specified timeout period using the {@link ExecutorService#awaitTermination(long, TimeUnit)}
-     * method. If the tasks do not terminate within the timeout period, the method forcefully shuts down the ExecutorService
-     * by calling {@link ExecutorService#shutdownNow()} and waits again for the termination using {@link ExecutorService#awaitTermination(long, TimeUnit)}.
-     * If the tasks still do not terminate, an error message is logged.
+     * This method gracefully shuts down the ExecutorService by calling {@link ExecutorService#shutdown()} and then
+     * waits for the termination of all tasks for a specified timeout period using the
+     * {@link ExecutorService#awaitTermination(long, TimeUnit)} method. If the tasks do not terminate within the timeout
+     * period, the method forcefully shuts down the ExecutorService by calling {@link ExecutorService#shutdownNow()} and
+     * waits again for the termination using {@link ExecutorService#awaitTermination(long, TimeUnit)}. If the tasks
+     * still do not terminate, an error message is logged.
      *
      * @param pool the ExecutorService to shut down and await termination
      */

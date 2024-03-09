@@ -204,7 +204,7 @@ final class FontSelectionAction extends AbstractAction
      * Invoked when ownership of the clipboard is lost.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents the contents which this owner had placed on the clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

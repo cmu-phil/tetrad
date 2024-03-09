@@ -145,8 +145,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @param assertion The proposition representing the assertion.
      * @param condition The proposition representing the condition.
      * @return The conditional probability of the assertion given the condition.
-     * @throws IllegalArgumentException If the assertion and condition are not for the same Bayes IM or if the variables in the assertion and data set are different or in a different
-     * order.
+     * @throws IllegalArgumentException If the assertion and condition are not for the same Bayes IM or if the variables
+     *                                  in the assertion and data set are different or in a different order.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

@@ -35,7 +35,8 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
     }
 
     /**
-     * Retrieves the description of the statistic: Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph.
+     * Retrieves the description of the statistic: Proportion of semi(X, Y) in estimated graph for which there is no
+     * semi(Y, X) in true graph.
      *
      * @return The description of the statistic.
      */
@@ -45,7 +46,8 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
     }
 
     /**
-     * Calculates the proportion of semi(X, Y) in the estimated graph for which there is no semi(Y, X) in the true graph.
+     * Calculates the proportion of semi(X, Y) in the estimated graph for which there is no semi(Y, X) in the true
+     * graph.
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).

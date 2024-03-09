@@ -184,11 +184,12 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * Calculates the conditional probability of an assertion given a condition.
      *
-     * @param assertion  A {@link Proposition} representing the assertion.
-     * @param condition  A {@link Proposition} representing the condition.
+     * @param assertion A {@link Proposition} representing the assertion.
+     * @param condition A {@link Proposition} representing the condition.
      * @return The conditional probability of the assertion given the condition.
-     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM, or if the variables in
-     *                                  the assertion and data set are either different or in a different order.
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM, or if the
+     *                                  variables in the assertion and data set are either different or in a different
+     *                                  order.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

@@ -14,15 +14,15 @@ import java.lang.management.ManagementFactory;
 public class MillisecondTimes {
 
     /**
+     * Constant <code>type</code>
+     */
+    public static Type type = Type.CPU;
+
+    /**
      * Prevents instantiation.
      */
     private MillisecondTimes() {
     }
-
-    /**
-     * Constant <code>type</code>
-     */
-    public static Type type = Type.CPU;
 
     /**
      * <p>wallTimeMillis.</p>

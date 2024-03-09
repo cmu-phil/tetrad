@@ -65,10 +65,11 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     /**
      * Runs the search algorithm on the given data model with the provided parameters.
      *
-     * @param dataModel   The data model to run the search on.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model to run the search on.
+     * @param parameters The parameters for the search algorithm.
      * @return The result graph after running the search algorithm.
-     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm fails to produce a graph.
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm fails
+     *                                  to produce a graph.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -106,8 +107,8 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * Returns a description of this method. If the algorithm is not null, the description
-     * includes the initial graph description from the algorithm.
+     * Returns a description of this method. If the algorithm is not null, the description includes the initial graph
+     * description from the algorithm.
      *
      * @return A description of this method.
      */
@@ -130,8 +131,8 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     /**
      * Retrieves the list of parameters for the current instance.
      *
-     * @return A list of parameter names used by the current instance. If the algorithm has parameters defined, they will be included in the list. Additionally, the parameter Params
-     *.VERBOSE will also be included.
+     * @return A list of parameter names used by the current instance. If the algorithm has parameters defined, they
+     * will be included in the list. Additionally, the parameter Params .VERBOSE will also be included.
      */
     @Override
     public List<String> getParameters() {

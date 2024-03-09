@@ -34,9 +34,8 @@ import nu.xom.Elements;
 public class SemXmlParser {
 
     /**
-     * This class represents a parser for SEM XML representation. It provides methods to parse XML and reinstantiate SEM IM objects.
-     * The class does not require any input parameters.
-     *
+     * This class represents a parser for SEM XML representation. It provides methods to parse XML and reinstantiate SEM
+     * IM objects. The class does not require any input parameters.
      */
     public SemXmlParser() {
     }

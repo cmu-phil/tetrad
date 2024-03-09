@@ -35,13 +35,6 @@ import org.apache.commons.math3.util.FastMath;
 @SuppressWarnings({"ConstantConditions", "WeakerAccess", "UnusedDeclaration"})
 public class ProbUtils {
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ProbUtils() {
-
-    }
-
     private static final double[] r = {1.253314137315500251207883, 1.193182964731915311846094,
             1.137490921203604514832235, 1.085827027468003637553896,
             1.037824575853726812300365, .9931557904881572182738326,
@@ -189,7 +182,6 @@ public class ProbUtils {
     private static final double c12 = 70.0;
     private static final double c13 = 84.0;
     private static final double c14 = 105.0;
-
     //
     // xinbta.f -- translated by f2c and modified
     //
@@ -252,6 +244,12 @@ public class ProbUtils {
      */
     private static double vm_epsilon = 1.0;
     private static long seedi = 123456789L, seedj = 362436069L;
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ProbUtils() {
+
+    }
 
     /**
      * Normal cumulative distribution function (the value which results by integrating the normal distribution function

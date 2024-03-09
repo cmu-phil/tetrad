@@ -52,11 +52,10 @@ public final class SemProposition implements TetradSerializable {
 
     /**
      * Represents a private final array of double values.
-     *
-     * This variable is part of the SemProposition class in the Tetrad API.
-     * SemProposition is a class that represents a Proposition for a Bayes IM (Bayesian
-     * Inference Model). It allows for semantic checks when deserializing.
-     *
+     * <p>
+     * This variable is part of the SemProposition class in the Tetrad API. SemProposition is a class that represents a
+     * Proposition for a Bayes IM (Bayesian Inference Model). It allows for semantic checks when deserializing.
+     * <p>
      * The values array contains the double values associated with the Proposition.
      */
     private final double[] values;

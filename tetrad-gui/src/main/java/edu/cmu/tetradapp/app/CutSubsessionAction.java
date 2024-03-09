@@ -67,8 +67,8 @@ final class CutSubsessionAction extends AbstractAction
     /**
      * Notifies that ownership of the clipboard contents has been lost.
      *
-     * @param clipboard    the clipboard that is no longer owned
-     * @param contents     the contents which this owner had placed on the clipboard
+     * @param clipboard the clipboard that is no longer owned
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

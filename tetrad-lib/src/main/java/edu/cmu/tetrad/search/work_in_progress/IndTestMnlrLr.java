@@ -101,8 +101,8 @@ public class IndTestMnlrLr implements IndependenceTest {
     /**
      * Checks the independence between two nodes given a set of conditioning nodes.
      *
-     * @param x the first node
-     * @param y the second node
+     * @param x  the first node
+     * @param y  the second node
      * @param _z the set of conditioning nodes
      * @return the result of the independence test
      */

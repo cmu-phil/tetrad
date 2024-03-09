@@ -96,10 +96,10 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the Fask search algorithm on the given data model with the specified parameters.
      *
-     * @param dataModel   the data model to run the search on
-     * @param parameters  the parameters for the search
+     * @param dataModel  the data model to run the search on
+     * @param parameters the parameters for the search
      * @return the resulting graph from the search
-     * @throws IllegalStateException if the data model is not a DataSet or if there are missing values
+     * @throws IllegalStateException    if the data model is not a DataSet or if there are missing values
      * @throws IllegalArgumentException if there are missing values in the data set
      */
     @Override
@@ -209,9 +209,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns the list of parameter names that are used by the algorithm.
-     * These parameters are looked up in the ParamMap, so if they are not already defined,
-     * they will need to be defined there.
+     * Returns the list of parameter names that are used by the algorithm. These parameters are looked up in the
+     * ParamMap, so if they are not already defined, they will need to be defined there.
      *
      * @return The list of parameter names used by the algorithm.
      */
@@ -268,7 +267,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Sets the independence wrapper for the object.
      *
-     * @param independenceWrapper the independence wrapper to be set. Must implement the {@link IndependenceWrapper} interface.
+     * @param independenceWrapper the independence wrapper to be set. Must implement the {@link IndependenceWrapper}
+     *                            interface.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {

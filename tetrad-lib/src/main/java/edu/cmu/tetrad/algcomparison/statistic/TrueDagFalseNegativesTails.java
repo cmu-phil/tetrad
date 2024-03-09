@@ -10,8 +10,8 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * The class TrueDagFalseNegativesTails implements the Statistic interface to calculate the number
- * of false negatives for tails compared to the true Directed Acyclic Graph (DAG).
+ * The class TrueDagFalseNegativesTails implements the Statistic interface to calculate the number of false negatives
+ * for tails compared to the true Directed Acyclic Graph (DAG).
  */
 public class TrueDagFalseNegativesTails implements Statistic {
     @Serial

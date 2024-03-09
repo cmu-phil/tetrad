@@ -401,8 +401,8 @@ public class Discretizer {
         }
 
         /**
-         * Returns a string representation of the Discretization object.
-         * The string contains the discretization information for the associated variable.
+         * Returns a string representation of the Discretization object. The string contains the discretization
+         * information for the associated variable.
          *
          * @return a string representation of the Discretization object
          */

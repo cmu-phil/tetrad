@@ -104,7 +104,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * Initializes an object of the class IndTestFisherZPercentIndependent.
      *
      * @param dataSets The list of data sets to be used for the independence test.
-     * @param alpha The significance level for the independence test. Must be between 0.0 and 1.0 (inclusive).
+     * @param alpha    The significance level for the independence test. Must be between 0.0 and 1.0 (inclusive).
      * @throws IllegalArgumentException If alpha is not within the valid range.
      */
     public IndTestFisherZPercentIndependent(List<DataSet> dataSets, double alpha) {
@@ -151,9 +151,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     /**
      * Checks the independence between two nodes x and y given a set of conditioning nodes z.
      *
-     * @param x   The first node.
-     * @param y   The second node.
-     * @param _z  The set of conditioning nodes.
+     * @param x  The first node.
+     * @param y  The second node.
+     * @param _z The set of conditioning nodes.
      * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {

@@ -31,8 +31,8 @@ public class GdistanceTest {
     }
 
     /**
-     * The main method generates random graphs, loads a location map, calculates the distance between two graphs,
-     * and saves the output to a file.
+     * The main method generates random graphs, loads a location map, calculates the distance between two graphs, and
+     * saves the output to a file.
      *
      * @param args the command line arguments
      */

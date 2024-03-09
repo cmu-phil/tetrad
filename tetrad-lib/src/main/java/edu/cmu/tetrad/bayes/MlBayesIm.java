@@ -565,11 +565,12 @@ public final class MlBayesIm implements BayesIm {
      * Sets the probability value for a specific node, row, and column in the probability table.
      *
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex  the row in the table for this node which represents the combination of parent values in question.
+     * @param rowIndex  the row in the table for this node which represents the combination of parent values in
+     *                  question.
      * @param colIndex  the column in the table for this node which represents the value of the node in question.
      * @param value     the desired probability to be set. Must be between 0.0 and 1.0, or Double.NaN.
      * @throws IllegalArgumentException if the column index is out of range for the given node, or if the probability
-     * value is not between 0.0 and 1.0 or Double.NaN.
+     *                                  value is not between 0.0 and 1.0 or Double.NaN.
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
                                double value) {
@@ -587,8 +588,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * Returns the corresponding node index in the given BayesIm
-     * based on the node index in this BayesIm.
+     * Returns the corresponding node index in the given BayesIm based on the node index in this BayesIm.
      *
      * @param nodeIndex    the index of the node in this BayesIm.
      * @param otherBayesIm the BayesIm in which the node is to be found.
@@ -604,7 +604,7 @@ public final class MlBayesIm implements BayesIm {
      * Clears all values in the specified row of a table.
      *
      * @param nodeIndex the index of the node for the table that this row belongs to
-     * @param rowIndex the index of the row to be cleared
+     * @param rowIndex  the index of the row to be cleared
      */
     public void clearRow(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -845,7 +845,7 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates data for the given data set.
      *
-     * @param dataSet The data set to simulate data for.
+     * @param dataSet         The data set to simulate data for.
      * @param latentDataSaved Indicates whether latent data should be saved during simulation.
      * @return The modified data set after simulating the data.
      */

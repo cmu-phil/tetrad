@@ -63,10 +63,12 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     }
 
     /**
-     * Compares this IndependenceTestModel object with the specified IndependenceTestModel object based on the name of the tests.
+     * Compares this IndependenceTestModel object with the specified IndependenceTestModel object based on the name of
+     * the tests.
      *
      * @param other the IndependenceTestModel object to be compared
-     * @return a negative integer, zero, or a positive integer as this IndependenceTestModel is less than, equal to, or greater than the specified IndependenceTestModel
+     * @return a negative integer, zero, or a positive integer as this IndependenceTestModel is less than, equal to, or
+     * greater than the specified IndependenceTestModel
      */
     @Override
     public int compareTo(IndependenceTestModel other) {

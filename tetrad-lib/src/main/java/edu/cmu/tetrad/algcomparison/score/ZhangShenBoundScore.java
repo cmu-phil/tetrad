@@ -38,8 +38,8 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * This class represents the constructor for the ZhangShenBoundScore class.
-     * It is used to create an instance of the ZhangShenBoundScore class.
+     * This class represents the constructor for the ZhangShenBoundScore class. It is used to create an instance of the
+     * ZhangShenBoundScore class.
      */
     public ZhangShenBoundScore() {
 

@@ -7,8 +7,8 @@ import edu.cmu.tetrad.graph.Graph;
 import java.io.Serial;
 
 /**
- * TailPrecision is a class that implements the Statistic interface.
- * It calculates the tail precision, which is the ratio of true positive arrows to the sum of true positive arrows and false positive arrows.
+ * TailPrecision is a class that implements the Statistic interface. It calculates the tail precision, which is the
+ * ratio of true positive arrows to the sum of true positive arrows and false positive arrows.
  */
 public class TailPrecision implements Statistic {
     @Serial
@@ -41,7 +41,8 @@ public class TailPrecision implements Statistic {
     }
 
     /**
-     * Calculates the tail precision, which is the ratio of true positive arrows to the sum of true positive arrows and false positive arrows.
+     * Calculates the tail precision, which is the ratio of true positive arrows to the sum of true positive arrows and
+     * false positive arrows.
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).

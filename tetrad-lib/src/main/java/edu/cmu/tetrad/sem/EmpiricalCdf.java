@@ -122,8 +122,8 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * Returns the numerical mean of the empirical cumulative distribution function (CDF).
-     * The numerical mean is calculated as the average of the data points.
+     * Returns the numerical mean of the empirical cumulative distribution function (CDF). The numerical mean is
+     * calculated as the average of the data points.
      *
      * @return the numerical mean of the CDF
      */
@@ -133,9 +133,8 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * Returns the numerical variance of the empirical cumulative distribution function (CDF).
-     * The numerical variance is calculated as the average of the squared differences
-     * between each data point and the numerical mean.
+     * Returns the numerical variance of the empirical cumulative distribution function (CDF). The numerical variance is
+     * calculated as the average of the squared differences between each data point and the numerical mean.
      *
      * @return the numerical variance of the CDF
      */
@@ -145,8 +144,8 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * Returns the lower bound of the support for the distribution.
-     * The support is the range of values for which the distribution is defined.
+     * Returns the lower bound of the support for the distribution. The support is the range of values for which the
+     * distribution is defined.
      *
      * @return the lower bound of the support
      */
@@ -156,8 +155,8 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     /**
-     * Returns the upper bound of the support for the distribution.
-     * The support is the range of values for which the distribution is defined.
+     * Returns the upper bound of the support for the distribution. The support is the range of values for which the
+     * distribution is defined.
      *
      * @return the upper bound of the support
      */

@@ -184,8 +184,8 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
-     * This method is called when an action event is generated. It processes the event by performing
-     * different actions based on the template name.
+     * This method is called when an action event is generated. It processes the event by performing different actions
+     * based on the template name.
      *
      * @param e the event to be processed
      */

@@ -41,12 +41,12 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
     /**
      * Runs the MGM search algorithm.
      *
-     * @param dataModel   The data model containing the dataset.
-     * @param parameters  The parameters for running the search.
+     * @param dataModel  The data model containing the dataset.
+     * @param parameters The parameters for running the search.
      * @return The graph obtained from the MGM search algorithm.
      * @throws IllegalArgumentException If the data model does not contain tabular data, if the dataset is not mixed
-     *                                  (contains at least one discrete column and at least one continuous column),
-     *                                  or if missing values are present.
+     *                                  (contains at least one discrete column and at least one continuous column), or
+     *                                  if missing values are present.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {

@@ -58,7 +58,6 @@ public class PerformanceTestsDan {
     /**
      * <p>main.</p>
      *
-     *
      * @param args a {@link java.lang.String} object
      */
     public static void main(String... args) {

@@ -45,14 +45,13 @@ public class RandomGraph {
     /**
      * Generates a random Directed Acyclic Graph (DAG).
      *
-     * @param nodes                 the list of nodes in the graph
-     * @param numLatentConfounders  the number of latent confounders (unobserved variables) in the graph
-     * @param maxNumEdges           the maximum number of edges in the graph
-     * @param maxDegree             the maximum number of edges incident to a single node in the graph
-     * @param maxIndegree           the maximum number of incoming edges for a single node in the graph
-     * @param maxOutdegree          the maximum number of outgoing edges for a single node in the graph
-     * @param connected             whether the graph should be connected or not
-     *
+     * @param nodes                the list of nodes in the graph
+     * @param numLatentConfounders the number of latent confounders (unobserved variables) in the graph
+     * @param maxNumEdges          the maximum number of edges in the graph
+     * @param maxDegree            the maximum number of edges incident to a single node in the graph
+     * @param maxIndegree          the maximum number of incoming edges for a single node in the graph
+     * @param maxOutdegree         the maximum number of outgoing edges for a single node in the graph
+     * @param connected            whether the graph should be connected or not
      * @return a randomly generated DAG representing the causal relationships between the nodes
      */
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -62,13 +61,13 @@ public class RandomGraph {
     /**
      * Generates a random graph based on the given parameters.
      *
-     * @param numNodes               the number of nodes in the graph
-     * @param numLatentConfounders   the number of latent confounders in the graph
-     * @param numEdges               the number of edges in the graph
-     * @param maxDegree              the maximum degree of each node in the graph
-     * @param maxIndegree            the maximum indegree of each node in the graph
-     * @param maxOutdegree           the maximum outdegree of each node in the graph
-     * @param connected              indicates whether the graph should be connected or not
+     * @param numNodes             the number of nodes in the graph
+     * @param numLatentConfounders the number of latent confounders in the graph
+     * @param numEdges             the number of edges in the graph
+     * @param maxDegree            the maximum degree of each node in the graph
+     * @param maxIndegree          the maximum indegree of each node in the graph
+     * @param maxOutdegree         the maximum outdegree of each node in the graph
+     * @param connected            indicates whether the graph should be connected or not
      * @return a randomly generated graph
      */
     public static Graph randomGraph(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -84,13 +83,13 @@ public class RandomGraph {
     /**
      * Generates a random graph based on the given parameters.
      *
-     * @param nodes                  the list of nodes to create the graph with
-     * @param numLatentConfounders   the number of latent confounders in the graph
-     * @param maxNumEdges            the maximum number of edges in the graph
-     * @param maxDegree              the maximum total degree (in-degree + out-degree) of each node
-     * @param maxIndegree            the maximum in-degree of each node
-     * @param maxOutdegree           the maximum out-degree of each node
-     * @param connected              boolean flag indicating whether the generated graph should be connected or not
+     * @param nodes                the list of nodes to create the graph with
+     * @param numLatentConfounders the number of latent confounders in the graph
+     * @param maxNumEdges          the maximum number of edges in the graph
+     * @param maxDegree            the maximum total degree (in-degree + out-degree) of each node
+     * @param maxIndegree          the maximum in-degree of each node
+     * @param maxOutdegree         the maximum out-degree of each node
+     * @param connected            boolean flag indicating whether the generated graph should be connected or not
      * @return the randomly generated graph
      */
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -100,17 +99,18 @@ public class RandomGraph {
     /**
      * Generates a random graph using UniformGraphGenerator with the specified parameters.
      *
-     * @param nodes                 The list of nodes to be included in the graph
-     * @param numLatentConfounders  The maximum number of latent confounders to be added to the graph
-     * @param maxNumEdges           The maximum number of edges to be added to the graph
-     * @param maxDegree             The maximum degree of each node in the graph
-     * @param maxIndegree           The maximum indegree of each node in the graph
-     * @param maxOutdegree          The maximum outdegree of each node in the graph
-     * @param connected             A flag indicating whether the graph should be a connected directed acyclic graph (DAG)
-     * @param numIterations         The number of iterations to generate the graph
+     * @param nodes                The list of nodes to be included in the graph
+     * @param numLatentConfounders The maximum number of latent confounders to be added to the graph
+     * @param maxNumEdges          The maximum number of edges to be added to the graph
+     * @param maxDegree            The maximum degree of each node in the graph
+     * @param maxIndegree          The maximum indegree of each node in the graph
+     * @param maxOutdegree         The maximum outdegree of each node in the graph
+     * @param connected            A flag indicating whether the graph should be a connected directed acyclic graph
+     *                             (DAG)
+     * @param numIterations        The number of iterations to generate the graph
      * @return The generated random graph
-     * @throws IllegalArgumentException if the given number of nodes is 0, or the maximum number of edges is out of range,
-     *                                  or the maximum number of latent confounders is out of range
+     * @throws IllegalArgumentException if the given number of nodes is 0, or the maximum number of edges is out of
+     *                                  range, or the maximum number of latent confounders is out of range
      */
     public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, int numIterations) {
         int numNodes = nodes.size();
@@ -175,14 +175,13 @@ public class RandomGraph {
     /**
      * Generates a random graph with the given parameters and random forward edges.
      *
-     * @param numNodes              the number of nodes in the graph
-     * @param numLatentConfounders  the number of latent confounders in the graph
-     * @param numEdges              the number of edges in the graph
-     * @param maxDegree             the maximum degree of a node in the graph
-     * @param maxIndegree           the maximum indegree of a node in the graph
-     * @param maxOutdegree          the maximum outdegree of a node in the graph
-     * @param connected             indicates whether the graph should be connected
-     *
+     * @param numNodes             the number of nodes in the graph
+     * @param numLatentConfounders the number of latent confounders in the graph
+     * @param numEdges             the number of edges in the graph
+     * @param maxDegree            the maximum degree of a node in the graph
+     * @param maxIndegree          the maximum indegree of a node in the graph
+     * @param maxOutdegree         the maximum outdegree of a node in the graph
+     * @param connected            indicates whether the graph should be connected
      * @return a random graph object
      */
     public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -199,14 +198,13 @@ public class RandomGraph {
     /**
      * Generates a random graph with forward edges.
      *
-     * @param nodes                 the list of nodes in the graph
-     * @param numLatentConfounders  the number of latent confounders in the graph
-     * @param numEdges              the total number of edges in the graph
-     * @param maxDegree             the maximum number of edges connected to each node
-     * @param maxIndegree           the maximum in-degree of each node
-     * @param maxOutdegree          the maximum out-degree of each node
-     * @param connected             if true, ensures that the generated graph is connected
-     *
+     * @param nodes                the list of nodes in the graph
+     * @param numLatentConfounders the number of latent confounders in the graph
+     * @param numEdges             the total number of edges in the graph
+     * @param maxDegree            the maximum number of edges connected to each node
+     * @param maxIndegree          the maximum in-degree of each node
+     * @param maxOutdegree         the maximum out-degree of each node
+     * @param connected            if true, ensures that the generated graph is connected
      * @return the random graph with forward edges
      */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -224,10 +222,10 @@ public class RandomGraph {
      * @param maxOutdegree         the maximum outdegree of a node in the graph
      * @param connected            indicates if the graph should be connected
      * @param layoutAsCircle       indicates if the graph should be laid out in a circular pattern
-     * @throws IllegalArgumentException if the number of nodes is less than or equal to 0,
-     *                                  the number of edges is negative or exceeds the possible maximum,
-     *                                  or the number of latent confounders is negative or exceeds the number of nodes
      * @return a randomly generated graph with forward edges
+     * @throws IllegalArgumentException if the number of nodes is less than or equal to 0, the number of edges is
+     *                                  negative or exceeds the possible maximum, or the number of latent confounders is
+     *                                  negative or exceeds the number of nodes
      */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle) {
         if (nodes.size() == 0) {
@@ -303,12 +301,12 @@ public class RandomGraph {
     /**
      * Generates a random scale-free graph.
      *
-     * @param numNodes              The number of nodes in the graph.
-     * @param numLatentConfounders  The number of latent confounders in the graph.
-     * @param alpha                 The parameter alpha for generating node degrees in the graph.
-     * @param beta                  The parameter beta for generating node degrees in the graph.
-     * @param delta_in              The parameter delta_in for generating node degrees in the graph.
-     * @param delta_out             The parameter delta_out for generating node degrees in the graph.
+     * @param numNodes             The number of nodes in the graph.
+     * @param numLatentConfounders The number of latent confounders in the graph.
+     * @param alpha                The parameter alpha for generating node degrees in the graph.
+     * @param beta                 The parameter beta for generating node degrees in the graph.
+     * @param delta_in             The parameter delta_in for generating node degrees in the graph.
+     * @param delta_out            The parameter delta_out for generating node degrees in the graph.
      * @return A randomly generated scale-free graph.
      */
     public static Graph randomScaleFreeGraph(int numNodes, int numLatentConfounders, double alpha, double beta, double delta_in, double delta_out) {

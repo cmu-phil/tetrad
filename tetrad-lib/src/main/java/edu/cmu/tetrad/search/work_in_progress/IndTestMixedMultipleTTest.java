@@ -94,9 +94,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      */
     private boolean verbose;
     /**
-     * Represents a boolean flag indicating whether linear dependencies should be preferred in the independence test.
-     * If set to true, the test will prioritize linear dependencies over other types of dependencies.
-     * If set to false, the test will consider all types of dependencies equally.
+     * Represents a boolean flag indicating whether linear dependencies should be preferred in the independence test. If
+     * set to true, the test will prioritize linear dependencies over other types of dependencies. If set to false, the
+     * test will consider all types of dependencies equally.
      */
     private boolean preferLinear = true;
 
@@ -134,7 +134,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     *
      * @param vars The sublist of variables.
      * @return an IndependenceTest object
      */
@@ -178,8 +177,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * Retrieves the list of variables used in the original data set.
-     * Note that it returns the variables from the original data set, not the modified dataset.
+     * Retrieves the list of variables used in the original data set. Note that it returns the variables from the
+     * original data set, not the modified dataset.
      *
      * @return The list of variables from the original data set.
      */
@@ -245,6 +244,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
     /**
      * Sets whether this test will print verbose output.
+     *
      * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {

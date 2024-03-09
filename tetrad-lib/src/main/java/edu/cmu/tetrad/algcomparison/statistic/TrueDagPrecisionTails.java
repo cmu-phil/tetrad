@@ -44,7 +44,8 @@ public class TrueDagPrecisionTails implements Statistic {
     }
 
     /**
-     * Calculates the proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true graph.
+     * Calculates the proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true
+     * graph.
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).

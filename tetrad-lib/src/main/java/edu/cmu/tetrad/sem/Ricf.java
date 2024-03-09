@@ -52,9 +52,8 @@ import java.util.*;
 public class Ricf {
 
     /**
-     * Represents the Ricf class.
-     * This class provides methods for calculating the Restricted Information Criterion Fusion (RICF)
-     * for a given SemGraph.
+     * Represents the Ricf class. This class provides methods for calculating the Restricted Information Criterion
+     * Fusion (RICF) for a given SemGraph.
      */
     public Ricf() {
     }
@@ -62,7 +61,7 @@ public class Ricf {
     /**
      * Calculates the Restricted Information Criterion Fusion (RICF) for a given SemGraph.
      *
-     * @param mag The SemGraph object representing the graph to calculate RICF for.
+     * @param mag       The SemGraph object representing the graph to calculate RICF for.
      * @param covMatrix The ICovarianceMatrix object representing the covariance matrix.
      * @param tolerance The tolerance value for convergence.
      * @return The RicfResult object containing the results of the RICF calculation.
@@ -823,11 +822,12 @@ public class Ricf {
     /**
      * Determines if a node j can be added to a set L1 while maintaining adjacency with all nodes in L1.
      *
-     * @param j The index of the node to be added.
-     * @param L1 The set of indices representing the current set of nodes.
+     * @param j     The index of the node to be added.
+     * @param L1    The set of indices representing the current set of nodes.
      * @param graph The graph containing the nodes.
      * @param nodes The list of nodes.
-     * @return Returns true if node j can be added to L1 while maintaining adjacency with all nodes in L1, false otherwise.
+     * @return Returns true if node j can be added to L1 while maintaining adjacency with all nodes in L1, false
+     * otherwise.
      */
     private boolean addable(int j, SortedSet<Integer> L1, Graph graph, List<Node> nodes) {
         for (int k : L1) {
@@ -1009,8 +1009,8 @@ public class Ricf {
         }
 
         /**
-         * Returns a string representation of the FitConGraphResult object.
-         * The string includes the Sigma hat matrix, deviance value, degrees of freedom, and number of iterations.
+         * Returns a string representation of the FitConGraphResult object. The string includes the Sigma hat matrix,
+         * deviance value, degrees of freedom, and number of iterations.
          *
          * @return a string representation of the FitConGraphResult object.
          */

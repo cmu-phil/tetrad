@@ -21,7 +21,7 @@ public class StructuralHammingDistance implements Statistic {
     /**
      * Constructs the statistic.
      */
-    public StructuralHammingDistance () {
+    public StructuralHammingDistance() {
     }
 
     /**

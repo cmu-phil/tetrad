@@ -66,11 +66,11 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     /**
      * Runs the search algorithm to orient edges in the input graph using the provided data.
      *
-     * @param dataModel   The data model containing the dataset to be used for the search.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model containing the dataset to be used for the search.
+     * @param parameters The parameters for the search algorithm.
      * @return The oriented graph resulting from the search algorithm.
-     * @throws IllegalArgumentException If the data model is not a continuous dataset or if the search algorithm
-     *                                  needs both data and a graph source as inputs but the graph is null.
+     * @throws IllegalArgumentException If the data model is not a continuous dataset or if the search algorithm needs
+     *                                  both data and a graph source as inputs but the graph is null.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {

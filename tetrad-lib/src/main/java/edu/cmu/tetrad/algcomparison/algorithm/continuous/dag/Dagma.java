@@ -48,10 +48,11 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
     }
 
     /**
-     * Runs the DAGMA algorithm to search for a directed acyclic graph (DAG) in the given data model with the specified parameters.
+     * Runs the DAGMA algorithm to search for a directed acyclic graph (DAG) in the given data model with the specified
+     * parameters.
      *
-     * @param dataModel   The data model to search.
-     * @param parameters  The parameters for the DAGMA algorithm.
+     * @param dataModel  The data model to search.
+     * @param parameters The parameters for the DAGMA algorithm.
      * @return The resulting graph, which represents a DAG.
      * @throws IllegalArgumentException If the data model is not a continuous dataset.
      */

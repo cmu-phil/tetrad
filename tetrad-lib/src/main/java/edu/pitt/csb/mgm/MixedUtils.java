@@ -51,16 +51,16 @@ import java.util.*;
 public class MixedUtils {
 
     /**
+     * Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code>
+     */
+    public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
+
+    //labels corresponding to values from allEdgeStats
+    /**
      * Prevents instantiation.
      */
     private MixedUtils() {
     }
-
-    //labels corresponding to values from allEdgeStats
-    /**
-     * Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code>
-     */
-    public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
     /**
      * <p>getDiscreteInds.</p>

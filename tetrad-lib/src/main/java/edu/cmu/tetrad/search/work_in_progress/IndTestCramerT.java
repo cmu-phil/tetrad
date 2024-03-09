@@ -142,7 +142,8 @@ public final class IndTestCramerT implements IndependenceTest {
      *
      * @param vars The sublist of variables to perform the independence test on.
      * @return An IndependenceTest object representing the results of the test.
-     * @throws IllegalArgumentException If the sublist of variables is empty or contains variables that are not original variables.
+     * @throws IllegalArgumentException If the sublist of variables is empty or contains variables that are not original
+     *                                  variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -171,13 +172,13 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Checks the independence between two nodes given a set of conditioning nodes.
      *
-     * @param x The first node.
-     * @param y The second node.
+     * @param x  The first node.
+     * @param y  The second node.
      * @param _z The set of conditioning nodes.
      * @return The result of the independence check.
-     * @throws NullPointerException If _z is null or contains null elements.
+     * @throws NullPointerException     If _z is null or contains null elements.
      * @throws IllegalArgumentException If the submatrix contains missing values.
-     * @throws RuntimeException If the submatrix is singular or the p-value is undefined.
+     * @throws RuntimeException         If the submatrix is singular or the p-value is undefined.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
@@ -273,10 +274,9 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * Calculates the p-value for the independence test.
-     * The p-value is calculated by integrating the probability density function (pdf)
-     * over the range of storedR (absolute value) to 1.0 with 100 intervals,
-     * and then multiplying the result by 2.0.
+     * Calculates the p-value for the independence test. The p-value is calculated by integrating the probability
+     * density function (pdf) over the range of storedR (absolute value) to 1.0 with 100 intervals, and then multiplying
+     * the result by 2.0.
      *
      * @return the p-value for the independence test.
      */

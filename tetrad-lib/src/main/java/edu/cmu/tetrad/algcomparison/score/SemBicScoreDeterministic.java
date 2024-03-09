@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SemBicScoreDeterministic is a class that implements the ScoreWrapper interface.
- * It is used to calculate the Sem BIC Score for deterministic models.
+ * SemBicScoreDeterministic is a class that implements the ScoreWrapper interface. It is used to calculate the Sem BIC
+ * Score for deterministic models.
  */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "Sem BIC Score Deterministic",

@@ -56,15 +56,13 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents the constructor for the Cpc class.
-     * It is used to create an instance of the Cpc class.
+     * This class represents the constructor for the Cpc class. It is used to create an instance of the Cpc class.
      */
     public Cpc() {
     }
 
     /**
-     * This class represents the constructor for the Cpc class.
-     * It is used to create an instance of the Cpc class.
+     * This class represents the constructor for the Cpc class. It is used to create an instance of the Cpc class.
      *
      * @param test The IndependenceWrapper object.
      */

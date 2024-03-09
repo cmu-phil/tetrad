@@ -64,9 +64,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      */
     private final DataSet internalData;
     /**
-     * A private final map that stores the variables per node in a HashMap.
-     * The keys of the map are instances of Node class, and the values are the corresponding list of Node objects.
-     * This map is used in the class IndTestMultinomialLogisticRegression.
+     * A private final map that stores the variables per node in a HashMap. The keys of the map are instances of Node
+     * class, and the values are the corresponding list of Node objects. This map is used in the class
+     * IndTestMultinomialLogisticRegression.
      */
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     /**

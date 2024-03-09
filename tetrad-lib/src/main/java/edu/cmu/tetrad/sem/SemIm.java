@@ -544,7 +544,7 @@ public final class SemIm implements Im, ISemIm {
      *
      * @param parameter The parameter for which to retrieve the value.
      * @return The value associated with the parameter.
-     * @throws NullPointerException if the parameter is null.
+     * @throws NullPointerException     if the parameter is null.
      * @throws IllegalArgumentException if the parameter is not present in the model.
      */
     public double getParamValue(Parameter parameter) {
@@ -574,7 +574,7 @@ public final class SemIm implements Im, ISemIm {
      * Sets the value of a parameter in the model.
      *
      * @param parameter the parameter to set the value for
-     * @param value the value to set for the parameter
+     * @param value     the value to set for the parameter
      * @throws IllegalArgumentException if the parameter cannot be set in this model
      */
     public void setParamValue(Parameter parameter, double value) {
@@ -873,10 +873,8 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Returns the variance for a given node.
      *
-     * @param node     The node for which the variance is calculated.
-     *                 Must be a {@link Node} object.
-     * @param implCovar The implementation covariance matrix.
-     *                 Must be a {@link Matrix} object.
+     * @param node      The node for which the variance is calculated. Must be a {@link Node} object.
+     * @param implCovar The implementation covariance matrix. Must be a {@link Matrix} object.
      * @return The variance value.
      */
     public double getVariance(Node node, Matrix implCovar) {

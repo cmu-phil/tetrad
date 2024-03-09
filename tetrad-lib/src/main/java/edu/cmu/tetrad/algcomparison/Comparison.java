@@ -140,12 +140,11 @@ public class Comparison {
 
     /**
      * Initializes a new instance of the Comparison class.
-     *
-     * By default, the saveGraphs property is set to true.
-     * The showSimulationIndices, showAlgorithmIndices, showUtilities, and sortByUtility properties are all set to false.
-     *
-     * Usage:
-     * Comparison comparison = new Comparison();
+     * <p>
+     * By default, the saveGraphs property is set to true. The showSimulationIndices, showAlgorithmIndices,
+     * showUtilities, and sortByUtility properties are all set to false.
+     * <p>
+     * Usage: Comparison comparison = new Comparison();
      */
     public Comparison() {
         this.saveGraphs = true;

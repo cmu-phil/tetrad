@@ -48,8 +48,8 @@ public class TestDegenerateGaussian {
     }
 
     /**
-     * The main method initializes various parameters, statistics, algorithms, simulations, and a comparison object.
-     * It sets the values for the parameters and adds statistics, algorithms, and simulations to the respective objects.
+     * The main method initializes various parameters, statistics, algorithms, simulations, and a comparison object. It
+     * sets the values for the parameters and adds statistics, algorithms, and simulations to the respective objects.
      * Lastly, it calls the compareFromSimulations method of the comparison object to perform a comparison.
      *
      * @param args the command-line arguments

@@ -8,10 +8,10 @@ import java.io.Serial;
 
 /**
  * Represents an implementation of the Statistic interface that calculates the Orientation Recall.
- *
- * The Orientation Recall is a statistic that measures the accuracy of the estimated
- * orientation of edges in a graph compared to the true graph. It calculates the ratio
- * of true positive orientations to the sum of true positive and false negative orientations.
+ * <p>
+ * The Orientation Recall is a statistic that measures the accuracy of the estimated orientation of edges in a graph
+ * compared to the true graph. It calculates the ratio of true positive orientations to the sum of true positive and
+ * false negative orientations.
  */
 public class OrientationRecall implements Statistic {
     @Serial
@@ -45,8 +45,8 @@ public class OrientationRecall implements Statistic {
     }
 
     /**
-     * Calculates the Orientation Recall statistic, which measures the accuracy of the estimated
-     * orientation of edges in a graph compared to the true graph.
+     * Calculates the Orientation Recall statistic, which measures the accuracy of the estimated orientation of edges in
+     * a graph compared to the true graph.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {

@@ -48,8 +48,8 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     /**
      * Runs a search algorithm to create a graph representation of the data.
      *
-     * @param dataModel   The data model containing the dataset.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model containing the dataset.
+     * @param parameters The parameters for the search algorithm.
      * @return The resulting graph representation of the data.
      * @throws IllegalArgumentException if the data model is not a continuous dataset or contains missing values.
      */
@@ -115,7 +115,6 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     *
      * Retrieves the data type required by the search algorithm.
      *
      * @return The data type required by the search algorithm.

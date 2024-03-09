@@ -72,8 +72,7 @@ public class SessionFileTransferHandler extends TransferHandler {
     /**
      * Imports data from a file into the session editor.
      *
-     * @param support the object containing the details of
-     *        the transfer, not <code>null</code>.
+     * @param support the object containing the details of the transfer, not <code>null</code>.
      * @return true if the data import was successful, false otherwise.
      */
     @Override

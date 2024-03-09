@@ -50,7 +50,8 @@ final class DeleteSubsessionAction extends AbstractAction
     }
 
     /**
-     * Invoked when an action occurs. Displays a confirmation dialog and deletes selected nodes in the session editor if the user chooses to delete.
+     * Invoked when an action occurs. Displays a confirmation dialog and deletes selected nodes in the session editor if
+     * the user chooses to delete.
      *
      * @param e the event to be processed
      */
@@ -70,7 +71,7 @@ final class DeleteSubsessionAction extends AbstractAction
      * Notifies that the specified clipboard is no longer owned by the owner.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents the contents which this owner had placed on the clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

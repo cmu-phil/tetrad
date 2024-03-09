@@ -8,8 +8,8 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import java.io.Serial;
 
 /**
- * The PagAdjacencyPrecision class implements the Statistic interface and represents the adjacency precision
- * compared to the true PAG (Partially Ancestral Graph).
+ * The PagAdjacencyPrecision class implements the Statistic interface and represents the adjacency precision compared to
+ * the true PAG (Partially Ancestral Graph).
  */
 public class PagAdjacencyPrecision implements Statistic {
     @Serial

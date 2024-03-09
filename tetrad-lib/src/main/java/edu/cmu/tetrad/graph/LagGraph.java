@@ -63,14 +63,13 @@ public class LagGraph implements Graph {
      */
     private final Set<Triple> ambiguousTriples = new HashSet<>();
     /**
-     * The graph.
-     */
-    private Dag graph = new Dag();
-
-    /**
      * The paths
      */
     private final Paths paths;
+    /**
+     * The graph.
+     */
+    private Dag graph = new Dag();
 
     /**
      * <p>Constructor for LagGraph.</p>

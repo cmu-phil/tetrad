@@ -188,8 +188,8 @@ public final class Dag implements Graph {
      *
      * @param edge the directed {@link Edge} object to be added
      * @return true if the edge is successfully added, false otherwise
-     * @throws IllegalArgumentException if the provided edge is not a directed edge
-     *                                  or adding the edge would result in a cycle
+     * @throws IllegalArgumentException if the provided edge is not a directed edge or adding the edge would result in a
+     *                                  cycle
      */
     public boolean addEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
@@ -276,8 +276,8 @@ public final class Dag implements Graph {
     /**
      * Reorients all edges in a Directed Acyclic Graph (DAG) with a single endpoint type.
      *
-     * @param endpoint The type of endpoint to reorient all edges with.
-     *                 Must be an instance of `edu.cmu.tetrad.graph.Endpoint`.
+     * @param endpoint The type of endpoint to reorient all edges with. Must be an instance of
+     *                 `edu.cmu.tetrad.graph.Endpoint`.
      * @throws UnsupportedOperationException if attempting to reorient all edges in a DAG with a single endpoint type.
      */
     public void reorientAllWith(Endpoint endpoint) {
@@ -552,7 +552,7 @@ public final class Dag implements Graph {
      * Retrieves a list of nodes in the given graph that have edges pointing into the specified node and endpoint.
      *
      * @param node the node to check for incoming edges
-     * @param n the endpoint to check for incoming edges
+     * @param n    the endpoint to check for incoming edges
      * @return a list of nodes with edges pointing into the specified node and endpoint
      */
     public List<Node> getNodesInTo(Node node, Endpoint n) {
@@ -563,7 +563,7 @@ public final class Dag implements Graph {
      * Retrieves a list of nodes that have outgoing edges to a specified node and endpoint.
      *
      * @param node The node to which the outgoing edges lead.
-     * @param n The endpoint to which the outgoing edges connect to the specified node.
+     * @param n    The endpoint to which the outgoing edges connect to the specified node.
      * @return A list of nodes that have outgoing edges to the specified node and endpoint.
      */
     public List<Node> getNodesOutTo(Node node, Endpoint n) {
@@ -668,7 +668,7 @@ public final class Dag implements Graph {
      *
      * @param graph the graph from which nodes and edges are to be pilfered
      * @throws IllegalArgumentException if the graph is null, or if adding a node/edge fails
-     * @throws NullPointerException if no graph is provided
+     * @throws NullPointerException     if no graph is provided
      */
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         if (graph == null) {
@@ -849,8 +849,8 @@ public final class Dag implements Graph {
     }
 
     /**
-     * Adds an ambiguous triple to the list of ambiguous triples.
-     * An ambiguous triple consists of three nodes: x, y, and z.
+     * Adds an ambiguous triple to the list of ambiguous triples. An ambiguous triple consists of three nodes: x, y, and
+     * z.
      *
      * @param x the first node in the ambiguous triple
      * @param y the second node in the ambiguous triple
@@ -941,8 +941,8 @@ public final class Dag implements Graph {
     }
 
     /**
-     * Sets the dotted underline triples for the given set of Triples.
-     * Clears the existing dotted underline triples and adds the new ones from the set.
+     * Sets the dotted underline triples for the given set of Triples. Clears the existing dotted underline triples and
+     * adds the new ones from the set.
      *
      * @param triples a Set of Triples to set as dotted underline triples
      */

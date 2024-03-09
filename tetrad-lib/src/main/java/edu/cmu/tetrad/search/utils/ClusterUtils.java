@@ -41,19 +41,19 @@ import java.util.Set;
 public class ClusterUtils {
 
     /**
-     * The ClusterUtils class provides utility methods for manipulating clusters and converting data.
-     * This class cannot be instantiated.
+     * The prefix for latent variables.
+     */
+    public static final String LATENT_PREFIX = "_L";
+
+
+    /**
+     * The ClusterUtils class provides utility methods for manipulating clusters and converting data. This class cannot
+     * be instantiated.
      *
      * @since <version>
      */
     private ClusterUtils() {
     }
-
-
-    /**
-     * The prefix for latent variables.
-     */
-    public static final String LATENT_PREFIX = "_L";
 
     /**
      * Converts a list of indices into a list of Nodes representing a cluster.

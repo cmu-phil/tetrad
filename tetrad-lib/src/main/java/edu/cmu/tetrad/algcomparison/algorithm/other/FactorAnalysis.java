@@ -37,7 +37,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     /**
      * Executes a factor analysis search on the given data model using the provided parameters.
      *
-     * @param dataModel The data model to perform the factor analysis on.
+     * @param dataModel  The data model to perform the factor analysis on.
      * @param parameters The parameters for the factor analysis.
      * @return The resulting graph after performing the factor analysis.
      * @throws IllegalArgumentException If the data model is not a continuous dataset.
@@ -151,8 +151,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     }
 
     /**
-     * Returns a short, one-line description of this algorithm.
-     * This will be printed in the report.
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
      *
      * @return The description of the algorithm.
      */

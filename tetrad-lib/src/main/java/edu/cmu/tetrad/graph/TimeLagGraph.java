@@ -196,7 +196,8 @@ public class TimeLagGraph implements Graph {
      *
      * @param edge the directed edge to be added
      * @return true if the edge was successfully added, false otherwise
-     * @throws IllegalArgumentException if the edge is not a directed edge, or if the edge does not connect nodes within the current time lag
+     * @throws IllegalArgumentException if the edge is not a directed edge, or if the edge does not connect nodes within
+     *                                  the current time lag
      */
     public boolean addEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
@@ -534,8 +535,7 @@ public class TimeLagGraph implements Graph {
      *
      * @param node1 the first node of the edge
      * @param node2 the second node of the edge
-     * @return {@code true} if the edge is successfully added,
-     *         {@code false} otherwise
+     * @return {@code true} if the edge is successfully added, {@code false} otherwise
      */
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Partially oriented edges not supported.");
@@ -587,8 +587,7 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * Returns the degree of the graph.
-     * The degree of a graph is the number of edges incident to a vertex.
+     * Returns the degree of the graph. The degree of a graph is the number of edges incident to a vertex.
      *
      * @return the degree of the graph
      */
@@ -639,8 +638,7 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * Retrieves the degree of a given node in the graph.
-     * The degree of a node is the number of edges connected to it.
+     * Retrieves the degree of a given node in the graph. The degree of a node is the number of edges connected to it.
      *
      * @param node a {@link Node} object representing the node for which the degree is to be determined
      * @return the degree of the specified node in the graph
@@ -811,9 +809,10 @@ public class TimeLagGraph implements Graph {
     /**
      * Retrieves a list of nodes that have an incoming edge from a specific node and endpoint.
      *
-     * @param node the source node from which the incoming edges are considered
+     * @param node     the source node from which the incoming edges are considered
      * @param endpoint the specific endpoint of the incoming edge
-     * @return a list of {@code Node} objects representing the nodes that have an incoming edge from the specified node and endpoint
+     * @return a list of {@code Node} objects representing the nodes that have an incoming edge from the specified node
+     * and endpoint
      */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesInTo(node, endpoint);
@@ -822,7 +821,7 @@ public class TimeLagGraph implements Graph {
     /**
      * Retrieves the list of nodes in a graph that have an outgoing edge to the given node and endpoint.
      *
-     * @param node the node to which the outgoing edges should be considered
+     * @param node     the node to which the outgoing edges should be considered
      * @param endpoint the endpoint at which the edges should be considered
      * @return a list of nodes that have an outgoing edge to the specified node and endpoint
      */
@@ -831,8 +830,8 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * Adds a {@link PropertyChangeListener} to the list of listeners
-     * that are notified when a bound property is changed.
+     * Adds a {@link PropertyChangeListener} to the list of listeners that are notified when a bound property is
+     * changed.
      *
      * @param l The {@link PropertyChangeListener} to be added
      */
@@ -874,7 +873,8 @@ public class TimeLagGraph implements Graph {
      * Returns the list of edges connected to the specified node.
      *
      * @param node a {@link Node} object representing the node
-     * @return a {@link List} containing the edges connected to the node, or null if the node does not exist in the graph
+     * @return a {@link List} containing the edges connected to the node, or null if the node does not exist in the
+     * graph
      */
     public List<Edge> getEdges(Node node) {
         if (getGraph().containsNode(node)) {
@@ -908,8 +908,7 @@ public class TimeLagGraph implements Graph {
      * Compares this Graph object with the specified object for equality.
      *
      * @param o the object to be compared
-     * @return true if the specified object is also a Graph and
-     *         if their underlying graphs are equal; false otherwise
+     * @return true if the specified object is also a Graph and if their underlying graphs are equal; false otherwise
      */
     public boolean equals(Object o) {
         if (!(o instanceof Graph)) return false;
@@ -928,8 +927,7 @@ public class TimeLagGraph implements Graph {
     /**
      * Reorients all edges in the graph to point towards the specified endpoint.
      *
-     * @param endpoint the endpoint to reorient all edges with
-     *                 (an instance of {@link Endpoint})
+     * @param endpoint the endpoint to reorient all edges with (an instance of {@link Endpoint})
      */
     public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
@@ -996,7 +994,6 @@ public class TimeLagGraph implements Graph {
      * Sets the nodes of the graph.
      *
      * @param nodes a list of Node objects representing the nodes of the graph
-     *
      * @throws IllegalArgumentException if an attempt is made to replace the nodes for a time lag graph
      */
     @Override
@@ -1293,8 +1290,8 @@ public class TimeLagGraph implements Graph {
 
     /**
      * Removes triples from the object's internal lists if any of the nodes in the triple is not present in the graph,
-     * or if any of the nodes are not adjacent to each other in the graph.
-     * The triples are removed from the list `ambiguousTriples`, `underLineTriples`, and `dottedUnderLineTriples`.
+     * or if any of the nodes are not adjacent to each other in the graph. The triples are removed from the list
+     * `ambiguousTriples`, `underLineTriples`, and `dottedUnderLineTriples`.
      */
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {

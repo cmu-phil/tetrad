@@ -46,8 +46,8 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     /**
      * Runs the search algorithm to build a graph using the given data model and parameters.
      *
-     * @param dataModel   The data model to be used for the search.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model to be used for the search.
+     * @param parameters The parameters for the search algorithm.
      * @return The resulting graph.
      * @throws IllegalArgumentException If the check type is unexpected.
      */

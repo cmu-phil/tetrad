@@ -30,6 +30,10 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * The data set.
+     */
+    private DataModel dataSet;
 
     /**
      * Initializes a new instance of the FisherZ class.
@@ -37,11 +41,6 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     public ConditionalGaussianBicScore() {
 
     }
-
-    /**
-     * The data set.
-     */
-    private DataModel dataSet;
 
     /**
      * {@inheritDoc}

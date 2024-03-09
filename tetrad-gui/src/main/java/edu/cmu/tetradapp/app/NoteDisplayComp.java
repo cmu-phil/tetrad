@@ -102,7 +102,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
-     *
      * @param selected a boolean
      */
     public void setSelected(boolean selected) {

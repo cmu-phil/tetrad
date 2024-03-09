@@ -10,7 +10,8 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * Represents a statistic that calculates the false positives for arrows compared to the true directed acyclic graph (DAG).
+ * Represents a statistic that calculates the false positives for arrows compared to the true directed acyclic graph
+ * (DAG).
  */
 public class TrueDagFalsePositiveArrow implements Statistic {
     @Serial

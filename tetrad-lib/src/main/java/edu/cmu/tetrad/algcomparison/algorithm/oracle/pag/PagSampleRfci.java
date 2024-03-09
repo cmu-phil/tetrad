@@ -14,7 +14,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,12 +30,6 @@ import java.util.List;
 )
 //@Experimental
 public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
-
-    /**
-     * Constructs a new instance of the PagSampleRfci algorithm.
-     */
-    public PagSampleRfci() {
-    }
 
     /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
@@ -76,6 +69,11 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
      * The knowledge
      */
     private Knowledge knowledge;
+    /**
+     * Constructs a new instance of the PagSampleRfci algorithm.
+     */
+    public PagSampleRfci() {
+    }
 
     /**
      * Runs the search algorithm using the given data set and parameters.

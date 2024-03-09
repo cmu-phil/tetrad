@@ -124,8 +124,7 @@ public final class Tetrad implements PropertyChangeListener {
     /**
      * Executes the necessary actions when a property is changed.
      *
-     * @param e A PropertyChangeEvent object describing the event source
-     *          and the property that has changed.
+     * @param e A PropertyChangeEvent object describing the event source and the property that has changed.
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {

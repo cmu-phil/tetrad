@@ -30,8 +30,9 @@ public class GSquare implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * GSquare class represents a wrapper for the G Square test, which is a statistical test for independence between two variables conditional on a third variable.
-     *
+     * GSquare class represents a wrapper for the G Square test, which is a statistical test for independence between
+     * two variables conditional on a third variable.
+     * <p>
      * This class implements the IndependenceWrapper interface, which requires the implementation of several methods.
      */
     public GSquare() {

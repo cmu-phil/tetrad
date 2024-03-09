@@ -144,8 +144,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * @param assertion the proposition representing the assertion
      * @param condition the proposition representing the condition
      * @return the conditional probability as a double value
-     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM
-     *                                  or if the assertion variable and data variables are different or in a different order
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM or if the assertion
+     *                                  variable and data variables are different or in a different order
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

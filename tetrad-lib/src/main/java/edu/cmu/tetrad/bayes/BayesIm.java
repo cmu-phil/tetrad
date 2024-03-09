@@ -371,7 +371,7 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     /**
      * Simulates data based on the provided data set and saves the latent data if specified.
      *
-     * @param dataSet the data set to simulate data for
+     * @param dataSet         the data set to simulate data for
      * @param latentDataSaved a boolean value indicating whether the latent data should be saved or not
      * @return the simulated data set
      */

@@ -108,7 +108,8 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns the type of the data set that the search algorithm requires. The data set can be continuous, discrete, or mixed.
+     * Returns the type of the data set that the search algorithm requires. The data set can be continuous, discrete, or
+     * mixed.
      *
      * @return The data type required by the search algorithm.
      */
@@ -118,8 +119,8 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Retrieves the list of parameters supported by this algorithm.
-     * The parameters include ALPHA, USE_WISHART, USE_GAP, PRECOMPUTE_COVARIANCES, and VERBOSE.
+     * Retrieves the list of parameters supported by this algorithm. The parameters include ALPHA, USE_WISHART, USE_GAP,
+     * PRECOMPUTE_COVARIANCES, and VERBOSE.
      *
      * @return The list of parameters supported by this algorithm.
      */

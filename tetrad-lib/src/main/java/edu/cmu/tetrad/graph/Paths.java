@@ -1442,8 +1442,8 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
-     * (Kevin Bui. March 2020.)
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (Kevin Bui.
+     * March 2020.)
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object

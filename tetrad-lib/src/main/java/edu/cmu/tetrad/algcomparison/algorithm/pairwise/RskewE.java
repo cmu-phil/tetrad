@@ -66,8 +66,8 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     /**
      * Runs a search algorithm to find the orientation of edges in a graph using the given data model and parameters.
      *
-     * @param dataModel   the data model containing the dataset
-     * @param parameters  the parameters to be used for the search algorithm
+     * @param dataModel  the data model containing the dataset
+     * @param parameters the parameters to be used for the search algorithm
      * @return the graph with oriented edges
      * @throws IllegalArgumentException if the data model is not a continuous dataset or if the graph is null
      */
@@ -107,9 +107,8 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Returns the description of the current algorithm. It returns the description of
-     * the algorithm if the external graph is not null (using the getDescription method
-     * of the algorithm), otherwise it returns an empty string.
+     * Returns the description of the current algorithm. It returns the description of the algorithm if the external
+     * graph is not null (using the getDescription method of the algorithm), otherwise it returns an empty string.
      *
      * @return The description of the current algorithm.
      */
@@ -132,8 +131,8 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     /**
      * Retrieves the list of parameters required for the current instance of the class.
      *
-     * @return A list of parameter names. If the algorithm associated with this instance has parameters defined,
-     *         those parameters will be included in the list. In addition, the parameter "VERBOSE" will always be included.
+     * @return A list of parameter names. If the algorithm associated with this instance has parameters defined, those
+     * parameters will be included in the list. In addition, the parameter "VERBOSE" will always be included.
      */
     @Override
     public List<String> getParameters() {

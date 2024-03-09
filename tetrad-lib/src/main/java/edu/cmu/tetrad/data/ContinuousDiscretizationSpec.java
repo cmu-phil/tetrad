@@ -76,18 +76,14 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     }
 
     /**
-     * Creates a ContinuousDiscretizationSpec object with the given breakpoints,
-     * categories, and method.
+     * Creates a ContinuousDiscretizationSpec object with the given breakpoints, categories, and method.
      *
      * @param breakpoints The array of breakpoints used for discretization.
-     * @param categories The list of categories for the discretized data.
-     * @param method The method used for discretization.
-     *              Possible values are:
-     *              - EVENLY_DISTRIBUTED_VALUES: 0 (evenly distributed values)
-     *              - EVENLY_DISTRIBUTED_INTERVALS: 1 (evenly distributed intervals)
-     *              - NONE: 2 (no discretization)
-     *
-     * @throws NullPointerException if breakpoints is null.
+     * @param categories  The list of categories for the discretized data.
+     * @param method      The method used for discretization. Possible values are: - EVENLY_DISTRIBUTED_VALUES: 0
+     *                    (evenly distributed values) - EVENLY_DISTRIBUTED_INTERVALS: 1 (evenly distributed intervals) -
+     *                    NONE: 2 (no discretization)
+     * @throws NullPointerException     if breakpoints is null.
      * @throws IllegalArgumentException if method is not one of the valid values.
      */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
@@ -125,12 +121,10 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     /**
      * Sets the method used for discretization.
      *
-     * @param method The method used for discretization.
-     *               Possible values are:
-     *               - ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES (0): for evenly distributed values
-     *               - ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS (1): for evenly distributed intervals
-     *               - ContinuousDiscretizationSpec.NONE (2): for no discretization
-     *
+     * @param method The method used for discretization. Possible values are: -
+     *               ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES (0): for evenly distributed values -
+     *               ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS (1): for evenly distributed intervals -
+     *               ContinuousDiscretizationSpec.NONE (2): for no discretization
      * @throws IllegalArgumentException if method is not one of the valid values.
      */
     public void setMethod(int method) {

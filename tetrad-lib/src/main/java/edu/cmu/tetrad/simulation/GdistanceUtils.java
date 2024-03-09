@@ -22,8 +22,8 @@ public class GdistanceUtils {
     }
 
     /**
-     * Calculates the histogram of a given list of input values based on thresholds.
-     * The histogram is an array of percents indicating how many values fall into each threshold bucket.
+     * Calculates the histogram of a given list of input values based on thresholds. The histogram is an array of
+     * percents indicating how many values fall into each threshold bucket.
      *
      * @param input      the list of input values
      * @param thresholds the array of thresholds that define the buckets

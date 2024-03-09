@@ -65,8 +65,8 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     /**
      * Executes the SkewE search algorithm.
      *
-     * @param dataModel   The data model containing the dataset.
-     * @param parameters  The parameters to be used for the search.
+     * @param dataModel  The data model containing the dataset.
+     * @param parameters The parameters to be used for the search.
      * @return The oriented graph.
      * @throws IllegalArgumentException if the data model is not a continuous dataset or the graph is null.
      */
@@ -106,10 +106,9 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * Returns a description of the algorithm used. If an initial graph
-     * is provided to the algorithm, it appends the initial graph description
-     * to the description. The format of the description is "SkewE with
-     * initial graph from [initial graph description]".
+     * Returns a description of the algorithm used. If an initial graph is provided to the algorithm, it appends the
+     * initial graph description to the description. The format of the description is "SkewE with initial graph from
+     * [initial graph description]".
      *
      * @return The description of the algorithm.
      */

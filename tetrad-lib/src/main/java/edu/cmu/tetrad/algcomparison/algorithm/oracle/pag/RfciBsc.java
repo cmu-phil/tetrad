@@ -36,13 +36,6 @@ import java.util.List;
 @Experimental
 public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
-    /**
-     * Blank constructor.
-     */
-    public RfciBsc() {
-
-    }
-
     @Serial
     private static final long serialVersionUID = 23L;
     /**
@@ -53,6 +46,12 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
      * Knowledge
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * Blank constructor.
+     */
+    public RfciBsc() {
+
+    }
 
     /**
      * Retrieves the knowledge associated with this object.

@@ -53,7 +53,7 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     /**
      * Runs the search algorithm using the given data model and parameters.
      *
-     * @param dataModel the data model to be used for the search
+     * @param dataModel  the data model to be used for the search
      * @param parameters the parameters for the search algorithm
      * @return the resulting graph after running the search algorithm
      * @throws IllegalArgumentException if the data model is not a continuous dataset

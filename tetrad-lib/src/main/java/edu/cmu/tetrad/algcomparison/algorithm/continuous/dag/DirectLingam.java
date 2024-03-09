@@ -65,8 +65,8 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     /**
      * Runs the Direct LiNGAM search algorithm on the given data model with the specified parameters.
      *
-     * @param dataModel   the data model to run the search algorithm on
-     * @param parameters  the parameters for the search algorithm
+     * @param dataModel  the data model to run the search algorithm on
+     * @param parameters the parameters for the search algorithm
      * @return the resulting graph from the search algorithm
      * @throws IllegalArgumentException if the data model is not an instance of DataSet
      */

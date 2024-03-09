@@ -25,8 +25,8 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
     }
 
     /**
-     * Returns the abbreviation for the statistic.
-     * The abbreviation is a short string that represents the statistic and will be printed at the top of each column in the report.
+     * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic and
+     * will be printed at the top of each column in the report.
      *
      * @return The abbreviation for the statistic.
      */
@@ -46,7 +46,8 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
     }
 
     /**
-     * Calculates the proportion of semi(X, Y) paths in the true graph for which there is no semi(Y, Z) path in the estimated graph.
+     * Calculates the proportion of semi(X, Y) paths in the true graph for which there is no semi(Y, Z) path in the
+     * estimated graph.
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).

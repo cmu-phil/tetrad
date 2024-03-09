@@ -254,20 +254,19 @@ public class GeneralizedSemEstimator {
     public static class MyContext implements Context {
 
         /**
-         * Constructs a new MyContext.
-         */
-        public MyContext() {
-        }
-
-        /**
          * The variable values.
          */
         final Map<String, Double> variableValues = new HashMap<>();
-
         /**
          * The parameter values.
          */
         final Map<String, Double> parameterValues = new HashMap<>();
+
+        /**
+         * Constructs a new MyContext.
+         */
+        public MyContext() {
+        }
 
         /**
          * Get the value of a variable or parameter.

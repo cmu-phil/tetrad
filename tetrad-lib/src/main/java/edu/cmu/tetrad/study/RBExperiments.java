@@ -42,15 +42,14 @@ import static org.apache.commons.math3.util.FastMath.log;
 public class RBExperiments {
 
     /**
-     * The minimum exponent value used in floating-point calculations.
-     * This constant represents the smallest exponent value that can be used without resulting in underflow.
-     * It is set to -1022, which is the minimum exponent value for the IEEE 754 floating-point standard.
+     * The minimum exponent value used in floating-point calculations. This constant represents the smallest exponent
+     * value that can be used without resulting in underflow. It is set to -1022, which is the minimum exponent value
+     * for the IEEE 754 floating-point standard.
      */
     private static final int MININUM_EXPONENT = -1022;
 
     /**
-     * Represents the depth value.
-     * This value determines the maximum depth for a certain operation.
+     * Represents the depth value. This value determines the maximum depth for a certain operation.
      */
     private final int depth = 5;
 
@@ -69,21 +68,18 @@ public class RBExperiments {
     /**
      * Main method for executing the RBExperiments class and running a series of experiments.
      *
-     * @param args the command line arguments. These arguments can be used to set various parameters for the experiments.
-     *             Possible options include:
-     *             -c (ignored)              : a flag to indicate that the input arguments are given in a compact format.
-     *             -i (ignored)              : a flag to indicate that the input arguments are given as individual arguments.
-     *             -lv [value]               : the value of the number of latent confounders.
-     *             -bs [value]               : the number of bootstrap samples.
-     *             -alpha [value]            : the significance level (alpha) for statistical tests.
-     *             -m [value]                : the number of models to consider.
-     *             -net [value]              : the name of the model.
-     *             -t1 [value]               : a flag to indicate whether threshold 1 should be used.
-     *             -t2 [value]               : a flag to indicate whether threshold 2 should be used.
-     *             -low [value]              : the lower threshold value for creating a dependency filtering dataset.
-     *             -up [value]               : the upper threshold value for creating a dependency filtering dataset.
-     *             -out [value]              : the directory to save the results to.
-     *             -data [value]             : the path to the data directory.
+     * @param args the command line arguments. These arguments can be used to set various parameters for the
+     *             experiments. Possible options include: -c (ignored)              : a flag to indicate that the input
+     *             arguments are given in a compact format. -i (ignored)              : a flag to indicate that the
+     *             input arguments are given as individual arguments. -lv [value]               : the value of the
+     *             number of latent confounders. -bs [value]               : the number of bootstrap samples. -alpha
+     *             [value]            : the significance level (alpha) for statistical tests. -m [value]
+     *             : the number of models to consider. -net [value]              : the name of the model. -t1 [value]
+     *                        : a flag to indicate whether threshold 1 should be used. -t2 [value]               : a
+     *             flag to indicate whether threshold 2 should be used. -low [value]              : the lower threshold
+     *             value for creating a dependency filtering dataset. -up [value]               : the upper threshold
+     *             value for creating a dependency filtering dataset. -out [value]              : the directory to save
+     *             the results to. -data [value]             : the path to the data directory.
      * @throws IOException if there is an error reading or writing data.
      */
     public static void main(String[] args) throws IOException {
@@ -163,18 +159,18 @@ public class RBExperiments {
     /**
      * Performs an experiment to estimate the structure and parameters of a Bayesian network using various methods.
      *
-     * @param modelName             the name of the model for the Bayesian network
-     * @param numCases              the number of cases to simulate
-     * @param numModels             the number of models to run the experiment for
-     * @param numBootstrapSamples   the number of bootstrap samples to use for creating empirical data
-     * @param alpha                 the significance level for the chi-squared test
-     * @param numLatentConfounders  the percentage of variables to be set as latent confounders
-     * @param threshold1            a flag indicating whether to use threshold 1 during the RB search
-     * @param threshold2            a flag indicating whether to use threshold 2 during the RB search
-     * @param lower                 the lower threshold value for the RB search
-     * @param upper                 the upper threshold value for the RB search
-     * @param filePath              the path to the directory for storing the experiment results
-     * @param round                 the round of the experiment
+     * @param modelName            the name of the model for the Bayesian network
+     * @param numCases             the number of cases to simulate
+     * @param numModels            the number of models to run the experiment for
+     * @param numBootstrapSamples  the number of bootstrap samples to use for creating empirical data
+     * @param alpha                the significance level for the chi-squared test
+     * @param numLatentConfounders the percentage of variables to be set as latent confounders
+     * @param threshold1           a flag indicating whether to use threshold 1 during the RB search
+     * @param threshold2           a flag indicating whether to use threshold 2 during the RB search
+     * @param lower                the lower threshold value for the RB search
+     * @param upper                the upper threshold value for the RB search
+     * @param filePath             the path to the directory for storing the experiment results
+     * @param round                the round of the experiment
      */
     public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
                            double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,

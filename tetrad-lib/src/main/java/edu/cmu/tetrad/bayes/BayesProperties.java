@@ -82,9 +82,10 @@ public final class BayesProperties {
 
     /**
      * Prevents instantiation.
+     *
      * @throws UnsupportedOperationException if called.
      */
-    private BayesProperties(){
+    private BayesProperties() {
         throw new UnsupportedOperationException();
     }
 
@@ -304,36 +305,33 @@ public final class BayesProperties {
     }
 
     /**
-     * The LikelihoodRet class represents the result of a likelihood ratio test.
-     * It contains the p-value, BIC, chi-squared statistic, and degrees of freedom.
+     * The LikelihoodRet class represents the result of a likelihood ratio test. It contains the p-value, BIC,
+     * chi-squared statistic, and degrees of freedom.
      */
     public static class LikelihoodRet {
+
+        /**
+         * The p-value.
+         */
+        public double p;
+        /**
+         * The BIC.
+         */
+        public double bic;
+        /**
+         * The chi-squared statistic.
+         */
+        public double chiSq;
+        /**
+         * The degrees of freedom.
+         */
+        public double dof;
 
         /**
          * Constructs a new LikelihoodRet object.
          */
         public LikelihoodRet() {
         }
-
-        /**
-         * The p-value.
-         */
-        public double p;
-
-        /**
-         * The BIC.
-         */
-        public double bic;
-
-        /**
-         * The chi-squared statistic.
-         */
-        public double chiSq;
-
-        /**
-         * The degrees of freedom.
-         */
-        public double dof;
     }
 }
 

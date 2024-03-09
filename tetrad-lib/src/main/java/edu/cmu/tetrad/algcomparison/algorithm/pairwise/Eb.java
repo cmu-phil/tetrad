@@ -65,8 +65,8 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     /**
      * Runs a search algorithm to orient the edges in a graph using the given data and parameters.
      *
-     * @param dataModel   the data model containing the dataset for the search algorithm
-     * @param parameters  the parameters for the search algorithm
+     * @param dataModel  the data model containing the dataset for the search algorithm
+     * @param parameters the parameters for the search algorithm
      * @return the graph with oriented edges
      * @throws IllegalArgumentException if the data model is not a continuous dataset or if the algorithm is null
      */
@@ -127,8 +127,8 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * Returns the list of parameters that are used by the class. These parameters include the parameters
-     * defined in the algorithm used by the class and the VERBOSE parameter.
+     * Returns the list of parameters that are used by the class. These parameters include the parameters defined in the
+     * algorithm used by the class and the VERBOSE parameter.
      *
      * @return The list of parameters used by the class.
      */

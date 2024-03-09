@@ -65,10 +65,11 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     /**
      * Runs the search algorithm using the provided data model and parameters.
      *
-     * @param dataModel   the data model to be used for the search
-     * @param parameters  the parameters for the search algorithm
+     * @param dataModel  the data model to be used for the search
+     * @param parameters the parameters for the search algorithm
      * @return the resulting graph from the search algorithm
-     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm requires both data and a graph source as inputs
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm
+     *                                  requires both data and a graph source as inputs
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {

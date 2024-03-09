@@ -19,24 +19,21 @@ public class TwoCycleTruePositive implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The TwoCycleTruePositive class represents a statistic that calculates the number of true positives
-     * for 2-cycles in both the true and estimated graphs. It is a measure of the accuracy of the estimated
-     * 2-cycle relationships.
-     *
-     * The calculation is performed by creating an ArrowConfusion object with the true and estimated graphs,
-     * and then retrieving the number of 2-cycle true positives using the getTwoCycleTp() method of the
-     * ArrowConfusion object.
-     *
+     * The TwoCycleTruePositive class represents a statistic that calculates the number of true positives for 2-cycles
+     * in both the true and estimated graphs. It is a measure of the accuracy of the estimated 2-cycle relationships.
+     * <p>
+     * The calculation is performed by creating an ArrowConfusion object with the true and estimated graphs, and then
+     * retrieving the number of 2-cycle true positives using the getTwoCycleTp() method of the ArrowConfusion object.
+     * <p>
      * Example usage:
-     *
-     * // Creating a TwoCycleTruePositive object
-     * TwoCycleTruePositive tctp = new TwoCycleTruePositive();
-     *
-     * // Obtaining the 2-cycle true positive value for a given true graph, estimated graph, and data model
-     * double twoCycleTp = tctp.getValue(trueGraph, estGraph, dataModel);
-     *
-     * Note: This class implements the Statistic interface and provides the required methods getAbbreviation()
-     * and getDescription(). It also provides a default constructor, which takes no parameters.
+     * <p>
+     * // Creating a TwoCycleTruePositive object TwoCycleTruePositive tctp = new TwoCycleTruePositive();
+     * <p>
+     * // Obtaining the 2-cycle true positive value for a given true graph, estimated graph, and data model double
+     * twoCycleTp = tctp.getValue(trueGraph, estGraph, dataModel);
+     * <p>
+     * Note: This class implements the Statistic interface and provides the required methods getAbbreviation() and
+     * getDescription(). It also provides a default constructor, which takes no parameters.
      *
      * @see Statistic
      * @see ArrowConfusion

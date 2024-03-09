@@ -66,11 +66,11 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     /**
      * Runs the search algorithm using the given data model and parameters.
      *
-     * @param dataModel   the data model to be used for the search
-     * @param parameters  the parameters to be used for the search
+     * @param dataModel  the data model to be used for the search
+     * @param parameters the parameters to be used for the search
      * @return the resulting graph
-     * @throws IllegalArgumentException if the data model is not a continuous dataset
-     *                                  or if the algorithm requires both data and a graph source as inputs
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the algorithm requires both
+     *                                  data and a graph source as inputs
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {

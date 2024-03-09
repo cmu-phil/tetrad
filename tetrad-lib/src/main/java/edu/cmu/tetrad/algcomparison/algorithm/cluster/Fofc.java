@@ -55,8 +55,8 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the search algorithm and returns the resulting graph.
      *
-     * @param dataModel   The data model containing the variables.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model containing the variables.
+     * @param parameters The parameters for the search algorithm.
      * @return The resulting graph.
      * @throws IllegalArgumentException if the check type parameter is unexpected.
      */

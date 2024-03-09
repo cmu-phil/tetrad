@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a class for Generalized Information Criterion Score Tests.
- * It implements the IndependenceWrapper interface.
+ * Represents a class for Generalized Information Criterion Score Tests. It implements the IndependenceWrapper
+ * interface.
  */
 
 // Removing from interface.
@@ -33,8 +33,8 @@ public class GICScoreTests implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Represents a class for Generalized Information Criterion Score Tests.
-     * It implements the IndependenceWrapper interface.
+     * Represents a class for Generalized Information Criterion Score Tests. It implements the IndependenceWrapper
+     * interface.
      */
     public GICScoreTests() {
     }

@@ -9,7 +9,7 @@ import java.io.Serial;
 
 /**
  * A class that implements the PagAdjacencyRecall statistic.
- *
+ * <p>
  * This statistic calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
  */
 public class PagAdjacencyRecall implements Statistic {
@@ -34,8 +34,7 @@ public class PagAdjacencyRecall implements Statistic {
     }
 
     /**
-     * Returns a short one-line description of this statistic.
-     * This will be printed at the beginning of the report.
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
      *
      * @return The description of the statistic.
      */

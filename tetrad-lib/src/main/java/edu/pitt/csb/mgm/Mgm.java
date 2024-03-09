@@ -641,7 +641,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Smooth method calculates the smooth loss and gradient given input parameters.
      *
-     * @param parIn    input Vector
+     * @param parIn      input Vector
      * @param gradOutVec gradient of g(X)
      * @return the smooth loss
      */

@@ -115,9 +115,9 @@ public class IndTestSepsetDci implements IndependenceTest {
      * @param x A Node object representing the first node.
      * @param y A Node object representing the second node.
      * @param z A set representing the set of conditioning nodes.
-     * @throws NullPointerException if z is null or if any node in z is null.
-     * @throws RuntimeException if the p-value is undefined.
      * @return An IndependenceResult object containing the result of the independence test.
+     * @throws NullPointerException if z is null or if any node in z is null.
+     * @throws RuntimeException     if the p-value is undefined.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -186,8 +186,8 @@ public class IndTestSepsetDci implements IndependenceTest {
     /**
      * Determines if a given Node is present in a List of Nodes.
      *
-     * @param z   The List of Nodes to search in.
-     * @param x1  The Node to search for.
+     * @param z  The List of Nodes to search in.
+     * @param x1 The Node to search for.
      * @return True if the Node x1 is present in the List z, otherwise False.
      */
     public boolean determines(List<Node> z, Node x1) {

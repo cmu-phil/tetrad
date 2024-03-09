@@ -48,7 +48,8 @@ final class CopySubsessionAction extends AbstractAction
     }
 
     /**
-     * Processes the action event by copying a selection of session nodes in the frontmost session editor to the clipboard.
+     * Processes the action event by copying a selection of session nodes in the frontmost session editor to the
+     * clipboard.
      *
      * @param e the event to be processed
      */
@@ -65,7 +66,7 @@ final class CopySubsessionAction extends AbstractAction
      * Notifies the owner that ownership of the clipboard contents has been lost.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents the contents which this owner had placed on the clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

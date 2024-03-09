@@ -64,7 +64,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         if (dataModel instanceof CovarianceMatrix) {
             if (this instanceof TakesCovarianceMatrix) {
                 return runSearch(dataModel, parameters);
-            }  else {
+            } else {
                 throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
             }
         } else if (parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {

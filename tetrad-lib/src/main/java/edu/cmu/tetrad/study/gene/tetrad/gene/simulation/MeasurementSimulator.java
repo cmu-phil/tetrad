@@ -70,24 +70,25 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * Represents an array of time steps.
-     *
+     * <p>
      * This variable is used to store an array of integers representing different time steps.
      */
     private int[] timeSteps;
 
     /**
      * This variable stores raw data in a three-dimensional array.
-     *
+     * <p>
      * The first dimension represents the rows in the data.
-     *
+     * <p>
      * The second dimension represents the columns in the data.
-     *
-     * The third dimension represents additional dimensions for the data, which can be used for organizing multidimensional data.
-     *
+     * <p>
+     * The third dimension represents additional dimensions for the data, which can be used for organizing
+     * multidimensional data.
+     * <p>
      * The values stored in this array are of type double.
-     *
+     * <p>
      * Access to this variable is private, meaning it can only be accessed from within the class it is declared in.
-     *
+     * <p>
      * Modifying this variable should be done with caution, as it contains sensitive raw data.
      */
     private double[][][] rawData;
@@ -96,10 +97,9 @@ public class MeasurementSimulator implements TetradSerializable {
      * Array variable to store measured data.
      *
      * <p>
-     * This variable is a 3-dimensional array of type double to store measured data. It is used to store
-     * data collected from various measures or experiments. The first dimension represents the measure
-     * index, the second dimension represents the sample index within the measure, and the third
-     * dimension represents the data value.
+     * This variable is a 3-dimensional array of type double to store measured data. It is used to store data collected
+     * from various measures or experiments. The first dimension represents the measure index, the second dimension
+     * represents the sample index within the measure, and the third dimension represents the data value.
      * </p>
      *
      * <p>
@@ -128,14 +128,13 @@ public class MeasurementSimulator implements TetradSerializable {
     private double[][][] measuredData;
 
     /**
-     * The dishNumber variable stores the number of a dish.
-     * It is an integer value and is initially set to -1.
+     * The dishNumber variable stores the number of a dish. It is an integer value and is initially set to -1.
      */
     private int dishNumber = -1;
 
     /**
-     * The cellNumber variable represents the number of a cell.
-     * It is a private integer variable with an initial value of -1.
+     * The cellNumber variable represents the number of a cell. It is a private integer variable with an initial value
+     * of -1.
      */
     private int cellNumber = -1;
 

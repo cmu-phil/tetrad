@@ -73,8 +73,8 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Runs the search algorithm to discover the causal graph.
      *
-     * @param dataModel   The data model used for the search.
-     * @param parameters  The parameters for the search algorithm.
+     * @param dataModel  The data model used for the search.
+     * @param parameters The parameters for the search algorithm.
      * @return The discovered causal graph.
      * @throws IllegalArgumentException if the data model is not an instance of DataSet when time lag is specified.
      */

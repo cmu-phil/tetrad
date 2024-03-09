@@ -29,20 +29,20 @@ import java.util.List;
 @LinearGaussian
 public class FisherZ implements IndependenceWrapper {
 
+    @Serial
+    private static final long serialVersionUID = 23L;
+
     /**
      * Constructs a new instance of the algorithm.
      */
     public FisherZ() {
     }
 
-    @Serial
-    private static final long serialVersionUID = 23L;
-
     /**
      * Gets an independence test based on the given data model and parameters.
      *
-     * @param dataModel   The data set to test independence against.
-     * @param parameters  The parameters of the test.
+     * @param dataModel  The data set to test independence against.
+     * @param parameters The parameters of the test.
      * @return An IndependenceTest object.
      * @throws IllegalArgumentException if the dataModel is not a dataset or a covariance matrix.
      */

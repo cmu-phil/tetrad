@@ -40,15 +40,15 @@ import java.util.*;
 public final class BayesXmlParser {
 
     /**
+     * The names of the variables in the Bayes net.
+     */
+    private Map<String, Node> namesToVars;
+
+    /**
      * A parser for Bayes XML files.
      */
     public BayesXmlParser() {
     }
-
-    /**
-     * The names of the variables in the Bayes net.
-     */
-    private Map<String, Node> namesToVars;
 
     private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {
         if (!"cpts".equals(element2.getQualifiedName())) {

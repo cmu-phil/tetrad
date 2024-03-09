@@ -87,8 +87,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      */
     private double alpha;
     /**
-     * Represents the probability associated with the most recently executed independence test, or Double.NaN if p value is
-     * not meaningful for this test.
+     * Represents the probability associated with the most recently executed independence test, or Double.NaN if p value
+     * is not meaningful for this test.
      */
     private double lastP;
     /**
@@ -106,8 +106,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * Constructs a new instance of IndTestMultinomialLogisticRegressionWald with the specified parameters.
      *
-     * @param data The dataset to perform the independence test on.
-     * @param alpha The significance level of the independence test. Must be in the range [0, 1].
+     * @param data         The dataset to perform the independence test on.
+     * @param alpha        The significance level of the independence test. Must be in the range [0, 1].
      * @param preferLinear Whether to prefer the linear model for the logistic regression.
      * @throws IllegalArgumentException if the alpha value is not in the range [0, 1].
      */
@@ -461,8 +461,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * Returns a string representation of the object.
-     * The returned string includes the type of the regression (Multinomial Logistic Regression) and the alpha value used.
+     * Returns a string representation of the object. The returned string includes the type of the regression
+     * (Multinomial Logistic Regression) and the alpha value used.
      *
      * @return A string representation of the object.
      */

@@ -111,7 +111,8 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      *
      * @param vars The sublist of variables.
      * @return An IndependenceTest object representing the result of the test.
-     * @throws UnsupportedOperationException This method is not implemented and will always throw an UnsupportedOperationException.
+     * @throws UnsupportedOperationException This method is not implemented and will always throw an
+     *                                       UnsupportedOperationException.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
@@ -235,7 +236,8 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * Sets the variables used in the independence test.
      *
      * @param variables A list of Nodes representing the variables to be used in the test.
-     * @throws IllegalArgumentException if the number of variables is different from the current number of variables in the test.
+     * @throws IllegalArgumentException if the number of variables is different from the current number of variables in
+     *                                  the test.
      */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");

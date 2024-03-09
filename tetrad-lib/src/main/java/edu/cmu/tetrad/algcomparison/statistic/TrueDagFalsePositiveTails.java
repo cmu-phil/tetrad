@@ -8,8 +8,8 @@ import edu.cmu.tetrad.graph.Graph;
 import java.io.Serial;
 
 /**
- * TrueDagFalsePositiveTails is a class that implements the Statistic interface. It calculates the number of false positives
- * for tails in the estimated graph compared to the true DAG.
+ * TrueDagFalsePositiveTails is a class that implements the Statistic interface. It calculates the number of false
+ * positives for tails in the estimated graph compared to the true DAG.
  */
 public class TrueDagFalsePositiveTails implements Statistic {
     @Serial
