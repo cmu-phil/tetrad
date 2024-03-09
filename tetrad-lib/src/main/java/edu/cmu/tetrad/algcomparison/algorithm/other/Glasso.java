@@ -40,6 +40,12 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the algorithm.
+     */
+    public Glasso() {
+    }
+
+    /**
      * Runs a search algorithm to create a graph representation of the data.
      *
      * @param dataModel   The data model containing the dataset.

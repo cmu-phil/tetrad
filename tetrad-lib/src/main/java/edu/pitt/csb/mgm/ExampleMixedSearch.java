@@ -36,6 +36,15 @@ import java.io.IOException;
  * @version $Id: $Id
  */
 public class ExampleMixedSearch {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleMixedSearch() {
+
+    }
+
+
     /**
      * <p>main.</p>
      *

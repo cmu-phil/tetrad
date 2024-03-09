@@ -37,6 +37,13 @@ import java.text.DecimalFormat;
  * @version $Id: $Id
  */
 public class ExampleSave {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleSave() {
+    }
+
     /**
      * <p>main.</p>
      *

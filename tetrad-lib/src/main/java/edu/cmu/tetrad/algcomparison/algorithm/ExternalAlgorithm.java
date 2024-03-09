@@ -36,6 +36,13 @@ public abstract class ExternalAlgorithm implements Algorithm {
     protected List<String> usedParameters = new ArrayList<>();
 
     /**
+     * <p>Constructor for ExternalAlgorithm.</p>
+     */
+    public ExternalAlgorithm() {
+
+    }
+
+    /**
      * <p>Setter for the field <code>path</code>.</p>
      *
      * @param path a {@link java.lang.String} object

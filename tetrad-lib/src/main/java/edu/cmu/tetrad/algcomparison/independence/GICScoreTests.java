@@ -16,10 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Represents a class for Generalized Information Criterion Score Tests.
+ * It implements the IndependenceWrapper interface.
  */
 
 // Removing from interface.
@@ -33,6 +31,13 @@ public class GICScoreTests implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Represents a class for Generalized Information Criterion Score Tests.
+     * It implements the IndependenceWrapper interface.
+     */
+    public GICScoreTests() {
+    }
 
     /**
      * {@inheritDoc}

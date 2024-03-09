@@ -21,6 +21,7 @@
 
 package edu.pitt.csb.mgm;
 
+import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
@@ -38,6 +39,14 @@ import java.io.File;
  * @version $Id: $Id
  */
 public class ExploreIndepTests {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExploreIndepTests() {
+
+    }
+
     /**
      * <p>main.</p>
      *

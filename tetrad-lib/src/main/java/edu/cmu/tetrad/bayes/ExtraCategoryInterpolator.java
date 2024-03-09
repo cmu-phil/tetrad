@@ -35,6 +35,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
+
+    /**
+     * Constructs a new instance of the algorithm.
+     */
+    public ExtraCategoryInterpolator() {
+    }
+
     /**
      * {@inheritDoc}
      */

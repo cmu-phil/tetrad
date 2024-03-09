@@ -29,6 +29,12 @@ import java.util.List;
 @LinearGaussian
 public class FisherZ implements IndependenceWrapper {
 
+    /**
+     * Constructs a new instance of the algorithm.
+     */
+    public FisherZ() {
+    }
+
     @Serial
     private static final long serialVersionUID = 23L;
 

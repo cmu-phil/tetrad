@@ -26,6 +26,12 @@ public class FBetaAdj implements Statistic {
     private double beta = 1;
 
     /**
+     * Constructs a new instance of the algorithm.
+     */
+    public FBetaAdj() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

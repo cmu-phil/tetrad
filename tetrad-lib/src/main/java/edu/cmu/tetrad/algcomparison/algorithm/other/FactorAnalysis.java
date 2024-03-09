@@ -29,6 +29,12 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the algorithm.
+     */
+    public FactorAnalysis() {
+    }
+
+    /**
      * Executes a factor analysis search on the given data model using the provided parameters.
      *
      * @param dataModel The data model to perform the factor analysis on.

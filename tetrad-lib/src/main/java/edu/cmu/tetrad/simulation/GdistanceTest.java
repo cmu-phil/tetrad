@@ -25,9 +25,16 @@ import java.util.List;
 public class GdistanceTest {
 
     /**
-     * <p>main.</p>
+     * Private constructor to prevent instantiation.
+     */
+    private GdistanceTest() {
+    }
+
+    /**
+     * The main method generates random graphs, loads a location map, calculates the distance between two graphs,
+     * and saves the output to a file.
      *
-     * @param args a {@link java.lang.String} object
+     * @param args the command line arguments
      */
     public static void main(String... args) {
         //first generate a couple random graphs

@@ -23,6 +23,12 @@ import java.util.List;
 public class GdistanceApply {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GdistanceApply() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object

@@ -27,6 +27,12 @@ import java.util.List;
 //)
 public class FisherZScore implements ScoreWrapper {
 
+    /**
+     * Constructs a new instance of the algorithm.
+     */
+    public FisherZScore() {
+    }
+
     @Serial
     private static final long serialVersionUID = 23L;
 

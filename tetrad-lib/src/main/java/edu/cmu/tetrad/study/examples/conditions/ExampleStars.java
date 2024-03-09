@@ -41,6 +41,13 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class ExampleStars {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleStars() {
+    }
+
     /**
      * <p>main.</p>
      *
