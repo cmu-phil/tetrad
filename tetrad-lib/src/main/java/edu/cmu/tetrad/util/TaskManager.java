@@ -9,7 +9,17 @@ package edu.cmu.tetrad.util;
 public class TaskManager {
     private static final TaskManager instance = new TaskManager();
 
+    /**
+     * Whether the task has been canceled.
+     */
     private boolean canceled;
+
+    /**
+     * Prevent instantiation.
+     */
+    private TaskManager() {
+        this.canceled = false;
+    }
 
     /**
      * <p>Getter for the field <code>instance</code>.</p>

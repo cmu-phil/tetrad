@@ -52,7 +52,12 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class StatUtils {
     private static final double logCoshExp = StatUtils.logCoshExp();
-    static double pow2 = StatUtils.pow();
+
+    /**
+     * Prevent instantiation.
+     */
+    private StatUtils() {
+    }
 
     /**
      * <p>mean.</p>

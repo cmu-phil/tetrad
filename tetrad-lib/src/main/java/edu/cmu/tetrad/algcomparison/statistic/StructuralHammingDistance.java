@@ -19,6 +19,12 @@ public class StructuralHammingDistance implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs the statistic.
+     */
+    public StructuralHammingDistance () {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

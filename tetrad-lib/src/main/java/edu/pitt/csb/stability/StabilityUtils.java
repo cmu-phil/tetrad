@@ -55,7 +55,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class StabilityUtils {
 
-    //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+    /**
+     * Prevent instantiation.
+     */
+    private StabilityUtils() {
+    }
 
     /**
      * <p>StabilitySearch.</p>

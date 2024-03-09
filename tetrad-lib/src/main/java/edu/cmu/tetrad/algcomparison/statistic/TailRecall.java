@@ -7,20 +7,23 @@ import edu.cmu.tetrad.graph.Graph;
 import java.io.Serial;
 
 /**
- * The arrow recall. This counts arrowheads maniacally, wherever they occur in the graphs. The true positives are the
- * number of arrowheads in both the true and estimated graphs. Thus, if the true contains X*-&gt;Y and estimated graph
- * either does not contain an edge from X to Y or else does not contain an arrowhead at X for an edge from X to Y, one
- * false positive is counted. Similarly for false negatives.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Implements the TailRecall statistic, which calculates the tail recall value for a given true graph, estimated graph,
+ * and data model.
  */
 public class TailRecall implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs the statistic.
+     */
+    public TailRecall() {
+    }
+
+    /**
+     * Returns the abbreviation for the statistic. This will be printed at the top of each column.
+     *
+     * @return The abbreviation.
      */
     @Override
     public String getAbbreviation() {
@@ -28,7 +31,9 @@ public class TailRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -36,7 +41,12 @@ public class TailRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the tail recall value for a given true graph, estimated graph, and data model.
+     *
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @return The tail recall value.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -48,7 +58,10 @@ public class TailRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the normalized value of a statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {
