@@ -279,7 +279,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the node at the specified index.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the node at the specified index.
      */
     public Node getNode(int nodeIndex) {
         return this.nodes[nodeIndex];
@@ -296,7 +299,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the index of the given node in the nodes array.
+     *
+     * @param node the given node.
+     * @return the index of the node in the nodes array, or -1 if the node is not found.
      */
     public int getNodeIndex(Node node) {
         for (int i = 0; i < this.nodes.length; i++) {
@@ -350,42 +356,62 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of columns in the specified node.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the number of columns.
      */
     public int getNumColumns(int nodeIndex) {
         return this.probs[nodeIndex][0].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the number of rows in the specified node.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the number of rows in the node.
      */
     public int getNumRows(int nodeIndex) {
         return this.probs[nodeIndex].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of parents for the given node.
+     *
+     * @param nodeIndex the index of the node.
+     * @return the number of parents.
      */
     public int getNumParents(int nodeIndex) {
         return this.parents[nodeIndex].length;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parent of a node at the specified index.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
+     * @return the parent of the node.
      */
     public int getParent(int nodeIndex, int parentIndex) {
         return this.parents[nodeIndex][parentIndex];
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the value of the parent dimension for a given node and parent index.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
+     * @return the parent dimension value.
      */
     public int getParentDim(int nodeIndex, int parentIndex) {
         return this.parentDims[nodeIndex][parentIndex];
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a copy of the dimensions of the parent node at the specified index.
+     *
+     * @param nodeIndex the index of the node.
+     * @return an array containing the dimensions of the parent node.
      */
     public int[] getParentDims(int nodeIndex) {
         int[] dims = this.parentDims[nodeIndex];
@@ -395,7 +421,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns an array containing the parents of the specified node.
+     *
+     * @param nodeIndex the index of the node.
+     * @return an array of integers representing the parents of the specified node.
      */
     public int[] getParents(int nodeIndex) {
         int[] nodeParents = this.parents[nodeIndex];
@@ -405,7 +434,11 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns an integer array containing the parent values for a given node index and row index.
+     *
+     * @param nodeIndex the index of the node.
+     * @param rowIndex  the index of the row in question.
+     * @return an integer array containing the parent values.
      */
     public int[] getParentValues(int nodeIndex, int rowIndex) {
         int[] dims = getParentDims(nodeIndex);
@@ -420,26 +453,36 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the value of the parent node at the specified row and column index.
+     *
+     * @param nodeIndex the index of the node.
+     * @param rowIndex  the index of the row in question.
+     * @param colIndex  the index of the column in question.
+     * @return the value of the parent node at the specified row and column index.
      */
     public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
         return getParentValues(nodeIndex, rowIndex)[colIndex];
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the probability for a given node in the table.
+     *
+     * @param nodeIndex the index of the node in question.
+     * @param rowIndex  the row in the table for this node which represents the combination of parent values in
+     *                  question.
+     * @param colIndex  the column in the table for this node which represents the value of the node in question.
+     * @return the probability value for the given node.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
         return this.probs[nodeIndex][rowIndex][colIndex];
     }
 
     /**
-     * <p>getRowIndex.</p>
+     * Returns the row index corresponding to the given node index and combination of parent values.
      *
-     * @param nodeIndex a int
-     * @param values    an array of {@link int} objects
-     * @return the row in the table for the given node and combination of parent values.
-     * @see #getParentValues
+     * @param nodeIndex the index of the node in question.
+     * @param values    the combination of parent values in question.
+     * @return the row index corresponding to the given node index and combination of parent values.
      */
     public int getRowIndex(int nodeIndex, int[] values) {
         int[] dim = getParentDims(nodeIndex);
@@ -463,9 +506,9 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Normalizes all rows in the table associated with a given node.
+     * Normalizes the specified node by invoking the {@link #normalizeRow(int, int)} method on each row of the node.
+     *
+     * @param nodeIndex the index of the node to be normalized.
      */
     public void normalizeNode(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -474,9 +517,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Normalizes the given row.
+     * Normalizes the probabilities of a given row in a node.
+     *
+     * @param nodeIndex the index of the node in question.
+     * @param rowIndex  the index of the row in question.
      */
     public void normalizeRow(int nodeIndex, int rowIndex) {
         int numColumns = getNumColumns(nodeIndex);
@@ -503,11 +547,12 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the probability for the given node. The matrix row represent row index, the row in the table for this for
      * node which represents the combination of parent values in question. of the CPT. The matrix column represent
      * column index, the column in the table for this node which represents the value of the node in question.
+     *
+     * @param nodeIndex  The index of the node.
+     * @param probMatrix The matrix of probabilities.
      */
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
@@ -517,15 +562,14 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the probability for the given node at a given row and column in the table for that node. To get the node
-     * index, use getNodeIndex(). To get the row index, use getRowIndex(). To get the column index, use
-     * getCategoryIndex() from the underlying BayesPm(). The value returned will represent a conditional probability of
-     * the form P(N=v0 | P1=v1, P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is the value
-     * referenced by colIndex, and the combination of parent values indicated is the combination indicated by rowIndex.
+     * Sets the probability value for a specific node, row, and column in the probability table.
      *
-     * @see #getProbability
+     * @param nodeIndex the index of the node in question.
+     * @param rowIndex  the row in the table for this node which represents the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents the value of the node in question.
+     * @param value     the desired probability to be set. Must be between 0.0 and 1.0, or Double.NaN.
+     * @throws IllegalArgumentException if the column index is out of range for the given node, or if the probability
+     * value is not between 0.0 and 1.0 or Double.NaN.
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
                                double value) {
@@ -543,7 +587,12 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the corresponding node index in the given BayesIm
+     * based on the node index in this BayesIm.
+     *
+     * @param nodeIndex    the index of the node in this BayesIm.
+     * @param otherBayesIm the BayesIm in which the node is to be found.
+     * @return the corresponding node index in the given BayesIm.
      */
     public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
         String nodeName = getNode(nodeIndex).getName();
@@ -552,9 +601,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Assigns random probability values to the child values of this row that add to 1.
+     * Clears all values in the specified row of a table.
+     *
+     * @param nodeIndex the index of the node for the table that this row belongs to
+     * @param rowIndex the index of the row to be cleared
      */
     public void clearRow(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -563,9 +613,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Assigns random probability values to the child values of this row that add to 1.
+     * Randomizes the values of a row in a table for a given node.
+     *
+     * @param nodeIndex the index of the node for the table that this row belongs to.
+     * @param rowIndex  the index of the row to be randomized.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         int size = getNumColumns(nodeIndex);
@@ -573,9 +624,9 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Randomizes any row in the table for the given node index that has a Double.NaN value in it.
+     * Randomizes the incomplete rows in the specified node's table.
+     *
+     * @param nodeIndex the index of the node for the table whose incomplete rows are to be randomized
      */
     public void randomizeIncompleteRows(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -586,9 +637,9 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Randomizes every row in the table for the given node index.
+     * Randomizes the table for a given node.
+     *
+     * @param nodeIndex the index of the node for the table to be randomized
      */
     public void randomizeTable(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -686,9 +737,9 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Randomizes every row in the table for the given node index.
+     * Clears the table by clearing all rows for the given node.
+     *
+     * @param nodeIndex The index of the node for the table to be cleared.
      */
     public void clearTable(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -697,7 +748,11 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the specified row of a table is incomplete, i.e., if any of the columns have a NaN value.
+     *
+     * @param nodeIndex the index of the table node to check.
+     * @param rowIndex  the index of the row to check.
+     * @return true if the row is incomplete, false otherwise.
      */
     public boolean isIncomplete(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -712,7 +767,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the specified table has any incomplete rows.
+     *
+     * @param nodeIndex the index of the node for the table
+     * @return true if the table has any incomplete rows, false otherwise
      */
     public boolean isIncomplete(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -741,7 +799,12 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Simulates a data set.
+     *
+     * @param sampleSize      The number of rows to simulate.
+     * @param latentDataSaved If set to true, latent variables are saved in the data set.
+     * @return The simulated data set.
+     * @throws IllegalArgumentException If the graph contains a directed cycle.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (getBayesPm().getDag().isTimeLagModel()) {
@@ -780,7 +843,11 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Simulates data for the given data set.
+     *
+     * @param dataSet The data set to simulate data for.
+     * @param latentDataSaved Indicates whether latent data should be saved during simulation.
+     * @return The modified data set after simulating the data.
      */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         // Get a tier ordering and convert it to an int array.
@@ -1048,7 +1115,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines whether the specified object is equal to this Bayes net.
+     *
+     * @param o the object to be compared to this Bayes net
+     * @return true if the specified object is equal to this Bayes net, false otherwise
      */
     public boolean equals(Object o) {
         if (o == this) {

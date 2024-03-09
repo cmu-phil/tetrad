@@ -43,9 +43,9 @@ final class LaunchManualAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Closes the frontmost session of this action's desktop.
+     * This method handles the action performed when a specific event is triggered.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         Desktop d = Desktop.getDesktop();

@@ -58,9 +58,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Paints the component.
+     * Paints the component with the given Graphics context.
+     *
+     * @param g the Graphics context in which to paint
      */
     public void paint(Graphics g) {
         int width = getSize().width;
@@ -84,9 +84,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the acronym of the component.
+     * Unused.
+     *
+     * @param acronym the acronym (e.g. "PC") for the node.
      */
     public void setAcronym(String acronym) {
 
@@ -102,9 +102,8 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the comp as selected.
+     *
+     * @param selected a boolean
      */
     public void setSelected(boolean selected) {
         this.selected = selected;

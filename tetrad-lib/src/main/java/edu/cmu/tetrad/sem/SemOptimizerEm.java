@@ -147,7 +147,12 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Optimizes an unoptimized Sem object by minimizing the chi-square statistic.
+     *
+     * @param semIm The unoptimized Sem object to be optimized.
+     * @throws NullPointerException If the sample covariance matrix has not been set.
+     * @throws IllegalArgumentException If the sample covariance matrix contains missing values.
+     * @throws RuntimeException If an error occurs during optimization.
      */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
@@ -235,7 +240,9 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the number of restarts for the optimization process.
+     *
+     * @return The number of restarts for the optimization process.
      */
     @Override
     public int getNumRestarts() {

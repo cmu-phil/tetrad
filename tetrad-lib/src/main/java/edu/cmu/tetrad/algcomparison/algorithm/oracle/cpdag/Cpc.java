@@ -117,7 +117,10 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -126,7 +129,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return This description.
      */
     @Override
     public String getDescription() {
@@ -134,7 +139,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required for the search.
      */
     @Override
     public DataType getDataType() {
@@ -142,7 +149,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters used in this method.
+     *
+     * @return The list of parameters, represented as strings.
      */
     @Override
     public List<String> getParameters() {
@@ -158,7 +167,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with this object.
+     *
+     * @return The knowledge associated with this object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -166,7 +177,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge the knowledge object to be set
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -174,7 +187,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper associated with this object.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -182,7 +197,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test the independence wrapper.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {

@@ -43,9 +43,9 @@ final class LaunchFlowchartAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Closes the frontmost session of this action's desktop.
+     * This method handles the action event triggered by a user interaction.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         Desktop d = Desktop.getDesktop();

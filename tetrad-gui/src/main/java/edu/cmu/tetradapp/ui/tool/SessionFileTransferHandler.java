@@ -52,10 +52,11 @@ public class SessionFileTransferHandler extends TransferHandler {
 
     private static final long serialVersionUID = -6674597813640455425L;
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
-
     /**
-     * {@inheritDoc}
+     * Determines whether the transfer can be imported.
+     *
+     * @param support the object containing the details of the transfer, not <code>null</code>.
+     * @return true if the transfer can be imported, false otherwise.
      */
     @Override
     public boolean canImport(TransferSupport support) {
@@ -69,7 +70,11 @@ public class SessionFileTransferHandler extends TransferHandler {
     }
 
     /**
-     * {@inheritDoc}
+     * Imports data from a file into the session editor.
+     *
+     * @param support the object containing the details of
+     *        the transfer, not <code>null</code>.
+     * @return true if the data import was successful, false otherwise.
      */
     @Override
     public boolean importData(TransferSupport support) {

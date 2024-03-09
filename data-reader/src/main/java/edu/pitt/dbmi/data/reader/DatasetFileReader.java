@@ -46,9 +46,9 @@ public abstract class DatasetFileReader extends DataFileReader implements Datase
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Get the missing data marker.
+     * Sets the missing data marker.
+     *
+     * @param missingDataMarker the missing data marker to be set
      */
     @Override
     public void setMissingDataMarker(String missingDataMarker) {

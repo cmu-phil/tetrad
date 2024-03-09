@@ -252,9 +252,9 @@ public abstract class DataFileReader implements DataReader {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the quote character.
+     *
+     * @param quoteCharacter the quote character to be set
      */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {

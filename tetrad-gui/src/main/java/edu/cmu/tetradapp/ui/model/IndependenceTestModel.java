@@ -63,7 +63,10 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this IndependenceTestModel object with the specified IndependenceTestModel object based on the name of the tests.
+     *
+     * @param other the IndependenceTestModel object to be compared
+     * @return a negative integer, zero, or a positive integer as this IndependenceTestModel is less than, equal to, or greater than the specified IndependenceTestModel
      */
     @Override
     public int compareTo(IndependenceTestModel other) {
@@ -71,7 +74,9 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a string representation of the object.
+     *
+     * @return the name of the object
      */
     @Override
     public String toString() {

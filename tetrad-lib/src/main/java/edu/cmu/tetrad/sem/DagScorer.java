@@ -137,10 +137,10 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Runs the estimator on the data and SemPm passed in through the constructor. Returns the fml score of the
-     * resulting model.
+     * Scores the given DAG using the implemented algorithm.
+     *
+     * @param dag the DAG to be scored
+     * @return the score of the DAG
      */
     public double score(Graph dag) {
         List<Node> changedNodes = getChangedNodes(dag);

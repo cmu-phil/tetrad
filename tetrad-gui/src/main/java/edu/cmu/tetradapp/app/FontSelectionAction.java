@@ -60,9 +60,9 @@ final class FontSelectionAction extends AbstractAction
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Processes the given event and displays a font selector dialog box.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         GraphicsEnvironment graphicsEnvironment =
@@ -201,9 +201,10 @@ final class FontSelectionAction extends AbstractAction
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Required by the AbstractAction interface; does nothing.
+     * Invoked when ownership of the clipboard is lost.
+     *
+     * @param clipboard the clipboard that is no longer owned
+     * @param contents the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

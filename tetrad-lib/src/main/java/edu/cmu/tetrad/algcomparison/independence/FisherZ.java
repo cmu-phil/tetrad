@@ -33,7 +33,12 @@ public class FisherZ implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Gets an independence test based on the given data model and parameters.
+     *
+     * @param dataModel   The data set to test independence against.
+     * @param parameters  The parameters of the test.
+     * @return An IndependenceTest object.
+     * @throws IllegalArgumentException if the dataModel is not a dataset or a covariance matrix.
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
@@ -54,7 +59,9 @@ public class FisherZ implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the description of the Fisher Z test.
+     *
+     * @return The description of the Fisher Z test.
      */
     @Override
     public String getDescription() {
@@ -62,7 +69,9 @@ public class FisherZ implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the independence test.
+     *
+     * @return The data type of the independence test.
      */
     @Override
     public DataType getDataType() {
@@ -70,7 +79,9 @@ public class FisherZ implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameters of the Fisher Z test.
+     *
+     * @return A list of strings representing the parameters of the Fisher Z test.
      */
     @Override
     public List<String> getParameters() {

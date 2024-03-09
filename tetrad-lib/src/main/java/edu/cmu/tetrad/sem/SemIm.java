@@ -540,9 +540,12 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Gets the value of a single free parameter, or Double.NaN if the parameter is not in this
+     * Retrieves the value associated with the given parameter.
+     *
+     * @param parameter The parameter for which to retrieve the value.
+     * @return The value associated with the parameter.
+     * @throws NullPointerException if the parameter is null.
+     * @throws IllegalArgumentException if the parameter is not present in the model.
      */
     public double getParamValue(Parameter parameter) {
         if (parameter == null) {
@@ -568,9 +571,11 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the value of a single free parameter to the given value.
+     * Sets the value of a parameter in the model.
+     *
+     * @param parameter the parameter to set the value for
+     * @param value the value to set for the parameter
+     * @throws IllegalArgumentException if the parameter cannot be set in this model
      */
     public void setParamValue(Parameter parameter, double value) {
         if (getFreeParameters().contains(parameter)) {
@@ -589,9 +594,11 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the value of a single free parameter to the given value.
+     * Sets the fixed value for a specified parameter in the model.
+     *
+     * @param parameter the parameter whose value is to be set. Must be a {@link Parameter} object.
+     * @param value     the new value for the parameter. Must be a double.
+     * @throws IllegalArgumentException if the parameter is not a fixed parameter in the model.
      */
     public void setFixedParamValue(Parameter parameter, double value) {
         if (!getFixedParameters().contains(parameter)) {
@@ -655,7 +662,12 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the error variance value for a specific node in the model's structural equation.
+     *
+     * @param x     The node for which the error variance should be set.
+     * @param value The value to set as the error variance.
+     * @throws NullPointerException     If the given node is null.
+     * @throws IllegalArgumentException If the given value is not a valid error variance.
      */
     public void setErrVar(Node x, double value) {
         Parameter param = this.semPm.getVarianceParameter(x);
@@ -663,7 +675,11 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the coefficient value for the edge between two nodes in the graph.
+     *
+     * @param x     The first node in the edge. Must be a {@link Node} object.
+     * @param y     The second node in the edge. Must be a {@link Node} object.
+     * @param value The value of the coefficient. Must be a double.
      */
     public void setEdgeCoef(Node x, Node y, double value) {
         Parameter param = this.semPm.getCoefficientParameter(x, y);
@@ -706,9 +722,10 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the mean associated with the given node.
+     * Sets the mean value for a given node in the variableNodes list.
+     *
+     * @param node The Node object for which the mean value needs to be set.
+     * @param mean The double value representing the mean value to be set.
      */
     public void setMean(Node node, double mean) {
         int index = this.variableNodes.indexOf(node);
@@ -727,9 +744,11 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the intercept. For acyclic SEMs only.
+     * Sets the intercept for a specified node in the SEM model.
+     *
+     * @param node      a {@link Node} object representing the node
+     * @param intercept a double value representing the new intercept to be set
+     * @throws UnsupportedOperationException if the SEM model is cyclic
      */
     public void setIntercept(Node node, double intercept) {
         if (isCyclic()) {
@@ -781,7 +800,10 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the intercept for a given node.
+     *
+     * @param node the node for which to calculate the intercept
+     * @return the intercept value
      */
     public double getIntercept(Node node) {
         node = this.semPm.getGraph().getNode(node.getName());
@@ -810,7 +832,10 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the mean value associated with a given {@link Node}.
+     *
+     * @param node the node for which the mean value is to be calculated
+     * @return the mean value associated with the given node
      */
     public double getMean(Node node) {
         int index = this.variableNodes.indexOf(node);
@@ -835,7 +860,10 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the mean standard deviation for the given node.
+     *
+     * @param node the node for which to calculate the mean standard deviation
+     * @return the mean standard deviation of the node
      */
     public double getMeanStdDev(Node node) {
         int index = this.variableNodes.indexOf(node);
@@ -843,7 +871,13 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the variance for a given node.
+     *
+     * @param node     The node for which the variance is calculated.
+     *                 Must be a {@link Node} object.
+     * @param implCovar The implementation covariance matrix.
+     *                 Must be a {@link Matrix} object.
+     * @return The variance value.
      */
     public double getVariance(Node node, Matrix implCovar) {
         if (getSemPm().getGraph().isExogenous(node)) {

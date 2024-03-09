@@ -50,7 +50,11 @@ public class DecompressibleInputStream extends ObjectInputStream {
     }
 
     /**
-     * {@inheritDoc}
+     * Reads and returns the class descriptor when deserializing an object.
+     *
+     * @return the class descriptor for the deserialized object.
+     * @throws IOException            if an I/O error occurs while reading the class descriptor.
+     * @throws ClassNotFoundException if the class for the class descriptor is not found.
      */
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {

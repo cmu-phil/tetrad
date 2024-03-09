@@ -244,7 +244,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
+     * Launches the editor associates with this node.
      */
     @Override
     public void doDoubleClickAction() {
@@ -252,9 +252,9 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Launches the editor associates with this node.
+     * Performs a double-click action on the given session wrapper graph.
+     *
+     * @param sessionWrapper a Graph object to perform the action on
      */
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
@@ -360,9 +360,9 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the selection status of the node.
+     *
+     * @param selected a boolean
      */
     @Override
     public void setSelected(boolean selected) {

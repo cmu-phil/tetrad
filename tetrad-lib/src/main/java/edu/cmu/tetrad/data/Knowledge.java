@@ -1011,10 +1011,10 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Two Knowledge objects are equal just in case their forbidden and required edges are equal, and their tiers are
-     * equal.
+     * Compares this Knowledge object with the specified object for equality.
+     *
+     * @param o the object to compare this Knowledge with
+     * @return true if the specified object is equal to this Knowledge, false otherwise
      */
     public boolean equals(Object o) {
         if (!(o instanceof Knowledge that)) {

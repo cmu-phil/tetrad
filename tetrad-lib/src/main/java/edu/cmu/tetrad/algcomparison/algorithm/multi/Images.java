@@ -73,7 +73,12 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph using the given data sets and parameters.
+     *
+     * @param dataSets   The data sets to search on.
+     * @param parameters The parameters for the search.
+     * @return The resulting graph.
+     * @throws IllegalArgumentException If the meta option is unrecognized.
      */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
@@ -117,7 +122,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph using the given data set and parameters.
+     *
+     * @param dataSet    The data set to run the search on.
+     * @param parameters The parameters of the search.
+     * @return The resulting graph.
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -125,7 +134,10 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -133,7 +145,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of this method.
+     *
+     * @return the description of this method.
      */
     @Override
     public String getDescription() {
@@ -141,7 +155,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the type of the data set.
+     *
+     * @return the type of the data set
      */
     @Override
     public DataType getDataType() {
@@ -149,7 +165,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for the algorithm.
+     *
+     * @return The list of parameters required for the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -167,7 +185,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge of the current instance.
+     *
+     * @return The knowledge of the current instance.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -175,7 +195,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge object for this instance.
+     *
+     * @param knowledge The knowledge object to be set. Cannot be null.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -183,7 +205,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the score wrapper object.
+     *
+     * @return The score wrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -191,7 +215,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for the algorithm.
+     *
+     * @param score The score wrapper to be set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -199,7 +225,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the IndependenceWrapper for this algorithm.
+     *
+     * @param test The IndependenceWrapper object to be set. Cannot be null.
      */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
