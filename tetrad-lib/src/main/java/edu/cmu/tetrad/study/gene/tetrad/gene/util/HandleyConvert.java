@@ -43,6 +43,13 @@ import java.util.StringTokenizer;
 public class HandleyConvert {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private HandleyConvert() {
+
+    }
+
+    /**
      * Converts the graph file from the moves line.
      *
      * @param args The expected argument is the filename of the graph file that has been saved out using the toString()

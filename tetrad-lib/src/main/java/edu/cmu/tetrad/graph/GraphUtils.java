@@ -45,6 +45,13 @@ import java.util.concurrent.TimeUnit;
 public final class GraphUtils {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphUtils() {
+
+    }
+
+    /**
      * Returns the associated node for the given error node in the specified graph.
      *
      * @param errorNode The error node for which the associated node needs to be retrieved.

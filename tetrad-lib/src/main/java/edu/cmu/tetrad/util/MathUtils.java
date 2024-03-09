@@ -32,6 +32,13 @@ import org.apache.commons.math3.util.FastMath;
 public class MathUtils {
 
     /**
+     * Private constructor.
+     */
+    private MathUtils() {
+
+    }
+
+    /**
      * <p>logistic.</p>
      *
      * @param x a double value.

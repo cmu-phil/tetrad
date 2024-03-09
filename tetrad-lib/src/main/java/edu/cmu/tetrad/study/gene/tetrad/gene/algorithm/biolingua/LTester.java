@@ -30,6 +30,13 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.*;
  * @version $Id: $Id
  */
 public class LTester {
+
+    /**
+     * Private constructor.
+     */
+    private LTester() {
+    }
+
     /**
      * <p>main.</p>
      *

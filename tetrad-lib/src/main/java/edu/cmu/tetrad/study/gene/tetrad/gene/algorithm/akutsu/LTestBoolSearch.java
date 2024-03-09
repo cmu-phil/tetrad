@@ -38,6 +38,12 @@ public class LTestBoolSearch {
     static int[][] cases = new int[LTestBoolSearch.ntimes][LTestBoolSearch.ngenes];
 
     /**
+     * Private constructor.
+     */
+    private LTestBoolSearch() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param argv an array of {@link java.lang.String} objects

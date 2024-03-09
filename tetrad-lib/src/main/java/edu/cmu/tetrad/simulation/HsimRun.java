@@ -26,6 +26,13 @@ import java.util.Set;
 public class HsimRun {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimRun() {
+
+    }
+
+    /**
      * <p>run.</p>
      *
      * @param readfilename   a {@link java.lang.String} object

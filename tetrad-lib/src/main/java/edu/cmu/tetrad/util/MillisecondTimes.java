@@ -12,6 +12,13 @@ import java.lang.management.ManagementFactory;
  * @version $Id: $Id
  */
 public class MillisecondTimes {
+
+    /**
+     * Prevents instantiation.
+     */
+    private MillisecondTimes() {
+    }
+
     /**
      * Constant <code>type</code>
      */

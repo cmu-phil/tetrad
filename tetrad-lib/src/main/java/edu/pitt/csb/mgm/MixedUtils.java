@@ -50,6 +50,12 @@ import java.util.*;
  */
 public class MixedUtils {
 
+    /**
+     * Prevents instantiation.
+     */
+    private MixedUtils() {
+    }
+
     //labels corresponding to values from allEdgeStats
     /**
      * Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code>

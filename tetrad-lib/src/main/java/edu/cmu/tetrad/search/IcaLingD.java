@@ -101,6 +101,15 @@ public class IcaLingD {
     public IcaLingD() {
     }
 
+    /**
+     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using the "exp" function.
+     *
+     * @param data             The dataset to estimate W for.
+     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
+     * @param fastIcaTolerance Tolerance for ICA.
+     * @param fastIcaA         Alpha for ICA.
+     * @return The estimated W matrix.
+     */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
         return estimateW(data, fastIcaMaxIter, fastIcaTolerance, fastIcaA, false);
     }
@@ -112,6 +121,7 @@ public class IcaLingD {
      * @param fastIcaMaxIter   Maximum number of iterations of ICA.
      * @param fastIcaTolerance Tolerance for ICA.
      * @param fastIcaA         Alpha for ICA.
+     * @param verbose          Whether to print the Anderson-Darling test results.
      * @return The estimated W matrix.
      */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA, boolean verbose) {

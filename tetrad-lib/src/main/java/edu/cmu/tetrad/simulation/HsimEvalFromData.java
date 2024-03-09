@@ -32,6 +32,13 @@ import java.util.*;
 public class HsimEvalFromData {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimEvalFromData() {
+
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects

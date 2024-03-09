@@ -13,6 +13,14 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class HsimCompareRepeat {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimCompareRepeat() {
+
+    }
+
     /**
      * <p>main.</p>
      *

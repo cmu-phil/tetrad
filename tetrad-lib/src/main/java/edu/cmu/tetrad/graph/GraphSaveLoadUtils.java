@@ -25,6 +25,13 @@ import java.util.regex.Pattern;
 public class GraphSaveLoadUtils {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphSaveLoadUtils() {
+
+    }
+
+    /**
      * <p>loadGraph.</p>
      *
      * @param file a {@link java.io.File} object

@@ -39,6 +39,12 @@ public class LTestReveal {
     static int[][] cases = new int[LTestReveal.ntimes][LTestReveal.ngenes];
 
     /**
+     * Private constructor.
+     */
+    private LTestReveal() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param argv an array of {@link java.lang.String} objects

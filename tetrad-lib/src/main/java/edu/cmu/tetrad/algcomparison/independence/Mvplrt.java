@@ -31,6 +31,12 @@ public class Mvplrt implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the test.
+     */
+    public Mvplrt() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

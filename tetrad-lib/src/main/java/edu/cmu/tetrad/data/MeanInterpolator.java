@@ -28,6 +28,13 @@ package edu.cmu.tetrad.data;
  * @version $Id: $Id
  */
 public final class MeanInterpolator implements DataFilter {
+
+    /**
+     * <p>Constructor for MeanInterpolator.</p>
+     */
+    public MeanInterpolator() {
+    }
+
     /**
      * {@inheritDoc}
      */

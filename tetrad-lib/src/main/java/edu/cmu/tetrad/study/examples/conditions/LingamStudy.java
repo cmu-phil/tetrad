@@ -44,6 +44,13 @@ import edu.cmu.tetrad.util.Params;
  * @version $Id: $Id
  */
 public class LingamStudy {
+
+    /**
+     * Private constructor.
+     */
+    private LingamStudy() {
+    }
+
     /**
      * <p>main.</p>
      *

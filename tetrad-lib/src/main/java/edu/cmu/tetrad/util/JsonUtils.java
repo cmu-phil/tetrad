@@ -20,6 +20,12 @@ import java.util.Set;
 public class JsonUtils {
 
     /**
+     * <p>Constructor for JsonUtils.</p>
+     */
+    public JsonUtils() {
+    }
+
+    /**
      * <p>parseJSONObjectToTetradGraph.</p>
      *
      * @param jsonResponse a {@link java.lang.String} object

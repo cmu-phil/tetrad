@@ -9,6 +9,13 @@ package edu.cmu.tetrad.simulation;
 public class HsimRepeatAuto {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimRepeatAuto() {
+
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects

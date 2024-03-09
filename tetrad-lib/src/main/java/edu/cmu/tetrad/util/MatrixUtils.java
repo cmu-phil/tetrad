@@ -48,6 +48,13 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public final class MatrixUtils {
 
     /**
+     * Private constructor.
+     */
+    private MatrixUtils() {
+
+    }
+
+    /**
      * Make a repeat copy of matrix mat.
      *
      * @param mat     matrix to copy

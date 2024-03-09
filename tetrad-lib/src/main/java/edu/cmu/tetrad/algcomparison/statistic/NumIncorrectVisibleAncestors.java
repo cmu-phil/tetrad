@@ -16,6 +16,13 @@ public class NumIncorrectVisibleAncestors implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumIncorrectVisibleAncestors() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

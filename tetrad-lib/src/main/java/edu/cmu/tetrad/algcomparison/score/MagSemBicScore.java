@@ -32,6 +32,13 @@ public class MagSemBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the score.
+     */
+    public MagSemBicScore() {
+
+    }
+
+    /**
      * The data set.
      */
     private DataModel dataSet;

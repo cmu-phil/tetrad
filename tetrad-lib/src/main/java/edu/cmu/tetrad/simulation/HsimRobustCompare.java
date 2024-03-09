@@ -23,6 +23,13 @@ import java.util.List;
  */
 public class HsimRobustCompare {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimRobustCompare() {
+
+    }
+
     //*************Public Methods*****************8//
 
     /**

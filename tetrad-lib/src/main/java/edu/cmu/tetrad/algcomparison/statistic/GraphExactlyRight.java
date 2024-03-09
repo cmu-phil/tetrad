@@ -17,6 +17,12 @@ public class GraphExactlyRight implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * <p>Constructor for GraphExactlyRight.</p>
+     */
+    public GraphExactlyRight() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

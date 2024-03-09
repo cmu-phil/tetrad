@@ -36,6 +36,13 @@ import java.util.StringTokenizer;
  * @version $Id: $Id
  */
 public class LTestSsys1 {
+
+    /**
+     * Private constructor.
+     */
+    private LTestSsys1() {
+    }
+
     /**
      * <p>main.</p>
      *

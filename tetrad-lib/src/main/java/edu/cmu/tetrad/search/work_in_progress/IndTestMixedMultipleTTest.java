@@ -188,7 +188,12 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException since not implemented.
+     * Determines if a given set of nodes z determines the node y.
+     *
+     * @param z The set of nodes to check if they determine y.
+     * @param y The node to check if it is determined by z.
+     * @return true if z determines y, false otherwise.
+     * @throws java.lang.UnsupportedOperationException since not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");

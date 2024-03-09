@@ -31,6 +31,13 @@ public class Kci implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * `Kci` constructor.
+     */
+    public Kci() {
+
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Returns a KCI test.

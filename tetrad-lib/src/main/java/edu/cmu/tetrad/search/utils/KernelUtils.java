@@ -37,6 +37,12 @@ import java.util.List;
 public class KernelUtils {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private KernelUtils() {
+    }
+
+    /**
      * Constructs Gram matrix for a given vector valued sample. The set of kernels corresponds to the variables in the
      * set. The output matrix is the tensor product of Gram matrices for each variable.
      *

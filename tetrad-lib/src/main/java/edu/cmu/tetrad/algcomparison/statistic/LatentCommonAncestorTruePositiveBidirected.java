@@ -18,6 +18,13 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * <p>Constructor for LatentCommonAncestorTruePositiveBidirected.</p>
+     */
+    public LatentCommonAncestorTruePositiveBidirected() {
+
+    }
+
+    /**
      * <p>existsLatentCommonAncestor.</p>
      *
      * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object

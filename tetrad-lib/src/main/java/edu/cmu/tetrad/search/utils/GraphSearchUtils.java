@@ -48,6 +48,13 @@ import static org.apache.commons.math3.util.FastMath.max;
 public final class GraphSearchUtils {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphSearchUtils() {
+
+    }
+
+    /**
      * Orients according to background knowledge.
      *
      * @param bk      a {@link Knowledge} object

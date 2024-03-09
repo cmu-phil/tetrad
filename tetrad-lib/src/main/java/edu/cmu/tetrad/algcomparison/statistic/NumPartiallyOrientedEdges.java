@@ -18,6 +18,13 @@ public class NumPartiallyOrientedEdges implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumPartiallyOrientedEdges() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

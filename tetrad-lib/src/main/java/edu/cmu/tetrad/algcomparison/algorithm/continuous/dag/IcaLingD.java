@@ -38,6 +38,13 @@ public class IcaLingD extends AbstractBootstrapAlgorithm implements Algorithm, R
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the IcaLingD algorithm.
+     */
+    public IcaLingD() {
+
+    }
+
+    /**
      * Runs a search on the provided data set using the given parameters. If verbose is set to true, all stable and
      * unstable graphs are printed to the console along with their B matrices.
      *

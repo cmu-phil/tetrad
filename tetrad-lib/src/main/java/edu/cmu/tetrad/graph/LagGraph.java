@@ -70,7 +70,14 @@ public class LagGraph implements Graph {
     /**
      * The paths
      */
-    private Paths paths;
+    private final Paths paths;
+
+    /**
+     * <p>Constructor for LagGraph.</p>
+     */
+    public LagGraph() {
+        this.paths = new Paths(this);
+    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

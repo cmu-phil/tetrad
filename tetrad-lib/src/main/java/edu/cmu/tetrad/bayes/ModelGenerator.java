@@ -37,6 +37,12 @@ import java.util.Set;
 public final class ModelGenerator {
 
     /**
+     * The ModelGenerator class is a utility class that provides methods for generating modified versions of an acyclic graph.
+     */
+    private ModelGenerator() {
+    }
+
+    /**
      * This method takes an acyclic graph as input and returns a list of graphs each of which is a modification of the
      * original graph with either an edge deleted, added or reversed.  Edges are not added or reversed if a cycle would
      * result.

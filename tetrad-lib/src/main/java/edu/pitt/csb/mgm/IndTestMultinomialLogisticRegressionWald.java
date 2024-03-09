@@ -52,6 +52,8 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
+
+
     /**
      * This is the original dataset that is used for the independence test.
      */
@@ -93,6 +95,13 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * Represents a boolean flag indicating whether the independence test is verbose.
      */
     private boolean verbose;
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private IndTestMultinomialLogisticRegressionWald() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Constructs a new instance of IndTestMultinomialLogisticRegressionWald with the specified parameters.

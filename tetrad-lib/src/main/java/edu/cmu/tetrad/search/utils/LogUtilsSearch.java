@@ -43,6 +43,13 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class LogUtilsSearch {
+
+    /**
+     * Constructor.
+     */
+    public LogUtilsSearch() {
+    }
+
     /**
      * <p>edgeOrientedMsg.</p>
      *

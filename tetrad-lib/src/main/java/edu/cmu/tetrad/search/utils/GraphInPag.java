@@ -39,6 +39,12 @@ import java.util.Set;
 public final class GraphInPag {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphInPag() {
+    }
+
+    /**
      * This method implements step (1) of the definition.
      *
      * @param pag a {@link edu.cmu.tetrad.graph.Graph} object

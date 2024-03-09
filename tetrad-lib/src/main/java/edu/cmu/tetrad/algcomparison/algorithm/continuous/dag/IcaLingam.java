@@ -41,6 +41,13 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the IcaLingam algorithm.
+     */
+    public IcaLingam() {
+
+    }
+
+    /**
      * Searches for a graph structure based on the given data set and parameters.
      *
      * @param dataSet    The data set to run the search on.
