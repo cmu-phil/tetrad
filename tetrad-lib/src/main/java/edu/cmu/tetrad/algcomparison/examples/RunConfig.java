@@ -30,6 +30,14 @@ import edu.cmu.tetrad.algcomparison.Comparison;
  * @version $Id: $Id
  */
 public class RunConfig {
+
+    /**
+     * Constructs a new instance of the Save.
+     */
+    public RunConfig() {
+
+    }
+
     /**
      * <p>main.</p>
      *

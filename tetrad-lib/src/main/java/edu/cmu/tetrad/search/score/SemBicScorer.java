@@ -21,6 +21,12 @@ import java.util.Map;
 public class SemBicScorer {
 
     /**
+     * Prevents instantiation.
+     */
+    private SemBicScorer() {
+    }
+
+    /**
      * Scores the given DAG using the given data model, usimg a BIC score.
      *
      * @param dag                   The DAG.

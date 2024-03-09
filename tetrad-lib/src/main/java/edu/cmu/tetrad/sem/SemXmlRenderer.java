@@ -38,6 +38,12 @@ import java.util.List;
 public class SemXmlRenderer {
 
     /**
+     * Prevent instantiation.
+     */
+    private SemXmlRenderer() {
+    }
+
+    /**
      * Converts a Sem Im into xml.
      *
      * @param semIm the instantiated structural equation model to convert

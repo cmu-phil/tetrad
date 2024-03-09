@@ -43,6 +43,12 @@ import java.util.Set;
 public class RegressionUtils {
 
     /**
+     * Constructs a new instance of the RegressionUtils.
+     */
+    public RegressionUtils() {
+    }
+
+    /**
      * <p>residuals.</p>
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object

@@ -14,10 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test. Ignore this for now
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The SemBicDTest class implements the IndependenceWrapper interface and represents
+ * a test for independence based on SEM BIC algorithm. It is annotated with the
+ * TestOfIndependence and LinearGaussian annotations.
  */
 public class SemBicDTest implements IndependenceWrapper {
 
@@ -25,7 +24,18 @@ public class SemBicDTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the SEM BIC test.
+     */
+    public SemBicDTest() {
+
+    }
+
+    /**
+     * Retrieves an IndependenceTest object for testing independence against a given data set and parameters.
+     *
+     * @param dataSet    The data set to test independence against.
+     * @param parameters The parameters of the test.
+     * @return An IndependenceTest object for testing independence.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -35,7 +45,9 @@ public class SemBicDTest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short description of this IndependenceTest.
+     *
+     * @return The description.
      */
     @Override
     public String getDescription() {
@@ -43,7 +55,9 @@ public class SemBicDTest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the test dataset.
+     *
+     * @return The data type of the test dataset.
      */
     @Override
     public DataType getDataType() {
@@ -51,7 +65,9 @@ public class SemBicDTest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters used in this method.
+     *
+     * @return The list of parameters.
      */
     @Override
     public List<String> getParameters() {

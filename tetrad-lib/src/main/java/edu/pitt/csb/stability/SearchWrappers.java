@@ -42,6 +42,12 @@ public class SearchWrappers {
     /**
      * Abstract class for search algorithm wrappers.
      */
+    private SearchWrappers() {
+    }
+
+    /**
+     * Abstract class for search algorithm wrappers.
+     */
     public static class PcStableWrapper extends DataGraphSearch {
         /**
          * Constructor.

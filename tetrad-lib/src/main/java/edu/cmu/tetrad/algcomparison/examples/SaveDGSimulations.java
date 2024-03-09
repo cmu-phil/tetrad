@@ -34,6 +34,13 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class SaveDGSimulations {
+
+    /**
+     * Constructs a new instance of the SaveDGSimulations.
+     */
+    public SaveDGSimulations() {
+    }
+
     /**
      * <p>main.</p>
      *

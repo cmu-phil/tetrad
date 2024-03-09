@@ -35,6 +35,15 @@ import edu.cmu.tetrad.util.Params;
  * @version $Id: $Id
  */
 public class Save {
+
+
+    /**
+     * Constructs a new instance of the Save.
+     */
+    public Save() {
+
+    }
+
     /**
      * <p>main.</p>
      *
