@@ -34,10 +34,18 @@ import java.util.StringTokenizer;
  * @version $Id: $Id
  */
 public class ReadIdeker {
+
     /**
-     * <p>main.</p>
+     * <p>Constructor for ReadIdeker.</p>
+     */
+    public ReadIdeker() {
+
+    }
+
+    /**
+     * The main method processes input data and performs various calculations and predictions.
      *
-     * @param argv an array of {@link java.lang.String} objects
+     * @param argv The command line arguments, expected to contain the name of the input file.
      */
     public static void main(String[] argv) {
 

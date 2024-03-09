@@ -48,8 +48,16 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class PerformanceTestsDan {
+
+    /**
+     * <p>Constructor for PerformanceTestsDan.</p>
+     */
+    public PerformanceTestsDan() {
+    }
+
     /**
      * <p>main.</p>
+     *
      *
      * @param args a {@link java.lang.String} object
      */

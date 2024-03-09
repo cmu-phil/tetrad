@@ -19,6 +19,12 @@ public class RandomTwoFactorMim implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the RandomTwoFactorMim.
+     */
+    public RandomTwoFactorMim() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -37,6 +37,12 @@ public class PoissonPriorScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
+     * Constructs a new instance of the PoissonPriorScore.
+     */
+    public PoissonPriorScore() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

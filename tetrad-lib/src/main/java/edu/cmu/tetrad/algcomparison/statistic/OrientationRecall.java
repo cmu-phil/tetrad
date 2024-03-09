@@ -7,17 +7,27 @@ import edu.cmu.tetrad.graph.Graph;
 import java.io.Serial;
 
 /**
- * The orientation recall.
+ * Represents an implementation of the Statistic interface that calculates the Orientation Recall.
  *
- * @author bryanandrews, josephramsey
- * @version $Id: $Id
+ * The Orientation Recall is a statistic that measures the accuracy of the estimated
+ * orientation of edges in a graph compared to the true graph. It calculates the ratio
+ * of true positive orientations to the sum of true positive and false negative orientations.
  */
 public class OrientationRecall implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the statistic.
+     */
+    public OrientationRecall() {
+
+    }
+
+    /**
+     * Returns the abbreviation for the statistic.
+     *
+     * @return The abbreviation.
      */
     @Override
     public String getAbbreviation() {
@@ -25,7 +35,9 @@ public class OrientationRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -33,7 +45,8 @@ public class OrientationRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the Orientation Recall statistic, which measures the accuracy of the estimated
+     * orientation of edges in a graph compared to the true graph.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {

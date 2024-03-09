@@ -33,6 +33,12 @@ import java.util.List;
 public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
     /**
+     * Constructs a new instance of the PagSampleRfci algorithm.
+     */
+    public PagSampleRfci() {
+    }
+
+    /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
      */
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();

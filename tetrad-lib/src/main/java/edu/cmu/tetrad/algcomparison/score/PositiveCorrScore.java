@@ -24,6 +24,12 @@ public class PositiveCorrScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the FisherZScore.
+     */
+    public PositiveCorrScore() {
+    }
+
+    /**
      * The alpha level.
      */
     double alpha = 0.001;

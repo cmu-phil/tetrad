@@ -35,6 +35,13 @@ import org.apache.commons.math3.util.FastMath;
 @SuppressWarnings({"ConstantConditions", "WeakerAccess", "UnusedDeclaration"})
 public class ProbUtils {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ProbUtils() {
+
+    }
+
     private static final double[] r = {1.253314137315500251207883, 1.193182964731915311846094,
             1.137490921203604514832235, 1.085827027468003637553896,
             1.037824575853726812300365, .9931557904881572182738326,

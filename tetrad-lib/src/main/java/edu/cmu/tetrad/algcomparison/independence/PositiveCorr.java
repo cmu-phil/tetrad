@@ -27,6 +27,12 @@ public class PositiveCorr implements IndependenceWrapper {
     private double alpha = 0.001;
 
     /**
+     * Constructs a new instance of the FisherZTest.
+     */
+    public PositiveCorr() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

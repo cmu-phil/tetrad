@@ -21,7 +21,16 @@ public class PercentAmbiguous implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the statistic.
+     */
+    public PercentAmbiguous() {
+
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -30,7 +39,9 @@ public class PercentAmbiguous implements Statistic {
 
 
     /**
-     * {@inheritDoc}
+     * Retrieves the description of the statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -38,7 +49,12 @@ public class PercentAmbiguous implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the percentage of ambiguous triples in the estimated graph compared to the true graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The percentage of ambiguous triples in the estimated graph.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -72,7 +88,10 @@ public class PercentAmbiguous implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the normalized value of a statistic given the original value.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {
