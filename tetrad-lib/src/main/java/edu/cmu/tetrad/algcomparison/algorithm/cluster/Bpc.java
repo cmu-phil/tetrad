@@ -44,9 +44,12 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Runs the BPC algorithm.
+     * Runs the search algorithm to build a graph using the given data model and parameters.
+     *
+     * @param dataModel   The data model to be used for the search.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The resulting graph.
+     * @throws IllegalArgumentException If the check type is unexpected.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -118,9 +121,10 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the true graph if there is one.
+     * Returns the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -129,9 +133,9 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the description of the algorithm.
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -139,9 +143,9 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the data type that the algorithm can handle.
+     * Retrieves the data type of the algorithm's output.
+     *
+     * @return The data type of the algorithm's output.
      */
     @Override
     public DataType getDataType() {
@@ -149,9 +153,9 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the parameters for the algorithm.
+     * Retrieves the list of parameters used by the algorithm.
+     *
+     * @return A list of strings representing the parameters used by the algorithm.
      */
     @Override
     public List<String> getParameters() {

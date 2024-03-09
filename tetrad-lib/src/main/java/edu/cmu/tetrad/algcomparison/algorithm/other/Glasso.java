@@ -40,7 +40,12 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Runs a search algorithm to create a graph representation of the data.
+     *
+     * @param dataModel   The data model containing the dataset.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The resulting graph representation of the data.
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or contains missing values.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
@@ -85,23 +90,29 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of the algorithm.
      */
     public String getDescription() {
         return "GLASSO (Graphical LASSO)";
     }
 
     /**
-     * {@inheritDoc}
+     *
+     * Retrieves the data type required by the search algorithm.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -109,7 +120,9 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a list of parameters used by the algorithm.
+     *
+     * @return A list of parameter names.
      */
     @Override
     public List<String> getParameters() {

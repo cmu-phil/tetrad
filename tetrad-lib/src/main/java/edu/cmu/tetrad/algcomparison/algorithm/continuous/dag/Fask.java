@@ -94,7 +94,13 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the Fask search algorithm on the given data model with the specified parameters.
+     *
+     * @param dataModel   the data model to run the search on
+     * @param parameters  the parameters for the search
+     * @return the resulting graph from the search
+     * @throws IllegalStateException if the data model is not a DataSet or if there are missing values
+     * @throws IllegalArgumentException if there are missing values in the data set
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -165,7 +171,10 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -173,7 +182,10 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of the FASK algorithm. This description will be printed in the report.
+     *
+     * @return A short description of the FASK algorithm.
+     * @throws IllegalStateException if the FASK algorithm is not initialized with either a test or an algorithm.
      */
     @Override
     public String getDescription() {
@@ -187,7 +199,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the dataset.
+     *
+     * @return The data type of the dataset.
      */
     @Override
     public DataType getDataType() {
@@ -195,7 +209,11 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameter names that are used by the algorithm.
+     * These parameters are looked up in the ParamMap, so if they are not already defined,
+     * they will need to be defined there.
+     *
+     * @return The list of parameter names used by the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -218,7 +236,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge associated with this object.
+     *
+     * @return The knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -226,7 +246,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -234,7 +256,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper associated with this object.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -242,7 +266,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the object.
+     *
+     * @param independenceWrapper the independence wrapper to be set. Must implement the {@link IndependenceWrapper} interface.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
@@ -250,7 +276,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The algorithm object.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
@@ -258,7 +286,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper object associated with this class.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -266,7 +296,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for the object.
+     *
+     * @param score the score wrapper to be set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {

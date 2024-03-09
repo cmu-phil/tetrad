@@ -63,7 +63,12 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the Direct LiNGAM search algorithm on the given data model with the specified parameters.
+     *
+     * @param dataModel   the data model to run the search algorithm on
+     * @param parameters  the parameters for the search algorithm
+     * @return the resulting graph from the search algorithm
+     * @throws IllegalArgumentException if the data model is not an instance of DataSet
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet)) {
@@ -81,7 +86,10 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph, which is a new instance of EdgeListGraph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -89,16 +97,18 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of the algorithm.
      */
     public String getDescription() {
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the algorithm, which can be Continuous, Discrete, Mixed, Graph, Covariance, or All.
+     *
+     * @return The data type of the algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -106,7 +116,9 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters for the DirectLingam algorithm.
+     *
+     * @return the list of parameters
      */
     @Override
     public List<String> getParameters() {
@@ -116,7 +128,9 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper object associated with this DirectLingam instance.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -124,7 +138,9 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for this DirectLingam instance.
+     *
+     * @param score the score wrapper to set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {

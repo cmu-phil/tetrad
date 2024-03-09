@@ -29,7 +29,12 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Executes a factor analysis search on the given data model using the provided parameters.
+     *
+     * @param dataModel The data model to perform the factor analysis on.
+     * @param parameters The parameters for the factor analysis.
+     * @return The resulting graph after performing the factor analysis.
+     * @throws IllegalArgumentException If the data model is not a continuous dataset.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
@@ -130,23 +135,29 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     }
 
     /**
-     * {@inheritDoc}
+     * Returns an undirected graph used for comparison.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The undirected graph for comparison.
      */
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns a short, one-line description of this algorithm.
+     * This will be printed in the report.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of the algorithm.
      */
     public String getDescription() {
         return "GLASSO (Graphical LASSO)";
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -154,7 +165,9 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameters for the current instance of the {@code FactorAnalysis} class.
+     *
+     * @return a list of strings representing the parameters for the factor analysis.
      */
     @Override
     public List<String> getParameters() {

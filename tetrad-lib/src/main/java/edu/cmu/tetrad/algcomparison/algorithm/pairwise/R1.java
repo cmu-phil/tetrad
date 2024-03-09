@@ -63,7 +63,12 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm on the given data model with the provided parameters.
+     *
+     * @param dataModel   The data model to run the search on.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The result graph after running the search algorithm.
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm fails to produce a graph.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -90,7 +95,10 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph generated from the true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -98,7 +106,10 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of this method. If the algorithm is not null, the description
+     * includes the initial graph description from the algorithm.
+     *
+     * @return A description of this method.
      */
     @Override
     public String getDescription() {
@@ -107,7 +118,9 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -115,7 +128,10 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters for the current instance.
+     *
+     * @return A list of parameter names used by the current instance. If the algorithm has parameters defined, they will be included in the list. Additionally, the parameter Params
+     *.VERBOSE will also be included.
      */
     @Override
     public List<String> getParameters() {
@@ -131,7 +147,10 @@ public class R1 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph for the algorithm.
+     *
+     * @param algorithm The algorithm object to set as the external graph.
+     * @throws IllegalArgumentException If the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

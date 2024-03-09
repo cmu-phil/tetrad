@@ -64,7 +64,13 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the given data model and parameters.
+     *
+     * @param dataModel   the data model to be used for the search
+     * @param parameters  the parameters to be used for the search
+     * @return the resulting graph
+     * @throws IllegalArgumentException if the data model is not a continuous dataset
+     *                                  or if the algorithm requires both data and a graph source as inputs
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -93,7 +99,10 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph based on the provided true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -101,7 +110,9 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the RSkew algorithm.
+     *
+     * @return A description of the RSkew algorithm.
      */
     @Override
     public String getDescription() {
@@ -110,7 +121,9 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the dataset.
+     *
+     * @return the data type of the dataset
      */
     @Override
     public DataType getDataType() {
@@ -118,7 +131,9 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for the algorithm.
+     *
+     * @return a list of parameter names that are used in the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -135,7 +150,10 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm the algorithm object representing the external graph
+     * @throws IllegalArgumentException if the algorithm parameter is null
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

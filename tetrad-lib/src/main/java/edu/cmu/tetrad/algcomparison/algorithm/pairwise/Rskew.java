@@ -63,7 +63,12 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the provided data model and parameters.
+     *
+     * @param dataModel   the data model to be used for the search
+     * @param parameters  the parameters for the search algorithm
+     * @return the resulting graph from the search algorithm
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the search algorithm requires both data and a graph source as inputs
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -90,7 +95,10 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -98,7 +106,9 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the algorithm being used, including the initial graph if available.
+     *
+     * @return A description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -107,7 +117,9 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type required by the algorithm.
+     *
+     * @return The data type required by the algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -115,7 +127,9 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a list of parameters required for the current instance of the class.
+     *
+     * @return A list of parameter names.
      */
     @Override
     public List<String> getParameters() {
@@ -131,7 +145,10 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph for this algorithm.
+     *
+     * @param algorithm The algorithm object representing the external graph.
+     * @throws IllegalArgumentException if the algorithm object is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

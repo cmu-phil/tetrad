@@ -51,7 +51,12 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the given data model and parameters.
+     *
+     * @param dataModel the data model to be used for the search
+     * @param parameters the parameters for the search algorithm
+     * @return the resulting graph after running the search algorithm
+     * @throws IllegalArgumentException if the data model is not a continuous dataset
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -78,7 +83,10 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph for the given true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -86,7 +94,9 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the method.
+     *
+     * @return A description of the method.
      */
     @Override
     public String getDescription() {
@@ -95,7 +105,9 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -103,7 +115,9 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the parameters required by the current algorithm.
+     *
+     * @return a List containing the parameter names
      */
     @Override
     public List<String> getParameters() {
@@ -119,7 +133,10 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph for the algorithm.
+     *
+     * @param algorithm The algorithm object representing the external graph.
+     * @throws IllegalArgumentException if the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

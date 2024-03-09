@@ -209,7 +209,10 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     /**
-     * {@inheritDoc}
+     * <p>getProb.</p>
+     *
+     * @param assertion a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @return a double
      */
     public double getProb(Proposition assertion) {
 

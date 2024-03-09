@@ -64,7 +64,12 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Runs a search algorithm to find the orientation of edges in a graph using the given data model and parameters.
+     *
+     * @param dataModel   the data model containing the dataset
+     * @param parameters  the parameters to be used for the search algorithm
+     * @return the graph with oriented edges
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the graph is null
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -91,7 +96,10 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -99,7 +107,11 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of the current algorithm. It returns the description of
+     * the algorithm if the external graph is not null (using the getDescription method
+     * of the algorithm), otherwise it returns an empty string.
+     *
+     * @return The description of the current algorithm.
      */
     @Override
     public String getDescription() {
@@ -108,7 +120,9 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type of the search.
      */
     @Override
     public DataType getDataType() {
@@ -116,7 +130,10 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for the current instance of the class.
+     *
+     * @return A list of parameter names. If the algorithm associated with this instance has parameters defined,
+     *         those parameters will be included in the list. In addition, the parameter "VERBOSE" will always be included.
      */
     @Override
     public List<String> getParameters() {
@@ -132,7 +149,10 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph for the algorithm.
+     *
+     * @param algorithm the algorithm object representing the external graph
+     * @throws IllegalArgumentException if the algorithm is null
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

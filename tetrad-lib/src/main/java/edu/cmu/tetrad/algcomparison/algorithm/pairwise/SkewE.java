@@ -63,7 +63,12 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Executes the SkewE search algorithm.
+     *
+     * @param dataModel   The data model containing the dataset.
+     * @param parameters  The parameters to be used for the search.
+     * @return The oriented graph.
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or the graph is null.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -90,7 +95,10 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -98,7 +106,12 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the algorithm used. If an initial graph
+     * is provided to the algorithm, it appends the initial graph description
+     * to the description. The format of the description is "SkewE with
+     * initial graph from [initial graph description]".
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -107,7 +120,9 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -115,7 +130,9 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters for the current instance of the class.
+     *
+     * @return The list of parameters, including algorithm parameters and additional parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -131,7 +148,10 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The algorithm that can take an external graph as input.
+     * @throws IllegalArgumentException if the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

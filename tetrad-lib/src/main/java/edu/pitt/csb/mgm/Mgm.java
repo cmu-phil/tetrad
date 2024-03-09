@@ -557,9 +557,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
+     * Calculate the smooth value of the given input vector.
+     *
+     * @param parIn The input vector.
+     * @return The smooth value.
      */
     public double smoothValue(DoubleMatrix1D parIn) {
         //work with copy
@@ -638,11 +639,11 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient this overloaded version
-     * calculates both nll and the smooth gradient at the same time any value in gradOut will be replaced by the new
-     * calculations
+     * Smooth method calculates the smooth loss and gradient given input parameters.
+     *
+     * @param parIn    input Vector
+     * @param gradOutVec gradient of g(X)
+     * @return the smooth loss
      */
     public double smooth(DoubleMatrix1D parIn, DoubleMatrix1D gradOutVec) {
         //work with copy
@@ -809,9 +810,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Calculates penalty term of objective function
+     * Calculates the non-smooth value for the given input vector.
+     *
+     * @param parIn the input vector
+     * @return the non-smooth value
      */
     public double nonSmoothValue(DoubleMatrix1D parIn) {
         //DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
@@ -892,9 +894,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Gradient of the pseudolikelihood
+     * Calculates the smooth gradient for a given input vector.
+     *
+     * @param parIn the input vector
+     * @return the smooth gradient
      */
     public DoubleMatrix1D smoothGradient(DoubleMatrix1D parIn) {
         int n = this.xDat.rows();
@@ -1039,9 +1042,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * A proximal operator for the MGM
+     * Applies proximal operator on the given input vector with a positive parameter.
+     *
+     * @param t the positive parameter for proximal operator
+     * @param X the input vector
+     * @return the result of applying proximal operator on the input vector
+     * @throws IllegalArgumentException if t is not positive
      */
     public DoubleMatrix1D proximalOperator(double t, DoubleMatrix1D X) {
         //System.out.println("PROX with t = " + t);
@@ -1154,9 +1160,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Calculates penalty term and proximal operator at the same time for speed
+     * Calculates the non-smooth value for a given parameter and input vectors.
+     *
+     * @param t  the positive parameter for the prox operator
+     * @param X  the input vector
+     * @param pX the vector solution to prox_t(X)
+     * @return the non-smooth value
      */
     public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D pX) {
 

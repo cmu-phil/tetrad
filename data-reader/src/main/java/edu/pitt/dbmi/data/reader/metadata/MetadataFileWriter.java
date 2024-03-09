@@ -36,9 +36,18 @@ import java.nio.file.StandardOpenOption;
 public class MetadataFileWriter implements MetadataWriter {
 
     /**
-     * {@inheritDoc}
-     * <p>
+     * Default constructor.
+     */
+    public MetadataFileWriter() {
+
+    }
+
+    /**
      * Writes the metadata as a string.
+     *
+     * @param metadata The metadata.
+     * @return The metadata as a string.
+     * @throws JsonProcessingException if an error occurs while processing the JSON.
      */
     @Override
     public String writeAsString(Metadata metadata) throws JsonProcessingException {
@@ -49,9 +58,11 @@ public class MetadataFileWriter implements MetadataWriter {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Writes the metadata to a file.
+     * Writes the metadata to the specified output file.
+     *
+     * @param metadata   The metadata to write.
+     * @param outputFile The output file to write the metadata to.
+     * @throws IOException If an error occurs while writing the metadata to the output file.
      */
     @Override
     public void write(Metadata metadata, Path outputFile) throws IOException {

@@ -64,7 +64,12 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm to orient edges in the input graph using the given data model and parameters.
+     *
+     * @param dataModel   The data model representing the data set. It must be a continuous data set.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The oriented graph produced by the search algorithm.
+     * @throws IllegalArgumentException If the data model is not a continuous data set or if the search algorithm fails to produce a graph.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -91,7 +96,10 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -99,7 +107,9 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the method.
+     *
+     * @return A string representing the description of the method. If the algorithm is not null, it appends the initial graph description from the algorithm.
      */
     @Override
     public String getDescription() {
@@ -108,7 +118,15 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the current algorithm.
+     *
+     * @return The data type of the algorithm. It can be one of the following:
+     * - Continuous: if all variables in the data set are continuous
+     * - Discrete: if all variables in the data set are discrete
+     * - Mixed: if the data set contains a mix of continuous and discrete variables
+     * - Graph: if the algorithm produces a graph as the result
+     * - Covariance: if the algorithm requires a covariance matrix as input
+     * - All: if the data type is not known or if the algorithm can handle any data type
      */
     @Override
     public DataType getDataType() {
@@ -116,7 +134,10 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameter names that are used by this method and its associated algorithm.
+     *
+     * @return A list of parameter names. If the associated algorithm has parameters, they are included in the list. Additionally, the parameter name "VERBOSE" is always added to
+     * the list.
      */
     @Override
     public List<String> getParameters() {
@@ -132,7 +153,11 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The algorithm object representing the external graph.
+     *                  Must implement the {@link Algorithm} interface.
+     * @throws IllegalArgumentException If the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

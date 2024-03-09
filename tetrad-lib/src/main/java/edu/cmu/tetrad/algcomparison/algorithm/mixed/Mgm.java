@@ -39,7 +39,14 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the MGM search algorithm.
+     *
+     * @param dataModel   The data model containing the dataset.
+     * @param parameters  The parameters for running the search.
+     * @return The graph obtained from the MGM search algorithm.
+     * @throws IllegalArgumentException If the data model does not contain tabular data, if the dataset is not mixed
+     *                                  (contains at least one discrete column and at least one continuous column),
+     *                                  or if missing values are present.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -102,10 +109,11 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
         return m.search();
     }
 
-    // Need to marry the parents on this.
-
     /**
-     * {@inheritDoc}
+     * Returns the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph, an undirected version of the true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -113,7 +121,9 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -121,7 +131,9 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type required by the search algorithm.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -129,7 +141,9 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters required by the getParameters method.
+     *
+     * @return List of parameters as strings.
      */
     @Override
     public List<String> getParameters() {

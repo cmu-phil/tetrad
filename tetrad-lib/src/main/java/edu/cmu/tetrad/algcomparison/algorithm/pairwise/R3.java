@@ -64,7 +64,13 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm to orient edges in the input graph using the provided data.
+     *
+     * @param dataModel   The data model containing the dataset to be used for the search.
+     * @param parameters  The parameters for the search algorithm.
+     * @return The oriented graph resulting from the search algorithm.
+     * @throws IllegalArgumentException If the data model is not a continuous dataset or if the search algorithm
+     *                                  needs both data and a graph source as inputs but the graph is null.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -91,7 +97,10 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Generates a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph generated from the true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -99,7 +108,9 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the method.
+     *
+     * @return The description of the method, including the algorithm description if available.
      */
     @Override
     public String getDescription() {
@@ -108,7 +119,9 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -116,7 +129,9 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters for the method.
+     *
+     * @return The list of parameters, including the algorithm parameters and the verbose parameter.
      */
     @Override
     public List<String> getParameters() {
@@ -132,7 +147,10 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The algorithm that contains the graph.
+     * @throws IllegalArgumentException If the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

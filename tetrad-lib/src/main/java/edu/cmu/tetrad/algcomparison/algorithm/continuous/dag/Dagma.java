@@ -48,7 +48,12 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the DAGMA algorithm to search for a directed acyclic graph (DAG) in the given data model with the specified parameters.
+     *
+     * @param dataModel   The data model to search.
+     * @param parameters  The parameters for the DAGMA algorithm.
+     * @return The resulting graph, which represents a DAG.
+     * @throws IllegalArgumentException If the data model is not a continuous dataset.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet dataSet)) {
@@ -68,7 +73,10 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -76,16 +84,18 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns the description of the DAGMA algorithm.
      *
-     * @return a {@link java.lang.String} object
+     * @return the description of the DAGMA algorithm
      */
     public String getDescription() {
         return "DAGMA (DAGs via M-matrices for Acyclicity)";
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the algorithm's output.
+     *
+     * @return The data type of the algorithm's output.
      */
     @Override
     public DataType getDataType() {
@@ -93,7 +103,9 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters used by the algorithm.
+     *
+     * @return A list of strings representing the parameters used by the algorithm.
      */
     @Override
     public List<String> getParameters() {

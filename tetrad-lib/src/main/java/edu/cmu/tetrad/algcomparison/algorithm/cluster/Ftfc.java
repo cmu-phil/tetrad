@@ -47,7 +47,12 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm to find a causal graph.
+     *
+     * @param dataSet    The data set or covariance matrix to search.
+     * @param parameters The search parameters.
+     * @return The causal graph discovered by the search algorithm.
+     * @throws IllegalArgumentException if the dataSet is not a dataset or a covariance matrix.
      */
     @Override
     public Graph runSearch(DataModel dataSet, Parameters parameters) {
@@ -81,7 +86,10 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the comparison graph for the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph, which is a completed partially directed acyclic graph (CPDAG) of the input graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -90,7 +98,9 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
+     *
+     * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -98,7 +108,9 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the type of the data set that the search algorithm requires. The data set can be continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -106,7 +118,10 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters supported by this algorithm.
+     * The parameters include ALPHA, USE_WISHART, USE_GAP, PRECOMPUTE_COVARIANCES, and VERBOSE.
+     *
+     * @return The list of parameters supported by this algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -121,7 +136,9 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the knowledge associated with this algorithm.
+     *
+     * @return The knowledge associated with this algorithm.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -129,7 +146,9 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with this algorithm.
+     *
+     * @param knowledge the knowledge object to be set
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {

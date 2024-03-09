@@ -63,7 +63,12 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Runs a search algorithm to orient the edges in a graph using the given data and parameters.
+     *
+     * @param dataModel   the data model containing the dataset for the search algorithm
+     * @param parameters  the parameters for the search algorithm
+     * @return the graph with oriented edges
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the algorithm is null
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -90,7 +95,10 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -98,7 +106,9 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the algorithm's orientation method.
+     *
+     * @return A description of the orientation method.
      */
     @Override
     public String getDescription() {
@@ -107,7 +117,9 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -115,7 +127,10 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters that are used by the class. These parameters include the parameters
+     * defined in the algorithm used by the class and the VERBOSE parameter.
+     *
+     * @return The list of parameters used by the class.
      */
     @Override
     public List<String> getParameters() {
@@ -131,7 +146,10 @@ public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The external graph algorithm to set.
+     * @throws IllegalArgumentException If the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
