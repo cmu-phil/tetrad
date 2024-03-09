@@ -67,10 +67,6 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
      */
     private final IndependenceWrapper test = new ProbabilisticTest();
     /**
-     * The bootstrap graphs
-     */
-    private final List<Graph> bootstrapGraphs = new ArrayList<>();
-    /**
      * The knowledge
      */
     private Knowledge knowledge;
