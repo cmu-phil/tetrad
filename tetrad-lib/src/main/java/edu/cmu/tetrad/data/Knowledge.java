@@ -408,7 +408,7 @@ public final class Knowledge implements TetradSerializable {
             Collections.sort(list);
             return list;
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected knowledge configuration.", e);
+            throw new RuntimeException("Expecting tiered knowledge", e);
         }
     }
 

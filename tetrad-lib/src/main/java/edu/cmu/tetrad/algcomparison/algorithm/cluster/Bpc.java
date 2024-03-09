@@ -31,7 +31,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, ClusterAlgorithm,
+public class Bpc implements Algorithm, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
@@ -52,7 +52,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, Cluste
      * @throws IllegalArgumentException If the check type is unexpected.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
