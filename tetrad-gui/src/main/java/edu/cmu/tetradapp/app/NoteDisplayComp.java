@@ -110,9 +110,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Does nothing.
+     * Unused.
+     *
+     * @param b a boolean
      */
     public void setHasModel(boolean b) {
         // Ignore.
@@ -120,7 +120,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * {@inheritDoc}
+     * Sets the name of the node.
+     *
+     * @param name the name of the node.
      */
     public void setName(String name) {
         super.setName(name);

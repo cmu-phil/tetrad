@@ -264,9 +264,9 @@ public abstract class DataFileReader implements DataReader {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the comment marker.
+     *
+     * @param commentMarker the comment marker to be set
      */
     @Override
     public void setCommentMarker(String commentMarker) {
