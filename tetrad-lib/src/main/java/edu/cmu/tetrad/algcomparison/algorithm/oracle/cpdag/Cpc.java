@@ -46,7 +46,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     private static final long serialVersionUID = 23L;
 
     /**
-     *
+     * The independence test.
      */
     private IndependenceWrapper test;
 
@@ -55,22 +55,30 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      */
     private Knowledge knowledge = new Knowledge();
 
-
     /**
-     * <p>Constructor for Cpc.</p>
+     * This class represents the constructor for the Cpc class.
+     * It is used to create an instance of the Cpc class.
      */
     public Cpc() {
     }
 
     /**
-     * <p>Constructor for Cpc.</p>
+     * This class represents the constructor for the Cpc class.
+     * It is used to create an instance of the Cpc class.
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param test The IndependenceWrapper object.
      */
     public Cpc(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /**
+     * This method is used to run the CPC algorithm.
+     *
+     * @param dataModel  The DataModel object.
+     * @param parameters The Parameters object.
+     * @return The Graph object.
+     */
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {

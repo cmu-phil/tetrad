@@ -40,12 +40,12 @@ public class Split implements Distribution {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * Represents the variable 'a' in the Split distribution.
      */
     private double a;
 
     /**
-     * @serial
+     * A private variable representing the value of `b`.
      */
     private double b;
 

@@ -18,7 +18,15 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * This class represents a statistic that calculates the true positives for arrows compared to the true DAG.
+     */
+    public TrueDagTruePositiveDirectedPathNonancestor() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation.
      */
     @Override
     public String getAbbreviation() {
@@ -26,7 +34,9 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the description of the statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -34,7 +44,12 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the true positives for arrows compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of true positives for arrows.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -54,25 +69,14 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
             }
         }
 
-//        for (Edge edge : estGraph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.ARROW) {
-//                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
-//                    tp++;
-//                }
-//            }
-//
-//            if (edge.getEndpoint2() == Endpoint.ARROW) {
-//                if (!trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-//                    tp++;
-//                }
-//            }
-//        }
-
         return tp;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of a statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

@@ -18,7 +18,15 @@ public class TrueDagTruePositiveArrow implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * This class represents a statistic that calculates the true positives for arrows compared to the true DAG.
+     */
+    public TrueDagTruePositiveArrow() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation.
      */
     @Override
     public String getAbbreviation() {
@@ -26,7 +34,9 @@ public class TrueDagTruePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a short one-line description of this statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -34,25 +44,16 @@ public class TrueDagTruePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the number of true positives for arrows compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of true positives.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
-
-//        List<Node> nodes = trueGraph.getNodes();
-//
-//        for (Node x : nodes) {
-//            for (Node y : nodes) {
-//                if (x == y) continue;
-//
-//                if (estGraph.existsDirectedPathFromTo(x, y)) {
-//                    if (!trueGraph.existsDirectedPathFromTo(y, x)) {
-//                        tp++;
-//                    }
-//                }
-//            }
-//        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {
@@ -72,7 +73,10 @@ public class TrueDagTruePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of the statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

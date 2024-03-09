@@ -36,6 +36,12 @@ import cern.colt.matrix.linalg.Algebra;
 public class TetradAlgebra {
 
     /**
+     * Initializes a new instance of the TetradAlgebra class.
+     */
+    public TetradAlgebra() {
+    }
+
+    /**
      * <p>multOuter.</p>
      *
      * @param v1 a {@link edu.cmu.tetrad.util.Vector} object

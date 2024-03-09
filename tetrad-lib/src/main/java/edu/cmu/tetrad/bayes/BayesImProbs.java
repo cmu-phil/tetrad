@@ -44,12 +44,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * Represents a variable of the BayesIm class.
      */
     private final BayesIm bayesIm;
 
     /**
-     * @serial Cannot be null.
+     * Represents a list of nodes.
      */
     private final List<Node> variables;
 

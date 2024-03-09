@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * The AdTreeHelper class is a helper class for constructing and manipulating
+ * an AD (Attribute Decision) tree.
  */
 class AdTreeHelper implements Serializable {
 

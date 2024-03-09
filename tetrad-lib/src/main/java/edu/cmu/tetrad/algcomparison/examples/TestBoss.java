@@ -43,6 +43,13 @@ import org.apache.commons.math3.linear.RealMatrix;
  * @version $Id: $Id
  */
 public class TestBoss {
+
+    /**
+     * Initializes a new instance of the TestBoss class.
+     */
+    public TestBoss() {
+    }
+
     /**
      * <p>main.</p>
      *

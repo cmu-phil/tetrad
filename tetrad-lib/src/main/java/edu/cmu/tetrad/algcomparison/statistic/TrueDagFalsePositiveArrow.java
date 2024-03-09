@@ -10,17 +10,22 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Represents a statistic that calculates the false positives for arrows compared to the true directed acyclic graph (DAG).
  */
 public class TrueDagFalsePositiveArrow implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * This class represents a statistic that calculates the false positives for arrows compared to the true DAG.
+     */
+    public TrueDagFalsePositiveArrow() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -28,7 +33,9 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of this statistic.
      */
     @Override
     public String getDescription() {
@@ -36,25 +43,16 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the false positives for arrows compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of false positive arrows in the estimated graph compared to the true graph.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fp = 0;
-
-        List<Node> nodes = trueGraph.getNodes();
-//
-//        for (Node x : nodes) {
-//            for (Node y : nodes) {
-//                if (x == y) continue;
-//
-//                if (estGraph.existsDirectedPathFromTo(x, y)) {
-//                    if (trueGraph.existsDirectedPathFromTo(y, x)) {
-//                        fp++;
-//                    }
-//                }
-//            }
-//        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {
@@ -74,7 +72,10 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of the statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic, between 0 and 1, inclusive.
      */
     @Override
     public double getNormValue(double value) {

@@ -62,6 +62,16 @@ import java.util.concurrent.*;
 public class TimeoutComparison {
 
     /**
+     * Represents a comparison of two time values for timeout purposes.
+     * <p>
+     * The TimeoutComparison class can be used to compare two time values
+     * and determine if they have exceeded a specified timeout period.
+     * </p>
+     */
+    public TimeoutComparison() {
+    }
+
+    /**
      * The date format.
      */
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");

@@ -20,6 +20,14 @@ public class TwoCycleFalsePositive implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * This class represents a statistic that calculates the 2-cycle precision. It counts 2-cycles manually, wherever they
+     * occur in the graphs. The true positives are the number of 2-cycles in both the true and estimated graphs. Thus,
+     * if the true does not contains X-&gt;Y,Y-&gt;X and estimated graph does contain it, one false positive is counted.
+     */
+    public TwoCycleFalsePositive() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

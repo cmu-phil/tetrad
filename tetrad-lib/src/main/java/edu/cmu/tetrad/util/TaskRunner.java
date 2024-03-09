@@ -41,19 +41,27 @@ public class TaskRunner<T> {
     private final ExecutorService pool;
 
     /**
-     * Constructor.
+     * This class is responsible for running a list of tasks that implement the Callable interface in parallel using
+     * multiple threads.
+     */
+    public TaskRunner() {
+        this(Runtime.getRuntime().availableProcessors());
+    }
+
+    /**
+     * Initializes a TaskRunner with the specified number of threads.
      *
-     * @param numOfThreads number of thread to run tasks in parallel
+     * @param numOfThreads the number of threads to be used by the TaskRunner
      */
     public TaskRunner(int numOfThreads) {
         this.pool = Executors.newFixedThreadPool(numOfThreads);
     }
 
     /**
-     * Run tasks in parallel.
+     * Executes a list of tasks that implement Callable in parallel using multiple threads.
      *
-     * @param tasks
-     * @return
+     * @param tasks the list of tasks to execute
+     * @return a list of results from the completed tasks
      */
     public List<T> run(final List<Callable<T>> tasks) {
         if (tasks == null) {
@@ -82,9 +90,15 @@ public class TaskRunner<T> {
     }
 
     /**
-     * Shutdown the pool. Wait at least 1 minute before forcefully shutdown the pool.
+     * Shuts down an ExecutorService and awaits its termination.
+     * <p>
+     * This method gracefully shuts down the ExecutorService by calling {@link ExecutorService#shutdown()} and then waits
+     * for the termination of all tasks for a specified timeout period using the {@link ExecutorService#awaitTermination(long, TimeUnit)}
+     * method. If the tasks do not terminate within the timeout period, the method forcefully shuts down the ExecutorService
+     * by calling {@link ExecutorService#shutdownNow()} and waits again for the termination using {@link ExecutorService#awaitTermination(long, TimeUnit)}.
+     * If the tasks still do not terminate, an error message is logged.
      *
-     * @param pool
+     * @param pool the ExecutorService to shut down and await termination
      */
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();
