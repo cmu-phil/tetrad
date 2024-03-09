@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -58,23 +57,11 @@ public class FasLofs implements Algorithm, HasKnowledge {
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.work_in_progress.FasLofs search = new edu.cmu.tetrad.search.work_in_progress.FasLofs((DataSet) dataSet, this.rule);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            search.setKnowledge(this.knowledge);
-            return getGraph(search);
-        } else {
-            FasLofs fasLofs = new FasLofs(this.rule);
-            //fasLofs.setKnowledge(knowledge);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        edu.cmu.tetrad.search.work_in_progress.FasLofs search = new edu.cmu.tetrad.search.work_in_progress.FasLofs((DataSet) dataSet, this.rule);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        search.setKnowledge(this.knowledge);
+        return getGraph(search);
     }
 
     /**

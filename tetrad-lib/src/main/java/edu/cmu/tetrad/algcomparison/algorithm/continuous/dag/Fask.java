@@ -17,7 +17,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -111,70 +110,58 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             }
         }
 
-        if (parameters.getInt(NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Fask search;
+        edu.cmu.tetrad.search.Fask search;
 
-            search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, this.score.getScore(dataSet, parameters),
-                    this.test.getTest(dataSet, parameters));
+        search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, this.score.getScore(dataSet, parameters),
+                this.test.getTest(dataSet, parameters));
 
-            search.setDepth(parameters.getInt(DEPTH));
-            search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-            search.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
-            search.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            search.setDelta(parameters.getDouble(FASK_DELTA));
-            search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
+        search.setDepth(parameters.getInt(DEPTH));
+        search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+        search.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
+        search.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
+        search.setDelta(parameters.getDouble(FASK_DELTA));
+        search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
-            if (this.externalGraph != null) {
-                this.externalGraph = algorithm.search(dataSet, parameters);
-            }
-
-            if (this.externalGraph != null) {
-                search.setExternalGraph(this.externalGraph);
-            }
-
-            int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
-
-            if (lrRule == 1) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
-            } else if (lrRule == 2) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
-            } else if (lrRule == 3) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
-            } else if (lrRule == 4) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
-            } else if (lrRule == 5) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
-            } else {
-                throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
-            }
-
-            int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
-
-            if (adjacencyMethod == 1) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
-            } else if (adjacencyMethod == 2) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FGES);
-            } else if (adjacencyMethod == 3) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.EXTERNAL_GRAPH);
-            } else if (adjacencyMethod == 4) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.NONE);
-            } else {
-                throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
-            }
-
-            search.setKnowledge(this.knowledge);
-            return getGraph(search);
-        } else {
-            Fask fask = new Fask(this.test, this.score);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data,
-                    fask,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(VERBOSE));
-            return search.search();
+        if (this.externalGraph != null) {
+            this.externalGraph = algorithm.search(dataSet, parameters);
         }
+
+        if (this.externalGraph != null) {
+            search.setExternalGraph(this.externalGraph);
+        }
+
+        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+
+        if (lrRule == 1) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+        } else if (lrRule == 2) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+        } else if (lrRule == 3) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+        } else if (lrRule == 4) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+        } else if (lrRule == 5) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
+
+        int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
+
+        if (adjacencyMethod == 1) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
+        } else if (adjacencyMethod == 2) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FGES);
+        } else if (adjacencyMethod == 3) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+        } else if (adjacencyMethod == 4) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.NONE);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
+
+        search.setKnowledge(this.knowledge);
+        return getGraph(search);
     }
 
     /**

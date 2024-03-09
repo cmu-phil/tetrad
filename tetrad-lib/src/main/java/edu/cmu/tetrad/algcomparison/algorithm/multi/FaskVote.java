@@ -14,8 +14,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -98,32 +96,15 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
             }
         }
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> _dataSets = new ArrayList<>();
-            for (DataModel d : dataSets) {
-                _dataSets.add((DataSet) d);
-            }
-
-            edu.cmu.tetrad.search.work_in_progress.FaskVote search = new edu.cmu.tetrad.search.work_in_progress.FaskVote(_dataSets, this.score, this.test);
-
-            search.setKnowledge(this.knowledge);
-            return search.search(parameters);
-        } else {
-            FaskVote imagesSemBic = new FaskVote(this.test, this.score);
-
-            List<DataSet> datasets = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                datasets.add((DataSet) dataModel);
-            }
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets, imagesSemBic,
-                    knowledge, parameters);
-            search.setScoreWrapper(score);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+        List<DataSet> _dataSets = new ArrayList<>();
+        for (DataModel d : dataSets) {
+            _dataSets.add((DataSet) d);
         }
+
+        edu.cmu.tetrad.search.work_in_progress.FaskVote search = new edu.cmu.tetrad.search.work_in_progress.FaskVote(_dataSets, this.score, this.test);
+
+        search.setKnowledge(this.knowledge);
+        return search.search(parameters);
     }
 
     /**
@@ -131,20 +112,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
-        } else {
-            FaskVote imagesSemBic = new FaskVote();
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    dataSets,
-                    imagesSemBic,
-                    knowledge, parameters);
-            search.setScoreWrapper(score);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 
     /**

@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -80,73 +79,40 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataModel> _dataSets = new ArrayList<>();
+        List<DataModel> _dataSets = new ArrayList<>();
 
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            for (DataModel dataSet : dataSets) {
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
                 }
-
-                dataSets = _dataSets;
+                _dataSets.add(timeSeries);
             }
 
-            List<Score> scores = new ArrayList<>();
+            dataSets = _dataSets;
+        }
 
-            for (DataModel dataModel : dataSets) {
-                Score s = score.getScore(dataModel, parameters);
-                scores.add(s);
-            }
+        List<Score> scores = new ArrayList<>();
 
-            ImagesScore score = new ImagesScore(scores);
+        for (DataModel dataModel : dataSets) {
+            Score s = score.getScore(dataModel, parameters);
+            scores.add(s);
+        }
 
-            if (meta == 1) {
-                edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                return search.search();
-            } else if (meta == 2) {
-                PermutationSearch search = new PermutationSearch(new Boss(score));
-                search.setKnowledge(this.knowledge);
-                return search.search();
-            } else {
-                throw new IllegalArgumentException("Unrecognized meta option: " + meta);
-            }
-        } else {
-            Images imagesSemBic = new Images();
+        ImagesScore score = new ImagesScore(scores);
 
-            List<DataSet> dataSets2 = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                dataSets2.add((DataSet) dataModel);
-            }
-
-            List<DataSet> _dataSets = new ArrayList<>();
-
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataSet dataSet : dataSets2) {
-                    DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
-                }
-
-                dataSets2 = _dataSets;
-            }
-
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    dataSets2,
-                    imagesSemBic,
-                    knowledge, parameters
-            );
+        if (meta == 1) {
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setScoreWrapper(score);
             return search.search();
+        } else if (meta == 2) {
+            PermutationSearch search = new PermutationSearch(new Boss(score));
+            search.setKnowledge(this.knowledge);
+            return search.search();
+        } else {
+            throw new IllegalArgumentException("Unrecognized meta option: " + meta);
         }
     }
 
@@ -155,20 +121,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
-        } else {
-            Images images = new Images();
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    images,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setScoreWrapper(score);
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**

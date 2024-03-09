@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.text.DecimalFormat;
@@ -78,43 +77,24 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
      */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> centered = new ArrayList<>();
+        List<DataSet> centered = new ArrayList<>();
 
-            for (DataModel dataSet : dataSets) {
-                centered.add(DataTransforms.standardizeData((DataSet) dataSet));
-            }
-
-            DataSet dataSet = DataTransforms.concatenate(centered);
-
-            dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
-
-            Fask search = new Fask(dataSet,
-                    this.score.getScore(dataSet, parameters),
-                    this.test.getTest(dataSet, parameters));
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
-            search.setKnowledge(this.knowledge);
-
-            return search.search();
-        } else {
-            FaskConcatenated algorithm = new FaskConcatenated(this.score, this.test);
-
-            List<DataSet> datasets = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                datasets.add((DataSet) dataModel);
-            }
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets,
-                    algorithm,
-                    knowledge, parameters);
-
-            search.setScoreWrapper(score);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+        for (DataModel dataSet : dataSets) {
+            centered.add(DataTransforms.standardizeData((DataSet) dataSet));
         }
+
+        DataSet dataSet = DataTransforms.concatenate(centered);
+
+        dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
+
+        Fask search = new Fask(dataSet,
+                this.score.getScore(dataSet, parameters),
+                this.test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
+        search.setKnowledge(this.knowledge);
+
+        return search.search();
     }
 
     /**
@@ -138,20 +118,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
-        } else {
-            FaskConcatenated algorithm = new FaskConcatenated(this.score, this.test);
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    algorithm,
-                    knowledge, parameters);
-            search.setScoreWrapper(score);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 
     /**

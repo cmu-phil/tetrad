@@ -10,7 +10,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -86,35 +85,21 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
             throw new IllegalArgumentException("You need at least one continuous and one discrete variable to run MGM.");
         }
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _ds = SimpleDataLoader.getMixedDataSet(dataSet);
+        DataSet _ds = SimpleDataLoader.getMixedDataSet(dataSet);
 
-            double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
-            double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
-            double mgmParam3 = parameters.getDouble(Params.MGM_PARAM3);
+        double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
+        double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
+        double mgmParam3 = parameters.getDouble(Params.MGM_PARAM3);
 
-            double[] lambda = {
-                    mgmParam1,
-                    mgmParam2,
-                    mgmParam3
-            };
+        double[] lambda = {
+                mgmParam1,
+                mgmParam2,
+                mgmParam3
+        };
 
-            edu.pitt.csb.mgm.Mgm m = new edu.pitt.csb.mgm.Mgm(_ds, lambda);
+        edu.pitt.csb.mgm.Mgm m = new edu.pitt.csb.mgm.Mgm(_ds, lambda);
 
-            return m.search();
-        } else {
-            Mgm algorithm = new Mgm();
-
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    dataSet,
-                    algorithm,
-                    new Knowledge(),
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return m.search();
     }
 
     // Need to marry the parents on this.
