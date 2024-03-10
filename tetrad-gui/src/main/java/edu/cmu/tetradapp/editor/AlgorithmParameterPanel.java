@@ -171,7 +171,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             if (algorithmRunner.getSourceGraph() == null) {
 
-                // Only show bootstrapping parameters is the algorithm is a bootstrap algorithm.
+                // Only show bootstrapping parameters if the algorithm is a bootstrap algorithm.
                 if (algorithm instanceof AbstractBootstrapAlgorithm) {
                     params = Params.getBootstrappingParameters(algorithm);
                     if (!params.isEmpty()) {
