@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSampleRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
@@ -169,10 +170,14 @@ public class AlgorithmParameterPanel extends JPanel {
             }
 
             if (algorithmRunner.getSourceGraph() == null) {
-                params = Params.getBootstrappingParameters(algorithm);
-                if (!params.isEmpty()) {
-                    this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
-                    this.mainPanel.add(Box.createVerticalStrut(10));
+
+                // Only show bootstrapping parameters is the algorithm is a bootstrap algorithm.
+                if (algorithm instanceof AbstractBootstrapAlgorithm) {
+                    params = Params.getBootstrappingParameters(algorithm);
+                    if (!params.isEmpty()) {
+                        this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                        this.mainPanel.add(Box.createVerticalStrut(10));
+                    }
                 }
             }
         }
