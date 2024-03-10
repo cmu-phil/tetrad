@@ -178,6 +178,12 @@ public class AlgorithmParameterPanel extends JPanel {
                         this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
                         this.mainPanel.add(Box.createVerticalStrut(10));
                     }
+                } else {
+                    JLabel label = new JLabel("This algorithm is not configured to do bootstrapping.");
+                    JPanel panel = new JPanel(new BorderLayout());
+                    panel.setBorder(BorderFactory.createTitledBorder("Bootstrapping"));
+                    panel.add(label, BorderLayout.WEST);
+                    this.mainPanel.add(panel);
                 }
             }
         }
