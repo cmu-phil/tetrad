@@ -111,6 +111,11 @@ public final class GraphSampling {
 
             List<EdgeTypeProbability> edgeTypeProbabilities = getEdgeTypeProbabilities(node1, node2, graphs);
             EdgeTypeProbability highestEdgeTypeProbability = getHighestEdgeTypeProbability(edgeTypeProbabilities);
+
+            if (graph.getNode(node1) == null || graph.getNode(node2) == null) {
+                continue;
+            }
+
             Edge highestProbEdge = createEdge(highestEdgeTypeProbability, graph.getNode(node1), graph.getNode(node2));
             if (highestProbEdge != null) {
                 // copy over edge-type probabilities

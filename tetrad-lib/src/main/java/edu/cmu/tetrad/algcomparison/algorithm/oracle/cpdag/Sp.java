@@ -127,7 +127,9 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, UsesSco
      */
     @Override
     public List<String> getParameters() {
-        return new ArrayList<>();
+        ArrayList<String> params = new ArrayList<>();
+        params.add(Params.TIME_LAG);
+        return params;
     }
 
     /**
