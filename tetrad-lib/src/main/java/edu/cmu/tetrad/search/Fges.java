@@ -873,8 +873,10 @@ public final class Fges implements IGraphSearch, DagScorer {
         if (verbose) {
             int cond = T.size() + getNaYX(x, y).size() + graph.getParents(y).size();
 
-            final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) + " " + T + " " + bump + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
+            if (verbose) {
+                final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) + " " + T + " " + bump + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
+                TetradLogger.getInstance().forceLogMessage(message);
+            }
         }
 
         for (Node _t : T) {
