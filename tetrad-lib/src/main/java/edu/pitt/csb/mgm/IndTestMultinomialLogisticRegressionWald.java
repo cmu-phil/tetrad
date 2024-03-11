@@ -106,8 +106,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * Constructs a new instance of IndTestMultinomialLogisticRegressionWald with the specified parameters.
      *
-     * @param data         The dataset to perform the independence test on.
-     * @param alpha        The significance level of the independence test. Must be in the range [0, 1].
+     * @param data The dataset to perform the independence test on.
+     * @param alpha The significance level of the independence test. Must be in the range [0, 1].
      * @param preferLinear Whether to prefer the linear model for the logistic regression.
      * @throws IllegalArgumentException if the alpha value is not in the range [0, 1].
      */
