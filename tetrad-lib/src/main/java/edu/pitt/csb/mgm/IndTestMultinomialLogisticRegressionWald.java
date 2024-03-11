@@ -87,8 +87,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      */
     private double alpha;
     /**
-     * Represents the probability associated with the most recently executed independence test, or Double.NaN if p value
-     * is not meaningful for this test.
+     * Represents the probability associated with the most recently executed independence test, or Double.NaN if p value is
+     * not meaningful for this test.
      */
     private double lastP;
     /**
