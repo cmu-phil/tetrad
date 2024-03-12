@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.editor.*;
@@ -34,6 +35,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 /**
@@ -43,12 +48,14 @@ import java.net.URL;
  * @version $Id: $Id
  */
 public class GraphCard extends JPanel {
+    @Serial
     private static final long serialVersionUID = -7654484444146823298L;
 
     /**
      * The algorithm runner.
      */
     private final GeneralAlgorithmRunner algorithmRunner;
+    private boolean isLatentVariableAlgorithm = false;
 
     /**
      * The workbench.
@@ -68,8 +75,24 @@ public class GraphCard extends JPanel {
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
-
+        checkLatentVariableAlgorithm(algorithmRunner);
         initComponents();
+    }
+
+    private void checkLatentVariableAlgorithm(GeneralAlgorithmRunner algorithmRunner) {
+        isLatentVariableAlgorithm = false;
+
+        Annotation annotation = algorithmRunner.getAlgorithm().getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
+        try {
+            Method method = annotation.annotationType().getDeclaredMethod("algoType");
+            AlgType ret = (AlgType) method.invoke(annotation);
+
+            if (ret == AlgType.allow_latent_common_causes) {
+                isLatentVariableAlgorithm = true;
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void initComponents() {
@@ -154,13 +177,16 @@ public class GraphCard extends JPanel {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
-        mainPanel.add(createInstructionBox(), BorderLayout.SOUTH);
+
+        if (isLatentVariableAlgorithm) {
+            mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
+        }
 
         return mainPanel;
     }
 
-    private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types and colorings");
+    private Box createLatentVariableInstructionBox() {
+        JLabel label = new JLabel("More information on FCI graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types

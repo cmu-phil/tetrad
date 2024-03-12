@@ -203,7 +203,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         buttonPanel.add(executeButton);
 
         // Info button added by Zhou to show edge types
-        JLabel infoLabel = new JLabel("More information on graph edge types and colorings");
+        JLabel infoLabel = new JLabel("More information on FCI graph edge types");
         infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
