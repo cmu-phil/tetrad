@@ -244,14 +244,17 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                         firePropertyChange("modelChanged", null, null);
                         GeneralAlgorithmEditor.this.graphCard.refresh();
-                        showGraphCard();
+
+                        if (!isInterrupted()) {
+                            showGraphCard();
+                        }
                     } catch (Exception exception) {
                         exception.printStackTrace(System.err);
 
                         JOptionPane.showMessageDialog(
                                 getTopLevelAncestor(),
                                 "Stopped with error:\n"
-                                        + exception.getMessage());
+                                + exception.getMessage());
                     }
                 }
             }

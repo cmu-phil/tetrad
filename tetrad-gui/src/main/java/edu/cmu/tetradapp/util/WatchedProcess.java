@@ -38,6 +38,8 @@ public abstract class WatchedProcess {
     private final JFrame frame;
     private Thread longRunningThread;
     private JDialog dialog;
+    
+    private boolean interrupted;
 
     /**
      * Constructor.
@@ -119,6 +121,8 @@ public abstract class WatchedProcess {
             if (dialog != null) {
                 SwingUtilities.invokeLater(() -> dialog.dispose());
             }
+
+            interrupted = true;
         });
 
         JPanel panel = new JPanel();
@@ -131,4 +135,9 @@ public abstract class WatchedProcess {
 
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
     }
+
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
 }
