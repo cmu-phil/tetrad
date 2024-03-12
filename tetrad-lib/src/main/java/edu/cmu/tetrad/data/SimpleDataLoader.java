@@ -28,6 +28,12 @@ import java.util.regex.Pattern;
 public class SimpleDataLoader {
 
     /**
+     * Prevent instantiation.
+     */
+    private SimpleDataLoader() {
+    }
+
+    /**
      * Loads a continuous dataset from a file.
      *
      * @param file               The text file to load the data from.

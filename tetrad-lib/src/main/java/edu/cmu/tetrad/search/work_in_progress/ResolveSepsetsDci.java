@@ -43,6 +43,27 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class ResolveSepsetsDci {
+
+    /**
+     * Resolves the separation sets using the Decision Component Interface (DCI) algorithm. This method is responsible
+     * for identifying and resolving the separation sets between different components in the system using the DCI
+     * algorithm.
+     * <p>
+     * The DCI algorithm helps in determining the communication protocols and data dependencies between various
+     * components in the system.
+     * <p>
+     * This method does not take any parameters and does not return any value.
+     * <p>
+     * Example usage:
+     * <p>
+     * ResolveSepsetsDci resolveSepsetsDci = new ResolveSepsetsDci(); resolveSepsetsDci.resolveSepsetsDci();
+     *
+     * @see <a href="https://www.example.com/dci-algorithm">DCI Algorithm</a>
+     * @since 1.0.0
+     */
+    public ResolveSepsetsDci() {
+    }
+
     /**
      * Resolves all inconsistencies between sepsets using a paricular method. Returns a sepsetMapDci with the resolved
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check

@@ -30,6 +30,12 @@ public class ProbabilisticTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the ProbabilisticTest class.
+     */
+    public ProbabilisticTest() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -35,6 +35,13 @@ import java.util.List;
 public final class MlBayesEstimator {
 
     /**
+     * <p>Constructor for MlBayesEstimator.</p>
+     */
+    public MlBayesEstimator() {
+
+    }
+
+    /**
      * 33 Estimates a Bayes IM using the variables, graph, and parameters in the given Bayes PM and the data columns in
      * the given data set. Each variable in the given Bayes PM must be equal to a variable in the given data set.
      *

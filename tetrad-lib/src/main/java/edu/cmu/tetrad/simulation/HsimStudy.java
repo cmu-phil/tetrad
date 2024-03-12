@@ -9,6 +9,12 @@ package edu.cmu.tetrad.simulation;
 public class HsimStudy {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimStudy() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects

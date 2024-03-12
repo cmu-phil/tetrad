@@ -19,7 +19,15 @@ public class TrueDagPrecisionArrow implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * This class represents a statistic that calculates the precision for arrows compared to the true DAG.
+     */
+    public TrueDagPrecisionArrow() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -27,7 +35,9 @@ public class TrueDagPrecisionArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the description of the statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -35,7 +45,12 @@ public class TrueDagPrecisionArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The calculated proportion value.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -61,7 +76,10 @@ public class TrueDagPrecisionArrow implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of the statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

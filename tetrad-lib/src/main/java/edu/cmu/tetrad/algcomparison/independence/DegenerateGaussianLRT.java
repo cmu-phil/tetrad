@@ -32,6 +32,12 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DegenerateGaussianLRT class.
+     */
+    public DegenerateGaussianLRT() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

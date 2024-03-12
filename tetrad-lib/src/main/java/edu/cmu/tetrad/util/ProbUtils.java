@@ -182,7 +182,6 @@ public class ProbUtils {
     private static final double c12 = 70.0;
     private static final double c13 = 84.0;
     private static final double c14 = 105.0;
-
     //
     // xinbta.f -- translated by f2c and modified
     //
@@ -245,6 +244,12 @@ public class ProbUtils {
      */
     private static double vm_epsilon = 1.0;
     private static long seedi = 123456789L, seedj = 362436069L;
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ProbUtils() {
+
+    }
 
     /**
      * Normal cumulative distribution function (the value which results by integrating the normal distribution function

@@ -19,6 +19,13 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class HsimUtils {
+
+    /**
+     * <p>Constructor for HsimUtils.</p>
+     */
+    public HsimUtils() {
+    }
+
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
 
     /**

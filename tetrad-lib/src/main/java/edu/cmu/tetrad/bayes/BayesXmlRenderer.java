@@ -39,6 +39,12 @@ public final class BayesXmlRenderer {
 
     /**
      * Private constructor to prevent instantiation.
+     */
+    private BayesXmlRenderer() {
+    }
+
+    /**
+     * Private constructor to prevent instantiation.
      *
      * @param bayesIm the Bayes net
      * @return the XML element

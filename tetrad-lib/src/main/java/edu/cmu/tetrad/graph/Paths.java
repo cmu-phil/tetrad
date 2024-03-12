@@ -1442,14 +1442,14 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (Kevin Bui.
+     * March 2020.)
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object
      * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param z     a {@link java.util.Set} object
      * @return a boolean
-     * @author Kevin V. Bui (March 2020)
      */
     public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, Set<Node> z) {
         Dag dag = new Dag(graph);
@@ -2104,6 +2104,12 @@ public class Paths implements TetradSerializable {
      * An algorithm to find all cliques in a graph.
      */
     public static class AllCliquesAlgorithm {
+
+        /**
+         * Constructs a new algorithm.
+         */
+        public AllCliquesAlgorithm() {
+        }
 
         /**
          * Main method.

@@ -35,6 +35,13 @@ import java.util.StringTokenizer;
  * @version $Id: $Id
  */
 public class LTestQnet3 {
+
+    /**
+     * Private constructor.
+     */
+    private LTestQnet3() {
+    }
+
     /**
      * <p>main.</p>
      *

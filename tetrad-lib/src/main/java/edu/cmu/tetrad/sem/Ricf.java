@@ -52,18 +52,19 @@ import java.util.*;
 public class Ricf {
 
     /**
-     * <p>Constructor for Ricf.</p>
+     * Represents the Ricf class. This class provides methods for calculating the Restricted Information Criterion
+     * Fusion (RICF) for a given SemGraph.
      */
     public Ricf() {
     }
 
     /**
-     * <p>ricf.</p>
+     * Calculates the Restricted Information Criterion Fusion (RICF) for a given SemGraph.
      *
-     * @param mag       a {@link edu.cmu.tetrad.graph.SemGraph} object
-     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param tolerance a double
-     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     * @param mag       The SemGraph object representing the graph to calculate RICF for.
+     * @param covMatrix The ICovarianceMatrix object representing the covariance matrix.
+     * @param tolerance The tolerance value for convergence.
+     * @return The RicfResult object containing the results of the RICF calculation.
      */
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
         mag.setShowErrorTerms(false);
@@ -225,24 +226,16 @@ public class Ricf {
                         DoubleMatrix2D a3 = algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
-//                        System.out.println("O.inv = " + oInv);
-
                         DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
                         DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
                         DoubleMatrix2D Z = algebra.mult(a4, a5);
 
-//                        System.out.println("Z = " + Z);
-
                         // Build XX
                         DoubleMatrix2D XX = algebra.mult(algebra.mult(Z, S), Z.viewDice());
-
-//                        System.out.println("XX = " + XX);
 
                         // Build XY
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
                         DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
-
-//                        System.out.println("YX = " + YX);
 
                         // Temp
                         DoubleMatrix2D a22 = algebra.inverse(XX);
@@ -253,8 +246,6 @@ public class Ricf {
                         a24.assign(a23);
                         DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
                         a25.assign(a23);
-
-//                        System.out.println("Omega 2 " + omega);
 
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
@@ -305,7 +296,7 @@ public class Ricf {
     }
 
     /**
-     * same as above but takes a Graph instead of a SemGraph
+     * Same as above but takes a Graph instead of a SemGraph
      *
      * @param mag       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
@@ -478,18 +469,12 @@ public class Ricf {
                         DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
                         DoubleMatrix2D Z = algebra.mult(a4, a5);
 
-//                        System.out.println("Z = " + Z);
-
                         // Build XX
                         DoubleMatrix2D XX = algebra.mult(algebra.mult(Z, S), Z.viewDice());
-
-//                        System.out.println("XX = " + XX);
 
                         // Build XY
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
                         DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
-
-//                        System.out.println("YX = " + YX);
 
                         // Temp
                         DoubleMatrix2D a22 = algebra.inverse(XX);
@@ -501,12 +486,8 @@ public class Ricf {
                         DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
                         a25.assign(a23);
 
-//                        System.out.println("Omega 2 " + omega);
-
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
-
-//                        System.out.println("tempVar = " + tempVar);
 
                         DoubleMatrix2D a27 = omega.viewSelection(v, spov);
                         DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
@@ -514,8 +495,6 @@ public class Ricf {
                         DoubleMatrix2D a30 = algebra.mult(a27, a28);
                         DoubleMatrix2D a31 = algebra.mult(a30, a29);
                         omega.set(_v, _v, tempVar + a31.get(0, 0));
-
-//                        System.out.println("Omega final " + omega);
                     }
                 }
             }
@@ -653,8 +632,6 @@ public class Ricf {
             a32.assign(KOld, PlusMult.plusMult(-1));
             double diff = algebra.norm1(a32);
 
-//            System.out.println(diff);
-
             if (diff < tol) break;
         }
 
@@ -730,7 +707,7 @@ public class Ricf {
         List<Node> ugNodes = new LinkedList<>();
 
         for (Node node : nodes) {
-            if (mag.getNodesInTo(node, Endpoint.ARROW).size() == 0) {
+            if (mag.getNodesInTo(node, Endpoint.ARROW).isEmpty()) {
                 ugNodes.add(node);
             }
         }
@@ -843,7 +820,14 @@ public class Ricf {
     }
 
     /**
-     * @return true if j is adjacent to all the nodes in l1.
+     * Determines if a node j can be added to a set L1 while maintaining adjacency with all nodes in L1.
+     *
+     * @param j     The index of the node to be added.
+     * @param L1    The set of indices representing the current set of nodes.
+     * @param graph The graph containing the nodes.
+     * @param nodes The list of nodes.
+     * @return Returns true if node j can be added to L1 while maintaining adjacency with all nodes in L1, false
+     * otherwise.
      */
     private boolean addable(int j, SortedSet<Integer> L1, Graph graph, List<Node> nodes) {
         for (int k : L1) {
@@ -918,7 +902,9 @@ public class Ricf {
         }
 
         /**
-         * A string representation of the result.
+         * Returns a string representation of the RicfResult object.
+         *
+         * @return The string representation of the RicfResult object.
          */
         public String toString() {
 
@@ -936,35 +922,45 @@ public class Ricf {
         }
 
         /**
-         * @return shat.
+         * Retrieves the shat matrix.
+         *
+         * @return The shat matrix.
          */
         public DoubleMatrix2D getShat() {
             return this.shat;
         }
 
         /**
-         * @return lhat.
+         * Returns the "lhat" matrix.
+         *
+         * @return The "lhat" matrix.
          */
         public DoubleMatrix2D getLhat() {
             return this.lhat;
         }
 
         /**
-         * @return bhat
+         * Returns the bhat matrix.
+         *
+         * @return The bhat matrix.
          */
         public DoubleMatrix2D getBhat() {
             return this.bhat;
         }
 
         /**
-         * @return ohat.
+         * Returns the ohat matrix.
+         *
+         * @return The ohat matrix.
          */
         public DoubleMatrix2D getOhat() {
             return this.ohat;
         }
 
         /**
-         * @return the number of iterations.
+         * Returns the number of iterations.
+         *
+         * @return The number of iterations.
          */
         public int getIterations() {
             return this.iterations;
@@ -1013,7 +1009,10 @@ public class Ricf {
         }
 
         /**
-         * @return a string representation.
+         * Returns a string representation of the FitConGraphResult object. The string includes the Sigma hat matrix,
+         * deviance value, degrees of freedom, and number of iterations.
+         *
+         * @return a string representation of the FitConGraphResult object.
          */
         public String toString() {
 

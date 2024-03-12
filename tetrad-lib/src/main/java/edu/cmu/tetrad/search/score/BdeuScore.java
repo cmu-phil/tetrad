@@ -75,6 +75,15 @@ public class BdeuScore implements DiscreteScore {
     private double structurePrior = 0d;
 
     /**
+     * Private constructor to prevent no-arg construction.
+     *
+     * @throws UnsupportedOperationException The BdeuScore class does not support the no-arg constructor.
+     */
+    private BdeuScore() {
+        throw new UnsupportedOperationException("The BdeuScore class does not support the no-arg constructor.");
+    }
+
+    /**
      * Constructs a BDe score for the given dataset.
      *
      * @param dataSet A discrete dataset.

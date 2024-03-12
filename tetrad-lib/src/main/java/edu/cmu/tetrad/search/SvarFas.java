@@ -340,7 +340,6 @@ public class SvarFas implements IFas {
 
                 if (result.isIndependent() && noEdgeRequired) {
                     getSepsets().set(x, y, empty);
-                    System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
                     List<List<Node>> simList = returnSimilarPairs(test, x, y);
                     if (simList.isEmpty()) continue;
                     List<Node> x1List = simList.get(0);
@@ -352,7 +351,6 @@ public class SvarFas implements IFas {
                     while (itx.hasNext() && ity.hasNext()) {
                         Node x1 = itx.next();
                         Node y1 = ity.next();
-                        System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
                         getSepsets().set(x1, y1, empty);
                     }
 
@@ -381,7 +379,6 @@ public class SvarFas implements IFas {
                     while (itx.hasNext() && ity.hasNext()) {
                         Node x1 = itx.next();
                         Node y1 = ity.next();
-                        System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
                         System.out.println("adding edge between x = " + x1 + " and y = " + y1);
                         adjacencies.get(x1).add(y1);
                         adjacencies.get(y1).add(x1);
@@ -558,15 +555,11 @@ public class SvarFas implements IFas {
      * @param condSet     The set of nodes used for conditional independence test.
      */
     private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, Set<Node> condSet) {
-        System.out.println("Entering removeSimilarPairs method...");
-        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if (x.getName().equals("time") || y.getName().equals("time")) {
-            System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
         for (Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
-                System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }
@@ -697,7 +690,6 @@ public class SvarFas implements IFas {
      * @return a list of similar pairs of nodes
      */
     private List<List<Node>> returnSimilarPairs(IndependenceTest test, Node x, Node y) {
-        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
@@ -724,8 +716,6 @@ public class SvarFas implements IFas {
                 break;
             }
         }
-
-        System.out.println("original independence: " + x + " and " + y);
 
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
@@ -756,7 +746,6 @@ public class SvarFas implements IFas {
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
             x1 = test.getVariable(A);
             y1 = test.getVariable(B);
-            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
             simListX.add(x1);
             simListY.add(y1);
         }

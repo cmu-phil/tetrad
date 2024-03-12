@@ -374,9 +374,8 @@ public class Discretizer {
          */
         private final int[] data;
 
-
         /**
-         * Constructs the discretization given the variable and data.
+         * A discretization specification for a continuous variable.
          */
         private Discretization(DiscreteVariable variable, int[] data) {
             this.variable = variable;
@@ -384,21 +383,28 @@ public class Discretizer {
         }
 
         /**
-         * @return - discretized variable.
+         * Retrieves the variable associated with the object.
+         *
+         * @return the variable associated with the object
          */
         public final DiscreteVariable getVariable() {
             return this.variable;
         }
 
         /**
-         * @return - discretized data.
+         * Retrieves the data associated with the discretization.
+         *
+         * @return the discretized data as an array of integers
          */
         public final int[] getData() {
             return this.data;
         }
 
         /**
-         * @return - string representation of the discretization.
+         * Returns a string representation of the Discretization object. The string contains the discretization
+         * information for the associated variable.
+         *
+         * @return a string representation of the Discretization object
          */
         public final String toString() {
             StringBuilder buf = new StringBuilder();

@@ -19,6 +19,16 @@ public class TwoCycleFalseNegative implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * This class represents a statistic that calculates the 2-cycle false negative. It counts 2-cycles manually,
+     * wherever they occur in the graphs. The true positives are the number of 2-cycles in both the true and estimated
+     * graphs. Thus, if the true contains X-&gt;Y,Y-&lt;X and estimated graph does not contain it, one false negative is
+     * counted.
+     */
+    public TwoCycleFalseNegative() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

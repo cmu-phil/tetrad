@@ -48,9 +48,10 @@ final class CopySubsessionAction extends AbstractAction
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Processes the action event by copying a selection of session nodes in the frontmost session editor to the
+     * clipboard.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         SessionEditorIndirectRef sessionEditorRef =
@@ -62,9 +63,10 @@ final class CopySubsessionAction extends AbstractAction
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Required by the AbstractAction interface; does nothing.
+     * Notifies the owner that ownership of the clipboard contents has been lost.
+     *
+     * @param clipboard the clipboard that is no longer owned
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

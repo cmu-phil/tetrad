@@ -18,11 +18,17 @@ import static org.apache.commons.math3.util.FastMath.tanh;
 public class BicDiff implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * Whether to precompute covariances.
      */
     private boolean precomputeCovariances = true;
+
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public BicDiff() {
+
+    }
 
     /**
      * {@inheritDoc}

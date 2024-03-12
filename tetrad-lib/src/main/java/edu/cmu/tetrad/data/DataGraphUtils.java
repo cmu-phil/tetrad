@@ -34,6 +34,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class DataGraphUtils {
+
+    /**
+     * Prevents instantiation.
+     */
+    private DataGraphUtils() {
+    }
+
     /**
      * <p>randomSingleFactorModel.</p>
      *

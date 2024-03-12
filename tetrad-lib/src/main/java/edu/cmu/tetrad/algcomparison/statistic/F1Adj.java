@@ -21,6 +21,12 @@ public class F1Adj implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Constructs a new instance of the algorithm.
+     */
+    public F1Adj() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

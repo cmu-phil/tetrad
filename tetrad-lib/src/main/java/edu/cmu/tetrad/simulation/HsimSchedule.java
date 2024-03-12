@@ -10,6 +10,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class HsimSchedule {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimSchedule() {
+    }
+
     /**
      * <p>main.</p>
      *

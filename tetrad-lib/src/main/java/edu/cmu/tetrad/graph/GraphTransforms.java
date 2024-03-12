@@ -17,6 +17,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class GraphTransforms {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphTransforms() {
+    }
+
     /**
      * <p>dagFromCpdag.</p>
      *

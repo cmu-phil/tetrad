@@ -63,14 +63,20 @@ public class LagGraph implements Graph {
      */
     private final Set<Triple> ambiguousTriples = new HashSet<>();
     /**
+     * The paths
+     */
+    private final Paths paths;
+    /**
      * The graph.
      */
     private Dag graph = new Dag();
 
     /**
-     * The paths
+     * <p>Constructor for LagGraph.</p>
      */
-    private Paths paths;
+    public LagGraph() {
+        this.paths = new Paths(this);
+    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

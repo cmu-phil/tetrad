@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -17,7 +18,6 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.io.Serial;
@@ -36,8 +36,8 @@ import java.util.List;
         algoType = AlgType.produce_undirected_graphs
 )
 @Bootstrapping
-public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs {
+public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -51,11 +51,6 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * <p>Constructor for Fas.</p>
@@ -76,43 +71,30 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-                case 0 -> PcCommon.PcHeuristicType.NONE;
-                case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-                case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-                case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-                default ->
-                        throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-            };
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
+            case 0 -> PcCommon.PcHeuristicType.NONE;
+            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
+            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
+            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
+            default ->
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+        };
 
-            edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataSet, parameters));
-            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-            search.setPcHeuristicType(pcHeuristicType);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataModel, parameters));
+        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setPcHeuristicType(pcHeuristicType);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
+        Object obj = parameters.get(Params.PRINT_STREAM);
 
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            return search.search();
-        } else {
-            Fas algorithm = new Fas(this.test);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+        if (obj instanceof PrintStream ps) {
+            search.setOut(ps);
         }
+
+        return search.search();
     }
 
     /**
@@ -185,11 +167,4 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         this.test = test;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

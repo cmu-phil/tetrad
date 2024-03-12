@@ -41,6 +41,14 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class ExampleCompareFromFiles {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleCompareFromFiles() {
+    }
+
+
     /**
      * <p>main.</p>
      *

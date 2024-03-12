@@ -19,6 +19,12 @@ import java.util.List;
 public class GdistanceRandomApply {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GdistanceRandomApply() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object

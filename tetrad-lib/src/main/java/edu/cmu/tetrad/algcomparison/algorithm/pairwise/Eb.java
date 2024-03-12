@@ -1,15 +1,18 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ import java.util.List;
 //        algoType = AlgType.orient_pairwise
 //)
 @Bootstrapping
-public class Eb implements Algorithm, TakesExternalGraph {
+public class Eb extends AbstractBootstrapAlgorithm implements Algorithm, TakesExternalGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,44 +63,42 @@ public class Eb implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Runs a search algorithm to orient the edges in a graph using the given data and parameters.
+     *
+     * @param dataModel  the data model containing the dataset for the search algorithm
+     * @param parameters the parameters for the search algorithm
+     * @return the graph with oriented edges
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the algorithm is null
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            this.externalGraph = this.algorithm.search(dataSet, parameters);
-
-            if (this.algorithm != null) {
-                this.externalGraph = this.algorithm.search(dataSet, parameters);
-            } else {
-                throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
-                        + "will orient the edges in the input graph using the data.");
-            }
-
-            List<DataSet> dataSets = new ArrayList<>();
-            dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
-
-            Lofs lofs = new Lofs(this.externalGraph, dataSets);
-            lofs.setRule(Lofs.Rule.EB);
-
-            return lofs.orient();
-        } else {
-            Eb eb = new Eb(this.algorithm);
-            if (this.externalGraph != null) {
-                eb.setExternalGraph(this.algorithm);
-            }
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, eb,
-                    new Knowledge(), parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+
+        this.externalGraph = this.algorithm.search(dataSet, parameters);
+
+        if (this.algorithm != null) {
+            this.externalGraph = this.algorithm.search(dataSet, parameters);
+        } else {
+            throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
+        List<DataSet> dataSets = new ArrayList<>();
+        dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
+
+        Lofs lofs = new Lofs(this.externalGraph, dataSets);
+        lofs.setRule(Lofs.Rule.EB);
+
+        return lofs.orient();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -105,7 +106,9 @@ public class Eb implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the algorithm's orientation method.
+     *
+     * @return A description of the orientation method.
      */
     @Override
     public String getDescription() {
@@ -114,7 +117,9 @@ public class Eb implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -122,7 +127,10 @@ public class Eb implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters that are used by the class. These parameters include the parameters defined in the
+     * algorithm used by the class and the VERBOSE parameter.
+     *
+     * @return The list of parameters used by the class.
      */
     @Override
     public List<String> getParameters() {
@@ -138,7 +146,10 @@ public class Eb implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm The external graph algorithm to set.
+     * @throws IllegalArgumentException If the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

@@ -14,6 +14,12 @@ import java.util.List;
 public class ExploreComparison {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExploreComparison() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object

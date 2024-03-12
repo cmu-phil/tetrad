@@ -640,6 +640,10 @@ public class Cstar {
      * @return a {@link java.lang.String} object
      */
     public String makeTable(LinkedList<Record> records) {
+        if (records.isEmpty()) {
+            throw new IllegalArgumentException("There were no CSTaR records generated. Perhaps the parameters are wrong.");
+        }
+
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
                 + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
                 "Top Bracket (‘q’) = " + this.topBracket +

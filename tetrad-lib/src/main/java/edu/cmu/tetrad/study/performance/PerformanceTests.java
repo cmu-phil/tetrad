@@ -55,6 +55,13 @@ public class PerformanceTests {
     private PrintStream out = System.out;
 
     /**
+     * This class represents a set of performance tests for a certain application. It contains various methods to test
+     * the performance of different algorithms.
+     */
+    public PerformanceTests() {
+    }
+
+    /**
      * <p>endpointMisclassification.</p>
      *
      * @param _nodes   a {@link java.util.List} object

@@ -18,6 +18,13 @@ public class Cyclic implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the Cyclic class.
+     */
+    public Cyclic() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

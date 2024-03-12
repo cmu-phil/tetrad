@@ -27,10 +27,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.maxEntApprox;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -77,6 +77,45 @@ public class DirectLingam {
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
         }
+    }
+
+    /**
+     * Calculates the maximum entropy approximation for the given array of values.
+     *
+     * @param x the array of values
+     * @return the maximum entropy approximation
+     */
+    public static double maxEntApprox(double[] x) {
+        x = StatUtils.standardizeData(x);
+
+        final double k1 = 79.047;
+        double k2 = 36 / (8 * sqrt(3) - 9);
+        final double gamma = 0.37457;
+        double gaussianEntropy = (log(2.0 * PI) / 2.0) + 1.0 / 2.0;
+
+        // This is negentropy
+        double b1 = 0.0;
+
+        for (double aX1 : x) {
+
+            // First term for the Taylor expansion of logcosh.
+            b1 += aX1 * aX1 / 2.0;
+        }
+
+        b1 /= x.length;
+
+        double b2 = 0.0;
+
+        for (double aX : x) {
+            b2 += aX * exp(-(aX * aX) / 2);
+        }
+
+        b2 /= x.length;
+
+        double d = b1 - gamma;
+        double negentropy = k1 * (d * d) + k2 * (b2 * b2);
+
+        return gaussianEntropy - negentropy;
     }
 
     /**
@@ -137,7 +176,8 @@ public class DirectLingam {
 
                 double lr = maxEntApprox(R.get(y)) - entx;
                 lr += maxEntApprox(rxy) - maxEntApprox(ryx);
-                curr += pow(min(0, lr), 2);
+                double min = min(0, lr);
+                curr += min * min;
             }
 
             if (curr < best) {
@@ -161,11 +201,11 @@ public class DirectLingam {
 
         for (double v : x) {
             mu += v;
-            std += pow(v, 2);
+            std += v * v;
         }
 
         mu /= n;
-        std = sqrt(std / n - pow(mu, 2));
+        std = sqrt(std / n - mu * mu);
 
         for (int i = 0; i < n; i++) {
             x[i] = (x[i] - mu) / std;
@@ -186,7 +226,7 @@ public class DirectLingam {
 
         for (int i = 0; i < n; i++) {
             cov += x[i] * y[i];
-            var += pow(y[i], 2);
+            var += y[i] * y[i];
         }
         double b = cov / var;
 
@@ -197,5 +237,4 @@ public class DirectLingam {
 
         return r;
     }
-
 }

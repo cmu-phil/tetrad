@@ -160,7 +160,11 @@ public final class SemManipulation implements TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Compares the current instance with the specified object for equality.
+     *
+     * @param o the object to be compared with the current instance
+     * @return true if the specified object is equal to the current instance, false otherwise.
+     * @throws IllegalArgumentException if the specified object is not an instance of SemManipulation.
      */
     public boolean equals(Object o) {
         if (o == null) {

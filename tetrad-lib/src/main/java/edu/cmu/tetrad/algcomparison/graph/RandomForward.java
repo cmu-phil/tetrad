@@ -18,7 +18,17 @@ public class RandomForward implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the RandomForward.
+     */
+    public RandomForward() {
+
+    }
+
+    /**
+     * Creates a random graph by adding forward edges.
+     *
+     * @param parameters Whatever parameters are needed for the given graph. See getParameters().
+     * @return The created graph.
      */
     @Override
     public Graph createGraph(Parameters parameters) {
@@ -33,7 +43,9 @@ public class RandomForward implements RandomGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short, one-line description of this graph type. This will be printed in the report.
+     *
+     * @return The description of the graph type.
      */
     @Override
     public String getDescription() {
@@ -41,7 +53,9 @@ public class RandomForward implements RandomGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the parameters that this graph uses.
+     *
+     * @return A list of String names of parameters.
      */
     @Override
     public List<String> getParameters() {

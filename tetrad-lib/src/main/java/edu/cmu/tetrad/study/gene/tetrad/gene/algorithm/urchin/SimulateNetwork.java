@@ -32,6 +32,13 @@ import java.text.NumberFormat;
  * @version $Id: $Id
  */
 public class SimulateNetwork {
+
+    /**
+     * Prevent instantiation.
+     */
+    private SimulateNetwork() {
+    }
+
     /**
      * <p>main.</p>
      *

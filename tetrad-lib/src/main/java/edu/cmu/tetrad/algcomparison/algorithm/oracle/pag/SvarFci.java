@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -18,18 +20,13 @@ import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SvarFCI.
- *
- * @author josephramsey
- * @author dmalinsky
- * @version $Id: $Id
+ * The SvarFci class is an implementation of the SVAR Fast Causal Inference algorithm.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SvarFCI",
@@ -38,8 +35,8 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs {
+public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -50,71 +47,66 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     private IndependenceWrapper test;
 
     /**
+     * Represents the private variable `knowledge` in the class `SvarFci`.
+     * <p>
+     * This variable stores the knowledge used by the `SvarFci` algorithm. The type of `knowledge` is `Knowledge`.
      *
+     * @see SvarFci
+     * @see Knowledge
      */
     private Knowledge knowledge;
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-
-    /**
-     * <p>Constructor for SvarFci.</p>
+     * Represents a constructor for the SvarFci class.
      */
     public SvarFci() {
     }
 
     /**
-     * <p>Constructor for SvarFci.</p>
+     * Represents a constructor for the SvarFci class.
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param test The IndependenceWrapper object used in the constructor.
      */
     public SvarFci(IndependenceWrapper test) {
         this.test = test;
     }
 
     /**
-     * {@inheritDoc}
+     * Executes the search algorithm to find a graph structure that best fits the given dataset and parameters.
+     *
+     * @param dataModel  The dataset to perform the search on.
+     * @param parameters The parameters to configure the search.
+     * @return The graph structure that best fits the dataset.
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            dataModel.setKnowledge(this.knowledge);
-            edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(this.test.getTest(dataModel, parameters));
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            return search.search();
-        } else {
-            SvarFci svarFci = new SvarFci(this.test);
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data, svarFci,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
+            }
+            dataModel = timeSeries;
+            knowledge = timeSeries.getKnowledge();
         }
+
+        dataModel.setKnowledge(this.knowledge);
+        edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(this.test.getTest(dataModel, parameters));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        return search.search();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -122,16 +114,19 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns the description of the method. The description is a combination of "SvarFCI (SVAR Fast Causal Inference)
+     * using" and the description of the independence test object.
      *
-     * @return a {@link java.lang.String} object
+     * @return the description of the method.
      */
     public String getDescription() {
         return "SvarFCI (SVAR Fast Causal Inference) using " + this.test.getDescription();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type required by the search algorithm.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -139,7 +134,9 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for this method.
+     *
+     * @return The list of parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -151,7 +148,9 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge object associated with this algorithm.
+     *
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -159,7 +158,9 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge object associated with this algorithm.
+     *
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -167,7 +168,9 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the IndependenceWrapper object associated with this algorithm.
+     *
+     * @return The IndependenceWrapper object.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -175,18 +178,12 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the independence wrapper for the algorithm.
+     *
+     * @param test The independence wrapper to set.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
     }
 }

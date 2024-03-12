@@ -45,20 +45,41 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @version $Id: $Id
  */
 public class DiscreteBicScore implements DiscreteScore {
-    // The discrete dataset.
+    /**
+     * The discrete dataset.
+     */
     private final DataSet dataSet;
-    // The variables of the dataset.
+    /**
+     * The variables of the dataset.
+     */
     private final int[][] data;
-    // The sample size.
+    /**
+     * The sample size.
+     */
     private final int sampleSize;
-    // The number of categories for each variable.
+    /**
+     * The number of categories for each variable.
+     */
     private final int[] numCategories;
-    // The variables of the dataset.
+    /**
+     * The variables of the dataset.
+     */
     private List<Node> variables;
-    // The penalty discount.
+    /**
+     * The penalty discount.
+     */
     private double penaltyDiscount = 1;
-    // The structure prior.
+    /**
+     * The structure prior.
+     */
     private double structurePrior = 0;
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private DiscreteBicScore() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Constructs the score using a dataset.

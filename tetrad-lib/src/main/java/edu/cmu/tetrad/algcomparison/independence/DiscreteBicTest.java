@@ -33,6 +33,12 @@ public class DiscreteBicTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the DiscreteBicTest class.
+     */
+    public DiscreteBicTest() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

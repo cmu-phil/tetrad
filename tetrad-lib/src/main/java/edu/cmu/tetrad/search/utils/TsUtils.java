@@ -52,6 +52,12 @@ import java.util.List;
 public class TsUtils {
 
     /**
+     * This class is not meant to be instantiated.
+     */
+    private TsUtils() {
+    }
+
+    /**
      * <p>ar.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object

@@ -45,6 +45,13 @@ import java.util.List;
 public class Comparison2 {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Comparison2() {
+
+    }
+
+    /**
      * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data, printing out error
      * statistics.
      *

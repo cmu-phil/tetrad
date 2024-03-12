@@ -45,6 +45,16 @@ public class ClusterUtils {
      */
     public static final String LATENT_PREFIX = "_L";
 
+
+    /**
+     * The ClusterUtils class provides utility methods for manipulating clusters and converting data. This class cannot
+     * be instantiated.
+     *
+     * @since <version>
+     */
+    private ClusterUtils() {
+    }
+
     /**
      * Converts a list of indices into a list of Nodes representing a cluster.
      *

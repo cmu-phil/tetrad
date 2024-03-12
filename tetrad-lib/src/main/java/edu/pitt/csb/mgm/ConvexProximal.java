@@ -35,6 +35,12 @@ import cern.colt.matrix.DoubleMatrix1D;
 public abstract class ConvexProximal {
 
     /**
+     * <p>Constructor for ConvexProximal.</p>
+     */
+    public ConvexProximal() {
+    }
+
+    /**
      * Calculate value of smooth function g(X)
      *
      * @param X input vector

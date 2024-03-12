@@ -17,6 +17,13 @@ public class CorrectSkeleton implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the CorrectSkeleton class.
+     */
+    public CorrectSkeleton() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -60,7 +60,11 @@ public class ChiSquare implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the index'th parameter to the given value.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; # parameters.
+     * @param value The value to set for the parameter.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
@@ -71,7 +75,11 @@ public class ChiSquare implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the index'th parameter.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; # parameters.
+     * @return The value of the parameter at the specified index.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -82,7 +90,11 @@ public class ChiSquare implements Distribution {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the name of the index'th parameter, for display purposes.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; # parameters.
+     * @return The name of the parameter at the specified index.
+     * @throws IllegalArgumentException If the index is invalid.
      */
     public String getParameterName(int index) {
         if (index == 0) {

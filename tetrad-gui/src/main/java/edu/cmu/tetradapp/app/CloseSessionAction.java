@@ -45,9 +45,9 @@ public final class CloseSessionAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Closes the frontmost session of this action's desktop.
+     * Performs an action when an event occurs.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
 

@@ -34,6 +34,14 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class ExampleNonlinearSave {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleNonlinearSave() {
+
+    }
+
     /**
      * <p>main.</p>
      *

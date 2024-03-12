@@ -13,7 +13,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of            //
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
 // GNU General Public License for more details.                              //
-//                                                                           //
+//                                               n                            //
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
@@ -52,23 +52,64 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
+
+
+    /**
+     * This is the original dataset that is used for the independence test.
+     */
     private final DataSet originalData;
+    /**
+     * The searchVariables over which this independence test is capable of determining independence relations.
+     */
     private final List<Node> searchVariables;
+    /**
+     * This is the dataset that is used for the independence test. It may be modified from the original dataset.
+     */
     private final DataSet internalData;
+    /**
+     * This is a map from each node to the variables that are used to test independence with that node.
+     */
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    /**
+     * This is the logistic regression that is used to test independence.
+     */
     private final LogisticRegression logisticRegression;
+    /**
+     * This is the regression that is used to test independence.
+     */
     private final RegressionDataset regression;
+    /**
+     * Represents a boolean flag indicating whether linear independence testing is preferred.
+     */
     private final boolean preferLinear;
+    /**
+     * Represents the significance level of the independence test.
+     */
     private double alpha;
+    /**
+     * Represents the probability associated with the most recently executed independence test, or Double.NaN if p value is
+     * not meaningful for this test.
+     */
     private double lastP;
+    /**
+     * Represents a boolean flag indicating whether the independence test is verbose.
+     */
     private boolean verbose;
 
     /**
-     * <p>Constructor for IndTestMultinomialLogisticRegressionWald.</p>
+     * Private constructor to prevent instantiation.
+     */
+    private IndTestMultinomialLogisticRegressionWald() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Constructs a new instance of IndTestMultinomialLogisticRegressionWald with the specified parameters.
      *
-     * @param data         a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param alpha        a double
-     * @param preferLinear a boolean
+     * @param data The dataset to perform the independence test on.
+     * @param alpha The significance level of the independence test. Must be in the range [0, 1].
+     * @param preferLinear Whether to prefer the linear model for the logistic regression.
+     * @throws IllegalArgumentException if the alpha value is not in the range [0, 1].
      */
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
         if (!(alpha >= 0 && alpha <= 1)) {
@@ -94,19 +135,22 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
+     * Tests the conditional independence between two variables given a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return The result of the independence test.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Determines the independence between two variables given a set of conditioning variables.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x the first variable
+     * @param y the second variable
+     * @param z the set of conditioning variables
+     * @return the result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
@@ -198,15 +242,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         double p = 1.0;
         for (Node _x : this.variablesPerNode.get(x)) {
 
-            // Without y
-//            List<Node> regressors0 = new ArrayList<Node>();
-//
-//            for (Node _z : z) {
-//                regressors0.addAll(variablesPerNode.get(_z));
-//            }
-//
-//            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
-
             // With y.
             List<Node> regressors1 = new ArrayList<>(this.variablesPerNode.get(y));
 
@@ -256,11 +291,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         // This is only one method that can be used, this requires every coefficient to be significant
 
         independent = p > this.alpha;
-
-        if (Double.isNaN(p)) {
-            throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
-        }
 
         this.lastP = p;
 
@@ -392,7 +422,11 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
 
     /**
-     * {@inheritDoc}
+     * Determines the independence between a set of variables and a target variable.
+     *
+     * @param z The set of conditioning variables.
+     * @param y The target variable to test for independence.
+     * @return True if the target variable y is independent of the set of conditioning variables z, false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -409,27 +443,28 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the significance level.
+     * Sets the significance level of the independence test.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * <p>getData.</p>
+     * Retrieves the original dataset used for the independence test.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return The original dataset used for the independence test.
      */
     public DataSet getData() {
         return this.originalData;
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object. The returned string includes the type of the regression
+     * (Multinomial Logistic Regression) and the alpha value used.
      *
-     * @return a string representation of this test.
+     * @return A string representation of the object.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -437,7 +472,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the program is in verbose mode.
+     *
+     * @return true if the program is in verbose mode, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -445,7 +482,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose mode of the program.
+     *
+     * @param verbose True if the program should be in verbose mode, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {

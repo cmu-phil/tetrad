@@ -27,6 +27,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataTransforms {
 
+    /**
+     * Prevent instantiation.
+     */
+    private DataTransforms() {
+    }
 
     /**
      * Log or unlog data
@@ -84,7 +89,7 @@ public class DataTransforms {
 
         for (DataSet dataSet : dataSets) {
             if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
+                throw new IllegalArgumentException("Sorry, detecting a non-continuous dataset.");
             }
 
             Matrix data2 = standardizeData(dataSet.getDoubleData());

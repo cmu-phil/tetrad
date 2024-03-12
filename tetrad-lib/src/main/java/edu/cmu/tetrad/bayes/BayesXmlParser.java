@@ -44,6 +44,12 @@ public final class BayesXmlParser {
      */
     private Map<String, Node> namesToVars;
 
+    /**
+     * A parser for Bayes XML files.
+     */
+    public BayesXmlParser() {
+    }
+
     private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {
         if (!"cpts".equals(element2.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting 'cpts' element.");

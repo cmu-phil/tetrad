@@ -29,7 +29,6 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * Sets a score wrapper if not null.
      *
      * @param score The wrapper
-     * @see edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable
      */
     void setScoreWrapper(ScoreWrapper score);
 
@@ -37,7 +36,6 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * Sets a test wrapper if not null.
      *
      * @param test The wrapper
-     * @see edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable
      */
     void setIndTestWrapper(IndependenceWrapper test);
 }

@@ -10,17 +10,22 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * A class implementing the Semidirected-Rec statistic.
  */
 public class SemidirectedRecall implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs the statistic.
+     */
+    public SemidirectedRecall() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the SemidirectedRecall statistic.
+     *
+     * @return The abbreviation for the SemidirectedRecall statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -28,7 +33,9 @@ public class SemidirectedRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The short description of this statistic.
      */
     @Override
     public String getDescription() {
@@ -36,7 +43,13 @@ public class SemidirectedRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the Semidirected-Rec statistic, which is the proportion of (X, Y) where if there is a semidirected
+     * path in the true graph, then there is also a semidirected path in the estimated graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The Semidirected-Rec statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -64,7 +77,10 @@ public class SemidirectedRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of the statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

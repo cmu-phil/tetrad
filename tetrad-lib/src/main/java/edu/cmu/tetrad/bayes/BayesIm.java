@@ -360,17 +360,20 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     boolean isIncomplete(int nodeIndex);
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Simulates a sample with the given sample size.
+     * Simulates a data set with the specified number of rows.
+     *
+     * @param sampleSize      the number of rows to simulate.
+     * @param latentDataSaved if true, latent variables are saved in the data set.
+     * @return the simulated data set.
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Overwrites the given dataSet with a new simulated dataSet, to avoid allocating memory. The given dataSet must
-     * have the necessary number of columns.
+     * Simulates data based on the provided data set and saves the latent data if specified.
+     *
+     * @param dataSet         the data set to simulate data for
+     * @param latentDataSaved a boolean value indicating whether the latent data should be saved or not
+     * @return the simulated data set
      */
     DataSet simulateData(DataSet dataSet, boolean latentDataSaved);
 

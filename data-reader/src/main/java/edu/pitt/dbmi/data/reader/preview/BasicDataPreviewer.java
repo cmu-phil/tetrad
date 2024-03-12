@@ -49,9 +49,13 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Get the previews of the data file.
+     *
+     * @param fromLine        the starting line number
+     * @param toLine          the ending line number
+     * @param numOfCharacters the number of characters to preview
+     * @return the previews
+     * @throws java.io.IOException if an I/O error occurs
      */
     @Override
     public List getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException {

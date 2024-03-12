@@ -40,6 +40,13 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class MVPCompareFromFiles {
+
+    /**
+     * <p>Constructor for MVPCompareFromFiles.</p>
+     */
+    public MVPCompareFromFiles() {
+    }
+
     /**
      * <p>main.</p>
      *

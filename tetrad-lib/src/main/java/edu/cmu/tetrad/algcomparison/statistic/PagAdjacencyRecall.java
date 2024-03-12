@@ -8,17 +8,25 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import java.io.Serial;
 
 /**
- * The adjacency recall. The true positives are the number of adjacencies in both the true and estimated graphs.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * A class that implements the PagAdjacencyRecall statistic.
+ * <p>
+ * This statistic calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
  */
 public class PagAdjacencyRecall implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the statistic.
+     */
+    public PagAdjacencyRecall() {
+
+    }
+
+    /**
+     * Retrieves the abbreviation for the given statistic.
+     *
+     * @return The abbreviation as a string.
      */
     @Override
     public String getAbbreviation() {
@@ -26,7 +34,9 @@ public class PagAdjacencyRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -34,7 +44,12 @@ public class PagAdjacencyRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG of the true DAG).
+     * @param estGraph  The estimated graph (same type as trueGraph).
+     * @param dataModel The data model.
+     * @return The adjacency recall value as a double.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -47,7 +62,10 @@ public class PagAdjacencyRecall implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of this statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

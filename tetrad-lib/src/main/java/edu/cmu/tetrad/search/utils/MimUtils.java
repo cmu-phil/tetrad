@@ -37,6 +37,12 @@ import java.util.List;
 public final class MimUtils {
 
     /**
+     * Private constructor.
+     */
+    private MimUtils() {
+    }
+
+    /**
      * <p>convertToClusters.</p>
      *
      * @param clusterGraph a {@link edu.cmu.tetrad.graph.Graph} object

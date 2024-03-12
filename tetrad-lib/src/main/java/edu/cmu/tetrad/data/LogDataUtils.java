@@ -30,6 +30,14 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @version $Id: $Id
  */
 public class LogDataUtils {
+
+    /**
+     * Private constructor.
+     */
+    private LogDataUtils() {
+
+    }
+
     /**
      * <p>logDataModelList.</p>
      *

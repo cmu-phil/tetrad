@@ -22,6 +22,13 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * <p>Constructor for LatentCommonAncestorRecallBidirected.</p>
+     */
+    public LatentCommonAncestorRecallBidirected() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

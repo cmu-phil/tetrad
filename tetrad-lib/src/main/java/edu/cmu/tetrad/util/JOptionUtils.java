@@ -34,6 +34,12 @@ public class JOptionUtils {
     private static JComponent COMPONENT;
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private JOptionUtils() {
+    }
+
+    /**
      * Sets the centering component used throughout. May be null.
      *
      * @param component Ibid.

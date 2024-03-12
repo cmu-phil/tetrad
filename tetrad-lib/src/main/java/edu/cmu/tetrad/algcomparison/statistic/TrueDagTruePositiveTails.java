@@ -18,6 +18,12 @@ public class TrueDagTruePositiveTails implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * This class represents a statistic that calculates the true positives for tails compared to the true DAG.
+     */
+    public TrueDagTruePositiveTails() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

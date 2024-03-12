@@ -47,6 +47,12 @@ import java.util.*;
 public final class ResolveSepsets {
 
     /**
+     * The method to use for resolving sepsets
+     */
+    public ResolveSepsets() {
+    }
+
+    /**
      * Tests for independence using one of the pooled methods
      *
      * @param method            a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object

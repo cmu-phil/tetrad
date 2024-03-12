@@ -20,6 +20,12 @@ public class TrueDagRecallArrows implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * This class represents a statistic that calculates the recall for arrows compared to the true DAG.
+     */
+    public TrueDagRecallArrows() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

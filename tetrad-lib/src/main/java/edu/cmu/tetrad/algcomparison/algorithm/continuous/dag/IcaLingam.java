@@ -1,10 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IcaLingD;
@@ -13,17 +17,16 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LiNGAM.
+ * IcaLingam class implements the Algorithm and ReturnsBootstrapGraphs interface. It provides the implementation of the
+ * ICA-LiNGAM algorithm for causal discovery.
  *
- * @author josephramsey
- * @version $Id: $Id
+ * @see edu.cmu.tetrad.search.IcaLingam
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "ICA-LiNGAM",
@@ -32,57 +35,53 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
+public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * The bootstrap graphs.
+     * Constructs a new instance of the IcaLingam algorithm.
      */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
+    public IcaLingam() {
 
-    /**
-     * {@inheritDoc}
-     */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
-
-            int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
-            double alpha = parameters.getDouble(Params.FAST_ICA_A);
-            double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-
-            Matrix W = IcaLingD.estimateW(data, maxIter, tol, alpha);
-            edu.cmu.tetrad.search.IcaLingam icaLingam = new edu.cmu.tetrad.search.IcaLingam();
-            icaLingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
-            icaLingam.setAcyclicityGuaranteed(parameters.getBoolean(Params.GUARANTEE_ACYCLIC));
-
-            Matrix bHat = icaLingam.fitW(W);
-            Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
-            TetradLogger.getInstance().forceLogMessage(bHat.toString());
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
-
-            LogUtilsSearch.stampWithBic(graph, dataSet);
-            return graph;
-        } else {
-            IcaLingam algorithm = new IcaLingam();
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data,
-                    algorithm,
-                    new Knowledge(),
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return search.search();
-        }
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph structure based on the given data set and parameters.
+     *
+     * @param dataSet    The data set to run the search on.
+     * @param parameters The parameters of the search.
+     * @return The resulting graph structure.
+     */
+    public Graph runSearch(DataModel dataSet, Parameters parameters) {
+        DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
+
+        int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
+        double alpha = parameters.getDouble(Params.FAST_ICA_A);
+        double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
+
+        Matrix W = IcaLingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
+        edu.cmu.tetrad.search.IcaLingam icaLingam = new edu.cmu.tetrad.search.IcaLingam();
+        icaLingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        icaLingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
+        Matrix bHat = icaLingam.getAcyclicTrimmedBHat(W);
+        Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
+
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            TetradLogger.getInstance().forceLogMessage("BHat = " + bHat);
+            TetradLogger.getInstance().forceLogMessage("Graph = " + graph);
+        }
+
+        LogUtilsSearch.stampWithBic(graph, dataSet);
+        return graph;
+    }
+
+    /**
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true, directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -90,16 +89,18 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns the description of the ICA-LiNGAM algorithm.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of the ICA-LiNGAM algorithm.
      */
     public String getDescription() {
         return "ICA-LiNGAM (ICA Linear Non-Gaussian Acyclic Model";
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the given method.
+     *
+     * @return The data type of the method. It can be Continuous, Discrete, Mixed, Graph, Covariance, or All.
      */
     @Override
     public DataType getDataType() {
@@ -107,7 +108,9 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters used by the getParameters method.
+     *
+     * @return A list of parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -117,16 +120,6 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
-        parameters.add(Params.GUARANTEE_ACYCLIC);
         return parameters;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
-
 }

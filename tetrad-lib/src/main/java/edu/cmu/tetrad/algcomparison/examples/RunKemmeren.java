@@ -28,6 +28,14 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class RunKemmeren {
+
+    /**
+     * <p>Constructor for RunKemmeren.</p>
+     */
+    public RunKemmeren() {
+
+    }
+
     /**
      * <p>main.</p>
      *

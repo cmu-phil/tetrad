@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -74,105 +73,71 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph using the given data sets and parameters.
+     *
+     * @param dataSets   The data sets to search on.
+     * @param parameters The parameters for the search.
+     * @return The resulting graph.
+     * @throws IllegalArgumentException If the meta option is unrecognized.
      */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataModel> _dataSets = new ArrayList<>();
+        List<DataModel> _dataSets = new ArrayList<>();
 
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            for (DataModel dataSet : dataSets) {
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
                 }
-
-                dataSets = _dataSets;
+                _dataSets.add(timeSeries);
             }
 
-            List<Score> scores = new ArrayList<>();
+            dataSets = _dataSets;
+        }
 
-            for (DataModel dataModel : dataSets) {
-                Score s = score.getScore(dataModel, parameters);
-                scores.add(s);
-            }
+        List<Score> scores = new ArrayList<>();
 
-            ImagesScore score = new ImagesScore(scores);
+        for (DataModel dataModel : dataSets) {
+            Score s = score.getScore(dataModel, parameters);
+            scores.add(s);
+        }
 
-            if (meta == 1) {
-                edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                return search.search();
-            } else if (meta == 2) {
-                PermutationSearch search = new PermutationSearch(new Boss(score));
-                search.setKnowledge(this.knowledge);
-                return search.search();
-            } else {
-                throw new IllegalArgumentException("Unrecognized meta option: " + meta);
-            }
-        } else {
-            Images imagesSemBic = new Images();
+        ImagesScore score = new ImagesScore(scores);
 
-            List<DataSet> dataSets2 = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                dataSets2.add((DataSet) dataModel);
-            }
-
-            List<DataSet> _dataSets = new ArrayList<>();
-
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataSet dataSet : dataSets2) {
-                    DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
-                }
-
-                dataSets2 = _dataSets;
-            }
-
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    dataSets2,
-                    imagesSemBic,
-                    knowledge, parameters
-            );
+        if (meta == 1) {
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setScoreWrapper(score);
             return search.search();
+        } else if (meta == 2) {
+            PermutationSearch search = new PermutationSearch(new Boss(score));
+            search.setKnowledge(this.knowledge);
+            return search.search();
+        } else {
+            throw new IllegalArgumentException("Unrecognized meta option: " + meta);
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Searches for a graph using the given data set and parameters.
+     *
+     * @param dataSet    The data set to run the search on.
+     * @param parameters The parameters of the search.
+     * @return The resulting graph.
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
-        } else {
-            Images images = new Images();
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    images,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setScoreWrapper(score);
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -180,7 +145,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of this method.
+     *
+     * @return the description of this method.
      */
     @Override
     public String getDescription() {
@@ -188,7 +155,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the type of the data set.
+     *
+     * @return the type of the data set
      */
     @Override
     public DataType getDataType() {
@@ -196,7 +165,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for the algorithm.
+     *
+     * @return The list of parameters required for the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -214,7 +185,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the knowledge of the current instance.
+     *
+     * @return The knowledge of the current instance.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -222,7 +195,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge object for this instance.
+     *
+     * @param knowledge The knowledge object to be set. Cannot be null.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -230,7 +205,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the score wrapper object.
+     *
+     * @return The score wrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -238,7 +215,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for the algorithm.
+     *
+     * @param score The score wrapper to be set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -246,7 +225,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the IndependenceWrapper for this algorithm.
+     *
+     * @param test The IndependenceWrapper object to be set. Cannot be null.
      */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {

@@ -30,7 +30,17 @@ public class ChiSquare implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Initializes a new instance of the ChiSquare class.
+     */
+    public ChiSquare() {
+    }
+
+    /**
+     * Retrieves an instance of the IndependenceTest interface that performs a Chi Square Test for independence.
+     *
+     * @param dataSet    The data set to test independence against.
+     * @param parameters The parameters of the test.
+     * @return An instance of the IndependenceTest interface that performs a Chi Square Test for independence.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -40,7 +50,9 @@ public class ChiSquare implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short description of the Chi Square Test.
+     *
+     * @return A String representing the short description of the Chi Square Test.
      */
     @Override
     public String getDescription() {
@@ -48,7 +60,9 @@ public class ChiSquare implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -56,7 +70,9 @@ public class ChiSquare implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameters required by the Chi Square Test.
+     *
+     * @return A list of strings representing the parameters required by the Chi Square Test.
      */
     @Override
     public List<String> getParameters() {

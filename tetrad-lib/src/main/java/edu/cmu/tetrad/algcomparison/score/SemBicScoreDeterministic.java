@@ -12,10 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * SemBicScoreDeterministic is a class that implements the ScoreWrapper interface. It is used to calculate the Sem BIC
+ * Score for deterministic models.
  */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "Sem BIC Score Deterministic",
@@ -33,6 +31,12 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
+     * Constructs a new instance of the SemBicScoreDeterministic.
+     */
+    public SemBicScoreDeterministic() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -48,7 +52,9 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short description of the method.
+     *
+     * @return The description of the method.
      */
     @Override
     public String getDescription() {
@@ -56,7 +62,9 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type of the ScoreWrapper implementation.
+     *
+     * @return The data type of the ScoreWrapper implementation.
      */
     @Override
     public DataType getDataType() {
@@ -64,7 +72,9 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of parameters required for the getScore() method.
+     *
+     * @return A list of String names of parameters required for the getScore() method.
      */
     @Override
     public List<String> getParameters() {
@@ -75,7 +85,10 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the Node with the given name from the data set.
+     *
+     * @param name the name of the variable
+     * @return the Node with the specified name
      */
     @Override
     public Node getVariable(String name) {

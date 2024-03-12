@@ -29,16 +29,20 @@ public class FisherZScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * The data set.
      */
     double alpha = 0.001;
-
     /**
      * The data set.
      */
     private DataModel dataSet;
+
+    /**
+     * Constructs a new instance of the algorithm.
+     */
+    public FisherZScore() {
+    }
 
     /**
      * {@inheritDoc}

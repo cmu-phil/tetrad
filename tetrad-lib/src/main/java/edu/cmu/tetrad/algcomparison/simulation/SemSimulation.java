@@ -7,17 +7,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,10 +97,48 @@ public class SemSimulation implements Simulation {
     }
 
     /**
+     * Performs post-processing on a given dataset based on the provided parameters.
+     *
+     * @param parameters The parameters used for post-processing.
+     * @param dataSet    The dataset to be post-processed.
+     * @return The post-processed dataset.
+     */
+    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
+        if (parameters.getBoolean(Params.STANDARDIZE)) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        }
+
+        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+
+        if (variance > 0) {
+            for (int k = 0; k < dataSet.getNumRows(); k++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(k, j);
+                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    dataSet.setDouble(k, j, d + norm);
+                }
+            }
+        }
+
+        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+            dataSet = DataTransforms.shuffleColumns(dataSet);
+        }
+
+        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+        }
+
+        dataSet = DataTransforms.restrictToMeasured(dataSet);
+
+        return dataSet;
+    }
+
+    /**
      * Creates data sets for simulation based on the given parameters and model reuse preference.
      *
      * @param parameters The parameters to use in the simulation.
-     * @param newModel If true, a new model is created. If false, the model is reused.
+     * @param newModel   If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -236,50 +272,12 @@ public class SemSimulation implements Simulation {
     /**
      * Simulates a data set based on the given SemIm and Parameters.
      *
-     * @param im the SemIm object used for simulation
+     * @param im         the SemIm object used for simulation
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(SemIm im, Parameters parameters) {
         this.ims.add(this.im);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
-    }
-
-    /**
-     * Performs post-processing on a given dataset based on the provided parameters.
-     *
-     * @param parameters The parameters used for post-processing.
-     * @param dataSet The dataset to be post-processed.
-     * @return The post-processed dataset.
-     */
-    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
-        if (parameters.getBoolean(Params.STANDARDIZE)) {
-            dataSet = DataTransforms.standardizeData(dataSet);
-        }
-
-        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
-
-        if (variance > 0) {
-            for (int k = 0; k < dataSet.getNumRows(); k++) {
-                for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                    double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
-                    dataSet.setDouble(k, j, d + norm);
-                }
-            }
-        }
-
-        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-            dataSet = DataTransforms.shuffleColumns(dataSet);
-        }
-
-        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
-            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
-        }
-
-        dataSet = DataTransforms.restrictToMeasured(dataSet);
-
-        return dataSet;
     }
 }

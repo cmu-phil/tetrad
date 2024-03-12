@@ -65,86 +65,80 @@ public class TimeoutComparison {
      * The date format.
      */
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
-
     /**
      * The graph type used.
      */
     private boolean[] graphTypeUsed;
-
     /**
      * The out.
      */
     private PrintStream out;
-
     /**
      * Whether to output the tables in tab-delimited format.
      */
     private boolean tabDelimitedTables;
-
     /**
      * Whether to save the graphs.
      */
     private boolean saveGraphs;
-
     /**
      * Whether to copy the data (or using the original).
      */
     private boolean copyData;
-
     /**
      * Whether to show the simulation indices.
      */
     private boolean showSimulationIndices;
-
     /**
      * Whether to show the algorithm indices.
      */
     private boolean showAlgorithmIndices;
-
     /**
      * Whether to show the utilities.
      */
     private boolean showUtilities;
-
     /**
      * Whether to sort by utility.
      */
     private boolean sortByUtility;
-
     /**
      * The data path.
      */
     private String dataPath;
-
     /**
      * The results path.
      */
     private String resultsPath;
-
     /**
      * Whether to parallelize the process.
      */
     private boolean parallelized = true;
-
     /**
      * Whether to save CPDAGs.
      */
     private boolean saveCPDAGs;
-
     /**
      * Whether to save PAGs.
      */
     private boolean savePags;
-
     /**
      * The directories for the saved graphs.
      */
     private ArrayList<String> dirs;
-
     /**
      * The comparison graph.
      */
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
+
+    /**
+     * Represents a comparison of two time values for timeout purposes.
+     * <p>
+     * The TimeoutComparison class can be used to compare two time values and determine if they have exceeded a
+     * specified timeout period.
+     * </p>
+     */
+    public TimeoutComparison() {
+    }
 
     /**
      * <p>compareFromFiles.</p>

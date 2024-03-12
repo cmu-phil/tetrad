@@ -42,9 +42,9 @@ final class ContributorsAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Closes the frontmost session of this action's desktop.
+     * Displays a message dialog showing a list of contributors.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         String msg = "This project has been worked on for many years under the generous " +

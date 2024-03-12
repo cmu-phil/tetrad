@@ -184,10 +184,10 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the action of adding the specified templatew into the frontmost session. It is assumed that all example
-     * sessions will be located in directory "example_sessions".
+     * This method is called when an action event is generated. It processes the event by performing different actions
+     * based on the template name.
+     *
+     * @param e the event to be processed
      */
     @Override
     public void actionPerformed(ActionEvent e) {

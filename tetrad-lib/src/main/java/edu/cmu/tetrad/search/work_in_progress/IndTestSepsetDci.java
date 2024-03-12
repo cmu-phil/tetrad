@@ -88,9 +88,11 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Required by IndependenceTest.
+     * Determines independence between a subset of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return This IndependenceTest object.
+     * @throws IllegalArgumentException If the subset is empty or contains variables that are not original variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -108,14 +110,14 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Checks the indicated independence fact.
+     * Checks the independence between two nodes, given a set of conditioning nodes.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @param x A Node object representing the first node.
+     * @param y A Node object representing the second node.
+     * @param z A set representing the set of conditioning nodes.
+     * @return An IndependenceResult object containing the result of the independence test.
+     * @throws NullPointerException if z is null or if any node in z is null.
+     * @throws RuntimeException     if the p-value is undefined.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -182,7 +184,11 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if a given Node is present in a List of Nodes.
+     *
+     * @param z  The List of Nodes to search in.
+     * @param x1 The Node to search for.
+     * @return True if the Node x1 is present in the List z, otherwise False.
      */
     public boolean determines(List<Node> z, Node x1) {
         return z.contains(x1);
@@ -198,14 +204,19 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the alpha level for the independence test.
+     *
+     * @param alpha The alpha level to be set.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the variable with the specified name.
+     *
+     * @param name the name of the variable to retrieve
+     * @return the variable with the specified name, or null if not found
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -267,14 +278,19 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbose flag.
+     *
+     * @param verbose True if verbose mode is enabled, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * @return the list of observed nodes in the given graph.
+     * Calculates the observed variables from a list of nodes.
+     *
+     * @param nodes A list of nodes.
+     * @return A list containing only the observed variables.
      */
     private List<Node> calcObservedVars(List<Node> nodes) {
         List<Node> observedVars = new ArrayList<>();

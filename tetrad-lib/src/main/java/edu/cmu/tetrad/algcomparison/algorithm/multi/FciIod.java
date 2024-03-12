@@ -14,7 +14,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -133,19 +132,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
-        } else {
-            FciIod images = new FciIod();
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    images,
-                    knowledge, parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**

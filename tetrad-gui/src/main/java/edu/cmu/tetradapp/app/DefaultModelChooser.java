@@ -82,7 +82,10 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the title to be used for the chooser.
+     *
+     * @param title The title to use for the chooser.
+     * @throws NullPointerException if the given title is null.
      */
     public void setTitle(String title) {
         if (title == null) {
@@ -102,7 +105,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the model configurations for the chooser.
+     *
+     * @param configs the models that this chooser should display
      */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         List<ClassWrapper> wrapperList = new LinkedList<>();
@@ -138,7 +143,10 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the id for the node.
+     *
+     * @param id the id for the node. Cannot be null.
+     * @throws NullPointerException if the given id is null.
      */
     public void setNodeId(String id) {
         if (id == null) {
@@ -148,7 +156,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the SessionNode for the getModel node.
+     *
+     * @param sessionNode the SessionNode for the getModel node.
      */
     public void setSessionNode(SessionNode sessionNode) {
         /*(

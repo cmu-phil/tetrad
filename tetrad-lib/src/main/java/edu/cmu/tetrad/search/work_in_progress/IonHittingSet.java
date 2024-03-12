@@ -50,6 +50,12 @@ import java.util.Set;
 public class IonHittingSet {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private IonHittingSet() {
+    }
+
+    /**
      * takes a List of HashSets of GraphChanges, and returns a List of GraphChanges.
      *
      * @param Forig a {@link java.util.List} object

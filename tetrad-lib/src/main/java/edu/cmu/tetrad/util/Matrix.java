@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
 
@@ -545,27 +546,9 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Adds a scalar value to each element of the matrix.
+     * <p>sqrt.</p>
      *
-     * @param d the scalar value to add to each element of the matrix
-     * @return a new Matrix object with each element increased by the scalar value
-     */
-    public Matrix scalarAdd(double d) {
-        Matrix m2 = copy();
-
-        for (int i = 0; i < getNumRows(); i++) {
-            for (int j = 0; j < getNumColumns(); j++) {
-                m2.set(i, j, get(i, j) + d);
-            }
-        }
-
-        return this;
-    }
-
-    /**
-     * Calculates the square root of the matrix using Singular Value Decomposition.
-     *
-     * @return The square root of the matrix as a new Matrix object.
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix sqrt() {
         SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
@@ -619,6 +602,15 @@ public class Matrix implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>zSum.</p>
+     *
+     * @return a double
+     */
+    public double zSum() {
+        return new DenseDoubleMatrix2D(this.apacheData.getData()).zSum();
+    }
+
     private boolean zeroDimension() {
         return getNumRows() == 0 || getNumColumns() == 0;
     }
@@ -658,35 +650,6 @@ public class Matrix implements TetradSerializable {
     }
 
 
-    /**
-     * Adds the given matrix to this matrix element-wise.
-     *
-     * @param m the matrix to be added to this matrix
-     */
-    public void add(Matrix m) {
-        for (int i = 0; i < getNumRows(); i++) {
-            for (int j = 0; j < getNumColumns(); j++) {
-                set(i, j, get(i, j) + m.get(i, j));
-            }
-        }
-    }
-
-    /**
-     * Calculates the sum of all elements in a matrix.
-     *
-     * @return the sum of all elements in the matrix
-     */
-    public double zSum() {
-        double sum = 0;
-
-        for (int i = 0; i < getNumRows(); i++) {
-            for (int j = 0; j < getNumColumns(); j++) {
-                sum += get(i, j);
-            }
-        }
-
-        return sum;
-    }
 }
 
 

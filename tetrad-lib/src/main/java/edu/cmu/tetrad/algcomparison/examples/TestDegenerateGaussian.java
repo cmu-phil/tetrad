@@ -40,10 +40,19 @@ import edu.cmu.tetrad.util.Parameters;
  * @version $Id: $Id
  */
 public class TestDegenerateGaussian {
+
     /**
-     * <p>main.</p>
+     * Initializes a new instance of the TestDegenerateGaussian class.
+     */
+    public TestDegenerateGaussian() {
+    }
+
+    /**
+     * The main method initializes various parameters, statistics, algorithms, simulations, and a comparison object. It
+     * sets the values for the parameters and adds statistics, algorithms, and simulations to the respective objects.
+     * Lastly, it calls the compareFromSimulations method of the comparison object to perform a comparison.
      *
-     * @param args a {@link java.lang.String} object
+     * @param args the command-line arguments
      */
     public static void main(String... args) {
         Parameters parameters = new Parameters();

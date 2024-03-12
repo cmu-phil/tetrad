@@ -54,12 +54,10 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     private static final long serialVersionUID = 23L;
     /**
      * Breakpoints, for continuous data.
-     *
-     * @serial
      */
     private final double[] breakpoints;
     /**
-     * @serial
+     * Categories, for discrete data.
      */
     private final List<String> categories;
     /**
@@ -68,21 +66,25 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     private int method;
 
     /**
-     * <p>Constructor for ContinuousDiscretizationSpec.</p>
+     * Constructor for creating a ContinuousDiscretizationSpec object.
      *
-     * @param breakpoints an array of {@link double} objects
-     * @param categories  a {@link java.util.List} object
+     * @param breakpoints The array of breakpoints used for discretization.
+     * @param categories  The list of categories for the discretized data.
      */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
     /**
-     * <p>Constructor for ContinuousDiscretizationSpec.</p>
+     * Creates a ContinuousDiscretizationSpec object with the given breakpoints, categories, and method.
      *
-     * @param breakpoints an array of {@link double} objects
-     * @param categories  a {@link java.util.List} object
-     * @param method      a int
+     * @param breakpoints The array of breakpoints used for discretization.
+     * @param categories  The list of categories for the discretized data.
+     * @param method      The method used for discretization. Possible values are: - EVENLY_DISTRIBUTED_VALUES: 0
+     *                    (evenly distributed values) - EVENLY_DISTRIBUTED_INTERVALS: 1 (evenly distributed intervals) -
+     *                    NONE: 2 (no discretization)
+     * @throws NullPointerException     if breakpoints is null.
+     * @throws IllegalArgumentException if method is not one of the valid values.
      */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
         if (breakpoints == null) {
@@ -108,18 +110,22 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     }
 
     /**
-     * <p>Getter for the field <code>method</code>.</p>
+     * Returns the value of the method used for discretization.
      *
-     * @return a int
+     * @return The method used for discretization.
      */
     public int getMethod() {
         return this.method;
     }
 
     /**
-     * <p>Setter for the field <code>method</code>.</p>
+     * Sets the method used for discretization.
      *
-     * @param method a int
+     * @param method The method used for discretization. Possible values are: -
+     *               ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES (0): for evenly distributed values -
+     *               ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS (1): for evenly distributed intervals -
+     *               ContinuousDiscretizationSpec.NONE (2): for no discretization
+     * @throws IllegalArgumentException if method is not one of the valid values.
      */
     public void setMethod(int method) {
         if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
@@ -129,18 +135,18 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     }
 
     /**
-     * <p>Getter for the field <code>categories</code>.</p>
+     * Retrieves the list of categories for the discretized data.
      *
-     * @return a {@link java.util.List} object
+     * @return The list of categories.
      */
     public List<String> getCategories() {
         return this.categories;
     }
 
     /**
-     * <p>Getter for the field <code>breakpoints</code>.</p>
+     * Retrieves the array of breakpoints used for discretization.
      *
-     * @return an array of {@link double} objects
+     * @return The array of breakpoints.
      */
     public double[] getBreakpoints() {
         return this.breakpoints;

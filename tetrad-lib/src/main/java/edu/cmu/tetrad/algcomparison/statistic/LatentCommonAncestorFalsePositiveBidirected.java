@@ -20,6 +20,13 @@ public class LatentCommonAncestorFalsePositiveBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * <p>Constructor for LatentCommonAncestorFalsePositiveBidirected.</p>
+     */
+    public LatentCommonAncestorFalsePositiveBidirected() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

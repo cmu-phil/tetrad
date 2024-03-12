@@ -35,6 +35,13 @@ public class CciTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the CciTest class.
+     */
+    public CciTest() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

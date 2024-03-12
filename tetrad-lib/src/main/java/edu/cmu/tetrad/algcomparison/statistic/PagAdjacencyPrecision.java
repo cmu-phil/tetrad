@@ -5,17 +5,27 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 
+import java.io.Serial;
+
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The PagAdjacencyPrecision class implements the Statistic interface and represents the adjacency precision compared to
+ * the true PAG (Partially Ancestral Graph).
  */
 public class PagAdjacencyPrecision implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs a new instance of the statistic.
+     */
+    public PagAdjacencyPrecision() {
+
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -23,7 +33,9 @@ public class PagAdjacencyPrecision implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -31,7 +43,12 @@ public class PagAdjacencyPrecision implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the adjacency precision of the estimated graph compared to the true graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The adjacency precision value.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -44,7 +61,10 @@ public class PagAdjacencyPrecision implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of a given statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

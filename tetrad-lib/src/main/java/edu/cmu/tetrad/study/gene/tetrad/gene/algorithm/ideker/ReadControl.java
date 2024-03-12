@@ -34,6 +34,14 @@ import java.util.StringTokenizer;
  * @version $Id: $Id
  */
 public class ReadControl {
+
+    /**
+     * <p>Constructor for ReadControl.</p>
+     */
+    public ReadControl() {
+
+    }
+
     /**
      * <p>main.</p>
      *

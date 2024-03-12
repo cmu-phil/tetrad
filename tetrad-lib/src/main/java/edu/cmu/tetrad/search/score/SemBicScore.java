@@ -73,33 +73,61 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScore implements Score {
 
-    // The sample size of the covariance matrix.
+    /**
+     * The sample size of the covariance matrix.
+     */
     private final int sampleSize;
-    // A  map from variable names to their indices.
+    /**
+     * A  map from variable names to their indices.
+     */
     private final Map<Node, Integer> indexMap;
-    // The log of the sample size.
+    /**
+     * The log of the sample size.
+     */
     private final double logN;
-    // True if row subsets should be calculated.
+    /**
+     * True if row subsets should be calculated.
+     */
     private boolean calculateRowSubsets;
-    // The dataset.
+    /**
+     * The dataset.
+     */
     private DataModel dataModel;
-    // .. as matrix
+    /**
+     * .. as matrix
+     */
     private Matrix data;
-    // The correlation matrix.
+    /**
+     * The correlation matrix.
+     */
     private ICovarianceMatrix covariances;
-    // The variables of the covariance matrix.
+    /**
+     * The variables of the covariance matrix.
+     */
     private List<Node> variables;
-    // True if verbose output should be sent to out.
+    /**
+     * True if verbose output should be sent to out.
+     */
     private boolean verbose;
-    // The penalty penaltyDiscount, 1 for standard BIC.
-    private double penaltyDiscount = 1.0;
-    // The structure prior, 0 for standard BIC.
+    /**
+     * The penalty penaltyDiscount, 1 for standard BIC.
+     */
+    private double penaltyDiscount;
+    /**
+     * The structure prior, 0 for standard BIC.
+     */
     private double structurePrior;
-    // The covariance matrix.
+    /**
+     * The covariance matrix.
+     */
     private Matrix matrix;
-    // The rule type to use.
+    /**
+     * The rule type to use.
+     */
     private RuleType ruleType = RuleType.CHICKERING;
-    // True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+    /**
+     * True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     */
     private boolean usePseudoInverse = false;
 
     /**
@@ -117,6 +145,7 @@ public class SemBicScore implements Score {
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
         this.logN = log(sampleSize);
+        penaltyDiscount = 1.0;
     }
 
     /**
@@ -150,6 +179,7 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
+        penaltyDiscount = 1.0;
     }
 
     /**
@@ -733,7 +763,10 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * A record for the covariance matrix and the regression coefficients.
+     * Represents a covariance matrix and regression coefficients.
+     *
+     * @param cov The covariance matrix.
+     * @param b   The regression coefficients.
      */
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }

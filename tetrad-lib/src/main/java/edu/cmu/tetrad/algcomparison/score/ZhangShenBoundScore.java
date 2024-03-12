@@ -38,7 +38,20 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * {@inheritDoc}
+     * This class represents the constructor for the ZhangShenBoundScore class. It is used to create an instance of the
+     * ZhangShenBoundScore class.
+     */
+    public ZhangShenBoundScore() {
+
+    }
+
+    /**
+     * Calculates the score based on the given data set and parameters.
+     *
+     * @param dataSet    The data set to test independence against.
+     * @param parameters The parameters of the test.
+     * @return The calculated score.
+     * @throws IllegalArgumentException If the data set is neither a dataset nor a covariance matrix.
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
@@ -62,7 +75,9 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of the Zhang-Shen Bound Score.
+     *
+     * @return the description of the score
      */
     @Override
     public String getDescription() {
@@ -70,7 +85,9 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the score.
+     *
+     * @return the data type of the score
      */
     @Override
     public DataType getDataType() {
@@ -78,7 +95,9 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parameters required for the Zhang-Shen Bound Score.
+     *
+     * @return The list of parameters required for the score.
      */
     @Override
     public List<String> getParameters() {
@@ -90,7 +109,10 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the variable with the given name from the data set.
+     *
+     * @param name the name of the variable to retrieve.
+     * @return the variable as a {@link Node} object.
      */
     @Override
     public Node getVariable(String name) {

@@ -12,7 +12,6 @@ import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.search.work_in_progress.FasLofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -57,38 +56,19 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
      */
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
-                dataSets.add((DataSet) dataModel);
-            }
-
-            DataSet dataSet = DataTransforms.concatenate(dataSets);
-
-            FasLofs search = new FasLofs(dataSet, this.rule);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            search.setKnowledge(this.knowledge);
-            return getGraph(search);
-        } else {
-            FaskLofsConcatenated algorithm = new FaskLofsConcatenated(this.rule);
-
-            List<DataSet> datasets = new ArrayList<>();
-
-            for (DataModel dataModel : dataModels) {
-                datasets.add((DataSet) dataModel);
-            }
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets,
-                    algorithm,
-                    knowledge,
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
         }
+
+        DataSet dataSet = DataTransforms.concatenate(dataSets);
+
+        FasLofs search = new FasLofs(dataSet, this.rule);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        search.setKnowledge(this.knowledge);
+        return getGraph(search);
     }
 
     /**
@@ -116,18 +96,7 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
-        } else {
-            FaskLofsConcatenated algorithm = new FaskLofsConcatenated(this.rule);
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    algorithm,
-                    knowledge, parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 
     /**

@@ -36,6 +36,12 @@ import java.util.Set;
 public class MisclassificationUtils {
 
     /**
+     * <p>Constructor for MisclassificationUtils.</p>
+     */
+    private MisclassificationUtils() {
+    }
+
+    /**
      * <p>getIndex.</p>
      *
      * @param endpoint a {@link edu.cmu.tetrad.graph.Endpoint} object

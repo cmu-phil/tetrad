@@ -17,6 +17,12 @@ public class LegalPag implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * <p>Constructor for LegalPag.</p>
+     */
+    public LegalPag() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

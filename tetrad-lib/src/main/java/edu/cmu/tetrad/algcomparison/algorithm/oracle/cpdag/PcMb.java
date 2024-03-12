@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -18,7 +19,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
@@ -37,8 +37,8 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs {
+public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -59,11 +59,6 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     private List<Node> targets;
 
     /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
-
-    /**
      * <p>Constructor for PcMb.</p>
      */
     public PcMb() {
@@ -78,33 +73,17 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         this.test = type;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.PcMb search = new edu.cmu.tetrad.search.PcMb(test, parameters.getInt(Params.DEPTH));
-            List<Node> targets = targets(test, parameters.getString(Params.TARGETS));
-            this.targets = targets;
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setFindMb(parameters.getBoolean(Params.MB));
-            return search.search(targets);
-        } else {
-            PcMb algorithm = new PcMb(this.test);
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        IndependenceTest myTest = this.test.getTest(dataModel, parameters);
+        edu.cmu.tetrad.search.PcMb search = new edu.cmu.tetrad.search.PcMb(myTest, parameters.getInt(Params.DEPTH));
+        List<Node> myTargets = targets(myTest, parameters.getString(Params.TARGETS));
+        this.targets = myTargets;
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setFindMb(parameters.getBoolean(Params.MB));
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    knowledge, parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
-        }
+        return search.search(myTargets);
     }
 
     @NotNull
@@ -196,11 +175,4 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         this.test = test;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

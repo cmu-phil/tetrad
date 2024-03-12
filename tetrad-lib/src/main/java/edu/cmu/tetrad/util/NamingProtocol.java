@@ -30,6 +30,12 @@ package edu.cmu.tetrad.util;
 public class NamingProtocol {
 
     /**
+     * <p>Constructor for NamingProtocol.</p>
+     */
+    private NamingProtocol() {
+    }
+
+    /**
      * <p>isLegalName.</p>
      *
      * @param name Ibid.

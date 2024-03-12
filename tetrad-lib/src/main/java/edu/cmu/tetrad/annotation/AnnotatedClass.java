@@ -32,8 +32,8 @@ public final class AnnotatedClass<T extends Annotation> implements Serializable 
     private static final long serialVersionUID = 5060798016477163171L;
 
     /**
-     * Represents a Class used as a parameter to an AnnotatedClass object.
-     * It is stored as a private final member in the AnnotatedClass class.
+     * Represents a Class used as a parameter to an AnnotatedClass object. It is stored as a private final member in the
+     * AnnotatedClass class.
      *
      * <p>
      * Example usage:

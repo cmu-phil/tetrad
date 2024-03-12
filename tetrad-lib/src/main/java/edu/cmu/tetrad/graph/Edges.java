@@ -41,6 +41,13 @@ import java.util.List;
 public final class Edges {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Edges() {
+
+    }
+
+    /**
      * Constructs a new bidirected edge from nodeA to nodeB (&lt;-&gt;).
      *
      * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object

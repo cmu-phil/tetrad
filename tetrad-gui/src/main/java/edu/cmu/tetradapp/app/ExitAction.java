@@ -41,9 +41,10 @@ final class ExitAction extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the action of loading a session from a file.
+     * This method is called when an action event occurs. It invokes the exitProgram() method in the DesktopController
+     * class to exit the Tetrad application.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         DesktopController.getInstance().exitProgram();

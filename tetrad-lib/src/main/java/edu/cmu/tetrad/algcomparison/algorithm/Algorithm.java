@@ -7,8 +7,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.util.List;
-
 /**
  * Interface that algorithm must implement.
  *
@@ -48,10 +46,4 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      */
     DataType getDataType();
 
-    /**
-     * Returns the parameters that this search uses.
-     *
-     * @return A list of String names of parameters.
-     */
-    List<String> getParameters();
 }

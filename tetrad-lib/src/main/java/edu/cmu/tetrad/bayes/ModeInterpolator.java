@@ -37,6 +37,11 @@ import java.util.Arrays;
  */
 public final class ModeInterpolator implements DataFilter {
 
+    /**
+     * <p>Constructor for ModeInterpolator.</p>
+     */
+    public ModeInterpolator() {
+    }
 
     /**
      * {@inheritDoc}

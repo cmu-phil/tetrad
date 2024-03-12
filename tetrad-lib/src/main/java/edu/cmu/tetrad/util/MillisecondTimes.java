@@ -12,10 +12,17 @@ import java.lang.management.ManagementFactory;
  * @version $Id: $Id
  */
 public class MillisecondTimes {
+
     /**
      * Constant <code>type</code>
      */
     public static Type type = Type.CPU;
+
+    /**
+     * Prevents instantiation.
+     */
+    private MillisecondTimes() {
+    }
 
     /**
      * <p>wallTimeMillis.</p>

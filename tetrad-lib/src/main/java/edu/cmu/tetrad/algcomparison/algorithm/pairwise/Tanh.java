@@ -1,15 +1,18 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -23,7 +26,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @Bootstrapping
-public class Tanh implements Algorithm, TakesExternalGraph {
+public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, TakesExternalGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -48,44 +51,42 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search algorithm using the given data model and parameters.
+     *
+     * @param dataModel  the data model to be used for the search
+     * @param parameters the parameters for the search algorithm
+     * @return the resulting graph after running the search algorithm
+     * @throws IllegalArgumentException if the data model is not a continuous dataset
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = this.algorithm.search(dataSet, parameters);
-
-            if (graph != null) {
-                this.externalGraph = graph;
-            } else {
-                throw new IllegalArgumentException("This Tanh algorithm needs both data and a graph source as inputs; it \n"
-                        + "will orient the edges in the input graph using the data");
-            }
-
-            List<DataSet> dataSets = new ArrayList<>();
-            dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
-
-            Lofs lofs = new Lofs(this.externalGraph, dataSets);
-            lofs.setRule(Lofs.Rule.Tanh);
-
-            return lofs.orient();
-        } else {
-            Tanh tanh = new Tanh(this.algorithm);
-            if (this.externalGraph != null) {
-                tanh.setExternalGraph(this.algorithm);
-            }
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, tanh,
-                    new Knowledge(), parameters);
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+
+        Graph graph = this.algorithm.search(dataSet, parameters);
+
+        if (graph != null) {
+            this.externalGraph = graph;
+        } else {
+            throw new IllegalArgumentException("This Tanh algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data");
+        }
+
+        List<DataSet> dataSets = new ArrayList<>();
+        dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
+
+        Lofs lofs = new Lofs(this.externalGraph, dataSets);
+        lofs.setRule(Lofs.Rule.Tanh);
+
+        return lofs.orient();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph for the given true directed graph, if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -93,7 +94,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the method.
+     *
+     * @return A description of the method.
      */
     @Override
     public String getDescription() {
@@ -102,7 +105,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -110,7 +115,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the parameters required by the current algorithm.
+     *
+     * @return a List containing the parameter names
      */
     @Override
     public List<String> getParameters() {
@@ -126,7 +133,10 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph for the algorithm.
+     *
+     * @param algorithm The algorithm object representing the external graph.
+     * @throws IllegalArgumentException if the algorithm is null.
      */
     @Override
     public void setExternalGraph(Algorithm algorithm) {

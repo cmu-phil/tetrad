@@ -59,7 +59,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * n.comp: number of components to be extracted
  * <p>
- * alg.typ: if 'alg.typ == "parallel"' the components are extracted simultaneously (the default). if 'alg.typ ==
+ * alg.typ: if 'alg.typ == "parallel"' the components are extracted simultaneously (the default). If 'alg.typ ==
  * "deflation"' the components are extracted one at a time.
  * <p>
  * fun: the functional form of the G function used in the approximation to neg-entropy (see details)
@@ -67,29 +67,28 @@ import static org.apache.commons.math3.util.FastMath.*;
  * alpha: constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh"'
  * <p>
  * method: if 'method == "R"' then computations are done exclusively in R (default). The code allows the interested R
- * user to see exactly what the algorithm does. if 'method == "C"' then C code is used to perform most of the
- * computations, which makes the algorithm run faster. During compilation the C code is linked to an optimized BLAS
+ * user to see exactly what the algorithm does. If 'method == "C"' then C code is used to perform most of the
+ * computations, which makes the algorithm run faster. During compilation, the C code is linked to an optimized BLAS
  * library if present, otherwise stand-alone BLAS routines are compiled.
  * <p>
  * row.norm: a logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
  * <p>
  * maxit: maximum number of iterations to perform
  * <p>
- * tol: a positive scalar giving the tolerance at which the un-mixing The data matrix X is considered to be a linear
- * combination of non-Gaussian (independent) components i.e. X = SA where columns of S contain the independent
- * components and A is a linear mixing matrix. In short ICA attempts to `un-mix' the data by estimating an un-mixing
- * matrix W where XW = S.
+ * tol: a positive scalar giving the tolerance at which the data matrix X is considered to be a linear combination of
+ * non-Gaussian (independent) components i.e., X = SA where columns of S contain the independent components and A is a
+ * linear mixing matrix. In short, ICA attempts to `un-mix' the data by estimating an un-mixing matrix W where XW = S.
  * <p>
- * Under this generative model the measured `signals' in X will tend to be `more Gaussian' than the source components
- * (in S) due to the Central Limit Theorem. Thus, in order to extract the independent components/sources we search for
- * an un-mixing matrix W that maximizes the non-gaussianity of the sources.
+ * Under this generative model, the measured `signals' in X will tend to be `more Gaussian' than the source components
+ * (in S) due to the Central Limit Theorem. Thus, to extract the independent components/sources, we search for an
+ * un-mixing matrix W that maximizes the non-gaussianity of the sources.
  * <p>
- * In FastICA, non-gaussianity is measured using approximations to neg-entropy (J) which are more robust than kurtosis
- * based measures and fast to compute.
+ * In FastICA, non-gaussianity is measured using approximations to neg-entropy (J) which are more robust than kurtosis-
+ * * based measures and fast to compute.
  * <p>
  * The approximation takes the form
  * <p>
- * J(y)=[E{G(y)}-E{G(v)}]^2 where v is a N(0,1) r.v.
+ * J(y)=[E{G(y)}-E{G(v)}]^2 where v is an N(0,1) r.v.
  * <p>
  * The following choices of G are included as options G(u)=frac{1}{alpha} log cosh (alpha u) and
  * G(u)=-exp(frac{-u^2}{2})
@@ -98,7 +97,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
- * The data matrix is then `whitened' by projecting the data onto its principle-component directions--i.e., X -&gt; XK
+ * The data matrix is then `whitened' by projecting the data onto its principle-component directions--i.e., X &gt; XK
  * where K is a pre-whitening matrix. The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
@@ -107,9 +106,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * Projection Pursuit*
  * <p>
- * In the absence of a generative model for the data the algorithm can be used to find the projection pursuit
- * directions. Projection pursuit is a technique for finding `interesting' directions in multi-dimensional datasets.
- * These projections and are useful for visualizing the dataset and in density estimation and regression. Interesting
+ * In the absence of a generative model for the data, the algorithm can be used to find the projection pursuit
+ * directions. Projection pursuit is a technique for finding `interesting' directions in multidimensional datasets.
+ * These projections are useful for visualizing the dataset and in density estimation and regression. Interesting
  * directions are those which show the least Gaussian distribution, which is what the FastICA algorithm does.
  * <p>
  * Author(s):
@@ -157,7 +156,7 @@ public class FastIca {
     private int numComponents;
 
     /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). If algorithmType ==
      * DEFLATION, the components are extracted one at a time.
      */
     private int algorithmType;
@@ -195,7 +194,7 @@ public class FastIca {
     private boolean verbose;
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
+     * Initial un-mixing matrix of dimension (n.comp, n.comp). If null (default), then a matrix of normal r.v.'s is
      * used.
      */
     private Matrix wInit;
@@ -206,7 +205,7 @@ public class FastIca {
      *
      * @param X             A 2D matrix, rows being cases, columns being variables. It is assumed that there are no
      *                      missing values.
-     * @param numComponents a int
+     * @param numComponents an int
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;
@@ -215,7 +214,40 @@ public class FastIca {
     }
 
     /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * Calculates the mean of the elements in a given Vector.
+     *
+     * @param v The Vector containing the elements.
+     * @return The mean value of the elements in the Vector.
+     */
+    private static double mean(Vector v) {
+        double sum = 0.0;
+
+        for (int i = 0; i < v.size(); i++) {
+            sum += v.get(i);
+        }
+
+        return sum / v.size();
+    }
+
+    /**
+     * Centers each row of the given matrix by subtracting the mean of the row from each element.
+     *
+     * @param x The matrix to be centered.
+     */
+    public static void center(Matrix x) {
+        for (int i = 0; i < x.getNumRows(); i++) {
+            Vector u = x.getRow(i);
+            double mean = mean(u);
+
+            for (int j = 0; j < x.getNumColumns(); j++) {
+                x.set(i, j, x.get(i, j) - mean);
+            }
+        }
+
+    }
+
+    /**
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). If algorithmType ==
      * DEFLATION, the components are extracted one at a time.
      *
      * @param algorithmType This type.
@@ -299,8 +331,8 @@ public class FastIca {
     }
 
     /**
-     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default), then a random matrix of normal
-     * r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp, n.comp). If NULL (default), then a random matrix of
+     * normal r.v.'s is used.
      *
      * @param wInit This matrix.
      */
@@ -357,8 +389,9 @@ public class FastIca {
         Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.getNumRows(); i++) {
-//            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
-            D.set(i, i, 1.0 / (D.get(i, i)));
+
+            // Need to take square roots to make sure the S vectors are uncorrelated here...
+            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
         }
 
         cov.sqrt();
@@ -385,7 +418,6 @@ public class FastIca {
         return new IcaResult(this.X, K, w, S);
 
     }
-
 
     private Matrix icaDeflation(Matrix X,
                                 double tolerance, int function, double alpha,
@@ -524,26 +556,10 @@ public class FastIca {
     }
 
     /**
-     * Calculates the mean of the elements in a given Vector.
+     * Calculates the sum of squares for elements in a given Vector.
      *
      * @param v The Vector containing the elements.
-     * @return The mean value of the elements in the Vector.
-     */
-    private double mean(Vector v) {
-        double sum = 0.0;
-
-        for (int i = 0; i < v.size(); i++) {
-            sum += v.get(i);
-        }
-
-        return sum / v.size();
-    }
-
-    /**
-     * Calculates the sum of squares of elements in a given Vector.
-     *
-     * @param v The Vector containing the elements.
-     * @return The sum of squares of the elements in the Vector.
+     * @return The sum of squares for the elements in the Vector.
      */
     private double sumOfSquares(Vector v) {
         double sum = 0.0;
@@ -556,10 +572,10 @@ public class FastIca {
     }
 
     /**
-     * Calculates the root mean square (RMS) of the elements in a given vector.
+     * Calculates the root-mean-square (RMS) of the elements in a given vector.
      *
      * @param w The vector containing the elements.
-     * @return The root mean square (RMS) of the elements in the vector.
+     * @return The root-mean-square (RMS) of the elements in the vector.
      */
     private double rms(Vector w) {
         double ssq = sumOfSquares(w);
@@ -666,7 +682,7 @@ public class FastIca {
     }
 
     /**
-     * Scales the input matrix by dividing each row by its root mean square (RMS).
+     * Scales the input matrix by dividing each row by its root-mean-square (RMS).
      *
      * @param x The matrix to be scaled.
      */
@@ -676,24 +692,6 @@ public class FastIca {
             x.assignRow(i, u);
         }
     }
-
-    /**
-     * Centers each row of the given matrix by subtracting the mean of the row from each element.
-     *
-     * @param x The matrix to be centered.
-     */
-    private void center(Matrix x) {
-        for (int i = 0; i < x.getNumRows(); i++) {
-            Vector u = x.getRow(i);
-            double mean = mean(u);
-
-            for (int j = 0; j < x.getNumColumns(); j++) {
-                x.set(i, j, x.get(i, j) - mean);
-            }
-        }
-
-    }
-
 
     /**
      * A list containing the following components

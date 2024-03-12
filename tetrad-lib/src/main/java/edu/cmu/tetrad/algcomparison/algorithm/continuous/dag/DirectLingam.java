@@ -1,12 +1,16 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
@@ -14,7 +18,6 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
+public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -42,11 +45,6 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
      * The score.
      */
     private ScoreWrapper score;
-
-    /**
-     * The bootstrap graphs.
-     */
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
      * <p>Constructor for DirectLingam.</p>
@@ -65,37 +63,33 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the Direct LiNGAM search algorithm on the given data model with the specified parameters.
+     *
+     * @param dataModel  the data model to run the search algorithm on
+     * @param parameters the parameters for the search algorithm
+     * @return the resulting graph from the search algorithm
+     * @throws IllegalArgumentException if the data model is not an instance of DataSet
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
-            Score score = this.score.getScore(dataSet, parameters);
-
-            edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
-            Graph graph = search.search();
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
-            LogUtilsSearch.stampWithBic(graph, dataSet);
-            return graph;
-        } else {
-            DirectLingam algorithm = new DirectLingam();
-
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data,
-                    algorithm,
-                    new Knowledge(),
-                    parameters
-            );
-
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return search.search();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
         }
+
+        DataSet data = SimpleDataLoader.getContinuousDataSet(dataModel);
+        Score score = this.score.getScore(dataModel, parameters);
+
+        edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
+        Graph graph = search.search();
+        TetradLogger.getInstance().forceLogMessage(graph.toString());
+        LogUtilsSearch.stampWithBic(graph, dataModel);
+        return graph;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a comparison graph based on the given true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph, which is a new instance of EdgeListGraph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -103,16 +97,18 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     /**
-     * <p>getDescription.</p>
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
      *
-     * @return a {@link java.lang.String} object
+     * @return The description of the algorithm.
      */
     public String getDescription() {
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the algorithm, which can be Continuous, Discrete, Mixed, Graph, Covariance, or All.
+     *
+     * @return The data type of the algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -120,7 +116,9 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters for the DirectLingam algorithm.
+     *
+     * @return the list of parameters
      */
     @Override
     public List<String> getParameters() {
@@ -130,15 +128,9 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
-
-    /**
-     * {@inheritDoc}
+     * Retrieves the ScoreWrapper object associated with this DirectLingam instance.
+     *
+     * @return The ScoreWrapper object.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -146,7 +138,9 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the score wrapper for this DirectLingam instance.
+     *
+     * @param score the score wrapper to set.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {

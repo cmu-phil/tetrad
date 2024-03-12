@@ -116,7 +116,10 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the probability of the given assertion in the DirichletDataSetProbs.
+     *
+     * @param assertion The proposition to be checked for probability.
+     * @return The probability of the assertion as a double value.
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
@@ -136,7 +139,13 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the conditional probability of an assertion given a condition in the context of a Bayes IM.
+     *
+     * @param assertion the proposition representing the assertion
+     * @param condition the proposition representing the condition
+     * @return the conditional probability as a double value
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM or if the assertion
+     *                                  variable and data variables are different or in a different order
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {

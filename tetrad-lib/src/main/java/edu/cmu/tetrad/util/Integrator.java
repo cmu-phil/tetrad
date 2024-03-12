@@ -31,6 +31,13 @@ package edu.cmu.tetrad.util;
 public class Integrator {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Integrator() {
+
+    }
+
+    /**
      * Finds the area under function f between x1 and x2 using Simpson's rule. Divides the interval [x1, x2] into
      * numIntervals subintervals.
      *

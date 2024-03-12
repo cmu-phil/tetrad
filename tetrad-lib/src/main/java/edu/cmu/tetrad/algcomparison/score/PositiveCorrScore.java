@@ -22,16 +22,20 @@ import java.util.List;
 public class PositiveCorrScore implements ScoreWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * The alpha level.
      */
     double alpha = 0.001;
-
     /**
      * The data set.
      */
     private DataModel dataSet;
+
+    /**
+     * Constructs a new instance of the FisherZScore.
+     */
+    public PositiveCorrScore() {
+    }
 
     /**
      * {@inheritDoc}

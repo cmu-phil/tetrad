@@ -33,6 +33,7 @@ import java.util.Scanner;
  * @version $Id: $Id
  */
 public class DataTools {
+
     /**
      * Constant <code>NEWLINE="System.getProperty(line.separator)"</code>
      */
@@ -45,6 +46,12 @@ public class DataTools {
      * Constant <code>DELIMITER=", "</code>
      */
     public static final String DELIMITER = ", ";
+
+    /**
+     * Prevents instantiation.
+     */
+    private DataTools() {
+    }
 
     /**
      * Reads a data table from a file.

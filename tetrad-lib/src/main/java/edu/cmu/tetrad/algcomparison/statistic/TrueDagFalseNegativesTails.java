@@ -10,17 +10,23 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The class TrueDagFalseNegativesTails implements the Statistic interface to calculate the number of false negatives
+ * for tails compared to the true Directed Acyclic Graph (DAG).
  */
 public class TrueDagFalseNegativesTails implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * {@inheritDoc}
+     * Constructs the statistic.
+     */
+    public TrueDagFalseNegativesTails() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation as a String.
      */
     @Override
     public String getAbbreviation() {
@@ -28,7 +34,9 @@ public class TrueDagFalseNegativesTails implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a short one-line description of the statistic.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -36,7 +44,12 @@ public class TrueDagFalseNegativesTails implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the number of false negatives for tails compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of false negatives for tails.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -59,25 +72,14 @@ public class TrueDagFalseNegativesTails implements Statistic {
             }
         }
 
-//        for (Edge edge : estGraph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) {
-//                if (trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
-//                    tp++;
-//                }
-//            }
-//
-//            if (edge.getEndpoint2() == Endpoint.TAIL) {
-//                if (trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-//                    tp++;
-//                }
-//            }
-//        }
-
         return fn;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the normalized value of the given statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

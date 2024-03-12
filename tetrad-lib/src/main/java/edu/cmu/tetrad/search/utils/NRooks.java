@@ -16,6 +16,12 @@ import java.util.Stack;
 public class NRooks {
 
     /**
+     * Prevent instantiation.
+     */
+    private NRooks() {
+    }
+
+    /**
      * Solves the N-Rooks problem for the given board or allowable positions.
      *
      * @param allowablePositions A matrix of allowable rook positions, should be true iff the position is allowable.

@@ -42,6 +42,12 @@ public class ReidentifyVariables {
     // in the original graph.
 
     /**
+     * Constructs a new instance of the ReidentifyVariables.
+     */
+    public ReidentifyVariables() {
+    }
+
+    /**
      * <p>reidentifyVariables1.</p>
      *
      * @param partition a {@link java.util.List} object

@@ -82,7 +82,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the title of the chooser.
+     *
+     * @param title The title to use for the chooser.
+     * @throws NullPointerException if the title is null
      */
     public void setTitle(String title) {
         if (title == null) {
@@ -112,7 +115,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the model configurations for the chooser.
+     *
+     * @param configs the list of model configurations to be displayed in the chooser
      */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         ChooserTreeModel model = new ChooserTreeModel(configs);
@@ -178,7 +183,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the ID for the node.
+     *
+     * @param id the ID for the node.
+     * @throws NullPointerException if the given ID is null.
      */
     public void setNodeId(String id) {
         if (id == null) {
@@ -188,7 +196,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the SessionNode for the getModel node.
+     *
+     * @param sessionNode the SessionNode to set
      */
     public void setSessionNode(SessionNode sessionNode) {
         this.sessionNode = sessionNode;

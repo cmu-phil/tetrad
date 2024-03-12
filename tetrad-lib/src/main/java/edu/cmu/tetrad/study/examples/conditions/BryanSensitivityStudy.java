@@ -43,6 +43,12 @@ import edu.cmu.tetrad.util.Params;
 public class BryanSensitivityStudy {
 
     /**
+     * No constructor for this class.
+     */
+    private BryanSensitivityStudy() {
+    }
+
+    /**
      * Run the example.
      *
      * @param args not used

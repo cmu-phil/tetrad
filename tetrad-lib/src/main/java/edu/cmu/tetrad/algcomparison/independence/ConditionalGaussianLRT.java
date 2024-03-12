@@ -32,6 +32,13 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Initializes a new instance of the FisherZ class.
+     */
+    public ConditionalGaussianLRT() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

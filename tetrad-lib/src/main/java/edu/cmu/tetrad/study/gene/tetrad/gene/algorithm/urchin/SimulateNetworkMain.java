@@ -29,6 +29,13 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
  * @version $Id: $Id
  */
 public class SimulateNetworkMain {
+
+    /**
+     * <p>Constructor for SimulateNetworkMain.</p>
+     */
+    public SimulateNetworkMain() {
+    }
+
     /**
      * <p>main.</p>
      *

@@ -38,6 +38,12 @@ public class LTestRevealSearch {
     static int[][] cases = new int[LTestRevealSearch.ntimes][LTestRevealSearch.ngenes];
 
     /**
+     * Private constructor.
+     */
+    private LTestRevealSearch() {
+    }
+
+    /**
      * <p>main.</p>
      *
      * @param argv an array of {@link java.lang.String} objects

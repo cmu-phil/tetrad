@@ -86,6 +86,12 @@ public class DMSearch {
     private LatentStructure dmStructure;
 
     /**
+     * <p>Constructor for DMSearch.</p>
+     */
+    public DMSearch() {
+    }
+
+    /**
      * <p>Setter for the field <code>minDiscount</code>.</p>
      *
      * @param minDiscount a int

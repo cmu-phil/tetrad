@@ -29,6 +29,13 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.ideker;
  * @version $Id: $Id
  */
 public class LTestPredictorSearch {
+
+    /**
+     * Private constructor.
+     */
+    private LTestPredictorSearch() {
+    }
+
     /**
      * <p>main.</p>
      *

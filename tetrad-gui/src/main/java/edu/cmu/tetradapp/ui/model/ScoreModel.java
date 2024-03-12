@@ -63,7 +63,12 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this ScoreModel object with the specified ScoreModel object for order. Returns a negative integer, zero,
+     * or a positive integer as this ScoreModel object is less than, equal to, or greater than the specified object.
+     *
+     * @param other the object to be compared.
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than
+     * the specified object.
      */
     @Override
     public int compareTo(ScoreModel other) {
@@ -71,7 +76,9 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a string representation of the ScoreModel.
+     *
+     * @return the name of the score.
      */
     @Override
     public String toString() {

@@ -14,6 +14,13 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class LayoutUtil {
+
+    /**
+     * Constructor.
+     */
+    public LayoutUtil() {
+    }
+
     /**
      * <p>kamadaKawaiLayout.</p>
      *

@@ -234,7 +234,12 @@ public final class SemEvidence implements TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
+     * This method checks if the given object is equal to the current instance of SemEvidence. Two SemEvidence objects
+     * are considered equal if they have the same semIm, proposition, and manipulation.
+     *
+     * @param o the object to be compared with the current instance of SemEvidence
+     * @return true if the given object is equal to the current instance of SemEvidence, false otherwise
+     * @throws IllegalArgumentException if the given object is not an instance of SemEvidence
      */
     public boolean equals(Object o) {
         if (o == null) {

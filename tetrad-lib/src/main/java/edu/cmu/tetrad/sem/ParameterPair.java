@@ -94,10 +94,10 @@ public class ParameterPair implements TetradSerializable {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Tests whether this object pair is equal to a second object pair by looking to see whether each element a and b is
-     * equal to its corresponding element.
+     * Checks if this ParameterPair object is equal to the specified object.
+     *
+     * @param object the object to compare to this ParameterPair
+     * @return {@code true} if the specified object is equal to this ParameterPair, {@code false} otherwise
      */
     public boolean equals(Object object) {
         if (object == null) {
