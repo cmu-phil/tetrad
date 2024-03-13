@@ -41,8 +41,8 @@ public class TaskRunner<T> {
     private final ExecutorService pool;
 
     /**
-     * This class is responsible for running a list of tasks that implement the Callable interface in parallel using
-     * multiple threads.
+     * This class is responsible for running a list of tasks that implement the
+     * Callable interface in parallel using multiple threads.
      */
     public TaskRunner() {
         this(Runtime.getRuntime().availableProcessors());
@@ -58,7 +58,8 @@ public class TaskRunner<T> {
     }
 
     /**
-     * Executes a list of tasks that implement Callable in parallel using multiple threads.
+     * Executes a list of tasks that implement Callable in parallel using
+     * multiple threads.
      *
      * @param tasks the list of tasks to execute
      * @return a list of results from the completed tasks
@@ -82,8 +83,10 @@ public class TaskRunner<T> {
             for (Future<T> completedTask : completedTasks) {
                 results.add(completedTask.get());
             }
-        } catch (ExecutionException | InterruptedException exception) {
+        } catch (InterruptedException exception) {
             LOGGER.error("", exception);
+        } catch (ExecutionException exception) {
+            throw new RuntimeException(exception.getCause().getMessage());
         }
 
         return results;
@@ -92,12 +95,15 @@ public class TaskRunner<T> {
     /**
      * Shuts down an ExecutorService and awaits its termination.
      * <p>
-     * This method gracefully shuts down the ExecutorService by calling {@link ExecutorService#shutdown()} and then
-     * waits for the termination of all tasks for a specified timeout period using the
-     * {@link ExecutorService#awaitTermination(long, TimeUnit)} method. If the tasks do not terminate within the timeout
-     * period, the method forcefully shuts down the ExecutorService by calling {@link ExecutorService#shutdownNow()} and
-     * waits again for the termination using {@link ExecutorService#awaitTermination(long, TimeUnit)}. If the tasks
-     * still do not terminate, an error message is logged.
+     * This method gracefully shuts down the ExecutorService by calling
+     * {@link ExecutorService#shutdown()} and then waits for the termination of
+     * all tasks for a specified timeout period using the
+     * {@link ExecutorService#awaitTermination(long, TimeUnit)} method. If the
+     * tasks do not terminate within the timeout period, the method forcefully
+     * shuts down the ExecutorService by calling
+     * {@link ExecutorService#shutdownNow()} and waits again for the termination
+     * using {@link ExecutorService#awaitTermination(long, TimeUnit)}. If the
+     * tasks still do not terminate, an error message is logged.
      *
      * @param pool the ExecutorService to shut down and await termination
      */
