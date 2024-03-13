@@ -18,10 +18,9 @@
  */
 package edu.cmu.tetradapp.editor.search;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -37,9 +36,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serial;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 
 /**
@@ -76,26 +72,6 @@ public class GraphCard extends JPanel {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
         initComponents();
-    }
-
-    public static boolean isLatentVariableAlgorithm(Algorithm algorithm) {
-        if (algorithm == null) {
-            throw new NullPointerException("Algorithm must not be null.");
-        }
-
-        Annotation annotation = algorithm.getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
-        try {
-            Method method = annotation.annotationType().getDeclaredMethod("algoType");
-            AlgType ret = (AlgType) method.invoke(annotation);
-
-            if (ret == AlgType.allow_latent_common_causes) {
-                return true;
-            }
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException("Error in getting algorithm type from annotation", e);
-        }
-
-        return false;
     }
 
     private void initComponents() {
@@ -181,7 +157,7 @@ public class GraphCard extends JPanel {
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
 
-        if (isLatentVariableAlgorithm(this.algorithmRunner.getAlgorithm())) {
+        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
             mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
         }
 
