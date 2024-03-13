@@ -163,7 +163,7 @@ public class Ida {
      * @param y The second variable
      * @return a list of the possible effects of X on Y.
      */
-    private LinkedList<Double> getEffects(Node x, Node y) {
+    public LinkedList<Double> getEffects(Node x, Node y) {
         List<Node> parents = this.cpdag.getParents(x);
         List<Node> children = this.cpdag.getChildren(x);
 
