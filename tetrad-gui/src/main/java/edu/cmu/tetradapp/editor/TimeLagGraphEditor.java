@@ -286,39 +286,39 @@ public final class TimeLagGraphEditor extends JPanel
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
+        JLabel label = new JLabel("Double click variable/node to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
-        // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Initialize helpSet
-                final String helpHS = "/docs/javahelp/TetradHelp.hs";
-
-                try {
-                    URL url = this.getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
-
-                    helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                    listener.actionPerformed(e);
-                } catch (Exception ee) {
-                    System.out.println("HelpSet " + ee.getMessage());
-                    System.out.println("HelpSet " + helpHS + " not found");
-                    throw new IllegalArgumentException();
-                }
-            }
-        });
-
+//        // Info button added by Zhou to show edge types
+//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+//
+//        // Clock info button to show edge types instructions - Zhou
+//        infoBtn.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                // Initialize helpSet
+//                final String helpHS = "/docs/javahelp/TetradHelp.hs";
+//
+//                try {
+//                    URL url = this.getClass().getResource(helpHS);
+//                    HelpSet helpSet = new HelpSet(null, url);
+//
+//                    helpSet.setHomeID("graph_edge_types");
+//                    HelpBroker broker = helpSet.createHelpBroker();
+//                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+//                    listener.actionPerformed(e);
+//                } catch (Exception ee) {
+//                    System.out.println("HelpSet " + ee.getMessage());
+//                    System.out.println("HelpSet " + helpHS + " not found");
+//                    throw new IllegalArgumentException();
+//                }
+//            }
+//        });
+//
         instructionBox.add(label);
         instructionBox.add(Box.createHorizontalStrut(2));
-        instructionBox.add(infoBtn);
+//        instructionBox.add(infoBtn);
 
         // Add to topBox
         topBox.add(topGraphBox);
