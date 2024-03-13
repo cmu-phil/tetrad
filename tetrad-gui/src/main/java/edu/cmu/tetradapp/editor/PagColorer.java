@@ -105,7 +105,7 @@ public class PagColorer extends JCheckBoxMenuItem {
             }
         }
 
-        if (buf1.length() > 0) {
+        if (!buf1.isEmpty()) {
             buf2.append(buf1);
         }
 
