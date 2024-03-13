@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -55,7 +56,6 @@ public class GraphCard extends JPanel {
      * The algorithm runner.
      */
     private final GeneralAlgorithmRunner algorithmRunner;
-    private boolean isLatentVariableAlgorithm = false;
 
     /**
      * The workbench.
@@ -75,24 +75,27 @@ public class GraphCard extends JPanel {
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
-        checkLatentVariableAlgorithm(algorithmRunner);
         initComponents();
     }
 
-    private void checkLatentVariableAlgorithm(GeneralAlgorithmRunner algorithmRunner) {
-        isLatentVariableAlgorithm = false;
+    public static boolean isLatentVariableAlgorithm(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new NullPointerException("Algorithm must not be null.");
+        }
 
-        Annotation annotation = algorithmRunner.getAlgorithm().getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
+        Annotation annotation = algorithm.getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
         try {
             Method method = annotation.annotationType().getDeclaredMethod("algoType");
             AlgType ret = (AlgType) method.invoke(annotation);
 
             if (ret == AlgType.allow_latent_common_causes) {
-                isLatentVariableAlgorithm = true;
+                return true;
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error in getting algorithm type from annotation", e);
         }
+
+        return false;
     }
 
     private void initComponents() {
@@ -178,7 +181,7 @@ public class GraphCard extends JPanel {
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
 
-        if (isLatentVariableAlgorithm) {
+        if (isLatentVariableAlgorithm(this.algorithmRunner.getAlgorithm())) {
             mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
         }
 

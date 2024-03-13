@@ -286,7 +286,7 @@ public final class TimeLagGraphEditor extends JPanel
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
