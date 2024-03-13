@@ -151,6 +151,10 @@ public class GraphCard extends JPanel {
         graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
+        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG coloring.
+        // This is to show the edge types in the graph. - jdramsey 2024/03/13
+        graphWorkbench.setDoPagColoring(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
+
         this.workbench = graphWorkbench;
 
         JPanel mainPanel = new JPanel(new BorderLayout());

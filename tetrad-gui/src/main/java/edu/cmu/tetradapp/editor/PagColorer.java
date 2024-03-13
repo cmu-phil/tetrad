@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -50,22 +51,22 @@ public class PagColorer extends JCheckBoxMenuItem {
 
         final GraphWorkbench _workbench = workbench;
 
-        Graph graph = workbench.getGraph();
-
         _workbench.setDoPagColoring(workbench.isDoPagColoring());
         setSelected(workbench.isDoPagColoring());
 
         addItemListener(e -> {
-            if (!isSelected()) {
-                workbench.setDoPagColoring(false);
-            } else {
+            _workbench.setDoPagColoring(isSelected());
+
+            if (isSelected()) {
                 int ret = JOptionPane.showConfirmDialog(workbench,
                         breakDown("Would you like to verify that this is a legal PAG?", 60),
                         "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (ret == JOptionPane.YES_NO_OPTION) {
+                if (ret == JOptionPane.YES_OPTION) {
                     class MyWatchedProcess extends WatchedProcess {
                         @Override
                         public void watch() {
+                            Graph graph = new EdgeListGraph(workbench.getGraph());
+
                             GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
                             String reason = breakDown(legalPag.getReason(), 60);
 
@@ -82,21 +83,6 @@ public class PagColorer extends JCheckBoxMenuItem {
                     }
 
                     new MyWatchedProcess();
-//                    GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
-//                    String reason = breakDown(legalPag.getReason(), 60);
-//
-//                    if (!legalPag.isLegalPag()) {
-//                        JOptionPane.showMessageDialog(workbench,
-//                                "This is not a legal PAG--one reason is as follows:" +
-//                                        "\n\n" + reason + ".",
-//                                "Legal PAG check",
-//                                JOptionPane.WARNING_MESSAGE);
-//                    } else {
-//                        JOptionPane.showMessageDialog(workbench, reason);
-//                    }
-//                }
-
-                    _workbench.setDoPagColoring(true);
                 }
             }
         });
