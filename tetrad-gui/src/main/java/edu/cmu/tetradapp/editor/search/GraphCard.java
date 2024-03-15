@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -34,6 +35,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 import java.net.URL;
 
 /**
@@ -43,6 +45,7 @@ import java.net.URL;
  * @version $Id: $Id
  */
 public class GraphCard extends JPanel {
+    @Serial
     private static final long serialVersionUID = -7654484444146823298L;
 
     /**
@@ -68,7 +71,6 @@ public class GraphCard extends JPanel {
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
-
         initComponents();
     }
 
@@ -149,18 +151,25 @@ public class GraphCard extends JPanel {
         graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
+        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG coloring.
+        // This is to show the edge types in the graph. - jdramsey 2024/03/13
+        graphWorkbench.setDoPagColoring(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
+
         this.workbench = graphWorkbench;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
-        mainPanel.add(createInstructionBox(), BorderLayout.SOUTH);
+
+        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
+            mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
+        }
 
         return mainPanel;
     }
 
-    private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types and colorings");
+    private Box createLatentVariableInstructionBox() {
+        JLabel label = new JLabel("More information on FCI graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types

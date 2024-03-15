@@ -253,6 +253,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         
                         disposeStopDialog();
 
+                        disposeStopDialog();
+
                         JOptionPane.showMessageDialog(
                                 getTopLevelAncestor(),
                                 "Stopped with error:\n"

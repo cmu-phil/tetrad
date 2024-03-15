@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -32,6 +34,9 @@ import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -390,10 +395,11 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * <p>isLegalPag.</p>
+     * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
-     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.LegalPagRet} object
+     * @param pag The Directed Acyclic Graph (PAG) to be checked
+     *
+     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
      */
     public static LegalPagRet isLegalPag(Graph pag) {
 
@@ -1161,6 +1167,35 @@ public final class GraphSearchUtils {
         }
 
         return counts;
+    }
+
+    /**
+     * Checks if the provided algorithm is a latent variable algorithm by inspecting the associated annotation.
+     *
+     * @param algorithm The algorithm to check.
+     * @return true if the algorithm is a latent variable algorithm, false otherwise.
+     * @throws NullPointerException if the algorithm is null.
+     * @throws RuntimeException if there is an error in getting the algorithm type from the annotation.
+     */
+    public static boolean isLatentVariableAlgorithmByAnnotation(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new NullPointerException("Algorithm must not be null.");
+        }
+
+        Annotation annotation = algorithm.getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
+
+        try {
+            Method method = annotation.annotationType().getDeclaredMethod("algoType");
+            AlgType ret = (AlgType) method.invoke(annotation);
+
+            if (ret == AlgType.allow_latent_common_causes) {
+                return true;
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException("Error in getting algorithm type from annotation", e);
+        }
+
+        return false;
     }
 
     /**
