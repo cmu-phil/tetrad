@@ -39,34 +39,30 @@ import java.util.Locale;
 import java.util.prefs.Preferences;
 
 /**
- * Launches Tetrad as an application. The intended class path in either case is "edu.cmu.tetradapp.Tetrad", so care
- * should be taken not to move this class out of the "INSTANCE" package. The launch itself is carried out by the method
- * "launchFrame()", which generates a new frame for the application.
- * <p>
- * Note to programmers: <b>Please don't make any changes to this class.</b> If you need another way of launching Tetrad
- * for special purposes, it's easy enough to create a copy of this class with a different name and modify it.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The Tetrad class represents the main class of the Tetrad application.
  */
 public final class Tetrad implements PropertyChangeListener {
 
-    // The experimental option
-    private static final String EXP_OPT = "--experimental";
-    // Whether to enable experimental features
     /**
-     * Constant <code>enableExperimental=// Whether to enable experimental features</code>
+     * The experimental option
+     */
+    private static final String EXP_OPT = "--experimental";
+    /**
+     * Whether to enable experimental features
      */
     public static boolean enableExperimental;
     /**
-     * Constant <code>frame</code>
+     * The variable frame represents the main JFrame of the application.
+     * It is a static field of the Tetrad class.
      */
     public static JFrame frame;
-    // The launch frame.
-    // The main application title.
-    private final String mainTitle
-            = "Tetrad " + Version.currentViewableVersion();
-    // The desktop placed into the launch frame.
+    /**
+     * The main application title.
+     */
+    private final String mainTitle = "Tetrad " + Version.currentViewableVersion();
+    /**
+     * The desktop placed into the launch frame.
+     */
     private TetradDesktop desktop;
 
     //==============================CONSTRUCTORS===========================//
@@ -108,7 +104,12 @@ public final class Tetrad implements PropertyChangeListener {
         Tetrad.enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
     }
 
-    //===============================PRIVATE METHODS=======================//
+
+    /**
+     * Sets the look and feel for the application based on the operating system.
+     * If the operating system is Windows XP, it sets the system look and feel.
+     * Throws an exception if encountering any errors while setting the look and feel.
+     */
     private static void setLookAndFeel() {
         try {
             String os = System.getProperties().getProperty("os.name");
@@ -133,7 +134,9 @@ public final class Tetrad implements PropertyChangeListener {
         }
     }
 
-    // Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
+    /**
+     * Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
+     */
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
@@ -164,16 +167,11 @@ public final class Tetrad implements PropertyChangeListener {
 
                 // On a super-small screen, make the window a bigger.
                 if (height <= 900) {
-                    return new Dimension((int) width, (int) height);
+                    return new Dimension((int) (width * 0.9), (int) (height * 0.8));
                 } else {
-                    height *= 0.75;
-                    width = height * 1.333333333;
+                    return new Dimension((int) (width * 0.75), (int) (height * 0.75));
                 }
-
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-                return new Dimension((int) width, (int) height);
             }
-
         };
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
