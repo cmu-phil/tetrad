@@ -165,7 +165,7 @@ public final class Tetrad implements PropertyChangeListener {
                 double width = graphicsDevice.getDisplayMode().getWidth();
                 double height = graphicsDevice.getDisplayMode().getHeight();
 
-                // On a super-small screen, make the window a bigger.
+                // On a super-small screen, make the window a bit bigger.
                 if (height <= 900) {
                     return new Dimension((int) (width * 0.9), (int) (height * 0.8));
                 } else {
