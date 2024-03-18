@@ -78,6 +78,7 @@ public class IcaLingD extends AbstractBootstrapAlgorithm implements Algorithm, R
 
         for (Matrix bHat : bHats) {
             Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
+            _bHats.put(graph, bHat);
 
             if (edu.cmu.tetrad.search.IcaLingD.isStable(bHat)) {
                 _stableGraphs.add(graph);
