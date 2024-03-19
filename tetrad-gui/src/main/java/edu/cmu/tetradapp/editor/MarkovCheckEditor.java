@@ -344,7 +344,7 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-        JButton recalculate = new JButton("Recalculate");
+        JButton recalculate = new JButton("Resample");
 
         this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
 
@@ -582,15 +582,16 @@ public class MarkovCheckEditor extends JPanel {
                     return "Test Result";
                 } else if (column == 3) {
                     return "P-value or Bump";
-                } else if (model.getMarkovCheck().isCpdag() && column == 4) {
-                    return "Min Beta";
                 }
+//                else if (model.getMarkovCheck().isCpdag() && column == 4) {
+//                    return "Min Beta";
+//                }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return model.getMarkovCheck().isCpdag() ? 5 : 4;
+                return model.getMarkovCheck().isCpdag() ? 4 : 3;
             }
 
             public int getRowCount() {
@@ -636,13 +637,13 @@ public class MarkovCheckEditor extends JPanel {
                     return nf.format(result.getPValue());
                 }
 
-                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
-                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
-                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
-                }
+//                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
+//                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
+//                    Node x = fact.getX();
+//                    Node y = fact.getY();
+//                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
+//                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
+//                }
 
                 return null;
             }
