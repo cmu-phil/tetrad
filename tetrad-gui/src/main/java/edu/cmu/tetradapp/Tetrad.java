@@ -169,7 +169,7 @@ public final class Tetrad implements PropertyChangeListener {
                 if (height <= 900) {
                     return new Dimension((int) (width * 0.9), (int) (height * 0.8));
                 } else {
-                    return new Dimension((int) (width * 0.7), (int) (height * 0.75));
+                    return new Dimension((int) (width * 0.65), (int) (height * 0.75));
                 }
             }
         };
