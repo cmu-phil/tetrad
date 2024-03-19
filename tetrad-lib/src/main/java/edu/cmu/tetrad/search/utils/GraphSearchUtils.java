@@ -454,7 +454,7 @@ public final class GraphSearchUtils {
         return new LegalPagRet(true, "This is a legal PAG");
     }
 
-    private static LegalMagRet isLegalMag(Graph mag) {
+    public static LegalMagRet isLegalMag(Graph mag) {
         for (Node n : mag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT)
                 return new LegalMagRet(false,
