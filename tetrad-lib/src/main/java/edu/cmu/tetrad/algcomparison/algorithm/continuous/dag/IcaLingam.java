@@ -39,7 +39,7 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
 
     @Serial
     private static final long serialVersionUID = 23L;
-    private Matrix bHat = null;
+    private Matrix bHat = new Matrix(0, 0);
 
     /**
      * Constructs a new instance of the IcaLingam algorithm.
@@ -129,7 +129,7 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
      *
      * @return The bHat matrix.
      */
-    public Matrix getbHat() {
+    public Matrix getBHat() {
         return bHat;
     }
 }
