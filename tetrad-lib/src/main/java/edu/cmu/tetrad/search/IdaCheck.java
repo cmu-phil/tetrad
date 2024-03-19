@@ -59,14 +59,26 @@ public class IdaCheck {
      * Constructs a new IDA check for the given CPDAG and data set.
      */
     public IdaCheck(Graph cpdag, DataSet dataSet) {
+
+        // check for null
+        if (cpdag == null) {
+            throw new NullPointerException("CPDAG is null.");
+        }
+        if (dataSet == null) {
+            throw new NullPointerException("DataSet is null.");
+        }
+
+        // Check to make sure the CPDAG is legal
         if (!cpdag.paths().isLegalCpdag()) {
             throw new IllegalArgumentException("Expecting a CPDAG.");
         }
 
+        // Convert the CPDAG to a CPDAG with the same nodes as the data set
         cpdag = GraphUtils.replaceNodes(cpdag, dataSet.getVariables());
 
-        if (!new HashSet<>(cpdag.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
-            throw new IllegalArgumentException("Expecting the variables in this CPDAG to be the same as " + "the variables in this dataset.");
+        // Check to makes sure the set of variables from the CPDAG is the same as the set of variables from the data set.
+        if (!cpdag.getNodes().equals(dataSet.getVariables())) {
+            throw new IllegalArgumentException("The variables in the CPDAG do not match the variables in the data set.");
         }
 
         this.dataSet = dataSet;

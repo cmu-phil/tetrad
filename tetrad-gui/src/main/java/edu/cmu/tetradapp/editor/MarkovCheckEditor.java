@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
- * A model for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
+ * An editor for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
  * respect to the dataset. The Markov check can be used to check whether a graph is Markov with respect to a dataset, or
  * whether a graph is Markov with respect to a dataset and a set of variables. The Markov check can also be used to
  * check whether a graph is Markov with respect to a dataset and a set of variables, given a set of knowledge. For facts
