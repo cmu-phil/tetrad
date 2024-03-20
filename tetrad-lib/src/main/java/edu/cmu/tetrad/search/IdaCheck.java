@@ -79,7 +79,7 @@ public class IdaCheck {
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
         // Check to make sure the set of variables from the CPDAG is the same as the set of variables from the data set.
-        if (!graph.getNodes().equals(dataSet.getVariables())) {
+        if (!new HashSet<>(graph.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
             throw new IllegalArgumentException("The variables in the CPDAG do not match the variables in the data set.");
         }
 
