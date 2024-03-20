@@ -124,15 +124,6 @@ public class IdaCheck {
     public double getMinEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
-
-        if (y.getName().equals("X3") && x.getName().equals("X7")) {
-            System.out.println("Effects 2 for " + y + " <- " + x + ": " + effects);
-            System.out.println();
-        }
-//        System.out.println("Effects 2 for " + y + " <- " + x + ": " + effects);
-
-
-//        Collections.sort(effects);
         return effects.getFirst();
     }
 
@@ -147,7 +138,6 @@ public class IdaCheck {
     public double getMaxEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
-        Collections.sort(effects);
         return effects.getLast();
     }
 

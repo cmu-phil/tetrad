@@ -45,13 +45,14 @@ import java.util.regex.Pattern;
 public class IdaEditor extends JPanel {
 
     public IdaEditor(IdaModel idaModel) {
-        IdaCheck idaCheck = idaModel.getIdaCheck();
+        IdaCheck idaCheckEst = idaModel.getIdaCheckEst();
+        IdaCheck idaCheckTrue = idaModel.getIdaCheckTrue();
 
         // Grab the legal ordered pairs (i.e. all possible pairs of distinct nodes)
-        List<OrderedPair<Node>> pairs = idaCheck.getOrderedPairs();
+        List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
 
-        // Create a table idaCheck for the results of the IDA check
-        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheck);
+        // Create a table idaCheckEst for the results of the IDA check
+        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheckEst, idaCheckTrue);
         this.setLayout(new BorderLayout());
 
         // Add the table to the left
@@ -123,7 +124,11 @@ public class IdaEditor extends JPanel {
         // Then you can add your panel to the top of your frame
         add(horiz, BorderLayout.CENTER);
 
-        setPreferredSize(new Dimension(400, 600));
+        if (idaCheckTrue == null) {
+            setPreferredSize(new Dimension(400, 600));
+        } else {
+            setPreferredSize(new Dimension(600, 600));
+        }
     }
 
 
@@ -134,9 +139,10 @@ public class IdaEditor extends JPanel {
     private static class IdaTableModel extends AbstractTableModel {
 
         /**
-         * The column names for the table.
+         * The column names for the table. If trueModel is null, then the table will have 3 columns. If trueModel is not
+         * null, then the table will have 5 columns.
          */
-        private final String[] columnNames = {"Pair", "Min IDA Effect", "Max IDA Effect"};
+        private final String[] columnNames = {"Pair", "Min Est Effect", "Max Est Effect", "Min True Effect", "Max True Effect"};
 
         /**
          * The data for the table.
@@ -144,22 +150,33 @@ public class IdaEditor extends JPanel {
         private final Object[][] data;
 
         /**
-         * Constructs a new table model for the results of the IDA check.
+         * Constructs a new table estModel for the results of the IDA check.
          */
-        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck model) {
+        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, IdaCheck trueModel) {
 
             // Create the data for the table
-            this.data = new Object[pairs.size()][3];
+            this.data = trueModel == null ? new Object[pairs.size()][3] : new Object[pairs.size()][5];
 
             // Fill in the data for the table
             for (int i = 0; i < pairs.size(); i++) {
                 OrderedPair<Node> pair = pairs.get(i);
                 String edge = pair.getSecond() + " <- " + pair.getFirst();
-                double min = model.getMinEffect(pair.getFirst(), pair.getSecond());
-                double max = model.getMaxEffect(pair.getFirst(), pair.getSecond());
-                this.data[i][0] = edge;
-                this.data[i][1] = min;
-                this.data[i][2] = max;
+                double minEst = estModel.getMinEffect(pair.getFirst(), pair.getSecond());
+                double maxEst = estModel.getMaxEffect(pair.getFirst(), pair.getSecond());
+
+               if (trueModel == null) {
+                    this.data[i][0] = edge;
+                    this.data[i][1] = minEst;
+                    this.data[i][2] = maxEst;
+                } else {
+                    double minTrue = trueModel.getMinEffect(pair.getFirst(), pair.getSecond());
+                    double maxTrue = trueModel.getMaxEffect(pair.getFirst(), pair.getSecond());
+                    this.data[i][0] = edge;
+                    this.data[i][1] = minEst;
+                    this.data[i][2] = maxEst;
+                    this.data[i][3] = minTrue;
+                    this.data[i][4] = maxTrue;
+                }
             }
         }
 
@@ -170,7 +187,7 @@ public class IdaEditor extends JPanel {
 
         @Override
         public int getColumnCount() {
-            return this.columnNames.length;
+            return data[0].length;
         }
 
         @Override
