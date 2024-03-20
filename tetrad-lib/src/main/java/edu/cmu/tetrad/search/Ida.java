@@ -2,13 +2,15 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
@@ -33,11 +35,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  */
 public class Ida {
     /**
-     * The dataset being searched over.
-     */
-    private final DataSet dataSet;
-    /**
-     * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+     * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm)
      */
     private final Graph cpdag;
     /**
@@ -57,70 +55,42 @@ public class Ida {
      * Constructor.
      *
      * @param dataSet        The dataset being searched over.
-     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+     * @param graph          The graph model. Should be a DAG or a CPDAG.
      * @param possibleCauses The possible causes to be considered.
      */
-    public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
-        this.dataSet = DataTransforms.convertNumericalDiscreteToContinuous(dataSet);
-        this.cpdag = cpdag;
+    public Ida(DataSet dataSet, Graph graph, List<Node> possibleCauses) {
+        // Check nullity
+        if (dataSet == null) {
+            throw new NullPointerException("Data set must not be null.");
+        }
+
+        if (graph == null) {
+            throw new NullPointerException("Graph must not be null.");
+        }
+
+        if (possibleCauses == null) {
+            throw new NullPointerException("Possible causes must not be null.");
+        }
+
+        // Check tha the graph is either a DAG or a CPDAG.
+        if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
+            throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
+        }
+
+        // Check that the dataset is continuous.
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
+        }
+
+        this.cpdag = graph;
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
-
-        this.allCovariances = new CovarianceMatrix(this.dataSet);
-
+        this.allCovariances = new CovarianceMatrix(dataSet);
         this.nodeIndices = new HashMap<>();
 
-        for (int i = 0; i < cpdag.getNodes().size(); i++) {
-            this.nodeIndices.put(cpdag.getNodes().get(i).getName(), i);
+        for (int i = 0; i < graph.getNodes().size(); i++) {
+            this.nodeIndices.put(graph.getNodes().get(i).getName(), i);
         }
-    }
-
-    /**
-     * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
-     *
-     * @param y The child variable.
-     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects, sorted downward by
-     * minimum effect size.
-     * @see Ida
-     */
-    public NodeEffects getSortedMinEffects(Node y) {
-        Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
-
-        List<Node> nodes = new ArrayList<>(allEffects.keySet());
-        RandomUtil.shuffle(nodes);
-
-        nodes.sort((o1, o2) -> Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1))));
-
-        LinkedList<Double> effects = new LinkedList<>();
-
-        for (Node node : nodes) {
-            effects.add(allEffects.get(node));
-        }
-
-        return new NodeEffects(nodes, effects);
-    }
-
-    /**
-     * Calculates the true effect of node x on node y in a given graph.
-     *
-     * @param x       The first node.
-     * @param y       The second node.
-     * @param trueDag The graph representing the true underlying causal structure.
-     * @return The true effect of x on y.
-     * @throws IllegalArgumentException If x is equal to y.
-     */
-    public double trueEffect(Node x, Node y, Graph trueDag) {
-        if (x == y) throw new IllegalArgumentException("x == y");
-
-        if (!trueDag.paths().isAncestorOf(x, y)) return 0.0;
-
-        trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
-
-        List<Node> regressors = new ArrayList<>();
-        regressors.add(x);
-        regressors.addAll(trueDag.getParents(x));
-
-        return abs(getBeta(regressors, y));
     }
 
     /**
@@ -246,7 +216,16 @@ public class Ida {
         return minEffects;
     }
 
-    // x must be the first regressor.
+    /**
+     * Calculates the beta coefficient for a given set of regressors and a child node.
+     * <p>
+     * Note that x must be the first regressor.
+     *
+     * @param regressors The list of regressor nodes.
+     * @param child      The child node for which the beta coefficient is calculated.
+     * @return The beta coefficient for the child node.
+     * @throws RuntimeException If a singularity is encountered during the regression process.
+     */
     private double getBeta(List<Node> regressors, Node child) {
         try {
             int yIndex = this.nodeIndices.get(child.getName());

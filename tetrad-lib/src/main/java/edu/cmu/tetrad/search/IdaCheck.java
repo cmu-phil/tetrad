@@ -58,33 +58,34 @@ public class IdaCheck {
     /**
      * Constructs a new IDA check for the given CPDAG and data set.
      */
-    public IdaCheck(Graph cpdag, DataSet dataSet) {
+    public IdaCheck(Graph graph, DataSet dataSet) {
 
         // check for null
-        if (cpdag == null) {
+        if (graph == null) {
             throw new NullPointerException("CPDAG is null.");
         }
+
         if (dataSet == null) {
             throw new NullPointerException("DataSet is null.");
         }
 
-        // Check to make sure the CPDAG is legal
-        if (!cpdag.paths().isLegalCpdag()) {
-            throw new IllegalArgumentException("Expecting a CPDAG.");
+        // Check to make sure the graph is either a DAG or a CPDAG.
+        if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
+            throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
         }
 
         // Convert the CPDAG to a CPDAG with the same nodes as the data set
-        cpdag = GraphUtils.replaceNodes(cpdag, dataSet.getVariables());
+        graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
         // Check to makes sure the set of variables from the CPDAG is the same as the set of variables from the data set.
-        if (!cpdag.getNodes().equals(dataSet.getVariables())) {
+        if (!graph.getNodes().equals(dataSet.getVariables())) {
             throw new IllegalArgumentException("The variables in the CPDAG do not match the variables in the data set.");
         }
 
         this.dataSet = dataSet;
         this.nodes = dataSet.getVariables();
         this.effects = new HashMap<>();
-        this.ida = new Ida(this.dataSet, cpdag, nodes);
+        this.ida = new Ida(this.dataSet, graph, nodes);
         this.pairs = calcOrderedPairs();
 
         for (OrderedPair<Node> pair : calcOrderedPairs()) {
@@ -154,59 +155,6 @@ public class IdaCheck {
     public double getSquaredDistance(Node x, Node y, double trueEffect) {
         double distance = ida.distance(this.effects.get(new OrderedPair<>(x, y)), trueEffect);
         return distance * distance;
-    }
-
-    /**
-     * Calculates the average squared distance between all pairs of nodes in the given SemIm object.
-     * <p>
-     * This method calculates the average squared distance by iterating over all edges in the SemGraph of the SemIm
-     * object. For each edge, it retrieves the tail node (x), the head node (y), and the true effect value. It then
-     * calculates the squared distance using the getSquaredDistance() method and adds it to the sum. After iterating
-     * over all edges, it returns the sum divided by the total number of edges.
-     * <p>
-     * If the SemGraph is not a legal DAG (Directed Acyclic Graph), an IllegalArgumentException is thrown. Furthermore,
-     * if the variables in the SemGraph's DAG are not the same as the variables in the DataSet, another
-     * IllegalArgumentException is thrown. If the graph is empty (i.e., no edges), an IllegalArgumentException is also
-     * thrown.
-     *
-     * @param im The SemIm object containing the SemGraph to calculate the average squared distance from.
-     * @return The average squared distance between all pairs of nodes in the SemGraph.
-     * @throws IllegalArgumentException If the SemGraph is not a legal DAG, the variables in the DAG are different from
-     *                                  the variables in the DataSet, or the graph is empty.
-     */
-    public double getAverageSquaredDistance(SemIm im) {
-        SemGraph graph = im.getSemPm().getGraph();
-        graph.setShowErrorTerms(false);
-
-        if (!graph.paths().isLegalDag()) {
-            throw new IllegalArgumentException("Expecting a DAG from the SEM model.");
-        }
-
-        Graph dag = new EdgeListGraph(graph);
-        Graph _dag = GraphUtils.replaceNodes(dag, dataSet.getVariables());
-
-        if (!new HashSet<>(_dag.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
-            throw new IllegalArgumentException("Expecting the variables in the DAG for this SEM model to be the " + "same as the variables in the dataset.");
-        }
-
-        double sum = 0.0;
-        int count = 0;
-
-        Set<Edge> edges = dag.getEdges();
-
-        if (edges.isEmpty())
-            throw new IllegalArgumentException("The graph for this model is empty, so we can't calculate " + "an average squared IDA distance.");
-
-        for (Edge edge : edges) {
-            Node x = Edges.getDirectedEdgeTail(edge);
-            Node y = Edges.getDirectedEdgeHead(edge);
-            double trueEffect = im.getEdgeCoef(edge);
-            double squaredDistance = getSquaredDistance(x, y, trueEffect);
-            sum += squaredDistance;
-            count++;
-        }
-
-        return sum / count;
     }
 
     /**

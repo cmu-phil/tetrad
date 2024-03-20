@@ -56,7 +56,7 @@ public class IdaModel implements SessionModel {
     /**
      * The true CPDAG represented by a graph object.
      */
-    private final Graph trueCpdag;
+    private final Graph trueCdag;
     /**
      * The parameters.
      */
@@ -122,7 +122,9 @@ public class IdaModel implements SessionModel {
 
         this.dataModel = dataModel.getSelectedDataModel();
         this.estCpdag = GraphTransforms.cpdagForDag(estimatedGraph.getGraph());
-        this.trueCpdag = semImWrapper == null ? null : GraphTransforms.cpdagForDag(semImWrapper.getSemIm().getSemPm().getGraph());
+
+        // We want the DAG here because we want a single IDA value, not a range.
+        this.trueCdag = semImWrapper == null ? null : semImWrapper.getSemIm().getSemPm().getGraph();
         this.parameters = parameters;
 
         // Make sure the data model is a DataSet.
@@ -165,11 +167,11 @@ public class IdaModel implements SessionModel {
             return this.idaCheckTrue;
         }
 
-        if (this.trueCpdag == null) {
+        if (this.trueCdag == null) {
             return null;
         }
 
-        this.idaCheckTrue = new IdaCheck(this.trueCpdag, (DataSet) this.dataModel);
+        this.idaCheckTrue = new IdaCheck(this.trueCdag, (DataSet) this.dataModel);
         return this.idaCheckTrue;
     }
 
@@ -185,8 +187,8 @@ public class IdaModel implements SessionModel {
     /**
      * The true CPDAG, if available.
      */
-    public Graph getTrueCpdag() {
-        return new EdgeListGraph(trueCpdag);
+    public Graph getTrueCdag() {
+        return new EdgeListGraph(trueCdag);
     }
 
     /**
