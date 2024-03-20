@@ -38,6 +38,9 @@ import java.util.regex.Pattern;
 /**
  * A editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
  * The table can be copied and pasted into a text file or into Excel.
+ * <p>
+ * For an estimated graph, the table will have 3 columns: Pair, Min Est Effect, and Max Est Effect. For a true graph,
+ * the table will have 5 columns: Pair, Min Est Effect, Max Est Effect, Min True Effect, and Max True Effect.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -164,7 +167,7 @@ public class IdaEditor extends JPanel {
                 double minEst = estModel.getMinEffect(pair.getFirst(), pair.getSecond());
                 double maxEst = estModel.getMaxEffect(pair.getFirst(), pair.getSecond());
 
-               if (trueModel == null) {
+                if (trueModel == null) {
                     this.data[i][0] = edge;
                     this.data[i][1] = minEst;
                     this.data[i][2] = maxEst;
