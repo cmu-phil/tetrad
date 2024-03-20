@@ -1397,7 +1397,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         private Graph graph() {
-            return this.wrapper.getSemIm().getSemPm().getGraph();
+            SemIm semIm = this.wrapper.getSemIm();
+            return semIm.getSemPm().getGraph();
         }
 
         private GraphWorkbench workbench() {

@@ -69,6 +69,10 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
      */
     private transient IdaCheck idaCheck;
 
+    public IdaModel(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(dataWrapper, graphSource, null, parameters);
+    }
+
     /**
      * Constructs a new IDA checker with the given data model, graph, and parameters.
      *
@@ -76,8 +80,7 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
      * @param graphSource the graph source.
      * @param parameters  the parameters.
      */
-    public IdaModel(DataWrapper dataModel, GraphSource graphSource,
-                    Parameters parameters) {
+    public IdaModel(DataWrapper dataModel, GraphSource graphSource, SemImWrapper semImWrapper, Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
