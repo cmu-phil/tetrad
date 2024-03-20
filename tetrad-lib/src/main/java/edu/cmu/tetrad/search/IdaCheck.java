@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.OrderedPair;
 
 import java.util.*;
 
@@ -29,11 +31,6 @@ import java.util.*;
 public class IdaCheck {
 
     /**
-     * Represents a data set used in the IDA check.
-     */
-    private final DataSet dataSet;
-
-    /**
      * The nodes in the dataset.
      */
     private final List<Node> nodes;
@@ -44,9 +41,9 @@ public class IdaCheck {
     private final List<OrderedPair<Node>> pairs;
 
     /**
-     * A map containing effects between node pairs. The keys of the map are instances of OrderedPair, which represents an
-     * unordered pair of nodes. The values of the map are lists of Double values, representing the effects between the
-     * node pairs.
+     * A map containing effects between node pairs. The keys of the map are instances of OrderedPair, which represents
+     * an unordered pair of nodes. The values of the map are lists of Double values, representing the effects between
+     * the node pairs.
      */
     private final Map<OrderedPair<Node>, LinkedList<Double>> effects;
 
@@ -69,6 +66,10 @@ public class IdaCheck {
             throw new NullPointerException("DataSet is null.");
         }
 
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("Expecting a continuous data set.");
+        }
+
         // Check to make sure the graph is either a DAG or a CPDAG.
         if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
             throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
@@ -77,15 +78,14 @@ public class IdaCheck {
         // Convert the CPDAG to a CPDAG with the same nodes as the data set
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
-        // Check to makes sure the set of variables from the CPDAG is the same as the set of variables from the data set.
+        // Check to make sure the set of variables from the CPDAG is the same as the set of variables from the data set.
         if (!graph.getNodes().equals(dataSet.getVariables())) {
             throw new IllegalArgumentException("The variables in the CPDAG do not match the variables in the data set.");
         }
 
-        this.dataSet = dataSet;
         this.nodes = dataSet.getVariables();
         this.effects = new HashMap<>();
-        this.ida = new Ida(this.dataSet, graph, nodes);
+        this.ida = new Ida(dataSet, graph, nodes);
         this.pairs = calcOrderedPairs();
 
         for (OrderedPair<Node> pair : calcOrderedPairs()) {
