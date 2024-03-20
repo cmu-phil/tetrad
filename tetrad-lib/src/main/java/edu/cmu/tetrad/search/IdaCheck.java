@@ -91,8 +91,6 @@ public class IdaCheck {
         for (OrderedPair<Node> pair : calcOrderedPairs()) {
             LinkedList<Double> effects = ida.getEffects(pair.getFirst(), pair.getSecond());
             this.effects.put(pair, effects);
-
-            System.out.println("Effects 1 for " + pair.getFirst() + " and " + pair.getSecond() + ": " + effects);
         }
     }
 
