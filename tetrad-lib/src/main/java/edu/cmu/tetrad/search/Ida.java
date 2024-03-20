@@ -23,7 +23,8 @@ import static org.apache.commons.math3.util.FastMath.min;
  * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
  * <p>
  * The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding
- * lower-bounded effects on Y.
+ * lower-bounded effects on Y. It regresses Y on X &cup; S, where X is a possible parent of Y and S is a set of
+ * possible parents of X, and reports the regression coefficient. The effects are sorted downward by minimum effect size.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -170,51 +171,68 @@ public class Ida {
         List<Node> siblings = new ArrayList<>(this.cpdag.getAdjacentNodes(x));
         siblings.removeAll(parents);
         siblings.removeAll(children);
+        siblings.remove(y);
 
-        SublistGenerator gen = new SublistGenerator(siblings.size(), siblings.size());
+        int size = siblings.size();
+        SublistGenerator gen = new SublistGenerator(size, size);
         int[] choice;
 
         LinkedList<Double> effects = new LinkedList<>();
 
+        if (y.getName().equals("X7") && x.getName().equals("X3")) {
+            System.out.println();
+        }
+
         CHOICE:
         while ((choice = gen.next()) != null) {
             try {
-                List<Node> sibbled = GraphUtils.asList(choice, siblings);
+                List<Node> siblingsChoice = GraphUtils.asList(choice, siblings);
 
-                if (sibbled.size() > 1) {
-                    ChoiceGenerator gen2 = new ChoiceGenerator(sibbled.size(), 2);
+                System.out.println("siblingsChoice = " + siblingsChoice);
+
+                if (siblingsChoice.size() > 1) {
+                    ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
                     int[] choice2;
 
                     while ((choice2 = gen2.next()) != null) {
-                        List<Node> adj = GraphUtils.asList(choice2, sibbled);
-                        if (!this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                        List<Node> adj = GraphUtils.asList(choice2, siblingsChoice);
+                        if (this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
                     }
                 }
 
-                if (!sibbled.isEmpty()) {
+                if (!siblingsChoice.isEmpty()) {
                     for (Node p : parents) {
-                        for (Node s : sibbled) {
-                            if (!this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
+                        for (Node s : siblingsChoice) {
+                            if (this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
                         }
                     }
                 }
 
-                List<Node> regressors = new ArrayList<>();
-                regressors.add(x);
-                for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
-                for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+                Set<Node> _regressors = new HashSet<>();
+                _regressors.add(x);
+                _regressors.addAll(parents);
+                _regressors.addAll(siblingsChoice);
+                List<Node> regressors = new ArrayList<>(_regressors);
+
+                double beta;
 
                 if (regressors.contains(y)) {
-                    effects.add(0.0);
+                    beta = 0.0;
                 } else {
-                    effects.add(abs(getBeta(regressors, y)));
+                    beta = getBeta(regressors, y);
                 }
+
+                System.out.println(y + " <- " + x + " siblings = " + siblings + " y | regressors = " + y + " | " + regressors + " " + beta + " x = " + x);
+
+                effects.add(abs(beta));
             } catch (Exception e) {
                 TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
         }
 
         Collections.sort(effects);
+
+        System.out.println("effects = " + effects);
 
         return effects;
     }
@@ -269,9 +287,13 @@ public class Ida {
      * @author josephramsey
      */
     public static class NodeEffects {
-        // The nodes.
+        /**
+         * The nodes.
+         */
         private List<Node> nodes;
-        // The effects.
+        /**
+         * The effects.
+         */
         private LinkedList<Double> effects;
 
         /**

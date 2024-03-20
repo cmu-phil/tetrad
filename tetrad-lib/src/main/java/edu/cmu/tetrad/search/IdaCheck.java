@@ -39,16 +39,16 @@ public class IdaCheck {
     private final List<Node> nodes;
 
     /**
-     * A list of NodePair objects representing all possible pairs of distinct nodes.
+     * A list of OrderedPair objects representing all possible pairs of distinct nodes.
      */
-    private final List<NodePair> nodePairs;
+    private final List<OrderedPair<Node>> pairs;
 
     /**
-     * A map containing effects between node pairs. The keys of the map are instances of NodePair, which represents an
+     * A map containing effects between node pairs. The keys of the map are instances of OrderedPair, which represents an
      * unordered pair of nodes. The values of the map are lists of Double values, representing the effects between the
      * node pairs.
      */
-    private final Map<NodePair, LinkedList<Double>> effects;
+    private final Map<OrderedPair<Node>, LinkedList<Double>> effects;
 
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
@@ -85,11 +85,13 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.effects = new HashMap<>();
         this.ida = new Ida(this.dataSet, cpdag, nodes);
-        this.nodePairs = calcNodePairs();
+        this.pairs = calcOrderedPairs();
 
-        for (NodePair nodePair : calcNodePairs()) {
-            LinkedList<Double> effects = ida.getEffects(nodePair.getFirst(), nodePair.getSecond());
-            this.effects.put(nodePair, effects);
+        for (OrderedPair<Node> pair : calcOrderedPairs()) {
+            LinkedList<Double> effects = ida.getEffects(pair.getFirst(), pair.getSecond());
+            this.effects.put(pair, effects);
+
+            System.out.println("Effects 1 for " + pair.getFirst() + " and " + pair.getSecond() + ": " + effects);
         }
     }
 
@@ -103,12 +105,12 @@ public class IdaCheck {
     }
 
     /**
-     * Retrieves a list of NodePair objects representing all possible pairs of distinct nodes in the graph.
+     * Retrieves a list of OrderedPair objects representing all possible pairs of distinct nodes in the graph.
      *
-     * @return a list of NodePair objects.
+     * @return a list of OrderedPair objects.
      */
-    public List<NodePair> getNodePairs() {
-        return new ArrayList<>(this.nodePairs);
+    public List<OrderedPair<Node>> getOrderedPairs() {
+        return new ArrayList<>(this.pairs);
     }
 
     /**
@@ -121,8 +123,16 @@ public class IdaCheck {
      */
     public double getMinEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.effects.get(new NodePair(x, y));
-        Collections.sort(effects);
+        LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
+
+        if (y.getName().equals("X3") && x.getName().equals("X7")) {
+            System.out.println("Effects 2 for " + y + " <- " + x + ": " + effects);
+            System.out.println();
+        }
+//        System.out.println("Effects 2 for " + y + " <- " + x + ": " + effects);
+
+
+//        Collections.sort(effects);
         return effects.getFirst();
     }
 
@@ -136,7 +146,7 @@ public class IdaCheck {
      */
     public double getMaxEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.effects.get(new NodePair(x, y));
+        LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
         Collections.sort(effects);
         return effects.getLast();
     }
@@ -152,7 +162,7 @@ public class IdaCheck {
      * @return the squared distance between the two nodes.
      */
     public double getSquaredDistance(Node x, Node y, double trueEffect) {
-        double distance = ida.distance(this.effects.get(new NodePair(x, y)), trueEffect);
+        double distance = ida.distance(this.effects.get(new OrderedPair<>(x, y)), trueEffect);
         return distance * distance;
     }
 
@@ -210,20 +220,20 @@ public class IdaCheck {
     }
 
     /**
-     * Calculates a list of NodePair objects representing all possible pairs of distinct nodes in the graph.
+     * Calculates a list of OrderedPair objects representing all possible pairs of distinct nodes in the graph.
      *
-     * @return a list of NodePair objects.
+     * @return a list of OrderedPair objects.
      */
-    private List<NodePair> calcNodePairs() {
-        List<NodePair> nodePairs = new ArrayList<>();
+    private List<OrderedPair<Node>> calcOrderedPairs() {
+        List<OrderedPair<Node>> OrderedPairs = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
                 if (i == j) continue;
-                nodePairs.add(new NodePair(nodes.get(i), nodes.get(j)));
+                OrderedPairs.add(new OrderedPair<>(nodes.get(i), nodes.get(j)));
             }
         }
 
-        return nodePairs;
+        return OrderedPairs;
     }
 }

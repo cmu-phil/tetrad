@@ -20,28 +20,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.NodePair;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetradapp.model.IdaModel;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
- * A model for the IdaCheck class. The IdaCheck class calculates IDA effects for a CPDAG G for all pairs distinct (x, y)
- * of variables, where the effect is the minimum IDA effect of x on y, obtained by regressing y on x &cup; S and reporting
- * the regression coefficient. Here, S ranges over sets consisting of possible parents of x in G--that is, a set
- * consisting of a subset of the parents of x in G. The IDA effect of x on y is the minimum of these regression
- * coefficients. The IDA effect of x on y is the minimum of these regression coefficients. The IDA effect of x on y is
- * the minimum of these regression coefficients. Here, x and y may be any nodes in G.
- * <p>
- * This editor displays a table of the results of the IDA check for each (x, y) pair of nodes and gives summary statistics
- * for the results. The table has columns for the pair of nodes, the minimum IDA effect, the maximum IDA effect. As a
- * summary, the average of the minimum squared distances of the coefficients in the SEM IM from the interval of IDA
- * is given. The table can be copied and pasted into a text file or into Excel. The table can be restricted to
- * certain variables by typing the names of the variables in the "Restrict to:" text field. The table can be sorted by
- * clicking on the column headers.
+ * A editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
+ * The table can be copied and pasted into a text file or into Excel.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -49,31 +45,91 @@ import java.util.List;
 public class IdaEditor extends JPanel {
 
     public IdaEditor(IdaModel idaModel) {
-        IdaCheck model = idaModel.getIdaCheck();
+        IdaCheck idaCheck = idaModel.getIdaCheck();
 
-        // Grab the legal node pairs (i.e. all possible pairs of distinct nodes)
-        List<NodePair> pairs = model.getNodePairs();
+        // Grab the legal ordered pairs (i.e. all possible pairs of distinct nodes)
+        List<OrderedPair<Node>> pairs = idaCheck.getOrderedPairs();
 
-        // Create a table model for the results of the IDA check
-        IdaTableModel tableModel = new IdaTableModel(pairs, model);
-
-        // Create a box layout for the panel, with the table at the left and the summary statistics at the right
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        // Create a table idaCheck for the results of the IDA check
+        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheck);
+        this.setLayout(new BorderLayout());
 
         // Add the table to the left
         JTable table = new JTable(tableModel);
+        table.setAutoCreateRowSorter(true);
+
         this.add(new JScrollPane(table));
 
-        // For now add a blank panel to the right
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        this.add(rightPanel);
+        // Create a TableRowSorter and set it to the JTable
+        TableRowSorter<IdaTableModel> sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
 
+        // Create the text field
+        JLabel label = new JLabel("Select:");
+        JTextField filterText = new JTextField(15);
+        filterText.setMaximumSize(new Dimension(500, 20));
+        label.setLabelFor(filterText);
+
+        // Create a listener for the text field that will update the table's row sort
+        filterText.getDocument().addDocumentListener(new DocumentListener() {
+
+            private void filter() {
+                String text = filterText.getText();
+                if (text.trim().isEmpty()) {
+                    sorter.setRowFilter(null);
+                } else {
+                    // process comma and space separated input
+                    String[] textParts = text.split("[,\\s]+");
+                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
+                    for (String part : textParts) {
+                        filters.add(RowFilter.regexFilter("(?i)" + Pattern.quote(part.trim())));
+                    }
+                    sorter.setRowFilter(RowFilter.orFilter(filters));
+                }
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // this method won't be called for plain text fields
+            }
+        });
+
+        // Add your label and text field to a panel
+        Box horiz = Box.createHorizontalBox();
+        Box vert = Box.createVerticalBox();
+
+        Box horiz2 = Box.createHorizontalBox();
+        horiz2.add(label);
+        horiz2.add(filterText);
+
+        vert.add(horiz2);
+        vert.add(new JScrollPane(table));
+
+        horiz.add(vert);
+
+        JPanel rightPanel = new JPanel();
+        horiz.add(rightPanel);
+
+        // Then you can add your panel to the top of your frame
+        add(horiz, BorderLayout.CENTER);
+
+        setPreferredSize(new Dimension(400, 600));
     }
 
 
     /**
-     * A table model for the results of the IDA check.
+     * A table model for the results of the IDA check. This table can be sorted by clicking on the column headers,
+     * up or down. The table can be copied and pasted into a text file or into Excel.
      */
     private static class IdaTableModel extends AbstractTableModel {
 
@@ -90,17 +146,18 @@ public class IdaEditor extends JPanel {
         /**
          * Constructs a new table model for the results of the IDA check.
          */
-        public IdaTableModel(List<NodePair> pairs, IdaCheck model) {
+        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck model) {
 
             // Create the data for the table
             this.data = new Object[pairs.size()][3];
 
             // Fill in the data for the table
             for (int i = 0; i < pairs.size(); i++) {
-                NodePair pair = pairs.get(i);
+                OrderedPair<Node> pair = pairs.get(i);
+                String edge = pair.getSecond() + " <- " + pair.getFirst();
                 double min = model.getMinEffect(pair.getFirst(), pair.getSecond());
                 double max = model.getMaxEffect(pair.getFirst(), pair.getSecond());
-                this.data[i][0] = pair;
+                this.data[i][0] = edge;
                 this.data[i][1] = min;
                 this.data[i][2] = max;
             }
@@ -130,13 +187,6 @@ public class IdaEditor extends JPanel {
         public Class<?> getColumnClass(int c) {
             return getValueAt(0, c).getClass();
         }
-
-        @Override
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
     }
-
-
 }
 

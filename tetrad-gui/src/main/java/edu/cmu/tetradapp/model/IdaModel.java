@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IdaCheck;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -37,8 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A model for the IDA check. This takes a graph and a data model and checks IDA facts for all pairs of distinct nodes.
- * It defers these judgments to the class IdaCheck.
+ * A model for the IDA check. This model is used to store the data model, graph, and parameters for the IDA check.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -67,17 +65,12 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
      */
     private List<String> vars = new LinkedList<>();
     /**
-     * The Markov check object.
+     * The IDA check object.
      */
-    private transient IdaCheck idaCheck = null;
-    /**
-     * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form X _||_ Y
-     * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
-     */
-    private Knowledge knowledge;
+    private transient IdaCheck idaCheck;
 
     /**
-     * Constructs a new Markov checker with the given data model, graph, and parameters.
+     * Constructs a new IDA checker with the given data model, graph, and parameters.
      *
      * @param dataModel   the data model.
      * @param graphSource the graph source.
@@ -94,7 +87,7 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        this.idaCheck = new IdaCheck(this.graph, (DataSet) this.dataModel);
+
     }
 
     /**
@@ -108,18 +101,23 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * Returns the underlying MarkovCheck object.
+     * Returns the underlying IdaCheck object.
      *
-     * @return the underlying MarkovCheck object.
+     * @return the underlying IdaCheck object.
      */
     public IdaCheck getIdaCheck() {
+        if (this.idaCheck != null) {
+            return this.idaCheck;
+        }
+
+        this.idaCheck = new IdaCheck(this.graph, (DataSet) this.dataModel);
         return this.idaCheck;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the graph.
+     * Returns the graph associated with the current instance of IdaModel.
+     *
+     * @return the graph object representing the current instance of IdaModel.
      */
     @Override
     public Graph getGraph() {
@@ -145,9 +143,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the name of this model.
+     * Returns the name of the session model.
+     *
+     * @return the name of the session model
      */
     @Override
     public String getName() {
@@ -155,9 +153,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the name of this model.
+     * Sets the name of the session model.
+     *
+     * @param name the name of the session model.
      */
     @Override
     public void setName(String name) {
@@ -183,9 +181,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the source graph.
+     * Returns the source graph associated with this model.
+     *
+     * @return the source graph object representing the current instance of IdaModel.
      */
     @Override
     public Graph getSourceGraph() {
@@ -193,9 +191,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the result graph.
+     * Returns the result graph associated with the current instance of IdaModel.
+     *
+     * @return the result graph object representing the current instance of IdaModel.
      */
     @Override
     public Graph getResultGraph() {
@@ -203,9 +201,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables.
+     * Retrieves the variables to check.
+     *
+     * @return a List of Node objects representing the variables to check.
      */
     @Override
     public List<Node> getVariables() {
@@ -213,9 +211,9 @@ public class IdaModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable names.
+     * Returns the names of the variables to check.
+     *
+     * @return a {@link List} of {@link String} representing the names of the variables to check.
      */
     @Override
     public List<String> getVariableNames() {
