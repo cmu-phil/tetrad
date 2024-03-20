@@ -179,16 +179,10 @@ public class Ida {
 
         LinkedList<Double> effects = new LinkedList<>();
 
-        if (y.getName().equals("X7") && x.getName().equals("X3")) {
-            System.out.println();
-        }
-
         CHOICE:
         while ((choice = gen.next()) != null) {
             try {
                 List<Node> siblingsChoice = GraphUtils.asList(choice, siblings);
-
-                System.out.println("siblingsChoice = " + siblingsChoice);
 
                 if (siblingsChoice.size() > 1) {
                     ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
@@ -222,8 +216,6 @@ public class Ida {
                     beta = getBeta(regressors, y);
                 }
 
-                System.out.println(y + " <- " + x + " siblings = " + siblings + " y | regressors = " + y + " | " + regressors + " " + beta + " x = " + x);
-
                 effects.add(abs(beta));
             } catch (Exception e) {
                 TetradLogger.getInstance().forceLogMessage(e.getMessage());
@@ -231,8 +223,6 @@ public class Ida {
         }
 
         Collections.sort(effects);
-
-        System.out.println("effects = " + effects);
 
         return effects;
     }
