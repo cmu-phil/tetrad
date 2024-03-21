@@ -101,7 +101,7 @@ public class IdaEditor extends JPanel {
                     sorter.setRowFilter(null);
                 } else {
                     // process comma and space separated input
-                    String[] textParts = text.split("[,]+");
+                    String[] textParts = text.split(",+");
                     List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
                     for (String part : textParts) {
                         try {
