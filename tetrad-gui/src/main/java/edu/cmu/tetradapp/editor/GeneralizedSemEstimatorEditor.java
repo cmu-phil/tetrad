@@ -44,11 +44,8 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Edits a SEM PM model.
- *
- * @author Donald Crimbchin
- * @author josephramsey
- * @version $Id: $Id
+ * The GeneralizedSemEstimatorEditor class represents an editor for the GeneralizedSemEstimatorWrapper.
+ * It provides a graphical user interface for editing variables, graph, and generating reports.
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
@@ -77,9 +74,9 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     //========================CONSTRUCTORS===========================//
 
     /**
-     * <p>Constructor for GeneralizedSemEstimatorEditor.</p>
+     * Constructs a GeneralizedSemEstimatorEditor with the specified wrapper.
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper} object
+     * @param wrapper the GeneralizedSemEstimatorWrapper to be used
      */
     public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
@@ -220,25 +217,27 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     }
 
     /**
-     * <p>getEditDelegate.</p>
+     * Returns the editing delegate component.
      *
-     * @return a {@link javax.swing.JComponent} object
+     * @return The editing delegate component as a JComponent.
      */
     public JComponent getEditDelegate() {
         return graphicalEditor();
     }
 
     /**
-     * <p>getGraph.</p>
+     * Retrieves the graph from the graphical editor's workbench.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return The graph from the workbench.
      */
     public Graph getGraph() {
         return graphicalEditor().getWorkbench().getGraph();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the model edges to display from the graphical editor's workbench.
+     *
+     * @return The model edges to display as a Map, where the keys are Edges and the values are their associated objects.
      */
     @Override
     public Map getModelEdgesToDisplay() {
@@ -246,34 +245,36 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     }
 
     /**
-     * <p>getModelNodesToDisplay.</p>
+     * Retrieves the model nodes to display from the graphical editor's workbench.
      *
-     * @return a {@link java.util.Map} object
+     * @return The model nodes to display.
      */
     public Map getModelNodesToDisplay() {
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
     /**
-     * <p>getKnowledge.</p>
+     * Retrieves the knowledge from the graphical editor's workbench.
      *
-     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return The knowledge from the workbench.
      */
     public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 
     /**
-     * <p>getSourceGraph.</p>
+     * Retrieves the source graph from the graphical editor's workbench.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return The source graph.
      */
     public Graph getSourceGraph() {
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
     /**
-     * {@inheritDoc}
+     * Layouts the graph based on the provided graph object.
+     *
+     * @param graph The graph to use for layout.
      */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
@@ -285,7 +286,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     }
 
     /**
-     * <p>layoutByKnowledge.</p>
+     * Layout the graph based on knowledge.
      */
     public void layoutByKnowledge() {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
