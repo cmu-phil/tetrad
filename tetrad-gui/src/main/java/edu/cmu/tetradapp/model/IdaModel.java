@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IdaCheck;
+import edu.cmu.tetrad.sem.SemManipulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -93,7 +94,15 @@ public class IdaModel implements SessionModel {
      * @param parameters  the parameters object.
      */
     public IdaModel(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
-        this(dataWrapper, graphSource, null, parameters);
+        this(dataWrapper, graphSource, new EdgeListGraph(), parameters);
+    }
+
+    public IdaModel(Simulation simulation, GraphSource estimatedGraph, Parameters parameters) {
+        this(simulation, estimatedGraph, simulation.getGraph(), parameters);
+    }
+
+    public IdaModel(DataWrapper dataModel, GraphSource estimatedGraph, SemImWrapper semImWrapper, Parameters parameters) {
+        this(dataModel, estimatedGraph, semImWrapper == null ? new EdgeListGraph() : semImWrapper.getGraph(), parameters);
     }
 
     /**
@@ -101,11 +110,11 @@ public class IdaModel implements SessionModel {
      *
      * @param dataModel      the data model for the IdaModel.
      * @param estimatedGraph the estimated graph for the IdaModel.
-     * @param semImWrapper   the SemImWrapper object for the IdaModel; may be null if not available.
+     * @param trueGraph      the true graph for the IdaModel.
      * @param parameters     the parameters for the IdaModel.
      * @throws IllegalArgumentException if the data model is not a DataSet.
      */
-    public IdaModel(DataWrapper dataModel, GraphSource estimatedGraph, SemImWrapper semImWrapper, Parameters parameters) {
+    public IdaModel(DataWrapper dataModel, GraphSource estimatedGraph, Graph trueGraph, Parameters parameters) {
 
         // Check nullity. SemImWrapper may be null.
         if (dataModel == null) {
@@ -124,7 +133,7 @@ public class IdaModel implements SessionModel {
         this.estCpdag = GraphTransforms.cpdagForDag(estimatedGraph.getGraph());
 
         // We want the DAG here because we want a single IDA value, not a range.
-        this.trueCdag = semImWrapper == null ? null : semImWrapper.getSemIm().getSemPm().getGraph();
+        this.trueCdag = trueGraph.getEdges().isEmpty() ? null : trueGraph;
         this.parameters = parameters;
 
         // Make sure the data model is a DataSet.
