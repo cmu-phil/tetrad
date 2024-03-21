@@ -26,7 +26,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * <p>
  * The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding
  * lower-bounded effects on Y. It regresses Y on X &cup; S, where X is a possible parent of Y and S is a set of
- * possible parents of X, and reports the regression coefficient. The effects are sorted downward by minimum effect size.
+     * possible parents of X, and reports the regression coefficient. The effects are sorted downward by minimum effect size.
  *
  * @author josephramsey
  * @version $Id: $Id

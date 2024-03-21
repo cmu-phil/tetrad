@@ -37,6 +37,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * A editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
@@ -47,6 +48,8 @@ import java.util.regex.Pattern;
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see IdaModel
+ * @see edu.cmu.tetrad.search.Ida
  */
 public class IdaEditor extends JPanel {
 
@@ -101,7 +104,12 @@ public class IdaEditor extends JPanel {
                     String[] textParts = text.split("[,]+");
                     List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
                     for (String part : textParts) {
-                        filters.add(RowFilter.regexFilter("(?i)" + Pattern.compile(part.trim())));
+                        try {
+                            Pattern compile = Pattern.compile(part.trim());
+                            filters.add(RowFilter.regexFilter("(?i)" + compile));
+                        } catch (PatternSyntaxException e) {
+                            // ignore
+                        }
                     }
                     sorter.setRowFilter(RowFilter.orFilter(filters));
                 }
