@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * A editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
+ * An editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
  * The table can be copied and pasted into a text file or into Excel.
  * <p>
  * For an estimated graph, the table will have 3 columns: Pair, Min Est Effect, and Max Est Effect. For a true graph,
@@ -62,7 +62,7 @@ public class IdaEditor extends JPanel {
         IdaCheck idaCheckEst = idaModel.getIdaCheckEst();
         IdaCheck idaCheckTrue = idaModel.getIdaCheckTrue();
 
-        // Grab the legal ordered pairs (i.e. all possible pairs of distinct nodes)
+        // Grab the legal ordered pairs (i.e., all possible pairs of distinct nodes)
         List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
 
         // Create a table idaCheckEst for the results of the IDA check
