@@ -129,8 +129,7 @@ public final class SublistGenerator {
         int[] choice;
 
         System.out.println();
-        System.out.println(
-                "Printing combinations for " + a + " choose " + depth + ":");
+        System.out.println("Printing sublists for " + a + " of size " + depth + ":");
         System.out.println();
 
         while ((choice = cg.next()) != null) {

@@ -1112,6 +1112,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.MarkovCheckEditor</editor-class>
             </model>
+            <model name="IDA Check" acronym="IDA Check"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.IdaModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
+            </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>
