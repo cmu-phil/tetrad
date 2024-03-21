@@ -458,7 +458,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 {"Beta(alpha, beta)", "Beta(%, %)"},
                 {"Cauchy(median, scale)", "Cauchy(%, %)"},
                 {"ChiSquare(df)", "ChiSquare(%)"},
-                {"ExponentialDist(mean)", "ExponentialDist(%)"},
+                {"Exponential(mean)", "Exponential(%)"},
                 {"FDist(e1, e2)", "FDist(%, %)"},
                 {"ExponentialPower(alpha, beta)", "ExponentialPower(%, %)"},
                 {"Gamma(shape, scale)", "Gamma(%, %)"},

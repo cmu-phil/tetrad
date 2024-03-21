@@ -26,6 +26,7 @@ import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -1517,7 +1518,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor() {
-            super("ExponentialDist", "ExponentialDist", Position.PREFIX, false);
+            super("Exponential", "Exponential", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1527,7 +1528,8 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Exp must have one argument.");
             }
 
-            return new AbstractExpression("ExponentialDist", Position.PREFIX, expressions) {
+            return new AbstractExpression("Exponential", Position.PREFIX, expressions) {
+                @Serial
                 private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {

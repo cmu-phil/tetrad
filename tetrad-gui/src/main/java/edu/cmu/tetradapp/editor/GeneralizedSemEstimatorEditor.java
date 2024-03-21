@@ -83,13 +83,14 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
      */
     public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(800, 600));
 
         this.wrapper = wrapper;
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Variables", listEditor());
-        tabbedPane.add("Graph", graphicalEditor());
-        tabbedPane.add("Report", estimationReport());
+        tabbedPane.add("Variables", new JScrollPane(listEditor()));
+        tabbedPane.add("Graph", new JScrollPane(graphicalEditor()));
+        tabbedPane.add("Report", new JScrollPane(estimationReport()));
 
         add(tabbedPane, BorderLayout.CENTER);
 
