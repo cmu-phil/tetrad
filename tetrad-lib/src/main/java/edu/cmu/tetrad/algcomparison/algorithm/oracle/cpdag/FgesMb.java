@@ -88,7 +88,8 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
+        if (obj instanceof PrintStream) {
+            PrintStream ps = (PrintStream) obj;
             search.setOut(ps);
         }
 

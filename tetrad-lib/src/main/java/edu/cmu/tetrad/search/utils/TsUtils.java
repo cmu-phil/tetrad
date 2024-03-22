@@ -400,7 +400,8 @@ public class TsUtils {
 
                 if (node instanceof ContinuousVariable) {
                     laggedNode = new ContinuousVariable(name);
-                } else if (node instanceof DiscreteVariable var) {
+                } else if (node instanceof DiscreteVariable) {
+                    DiscreteVariable var = (DiscreteVariable) node;
                     laggedNode = new DiscreteVariable(var);
                     laggedNode.setName(name);
                 } else {

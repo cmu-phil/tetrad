@@ -71,9 +71,10 @@ public class BossLingam extends AbstractBootstrapAlgorithm implements Algorithm,
      */
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));

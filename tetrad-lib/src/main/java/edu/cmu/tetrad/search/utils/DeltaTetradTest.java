@@ -361,9 +361,10 @@ public class DeltaTetradTest {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Sigma _o)) {
+            if (!(o instanceof Sigma)) {
                 throw new IllegalArgumentException();
             }
+            Sigma _o = (Sigma) o;
 
             return (_o.getA().equals(getA()) && _o.getB().equals(getB())) || (_o.getB().equals(getA()) && _o.getA().equals(getB()));
         }

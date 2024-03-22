@@ -318,9 +318,10 @@ public final class Evidence implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof Evidence evidence)) {
+        if (!(o instanceof Evidence)) {
             return false;
         }
+        Evidence evidence = (Evidence) o;
 
         return this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
 

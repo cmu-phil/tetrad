@@ -189,30 +189,29 @@ public class IdaEditor extends JPanel {
         textArea.setOpaque(true);
         textArea.setEditable(false);
         textArea.setText(
-                """
-                        IDA Check
-
-                        The IDA check displays the results of the IDA algorithm, as given in this paper:
-
-                        Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
-                        \s
-                        The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding absolute effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient, or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
-
-                        This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be a CPDAG, as well as for the true DAG, which (since the minimum and maximum values will be identical) gives true effect sizes. It is then possible to assess whether the true effect size falls within the bounds given by the minimum and maximum from the estimated CPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
-
-                        Finally, the average of each column in the table is given at the bottom of the table.
-
-                        The tables may be sorted in increasing order by clicking on the column header one wishes to sort or in descending order by clicking the column header twice. Also, a facility is provided to specify a comma-separated list of regexes to select rows in the table.
-
-                        IDA Check is available in the Comparison box and can take the following combinations of parents:
-
-                        An estimated CPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
-
-                        A Simulation box (containing a true DAG and a continuous dataset) and an estimated CPDAG. In this case, extra columns comparing to the true model, as described above, will be displayed.
-
-                        A SEM IM, a box containing data, and a box containing a graph. In this case, the true graph will be obtained from the given SEM IM.
-
-                        The contents of the table may be selected and copied and pasted into Excel."""
+                "IDA Check\n" +
+                "\n" +
+                "The IDA check displays the results of the IDA algorithm, as given in this paper:\n" +
+                "\n" +
+                "Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. \"Estimating high-dimensional intervention effects from observational data.\" The Annals of Statistics 37.6A (2009): 3133-3164.\n" +
+                "\n" +
+                "The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding absolute effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient, or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.\n" +
+                "\n" +
+                "This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be a CPDAG, as well as for the true DAG, which (since the minimum and maximum values will be identical) gives true effect sizes. It is then possible to assess whether the true effect size falls within the bounds given by the minimum and maximum from the estimated CPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.\n" +
+                "\n" +
+                "Finally, the average of each column in the table is given at the bottom of the table.\n" +
+                "\n" +
+                "The tables may be sorted in increasing order by clicking on the column header one wishes to sort or in descending order by clicking the column header twice. Also, a facility is provided to specify a comma-separated list of regexes to select rows in the table.\n" +
+                "\n" +
+                "IDA Check is available in the Comparison box and can take the following combinations of parents:\n" +
+                "\n" +
+                "An estimated CPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.\n" +
+                "\n" +
+                "A Simulation box (containing a true DAG and a continuous dataset) and an estimated CPDAG. In this case, extra columns comparing to the true model, as described above, will be displayed.\n" +
+                "\n" +
+                "A SEM IM, a box containing data, and a box containing a graph. In this case, the true graph will be obtained from the given SEM IM.\n" +
+                "\n" +
+                "The contents of the table may be selected and copied and pasted into Excel."
         );
 
         return textArea;

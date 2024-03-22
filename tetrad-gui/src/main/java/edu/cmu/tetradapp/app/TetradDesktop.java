@@ -313,7 +313,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         for (JInternalFrame frame : frames) {
             Object o = frame.getContentPane().getComponents()[0];
 
-            if (o instanceof SessionEditor sessionEditor) {
+            if (o instanceof SessionEditor) {
+                SessionEditor sessionEditor = (SessionEditor) o;
                 SessionEditorWorkbench workbench = sessionEditor
                         .getSessionWorkbench();
                 Graph graph = workbench.getGraph();
@@ -334,7 +335,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         for (JInternalFrame allFrame : allFrames) {
             Object o = allFrame.getContentPane().getComponents()[0];
 
-            if (o instanceof SessionEditor editor) {
+            if (o instanceof SessionEditor) {
+                SessionEditor editor = (SessionEditor) o;
                 String editorName = editor.getName();
                 if (editorName.equals(name)) {
                     return true;
@@ -355,7 +357,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         for (JInternalFrame allFrame : allFrames) {
             Object o = allFrame.getContentPane().getComponents()[0];
 
-            if (o instanceof SessionEditor editor) {
+            if (o instanceof SessionEditor) {
+                SessionEditor editor = (SessionEditor) o;
                 String editorName = editor.getName();
                 if (editorName.equals(name)) {
                     return editor.getSessionWorkbench().getSessionWrapper()

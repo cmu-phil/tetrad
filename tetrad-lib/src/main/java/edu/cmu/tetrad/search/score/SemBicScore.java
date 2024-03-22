@@ -764,12 +764,50 @@ public class SemBicScore implements Score {
 
     /**
      * Represents a covariance matrix and regression coefficients.
-     *
-     * @param cov The covariance matrix.
-     * @param b   The regression coefficients.
      */
-    public record CovAndCoefs(Matrix cov, Matrix b) {
-    }
+        public static final class CovAndCoefs {
+        private final Matrix cov;
+        private final Matrix b;
+
+        /**
+         * @param cov The covariance matrix.
+         * @param b   The regression coefficients.
+         */
+        public CovAndCoefs(Matrix cov, Matrix b) {
+            this.cov = cov;
+            this.b = b;
+        }
+
+        public Matrix cov() {
+            return cov;
+        }
+
+        public Matrix b() {
+            return b;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (CovAndCoefs) obj;
+            return Objects.equals(this.cov, that.cov) &&
+                   Objects.equals(this.b, that.b);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(cov, b);
+        }
+
+        @Override
+        public String toString() {
+            return "CovAndCoefs[" +
+                   "cov=" + cov + ", " +
+                   "b=" + b + ']';
+        }
+
+        }
 }
 
 

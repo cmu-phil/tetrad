@@ -99,9 +99,10 @@ public final class KnowledgeEdge implements TetradSerializable {
             return false;
         }
 
-        if (!(object instanceof KnowledgeEdge pair)) {
+        if (!(object instanceof KnowledgeEdge)) {
             return false;
         }
+        KnowledgeEdge pair = (KnowledgeEdge) object;
 
         return this.from.equals(pair.from) && this.to.equals(pair.to);
     }

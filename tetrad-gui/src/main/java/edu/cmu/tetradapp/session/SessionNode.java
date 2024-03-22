@@ -619,7 +619,8 @@ public class SessionNode implements Node {
         }
 
         // If we're running a simulation, try executing the model.
-        if (this.model instanceof Executable executable) {
+        if (this.model instanceof Executable) {
+            Executable executable = (Executable) this.model;
 
             try {
 
@@ -1006,7 +1007,8 @@ public class SessionNode implements Node {
      * @param param      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void putParam(Class modelClass, Parameters param) {
-        if (param instanceof SessionListener listener) {
+        if (param instanceof SessionListener) {
+            SessionListener listener = (SessionListener) param;
             getSessionSupport().addSessionListener(listener);
         }
 
@@ -1031,8 +1033,11 @@ public class SessionNode implements Node {
     public void removeParam(Class modelClass) {
         Object param = this.paramMap.get(modelClass);
 
-        if (param != null && param instanceof SessionListener listener) {
-            getSessionSupport().removeSessionListener(listener);
+        if (param instanceof SessionListener) {
+            SessionListener listener = (SessionListener) param;
+            if (param != null) {
+                getSessionSupport().removeSessionListener(listener);
+            }
         }
 
         this.paramMap.remove(modelClass);
@@ -2095,7 +2100,8 @@ public class SessionNode implements Node {
             for (Class clazz : SessionNode.this.modelClasses) {
                 Object param = getParam(clazz);
 
-                if (param instanceof ExecutionRestarter restarter) {
+                if (param instanceof ExecutionRestarter) {
+                    ExecutionRestarter restarter = (ExecutionRestarter) param;
                     restarter.newExecution();
                 }
             }

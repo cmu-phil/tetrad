@@ -104,9 +104,10 @@ public class ParameterPair implements TetradSerializable {
             return false;
         }
 
-        if (!(object instanceof ParameterPair pair)) {
+        if (!(object instanceof ParameterPair)) {
             return false;
         }
+        ParameterPair pair = (ParameterPair) object;
 
         return this.a.equals(pair.a) && this.b.equals(pair.b);
     }

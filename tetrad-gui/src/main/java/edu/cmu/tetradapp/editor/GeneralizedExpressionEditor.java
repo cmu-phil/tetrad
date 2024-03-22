@@ -713,10 +713,50 @@ class GeneralizedExpressionEditor extends JComponent {
     }
 
     /**
-     * Represents the result of an expression evaluation.
-     */
-    private record Result(List<String> parametersList, StringBuilder buf) {
-    }
+         * Represents the result of an expression evaluation.
+         */
+        private static final class Result {
+        private final List<String> parametersList;
+        private final StringBuilder buf;
+
+        /**
+         *
+         */
+        private Result(List<String> parametersList, StringBuilder buf) {
+            this.parametersList = parametersList;
+            this.buf = buf;
+        }
+
+        public List<String> parametersList() {
+            return parametersList;
+        }
+
+        public StringBuilder buf() {
+            return buf;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (Result) obj;
+            return Objects.equals(this.parametersList, that.parametersList) &&
+                   Objects.equals(this.buf, that.buf);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(parametersList, buf);
+        }
+
+        @Override
+        public String toString() {
+            return "Result[" +
+                   "parametersList=" + parametersList + ", " +
+                   "buf=" + buf + ']';
+        }
+
+        }
 }
 
 

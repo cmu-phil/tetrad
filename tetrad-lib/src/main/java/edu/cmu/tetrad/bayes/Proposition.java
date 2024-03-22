@@ -448,9 +448,10 @@ public final class Proposition implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof Proposition proposition)) {
+        if (!(o instanceof Proposition)) {
             return false;
         }
+        Proposition proposition = (Proposition) o;
 
         if (!(this.variableSource == proposition.variableSource)) {
             return false;

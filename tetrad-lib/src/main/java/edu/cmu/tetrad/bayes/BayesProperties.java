@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Calculates some scores for Bayes nets as a whole.
@@ -271,38 +272,63 @@ public final class BayesProperties {
     }
 
     /**
-     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
-     */
-    private record Ret(double lik, int dof) {
-        /**
-         * Constructs a new Ret object.
-         *
-         * @param lik The likelihood.
-         * @param dof The degrees of freedom.
+         * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
          */
-        private Ret {
+        private static final class Ret {
+        private final double lik;
+        private final int dof;
+
+            /**
+             * Constructs a new Ret object.
+             *
+             * @param lik The likelihood.
+             * @param dof The degrees of freedom.
+             */
+            private Ret(double lik, int dof) {
+                this.lik = lik;
+                this.dof = dof;
+            }
+
+            /**
+             * Returns the likelihood.
+             *
+             * @return The likelihood.
+             */
+            public double lik() {
+                return this.lik;
+            }
+
+            /**
+             * Returns the degrees of freedom.
+             *
+             * @return The degrees of freedom.
+             */
+            public int dof() {
+                return this.dof;
+            }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (Ret) obj;
+            return Double.doubleToLongBits(this.lik) == Double.doubleToLongBits(that.lik) &&
+                   this.dof == that.dof;
         }
 
-        /**
-         * Returns the likelihood.
-         *
-         * @return The likelihood.
-         */
         @Override
-        public double lik() {
-            return this.lik;
+        public int hashCode() {
+            return Objects.hash(lik, dof);
         }
 
-        /**
-         * Returns the degrees of freedom.
-         *
-         * @return The degrees of freedom.
-         */
         @Override
-        public int dof() {
-            return this.dof;
+        public String toString() {
+            return "Ret[" +
+                   "lik=" + lik + ", " +
+                   "dof=" + dof + ']';
         }
-    }
+
+        }
 
     /**
      * The LikelihoodRet class represents the result of a likelihood ratio test. It contains the p-value, BIC,

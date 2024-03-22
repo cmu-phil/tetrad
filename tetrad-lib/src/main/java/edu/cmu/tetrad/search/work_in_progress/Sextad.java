@@ -215,7 +215,8 @@ public class Sextad implements TetradSerializable {
      * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Sextad sextad)) throw new IllegalArgumentException();
+        if (!(o instanceof Sextad)) throw new IllegalArgumentException();
+        Sextad sextad = (Sextad) o;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
                 this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||

@@ -73,9 +73,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
+            if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
+            DataSet dataSet = (DataSet) dataModel;
 
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
@@ -85,22 +86,38 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
+        PcCommon.ConflictRule conflictRule;
+        switch (parameters.getInt(Params.CONFLICT_RULE)) {
+            case 1:
+                conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                break;
+            case 2:
+                conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+                break;
+            case 3:
+                conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+        }
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
+        PcCommon.PcHeuristicType pcHeuristicType;
+        switch (parameters.getInt(Params.PC_HEURISTIC)) {
+            case 0:
+                pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+                break;
+            case 1:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+                break;
+            case 2:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_2;
+                break;
+            case 3:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_3;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+        }
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));

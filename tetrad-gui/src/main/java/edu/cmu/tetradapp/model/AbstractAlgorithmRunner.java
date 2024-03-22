@@ -454,7 +454,8 @@ public abstract class AbstractAlgorithmRunner
 
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataSet dataSet) {
+        if (dataModel instanceof DataSet) {
+            DataSet dataSet = (DataSet) dataModel;
             if (dataSet.isDiscrete()) {
                 return dataSet;
             } else if (dataSet.isContinuous()) {

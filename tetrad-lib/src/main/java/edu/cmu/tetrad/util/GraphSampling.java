@@ -157,16 +157,24 @@ public final class GraphSampling {
             return null;
         }
 
-        return switch (edgeTypeProbability.getEdgeType()) {
-            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
-        };
+        switch (edgeTypeProbability.getEdgeType()) {
+            case ta:
+                return new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
+            case at:
+                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
+            case ca:
+                return new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
+            case ac:
+                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
+            case cc:
+                return new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
+            case aa:
+                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
+            case tt:
+                return new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
+            default:
+                return new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
+        }
     }
 
     private static EdgeTypeProbability getHighestEdgeTypeProbability(List<EdgeTypeProbability> edgeTypeProbabilities, ResamplingEdgeEnsemble edgeEnsemble) {
@@ -273,13 +281,18 @@ public final class GraphSampling {
     }
 
     private static EdgeType getReversed(EdgeType edgeType) {
-        return switch (edgeType) {
-            case ac -> EdgeType.ca;
-            case at -> EdgeType.ta;
-            case ca -> EdgeType.ac;
-            case ta -> EdgeType.at;
-            default -> edgeType;
-        };
+        switch (edgeType) {
+            case ac:
+                return EdgeType.ca;
+            case at:
+                return EdgeType.ta;
+            case ca:
+                return EdgeType.ac;
+            case ta:
+                return EdgeType.at;
+            default:
+                return edgeType;
+        }
     }
 
     private static EdgeType getEdgeType(Edge edge, Node node1, Node node2) {

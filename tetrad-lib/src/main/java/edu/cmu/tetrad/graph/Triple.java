@@ -142,9 +142,10 @@ public final class Triple implements TetradSerializable {
      * {@inheritDoc}
      */
     public boolean equals(Object obj) {
-        if (!(obj instanceof Triple triple)) {
+        if (!(obj instanceof Triple)) {
             return false;
         }
+        Triple triple = (Triple) obj;
 
         return (this.x == triple.x && this.y == triple.y &&
                 this.z == triple.z)

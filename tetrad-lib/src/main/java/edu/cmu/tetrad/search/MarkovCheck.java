@@ -977,19 +977,105 @@ public class MarkovCheck {
 
     /**
      * A single record for the results of the Markov check.
-     *
-     * @param adInd       The Anderson-Darling p-value for the independent case.
-     * @param adDep       The Anderson-Darling p-value for the dependent case.
-     * @param binIndep    The Binomial p-value for the independent case.
-     * @param binDep      The Binomial p-value for the dependent case.
-     * @param fracDepInd  The fraction of dependent judgments for the independent case.
-     * @param fracDepDep  The fraction of dependent judgments for the dependent case.
-     * @param numTestsInd The number of tests for the independent case.
-     * @param numTestsDep The number of tests for the dependent case.
      */
-    public record MarkovCheckRecord(double adInd, double adDep, double binIndep, double binDep, double fracDepInd,
-                                    double fracDepDep, int numTestsInd, int numTestsDep) {
-    }
+        public static final class MarkovCheckRecord {
+        private final double adInd;
+        private final double adDep;
+        private final double binIndep;
+        private final double binDep;
+        private final double fracDepInd;
+        private final double fracDepDep;
+        private final int numTestsInd;
+        private final int numTestsDep;
+
+        /**
+         * @param adInd       The Anderson-Darling p-value for the independent case.
+         * @param adDep       The Anderson-Darling p-value for the dependent case.
+         * @param binIndep    The Binomial p-value for the independent case.
+         * @param binDep      The Binomial p-value for the dependent case.
+         * @param fracDepInd  The fraction of dependent judgments for the independent case.
+         * @param fracDepDep  The fraction of dependent judgments for the dependent case.
+         * @param numTestsInd The number of tests for the independent case.
+         * @param numTestsDep The number of tests for the dependent case.
+         */
+        public MarkovCheckRecord(double adInd, double adDep, double binIndep, double binDep, double fracDepInd,
+                                 double fracDepDep, int numTestsInd, int numTestsDep) {
+            this.adInd = adInd;
+            this.adDep = adDep;
+            this.binIndep = binIndep;
+            this.binDep = binDep;
+            this.fracDepInd = fracDepInd;
+            this.fracDepDep = fracDepDep;
+            this.numTestsInd = numTestsInd;
+            this.numTestsDep = numTestsDep;
+        }
+
+        public double adInd() {
+            return adInd;
+        }
+
+        public double adDep() {
+            return adDep;
+        }
+
+        public double binIndep() {
+            return binIndep;
+        }
+
+        public double binDep() {
+            return binDep;
+        }
+
+        public double fracDepInd() {
+            return fracDepInd;
+        }
+
+        public double fracDepDep() {
+            return fracDepDep;
+        }
+
+        public int numTestsInd() {
+            return numTestsInd;
+        }
+
+        public int numTestsDep() {
+            return numTestsDep;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (MarkovCheckRecord) obj;
+            return Double.doubleToLongBits(this.adInd) == Double.doubleToLongBits(that.adInd) &&
+                   Double.doubleToLongBits(this.adDep) == Double.doubleToLongBits(that.adDep) &&
+                   Double.doubleToLongBits(this.binIndep) == Double.doubleToLongBits(that.binIndep) &&
+                   Double.doubleToLongBits(this.binDep) == Double.doubleToLongBits(that.binDep) &&
+                   Double.doubleToLongBits(this.fracDepInd) == Double.doubleToLongBits(that.fracDepInd) &&
+                   Double.doubleToLongBits(this.fracDepDep) == Double.doubleToLongBits(that.fracDepDep) &&
+                   this.numTestsInd == that.numTestsInd &&
+                   this.numTestsDep == that.numTestsDep;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(adInd, adDep, binIndep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
+        }
+
+        @Override
+        public String toString() {
+            return "MarkovCheckRecord[" +
+                   "adInd=" + adInd + ", " +
+                   "adDep=" + adDep + ", " +
+                   "binIndep=" + binIndep + ", " +
+                   "binDep=" + binDep + ", " +
+                   "fracDepInd=" + fracDepInd + ", " +
+                   "fracDepDep=" + fracDepDep + ", " +
+                   "numTestsInd=" + numTestsInd + ", " +
+                   "numTestsDep=" + numTestsDep + ']';
+        }
+
+        }
 
     /**
      * Stores the set of m-separation facts and the set of m-connection facts for a graph, for the global check.

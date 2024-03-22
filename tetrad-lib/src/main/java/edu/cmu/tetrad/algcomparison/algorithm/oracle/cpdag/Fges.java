@@ -84,9 +84,10 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
+            if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
+            DataSet dataSet = (DataSet) dataModel;
 
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
@@ -118,7 +119,8 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
 
         Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
+        if (obj instanceof PrintStream) {
+            PrintStream ps = (PrintStream) obj;
             search.setOut(ps);
         }
 

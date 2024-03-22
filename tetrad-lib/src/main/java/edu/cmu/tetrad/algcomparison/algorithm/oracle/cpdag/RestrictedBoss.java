@@ -61,9 +61,10 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algori
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         String string = parameters.getString(Params.TARGETS);
         String[] _targets;

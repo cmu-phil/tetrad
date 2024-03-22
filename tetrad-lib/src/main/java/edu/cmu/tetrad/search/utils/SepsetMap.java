@@ -170,9 +170,10 @@ public final class SepsetMap implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof SepsetMap _sepset)) {
+        if (!(o instanceof SepsetMap)) {
             return false;
         }
+        SepsetMap _sepset = (SepsetMap) o;
 
         return this.sepsets.equals(_sepset.sepsets);
     }

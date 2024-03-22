@@ -50,9 +50,10 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting tabular data for MGM.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         if (!dataSet.isMixed()) {
             throw new IllegalArgumentException("Expecting mixed data for MGM--at least one discrete column and at least" +

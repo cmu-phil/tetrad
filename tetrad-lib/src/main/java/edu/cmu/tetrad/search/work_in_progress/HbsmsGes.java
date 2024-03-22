@@ -772,7 +772,8 @@ public final class HbsmsGes implements Hbsms {
          */
         public boolean equals(Object o) {
             if (o == null) return false;
-            if (!(o instanceof GraphWithPValue p)) return false;
+            if (!(o instanceof GraphWithPValue)) return false;
+            GraphWithPValue p = (GraphWithPValue) o;
             return (p.graph.equals(this.graph));
         }
     }

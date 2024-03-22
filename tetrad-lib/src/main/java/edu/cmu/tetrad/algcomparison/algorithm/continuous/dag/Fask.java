@@ -104,9 +104,10 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalStateException("Expecting a dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {

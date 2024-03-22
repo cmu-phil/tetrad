@@ -273,8 +273,9 @@ public class GraphChange {
      * strucs of GraphChange gc, then this "equals" gc
      */
     public boolean equals(Object other) {
-        if (!(other instanceof GraphChange otherGC))
+        if (!(other instanceof GraphChange))
             return false;
+        GraphChange otherGC = (GraphChange) other;
 
         return otherGC.removes.equals(this.removes) &&
                 otherGC.colliders.equals(this.colliders) &&
@@ -359,9 +360,10 @@ public class GraphChange {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof NodePair thatPair)) {
+            if (!(o instanceof NodePair)) {
                 return false;
             }
+            NodePair thatPair = (NodePair) o;
             return this.getFirst().equals(thatPair.getFirst())
                     && this.getSecond().equals(thatPair.getSecond());
 

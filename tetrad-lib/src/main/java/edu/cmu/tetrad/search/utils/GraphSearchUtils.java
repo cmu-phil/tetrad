@@ -1336,7 +1336,8 @@ public final class GraphSearchUtils {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof ReachabilityEdge edge)) return false;
+            if (!(obj instanceof ReachabilityEdge)) return false;
+            ReachabilityEdge edge = (ReachabilityEdge) obj;
 
             if (!(edge.getFrom().equals(this.getFrom()))) {
                 return false;

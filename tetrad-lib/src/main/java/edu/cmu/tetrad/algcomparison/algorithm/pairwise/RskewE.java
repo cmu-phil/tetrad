@@ -73,9 +73,10 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+        if (!(dataModel instanceof DataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         Graph graph = this.algorithm.search(dataSet, parameters);
 

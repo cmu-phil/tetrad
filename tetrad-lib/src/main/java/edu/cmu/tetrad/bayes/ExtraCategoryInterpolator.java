@@ -57,10 +57,11 @@ public final class ExtraCategoryInterpolator implements DataFilter {
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node _var = dataSet.getVariable(j);
 
-            if (!(_var instanceof DiscreteVariable variable)) {
+            if (!(_var instanceof DiscreteVariable)) {
                 variables.add(_var);
                 continue;
             }
+            DiscreteVariable variable = (DiscreteVariable) _var;
 
             String oldName = variable.getName();
             List<String> oldCategories = variable.getCategories();
@@ -91,7 +92,8 @@ public final class ExtraCategoryInterpolator implements DataFilter {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     newDataSet.setDouble(i, j, dataSet.getDouble(i, j));
                 }
-            } else if (_var instanceof DiscreteVariable variable) {
+            } else if (_var instanceof DiscreteVariable) {
+                DiscreteVariable variable = (DiscreteVariable) _var;
                 int numCategories = variable.getNumCategories();
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {

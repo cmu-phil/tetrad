@@ -78,9 +78,10 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
+            if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
+            DataSet dataSet = (DataSet) dataModel;
 
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {
@@ -90,14 +91,23 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
+        PcCommon.PcHeuristicType pcHeuristicType;
+        switch (parameters.getInt(Params.PC_HEURISTIC)) {
+            case 0:
+                pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+                break;
+            case 1:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+                break;
+            case 2:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_2;
+                break;
+            case 3:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_3;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+        }
 
         edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));

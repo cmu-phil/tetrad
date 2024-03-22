@@ -334,7 +334,8 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         Data data = read(dataColumns, hasHeader);
 
         if (metadata != null) {
-            if (data instanceof ContinuousData continuousData) {
+            if (data instanceof ContinuousData) {
+                ContinuousData continuousData = (ContinuousData) data;
                 double[][] contData = continuousData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
                     ColumnMetadata valCol = column.getValueColumn();
@@ -352,7 +353,8 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         }
                     }
                 });
-            } else if (data instanceof DiscreteData verticalDiscreteData) {
+            } else if (data instanceof DiscreteData) {
+                DiscreteData verticalDiscreteData = (DiscreteData) data;
                 int[][] discreteData = verticalDiscreteData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
                     ColumnMetadata valCol = column.getValueColumn();
@@ -370,7 +372,8 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         }
                     }
                 });
-            } else if (data instanceof MixedTabularData mixedTabularData) {
+            } else if (data instanceof MixedTabularData) {
+                MixedTabularData mixedTabularData = (MixedTabularData) data;
                 double[][] continuousData = mixedTabularData.getContinuousData();
                 int[][] discreteData = mixedTabularData.getDiscreteData();
                 metadata.getInterventionalColumns().forEach(column -> {

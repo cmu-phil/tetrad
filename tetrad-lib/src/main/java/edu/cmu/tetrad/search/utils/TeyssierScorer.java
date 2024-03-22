@@ -819,7 +819,8 @@ public class TeyssierScorer {
 
         public boolean equals(Object o) {
             if (o == null) return false;
-            if (!(o instanceof Pair thatPair)) return false;
+            if (!(o instanceof Pair)) return false;
+            Pair thatPair = (Pair) o;
             return this.parents.equals(thatPair.parents) && this.score == thatPair.score;
         }
     }

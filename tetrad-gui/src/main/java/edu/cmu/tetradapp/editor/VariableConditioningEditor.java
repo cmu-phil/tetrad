@@ -72,7 +72,8 @@ public class VariableConditioningEditor extends JPanel {
         this.newConditioningVariableButton.addActionListener(e -> {
             Node selected = (Node) VariableConditioningEditor.this.newConditioningVariableSelector.getSelectedItem();
 
-            if (selected instanceof ContinuousVariable _var) {
+            if (selected instanceof ContinuousVariable) {
+                ContinuousVariable _var = (ContinuousVariable) selected;
                 ContinuousConditioningPanel panel1 = (ContinuousConditioningPanel) VariableConditioningEditor.this.conditioningPanelMap.get(_var);
 
                 if (panel1 == null) {
@@ -91,7 +92,8 @@ public class VariableConditioningEditor extends JPanel {
 
                 ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
                 VariableConditioningEditor.this.conditioningPanelMap.put(_var, panel3);
-            } else if (selected instanceof DiscreteVariable _var) {
+            } else if (selected instanceof DiscreteVariable) {
+                DiscreteVariable _var = (DiscreteVariable) selected;
                 DiscreteConditioningPanel panel1 = (DiscreteConditioningPanel) VariableConditioningEditor.this.conditioningPanelMap.get(_var);
 
                 if (panel1 == null) {

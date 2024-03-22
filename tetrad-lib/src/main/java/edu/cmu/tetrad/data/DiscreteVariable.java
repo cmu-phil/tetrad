@@ -338,7 +338,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      * Determines whether the given value is the missing value marker.
      */
     public boolean isMissingValue(Object value) {
-        if (value instanceof Integer ivalue) {
+        if (value instanceof Integer) {
+            Integer ivalue = (Integer) value;
             return ivalue == DiscreteVariable.MISSING_VALUE;
         } else if (value instanceof String) {
             return DiscreteVariable.MISSING_VALUE_STRING.equals(value);
@@ -380,7 +381,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      */
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof DiscreteVariable variable)) return false;
+        if (!(o instanceof DiscreteVariable)) return false;
+        DiscreteVariable variable = (DiscreteVariable) o;
         if (!getName().equals(((Node) o).getName())) return false;
 
         if (!(getNumCategories() == variable.getNumCategories())) {

@@ -43,9 +43,10 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
      * @throws IllegalArgumentException If the data model is not a continuous dataset.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+        if (!(dataModel instanceof DataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(dataSet);
         analysis.setThreshold(parameters.getDouble("convergenceThreshold"));

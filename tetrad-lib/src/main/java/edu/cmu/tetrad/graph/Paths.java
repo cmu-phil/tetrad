@@ -611,9 +611,10 @@ public class Paths implements TetradSerializable {
     }
 
     private void treksIncludingBidirected(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths) {
-        if (!(graph instanceof SemGraph _graph)) {
+        if (!(graph instanceof SemGraph)) {
             throw new IllegalArgumentException("Expecting a SEM graph");
         }
+        SemGraph _graph = (SemGraph) graph;
 
         if (!_graph.isShowErrorTerms()) {
             throw new IllegalArgumentException("The SEM Graph must be showing its error terms; this method " + "doesn't traverse two edges between the same nodes well.");
@@ -924,9 +925,10 @@ public class Paths implements TetradSerializable {
             }
 
             public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
+                if (!(o instanceof EdgeNode)) {
                     throw new IllegalArgumentException();
                 }
+                EdgeNode _o = (EdgeNode) o;
                 return _o.edge == this.edge && _o.node == this.node;
             }
         }
@@ -995,9 +997,10 @@ public class Paths implements TetradSerializable {
             }
 
             public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
+                if (!(o instanceof EdgeNode)) {
                     throw new IllegalArgumentException();
                 }
+                EdgeNode _o = (EdgeNode) o;
                 return _o.edge == this.edge && _o.node == this.node;
             }
         }
@@ -1637,9 +1640,10 @@ public class Paths implements TetradSerializable {
             }
 
             public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
+                if (!(o instanceof EdgeNode)) {
                     throw new IllegalArgumentException();
                 }
+                EdgeNode _o = (EdgeNode) o;
                 return _o.edge == this.edge && _o.node == this.node;
             }
         }
@@ -1716,9 +1720,10 @@ public class Paths implements TetradSerializable {
             }
 
             public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
+                if (!(o instanceof EdgeNode)) {
                     throw new IllegalArgumentException();
                 }
+                EdgeNode _o = (EdgeNode) o;
                 return _o.edge.equals(this.edge) && _o.node.equals(this.node);
             }
         }

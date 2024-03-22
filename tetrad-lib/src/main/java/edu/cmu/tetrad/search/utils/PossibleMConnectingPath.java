@@ -299,9 +299,10 @@ public class PossibleMConnectingPath {
      * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        if (!(o instanceof PossibleMConnectingPath p)) {
+        if (!(o instanceof PossibleMConnectingPath)) {
             return false;
         }
+        PossibleMConnectingPath p = (PossibleMConnectingPath) o;
         return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
     }
 }

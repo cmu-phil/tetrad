@@ -126,7 +126,8 @@ public class Tetrad {
      */
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof Tetrad tetrad)) return false;
+        if (!(o instanceof Tetrad)) return false;
+        Tetrad tetrad = (Tetrad) o;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)

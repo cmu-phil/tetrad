@@ -57,9 +57,10 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
      * @throws IllegalArgumentException If the data model is not a continuous dataset.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
 

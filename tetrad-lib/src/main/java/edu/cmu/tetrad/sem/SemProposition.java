@@ -145,9 +145,10 @@ public final class SemProposition implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof SemProposition proposition)) {
+        if (!(o instanceof SemProposition)) {
             throw new IllegalArgumentException();
         }
+        SemProposition proposition = (SemProposition) o;
 
         if (!(this.semIm == proposition.semIm)) {
             return false;

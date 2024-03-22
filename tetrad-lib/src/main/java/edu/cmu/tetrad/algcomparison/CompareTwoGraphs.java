@@ -98,10 +98,9 @@ public class CompareTwoGraphs {
             }
         }
 
-        builder.append("""
-
-
-                Two-cycles in true correctly adjacent in estimated""");
+        builder.append("\n" +
+                       "\n" +
+                       "Two-cycles in true correctly adjacent in estimated");
 
         sort(allSingleEdges);
 
@@ -127,10 +126,9 @@ public class CompareTwoGraphs {
         }
 
         {
-            builder.append("""
-
-
-                    Edges incorrectly oriented""");
+            builder.append("\n" +
+                           "\n" +
+                           "Edges incorrectly oriented");
 
             if (incorrect.isEmpty()) {
                 builder.append("\n  --NONE--");
@@ -148,10 +146,9 @@ public class CompareTwoGraphs {
         }
 
         {
-            builder.append("""
-
-
-                    Edges correctly oriented""");
+            builder.append("\n" +
+                           "\n" +
+                           "Edges correctly oriented");
 
             List<Edge> correct = new ArrayList<>();
 

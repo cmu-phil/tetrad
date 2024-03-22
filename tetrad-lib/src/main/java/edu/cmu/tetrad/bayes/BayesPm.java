@@ -333,9 +333,10 @@ public final class BayesPm implements Pm, VariableSource {
             return false;
         }
 
-        if (!(o instanceof BayesPm bayesPm)) {
+        if (!(o instanceof BayesPm)) {
             return false;
         }
+        BayesPm bayesPm = (BayesPm) o;
 
         return bayesPm.dag.equals(this.dag) && bayesPm.nodesToVariables.equals(this.nodesToVariables);
 

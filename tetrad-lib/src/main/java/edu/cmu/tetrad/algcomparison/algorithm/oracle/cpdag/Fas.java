@@ -72,14 +72,23 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      */
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
+        PcCommon.PcHeuristicType pcHeuristicType;
+        switch (parameters.getInt(Params.PC_HEURISTIC)) {
+            case 0:
+                pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+                break;
+            case 1:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+                break;
+            case 2:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_2;
+                break;
+            case 3:
+                pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_3;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+        }
 
         edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataModel, parameters));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
@@ -90,7 +99,8 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         Object obj = parameters.get(Params.PRINT_STREAM);
 
-        if (obj instanceof PrintStream ps) {
+        if (obj instanceof PrintStream) {
+            PrintStream ps = (PrintStream) obj;
             search.setOut(ps);
         }
 

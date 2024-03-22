@@ -86,9 +86,10 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
+            if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
+            DataSet dataSet = (DataSet) dataModel;
 
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
             if (dataSet.getName() != null) {

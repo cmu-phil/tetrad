@@ -546,7 +546,8 @@ public final class LargeScaleSimulation {
             this.coefs[_head] = newCoefs;
         }
 
-        if (this.graph instanceof TimeLagGraph lagGraph) {
+        if (this.graph instanceof TimeLagGraph) {
+            TimeLagGraph lagGraph = (TimeLagGraph) this.graph;
             Knowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
             List<Node> lag0 = lagGraph.getLag0Nodes();
 

@@ -396,7 +396,8 @@ public class Comparison {
                     stdout.println("Type mismatch: " + algorithmWrapper.getDescription() + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                     external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
                 }
 
@@ -1255,7 +1256,8 @@ public class Comparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1365,7 +1367,8 @@ public class Comparison {
 
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);
@@ -1411,13 +1414,18 @@ public class Comparison {
     }
 
     private String getHeader(int u) {
-        return switch (u) {
-            case 0 -> "All edges";
-            case 1 -> "Discrete-discrete";
-            case 2 -> "Discrete-continuous";
-            case 3 -> "Continuous-continuous";
-            default -> throw new IllegalStateException();
-        };
+        switch (u) {
+            case 0:
+                return "All edges";
+            case 1:
+                return "Discrete-discrete";
+            case 2:
+                return "Discrete-continuous";
+            case 3:
+                return "Continuous-continuous";
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     private double[][][] calcStatTables(double[][][][] allStats, Mode mode, int numTables, List<AlgorithmSimulationWrapper> wrappers, int numStats, Statistics statistics) {
@@ -2106,42 +2114,64 @@ public class Comparison {
 
     /**
      * A run.
-     *
-     * @param algSimIndex The algorithm simulation index.
-     * @param runIndex    The run index.
      */
-    private record Run(int algSimIndex, int runIndex) {
+        private static final class Run {
+        private final int algSimIndex;
+        private final int runIndex;
 
-        /**
-         * Constructs a new run.
-         *
-         * @param algSimIndex the algorithm simulation index
-         * @param runIndex    the run index
-         */
-        private Run {
-        }
 
-        /**
-         * <p>Getter for the field <code>algSimIndex</code>.</p>
-         *
-         * @return the algorithm simulation index
-         */
+            /**
+             * Constructs a new run.
+             *
+             * @param algSimIndex the algorithm simulation index
+             * @param runIndex    the run index
+             */
+            private Run(int algSimIndex, int runIndex) {
+                this.algSimIndex = algSimIndex;
+                this.runIndex = runIndex;
+            }
+
+            /**
+             * <p>Getter for the field <code>algSimIndex</code>.</p>
+             *
+             * @return the algorithm simulation index
+             */
+            public int algSimIndex() {
+                return this.algSimIndex;
+            }
+
+            /**
+             * <p>Getter for the field <code>runIndex</code>.</p>
+             *
+             * @return the run index
+             */
+            public int runIndex() {
+                return this.runIndex;
+            }
+
         @Override
-        public int algSimIndex() {
-            return this.algSimIndex;
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (Run) obj;
+            return this.algSimIndex == that.algSimIndex &&
+                   this.runIndex == that.runIndex;
         }
 
-        /**
-         * <p>Getter for the field <code>runIndex</code>.</p>
-         *
-         * @return the run index
-         */
         @Override
-        public int runIndex() {
-            return this.runIndex;
+        public int hashCode() {
+            return Objects.hash(algSimIndex, runIndex);
         }
 
-    }
+        @Override
+        public String toString() {
+            return "Run[" +
+                   "algSimIndex=" + algSimIndex + ", " +
+                   "runIndex=" + runIndex + ']';
+        }
+
+
+        }
 
     /**
      * A task for running an algorithm.

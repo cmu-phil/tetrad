@@ -54,9 +54,10 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
+        if (!(dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         dataSet = dataSet.copy();
 
@@ -79,7 +80,8 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
+        if (obj instanceof PrintStream) {
+            PrintStream ps = (PrintStream) obj;
             search.setOut(ps);
         }
 

@@ -483,10 +483,9 @@ public final class PcCommon implements IGraphSearch {
                 forceLogMessage("Noncollider: " + triple, verbose);
             }
 
-            forceLogMessage("""
-
-                    Ambiguous triples (i.e. list of triples for which\s
-                    there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
+            forceLogMessage("\n" +
+                            "Ambiguous triples (i.e. list of triples for which \n" +
+                            "there is ambiguous data about whether they are colliderDiscovery or not):", verbose);
 
             for (Triple triple : getAmbiguousTriples()) {
                 forceLogMessage("Ambiguous: " + triple, verbose);

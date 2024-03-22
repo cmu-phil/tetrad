@@ -50,9 +50,10 @@ public class LogData extends DataWrapper {
         DataModelList outList = new DataModelList();
 
         for (DataModel model : inList) {
-            if (!(model instanceof DataSet dataSet)) {
+            if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
+            DataSet dataSet = (DataSet) model;
 
             double a = params.getDouble("a");
             boolean isUnlog = params.getBoolean("unlog");

@@ -1017,9 +1017,10 @@ public final class Knowledge implements TetradSerializable {
      * @return true if the specified object is equal to this Knowledge, false otherwise
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Knowledge that)) {
+        if (!(o instanceof Knowledge)) {
             return false;
         }
+        Knowledge that = (Knowledge) o;
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                 && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)

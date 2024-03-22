@@ -276,10 +276,11 @@ public final class NumberObjectDataSet
     public void setInt(int row, int column, int value) {
         Node variable = getVariable(column);
 
-        if (!(variable instanceof DiscreteVariable _variable)) {
+        if (!(variable instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
                     "Can only set ints for discrete columns.");
         }
+        DiscreteVariable _variable = (DiscreteVariable) variable;
 
         if (value < 0 && value != -99) {
             throw new IllegalArgumentException(
@@ -346,7 +347,8 @@ public final class NumberObjectDataSet
 
         if (variable instanceof ContinuousVariable) {
             return getDouble(row, col);
-        } else if (variable instanceof DiscreteVariable _variable) {
+        } else if (variable instanceof DiscreteVariable) {
+            DiscreteVariable _variable = (DiscreteVariable) variable;
 
             if (_variable.isCategoryNamesDisplayed()) {
                 return _variable.getCategory(getInt(row, col));
@@ -490,11 +492,13 @@ public final class NumberObjectDataSet
      * <code>to</code>. Supported currently only for discrete variables.
      */
     public void changeVariable(Node from, Node to) {
-        if (!(from instanceof DiscreteVariable _from &&
-                to instanceof DiscreteVariable _to)) {
+        if (!(from instanceof DiscreteVariable &&
+              to instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
                     "Only discrete variables supported.");
         }
+        DiscreteVariable _to = (DiscreteVariable) to;
+        DiscreteVariable _from = (DiscreteVariable) from;
 
         int col = this.variables.indexOf(_from);
 
@@ -957,7 +961,8 @@ public final class NumberObjectDataSet
                     if (j < getNumColumns() - 1) {
                         buf.append(this.outputDelimiter);
                     }
-                } else if (variable instanceof DiscreteVariable _variable) {
+                } else if (variable instanceof DiscreteVariable) {
+                    DiscreteVariable _variable = (DiscreteVariable) variable;
                     int value = getInt(i, j);
 
                     if (value == -99) {
@@ -1165,9 +1170,10 @@ public final class NumberObjectDataSet
             return true;
         }
 
-        if (!(obj instanceof DataSet _dataSet)) {
+        if (!(obj instanceof DataSet)) {
             return false;
         }
+        DataSet _dataSet = (DataSet) obj;
 
         for (int i = 0; i < getVariables().size(); i++) {
             Node node = getVariables().get(i);
@@ -1324,7 +1330,8 @@ public final class NumberObjectDataSet
                 }
 
                 return index;
-            } else if (element instanceof String label) {
+            } else if (element instanceof String) {
+                String label = (String) element;
 
                 variable = accomodateCategory(variable, label);
                 int index = variable.getIndex(label);
@@ -1349,7 +1356,8 @@ public final class NumberObjectDataSet
                 }
 
                 return index;
-            } else if (element instanceof String label) {
+            } else if (element instanceof String) {
+                String label = (String) element;
 
                 int index = variable.getIndex(label);
 

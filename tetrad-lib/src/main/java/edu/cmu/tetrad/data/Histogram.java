@@ -151,7 +151,8 @@ public class Histogram {
             }
 
             return counts;
-        } else if (this.target instanceof DiscreteVariable _var) {
+        } else if (this.target instanceof DiscreteVariable) {
+            DiscreteVariable _var = (DiscreteVariable) this.target;
             List<Integer> _data = getConditionedDataDiscrete();
 
             int[] counts = new int[_var.getNumCategories()];

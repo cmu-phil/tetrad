@@ -79,7 +79,8 @@ public class SemEstimatorWrapper implements SessionModel {
         this.params = params;
         this.semPm = semPm;
 
-        if (dataModel instanceof DataSet dataSet) {
+        if (dataModel instanceof DataSet) {
+            DataSet dataSet = (DataSet) dataModel;
             SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
             estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
             estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));

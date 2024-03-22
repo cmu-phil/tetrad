@@ -393,7 +393,8 @@ public class TimeoutComparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -1213,7 +1214,8 @@ public class TimeoutComparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1261,7 +1263,8 @@ public class TimeoutComparison {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);

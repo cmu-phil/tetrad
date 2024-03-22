@@ -412,7 +412,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public final boolean equals(Object o) {
         if (o == null) return false;
         if (o == this) return true;
-        if (!(o instanceof Edge edge)) return false;
+        if (!(o instanceof Edge)) return false;
+        Edge edge = (Edge) o;
 
         // Equality of nodes can only dependent on the object identity of the
         // nodes, not on their name. Otherwise, the identity of an edge could be

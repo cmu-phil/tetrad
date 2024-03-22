@@ -492,16 +492,15 @@ public class TestFges {
 
     @Test
     public void testCites() {
-        final String citesString = """
-                164
-                ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS
-                1.0
-                .62\t1.0
-                .25\t.09\t1.0
-                .16\t.28\t.07\t1.0
-                -.10\t.00\t.03\t.10\t1.0
-                .29\t.25\t.34\t.37\t.13\t1.0
-                .18\t.15\t.19\t.41\t.43\t.55\t1.0""";
+        final String citesString = "164\n" +
+                                   "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
+                                   "1.0\n" +
+                                   ".62\t1.0\n" +
+                                   ".25\t.09\t1.0\n" +
+                                   ".16\t.28\t.07\t1.0\n" +
+                                   "-.10\t.00\t.03\t.10\t1.0\n" +
+                                   ".29\t.25\t.34\t.37\t.13\t1.0\n" +
+                                   ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix cov = SimpleDataLoader.loadCovarianceMatrix(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
@@ -510,21 +509,20 @@ public class TestFges {
 
         System.out.println(CPDAG);
 
-        final String trueString = """
-                Graph Nodes:
-                Graph Nodes:
-                Graph Nodes:;ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS
-
-                Graph Edges:
-                1. ABILITY --> GPQ
-                2. ABILITY --> PREPROD
-                3. ABILITY --> PUBS
-                4. GPQ --> QFJ
-                5. PREPROD --> CITES
-                6. PUBS --> CITES
-                7. QFJ --> CITES
-                8. QFJ --> PUBS
-                9. SEX --> PUBS""";
+        final String trueString = "Graph Nodes:\n" +
+                                  "Graph Nodes:\n" +
+                                  "Graph Nodes:;ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
+                                  "\n" +
+                                  "Graph Edges:\n" +
+                                  "1. ABILITY --> GPQ\n" +
+                                  "2. ABILITY --> PREPROD\n" +
+                                  "3. ABILITY --> PUBS\n" +
+                                  "4. GPQ --> QFJ\n" +
+                                  "5. PREPROD --> CITES\n" +
+                                  "6. PUBS --> CITES\n" +
+                                  "7. QFJ --> CITES\n" +
+                                  "8. QFJ --> PUBS\n" +
+                                  "9. SEX --> PUBS";
 
         try {
             Graph trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);

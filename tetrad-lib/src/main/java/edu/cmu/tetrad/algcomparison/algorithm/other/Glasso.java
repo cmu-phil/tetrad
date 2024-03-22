@@ -54,9 +54,10 @@ public class Glasso extends AbstractBootstrapAlgorithm implements Algorithm {
      * @throws IllegalArgumentException if the data model is not a continuous dataset or contains missing values.
      */
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+        if (!(dataModel instanceof DataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+        DataSet dataSet = (DataSet) dataModel;
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {

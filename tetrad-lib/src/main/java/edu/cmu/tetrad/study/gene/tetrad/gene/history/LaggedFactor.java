@@ -94,7 +94,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      */
     public int compareTo(Object o) {
 
-        if (o instanceof LaggedFactor f) {
+        if (o instanceof LaggedFactor) {
+            LaggedFactor f = (LaggedFactor) o;
             int n = this.factor.compareTo(f.getFactor());
 
             if (n != 0) {
@@ -152,9 +153,10 @@ public class LaggedFactor implements Comparable, TetradSerializable {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof LaggedFactor c)) {
+        if (!(o instanceof LaggedFactor)) {
             return false;
         }
+        LaggedFactor c = (LaggedFactor) o;
         return c.getFactor().equals(this.getFactor()) &&
                 c.getLag() == this.getLag();
     }

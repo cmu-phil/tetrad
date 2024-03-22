@@ -570,9 +570,10 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof Combination v)) {
+            if (!(o instanceof Combination)) {
                 return false;
             }
+            Combination v = (Combination) o;
             return v.parameter == this.parameter && v.paramValues.equals(this.paramValues);
         }
 
@@ -607,9 +608,10 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof VariableValues v)) {
+            if (!(o instanceof VariableValues)) {
                 return false;
             }
+            VariableValues v = (VariableValues) o;
             return v.variable.equals(this.variable) && v.value == this.value;
         }
     }

@@ -225,7 +225,8 @@ public class TetradLogger {
             }
         }
         for (OutputStream stream : this.writers.keySet()) {
-            if (stream instanceof LogDisplayOutputStream logStream) {
+            if (stream instanceof LogDisplayOutputStream) {
+                LogDisplayOutputStream logStream = (LogDisplayOutputStream) stream;
                 logStream.moveToEnd();
             }
         }

@@ -176,9 +176,10 @@ public final class SepsetMapDci {
      * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        if (!(o instanceof SepsetMapDci _sepset)) {
+        if (!(o instanceof SepsetMapDci)) {
             return false;
         }
+        SepsetMapDci _sepset = (SepsetMapDci) o;
 
         return this.sepsets.equals(_sepset.sepsets) && this.sepsetSets.equals(_sepset.sepsetSets);
     }

@@ -126,7 +126,8 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = new Parameters(parameters);
 
-        if (graphSource instanceof Simulation simulation) {
+        if (graphSource instanceof Simulation) {
+            Simulation simulation = (Simulation) graphSource;
             List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
@@ -160,7 +161,8 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public DagWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof Simulation simulation) {
+        if (wrapper instanceof Simulation) {
+            Simulation simulation = (Simulation) wrapper;
             List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();

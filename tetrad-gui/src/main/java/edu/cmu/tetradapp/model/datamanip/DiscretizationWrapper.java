@@ -64,9 +64,10 @@ public class DiscretizationWrapper extends DataWrapper {
         DataModelList discretizedDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet originalData)) {
+            if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
+            DataSet originalData = (DataSet) dataModel;
 
             Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);

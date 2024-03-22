@@ -144,9 +144,10 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
      * {@inheritDoc}
      */
     public boolean equals(Object obj) {
-        if (!(obj instanceof IndependenceFact fact)) {
+        if (!(obj instanceof IndependenceFact)) {
             return false;
         }
+        IndependenceFact fact = (IndependenceFact) obj;
 
         Set<String> zString1 = new HashSet<>();
 

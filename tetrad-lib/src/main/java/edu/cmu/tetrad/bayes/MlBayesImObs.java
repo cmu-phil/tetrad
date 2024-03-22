@@ -926,9 +926,10 @@ public final class MlBayesImObs implements BayesIm {
             return true;
         }
 
-        if (!(o instanceof BayesIm otherIm)) {
+        if (!(o instanceof BayesIm)) {
             return false;
         }
+        BayesIm otherIm = (BayesIm) o;
 
         if (getNumNodes() != otherIm.getNumNodes()) {
             return false;

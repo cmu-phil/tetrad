@@ -971,9 +971,10 @@ public final class DirichletBayesIm implements BayesIm {
             return true;
         }
 
-        if (!(o instanceof DirichletBayesIm otherIm)) {
+        if (!(o instanceof DirichletBayesIm)) {
             return false;
         }
+        DirichletBayesIm otherIm = (DirichletBayesIm) o;
 
         if (getNumNodes() != otherIm.getNumNodes()) {
             return false;

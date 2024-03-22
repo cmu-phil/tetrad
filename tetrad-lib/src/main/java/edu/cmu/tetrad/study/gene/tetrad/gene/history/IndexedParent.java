@@ -108,9 +108,10 @@ public final class IndexedParent implements TetradSerializable {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof IndexedParent c)) {
+        if (!(o instanceof IndexedParent)) {
             return false;
         }
+        IndexedParent c = (IndexedParent) o;
         return c.getIndex() == this.getIndex() && c.getLag() == this.getLag();
     }
 

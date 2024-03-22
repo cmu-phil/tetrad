@@ -337,9 +337,10 @@ public final class DataModelList extends AbstractList<DataModel>
             return false;
         }
 
-        if (!(o instanceof DataModelList list)) {
+        if (!(o instanceof DataModelList)) {
             return false;
         }
+        DataModelList list = (DataModelList) o;
 
         return this.name.equals(list.name) && this.modelList.equals(list.modelList) && this.knowledge.equals(list.knowledge) && this.selectedModel.equals(list.selectedModel);
 

@@ -1716,9 +1716,10 @@ public class Ion {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof IonIndependenceFacts fact)) {
+            if (!(obj instanceof IonIndependenceFacts)) {
                 return false;
             }
+            IonIndependenceFacts fact = (IonIndependenceFacts) obj;
 
             return (this.x.equals(fact.x) && this.y.equals(fact.y) &&
                     this.z.equals(fact.z))

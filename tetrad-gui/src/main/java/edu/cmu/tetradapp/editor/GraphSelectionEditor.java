@@ -1085,7 +1085,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             }
         }
 
-        private static class VariableManipulationPanel extends JPanel {
+        private class VariableManipulationPanel extends JPanel {
 
             @Serial
             private static final long serialVersionUID = 4538277448583296121L;
@@ -1133,7 +1133,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         /**
          * A basic model for the list (needed an addAll feature, which the detault model didn't have)
          */
-        public static class VariableListModel extends AbstractListModel {
+        public class VariableListModel extends AbstractListModel {
 
             @Serial
             private static final long serialVersionUID = 8014422476634156667L;
