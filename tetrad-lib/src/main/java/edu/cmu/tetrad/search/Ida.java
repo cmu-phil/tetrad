@@ -25,8 +25,10 @@ import static org.apache.commons.math3.util.FastMath.min;
  * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
  * <p>
  * The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding
- * lower-bounded effects on Y. It regresses Y on X &cup; S, where X is a possible parent of Y and S is a set of
-     * possible parents of X, and reports the regression coefficient. The effects are sorted downward by minimum effect size.
+ * lower-bounded effects on Y. It regresses Y on X &cup; S, where X is a possible parent of Y and S is a set of possible
+ * parents of X, and reports the regression coefficient. The set of such regressions is then sorted in ascending order
+ * to give the total effects of X on Y. The absolute total effects are calculated as the absolute values of the total
+ * effects.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -127,10 +129,12 @@ public class Ida {
      *
      * @param x The node whose total effects are to be calculated.
      * @param y The node for which the total effects are calculated.
-     * @return A LinkedList of Double values representing the total effects of node x
-     * on node y. The LinkedList is sorted in ascending order.
+     * @return A LinkedList of Double values representing the total effects of node x on node y. The LinkedList is
+     * sorted in ascending order.
      */
     public LinkedList<Double> getTotalEffects(Node x, Node y) {
+        System.out.println("Calculating total effects of " + x + " on " + y + ".");
+
         List<Node> parents = this.cpdag.getParents(x);
         List<Node> children = this.cpdag.getChildren(x);
 
@@ -179,8 +183,10 @@ public class Ida {
                 if (regressors.contains(y)) {
                     beta = 0.0;
                 } else {
-                    beta = getBeta(regressors, y);
+                    beta = getBeta(regressors, x, y);
                 }
+
+                System.out.println("Regressors: " + regressors + ", beta: " + beta);
 
                 totalEffects.add(beta);
             } catch (Exception e) {
@@ -197,8 +203,8 @@ public class Ida {
      *
      * @param x The node for which the total effects are calculated.
      * @param y The node whose total effects are obtained.
-     * @return A LinkedList of Double values representing the absolute total effects of node x on node y.
-     * The LinkedList is sorted in ascending order.
+     * @return A LinkedList of Double values representing the absolute total effects of node x on node y. The LinkedList
+     * is sorted in ascending order.
      */
     public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
         LinkedList<Double> totalEffects = getTotalEffects(x, y);
@@ -235,12 +241,16 @@ public class Ida {
      * Note that x must be the first regressor.
      *
      * @param regressors The list of regressor nodes.
+     * @param parent     The parent node for which the beta coefficient is calculated.
      * @param child      The child node for which the beta coefficient is calculated.
-     * @return The beta coefficient for the child node.
+     * @return The beta coefficient for the parent->child regression.
      * @throws RuntimeException If a singularity is encountered during the regression process.
      */
-    private double getBeta(List<Node> regressors, Node child) {
+    private double getBeta(List<Node> regressors, Node parent, Node child) {
+        if (!regressors.contains(parent)) throw new IllegalArgumentException("The regressors must contain the parent node.");
+
         try {
+            int xIndex = regressors.indexOf(parent);
             int yIndex = this.nodeIndices.get(child.getName());
             int[] xIndices = new int[regressors.size()];
             for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
@@ -253,13 +263,13 @@ public class Ida {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
                 System.out.println("Singularity encountered when regressing " +
-                        LogUtilsSearch.getScoreFact(child, regressors));
+                                   LogUtilsSearch.getScoreFact(child, regressors));
             }
 
-            return bStar != null ? bStar.get(0, 0) : 0.0;
+            return bStar != null ? bStar.get(xIndex, 0) : 0.0;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
-                    LogUtilsSearch.getScoreFact(child, regressors));
+                                       LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 
