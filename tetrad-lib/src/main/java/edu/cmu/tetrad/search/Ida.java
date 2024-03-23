@@ -123,18 +123,14 @@ public class Ida {
     }
 
     /**
-     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern), sorted low
-     * to high in absolute value.
-     * <p>
-     * 1. First, estimate a pattern P from the data. 2. Then, consider all combinations C of siblings Z of X (Z--X) that
-     * include all the parents of X in P. 3. For each such C, regress Y onto {X} U C and record the coefficient beta for
-     * X in the regression. 4. Report the list of such betas, sorted low to high.
+     * Calculates the total effects of node x on node y.
      *
-     * @param x The first variable.
-     * @param y The second variable
-     * @return a list of the possible effects of X on Y.
+     * @param x The node whose total effects are to be calculated.
+     * @param y The node for which the total effects are calculated.
+     * @return A LinkedList of Double values representing the total effects of node x
+     * on node y. The LinkedList is sorted in ascending order.
      */
-    public LinkedList<Double> getEffects(Node x, Node y) {
+    public LinkedList<Double> getTotalEffects(Node x, Node y) {
         List<Node> parents = this.cpdag.getParents(x);
         List<Node> children = this.cpdag.getChildren(x);
 
@@ -147,7 +143,7 @@ public class Ida {
         SublistGenerator gen = new SublistGenerator(size, size);
         int[] choice;
 
-        LinkedList<Double> effects = new LinkedList<>();
+        LinkedList<Double> totalEffects = new LinkedList<>();
 
         CHOICE:
         while ((choice = gen.next()) != null) {
@@ -186,15 +182,33 @@ public class Ida {
                     beta = getBeta(regressors, y);
                 }
 
-                effects.add(abs(beta));
+                totalEffects.add(beta);
             } catch (Exception e) {
                 TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
         }
 
-        Collections.sort(effects);
+        Collections.sort(totalEffects);
+        return totalEffects;
+    }
 
-        return effects;
+    /**
+     * This method calculates the absolute total effects of node x on node y.
+     *
+     * @param x The node for which the total effects are calculated.
+     * @param y The node whose total effects are obtained.
+     * @return A LinkedList of Double values representing the absolute total effects of node x on node y.
+     * The LinkedList is sorted in ascending order.
+     */
+    public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
+        LinkedList<Double> totalEffects = getTotalEffects(x, y);
+        LinkedList<Double> absTotalEffects = new LinkedList<>();
+        for (double d : totalEffects) {
+            absTotalEffects.add(Math.abs(d));
+        }
+
+        Collections.sort(absTotalEffects);
+        return absTotalEffects;
     }
 
     /**
@@ -203,13 +217,12 @@ public class Ida {
      * @param y The child variable
      * @return Thia map.
      */
-    public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
+    public Map<Node, Double> calculateMinimumTotalEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
             if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
-
-            LinkedList<Double> effects = getEffects(x, y);
+            LinkedList<Double> effects = getTotalEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
 

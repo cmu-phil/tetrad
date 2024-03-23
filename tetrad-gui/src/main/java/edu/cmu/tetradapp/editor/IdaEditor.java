@@ -223,12 +223,13 @@ public class IdaEditor extends JPanel {
      * down. The table can be copied and pasted into a text file or into Excel.
      */
     private static class IdaTableModel extends AbstractTableModel {
-
         /**
-         * The column names for the table. If trueModel is null, then the table will have 3 columns. If trueModel is not
-         * null, then the table will have 5 columns.
+         * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
+         * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
+         * the fifth column is the true total effect, and the sixth column is the squared distance. If the true model is
+         * not given, the last two columns are not included.
          */
-        private final String[] columnNames = {"Pair", "Min Est Effect", "Max Est Effect", "True Effect", "Squared Distance"};
+        private final String[] columnNames = {"Pair", "Min TE", "Max TE", "Min Abs TE", "True TE", "Sq Dist"};
         /**
          * The data for the table.
          */
@@ -249,37 +250,43 @@ public class IdaEditor extends JPanel {
             this.pairs = pairs;
 
             // Create the data for the table
-            this.data = trueModel == null ? new Object[pairs.size()][3] : new Object[pairs.size()][5];
+            this.data = new Object[pairs.size()][trueModel == null ? 4 : 6];
 
-            averages = new double[4];
+            // Create the averages' array
+            averages = new double[trueModel == null ? 3 : 5];
 
             // Fill in the data for the table
             for (int i = 0; i < pairs.size(); i++) {
                 OrderedPair<Node> pair = pairs.get(i);
                 String edge = pair.getSecond() + " <- " + pair.getFirst();
-                double minEst = estModel.getMinEffect(pair.getFirst(), pair.getSecond());
-                double maxEst = estModel.getMaxEffect(pair.getFirst(), pair.getSecond());
+                double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
+                double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
+                double minAbsTotalEffect = estModel.getMinAbsTotalEffect(pair.getFirst(), pair.getSecond());
 
                 if (trueModel == null) {
                     this.data[i][0] = edge;
-                    this.data[i][1] = minEst;
-                    this.data[i][2] = maxEst;
+                    this.data[i][1] = minTotalEffect;
+                    this.data[i][2] = maxTotalEffect;
+                    this.data[i][3] = minAbsTotalEffect;
 
-                    averages[0] += minEst;
-                    averages[1] += maxEst;
+                    averages[0] += minTotalEffect;
+                    averages[1] += maxTotalEffect;
+                    averages[2] += minAbsTotalEffect;
                 } else {
-                    double trueEffect = trueModel.getMinEffect(pair.getFirst(), pair.getSecond());
+                    double trueEffect = trueModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
                     double squaredDistance = estModel.getSquaredDistance(pair.getFirst(), pair.getSecond(), trueEffect);
                     this.data[i][0] = edge;
-                    this.data[i][1] = minEst;
-                    this.data[i][2] = maxEst;
-                    this.data[i][3] = trueEffect;
-                    this.data[i][4] = squaredDistance;
+                    this.data[i][1] = minTotalEffect;
+                    this.data[i][2] = maxTotalEffect;
+                    this.data[i][3] = minAbsTotalEffect;
+                    this.data[i][4] = trueEffect;
+                    this.data[i][5] = squaredDistance;
 
-                    averages[0] += minEst;
-                    averages[1] += maxEst;
-                    averages[2] += trueEffect;
-                    averages[3] += squaredDistance;
+                    averages[0] += minTotalEffect;
+                    averages[1] += maxTotalEffect;
+                    averages[2] += minAbsTotalEffect;
+                    averages[3] += trueEffect;
+                    averages[4] += squaredDistance;
                 }
             }
 

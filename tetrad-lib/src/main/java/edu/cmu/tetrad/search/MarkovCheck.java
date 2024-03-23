@@ -236,7 +236,7 @@ public class MarkovCheck {
         List<Node> possibleCauses = new ArrayList<>();
         possibleCauses.add(x);
         Ida ida = new Ida(dataSet, graph, possibleCauses);
-        return ida.calculateMinimumEffectsOnY(y).get(x);
+        return ida.calculateMinimumTotalEffectsOnY(y).get(x);
     }
 
     /**

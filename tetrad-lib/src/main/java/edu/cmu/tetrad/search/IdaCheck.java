@@ -41,11 +41,14 @@ public class IdaCheck {
     private final List<OrderedPair<Node>> pairs;
 
     /**
-     * A map containing effects between node pairs. The keys of the map are instances of OrderedPair, which represents
-     * an unordered pair of nodes. The values of the map are lists of Double values, representing the effects between
-     * the node pairs.
+     * A map from ordered pairs of nodes X-&gt;Y to a list of total effects for X on Y.
      */
-    private final Map<OrderedPair<Node>, LinkedList<Double>> effects;
+    private final Map<OrderedPair<Node>, LinkedList<Double>> totalEffects;
+
+    /**
+     * A map from ordered pairs of nodes X-&gt;Y to a list of absolute total effects for X on Y.
+     */
+    private final Map<OrderedPair<Node>, LinkedList<Double>> absTotalEffects;
 
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
@@ -84,13 +87,16 @@ public class IdaCheck {
         }
 
         this.nodes = dataSet.getVariables();
-        this.effects = new HashMap<>();
+        this.totalEffects = new HashMap<>();
+        this.absTotalEffects = new HashMap<>();
         this.ida = new Ida(dataSet, graph, nodes);
         this.pairs = calcOrderedPairs();
 
         for (OrderedPair<Node> pair : calcOrderedPairs()) {
-            LinkedList<Double> effects = ida.getEffects(pair.getFirst(), pair.getSecond());
-            this.effects.put(pair, effects);
+            LinkedList<Double> totalEffects = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
+            LinkedList<Double> absTotalEffects = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
+            this.totalEffects.put(pair, totalEffects);
+            this.absTotalEffects.put(pair, absTotalEffects);
         }
     }
 
@@ -113,37 +119,51 @@ public class IdaCheck {
     }
 
     /**
-     * Gets the minimum effect value between two nodes.
+     * Gets the minimum total effect value between two nodes.
      *
      * @param x the first node.
      * @param y the second node.
-     * @return the minimum effect value between the two nodes.
+     * @return the minimum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
-    public double getMinEffect(Node x, Node y) {
+    public double getMinTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
+        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
         return effects.getFirst();
     }
 
     /**
-     * Returns the maximum effect value between two nodes.
+     * Returns the maximum total effect value between two nodes.
      *
      * @param x the first node.
      * @param y the second node.
-     * @return the maximum effect value between the two nodes.
+     * @return the maximum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
-    public double getMaxEffect(Node x, Node y) {
+    public double getMaxTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.effects.get(new OrderedPair<>(x, y));
+        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
         return effects.getLast();
     }
 
     /**
-     * Calculates the squared distance of the true effect to the [min, max] IDA effect range of the given (x, y) node
-     * pair. If the true effect falls within [min, max], the method returns 0. Otherwise, the squared distance to the
-     * nearest endpoint of the [min, max] range is returned.
+     * Gets the minimum absolute total effect value between two nodes.
+     *
+     * @param x the first node.
+     * @param y the second node.
+     * @return the minimum absolute total effect value between the two nodes.
+     * @throws IllegalArgumentException if the nodes x and y are the same.
+     */
+    public double getMinAbsTotalEffect(Node x, Node y) {
+        if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
+        LinkedList<Double> effects = this.absTotalEffects.get(new OrderedPair<>(x, y));
+        return effects.getFirst();
+    }
+
+    /**
+     * Calculates the squared distance of the true total effect to the [min, max] IDA effect range of the given (x, y)
+     * node pair. If the true effect falls within [min, max], the method returns 0. Otherwise, the squared distance to
+     * the nearest endpoint of the [min, max] range is returned.
      *
      * @param x          the first node.
      * @param y          the second node.
@@ -151,7 +171,7 @@ public class IdaCheck {
      * @return the squared distance between the two nodes.
      */
     public double getSquaredDistance(Node x, Node y, double trueEffect) {
-        double distance = ida.distance(this.effects.get(new OrderedPair<>(x, y)), trueEffect);
+        double distance = ida.distance(this.totalEffects.get(new OrderedPair<>(x, y)), trueEffect);
         return distance * distance;
     }
 

@@ -24,11 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IdaCheck;
-import edu.cmu.tetrad.sem.SemManipulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -71,75 +69,61 @@ public class IdaModel implements SessionModel {
      */
     private List<String> vars = new LinkedList<>();
     /**
-     * Represents the IdaCheck object associated with the estimated CPDAG.
-     * This variable is used to perform checks on the estimated CPDAG.
-     * It is set to null if the estimated CPDAG is not available.
+     * Represents the IdaCheck object associated with the estimated CPDAG. This variable is used to perform checks on
+     * the estimated CPDAG. It is set to null if the estimated CPDAG is not available.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
     /**
-     * Represents the IdaCheck object associated with the true CPDAG.
-     * This variable is used in the context of the IdaModel class.
+     * Represents the IdaCheck object associated with the true CPDAG. This variable is used in the context of the
+     * IdaModel class.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckTrue;
 
     /**
-     * Constructs a new instance of IdaModel.
-     *
-     * @param dataWrapper the data wrapper object.
-     * @param graphSource the graph source object.
-     * @param parameters  the parameters object.
-     */
-    public IdaModel(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
-        this(dataWrapper, graphSource, new EdgeListGraph(), parameters);
-    }
-
-    public IdaModel(Simulation simulation, GraphSource estimatedGraph, Parameters parameters) {
-        this(simulation, estimatedGraph, simulation.getGraph(), parameters);
-    }
-
-    public IdaModel(DataWrapper dataModel, GraphSource estimatedGraph, SemImWrapper semImWrapper, Parameters parameters) {
-        this(dataModel, estimatedGraph, semImWrapper == null ? new EdgeListGraph() : semImWrapper.getGraph(), parameters);
-    }
-
-    /**
      * Constructs a new instance of the IdaModel class.
      *
-     * @param dataModel      the data model for the IdaModel.
-     * @param estimatedGraph the estimated graph for the IdaModel.
-     * @param trueGraph      the true graph for the IdaModel.
-     * @param parameters     the parameters for the IdaModel.
+     * @param dataWrapper the data wrapper for the IdaModel; could be a Simulation.
+     * @param graphSource the graph source for the IdaModel.
+     * @param parameters  the parameters for the IdaModel.
      * @throws IllegalArgumentException if the data model is not a DataSet.
      */
-    public IdaModel(DataWrapper dataModel, GraphSource estimatedGraph, Graph trueGraph, Parameters parameters) {
+    public IdaModel(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
 
         // Check nullity. SemImWrapper may be null.
-        if (dataModel == null) {
+        if (dataWrapper == null) {
             throw new NullPointerException("Data model must not be null.");
         }
 
-        if (estimatedGraph == null) {
-            throw new NullPointerException("Estimated graph must not be null.");
+        if (graphSource == null) {
+            throw new NullPointerException("Graph source must not be null.");
         }
 
         if (parameters == null) {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        this.dataModel = dataModel.getSelectedDataModel();
-        this.estCpdag = GraphTransforms.cpdagForDag(estimatedGraph.getGraph());
-
-        // We want the DAG here because we want a single IDA value, not a range.
-        this.trueCdag = trueGraph.getEdges().isEmpty() ? null : trueGraph;
-        this.parameters = parameters;
+        this.dataModel = dataWrapper.getSelectedDataModel();
 
         // Make sure the data model is a DataSet.
         if (!(this.dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a data set.");
         }
+
+        this.estCpdag = GraphTransforms.cpdagForDag(graphSource.getGraph());
+
+        // We want the DAG here because we want a single IDA value, not a range.
+        if (dataWrapper instanceof Simulation simulation) {
+            Graph trueGraph = simulation.getGraph();
+            this.trueCdag = trueGraph.getEdges().isEmpty() ? null : trueGraph;
+        } else {
+            this.trueCdag = null;
+        }
+
+        this.parameters = parameters;
     }
 
     /**
@@ -182,22 +166,6 @@ public class IdaModel implements SessionModel {
 
         this.idaCheckTrue = new IdaCheck(this.trueCdag, (DataSet) this.dataModel);
         return this.idaCheckTrue;
-    }
-
-    /**
-     * Returns the graph associated with the current instance of IdaModel.
-     *
-     * @return the graph object representing the current instance of IdaModel.
-     */
-    public Graph getEstCpdag() {
-        return this.estCpdag;
-    }
-
-    /**
-     * The true CPDAG, if available.
-     */
-    public Graph getTrueCdag() {
-        return new EdgeListGraph(trueCdag);
     }
 
     /**
