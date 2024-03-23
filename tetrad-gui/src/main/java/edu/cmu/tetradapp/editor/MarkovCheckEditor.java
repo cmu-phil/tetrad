@@ -41,9 +41,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.*;
 import java.awt.Point;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -54,6 +54,8 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
@@ -562,12 +564,12 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private JPanel buildGuiIndep() {
-        JPanel tablelPanel = new JPanel(new BorderLayout());
+        Box tablePanel = Box.createVerticalBox();
 
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        tablelPanel.add(conditioningLabelIndep, BorderLayout.NORTH);
+        tablePanel.add(conditioningLabelIndep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
@@ -683,11 +685,11 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        JScrollPane scroll = new JScrollPane(table);
-        tablelPanel.add(scroll, BorderLayout.CENTER);
+
+        addFilterPanel(tableModelIndep, table, tablePanel);
 
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        tablelPanel.add(label, BorderLayout.SOUTH);
+        tablePanel.add(label, BorderLayout.SOUTH);
 
         setLabelTexts();
 
@@ -724,22 +726,101 @@ public class MarkovCheckEditor extends JPanel {
         a4.add(a9);
 
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
-        checkMarkovPanel.add(new PaddingPanel(tablelPanel), BorderLayout.CENTER);
+        checkMarkovPanel.add(new PaddingPanel(tablePanel), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
 
         return checkMarkovPanel;
+    }
+
+    private static void addFilterPanel(AbstractTableModel tableModel, JTable table, Box tablePanel) {
+        TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
+
+        // Create the text field
+        JLabel regexLabel = new JLabel("Regexes (semicolon separated):");
+        JTextField filterText = new JTextField(15);
+        filterText.setMaximumSize(new Dimension(800, 20));
+        regexLabel.setLabelFor(filterText);
+
+        // Create a listener for the text field that will update the table's row sort
+        filterText.getDocument().addDocumentListener(getFilterListener(filterText, sorter));
+
+        JScrollPane scroll = new JScrollPane(table);
+
+        Box filterBox = Box.createHorizontalBox();
+        filterBox.add(regexLabel);
+        filterBox.add(filterText);
+        tablePanel.add(filterBox);
+        tablePanel.add(scroll);
+    }
+
+    @NotNull
+    private static DocumentListener getFilterListener(JTextField filterText, TableRowSorter<AbstractTableModel> sorter) {
+        return new DocumentListener() {
+
+            /**
+             * Filters the table based on the text in the text field.
+             */
+            private void filter() {
+                String text = filterText.getText();
+                if (text.trim().isEmpty()) {
+                    sorter.setRowFilter(null);
+                } else {
+                    String[] textParts = text.split(";+");
+                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
+                    for (String part : textParts) {
+                        try {
+                            filters.add(RowFilter.regexFilter(part.trim()));
+                        } catch (PatternSyntaxException e) {
+                            // ignore
+                        }
+                    }
+                    sorter.setRowFilter(RowFilter.orFilter(filters));
+                }
+            }
+
+            /**
+             * Inserts text into the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            /**
+             * Removes text from the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            /**
+             * Changes text in the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // this method won't be called for plain text fields
+            }
+        };
     }
 
     /**
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
-        JPanel tablelPanel = new JPanel(new BorderLayout());
+        Box tablePanel = Box.createVerticalBox();
 
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
-        tablelPanel.add(conditioningLabelDep, BorderLayout.NORTH);
+        tablePanel.add(conditioningLabelDep);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
@@ -856,14 +937,16 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
+        addFilterPanel(tableModelDep, table, tablePanel);
+
         JScrollPane scroll = new JScrollPane(table);
-        tablelPanel.add(scroll, BorderLayout.CENTER);
+        tablePanel.add(scroll);
 
         Box a3 = Box.createHorizontalBox();
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
         a3.add(label);
         a3.add(Box.createHorizontalGlue());
-        tablelPanel.add(label, BorderLayout.SOUTH);
+        tablePanel.add(label);
 
         setLabelTexts();
 
@@ -903,7 +986,7 @@ public class MarkovCheckEditor extends JPanel {
         a11.add(a4);
 
         JPanel checkDependDistributionPanel = new JPanel(new BorderLayout());
-        checkDependDistributionPanel.add(new PaddingPanel(tablelPanel), BorderLayout.CENTER);
+        checkDependDistributionPanel.add(new PaddingPanel(tablePanel), BorderLayout.CENTER);
         checkDependDistributionPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
 
         return checkDependDistributionPanel;

@@ -86,7 +86,7 @@ public class IdaEditor extends JPanel {
         table.setRowSorter(sorter);
 
         // Create the text field
-        JLabel label = new JLabel("Regexes (comma separated):");
+        JLabel label = new JLabel("Regexes (semicolon separated):");
         JTextField filterText = new JTextField(15);
         filterText.setMaximumSize(new Dimension(500, 20));
         label.setLabelFor(filterText);
@@ -102,13 +102,11 @@ public class IdaEditor extends JPanel {
                 if (text.trim().isEmpty()) {
                     sorter.setRowFilter(null);
                 } else {
-                    // process comma and space separated input
-                    String[] textParts = text.split(",+");
+                    String[] textParts = text.split(";+");
                     List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
                     for (String part : textParts) {
                         try {
-                            Pattern compile = Pattern.compile(part.trim());
-                            filters.add(RowFilter.regexFilter("(?i)" + compile));
+                            filters.add(RowFilter.regexFilter(part.trim()));
                         } catch (PatternSyntaxException e) {
                             // ignore
                         }
