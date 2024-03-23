@@ -315,7 +315,7 @@ public final class SemIm implements Im, ISemIm {
 
         if (!MatrixUtils.isPositiveDefinite(covariances)) {
             throw new IllegalArgumentException("Covariances must be symmetric "
-                    + "positive definite.");
+                                               + "positive definite.");
         }
 
         if (means.size() != this.semPm.getVariableNodes().size()) {
@@ -326,7 +326,7 @@ public final class SemIm implements Im, ISemIm {
         if (covariances.getNumRows() != this.semPm.getVariableNodes().size()) {
             throw new IllegalArgumentException(
                     "Dimension of covariance matrix "
-                            + "does not equal number of variables.");
+                    + "does not equal number of variables.");
         }
 
         this.errCovar = covariances;
@@ -530,7 +530,7 @@ public final class SemIm implements Im, ISemIm {
     public void setFreeParamValues(double[] params) {
         if (params.length != getNumFreeParams()) {
             throw new IllegalArgumentException("The array provided must be "
-                    + "of the same length as the number of free parameters.");
+                                               + "of the same length as the number of free parameters.");
         }
 
         for (int i = 0; i < freeMappings().size(); i++) {
@@ -589,7 +589,7 @@ public final class SemIm implements Im, ISemIm {
             this.variableMeans[index] = value;
         } else {
             throw new IllegalArgumentException("That parameter cannot be set in "
-                    + "this model: " + parameter);
+                                               + "this model: " + parameter);
         }
     }
 
@@ -753,10 +753,10 @@ public final class SemIm implements Im, ISemIm {
     public void setIntercept(Node node, double intercept) {
         if (isCyclic()) {
             throw new UnsupportedOperationException("Setting and getting of "
-                    + "intercepts is supported for acyclic SEMs only. The internal "
-                    + "parameterizations uses variable means; the relationship "
-                    + "between variable means and intercepts has not been fully "
-                    + "worked out for the cyclic case.");
+                                                    + "intercepts is supported for acyclic SEMs only. The internal "
+                                                    + "parameterizations uses variable means; the relationship "
+                                                    + "between variable means and intercepts has not been fully "
+                                                    + "worked out for the cyclic case.");
         }
 
         SemGraph semGraph = getSemPm().getGraph();
@@ -970,7 +970,7 @@ public final class SemIm implements Im, ISemIm {
 
         if (parameter == null) {
             throw new IllegalArgumentException("There is no parameter in "
-                    + "model for an edge from " + nodeA + " to " + nodeB + ".");
+                                               + "model for an edge from " + nodeA + " to " + nodeB + ".");
         }
 
         if (!this.getFreeParameters().contains(parameter)) {
@@ -1562,7 +1562,7 @@ public final class SemIm implements Im, ISemIm {
                 }
 
                 if (_parents[col].length == 0 && initialValues != null
-                        && initCol != -1) {
+                    && initCol != -1) {
                     int column = initialValues.getColumn(initNode);
                     value = initialValues.getDouble(row, column);
                 } else {
@@ -1849,7 +1849,7 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getTValue(Parameter parameter, int maxFreeParams) {
         return getParamValue(parameter)
-                / getStandardError(parameter, maxFreeParams);
+               / getStandardError(parameter, maxFreeParams);
     }
 
     /**
@@ -2450,5 +2450,30 @@ public final class SemIm implements Im, ISemIm {
      */
     public int getNumRandomCalls() {
         return numRandomCalls;
+    }
+
+    public synchronized double getTotalEffect(Node x, Node y) {
+        List<Node> parents = getSemPm().getGraph().getParents(x);
+
+        Map<Parameter, Double> paramValues = new HashMap<>();
+
+        for (Node parent : parents) {
+            Parameter param = this.semPm.getCoefficientParameter(parent, x);
+            paramValues.put(param, getParamValue(param));
+            setParamValue(param, 0);
+        }
+
+        computeImpliedCovar();
+
+        Matrix impl = getImplCovarMeas();
+        double cov = impl.get(measuredNodes.indexOf(x), measuredNodes.indexOf(y));
+
+        for (Parameter param : paramValues.keySet()) {
+            setParamValue(param, paramValues.get(param));
+        }
+
+        computeImpliedCovar();
+
+        return cov;
     }
 }

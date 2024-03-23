@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.search.IdaCheck;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IdaModel;
 
@@ -35,7 +36,9 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -60,13 +63,12 @@ public class IdaEditor extends JPanel {
      */
     public IdaEditor(IdaModel idaModel) {
         IdaCheck idaCheckEst = idaModel.getIdaCheckEst();
-        IdaCheck idaCheckTrue = idaModel.getIdaCheckTrue();
 
         // Grab the legal ordered pairs (i.e., all possible pairs of distinct nodes)
         List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
 
         // Create a table idaCheckEst for the results of the IDA check
-        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheckEst, idaCheckTrue);
+        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheckEst, idaModel.getTrueSemIm());
         this.setLayout(new BorderLayout());
 
         // Add the table to the left
@@ -163,11 +165,11 @@ public class IdaEditor extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
         tabbedPane.addTab("Table", horiz);
-        tabbedPane.addTab("Help", new JScrollPane(getDescription()));
+        tabbedPane.addTab("Help", new JScrollPane(getHelp()));
 
         add(tabbedPane, BorderLayout.CENTER);
 
-        if (idaCheckTrue == null) {
+        if (idaModel.getTrueSemIm() == null) {
             setPreferredSize(new Dimension(400, 600));
         } else {
             setPreferredSize(new Dimension(600, 600));
@@ -182,7 +184,7 @@ public class IdaEditor extends JPanel {
      *
      * @return a text area containing a description of the IDA checker.
      */
-    public static JTextArea getDescription() {
+    public static JTextArea getHelp() {
         JTextArea textArea = new JTextArea();
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
@@ -190,15 +192,13 @@ public class IdaEditor extends JPanel {
         textArea.setEditable(false);
         textArea.setText(
                 """
-                        IDA Check
-
-                        The IDA check displays the results of the IDA algorithm, as given in this paper:
+                        This IDA check displays the results of the IDA algorithm. The original reference is the following:
 
                         Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
-                        \s
-                        The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding absolute effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient, or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
+                                               
+                        The IDA algorithm seeks to give a list of possible parents for a given variable Y and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
 
-                        This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be a CPDAG, as well as for the true DAG, which (since the minimum and maximum values will be identical) gives true effect sizes. It is then possible to assess whether the true effect size falls within the bounds given by the minimum and maximum from the estimated CPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
+                        This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an MPDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules). It also optionally takes a Simulation box as input in place of a Data box, which allows for a calculation of the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated MPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
 
                         Finally, the average of each column in the table is given at the bottom of the table.
 
@@ -206,13 +206,14 @@ public class IdaEditor extends JPanel {
 
                         IDA Check is available in the Comparison box and can take the following combinations of parents:
 
-                        An estimated CPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
+                        An estimated MPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
 
-                        A Simulation box (containing a true DAG and a continuous dataset) and an estimated CPDAG. In this case, extra columns comparing to the true model, as described above, will be displayed.
+                        A Simulation box containing a true SEM IM and an estimated MPDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
 
-                        A SEM IM, a box containing data, and a box containing a graph. In this case, the true graph will be obtained from the given SEM IM.
-
-                        The contents of the table may be selected and copied and pasted into Excel."""
+                        The contents of the table may be selected, copied, and pasted into Excel.
+                                                
+                        The abbreviation "TE" in the table headers stands for "Total Effect." The abbreviation "Abs TE" stands for "Absolute Total Effect." The abbreviation "Sq Dist" stands for "Squared Distance." effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect, the fifth column is the true total effect, and the sixth column is the squared distance from the true total effect, where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true model is not given, the last two columns are not included.
+                        """
         );
 
         return textArea;
@@ -226,8 +227,9 @@ public class IdaEditor extends JPanel {
         /**
          * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
          * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
-         * the fifth column is the true total effect, and the sixth column is the squared distance. If the true model is
-         * not given, the last two columns are not included.
+         * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
+         * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
+         * If the true model is not given, the last two columns are not included.
          */
         private final String[] columnNames = {"Pair", "Min TE", "Max TE", "Min Abs TE", "True TE", "Sq Dist"};
         /**
@@ -246,14 +248,25 @@ public class IdaEditor extends JPanel {
         /**
          * Constructs a new table estModel for the results of the IDA check.
          */
-        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, IdaCheck trueModel) {
+        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
             this.pairs = pairs;
 
             // Create the data for the table
-            this.data = new Object[pairs.size()][trueModel == null ? 4 : 6];
+            this.data = new Object[pairs.size()][trueSemIm == null ? 4 : 6];
 
             // Create the averages' array
-            averages = new double[trueModel == null ? 3 : 5];
+            averages = new double[trueSemIm == null ? 3 : 5];
+
+            // If the true model is given, make a map from nodes in the estimated model to nodes in the SEM IM.
+            // This is used to calculate the true total effects.
+            Map<Node, Node> nodeMap = new HashMap<>();
+
+            if (trueSemIm != null) {
+                for (Node node : estModel.getNodes()) {
+                    Node _node = trueSemIm.getSemPm().getGraph().getNode(node.getName());
+                    nodeMap.put(node, _node);
+                }
+            }
 
             // Fill in the data for the table
             for (int i = 0; i < pairs.size(); i++) {
@@ -263,7 +276,7 @@ public class IdaEditor extends JPanel {
                 double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
                 double minAbsTotalEffect = estModel.getMinAbsTotalEffect(pair.getFirst(), pair.getSecond());
 
-                if (trueModel == null) {
+                if (trueSemIm == null) {
                     this.data[i][0] = edge;
                     this.data[i][1] = minTotalEffect;
                     this.data[i][2] = maxTotalEffect;
@@ -273,7 +286,7 @@ public class IdaEditor extends JPanel {
                     averages[1] += maxTotalEffect;
                     averages[2] += minAbsTotalEffect;
                 } else {
-                    double trueEffect = trueModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
+                    double trueEffect = trueSemIm.getTotalEffect(nodeMap.get(pair.getFirst()), nodeMap.get(pair.getSecond()));
                     double squaredDistance = estModel.getSquaredDistance(pair.getFirst(), pair.getSecond(), trueEffect);
                     this.data[i][0] = edge;
                     this.data[i][1] = minTotalEffect;

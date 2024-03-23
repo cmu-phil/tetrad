@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -63,13 +62,9 @@ public class MarkovCheck {
      */
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
     /**
-     * True just in case the given graph is a CPDAG (completed partially directed acyclic graph).
+     * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
     private final boolean isCpdag;
-    /**
-     * This stores the dataset from the independence test provided.
-     */
-    private final DataSet dataSet;
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -165,7 +160,6 @@ public class MarkovCheck {
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
         this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
-        this.dataSet = (DataSet) independenceTest.getData();
     }
 
     /**
@@ -202,7 +196,7 @@ public class MarkovCheck {
                     Set<Node> z = GraphUtils.asSet(list, _other);
 
                     if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
-                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                          && new HashSet<>(getConditioningNodes()).containsAll(z))) {
                         continue;
                     }
 
@@ -218,25 +212,6 @@ public class MarkovCheck {
         }
 
         return new AllSubsetsIndependenceFacts(msep, mconn);
-    }
-
-    /**
-     * Calculates the minimum IDA beta value for a given causal relationship between two nodes.
-     *
-     * @param x the cause node
-     * @param y the effect node
-     * @return the minimum IDA beta value
-     * @throws IllegalArgumentException if the graph is not a CPDAG (partially directed acyclic graph)
-     */
-    public double getMinBeta(Node x, Node y) {
-        if (!isCpdag) {
-            throw new IllegalArgumentException("Can only calculate minimum IDA beta values for CPDAGs.");
-        }
-
-        List<Node> possibleCauses = new ArrayList<>();
-        possibleCauses.add(x);
-        Ida ida = new Ida(dataSet, graph, possibleCauses);
-        return ida.calculateMinimumTotalEffectsOnY(y).get(x);
     }
 
     /**
@@ -329,7 +304,7 @@ public class MarkovCheck {
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
                     if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
-                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                          && new HashSet<>(getConditioningNodes()).containsAll(z))) {
                         continue;
                     }
 
@@ -558,9 +533,9 @@ public class MarkovCheck {
     public void setKnowledge(Knowledge knowledge) {
         if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
             throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                    "| Z1,..,Zn.");
+                                               "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                                               "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                                               "| Z1,..,Zn.");
         }
 
         int lastTier = 0;
@@ -633,13 +608,13 @@ public class MarkovCheck {
         MarkovCheckRecord record = getMarkovCheckRecord();
 
         return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
-                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
-                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
-                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
-                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
-                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
-                "Number of tests (indep): " + record.numTestsInd + "\n" +
-                "Number of tests (dep): " + record.numTestsDep;
+               "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
+               "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
+               "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
+               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
+               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
+               "Number of tests (indep): " + record.numTestsInd + "\n" +
+               "Number of tests (dep): " + record.numTestsDep;
     }
 
     /**

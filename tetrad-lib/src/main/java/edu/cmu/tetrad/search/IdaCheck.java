@@ -5,24 +5,27 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.sem.SemIm;
 
 import java.util.*;
 
 /**
- * This calculates IDA effects for a CPDAG G for all pairs distinct (x, y) of variables, where the effect is the minimum
- * IDA effect of x on y, obtained by regressing y on x &cup; S and reporting the regression coefficient. Here, S ranges
- * over sets consisting of possible parents of x in G--that is, a set consisting of the parents of x in G plus some
- * combination of the neighbors for x in G, and excluding any children of x in G. Here, x and y may be any nodes in G.
- * These are IDA effects as defined in the following paper:
+ * This calculates total effects and absolute total effects for an MPDAG G for all pairs distinct (x, y) of variables,
+ * where the total effect is obtained by regressing y on x &cup; S and reporting the regression coefficient. Here, S
+ * ranges over sets consisting of possible parents of x in G--that is, a set consisting of the parents of x in G plus
+ * some combination of the neighbors for x in G, and excluding any children of x in G. Absolute total effects are
+ * calculated as the abolute values of the total effects; the minimum values for these across possible parent sets is
+ * reported as suggested in this paper:
  * <p>
  * Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from
  * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
  * <p>
  * Additionally, if a linear SEM model is supplied over the same variables, a minimum squared distance is calculated of
- * each coefficient in this IM from the interval of IDA coefficients (min to max) for the pair (x, y) for each directed
- * edge x->y in the SEM IM. Here, (x, y) pairs are limited to the directed edges of the SEM model. If the true
- * coefficient falls within the interval [min, max], we give a distance of 0; otherwise, we give the distance to the
- * nearest endpoint. This distance is then squared, and we report the average of these squared distances.
+ * each coefficient in this IM from the interval of total effects (min to max) for the pair (x, y) for each directed
+ * edge x->y in the SEM IM. If the true total effect falls within the interval [min, max], we give a distance of 0;
+ * otherwise, we give the distance to the nearest endpoint. This distance is then squared.
+ * <p>
+ * We also report the averages of each statistic across all pairs of distinct nodes in the dataset.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -54,15 +57,16 @@ public class IdaCheck {
      * The instance of IDA used in this class to calculate node effects and distances.
      */
     private final Ida ida;
+    private final SemIm trueSemIm;
 
     /**
-     * Constructs a new IDA check for the given CPDAG and data set.
+     * Constructs a new IDA check for the given MPDAG and data set.
      */
-    public IdaCheck(Graph graph, DataSet dataSet) {
+    public IdaCheck(Graph graph, DataSet dataSet, SemIm trueSemIm) {
 
         // check for null
         if (graph == null) {
-            throw new NullPointerException("CPDAG is null.");
+            throw new NullPointerException("Graph is null.");
         }
 
         if (dataSet == null) {
@@ -73,17 +77,17 @@ public class IdaCheck {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        // Check to make sure the graph is either a DAG or a CPDAG.
-        if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
-            throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
+        // Check to make sure the graph is an MPDAG.
+        if (!graph.paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Expecting an MPDAG.");
         }
 
-        // Convert the CPDAG to a CPDAG with the same nodes as the data set
+        // Convert the MPDAG to a MPDAG with the same nodes as the data set
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
-        // Check to make sure the set of variables from the CPDAG is the same as the set of variables from the data set.
+        // Check to make sure the set of variables from the MPDAG is the same as the set of variables from the data set.
         if (!new HashSet<>(graph.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
-            throw new IllegalArgumentException("The variables in the CPDAG do not match the variables in the data set.");
+            throw new IllegalArgumentException("The variables in the MPDAG do not match the variables in the data set.");
         }
 
         this.nodes = dataSet.getVariables();
@@ -98,6 +102,8 @@ public class IdaCheck {
             this.totalEffects.put(pair, totalEffects);
             this.absTotalEffects.put(pair, absTotalEffects);
         }
+
+        this.trueSemIm = trueSemIm;
     }
 
     /**
@@ -191,5 +197,12 @@ public class IdaCheck {
         }
 
         return OrderedPairs;
+    }
+
+    /**
+     * The true SEM IM. May be null.
+     */
+    public SemIm getTrueSemIm() {
+        return trueSemIm;
     }
 }

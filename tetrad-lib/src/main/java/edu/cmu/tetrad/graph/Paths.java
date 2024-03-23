@@ -193,6 +193,34 @@ public class Paths implements TetradSerializable {
         }
     }
 
+    public boolean isLegalMpdag() {
+        Graph g = this.graph;
+
+        for (Edge e : g.getEdges()) {
+            if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                return false;
+            }
+        }
+
+        List<Node> pi = new ArrayList<>(g.getNodes());
+
+        try {
+            g.paths().makeValidOrder(pi);
+            MsepTest msepTest = new MsepTest(g);
+            Graph dag = getDag(pi, msepTest);
+            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+
+            Graph _g = new EdgeListGraph(g);
+            _g = GraphTransforms.cpdagForDag(_g);
+
+            return _g.equals(cpdag);
+        } catch (Exception e) {
+            // There was no valid sink.
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Checks if the given graph is a legal mag.
      *

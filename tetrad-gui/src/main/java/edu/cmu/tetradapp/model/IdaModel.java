@@ -21,12 +21,13 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IdaCheck;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -51,11 +52,8 @@ public class IdaModel implements SessionModel {
     /**
      * Represents the estimated graph associated with the current instance of IdaModel.
      */
-    private final Graph estCpdag;
-    /**
-     * The true CPDAG represented by a graph object.
-     */
-    private final Graph trueCdag;
+    private final Graph estMpdag;
+    private final SemIm trueSemIm;
     /**
      * The parameters.
      */
@@ -69,14 +67,14 @@ public class IdaModel implements SessionModel {
      */
     private List<String> vars = new LinkedList<>();
     /**
-     * Represents the IdaCheck object associated with the estimated CPDAG. This variable is used to perform checks on
-     * the estimated CPDAG. It is set to null if the estimated CPDAG is not available.
+     * Represents the IdaCheck object associated with the estimated MPDAG. This variable is used to perform checks on
+     * the estimated MPDAG. It is set to null if the estimated MPDAG is not available.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
     /**
-     * Represents the IdaCheck object associated with the true CPDAG. This variable is used in the context of the
+     * Represents the IdaCheck object associated with the true MPDAG. This variable is used in the context of the
      * IdaModel class.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
@@ -107,23 +105,34 @@ public class IdaModel implements SessionModel {
         }
 
         this.dataModel = dataWrapper.getSelectedDataModel();
+        this.parameters = parameters;
 
         // Make sure the data model is a DataSet.
         if (!(this.dataModel instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        this.estCpdag = GraphTransforms.cpdagForDag(graphSource.getGraph());
-
-        // We want the DAG here because we want a single IDA value, not a range.
-        if (dataWrapper instanceof Simulation simulation) {
-            Graph trueGraph = simulation.getGraph();
-            this.trueCdag = trueGraph.getEdges().isEmpty() ? null : trueGraph;
-        } else {
-            this.trueCdag = null;
+        if (!graphSource.getGraph().paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Expecting an MPDAG. (Could be a CPDAG or a DAG.)");
         }
 
-        this.parameters = parameters;
+        this.estMpdag = graphSource.getGraph();
+
+        // If the data model is a simulation, get the true SEM IM.
+        if (dataWrapper instanceof Simulation simulation) {
+            if (simulation.getSimulation() == null) {
+                throw new IllegalArgumentException("The simulation was not initialized.");
+            }
+
+            if (!(simulation.getSimulation() instanceof SemSimulation)) {
+                throw new IllegalArgumentException("The simulation was not a SEM simulation.");
+            }
+
+            List<SemIm> ims = ((SemSimulation) (simulation.getSimulation())).getIms();
+            this.trueSemIm = ims.get(0);
+        } else {
+            this.trueSemIm = null;
+        }
     }
 
     /**
@@ -137,34 +146,34 @@ public class IdaModel implements SessionModel {
     }
 
     /**
-     * Retrieves the IdaCheck object associated with the estimated CPDAG.
+     * Retrieves the IdaCheck object associated with the estimated MPDAG.
      *
-     * @return the IdaCheck object associated with the estimated CPDAG, or null if it is not available.
+     * @return the IdaCheck object associated with the estimated MPDAG, or null if it is not available.
      */
     public IdaCheck getIdaCheckEst() {
         if (this.idaCheckEst != null) {
             return this.idaCheckEst;
         }
 
-        this.idaCheckEst = new IdaCheck(this.estCpdag, (DataSet) this.dataModel);
+        this.idaCheckEst = new IdaCheck(this.estMpdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckEst;
     }
 
     /**
-     * Retrieves the IdaCheck object with the true CPDAG.
+     * Retrieves the IdaCheck object with the true DAG.
      *
-     * @return the IdaCheck object with the true CPDAG, or null if the true CPDAG is not available.
+     * @return the IdaCheck object with the true DAG, or null if the true DAG is not available.
      */
     public IdaCheck getIdaCheckTrue() {
         if (this.idaCheckTrue != null) {
             return this.idaCheckTrue;
         }
 
-        if (this.trueCdag == null) {
+        if (this.trueSemIm == null) {
             return null;
         }
 
-        this.idaCheckTrue = new IdaCheck(this.trueCdag, (DataSet) this.dataModel);
+        this.idaCheckTrue = new IdaCheck(estMpdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckTrue;
     }
 
@@ -222,6 +231,15 @@ public class IdaModel implements SessionModel {
      */
     public void setVars(List<String> vars) {
         this.vars = vars;
+    }
+
+    /**
+     * Gets the true SemIm object. Could be null.
+     *
+     * @return the true SemIm object
+     */
+    public SemIm getTrueSemIm() {
+        return trueSemIm;
     }
 }
 
