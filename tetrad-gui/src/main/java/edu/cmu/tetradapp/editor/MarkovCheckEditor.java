@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
- * An editor for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
+ * A model for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
  * respect to the dataset. The Markov check can be used to check whether a graph is Markov with respect to a dataset, or
  * whether a graph is Markov with respect to a dataset and a set of variables. The Markov check can also be used to
  * check whether a graph is Markov with respect to a dataset and a set of variables, given a set of knowledge. For facts
@@ -344,7 +344,7 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-        JButton recalculate = new JButton("Recalculate");
+        JButton recalculate = new JButton("Resample");
 
         this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
 
@@ -582,15 +582,13 @@ public class MarkovCheckEditor extends JPanel {
                     return "Test Result";
                 } else if (column == 3) {
                     return "P-value or Bump";
-                } else if (model.getMarkovCheck().isCpdag() && column == 4) {
-                    return "Min Beta";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return model.getMarkovCheck().isCpdag() ? 5 : 4;
+                return 4;
             }
 
             public int getRowCount() {
@@ -634,14 +632,6 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 3) {
                     return nf.format(result.getPValue());
-                }
-
-                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
-                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
-                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
                 }
 
                 return null;
@@ -765,8 +755,6 @@ public class MarkovCheckEditor extends JPanel {
                     return "Test Result";
                 } else if (column == 3) {
                     return "P-value or Bump";
-                } else if (model.getMarkovCheck().isCpdag() && column == 4) {
-                    return "Min Beta";
                 }
 
                 return null;
@@ -817,14 +805,6 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 3) {
                     return nf.format(result.getPValue());
-                }
-
-                if (columnIndex == 4 && model.getMarkovCheck().isCpdag()) {
-                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    double minBeta = model.getMarkovCheck().getMinBeta(x, y);
-                    return NumberFormatUtil.getInstance().getNumberFormat().format(minBeta);
                 }
 
                 return null;
