@@ -58,7 +58,7 @@ public class IdaEditor extends JPanel {
     /**
      * The label for the average squared distance.
      */
-    private final JLabel avgSquaredDistLabel;
+    private JLabel avgSquaredDistLabel =  null;
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -183,9 +183,13 @@ public class IdaEditor extends JPanel {
         vert.add(new JScrollPane(table));
         Box statsBox = Box.createVerticalBox();
         vert.add(statsBox);
-        avgSquaredDistLabel = new JLabel();
-        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
-        addStatToBox(avgSquaredDistLabel, statsBox);
+
+        if (idaModel.getTrueSemIm() != null) {
+            avgSquaredDistLabel = new JLabel();
+            avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
+            addStatToBox(avgSquaredDistLabel, statsBox);
+        }
+
         horiz.add(vert);
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
