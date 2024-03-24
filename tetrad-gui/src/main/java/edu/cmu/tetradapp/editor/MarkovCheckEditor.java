@@ -22,8 +22,10 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -42,7 +44,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.Point;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -236,7 +241,7 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: "
-                            + conditioningSetTypeJComboBox.getSelectedItem());
+                                                       + conditioningSetTypeJComboBox.getSelectedItem());
             }
 
             class MyWatchedProcess extends WatchedProcess {
@@ -245,7 +250,7 @@ public class MarkovCheckEditor extends JPanel {
                     if (model.getMarkovCheck().getSetType() == ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
                         int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
                                 "The all subsets option is exponential and can become extremely slow beyond 12"
-                                        + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
+                                + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null
                         );
 
@@ -338,7 +343,7 @@ public class MarkovCheckEditor extends JPanel {
 
         if (!missingVars.isEmpty()) {
             throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:"
-                    + "\n    " + missingVars);
+                                               + "\n    " + missingVars);
         }
 
         model.setVars(graph.getNodeNames());
@@ -468,6 +473,63 @@ public class MarkovCheckEditor extends JPanel {
         view.setMinimumSize(new Dimension(300, 200));
         view.setMaximumSize(new Dimension(300, 200));
         return view;
+    }
+
+    @NotNull
+    private static DocumentListener getFilterListener(JTextField filterText, TableRowSorter<AbstractTableModel> sorter) {
+        return new DocumentListener() {
+
+            /**
+             * Filters the table based on the text in the text field.
+             */
+            private void filter() {
+                String text = filterText.getText();
+                if (text.trim().isEmpty()) {
+                    sorter.setRowFilter(null);
+                } else {
+                    String[] textParts = text.split(";+");
+                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
+                    for (String part : textParts) {
+                        try {
+                            filters.add(RowFilter.regexFilter(part.trim()));
+                        } catch (PatternSyntaxException e) {
+                            // ignore
+                        }
+                    }
+                    sorter.setRowFilter(RowFilter.orFilter(filters));
+                }
+            }
+
+            /**
+             * Inserts text into the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            /**
+             * Removes text from the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            /**
+             * Changes text in the text field.
+             *
+             * @param e the document event.
+             */
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // this method won't be called for plain text fields
+            }
+        };
     }
 
     private void initComponents(JButton params, JButton recalculate, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
@@ -829,63 +891,6 @@ public class MarkovCheckEditor extends JPanel {
         panel.add(scroll);
     }
 
-    @NotNull
-    private static DocumentListener getFilterListener(JTextField filterText, TableRowSorter<AbstractTableModel> sorter) {
-        return new DocumentListener() {
-
-            /**
-             * Filters the table based on the text in the text field.
-             */
-            private void filter() {
-                String text = filterText.getText();
-                if (text.trim().isEmpty()) {
-                    sorter.setRowFilter(null);
-                } else {
-                    String[] textParts = text.split(";+");
-                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
-                    for (String part : textParts) {
-                        try {
-                            filters.add(RowFilter.regexFilter(part.trim()));
-                        } catch (PatternSyntaxException e) {
-                            // ignore
-                        }
-                    }
-                    sorter.setRowFilter(RowFilter.orFilter(filters));
-                }
-            }
-
-            /**
-             * Inserts text into the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Removes text from the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Changes text in the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                // this method won't be called for plain text fields
-            }
-        };
-    }
-
     /**
      * Performs the action of opening a session from a file.
      */
@@ -1067,6 +1072,12 @@ public class MarkovCheckEditor extends JPanel {
         return checkDependDistributionPanel;
     }
 
+    /**
+     * Sorts the table by the specified column in either ascending or descending order.
+     *
+     * @param sortCol The index of the column to sort by.
+     * @param indep   {@code true} if sorting the independent table, {@code false} if sorting the dependent table.
+     */
     private void sortByColumn(int sortCol, boolean indep) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
@@ -1085,6 +1096,15 @@ public class MarkovCheckEditor extends JPanel {
         repaint();
     }
 
+    /**
+     * Sets the text of various JLabels in the class. This method initializes the JLabels if they are null and sets the
+     * text of each JLabel based on the corresponding values in the MarkovCheck object.
+     * <p>
+     * The method sets the text for the following JLabels: - ksLabelIndep - ksLabelDep - binomialPLabelIndep -
+     * binomialPLabelDep - andersonDarlingA2LabelIndep - andersonDarlingA2LabelDep - andersonDarlingPLabelIndep -
+     * andersonDarlingPLabelDep - fractionDepLabelIndep - fractionDepLabelDep - conditioningLabelIndep -
+     * conditioningLabelDep
+     */
     private void setLabelTexts() {
         if (ksLabelIndep == null) {
             ksLabelIndep = new JLabel();
@@ -1127,45 +1147,45 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         ksLabelIndep.setText("P-value of KS Uniformity Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
+                             + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(true)))));
         ksLabelDep.setText("P-value of KS Uniformity Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
+                           + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
 
         andersonDarlingA2LabelIndep.setText("A^2 = "
-                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
+                                            + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(true)))));
         andersonDarlingA2LabelDep.setText("A^2* = "
-                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
+                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(false)))));
 
         andersonDarlingPLabelIndep.setText("P-value of the Anderson-Darling test = "
-                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
+                                           + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
         andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
-                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                                         + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
+                                    + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(true)))));
         binomialPLabelDep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
+                                  + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
         fractionDepLabelIndep.setText("% dependent = "
-                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
+                                      + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(true)))));
         fractionDepLabelDep.setText("% dependent = "
-                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
+                                    + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
 
@@ -1177,6 +1197,12 @@ public class MarkovCheckEditor extends JPanel {
         return this.lastSortCol;
     }
 
+    /**
+     * Sets the last sort column for the table.
+     *
+     * @param lastSortCol The last sort column. Must be between 0 and 4 (inclusive).
+     * @throws IllegalArgumentException If the last sort column is out of range.
+     */
     private void setLastSortCol(int lastSortCol) {
         if (lastSortCol < 0 || lastSortCol > 4) {
             throw new IllegalArgumentException();
@@ -1185,10 +1211,21 @@ public class MarkovCheckEditor extends JPanel {
         this.lastSortCol = lastSortCol;
     }
 
+    /**
+     * Returns the sort direction for the table column.
+     *
+     * @return The sort direction for the table column. Must be either 1 (ascending) or -1 (descending).
+     */
     private int getSortDir() {
         return this.sortDir;
     }
 
+    /**
+     * Sets the sort direction for the specified column in the table.
+     *
+     * @param sortDir The sort direction to set. Must be either 1 (ascending) or -1 (descending).
+     * @throws IllegalArgumentException If the sort direction is not valid.
+     */
     private void setSortDir(int sortDir) {
         if (!(sortDir == 1 || sortDir == -1)) {
             throw new IllegalArgumentException();
@@ -1197,6 +1234,12 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
+    /**
+     * Creates a histogram panel to display the results.
+     *
+     * @param results The list of IndependenceResult objects to display in the histogram.
+     * @return The Box containing the histogram panel.
+     */
     private Box createHistogramPanel(List<IndependenceResult> results) {
         if (results.isEmpty()) {
             return Box.createVerticalBox();
@@ -1208,6 +1251,12 @@ public class MarkovCheckEditor extends JPanel {
         return box;
     }
 
+    /**
+     * Returns the data type of the data set.
+     *
+     * @return the data type of the data set as a DataType enum object: Continuous, Discrete, Mixed, Covariance, or null
+     * if the data set does not match any of the types.
+     */
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
@@ -1224,6 +1273,12 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
+    /**
+     * Refreshes the test list in the GUI. Retrieves the data type of the data set. Removes all items from the test
+     * combo box. Retrieves the independence test models for the given data type. Adds the independence test models to
+     * the test combo box. Disables the test combo box if there are no items. Selects the default model for the data
+     * type.
+     */
     private void refreshTestList() {
         DataType dataType = getDataType();
 
@@ -1242,11 +1297,26 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     // Parameter panel code from Kevin Bui.
+
+    /**
+     * Creates a parameters panel for the given independence wrapper and parameters.
+     *
+     * @param independenceWrapper The independence wrapper implementation.
+     * @param params              The parameters for the independence test.
+     * @return The JPanel containing the parameters panel.
+     */
     private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
         Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
         return createParamsPanel(testParameters, params);
     }
 
+    /**
+     * Creates a parameters panel for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return The JPanel containing the parameters panel.
+     */
     private JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
@@ -1266,6 +1336,13 @@ public class MarkovCheckEditor extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates a map of parameter components for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return A map of parameter names to Box components.
+     */
     private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
@@ -1278,6 +1355,15 @@ public class MarkovCheckEditor extends JPanel {
                         TreeMap::new));
     }
 
+    /**
+     * Creates a parameter component based on the given parameter, Parameters, and ParamDescription.
+     *
+     * @param parameter  The name of the parameter.
+     * @param parameters The Parameters object containing the parameter values.
+     * @param paramDesc  The ParamDescription object with information about the parameter.
+     * @return A Box component representing the parameter component.
+     * @throws IllegalArgumentException If the default value type is unexpected.
+     */
     private Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
@@ -1315,6 +1401,16 @@ public class MarkovCheckEditor extends JPanel {
         return paramRow;
     }
 
+    /**
+     * Returns a DoubleTextField with specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the DoubleTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A DoubleTextField with the specified parameters.
+     */
     private DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                            double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
@@ -1345,6 +1441,16 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
+    /**
+     * Returns an IntTextField with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the IntTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return An IntTextField with the specified parameters.
+     */
     private IntTextField getIntTextField(String parameter, Parameters parameters,
                                          int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
@@ -1374,6 +1480,16 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
+    /**
+     * Returns a LongTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the LongTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A LongTextField object with the specified parameters.
+     */
     private LongTextField getLongTextField(String parameter, Parameters parameters,
                                            long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
@@ -1403,7 +1519,13 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
-    // Zhou's new implementation with yes/no radio buttons
+    /**
+     * Creates a boolean selection box with Yes and No radio buttons.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the boolean parameter
+     */
     private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
@@ -1447,6 +1569,14 @@ public class MarkovCheckEditor extends JPanel {
         return selectionBox;
     }
 
+    /**
+     * Returns a StringTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the StringTextField.
+     * @return A StringTextField object with the specified parameters.
+     */
     private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
@@ -1467,14 +1597,66 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
+    /**
+     * Custom renderer for the cells of a JTable.
+     */
     static class Renderer extends DefaultTableCellRenderer {
 
+        /**
+         * The private variable `table` is an instance of the JTable class.
+         * <p>
+         * This variable represents a table component that displays data in a tabular form. It is typically used to
+         * display data from a data source, such as a database or an array.
+         * <p>
+         * The JTable class provides methods for manipulating the table data, formatting the table appearance, and
+         * handling user interactions.
+         * <p>
+         * The JTable component is usually added to a container, such as a JFrame or a JPanel, to be displayed in a
+         * graphical user interface.
+         */
         private JTable table;
+
+        /**
+         * This private variable represents whether a cell is selected in a JTable.
+         * <p>
+         * The JTable is a component that displays data in a tabular form. It is used to display data from a data
+         * source, such as a database or an array. The Renderer class is a custom renderer for the cells of the JTable,
+         * and this variable is used to determine if a cell is selected.
+         * <p>
+         * When a cell is selected, the selected variable is set to true. Otherwise, it is set to false.
+         * <p>
+         * The selected variable is used in the setValue method of the Renderer class to set the foreground and
+         * background colors of the cell based on its selection state.
+         * <p>
+         * This variable is primarily used internally within the Renderer class and should not be accessed or modified
+         * directly.
+         *
+         * @see Renderer
+         */
         private boolean selected;
 
+        /**
+         * Custom renderer for the cells of a JTable.
+         * <p>
+         * The Renderer class is a custom renderer for the cells of a JTable component. It is used to control the
+         * appearance of the cells in the table.
+         */
         public Renderer() {
         }
 
+        /**
+         * Sets the value for the cell.
+         * <p>
+         * This method is used to set the value of a cell in a JTable component. The value can be any object, but it
+         * will be converted to a string representation before being displayed in the cell.
+         * <p>
+         * If the value is null, the text value of the cell will be set to an empty string.
+         * <p>
+         * The appearance of the cell's foreground and background colors will also be updated based on its selection
+         * state.
+         *
+         * @param value the string value for this cell; if value is null, it sets the text value to an empty string
+         */
         public void setValue(Object value) {
             if (selected) {
                 setForeground(table.getSelectionForeground());
@@ -1487,6 +1669,17 @@ public class MarkovCheckEditor extends JPanel {
             this.setText(value.toString());
         }
 
+        /**
+         * Returns the component used for rendering the cell at the specified row and column in the table.
+         *
+         * @param table      the <code>JTable</code> that is asking the renderer to draw; can be <code>null</code>
+         * @param value      the value of the cell to be rendered
+         * @param isSelected true if the cell is selected; otherwise false
+         * @param hasFocus   true if the cell has focus; otherwise false
+         * @param row        the row index of the cell being rendered
+         * @param column     the column index of the cell being rendered
+         * @return the component used for rendering the cell
+         */
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             this.table = table;

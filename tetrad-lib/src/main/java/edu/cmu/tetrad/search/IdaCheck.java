@@ -57,7 +57,15 @@ public class IdaCheck {
      * The instance of IDA used in this class to calculate node effects and distances.
      */
     private final Ida ida;
+
+    /**
+     * The true SEM IM, if given.
+     */
     private final SemIm trueSemIm;
+
+    /**
+     * A map from nodes in the estimated model to nodes in the SEM IM.
+     */
     private HashMap<Node, Node> nodeMap;
 
     /**
@@ -200,8 +208,8 @@ public class IdaCheck {
     }
 
     /**
-     * Returns the average of the squared distances between the true total effects and the IDA effect ranges the list
-     * of node pairs indicated.
+     * Returns the average of the squared distances between the true total effects and the IDA effect ranges the list of
+     * node pairs indicated.
      *
      * @param pairs the list of node pairs.
      */
@@ -223,6 +231,9 @@ public class IdaCheck {
     /**
      * Returns the squared difference between the minimum total effect and the true total effect for the given pair of
      * nodes.
+     *
+     * @param pair the pair of nodes.
+     * @return the squared difference between the minimum total effect and the true total effect.
      */
     public double getSquaredMinTrueDistance(OrderedPair<Node> pair) {
         Node x = pair.getFirst();
@@ -247,8 +258,11 @@ public class IdaCheck {
     /**
      * Returns the average of the squared differences between the minimum total effects and the true total effects for
      * the list of node pairs indicated.
+     *
+     * @param pairs the list of node pairs.
+     * @return the average of the squared differences between the minimum total effects and the true total effects.
      */
-    public double getAverageSquaredMinTrueDistance(List<OrderedPair<Node>> pairs) {
+    public double getAvgMinSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
         List<OrderedPair<Node>> _pairs = getOrderedPairs();
         double sum = 0.0;
 
@@ -266,6 +280,9 @@ public class IdaCheck {
     /**
      * Returns the squared difference between the maximum total effect and the true total effect for the given pair of
      * nodes.
+     *
+     * @param pair the pair of nodes.
+     * @return the squared difference between the maximum total effect and the true total effect.
      */
     public double getSquaredMaxTrueDist(OrderedPair<Node> pair) {
         Node x = pair.getFirst();
@@ -290,8 +307,11 @@ public class IdaCheck {
     /**
      * Returns the average of the squared differences between the maximum total effects and the true total effects for
      * the list of node pairs indicated.
+     *
+     * @param pairs the list of node pairs.
+     * @return the average of the squared differences between the maximum total effects and the true total effects.
      */
-    public double getAverageSquaredMaxTrueDistance(List<OrderedPair<Node>> pairs) {
+    public double getAvgMaxSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
         List<OrderedPair<Node>> _pairs = getOrderedPairs();
         double sum = 0.0;
 

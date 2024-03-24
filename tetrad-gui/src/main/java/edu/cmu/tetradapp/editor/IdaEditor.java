@@ -115,11 +115,11 @@ public class IdaEditor extends JPanel {
                 }
 
                 if (squaredDiffMinTotalLabel != null) {
-                    squaredDiffMinTotalLabel.setText("Squared Difference Min Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMinTrueDistance(visiblePairs)));
+                    squaredDiffMinTotalLabel.setText("Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(visiblePairs)));
                 }
 
                 if (squaredDiffMaxTotalLabel != null) {
-                    squaredDiffMaxTotalLabel.setText("Squared Difference Max Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMaxTrueDistance(visiblePairs)));
+                    squaredDiffMaxTotalLabel.setText("Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(visiblePairs)));
                 }
             }
         });
@@ -204,11 +204,11 @@ public class IdaEditor extends JPanel {
             addStatToBox(avgSquaredDistLabel, statsBox);
 
             squaredDiffMinTotalLabel = new JLabel();
-            squaredDiffMinTotalLabel.setText("Squared Difference Min Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMinTrueDistance(pairs)));
+            squaredDiffMinTotalLabel.setText("Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMinTotalLabel, statsBox);
 
             squaredDiffMaxTotalLabel = new JLabel();
-            squaredDiffMaxTotalLabel.setText("Squared Difference Max Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMaxTrueDistance(pairs)));
+            squaredDiffMaxTotalLabel.setText("Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMaxTotalLabel, statsBox);
         }
 
@@ -231,6 +231,12 @@ public class IdaEditor extends JPanel {
         repaint();
     }
 
+    /**
+     * Adds a stat to the stats box.
+     *
+     * @param stat1     the stat to add.
+     * @param statsBox  the stats box.
+     */
     private static void addStatToBox(JLabel stat1, Box statsBox) {
         Box horiz3 = Box.createHorizontalBox();
         horiz3.add(stat1);
