@@ -139,7 +139,6 @@ public class Ida {
         List<Node> siblings = new ArrayList<>(this.cpdag.getAdjacentNodes(x));
         siblings.removeAll(parents);
         siblings.removeAll(children);
-        siblings.remove(y);
 
         int size = siblings.size();
         SublistGenerator gen = new SublistGenerator(size, size);
@@ -175,6 +174,8 @@ public class Ida {
                 _regressors.addAll(parents);
                 _regressors.addAll(siblingsChoice);
                 List<Node> regressors = new ArrayList<>(_regressors);
+
+                System.out.println(x + " to " + y + " regressors: " + regressors);
 
                 double beta;
 

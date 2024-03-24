@@ -757,10 +757,19 @@ public class MarkovCheckEditor extends JPanel {
                     visiblePairs.add(results.get(modelIndex));
                 }
 
-                if (fractionDepLabelIndep != null) {
+                if (indep && fractionDepLabelIndep != null) {
                     double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
 
                     fractionDepLabelIndep.setText(
+                            "% dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                    "NaN" : nf.format(fractionDependent * 100))
+                    );
+                }
+
+                if (!indep && fractionDepLabelDep != null) {
+                    double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
+
+                    fractionDepLabelDep.setText(
                             "% dependent = " + ((Double.isNaN(fractionDependent)) ?
                                     "NaN" : nf.format(fractionDependent * 100))
                     );
