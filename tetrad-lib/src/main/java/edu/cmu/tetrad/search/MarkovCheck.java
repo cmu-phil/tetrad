@@ -471,7 +471,7 @@ public class MarkovCheck {
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Binomial p-value for the given list of results.
      */
-    public double getBinomialP(boolean indep) {
+    public double getBinomialPValue(boolean indep) {
         if (indep) {
             return binomialPIndep;
         } else {
@@ -598,8 +598,8 @@ public class MarkovCheck {
         generateResults();
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
-        double binIndep = getBinomialP(true);
-        double binDep = getBinomialP(false);
+        double binIndep = getBinomialPValue(true);
+        double binDep = getBinomialPValue(false);
         double fracDepInd = getFractionDependent(true);
         double fracDepDep = getFractionDependent(false);
         int numTestsInd = getNumTests(true);
@@ -860,8 +860,8 @@ public class MarkovCheck {
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
-                ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                binomialPIndep = getBinomialP(pValues, independenceTest.getAlpha());
+                ksPValueIndep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                binomialPIndep = getBinomialPValue(pValues, independenceTest.getAlpha());
                 aSquaredIndep = aSquared;
                 aSquaredStarIndep = aSquaredStar;
                 andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
@@ -875,8 +875,8 @@ public class MarkovCheck {
                 andersonDarlingPDep = Double.NaN;
 
             } else {
-                ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                binomialPDep = getBinomialP(pValues, independenceTest.getAlpha());
+                ksPValueDep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                binomialPDep = getBinomialPValue(pValues, independenceTest.getAlpha());
                 aSquaredDep = aSquared;
                 aSquaredStarDep = aSquaredStar;
                 andersonDarlingPDep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
@@ -920,7 +920,7 @@ public class MarkovCheck {
      * @param alpha   The alpha level. Rejections with p-values less than this are considered dependent.
      * @return The Binomial p-value for non-uniformity.
      */
-    private double getBinomialP(List<Double> pValues, double alpha) {
+    private double getBinomialPValue(List<Double> pValues, double alpha) {
         int independentJudgements = 0;
 
         for (double pValue : pValues) {
@@ -958,6 +958,30 @@ public class MarkovCheck {
      */
     public boolean isCpdag() {
         return isCpdag;
+    }
+
+    public double getKsPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+    }
+
+    public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        return getBinomialPValue(pValues, independenceTest.getAlpha());
+    }
+
+    public double getAndersonDarlingA2(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getASquared();
+    }
+
+    public  double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        double aSquared = generalAndersonDarlingTest.getASquared();
+        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
 
     /**

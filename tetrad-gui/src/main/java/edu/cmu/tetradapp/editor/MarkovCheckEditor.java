@@ -53,7 +53,6 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -262,8 +261,8 @@ public class MarkovCheckEditor extends JPanel {
 
                     histogramPanelDep.removeAll();
                     histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
                     histogramPanelDep.validate();
                     histogramPanelIndep.validate();
                     histogramPanelDep.repaint();
@@ -289,8 +288,8 @@ public class MarkovCheckEditor extends JPanel {
 
                     histogramPanelDep.removeAll();
                     histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
                     histogramPanelDep.validate();
                     histogramPanelIndep.validate();
                     histogramPanelDep.repaint();
@@ -408,8 +407,8 @@ public class MarkovCheckEditor extends JPanel {
                 tableModelDep.fireTableDataChanged();
                 histogramPanelDep.removeAll();
                 histogramPanelIndep.removeAll();
-                histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-                histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
+                histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
                 histogramPanelDep.validate();
                 histogramPanelIndep.validate();
                 histogramPanelDep.repaint();
@@ -466,6 +465,7 @@ public class MarkovCheckEditor extends JPanel {
         Color fillColor = new Color(113, 165, 210);
         view.setBarColor(fillColor);
 
+        view.setMinimumSize(new Dimension(300, 200));
         view.setMaximumSize(new Dimension(300, 200));
         return view;
     }
@@ -528,8 +528,8 @@ public class MarkovCheckEditor extends JPanel {
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();
         histogramPanelIndep.removeAll();
-        histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
         histogramPanelDep.validate();
         histogramPanelIndep.validate();
         histogramPanelDep.repaint();
@@ -696,7 +696,7 @@ public class MarkovCheckEditor extends JPanel {
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
         histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
         a4.add(histogramPanelIndep);
 
         Box a5 = Box.createHorizontalBox();
@@ -764,6 +764,27 @@ public class MarkovCheckEditor extends JPanel {
                             "% dependent = " + ((Double.isNaN(fractionDependent)) ?
                                     "NaN" : nf.format(fractionDependent * 100))
                     );
+
+                    ksLabelIndep.setText(
+                            "KS p-value = " + nf.format(model.getMarkovCheck().getKsPValue(visiblePairs))
+                    );
+
+                    binomialPLabelIndep.setText(
+                            "Binomial p-value = " + nf.format(model.getMarkovCheck().getBinomialPValue(visiblePairs))
+                    );
+
+                    andersonDarlingA2LabelIndep.setText(
+                            "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
+                    );
+
+                    andersonDarlingA2LabelIndep.setText(
+                            "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                    );
+
+                    histogramPanelIndep.removeAll();
+                    histogramPanelIndep.add(createHistogramPanel(true, visiblePairs), BorderLayout.CENTER);
+                    histogramPanelIndep.validate();
+                    histogramPanelIndep.repaint();
                 }
 
                 if (!indep && fractionDepLabelDep != null) {
@@ -773,7 +794,29 @@ public class MarkovCheckEditor extends JPanel {
                             "% dependent = " + ((Double.isNaN(fractionDependent)) ?
                                     "NaN" : nf.format(fractionDependent * 100))
                     );
+
+                    ksLabelDep.setText(
+                            "KS p-value = " + nf.format(model.getMarkovCheck().getKsPValue(visiblePairs))
+                    );
+
+                    binomialPLabelDep.setText(
+                            "Binomial p-value = " + nf.format(model.getMarkovCheck().getBinomialPValue(visiblePairs))
+                    );
+
+                    andersonDarlingA2LabelDep.setText(
+                            "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
+                    );
+
+                    andersonDarlingPLabelDep.setText(
+                            "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                    );
+
+                    histogramPanelDep.removeAll();
+                    histogramPanelDep.add(createHistogramPanel(false, visiblePairs), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelDep.repaint();
                 }
+
             }
         });
 
@@ -969,7 +1012,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        addFilterPanel(model, false, tableModelIndep, table, tableBox);
+        addFilterPanel(model, false, tableModelDep, table, tableBox);
 
         JScrollPane scroll = new JScrollPane(table);
         tableBox.add(scroll);
@@ -986,7 +1029,7 @@ public class MarkovCheckEditor extends JPanel {
         histogramPanelDep = new JPanel();
         histogramPanelDep.setLayout(new BorderLayout());
         histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelDep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelDep.add(createHistogramPanel(true, model.getResults(false)), BorderLayout.CENTER);
         a4.add(histogramPanelDep);
 
         Box a5 = Box.createHorizontalBox();
@@ -1110,13 +1153,13 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(true))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(true)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(true)))));
         binomialPLabelDep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(false))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
         fractionDepLabelIndep.setText("% dependent = "
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
@@ -1154,9 +1197,7 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
-    private Box createHistogramPanel(boolean indep) {
-        List<IndependenceResult> results = model.getResults(indep);
-
+    private Box createHistogramPanel(boolean indep, List<IndependenceResult> results) {
         if (results.isEmpty()) {
             return Box.createVerticalBox();
         }
