@@ -261,8 +261,8 @@ public class MarkovCheckEditor extends JPanel {
 
                     histogramPanelDep.removeAll();
                     histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
+                    histogramPanelDep.add(createHistogramPanel(model.getResults(false)), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
                     histogramPanelDep.validate();
                     histogramPanelIndep.validate();
                     histogramPanelDep.repaint();
@@ -288,8 +288,8 @@ public class MarkovCheckEditor extends JPanel {
 
                     histogramPanelDep.removeAll();
                     histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
+                    histogramPanelDep.add(createHistogramPanel(model.getResults(false)), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
                     histogramPanelDep.validate();
                     histogramPanelIndep.validate();
                     histogramPanelDep.repaint();
@@ -407,8 +407,8 @@ public class MarkovCheckEditor extends JPanel {
                 tableModelDep.fireTableDataChanged();
                 histogramPanelDep.removeAll();
                 histogramPanelIndep.removeAll();
-                histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
-                histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
+                histogramPanelDep.add(createHistogramPanel(model.getResults(false)), BorderLayout.CENTER);
+                histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
                 histogramPanelDep.validate();
                 histogramPanelIndep.validate();
                 histogramPanelDep.repaint();
@@ -528,8 +528,8 @@ public class MarkovCheckEditor extends JPanel {
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();
         histogramPanelIndep.removeAll();
-        histogramPanelDep.add(createHistogramPanel(false, model.getResults(false)), BorderLayout.CENTER);
-        histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
+        histogramPanelDep.add(createHistogramPanel(model.getResults(false)), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
         histogramPanelDep.validate();
         histogramPanelIndep.validate();
         histogramPanelDep.repaint();
@@ -696,7 +696,7 @@ public class MarkovCheckEditor extends JPanel {
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
         histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelIndep.add(createHistogramPanel(true, model.getResults(true)), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
         a4.add(histogramPanelIndep);
 
         Box a5 = Box.createHorizontalBox();
@@ -782,7 +782,7 @@ public class MarkovCheckEditor extends JPanel {
                     );
 
                     histogramPanelIndep.removeAll();
-                    histogramPanelIndep.add(createHistogramPanel(true, visiblePairs), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                     histogramPanelIndep.validate();
                     histogramPanelIndep.repaint();
                 }
@@ -812,7 +812,7 @@ public class MarkovCheckEditor extends JPanel {
                     );
 
                     histogramPanelDep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false, visiblePairs), BorderLayout.CENTER);
+                    histogramPanelDep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                     histogramPanelDep.validate();
                     histogramPanelDep.repaint();
                 }
@@ -1029,7 +1029,7 @@ public class MarkovCheckEditor extends JPanel {
         histogramPanelDep = new JPanel();
         histogramPanelDep.setLayout(new BorderLayout());
         histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelDep.add(createHistogramPanel(true, model.getResults(false)), BorderLayout.CENTER);
+        histogramPanelDep.add(createHistogramPanel(model.getResults(false)), BorderLayout.CENTER);
         a4.add(histogramPanelDep);
 
         Box a5 = Box.createHorizontalBox();
@@ -1197,7 +1197,7 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
-    private Box createHistogramPanel(boolean indep, List<IndependenceResult> results) {
+    private Box createHistogramPanel(List<IndependenceResult> results) {
         if (results.isEmpty()) {
             return Box.createVerticalBox();
         }
