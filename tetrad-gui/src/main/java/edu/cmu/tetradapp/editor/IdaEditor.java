@@ -31,7 +31,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
-import javax.swing.event.RowSorterListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -59,6 +58,16 @@ public class IdaEditor extends JPanel {
      * The label for the average squared distance.
      */
     private JLabel avgSquaredDistLabel =  null;
+
+    /**
+     * The label for the squared difference between minimum total effect and true total effect.
+     */
+    private JLabel squaredDiffMinTotalLabel = null;
+
+    /**
+     *
+     */
+    private JLabel squaredDiffMaxTotalLabel = null;
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -103,6 +112,14 @@ public class IdaEditor extends JPanel {
 
                 if (avgSquaredDistLabel != null) {
                     avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(visiblePairs)));
+                }
+
+                if (squaredDiffMinTotalLabel != null) {
+                    squaredDiffMinTotalLabel.setText("Squared Difference Min Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMinTrueDistance(visiblePairs)));
+                }
+
+                if (squaredDiffMaxTotalLabel != null) {
+                    squaredDiffMaxTotalLabel.setText("Squared Difference Max Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMaxTrueDistance(visiblePairs)));
                 }
             }
         });
@@ -185,6 +202,14 @@ public class IdaEditor extends JPanel {
             avgSquaredDistLabel = new JLabel();
             avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
             addStatToBox(avgSquaredDistLabel, statsBox);
+
+            squaredDiffMinTotalLabel = new JLabel();
+            squaredDiffMinTotalLabel.setText("Squared Difference Min Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMinTrueDistance(pairs)));
+            addStatToBox(squaredDiffMinTotalLabel, statsBox);
+
+            squaredDiffMaxTotalLabel = new JLabel();
+            squaredDiffMaxTotalLabel.setText("Squared Difference Max Total: " + numberFormat.format(idaCheckEst.getAverageSquaredMaxTrueDistance(pairs)));
+            addStatToBox(squaredDiffMaxTotalLabel, statsBox);
         }
 
         horiz.add(vert);

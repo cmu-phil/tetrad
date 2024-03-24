@@ -2453,11 +2453,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     public synchronized double getTotalEffect(Node x, Node y) {
-//        System.out.println("Computing total effect of " + x + " on " + y);
-
         List<Node> parents = getSemPm().getGraph().getParents(x);
-
-//        System.out.println("Parents: " + parents);
 
         Map<Parameter, Double> paramValues = new HashMap<>();
 
@@ -2465,29 +2461,24 @@ public final class SemIm implements Im, ISemIm {
             Parameter param = this.semPm.getCoefficientParameter(parent, x);
             paramValues.put(param, getParamValue(param));
             setParamValue(param, 0);
-//            System.out.println("Setting " + param + " to 0");
         }
 
         Matrix impl = getImplCovar(!paramValues.isEmpty());
-//        impl = MatrixUtils.convertCovToCorr(impl);
+
         int i = variableNodes.indexOf(x);
         int j = variableNodes.indexOf(y);
 
-//        System.out.println("node = " + variableNodes);
-//        System.out.println("i = " + i + ", j = " + j);
-
-        double effect = impl.get(i, j);
-        effect /= Math.sqrt(impl.get(i, i) * impl.get(j, j));
+        double totalEffect = impl.get(i, j);
+        totalEffect /= impl.get(i, i);
 
         if (!paramValues.isEmpty()) {
             for (Parameter param : paramValues.keySet()) {
                 setParamValue(param, paramValues.get(param));
-//            System.out.println("Resetting " + param + " to " + paramValues.get(param));
             }
 
             getImplCovar(true);
         }
 
-        return effect;
+        return totalEffect;
     }
 }

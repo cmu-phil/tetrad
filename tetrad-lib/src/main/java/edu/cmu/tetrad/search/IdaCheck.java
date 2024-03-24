@@ -221,6 +221,92 @@ public class IdaCheck {
     }
 
     /**
+     * Returns the squared difference between the minimum total effect and the true total effect for the given pair of
+     * nodes.
+     */
+    public double getSquaredMinTrueDistance(OrderedPair<Node> pair) {
+        Node x = pair.getFirst();
+        Node y = pair.getSecond();
+
+        List<Double> totalEffects = ida.getTotalEffects(x, y);
+        double trueTotalEffect = getTrueTotalEffect(pair);
+
+        double min = Double.MAX_VALUE;
+
+        for (double totalEffect : totalEffects) {
+            double diff = totalEffect - trueTotalEffect;
+            diff *= diff;
+            if (diff < min) {
+                min = diff;
+            }
+        }
+
+        return min;
+    }
+
+    /**
+     * Returns the average of the squared differences between the minimum total effects and the true total effects for
+     * the list of node pairs indicated.
+     */
+    public double getAverageSquaredMinTrueDistance(List<OrderedPair<Node>> pairs) {
+        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        double sum = 0.0;
+
+        for (OrderedPair<Node> pair : pairs) {
+            if (!_pairs.contains(pair)) {
+                throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
+            }
+
+            sum += getSquaredMinTrueDistance(pair);
+        }
+
+        return sum / pairs.size();
+    }
+
+    /**
+     * Returns the squared difference between the maximum total effect and the true total effect for the given pair of
+     * nodes.
+     */
+    public double getSquaredMaxTrueDist(OrderedPair<Node> pair) {
+        Node x = pair.getFirst();
+        Node y = pair.getSecond();
+
+        List<Double> totalEffects = ida.getTotalEffects(x, y);
+        double trueTotalEffect = getTrueTotalEffect(pair);
+
+        double max = 0;
+
+        for (double totalEffect : totalEffects) {
+            double diff = totalEffect - trueTotalEffect;
+            diff *= diff;
+            if (diff > max) {
+                max = diff;
+            }
+        }
+
+        return max;
+    }
+
+    /**
+     * Returns the average of the squared differences between the maximum total effects and the true total effects for
+     * the list of node pairs indicated.
+     */
+    public double getAverageSquaredMaxTrueDistance(List<OrderedPair<Node>> pairs) {
+        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        double sum = 0.0;
+
+        for (OrderedPair<Node> pair : pairs) {
+            if (!_pairs.contains(pair)) {
+                throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
+            }
+
+            sum += getSquaredMaxTrueDist(pair);
+        }
+
+        return sum / pairs.size();
+    }
+
+    /**
      * Calculates a list of OrderedPair objects representing all possible pairs of distinct nodes in the graph.
      *
      * @return a list of OrderedPair objects.
