@@ -58,6 +58,7 @@ public class IdaCheck {
      */
     private final Ida ida;
     private final SemIm trueSemIm;
+    private HashMap<Node, Node> nodeMap;
 
     /**
      * Constructs a new IDA check for the given MPDAG and data set.
@@ -104,6 +105,22 @@ public class IdaCheck {
         }
 
         this.trueSemIm = trueSemIm;
+
+        if (this.trueSemIm != null) {
+
+            // If the true model is given, make a map from nodes in the estimated model to nodes in the SEM IM.
+            // This is used to calculate the true total effects.
+            nodeMap = new HashMap<>();
+
+            for (Node node : getNodes()) {
+                Node _node = trueSemIm.getSemPm().getGraph().getNode(node.getName());
+                nodeMap.put(node, _node);
+            }
+        }
+    }
+
+    public double getTrueTotalEffect(OrderedPair<Node> pair) {
+        return this.trueSemIm.getTotalEffect(nodeMap.get(pair.getFirst()), nodeMap.get(pair.getSecond()));
     }
 
     /**
@@ -168,17 +185,39 @@ public class IdaCheck {
 
     /**
      * Calculates the squared distance of the true total effect to the [min, max] IDA effect range of the given (x, y)
-     * node pair. If the true effect falls within [min, max], the method returns 0. Otherwise, the squared distance to
-     * the nearest endpoint of the [min, max] range is returned.
+     * node pair, for x predicting y. If the true effect falls within [min, max], the method returns 0. Otherwise, the
+     * squared distance to the nearest endpoint of the [min, max] range is returned.
      *
-     * @param x          the first node.
-     * @param y          the second node.
-     * @param trueEffect the true effect value.
+     * @param pair the pair of nodes.
      * @return the squared distance between the two nodes.
      */
-    public double getSquaredDistance(Node x, Node y, double trueEffect) {
-        double distance = ida.distance(this.totalEffects.get(new OrderedPair<>(x, y)), trueEffect);
+    public double getSquaredDistance(OrderedPair<Node> pair) {
+        Node x = pair.getFirst();
+        Node y = pair.getSecond();
+        double trueTotalEffect = getTrueTotalEffect(pair);
+        double distance = ida.distance(this.totalEffects.get(new OrderedPair<>(x, y)), trueTotalEffect);
         return distance * distance;
+    }
+
+    /**
+     * Returns the average of the squared distances between the true total effects and the IDA effect ranges the list
+     * of node pairs indicated.
+     *
+     * @param pairs the list of node pairs.
+     */
+    public double getAverageSquaredDistance(List<OrderedPair<Node>> pairs) {
+        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        double sum = 0.0;
+
+        for (OrderedPair<Node> pair : pairs) {
+            if (!_pairs.contains(pair)) {
+                throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
+            }
+
+            sum += getSquaredDistance(pair);
+        }
+
+        return sum / pairs.size();
     }
 
     /**
@@ -197,12 +236,5 @@ public class IdaCheck {
         }
 
         return OrderedPairs;
-    }
-
-    /**
-     * The true SEM IM. May be null.
-     */
-    public SemIm getTrueSemIm() {
-        return trueSemIm;
     }
 }

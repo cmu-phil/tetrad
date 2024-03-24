@@ -133,8 +133,6 @@ public class Ida {
      * sorted in ascending order.
      */
     public LinkedList<Double> getTotalEffects(Node x, Node y) {
-        System.out.println("Calculating total effects of " + x + " on " + y + ".");
-
         List<Node> parents = this.cpdag.getParents(x);
         List<Node> children = this.cpdag.getChildren(x);
 
@@ -185,8 +183,6 @@ public class Ida {
                 } else {
                     beta = getBeta(regressors, x, y);
                 }
-
-                System.out.println("Regressors: " + regressors + ", beta: " + beta);
 
                 totalEffects.add(beta);
             } catch (Exception e) {

@@ -30,16 +30,15 @@ import edu.cmu.tetradapp.model.IdaModel;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.RowSorterEvent;
+import javax.swing.event.RowSorterListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -55,6 +54,11 @@ import java.util.regex.PatternSyntaxException;
  * @see edu.cmu.tetrad.search.Ida
  */
 public class IdaEditor extends JPanel {
+
+    /**
+     * The label for the average squared distance.
+     */
+    private final JLabel avgSquaredDistLabel;
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -73,17 +77,38 @@ public class IdaEditor extends JPanel {
 
         // Add the table to the left
         JTable table = new JTable(tableModel);
-
-        NumberFormatRenderer numberRenderer = new NumberFormatRenderer(NumberFormatUtil.getInstance().getNumberFormat());
+        NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormatRenderer numberRenderer = new NumberFormatRenderer(numberFormat);
         table.setDefaultRenderer(Double.class, numberRenderer);
-
         table.setAutoCreateRowSorter(true);
+        table.setFillsViewportHeight(true);
 
         this.add(new JScrollPane(table));
 
         // Create a TableRowSorter and set it to the JTable
         TableRowSorter<IdaTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
+
+        sorter.addRowSorterListener(new RowSorterListener() {
+            @Override
+            public void sorterChanged(RowSorterEvent e) {
+                if (e.getType() == RowSorterEvent.Type.SORTED) {
+                    List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
+
+                    List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
+                    int rowCount = table.getRowCount();
+
+                    for (int i = 0; i < rowCount; i++) {
+                        int modelIndex = table.convertRowIndexToModel(i);
+                        visiblePairs.add(pairs.get(modelIndex));
+                    }
+
+                    if (avgSquaredDistLabel != null) {
+                        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(visiblePairs)));
+                    }
+                }
+            }
+        });
 
         // Create the text field
         JLabel label = new JLabel("Regexes (semicolon separated):");
@@ -156,8 +181,11 @@ public class IdaEditor extends JPanel {
 
         vert.add(horiz2);
         vert.add(new JScrollPane(table));
-        table.setFillsViewportHeight(true);
-
+        Box statsBox = Box.createVerticalBox();
+        vert.add(statsBox);
+        avgSquaredDistLabel = new JLabel();
+        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
+        addStatToBox(avgSquaredDistLabel, statsBox);
         horiz.add(vert);
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -175,6 +203,13 @@ public class IdaEditor extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private static void addStatToBox(JLabel stat1, Box statsBox) {
+        Box horiz3 = Box.createHorizontalBox();
+        horiz3.add(stat1);
+        horiz3.add(Box.createHorizontalGlue());
+        statsBox.add(horiz3);
     }
 
     /**
@@ -234,37 +269,14 @@ public class IdaEditor extends JPanel {
          * The data for the table.
          */
         private final Object[][] data;
-        /**
-         * The pairs of nodes.
-         */
-        private final List<OrderedPair<Node>> pairs;
-        /**
-         * The averages for the table.
-         */
-        private final double[] averages;
 
         /**
          * Constructs a new table estModel for the results of the IDA check.
          */
         public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
-            this.pairs = pairs;
 
             // Create the data for the table
             this.data = new Object[pairs.size()][trueSemIm == null ? 4 : 6];
-
-            // Create the averages' array
-            averages = new double[trueSemIm == null ? 3 : 5];
-
-            // If the true model is given, make a map from nodes in the estimated model to nodes in the SEM IM.
-            // This is used to calculate the true total effects.
-            Map<Node, Node> nodeMap = new HashMap<>();
-
-            if (trueSemIm != null) {
-                for (Node node : estModel.getNodes()) {
-                    Node _node = trueSemIm.getSemPm().getGraph().getNode(node.getName());
-                    nodeMap.put(node, _node);
-                }
-            }
 
             // Fill in the data for the table
             for (int i = 0; i < pairs.size(); i++) {
@@ -279,31 +291,16 @@ public class IdaEditor extends JPanel {
                     this.data[i][1] = minTotalEffect;
                     this.data[i][2] = maxTotalEffect;
                     this.data[i][3] = minAbsTotalEffect;
-
-                    averages[0] += minTotalEffect;
-                    averages[1] += maxTotalEffect;
-                    averages[2] += minAbsTotalEffect;
                 } else {
-                    double trueEffect = trueSemIm.getTotalEffect(nodeMap.get(pair.getFirst()), nodeMap.get(pair.getSecond()));
-                    double squaredDistance = estModel.getSquaredDistance(pair.getFirst(), pair.getSecond(), trueEffect);
+                    double trueTotalEffect = estModel.getTrueTotalEffect(pair);
+                    double squaredDistance = estModel.getSquaredDistance(pair);
                     this.data[i][0] = edge;
                     this.data[i][1] = minTotalEffect;
                     this.data[i][2] = maxTotalEffect;
                     this.data[i][3] = minAbsTotalEffect;
-                    this.data[i][4] = trueEffect;
+                    this.data[i][4] = trueTotalEffect;
                     this.data[i][5] = squaredDistance;
-
-                    averages[0] += minTotalEffect;
-                    averages[1] += maxTotalEffect;
-                    averages[2] += minAbsTotalEffect;
-                    averages[3] += trueEffect;
-                    averages[4] += squaredDistance;
                 }
-            }
-
-            // Divide by the number of rows
-            for (int i = 0; i < averages.length; i++) {
-                averages[i] /= pairs.size();
             }
         }
 
@@ -314,7 +311,7 @@ public class IdaEditor extends JPanel {
          */
         @Override
         public int getRowCount() {
-            return this.data.length + 1;
+            return this.data.length;
         }
 
         /**
@@ -347,15 +344,7 @@ public class IdaEditor extends JPanel {
          */
         @Override
         public Object getValueAt(int row, int col) {
-            if (row < this.pairs.size()) {
-                return this.data[row][col];
-            } else {
-                if (col == 0) {
-                    return "Average";
-                } else {
-                    return averages[col - 1];
-                }
-            }
+            return this.data[row][col];
         }
 
         /**
