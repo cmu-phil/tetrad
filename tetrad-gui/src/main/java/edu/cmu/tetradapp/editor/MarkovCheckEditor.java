@@ -491,7 +491,21 @@ public class MarkovCheckEditor extends JPanel {
                     List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
                     for (String part : textParts) {
                         try {
-                            filters.add(RowFilter.regexFilter(part.trim()));
+
+                            String trim = part.trim();
+
+                            // Swap escapes for parentheses and pipes
+                            trim = trim.replace("\\(", "<+++<");
+                            trim = trim.replace("\\)", ">+++>");
+                            trim = trim.replace("\\|", "|+++|");
+                            trim = trim.replace("(", "\\(");
+                            trim = trim.replace(")", "\\)");
+                            trim = trim.replace("|", "\\|");
+                            trim = trim.replace("<+++<", "(");
+                            trim = trim.replace(">+++>", ")");
+                            trim = trim.replace("|+++|", "|");
+
+                            filters.add(RowFilter.regexFilter(trim));
                         } catch (PatternSyntaxException e) {
                             // ignore
                         }
