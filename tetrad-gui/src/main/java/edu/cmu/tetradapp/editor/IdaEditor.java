@@ -89,23 +89,20 @@ public class IdaEditor extends JPanel {
         TableRowSorter<IdaTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
-        sorter.addRowSorterListener(new RowSorterListener() {
-            @Override
-            public void sorterChanged(RowSorterEvent e) {
-                if (e.getType() == RowSorterEvent.Type.SORTED) {
-                    List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
+        sorter.addRowSorterListener(e -> {
+            if (e.getType() == RowSorterEvent.Type.SORTED) {
+                List<OrderedPair<Node>> pairs1 = idaCheckEst.getOrderedPairs();
 
-                    List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
-                    int rowCount = table.getRowCount();
+                List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
+                int rowCount = table.getRowCount();
 
-                    for (int i = 0; i < rowCount; i++) {
-                        int modelIndex = table.convertRowIndexToModel(i);
-                        visiblePairs.add(pairs.get(modelIndex));
-                    }
+                for (int i = 0; i < rowCount; i++) {
+                    int modelIndex = table.convertRowIndexToModel(i);
+                    visiblePairs.add(pairs1.get(modelIndex));
+                }
 
-                    if (avgSquaredDistLabel != null) {
-                        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(visiblePairs)));
-                    }
+                if (avgSquaredDistLabel != null) {
+                    avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(visiblePairs)));
                 }
             }
         });

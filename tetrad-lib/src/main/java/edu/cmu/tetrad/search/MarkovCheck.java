@@ -399,6 +399,16 @@ public class MarkovCheck {
         }
     }
 
+    public double getFractionDependent(List<IndependenceResult> results) {
+        int dependent = 0;
+
+        for (IndependenceResult result : results) {
+            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
+        }
+
+        return dependent / (double) results.size();
+    }
+
     /**
      * Returns the Kolmorogov-Smirnov p-value for the given list of results.
      *

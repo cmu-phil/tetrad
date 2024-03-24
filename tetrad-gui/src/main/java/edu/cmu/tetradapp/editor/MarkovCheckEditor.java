@@ -22,10 +22,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -43,6 +41,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.RowSorterEvent;
 import javax.swing.table.*;
 import java.awt.Point;
 import java.awt.*;
@@ -564,12 +563,12 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private JPanel buildGuiIndep() {
-        Box tablePanel = Box.createVerticalBox();
+        Box tableBox = Box.createVerticalBox();
 
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        tablePanel.add(conditioningLabelIndep, BorderLayout.NORTH);
+        tableBox.add(conditioningLabelIndep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
@@ -686,10 +685,10 @@ public class MarkovCheckEditor extends JPanel {
         });
 
 
-        addFilterPanel(tableModelIndep, table, tablePanel);
+        addFilterPanel(model, true, tableModelIndep, table, tableBox);
 
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        tablePanel.add(label, BorderLayout.SOUTH);
+        tableBox.add(label, BorderLayout.SOUTH);
 
         setLabelTexts();
 
@@ -726,13 +725,14 @@ public class MarkovCheckEditor extends JPanel {
         a4.add(a9);
 
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
-        checkMarkovPanel.add(new PaddingPanel(tablePanel), BorderLayout.CENTER);
+        checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
 
         return checkMarkovPanel;
     }
 
-    private static void addFilterPanel(AbstractTableModel tableModel, JTable table, Box tablePanel) {
+    private void addFilterPanel(MarkovCheckIndTestModel model, boolean indep, AbstractTableModel tableModel, JTable table,
+                                Box panel) {
         TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
@@ -745,13 +745,36 @@ public class MarkovCheckEditor extends JPanel {
         // Create a listener for the text field that will update the table's row sort
         filterText.getDocument().addDocumentListener(getFilterListener(filterText, sorter));
 
+        sorter.addRowSorterListener(e -> {
+            if (e.getType() == RowSorterEvent.Type.SORTED) {
+                List<IndependenceResult> results = model.getResults(indep);
+
+                List<IndependenceResult> visiblePairs = new ArrayList<>();
+                int rowCount = table.getRowCount();
+
+                for (int i = 0; i < rowCount; i++) {
+                    int modelIndex = table.convertRowIndexToModel(i);
+                    visiblePairs.add(results.get(modelIndex));
+                }
+
+                if (fractionDepLabelIndep != null) {
+                    double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
+
+                    fractionDepLabelIndep.setText(
+                            "% dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                    "NaN" : nf.format(fractionDependent * 100))
+                    );
+                }
+            }
+        });
+
         JScrollPane scroll = new JScrollPane(table);
 
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(regexLabel);
         filterBox.add(filterText);
-        tablePanel.add(filterBox);
-        tablePanel.add(scroll);
+        panel.add(filterBox);
+        panel.add(scroll);
     }
 
     @NotNull
@@ -815,12 +838,12 @@ public class MarkovCheckEditor extends JPanel {
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
-        Box tablePanel = Box.createVerticalBox();
+        Box tableBox = Box.createVerticalBox();
 
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
-        tablePanel.add(conditioningLabelDep);
+        tableBox.add(conditioningLabelDep);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
@@ -937,16 +960,16 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        addFilterPanel(tableModelDep, table, tablePanel);
+        addFilterPanel(model, false, tableModelIndep, table, tableBox);
 
         JScrollPane scroll = new JScrollPane(table);
-        tablePanel.add(scroll);
+        tableBox.add(scroll);
 
         Box a3 = Box.createHorizontalBox();
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
         a3.add(label);
         a3.add(Box.createHorizontalGlue());
-        tablePanel.add(label);
+        tableBox.add(label);
 
         setLabelTexts();
 
@@ -986,7 +1009,7 @@ public class MarkovCheckEditor extends JPanel {
         a11.add(a4);
 
         JPanel checkDependDistributionPanel = new JPanel(new BorderLayout());
-        checkDependDistributionPanel.add(new PaddingPanel(tablePanel), BorderLayout.CENTER);
+        checkDependDistributionPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkDependDistributionPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
 
         return checkDependDistributionPanel;
