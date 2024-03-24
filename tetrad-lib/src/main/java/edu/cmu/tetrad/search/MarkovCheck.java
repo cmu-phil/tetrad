@@ -241,11 +241,14 @@ public class MarkovCheck {
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
      * independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
+     * @param clear True if the results should be cleared before generating new results.
      * @see #getResults(boolean)
      */
-    public void generateResults() {
-        resultsIndep.clear();
-        resultsDep.clear();
+    public void generateResults(boolean clear) {
+        if (clear) {
+            resultsIndep.clear();
+            resultsDep.clear();
+        }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts();
@@ -595,7 +598,7 @@ public class MarkovCheck {
      */
     public MarkovCheckRecord getMarkovCheckRecord() {
         setPercentResample(percentResample);
-        generateResults();
+        generateResults(true);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
         double binIndep = getBinomialPValue(true);
