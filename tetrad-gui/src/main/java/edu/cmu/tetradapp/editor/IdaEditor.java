@@ -57,7 +57,7 @@ public class IdaEditor extends JPanel {
     /**
      * The label for the average squared distance.
      */
-    private JLabel avgSquaredDistLabel =  null;
+    private JLabel avgSquaredDistLabel = null;
 
     /**
      * The label for the squared difference between minimum total effect and true total effect.
@@ -158,7 +158,7 @@ public class IdaEditor extends JPanel {
                             trim = trim.replace(">+++>", ")");
                             trim = trim.replace("|+++|", "|");
 
-                             filters.add(RowFilter.regexFilter(trim));
+                            filters.add(RowFilter.regexFilter(trim));
                         } catch (PatternSyntaxException e) {
                             // ignore
                         }
@@ -247,8 +247,8 @@ public class IdaEditor extends JPanel {
     /**
      * Adds a stat to the stats box.
      *
-     * @param stat1     the stat to add.
-     * @param statsBox  the stats box.
+     * @param stat1    the stat to add.
+     * @param statsBox the stats box.
      */
     private static void addStatToBox(JLabel stat1, Box statsBox) {
         Box horiz3 = Box.createHorizontalBox();
@@ -268,31 +268,31 @@ public class IdaEditor extends JPanel {
         textArea.setWrapStyleWord(true);
         textArea.setOpaque(true);
         textArea.setEditable(false);
-        textArea.setText(
-                """
-                        This IDA check displays the results of the IDA algorithm. The original reference is the following:
+        textArea.setText("""
+                This IDA check displays the results of the IDA algorithm. The original reference is the following:
 
-                        Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
-                                               
-                        The IDA algorithm seeks to give a list of possible parents for a given variable Y and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
+                Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
+                        					  \s
+                The IDA algorithm seeks to give a list of possible parents for a given variable Y and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
 
-                        This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an MPDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules). It also optionally takes a Simulation box as input in place of a Data box, which allows for a calculation of the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated MPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
+                This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an MPDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules). It also optionally takes a Simulation box as input instead of a Data box, which allows for calculating the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated MPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
 
-                        Finally, the average of each column in the table is given at the bottom of the table.
+                Finally, the average of each column in the table is given at the bottom of the table.
 
-                        The tables may be sorted in increasing order by clicking on the column header one wishes to sort or in descending order by clicking the column header twice. Also, a facility is provided to specify a comma-separated list of regexes to select rows in the table.
+                The tables may be sorted in increasing order by clicking on the column header one wishes to sort or in descending order by clicking the column header twice. Also, a facility is provided to specify a comma-separated list of regexes to select rows in the table.
 
-                        IDA Check is available in the Comparison box and can take the following combinations of parents:
+                IDA Check is available in the Comparison box and can take the following combinations of parents:
 
-                        An estimated MPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
+                An estimated MPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
 
-                        A Simulation box containing a true SEM IM and an estimated MPDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
+                A Simulation box containing a true SEM IM and an estimated MPDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
 
-                        The contents of the table may be selected, copied, and pasted into Excel.
-                                                
-                        The abbreviation "TE" in the table headers stands for "Total Effect." The abbreviation "Abs TE" stands for "Absolute Total Effect." The abbreviation "Sq Dist" stands for "Squared Distance." effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect, the fifth column is the true total effect, and the sixth column is the squared distance from the true total effect, where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true model is not given, the last two columns are not included.
-                        """
-        );
+                The contents of the table may be selected, copied, and pasted into Excel.
+                        						
+                The abbreviation "TE" in the table headers stands for "Total Effect." The abbreviation "Abs TE" stands for "Absolute Total Effect." The abbreviation "Sq Dist" stands for "Squared Distance." effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect, the fifth column is the true total effect, and the sixth column is the squared distance from the true total effect, where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true model is not given, the last two columns are not included.
+
+                A field is provided, allowing the users to specify using regexes (regular expressions) to display only a subset of the rows in a table. The expressions used are slight deviations of usual regular expressions in that the characters '(', ')', and '|' do not need to be escaped '\\(', '\\)', '\\|") to match an expression with those characters. Rather, to use those characters to control the regexes, the escape sequences should be used. This is because independence facts like "Ind(X, Y | Z)" are common for Tetrad. Note that when a table is subsetted using regexes, the statistics at the bottom of the table will be updated to reflect the subsetted table. The regexes are separated by semicolons.                
+                """);
 
         return textArea;
     }
