@@ -349,7 +349,8 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-        JButton recalculate = new JButton("Resample");
+        JButton resample = new JButton("Resample");
+        JButton addSample = new JButton("Add Sample");
 
         this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
 
@@ -362,7 +363,8 @@ public class MarkovCheckEditor extends JPanel {
             percentSampleLabel = new JLabel("(Not tabular data)");
         }
 
-        recalculate.addActionListener(e -> refreshResult(model, percent));
+        resample.addActionListener(e -> refreshResult(model, percent, true));
+        addSample.addActionListener(e -> refreshResult(model, percent, false));
 
         percent.setFilter((value, oldValue) -> {
             if (value < 0.0 || value > 1.0) {
@@ -382,7 +384,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 @Override
                 public void watch() {
-                    refreshResult(model, percent);
+                    refreshResult(model, percent, true);
                 }
             }
 
@@ -424,7 +426,7 @@ public class MarkovCheckEditor extends JPanel {
 
         new MyWatchedProcess();
         //        add(box);
-        initComponents(params, recalculate, pane, conditioningSetsLabel, percentSampleLabel);
+        initComponents(params, resample, addSample, pane, conditioningSetsLabel, percentSampleLabel);
     }
 
     /**
@@ -546,7 +548,7 @@ public class MarkovCheckEditor extends JPanel {
         };
     }
 
-    private void initComponents(JButton params, JButton recalculate, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
+    private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -567,7 +569,9 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(params)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(recalculate)
+                                                        .addComponent(resample)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(addSample)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(percentSampleLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -582,7 +586,8 @@ public class MarkovCheckEditor extends JPanel {
                                 .addComponent(testLabel)
                                 .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(params)
-                                .addComponent(recalculate)
+                                .addComponent(resample)
+                                .addComponent(addSample)
                                 .addComponent(percentSampleLabel)
                                 .addComponent(percent, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -596,11 +601,11 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     //========================PUBLIC METHODS==========================//
-    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
+    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent, boolean clear) {
         setTest();
 
         model.getMarkovCheck().setPercentResample(percent.getValue());
-        model.getMarkovCheck().generateResults(false);
+        model.getMarkovCheck().generateResults(clear);
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();
         histogramPanelDep.removeAll();

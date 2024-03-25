@@ -52,7 +52,7 @@ public class MarkovCheck {
     /**
      * The independence test.
      */
-    private final IndependenceTest independenceTest;
+    private IndependenceTest independenceTest;
     /**
      * The results of the Markov check for the independent case.
      */
@@ -982,9 +982,17 @@ public class MarkovCheck {
     public  double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        double aSquared = generalAndersonDarlingTest.getASquared();
+//        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+    }
+
+    public void setIndependenceTest(IndependenceTest test) {
+        if (test == null) {
+            throw new IllegalArgumentException("Independence test cannot be null.");
+        }
+
+        this.independenceTest = test;
     }
 
     /**
