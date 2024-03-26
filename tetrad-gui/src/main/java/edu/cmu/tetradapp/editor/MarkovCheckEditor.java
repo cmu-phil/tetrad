@@ -860,7 +860,10 @@ public class MarkovCheckEditor extends JPanel {
 
             for (int i = 0; i < rowCount; i++) {
                 int modelIndex = tableIndep.convertRowIndexToModel(i);
-                visiblePairs.add(results.get(modelIndex));
+
+                if (modelIndex > -1) {
+                    visiblePairs.add(results.get(modelIndex));
+                }
             }
 
             double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
@@ -900,7 +903,10 @@ public class MarkovCheckEditor extends JPanel {
 
             for (int i = 0; i < rowCount; i++) {
                 int modelIndex = tableDep.convertRowIndexToModel(i);
-                visiblePairs.add(results.get(modelIndex));
+
+                if (modelIndex > -1) {
+                    visiblePairs.add(results.get(modelIndex));
+                }
             }
 
             double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
