@@ -165,15 +165,15 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel binomialPLabelIndep;
 
-    /**
-     * The label for the Anderson-Darling test.
-     */
-    private JLabel andersonDarlingA2LabelDep;
-
-    /**
-     * The label for the Anderson-Darling test.
-     */
-    private JLabel andersonDarlingA2LabelIndep;
+//    /**
+//     * The label for the Anderson-Darling test.
+//     */
+//    private JLabel andersonDarlingA2LabelDep;
+//
+//    /**
+//     * The label for the Anderson-Darling test.
+//     */
+//    private JLabel andersonDarlingA2LabelIndep;
 
     /**
      * The label for the Anderson-Darling test.
@@ -209,6 +209,9 @@ public class MarkovCheckEditor extends JPanel {
      * The histogram panel.
      */
     private JPanel histogramPanelDep;
+    private static boolean flipEscapes = true;
+    private JCheckBox flipEscapesIndep;
+    private JCheckBox flipEscapesDep;
 
     /**
      * Constructs a new editor for the given model.
@@ -499,16 +502,18 @@ public class MarkovCheckEditor extends JPanel {
 
                             String trim = part.trim();
 
-                            // Swap escapes for parentheses and pipes
-                            trim = trim.replace("\\(", "<+++<");
-                            trim = trim.replace("\\)", ">+++>");
-                            trim = trim.replace("\\|", "|+++|");
-                            trim = trim.replace("(", "\\(");
-                            trim = trim.replace(")", "\\)");
-                            trim = trim.replace("|", "\\|");
-                            trim = trim.replace("<+++<", "(");
-                            trim = trim.replace(">+++>", ")");
-                            trim = trim.replace("|+++|", "|");
+                            if (isFlipEscapes()) {
+                                // Swap escapes for parentheses and pipes
+                                trim = trim.replace("\\(", "<+++<");
+                                trim = trim.replace("\\)", ">+++>");
+                                trim = trim.replace("\\|", "|+++|");
+                                trim = trim.replace("(", "\\(");
+                                trim = trim.replace(")", "\\)");
+                                trim = trim.replace("|", "\\|");
+                                trim = trim.replace("<+++<", "(");
+                                trim = trim.replace(">+++>", ")");
+                                trim = trim.replace("|+++|", "|");
+                            }
 
                             filters.add(RowFilter.regexFilter(trim));
                         } catch (PatternSyntaxException e) {
@@ -762,7 +767,14 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        addFilterPanel(model, tableModelIndep, tableIndep, tableBox);
+        flipEscapesIndep = new JCheckBox("Flip escapes ()|");
+        flipEscapesIndep.setSelected(flipEscapes);
+        flipEscapesIndep.addActionListener(e -> {
+            flipEscapes = flipEscapesIndep.isSelected();
+            flipEscapesDep.setSelected(isFlipEscapes());
+        });
+
+        addFilterPanel(model, tableModelIndep, tableIndep, tableBox, flipEscapesIndep);
 
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
         tableBox.add(label, BorderLayout.SOUTH);
@@ -791,10 +803,10 @@ public class MarkovCheckEditor extends JPanel {
         a7.add(binomialPLabelIndep);
         a4.add(a7);
 
-        Box a8 = Box.createHorizontalBox();
-        a8.add(Box.createHorizontalGlue());
-        a8.add(andersonDarlingA2LabelIndep);
-        a4.add(a8);
+//        Box a8 = Box.createHorizontalBox();
+//        a8.add(Box.createHorizontalGlue());
+//        a8.add(andersonDarlingA2LabelIndep);
+//        a4.add(a8);
 
         Box a9 = Box.createHorizontalBox();
         a9.add(Box.createHorizontalGlue());
@@ -809,7 +821,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void addFilterPanel(MarkovCheckIndTestModel model, AbstractTableModel tableModel, JTable table,
-                                Box panel) {
+                                Box panel, JCheckBox flipEscapes) {
         TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
@@ -833,6 +845,7 @@ public class MarkovCheckEditor extends JPanel {
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(regexLabel);
         filterBox.add(filterText);
+        filterBox.add(flipEscapes);
         panel.add(filterBox);
         panel.add(scroll);
     }
@@ -865,12 +878,12 @@ public class MarkovCheckEditor extends JPanel {
                     "Binomial p-value = " + nf.format(model.getMarkovCheck().getBinomialPValue(visiblePairs))
             );
 
-            andersonDarlingA2LabelIndep.setText(
-                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
-            );
+//            andersonDarlingA2LabelIndep.setText(
+//                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
+//            );
 
-            andersonDarlingA2LabelIndep.setText(
-                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+            andersonDarlingPLabelIndep.setText(
+                    "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
             );
 
             histogramPanelIndep.removeAll();
@@ -905,12 +918,12 @@ public class MarkovCheckEditor extends JPanel {
                     "Binomial p-value = " + nf.format(model.getMarkovCheck().getBinomialPValue(visiblePairs))
             );
 
-            andersonDarlingA2LabelDep.setText(
-                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
-            );
+//            andersonDarlingA2LabelDep.setText(
+//                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingA2(visiblePairs))
+//            );
 
-            andersonDarlingA2LabelDep.setText(
-                    "Anderson-Darling A^2 = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+            andersonDarlingPLabelDep.setText(
+                    "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
             );
 
             histogramPanelDep.removeAll();
@@ -1045,7 +1058,14 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        addFilterPanel(model, tableModelDep, tableDep, tableBox);
+        flipEscapesDep = new JCheckBox("Flip escapes ()|");
+        flipEscapesDep.setSelected(isFlipEscapes());
+        flipEscapesDep.addActionListener(e -> {
+            flipEscapes = flipEscapesDep.isSelected();
+            flipEscapesIndep.setSelected(isFlipEscapes());
+        });
+
+        addFilterPanel(model, tableModelDep, tableDep, tableBox, flipEscapesDep);
 
         JScrollPane scroll = new JScrollPane(tableDep);
         tableBox.add(scroll);
@@ -1080,10 +1100,10 @@ public class MarkovCheckEditor extends JPanel {
         a7.add(binomialPLabelDep);
         a4.add(a7);
 
-        Box a8 = Box.createHorizontalBox();
-        a8.add(Box.createHorizontalGlue());
-        a8.add(andersonDarlingA2LabelDep);
-        a4.add(a8);
+//        Box a8 = Box.createHorizontalBox();
+//        a8.add(Box.createHorizontalGlue());
+//        a8.add(andersonDarlingA2LabelDep);
+//        a4.add(a8);
 
         Box a9 = Box.createHorizontalBox();
         a9.add(Box.createHorizontalGlue());
@@ -1150,13 +1170,13 @@ public class MarkovCheckEditor extends JPanel {
             binomialPLabelDep = new JLabel();
         }
 
-        if (andersonDarlingA2LabelIndep == null) {
-            andersonDarlingA2LabelIndep = new JLabel();
-        }
-
-        if (andersonDarlingA2LabelDep == null) {
-            andersonDarlingA2LabelDep = new JLabel();
-        }
+//        if (andersonDarlingA2LabelIndep == null) {
+//            andersonDarlingA2LabelIndep = new JLabel();
+//        }
+//
+//        if (andersonDarlingA2LabelDep == null) {
+//            andersonDarlingA2LabelDep = new JLabel();
+//        }
 
         if (andersonDarlingPLabelIndep == null) {
             andersonDarlingPLabelIndep = new JLabel();
@@ -1183,14 +1203,14 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
 
-        andersonDarlingA2LabelIndep.setText("A^2 = "
-                                            + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(true)))));
-        andersonDarlingA2LabelDep.setText("A^2* = "
-                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(false)))));
+//        andersonDarlingA2LabelIndep.setText("A^2 = "
+//                                            + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
+//                ? "-"
+//                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(true)))));
+//        andersonDarlingA2LabelDep.setText("A^2* = "
+//                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
+//                ? "-"
+//                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(false)))));
 
         andersonDarlingPLabelIndep.setText("P-value of the Anderson-Darling test = "
                                            + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
@@ -1623,6 +1643,10 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         return field;
+    }
+
+    private static boolean isFlipEscapes() {
+        return flipEscapes;
     }
 
     /**

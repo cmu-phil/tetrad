@@ -178,17 +178,27 @@ public class IdaCheck {
     }
 
     /**
-     * Gets the minimum absolute total effect value between two nodes.
+     * Gets the signed minimum absolute total effect value between two nodes.
      *
      * @param x the first node.
      * @param y the second node.
-     * @return the minimum absolute total effect value between the two nodes.
+     * @return the signed minimum absolute total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
-    public double getMinAbsTotalEffect(Node x, Node y) {
+    public double getIdaMinEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.absTotalEffects.get(new OrderedPair<>(x, y));
-        return effects.getFirst();
+        LinkedList<Double> totalEffects = this.totalEffects.get(new OrderedPair<>(x, y));
+        Double first = effects.getFirst();
+        double ret = Double.NaN;
+
+        for (Double totalEffect : totalEffects) {
+            if (Math.abs(totalEffect) == first) {
+                ret = totalEffect;
+            }
+        }
+
+        return ret;
     }
 
     /**
