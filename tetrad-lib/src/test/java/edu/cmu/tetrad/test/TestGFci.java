@@ -51,8 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author josephramsey
@@ -127,7 +126,7 @@ public class TestGFci {
                 {0, 0, 0, 0, 0, 0},};
 
         for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+            assertArrayEquals(counts[i], expectedCounts[i]);
         }
 
     }

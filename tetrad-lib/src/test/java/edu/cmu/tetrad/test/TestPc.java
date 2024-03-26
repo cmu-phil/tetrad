@@ -372,7 +372,7 @@ public class TestPc {
 //            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
-                if (true && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
+                if (!(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
                     continue;
                 }
 

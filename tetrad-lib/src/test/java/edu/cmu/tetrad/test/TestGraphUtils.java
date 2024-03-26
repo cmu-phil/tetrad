@@ -29,8 +29,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author josephramsey
@@ -198,16 +197,16 @@ public final class TestGraphUtils {
         assertTrue(graph.paths().isAncestorOf(y, y));
 
         assertTrue(graph.paths().isAncestorOf(a, x));
-        assertTrue(!graph.paths().isAncestorOf(x, a));
+        assertFalse(graph.paths().isAncestorOf(x, a));
         assertTrue(graph.paths().isAncestorOf(a, y));
-        assertTrue(!graph.paths().isAncestorOf(y, a));
+        assertFalse(graph.paths().isAncestorOf(y, a));
 
         assertTrue(graph.paths().isAncestorOf(a, y));
         assertTrue(graph.paths().isAncestorOf(b, x));
 
-        assertTrue(!graph.paths().isAncestorOf(a, b));
-        assertTrue(!graph.paths().isAncestorOf(y, a));
-        assertTrue(!graph.paths().isAncestorOf(x, b));
+        assertFalse(graph.paths().isAncestorOf(a, b));
+        assertFalse(graph.paths().isAncestorOf(y, a));
+        assertFalse(graph.paths().isAncestorOf(x, b));
 
         assertTrue(graph.paths().isMConnectedTo(a, y, new HashSet<>()));
         assertTrue(graph.paths().isMConnectedTo(b, x, new HashSet<>()));

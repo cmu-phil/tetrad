@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -53,7 +54,7 @@ public class TestKernelGaussian {
         dataset.setDouble(3, 0, 4);
         dataset.setDouble(4, 0, 5);
         KernelGaussian kernel = new KernelGaussian(dataset, X);
-        assertTrue(kernel.getBandwidth() == 2);
+        assertEquals(2, kernel.getBandwidth(), 0.0);
 
     }
 }

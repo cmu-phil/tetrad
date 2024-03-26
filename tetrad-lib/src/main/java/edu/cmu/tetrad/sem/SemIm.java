@@ -2452,6 +2452,13 @@ public final class SemIm implements Im, ISemIm {
         return numRandomCalls;
     }
 
+    /**
+     * Calculates the total effect between two nodes.
+     *
+     * @param x the source node
+     * @param y the target node
+     * @return the total effect from node x to node y
+     */
     public synchronized double getTotalEffect(Node x, Node y) {
         List<Node> parents = getSemPm().getGraph().getParents(x);
 

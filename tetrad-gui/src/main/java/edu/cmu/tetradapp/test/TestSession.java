@@ -75,7 +75,7 @@ public class TestSession {
         assertTrue(this.session.getNodes().contains(node3));
         this.session.removeNode(node2);
         assertEquals(2, this.session.getNodes().size());
-        assertTrue(!this.session.getNodes().contains(node2));
+        assertFalse(this.session.getNodes().contains(node2));
         this.session.clearNodes();
         assertEquals(0, this.session.getNodes().size());
     }

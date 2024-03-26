@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.algcomparison.statistic.LegalPag;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -121,7 +120,7 @@ public class Paths implements TetradSerializable {
             do {
                 if (itr.hasNext()) x = itr.next();
                 else throw new IllegalArgumentException("The remaining graph does not have valid sink; there " +
-                        "could be a directed cycle or a non-chordal undirected cycle.");
+                                                        "could be a directed cycle or a non-chordal undirected cycle.");
             } while (invalidSink(x, _graph));
             order.add(x);
             _graph.removeNode(x);
@@ -193,6 +192,13 @@ public class Paths implements TetradSerializable {
         }
     }
 
+    /**
+     * Checks if the given Multi-Parent Directed Acyclic Graph (MPDAG) is legal. A MPDAG is considered legal if it is
+     * equivalent to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for maximum
+     * orientation.
+     *
+     * @return true if the MPDAG is legal, false otherwise.
+     */
     public boolean isLegalMpdag() {
         Graph g = this.graph;
 

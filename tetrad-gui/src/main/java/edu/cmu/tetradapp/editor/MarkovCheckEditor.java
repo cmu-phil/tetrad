@@ -116,7 +116,16 @@ public class MarkovCheckEditor extends JPanel {
      * The label for the fraction of p-values less than the alpha level.
      */
     boolean updatingTestModels = true;
+    /**
+     * The JTable variable containing the independent table.
+     */
     private JTable tableIndep;
+    /**
+     * Represents a private JTable variable named tableDep. This variable is an instance of the JTable class and is used
+     * as a table component in the MarkovCheckEditor class.
+     *
+     * @see MarkovCheckEditor
+     */
     private JTable tableDep;
     /**
      * The table model for the independence test.
@@ -188,7 +197,13 @@ public class MarkovCheckEditor extends JPanel {
      * The histogram panel.
      */
     private JPanel histogramPanelDep;
+    /**
+     * A checkbox for the independence tab to flip escapes for some regexes.
+     */
     private JCheckBox flipEscapesIndep;
+    /**
+     * A checkbox for the dependence tab to flip escapes for some regexes.
+     */
     private JCheckBox flipEscapesDep;
 
     /**

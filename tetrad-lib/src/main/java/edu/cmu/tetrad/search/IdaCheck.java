@@ -70,6 +70,10 @@ public class IdaCheck {
 
     /**
      * Constructs a new IDA check for the given MPDAG and data set.
+     *
+     * @param graph     the MPDAG.
+     * @param dataSet   the data set.
+     * @param trueSemIm the true SEM IM.
      */
     public IdaCheck(Graph graph, DataSet dataSet, SemIm trueSemIm) {
 
@@ -127,6 +131,12 @@ public class IdaCheck {
         }
     }
 
+    /**
+     * Calculates the true total effect between two nodes in the graph.
+     *
+     * @param pair the ordered pair of nodes for which the total effect is calculated.
+     * @return the true total effect between the two nodes.
+     */
     public double getTrueTotalEffect(OrderedPair<Node> pair) {
         return this.trueSemIm.getTotalEffect(nodeMap.get(pair.getFirst()), nodeMap.get(pair.getSecond()));
     }
@@ -222,6 +232,7 @@ public class IdaCheck {
      * node pairs indicated.
      *
      * @param pairs the list of node pairs.
+     * @return the average of the squared distances between the true total effects and the IDA effect ranges.
      */
     public double getAverageSquaredDistance(List<OrderedPair<Node>> pairs) {
         List<OrderedPair<Node>> _pairs = getOrderedPairs();

@@ -38,7 +38,7 @@ public abstract class WatchedProcess {
     private final JFrame frame;
     private Thread longRunningThread;
     private JDialog dialog;
-    
+
     private boolean interrupted;
 
     /**
@@ -142,6 +142,11 @@ public abstract class WatchedProcess {
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
     }
 
+    /**
+     * Checks if the object has been interrupted.
+     *
+     * @return true if the object has been interrupted, false otherwise.
+     */
     public boolean isInterrupted() {
         return interrupted;
     }

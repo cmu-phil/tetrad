@@ -403,6 +403,12 @@ public class MarkovCheck {
         }
     }
 
+    /**
+     * Calculates the fraction of dependent results.
+     *
+     * @param results the list of IndependenceResult objects
+     * @return the fraction of dependent results as a double value
+     */
     public double getFractionDependent(List<IndependenceResult> results) {
         int dependent = 0;
 
@@ -964,22 +970,46 @@ public class MarkovCheck {
         return isCpdag;
     }
 
+    /**
+     * Calculates the Kolmogorov-Smirnov (KS) p-value for a list of independence test results.
+     *
+     * @param visiblePairs a list of IndependenceResult objects representing the observed values and expected values for a series of tests
+     * @return the KS p-value calculated using the list of independence test results
+     */
     public double getKsPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
     }
 
+    /**
+     * Calculates the binomial p-value based on the list of visible pairs.
+     *
+     * @param visiblePairs a list of IndependenceResult representing the visible pairs.
+     * @return the binomial p-value.
+     */
     public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         return getBinomialPValue(pValues, independenceTest.getAlpha());
     }
 
+    /**
+     * Calculates the Anderson-Darling A2 value for a list of independence results.
+     *
+     * @param visiblePairs the list of independence results
+     * @return the Anderson-Darling A2 value
+     */
     public double getAndersonDarlingA2(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getASquared();
     }
 
+    /**
+     * Calculates the Anderson-Darling p-value for a given list of independence results.
+     *
+     * @param visiblePairs the list of independence results
+     * @return the Anderson-Darling p-value
+     */
     public  double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
@@ -988,6 +1018,12 @@ public class MarkovCheck {
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
 
+    /**
+     * Sets the independence test to be used for determining independence between variables.
+     *
+     * @param test the independence test to be set
+     * @throws IllegalArgumentException if the test parameter is null
+     */
     public void setIndependenceTest(IndependenceTest test) {
         if (test == null) {
             throw new IllegalArgumentException("Independence test cannot be null.");

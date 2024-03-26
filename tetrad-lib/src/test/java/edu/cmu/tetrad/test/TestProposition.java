@@ -51,7 +51,7 @@ public final class TestProposition {
         assertEquals(prop1, prop2);
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         Proposition prop3 = new Proposition(bayesIm2, prop1);
-        assertFalse(prop3.equals(prop1));
+        assertNotEquals(prop3, prop1);
     }
 
     private BayesIm sampleBayesIm2() {

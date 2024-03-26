@@ -24,7 +24,12 @@ public class IdaAverageSquaredDistance implements Statistic {
     private final SemIm semIm;
 
     /**
-     * Constructs the statistic.
+     * The IDA Average Squared Distance.
+     * <p>
+     * The IDA Average Squared Distance is a statistic that measures the average squared distance between the true and estimated
+     * total effects for each pair of variables in a Structural Equation Model (SEM).
+     *
+     * @param semIm The true SEM IM. This statistic can only be used if the true SEM IM is known.
      */
     public IdaAverageSquaredDistance(SemIm semIm) {
         this.semIm = semIm;

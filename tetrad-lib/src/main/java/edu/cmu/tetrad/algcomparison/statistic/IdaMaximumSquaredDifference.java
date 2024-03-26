@@ -26,7 +26,9 @@ public class IdaMaximumSquaredDifference implements Statistic {
     private final SemIm semIm;
 
     /**
-     * Constructs the statistic.
+     * Initializes a new instance of the {@code IdaMaximumSquaredDifference} class.
+     *
+     * @param semIm The true SEM IM.
      */
     public IdaMaximumSquaredDifference(SemIm semIm) {
         this.semIm = semIm;

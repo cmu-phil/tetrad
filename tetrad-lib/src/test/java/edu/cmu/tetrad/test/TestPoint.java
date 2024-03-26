@@ -39,7 +39,7 @@ public class TestPoint {
         PointXy q = new PointXy(35, 55);
         PointXy r = new PointXy(25, 50);
 
-        assertFalse(p.equals(q));
+        assertNotEquals(p, q);
         assertEquals(p, r);
 
         PointXy s = new PointXy(q);

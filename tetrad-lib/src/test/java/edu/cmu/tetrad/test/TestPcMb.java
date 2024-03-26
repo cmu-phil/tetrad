@@ -58,7 +58,7 @@ public class TestPcMb {
 
         System.out.println(mbDags.size());
 
-        assertTrue(mbDags.size() == 5);
+        assertEquals(5, mbDags.size());
     }
 
     //    @Test

@@ -26,7 +26,9 @@ public class IdaMinimumSquaredDifference implements Statistic {
     private final SemIm semIm;
 
     /**
-     * Constructs the statistic.
+     * Constructs an instance of the {@code IdaMinimumSquaredDifference} class with the specified SEM IM.
+     *
+     * @param semIm the SEM IM representing the true model.
      */
     public IdaMinimumSquaredDifference(SemIm semIm) {
         this.semIm = semIm;

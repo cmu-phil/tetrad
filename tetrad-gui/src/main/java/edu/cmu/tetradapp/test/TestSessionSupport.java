@@ -24,8 +24,7 @@ package edu.cmu.tetradapp.test;
 import edu.cmu.tetradapp.session.*;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functionality of SessionSupport. SessionSupport has to be able to add and remove listeners, construct
@@ -87,8 +86,8 @@ public class TestSessionSupport {
              */
             public void nodeAdded(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.NODE_ADDED);
-                assertTrue(getNode1() == event.getNode());
+                assertEquals(SessionEvent.NODE_ADDED, event.getType());
+                assertSame(getNode1(), event.getNode());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -98,8 +97,8 @@ public class TestSessionSupport {
              */
             public void nodeRemoved(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.NODE_REMOVED);
-                assertTrue(getNode1() == event.getNode());
+                assertEquals(SessionEvent.NODE_REMOVED, event.getType());
+                assertSame(getNode1(), event.getNode());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -109,9 +108,9 @@ public class TestSessionSupport {
              */
             public void parentAdded(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.PARENT_ADDED);
-                assertTrue(getNode1() == event.getParent());
-                assertTrue(getNode2() == event.getChild());
+                assertEquals(SessionEvent.PARENT_ADDED, event.getType());
+                assertSame(getNode1(), event.getParent());
+                assertSame(getNode2(), event.getChild());
                 setEvent1Received(true);
             }
 
@@ -120,9 +119,9 @@ public class TestSessionSupport {
              */
             public void parentRemoved(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.PARENT_REMOVED);
-                assertTrue(getNode1() == event.getParent());
-                assertTrue(getNode2() == event.getChild());
+                assertEquals(SessionEvent.PARENT_REMOVED, event.getType());
+                assertSame(getNode1(), event.getParent());
+                assertSame(getNode2(), event.getChild());
                 setEvent1Received(true);
             }
 
@@ -131,8 +130,8 @@ public class TestSessionSupport {
              */
             public void modelCreated(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.MODEL_CREATED);
-                assertTrue(getNode1() == event.getNode());
+                assertEquals(SessionEvent.MODEL_CREATED, event.getType());
+                assertSame(getNode1(), event.getNode());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -142,8 +141,8 @@ public class TestSessionSupport {
              */
             public void modelDestroyed(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.MODEL_DESTROYED);
-                assertTrue(getNode1() == event.getNode());
+                assertEquals(SessionEvent.MODEL_DESTROYED, event.getType());
+                assertSame(getNode1(), event.getNode());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -154,8 +153,8 @@ public class TestSessionSupport {
              */
             public void modelUnclear(SessionEvent event) {
 
-                assertTrue(event.getType() == SessionEvent.MODEL_UNCLEAR);
-                assertTrue(getNode1() == event.getNode());
+                assertEquals(SessionEvent.MODEL_UNCLEAR, event.getType());
+                assertSame(getNode1(), event.getNode());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -164,7 +163,7 @@ public class TestSessionSupport {
              * This method is called when a node is executed manually.
              */
             public void executionStarted(SessionEvent event) {
-                assertTrue(event.getType() == SessionEvent.EXECUTION_STARTED);
+                assertEquals(SessionEvent.EXECUTION_STARTED, event.getType());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -173,7 +172,7 @@ public class TestSessionSupport {
              * This method is called when a node is executed manually.
              */
             public void repetitionChanged(SessionEvent event) {
-                assertTrue(event.getType() == SessionEvent.REPETITION_CHANGED);
+                assertEquals(SessionEvent.REPETITION_CHANGED, event.getType());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -182,7 +181,7 @@ public class TestSessionSupport {
              * This method is called when a node is executed manually.
              */
             public void addingEdge(SessionEvent event) {
-                assertTrue(event.getType() == SessionEvent.ADDING_EDGE);
+                assertEquals(SessionEvent.ADDING_EDGE, event.getType());
                 assertNull(event.getParent());
                 setEvent1Received(true);
             }
@@ -225,7 +224,7 @@ public class TestSessionSupport {
         this.sessionSupport.removeSessionListener(l1);
         setEvent1Received(false);
         this.sessionSupport.fireNodeAdded(this.node1);
-        assertTrue(!isEvent1Received());
+        assertFalse(isEvent1Received());
     }
 
     /**
@@ -269,7 +268,7 @@ public class TestSessionSupport {
         setEvent1Received(false);
         setEvent2Received(false);
         this.sessionSupport.fireNodeAdded(this.node1);
-        assertTrue(!isEvent1Received());
+        assertFalse(isEvent1Received());
         assertTrue(isEvent2Received());
     }
 

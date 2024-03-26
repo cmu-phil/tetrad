@@ -38,7 +38,7 @@ public final class TestDelimiterType {
         assertEquals("Tab", DelimiterType.TAB.toString());
         assertEquals("Whitespace", DelimiterType.WHITESPACE.toString());
         assertEquals("Comma", DelimiterType.COMMA.toString());
-        assertFalse(DelimiterType.TAB.equals(DelimiterType.WHITESPACE));
+        assertNotEquals(DelimiterType.TAB, DelimiterType.WHITESPACE);
     }
 }
 

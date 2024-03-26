@@ -53,6 +53,10 @@ public class IdaModel implements SessionModel {
      * Represents the estimated graph associated with the current instance of IdaModel.
      */
     private final Graph estMpdag;
+    /**
+     * Represents the true SemIm object associated with the class IdaModel. It can be null if the object is not
+     * available.
+     */
     private final SemIm trueSemIm;
     /**
      * The parameters.
