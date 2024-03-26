@@ -427,7 +427,6 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         new MyWatchedProcess();
-        //        add(box);
         initComponents(params, resample, addSample, pane, conditioningSetsLabel, percentSampleLabel);
     }
 
@@ -839,8 +838,8 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void updateTables(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep) {
-        {
 
+        {
             List<IndependenceResult> results = model.getResults(true);
 
             List<IndependenceResult> visiblePairs = new ArrayList<>();
@@ -935,7 +934,6 @@ public class MarkovCheckEditor extends JPanel {
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
-//        a1.add(Box.createVerticalStrut(5));
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
