@@ -73,13 +73,13 @@ public class RBExperiments {
      *             arguments are given in a compact format. -i (ignored)              : a flag to indicate that the
      *             input arguments are given as individual arguments. -lv [value]               : the value of the
      *             number of latent confounders. -bs [value]               : the number of bootstrap samples. -alpha
-     *             [value]            : the significance level (alpha) for statistical tests. -m [value]
-     *             : the number of models to consider. -net [value]              : the name of the model. -t1 [value]
-     *                        : a flag to indicate whether threshold 1 should be used. -t2 [value]               : a
-     *             flag to indicate whether threshold 2 should be used. -low [value]              : the lower threshold
-     *             value for creating a dependency filtering dataset. -up [value]               : the upper threshold
-     *             value for creating a dependency filtering dataset. -out [value]              : the directory to save
-     *             the results to. -data [value]             : the path to the data directory.
+     *             [value]            : the significance level (alpha) for statistical tests. -m [value] : the number of
+     *             models to consider. -net [value]              : the name of the model. -t1 [value] : a flag to
+     *             indicate whether threshold 1 should be used. -t2 [value]               : a flag to indicate whether
+     *             threshold 2 should be used. -low [value]              : the lower threshold value for creating a
+     *             dependency filtering dataset. -up [value]               : the upper threshold value for creating a
+     *             dependency filtering dataset. -out [value]              : the directory to save the results to. -data
+     *             [value]             : the path to the data directory.
      * @throws IOException if there is an error reading or writing data.
      */
     public static void main(String[] args) throws IOException {
@@ -193,14 +193,14 @@ public class RBExperiments {
 
         // create output directory and files
         filePath = filePath + "/" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-                + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
+                   + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
         try {
             File dir = new File(filePath);
             dir.mkdirs();
             File file = new File(dir,
                     "Results-" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-                            + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
-                            + numBootstrapSamples + "-" + round + ".txt");
+                    + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
+                    + numBootstrapSamples + "-" + round + ".txt");
             if (!file.exists() || file.length() == 0) {
                 out = new PrintStream(Files.newOutputStream(file.toPath()));
             } else {

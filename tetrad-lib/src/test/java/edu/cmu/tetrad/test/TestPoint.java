@@ -24,7 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.PointXy;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests basic functionality of the tetrad.util.Point class.

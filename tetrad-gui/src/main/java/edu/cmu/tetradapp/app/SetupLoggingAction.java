@@ -101,8 +101,8 @@ public class SetupLoggingAction extends AbstractAction {
             if (!text.matches("[a-zA-Z_]*")) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Spaces, numbers, and special characters (" +
-                                "except underlines) in filenames will be " +
-                                "ignored. You might want to delete them.",
+                        "except underlines) in filenames will be " +
+                        "ignored. You might want to delete them.",
                         "Friendly Detail Message",
                         JOptionPane.WARNING_MESSAGE);
             }
@@ -153,9 +153,9 @@ public class SetupLoggingAction extends AbstractAction {
 
         Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("<html>" +
-                "Output will be written to sequentially numbered files, using the<br>" +
-                "given file prefix, in the given directory, with one output file<br>" +
-                "generated per search." + "</html>"));
+                          "Output will be written to sequentially numbered files, using the<br>" +
+                          "given file prefix, in the given directory, with one output file<br>" +
+                          "generated per search." + "</html>"));
         b1.add(b8);
 
         return b1;

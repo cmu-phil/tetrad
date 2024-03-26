@@ -110,7 +110,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     private void setNumSplits(int numSplits) {
         if (numSplits < 1) {
             throw new IllegalArgumentException("Number of splits must be " +
-                    "at least 1.");
+                                               "at least 1.");
         }
 
         this.params.set("numSplits", numSplits);
@@ -381,12 +381,12 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                             int index = label;
 
                             if (index - 1 > 0 &&
-                                    !(SplitEditor.this.breakpoints[index - 2] < value)) {
+                                !(SplitEditor.this.breakpoints[index - 2] < value)) {
                                 value = SplitEditor.this.breakpoints[index - 1];
                             }
 
                             if (index - 1 < SplitEditor.this.breakpoints.length - 1 &&
-                                    !(value < SplitEditor.this.breakpoints[index])) {
+                                !(value < SplitEditor.this.breakpoints[index])) {
                                 value = SplitEditor.this.breakpoints[index - 1];
                             }
 

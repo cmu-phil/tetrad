@@ -77,10 +77,10 @@ class EvidenceWizardSingle extends JPanel {
         // Do Layout.
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
-                "Select the node in the graph that you would like to see updated" +
-                "<br>probabilities for. In the list below, select the evidence that" +
-                "<br>you would like to update on. Click the 'Do Update Now' button" +
-                "<br>to view updated probabilities." + "</html>"));
+                          "Select the node in the graph that you would like to see updated" +
+                          "<br>probabilities for. In the list below, select the evidence that" +
+                          "<br>you would like to update on. Click the 'Do Update Now' button" +
+                          "<br>to view updated probabilities." + "</html>"));
         b0.add(Box.createHorizontalGlue());
         add(b0);
         add(Box.createVerticalStrut(10));

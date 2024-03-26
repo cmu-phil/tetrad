@@ -159,7 +159,7 @@ public class SpecialDataClark implements Simulation {
             return im.simulateData(N, false);
         } catch (Exception e) {
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
-                    "the parameters have been specified.");
+                                               "the parameters have been specified.");
         }
     }
 

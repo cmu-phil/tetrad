@@ -275,9 +275,9 @@ public class VcFas {
         String name2 = y.getName();
 
         if (this.knowledge.isForbidden(name1, name2) &&
-                this.knowledge.isForbidden(name2, name1)) {
+            this.knowledge.isForbidden(name2, name1)) {
             String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.";
+                             "forbidden by background knowledge.";
             TetradLogger.getInstance().forceLogMessage(message);
 
             return true;

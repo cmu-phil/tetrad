@@ -155,7 +155,7 @@ public class TetradTestPopulation implements TetradTest {
      */
     public boolean oneFactorTest(int a, int b, int c, int d, int e) {
         return tetradScore3(a, b, c, d) && tetradScore3(a, b, c, e) &&
-                tetradScore3(b, c, d, e);
+               tetradScore3(b, c, d, e);
     }
 
     /**

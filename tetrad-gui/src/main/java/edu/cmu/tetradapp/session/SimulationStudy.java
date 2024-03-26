@@ -158,7 +158,7 @@ public final class SimulationStudy {
     public void execute(SessionNode sessionNode, boolean overwrite) {
         if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
-                    "session: " + sessionNode.getDisplayName());
+                                               "session: " + sessionNode.getDisplayName());
         }
 
         this.nodesToExecute = this.session.getNodes();
@@ -194,7 +194,7 @@ public final class SimulationStudy {
                                           boolean overwrite) {
         if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
-                    "session: " + sessionNode.getDisplayName());
+                                               "session: " + sessionNode.getDisplayName());
         }
 
         this.nodesToExecute = this.session.getNodes();
@@ -261,7 +261,7 @@ public final class SimulationStudy {
 
         if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
-                    "session: " + sessionNode.getDisplayName());
+                                               "session: " + sessionNode.getDisplayName());
         }
 
         // Only fill in nodes that were already filled in.
@@ -285,7 +285,7 @@ public final class SimulationStudy {
 
         for (int i = 0; i < repetition; i++) {
             if (Preferences.userRoot().getBoolean("experimental", false) &&
-                    Preferences.userRoot().getBoolean("errorFound", false)) {
+                Preferences.userRoot().getBoolean("errorFound", false)) {
 //                break;
             }
 
@@ -299,7 +299,7 @@ public final class SimulationStudy {
 
                 if (repetition > 1) {
                     TetradLogger.getInstance().forceLogMessage("\nREPETITION #" + (i + 1) + " FOR "
-                            + sessionNode.getDisplayName() + "\n");
+                                                               + sessionNode.getDisplayName() + "\n");
                 }
 
                 boolean created = sessionNode.createModel(simulation);

@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the GraphConverter class.

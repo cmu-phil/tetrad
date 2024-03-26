@@ -63,7 +63,7 @@ public class RocCalculator {
 
         if (scores.length != inCategory.length) {
             throw new IllegalArgumentException("Scores array must have same " +
-                    "number of items as inCategory array.");
+                                               "number of items as inCategory array.");
         }
 
         if (direction != RocCalculator.ASCENDING && direction != RocCalculator.DESCENDING) {
@@ -159,9 +159,9 @@ public class RocCalculator {
         for (int i = 0; i < numPoints; i++) {
             //System.out.println(plot[i][0] + " " + plot[i][1]);
             pointsDouble[i][0] = ((double) this.points[i][0]) /
-                    ((double) this.points[numPoints - 1][0]);
+                                 ((double) this.points[numPoints - 1][0]);
             pointsDouble[i][1] = ((double) this.points[i][1]) /
-                    ((double) this.points[numPoints - 1][1]);
+                                 ((double) this.points[numPoints - 1][1]);
         }
 
         return pointsDouble;

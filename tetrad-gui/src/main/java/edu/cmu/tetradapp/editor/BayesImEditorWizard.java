@@ -130,12 +130,12 @@ public final class BayesImEditorWizard extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("2. Scroll to a row (that is, combination of "
-                + "parent values) in the table below."));
+                          + "parent values) in the table below."));
         b2.add(Box.createHorizontalGlue());
 
         Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("3. Click in the appropriate box and assign a probability"
-                + " to each value of the chosen"));
+                          + " to each value of the chosen"));
         b3.add(Box.createHorizontalGlue());
 
         Box b3a = Box.createHorizontalBox();

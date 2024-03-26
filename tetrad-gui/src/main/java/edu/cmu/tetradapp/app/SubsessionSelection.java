@@ -68,10 +68,10 @@ final class SubsessionSelection implements Transferable {
 
         for (Object sessionElement : sessionElements) {
             if (!(sessionElement instanceof GraphNode ||
-                    sessionElement instanceof Edge)) {
+                  sessionElement instanceof Edge)) {
                 throw new IllegalArgumentException("Model node list contains " +
-                        "an object that is not a GraphNode or an Edge: " +
-                        sessionElement);
+                                                   "an object that is not a GraphNode or an Edge: " +
+                                                   sessionElement);
             }
         }
 

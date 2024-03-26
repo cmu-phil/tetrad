@@ -139,7 +139,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     public void displayParents() {
         for (int i = 0; i < getNparents(); i++) {
             System.out.println(getParents()[i].getName() + " " +
-                    getParents()[i].getValue() + " " + getInhibitExcite()[i]);
+                               getParents()[i].getValue() + " " + getInhibitExcite()[i]);
         }
     }
 

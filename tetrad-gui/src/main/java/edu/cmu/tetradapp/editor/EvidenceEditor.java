@@ -115,14 +115,14 @@ class EvidenceEditor extends JPanel {
                             getEvidence().getProposition();
 
                     if (proposition.getNumAllowed(i1) ==
-                            getEvidence().getNumCategories(i1)) {
+                        getEvidence().getNumCategories(i1)) {
                         proposition.setCategory(i1, j1);
                     } else if (proposition.getNumAllowed(i1) == 1) {
                         if (proposition.getSingleCategory(i1) == j1) {
                             proposition.removeCategory(i1, j1);
                         } else {
                             if ((ActionEvent.SHIFT_MASK &
-                                    e.getModifiers()) != 1) {
+                                 e.getModifiers()) != 1) {
                                 proposition.setVariable(i1, false);
                             }
 

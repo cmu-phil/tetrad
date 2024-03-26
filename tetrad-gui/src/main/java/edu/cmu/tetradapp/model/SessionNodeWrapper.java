@@ -189,7 +189,7 @@ public class SessionNodeWrapper extends GraphNode {
      */
     public String toString() {
         return "SessionNodewrapper (type " + getButtonType() + ", name " +
-                getSessionName() + ")";
+               getSessionName() + ")";
     }
 
     /**

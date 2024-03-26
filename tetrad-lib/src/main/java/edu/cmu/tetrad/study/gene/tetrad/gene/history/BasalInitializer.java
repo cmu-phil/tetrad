@@ -77,7 +77,7 @@ public class BasalInitializer implements Initializer {
 
         if (initStDev <= 0) {
             throw new IllegalArgumentException("The initialization standard " +
-                    "deviation must be positive");
+                                               "deviation must be positive");
         }
 
         this.updateFunction = updateFunction;

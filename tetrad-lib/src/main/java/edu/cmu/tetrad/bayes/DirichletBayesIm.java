@@ -769,7 +769,7 @@ public final class DirichletBayesIm implements BayesIm {
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         throw new UnsupportedOperationException("Please set pseudocounts and "
-                + "not probabilities for this Dirichlet Bayes IM.");
+                                                + "not probabilities for this Dirichlet Bayes IM.");
     }
 
     /**
@@ -786,7 +786,7 @@ public final class DirichletBayesIm implements BayesIm {
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
                                double value) {
         throw new UnsupportedOperationException("Please set pseudocounts and "
-                + "not probabilities for this Dirichlet Bayes IM.");
+                                                + "not probabilities for this Dirichlet Bayes IM.");
     }
 
     /**
@@ -922,8 +922,8 @@ public final class DirichletBayesIm implements BayesIm {
 
                     if (Double.isNaN(probability)) {
                         throw new IllegalStateException("Some probability "
-                                + "values in the BayesIm are not filled in; "
-                                + "cannot simulate data.");
+                                                        + "values in the BayesIm are not filled in; "
+                                                        + "cannot simulate data.");
                     }
 
                     sum += probability;
@@ -1000,12 +1000,12 @@ public final class DirichletBayesIm implements BayesIm {
                     double otherProbability = otherIm.getPseudocount(i, j, k);
 
                     if (Double.isNaN(probability)
-                            && Double.isNaN(otherProbability)) {
+                        && Double.isNaN(otherProbability)) {
                         continue;
                     }
 
                     if (FastMath.abs(probability - otherProbability)
-                            > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
+                        > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1066,8 +1066,8 @@ public final class DirichletBayesIm implements BayesIm {
                                         int nodeIndex, int rowIndex, DirichletBayesIm oldBayesIm) {
         if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
             throw new IllegalArgumentException("It's only possible to copy "
-                    + "one row of probability values to another in a Bayes IM "
-                    + "if the number of columns in the table are the same.");
+                                               + "one row of probability values to another in a Bayes IM "
+                                               + "if the number of columns in the table are the same.");
         }
 
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -1141,7 +1141,7 @@ public final class DirichletBayesIm implements BayesIm {
             }
 
             if (oldParentIndex == -1
-                    || oldParentIndex >= oldBayesIm.getNumParents(oldNodeIndex)) {
+                || oldParentIndex >= oldBayesIm.getNumParents(oldNodeIndex)) {
                 continue;
             }
 

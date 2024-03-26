@@ -330,17 +330,17 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
             if (!this.knowledge.isForbiddenByTiers(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
-                        " is not forbidden by tiers.");
+                                                   " is not forbidden by tiers.");
             }
         } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
             if (!this.knowledge.isForbiddenByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
-                        " is not forbidden by groups.");
+                                                   " is not forbidden by groups.");
             }
         } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             if (!this.knowledge.isRequiredByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
-                        " is not required by groups.");
+                                                   " is not required by groups.");
             }
         }
 
@@ -451,13 +451,13 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
             throw new IllegalArgumentException(
                     "Please use the tiers interface " +
-                            "to remove edges forbidden by tiers.");
+                    "to remove edges forbidden by tiers.");
         } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
-                    "remove edges forbidden by groups.");
+                                               "remove edges forbidden by groups.");
         } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
-                    "remove edges required by groups.");
+                                               "remove edges required by groups.");
         }
 
         return getGraph().removeEdge(edge);
@@ -783,20 +783,20 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

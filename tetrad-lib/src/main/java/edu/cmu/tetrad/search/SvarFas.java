@@ -306,7 +306,7 @@ public class SvarFas implements IFas {
                     String simX = x1.getName();
                     String simY = y1.getName();
                     if ((Objects.equals(xName, simX) && Objects.equals(yName, simY)) ||
-                            (Objects.equals(xName, simY) && Objects.equals(yName, simX))) {
+                        (Objects.equals(xName, simY) && Objects.equals(yName, simX))) {
                         skipPair = true;
                         System.out.println("Skipping pair x,y = " + xName + ", " + yName);
                         break;
@@ -330,7 +330,7 @@ public class SvarFas implements IFas {
                     this.numIndependenceTests++;
                     result = test.checkIndependence(x, y, empty);
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
-                            y + " independence = " + result.isIndependent());
+                                       y + " independence = " + result.isIndependent());
                 } catch (Exception e) {
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
@@ -355,12 +355,12 @@ public class SvarFas implements IFas {
                     }
 
                     String message = LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                            this.nf.format(result.getScore());
+                                     this.nf.format(result.getScore());
                     TetradLogger.getInstance().forceLogMessage(message);
 
                     if (this.verbose) {
                         this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(result.getScore()));
+                                         this.nf.format(result.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -386,7 +386,7 @@ public class SvarFas implements IFas {
 
                     if (this.verbose) {
                         String message = LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(result.getScore());
+                                         this.nf.format(result.getScore());
                         TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
@@ -434,9 +434,9 @@ public class SvarFas implements IFas {
         String name2 = y.getName();
 
         if (this.knowledge.isForbidden(name1, name2) &&
-                this.knowledge.isForbidden(name2, name1)) {
+            this.knowledge.isForbidden(name2, name1)) {
             String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.";
+                             "forbidden by background knowledge.";
             TetradLogger.getInstance().forceLogMessage(message);
 
             return true;
@@ -624,9 +624,9 @@ public class SvarFas implements IFas {
                     int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);
@@ -664,9 +664,9 @@ public class SvarFas implements IFas {
                     int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);

@@ -148,7 +148,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         }
 
         return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
+               !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -303,7 +303,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         TetradLogger.getInstance().forceLogMessage("After step 4 (PC Orient)" + graph);
 
         TetradLogger.getInstance().forceLogMessage("BEGINNING step 5 (Trim graph to {T} U PC U " +
-                "{Parents(Children(T))}).");
+                                                   "{Parents(Children(T))}).");
 
         if (findMb) {
             Set<Node> mb = new HashSet<>();
@@ -587,7 +587,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private void prune(Node node, Graph graph, int depth) {
         TetradLogger.getInstance().forceLogMessage("Trying to remove edges adjacent to node " + node +
-                ", depth = " + depth + ".");
+                                                   ", depth = " + depth + ".");
 
         // Otherwise, try removing all other edges adjacent node. Return
         // true if more edges could be removed at the next depth.
@@ -646,7 +646,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         String message = "PC-MB took " + nf.format(seconds) + " seconds.";
         TetradLogger.getInstance().forceLogMessage(message);
         TetradLogger.getInstance().forceLogMessage("Number of independence tests performed = " +
-                getNumIndependenceTests());
+                                                   getNumIndependenceTests());
 
         this.resultGraph = graph;
     }
@@ -689,7 +689,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private void noteMaxAtDepth(int depth, int numAdjacents) {
         if (depth < this.maxRemainingAtDepth.length &&
-                numAdjacents > this.maxRemainingAtDepth[depth]) {
+            numAdjacents > this.maxRemainingAtDepth[depth]) {
             this.maxRemainingAtDepth[depth] = numAdjacents;
         }
     }
@@ -862,7 +862,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private boolean edgeForbidden(Node x1, Node x2) {
         return getKnowledge().isForbidden(x1.toString(), x2.toString()) &&
-                getKnowledge().isForbidden(x2.toString(), x1.toString());
+               getKnowledge().isForbidden(x2.toString(), x1.toString());
     }
 
     /**
@@ -874,7 +874,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private boolean edgeRequired(Node x1, Node x2) {
         return getKnowledge().isRequired(x1.toString(), x2.toString()) ||
-                getKnowledge().isRequired(x2.toString(), x1.toString());
+               getKnowledge().isRequired(x2.toString(), x1.toString());
     }
 
     /**
@@ -920,7 +920,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
-                PcMb.isArrowheadAllowed1(z, y, knowledge);
+               PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
     /**

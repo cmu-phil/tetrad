@@ -25,7 +25,6 @@ import edu.cmu.tetrad.util.Version;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the Version class, to make sure it can load versions from string representations and generate string

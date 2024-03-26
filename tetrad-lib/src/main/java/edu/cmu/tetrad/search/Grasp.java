@@ -438,9 +438,9 @@ public class Grasp {
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (GRaSP)"
-                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                                                       + " Score = " + scorer.score()
+                                                       + " (GRaSP)"
+                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

@@ -50,10 +50,6 @@ public class MarkovCheck {
      */
     private final Graph graph;
     /**
-     * The independence test.
-     */
-    private IndependenceTest independenceTest;
-    /**
      * The results of the Markov check for the independent case.
      */
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
@@ -65,6 +61,10 @@ public class MarkovCheck {
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
     private final boolean isCpdag;
+    /**
+     * The independence test.
+     */
+    private IndependenceTest independenceTest;
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -523,6 +523,20 @@ public class MarkovCheck {
     }
 
     /**
+     * Sets the independence test to be used for determining independence between variables.
+     *
+     * @param test the independence test to be set
+     * @throws IllegalArgumentException if the test parameter is null
+     */
+    public void setIndependenceTest(IndependenceTest test) {
+        if (test == null) {
+            throw new IllegalArgumentException("Independence test cannot be null.");
+        }
+
+        this.independenceTest = test;
+    }
+
+    /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
      * @param percentResample The percentage of all samples to use when resampling for each conditional independence
@@ -973,7 +987,8 @@ public class MarkovCheck {
     /**
      * Calculates the Kolmogorov-Smirnov (KS) p-value for a list of independence test results.
      *
-     * @param visiblePairs a list of IndependenceResult objects representing the observed values and expected values for a series of tests
+     * @param visiblePairs a list of IndependenceResult objects representing the observed values and expected values for
+     *                     a series of tests
      * @return the KS p-value calculated using the list of independence test results
      */
     public double getKsPValue(List<IndependenceResult> visiblePairs) {
@@ -1010,26 +1025,12 @@ public class MarkovCheck {
      * @param visiblePairs the list of independence results
      * @return the Anderson-Darling p-value
      */
-    public  double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
+    public double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
-    }
-
-    /**
-     * Sets the independence test to be used for determining independence between variables.
-     *
-     * @param test the independence test to be set
-     * @throws IllegalArgumentException if the test parameter is null
-     */
-    public void setIndependenceTest(IndependenceTest test) {
-        if (test == null) {
-            throw new IllegalArgumentException("Independence test cannot be null.");
-        }
-
-        this.independenceTest = test;
     }
 
     /**

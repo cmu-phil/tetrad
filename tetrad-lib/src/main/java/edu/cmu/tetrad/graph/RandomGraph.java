@@ -1043,7 +1043,7 @@ public class RandomGraph {
         public Graph getDag(List<Node> nodes) {
             if (nodes.size() != getNumNodes()) {
                 throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the "
-                        + "simulated graph has " + getNumNodes() + ".");
+                                                   + "simulated graph has " + getNumNodes() + ".");
             }
 
             Graph dag = new EdgeListGraph(nodes);

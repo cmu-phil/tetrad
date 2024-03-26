@@ -180,7 +180,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
             if (tf == 0) throw new IllegalArgumentException(
                     "For the Fisher method, all component p values in the calculation may not be zero, " +
-                            "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
+                    "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
             double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
 
             if (Double.isNaN(p)) {
@@ -202,7 +202,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             return result;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
     }
 

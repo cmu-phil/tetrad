@@ -610,7 +610,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         }
 
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                        .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
 
         // categorical loss
@@ -702,7 +702,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         //sqloss=-n/2*sum(log(betad))+...
         //.5*norm((X-e*alpha1'-Xbeta-Dtheta)*diag(sqrt(betad)),'fro')^2;
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                        .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
         //ok now tempLoss = res
         tempLoss.assign(Functions.mult(-1));
@@ -795,7 +795,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         gradOut.betad = this.factory1D.make(this.xDat.columns());
         for (int i = 0; i < this.p; i++) {
             gradOut.betad.set(i, -this.n / (2.0 * par.betad.get(i)) + this.alg.norm2(tempLoss.viewColumn(i)) / 2.0 -
-                    this.alg.mult(tempLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
+                                 this.alg.mult(tempLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
         gradOut.alpha1.assign(Functions.div(this.n));
@@ -1028,7 +1028,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             }
 
             grad.betad.set(i, -n / (2.0 * par.betad.get(i)) + this.alg.norm2(negLoss.viewColumn(i)) / 2.0 -
-                    this.alg.mult(negLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
+                              this.alg.mult(negLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
         grad.alpha1.assign(Functions.div(n));

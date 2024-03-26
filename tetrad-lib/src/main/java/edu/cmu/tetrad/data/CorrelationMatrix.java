@@ -97,7 +97,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
             if (FastMath.abs(matrix.get(i, i) - 1.0) > 1.e-5) {
                 throw new IllegalArgumentException(
                         "For a correlation matrix, " +
-                                "variances (diagonal elements) must be 1.0");
+                        "variances (diagonal elements) must be 1.0");
             }
         }
 

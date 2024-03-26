@@ -271,7 +271,7 @@ public final class SemEstimatorGibbs {
 //							System.out.println("dcand end");
                             double numer = dcand - dmean;
                             double denom1 = (-1.0 * FastMath.sqrt(cand - mean[0]) /
-                                    (2.0 * vr)) - FastMath.log(this.stretch2);
+                                             (2.0 * vr)) - FastMath.log(this.stretch2);
                             rj = numer - denom1;
                             accept = FastMath.log(RandomUtil.getInstance().nextDouble());
 
@@ -352,7 +352,7 @@ public final class SemEstimatorGibbs {
                 e = d;
 
                 if ((FastMath.abs(p) >= FastMath.abs(0.5 * q * etemp)) ||
-                        (p <= q * (a - x)) || (p >= q * (b - x))) {
+                    (p <= q * (a - x)) || (p >= q * (b - x))) {
                     e = (x >= xm) ? a - x : b - x;
                     d = CGOLD * e;
                 } else {

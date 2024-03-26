@@ -78,7 +78,7 @@ public final class CptInvariantMarginalCalculator
 
         if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
-                    "Bayes IM and evidence must be compatible.");
+                                               "Bayes IM and evidence must be compatible.");
         }
 
         this.bayesIm = bayesIm;

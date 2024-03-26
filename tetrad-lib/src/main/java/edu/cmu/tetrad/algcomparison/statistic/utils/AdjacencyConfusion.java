@@ -55,17 +55,17 @@ public class AdjacencyConfusion {
 
         for (Edge edge : allUnoriented) {
             if (est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    !truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                !truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.fp++;
             }
 
             if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    !est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                !est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.fn++;
             }
 
             if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.tp++;
             }
         }

@@ -104,9 +104,9 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
             if (numCells > 1000000 /* Integer.MAX_VALUE / dim*/) {
                 throw new IllegalArgumentException(
                         "The number of rows in the " +
-                                "probability table " +
-                                " is greater than 1,000,000 and cannot be " +
-                                "represented.");
+                        "probability table " +
+                        " is greater than 1,000,000 and cannot be " +
+                        "represented.");
             }
             numCells *= parentDim;
         }
@@ -271,7 +271,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         // Initialize to 0's.

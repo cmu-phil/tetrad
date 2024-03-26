@@ -268,7 +268,7 @@ public class Pcd implements IGraphSearch {
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
+                                               "be in the domain of the independence test provided.");
         }
 
 

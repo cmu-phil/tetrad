@@ -24,10 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class TestCombinationIterator {
 

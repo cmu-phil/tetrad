@@ -294,7 +294,7 @@ public final class Cfci implements IGraphSearch {
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
                     if (FciOrient.isArrowheadAllowed(x, y, graph, knowledge) &&
-                            FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
+                        FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 

@@ -104,7 +104,7 @@ public class TestGeneralizedSem {
 
             Set<Node> referencedByX3 = pm.getReferencedNodes(x3);
             assertTrue(referencedByX3.contains(x1) && referencedByX3.contains(x2) && referencedByX3.contains(e_x3)
-                    && !referencedByX3.contains(x4));
+                       && !referencedByX3.contains(x4));
 
             pm.setNodeExpression(x5, "a * E^X2 + X4 + E_X5");
 

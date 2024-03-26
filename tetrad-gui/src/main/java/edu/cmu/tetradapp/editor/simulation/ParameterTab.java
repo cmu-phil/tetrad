@@ -406,7 +406,7 @@ public class ParameterTab extends JPanel {
                 };
             } else {
                 throw new IllegalStateException("Not expecting that model type: "
-                        + simulation.getSimulation().getClass());
+                                                + simulation.getSimulation().getClass());
             }
         } else {
             items = ParameterTab.SOURCE_GRAPH_ITEMS;

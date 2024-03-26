@@ -76,11 +76,11 @@ class RunSimulationAction extends AbstractAction {
         int selection = JOptionPane.showOptionDialog(
                 centeringComp,
                 "Executing this node will erase any model for this node, " +
-                        "\nerase any models for any descendant nodes, and create " +
-                        "\nnew models with new values using the default" +
-                        "\nparameters for each node, which you may edit, and " +
-                        "\nthe repetition numbers for each node, which you " +
-                        "\nmay also edit. Continue?",
+                "\nerase any models for any descendant nodes, and create " +
+                "\nnew models with new values using the default" +
+                "\nparameters for each node, which you may edit, and " +
+                "\nthe repetition numbers for each node, which you " +
+                "\nmay also edit. Continue?",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[1]);
 

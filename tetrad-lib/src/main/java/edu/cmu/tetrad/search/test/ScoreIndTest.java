@@ -119,7 +119,7 @@ public class ScoreIndTest implements IndependenceTest {
 
         if (Double.isNaN(v)) {
             throw new RuntimeException("Undefined score bump encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
 
         int N = score.getSampleSize();

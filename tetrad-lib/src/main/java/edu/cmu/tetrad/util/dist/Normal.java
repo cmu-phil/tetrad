@@ -92,7 +92,7 @@ public class Normal implements Distribution {
             this.sd = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
-                    index + ": " + value);
+                                               index + ": " + value);
         }
     }
 

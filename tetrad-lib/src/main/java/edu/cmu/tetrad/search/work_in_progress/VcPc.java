@@ -181,7 +181,7 @@ public final class VcPc implements IGraphSearch {
     public static boolean isArrowheadAllowed1(Node from, Node to,
                                               Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
+                                    !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -262,7 +262,7 @@ public final class VcPc implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
@@ -750,7 +750,7 @@ public final class VcPc implements IGraphSearch {
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return VcPc.isArrowheadAllowed1(x, y, knowledge) &&
-                VcPc.isArrowheadAllowed1(z, y, knowledge);
+               VcPc.isArrowheadAllowed1(z, y, knowledge);
     }
 
     /**

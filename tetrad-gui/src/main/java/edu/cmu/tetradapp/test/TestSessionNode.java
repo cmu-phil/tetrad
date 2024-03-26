@@ -153,7 +153,7 @@ public class TestSessionNode {
                     {Type2.class, Type3.class, null};
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
-                    "parameter in the list.");
+                 "parameter in the list.");
         } catch (NullPointerException e) {
             // What we wanted.
         }

@@ -71,7 +71,7 @@ public class BayesImParser {
     public BayesIm getBayesIm(Element element) {
         if (!"smile".equals(element.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting " +
-                    "smile" + " element.");
+                                               "smile" + " element.");
         }
 
         Elements elements = element.getChildElements();

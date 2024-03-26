@@ -200,7 +200,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
             if (Double.isNaN(pValue)) {
                 throw new RuntimeException("NaN p-value encountered when testing " +
-                        LogUtilsSearch.independenceFact(x, y, _z));
+                                           LogUtilsSearch.independenceFact(x, y, _z));
             }
 
             boolean independent = pValue > _cutoff;
@@ -215,7 +215,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
     }
 

@@ -149,11 +149,11 @@ class Tsls {
                             if (parent == nodeA) {
                                 if (semGraph.getParents(parent).size() == 0) {
                                     System.out.println("Fixing mx1 = " +
-                                            indicator.getName());
+                                                       indicator.getName());
                                     mx1.add(indicator);
                                 } else {
                                     System.out.println("Fixing my1 = " +
-                                            indicator.getName());
+                                                       indicator.getName());
                                     my1.add(indicator);
                                 }
                                 continue latentIteration;
@@ -399,7 +399,7 @@ class Tsls {
             while (children.hasNext()) {
                 Node next = children.next();
                 if ((next.getNodeType() == NodeType.MEASURED) &&
-                        next != current) {
+                    next != current) {
                     other_measures.add(next);
                 }
             }

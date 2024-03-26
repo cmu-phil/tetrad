@@ -95,7 +95,7 @@ class RandomGraphEditor extends JPanel {
         int oldNumNodes = oldNumMeasured + oldNumLatents;
 
         if (oldNumNodes > 1 && oldNumMeasured == getNumMeasuredNodes() &&
-                oldNumLatents == getNumLatents()) {
+            oldNumLatents == getNumLatents()) {
             setNumMeasuredNodes(oldNumMeasured);
             setNumLatents(oldNumLatents);
             setMaxEdges(
@@ -552,7 +552,7 @@ class RandomGraphEditor extends JPanel {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
                     "Max # latent confounders must be" + " >= 0: " +
-                            numLatentNodes);
+                    numLatentNodes);
         }
 
         this.parameters.set("newGraphNumLatents", numLatentNodes);

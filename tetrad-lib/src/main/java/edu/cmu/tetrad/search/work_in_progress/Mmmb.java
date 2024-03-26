@@ -119,7 +119,7 @@ public final class Mmmb implements IMbSearch {
         long time2 = MillisecondTimes.timeMillis() - time;
         TetradLogger.getInstance().forceLogMessage("Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().forceLogMessage("Number of independence tests performed: " +
-                this.numIndTests);
+                                                   this.numIndTests);
         //        System.out.println("Number of calls to mmpc = " + pc.size());
 
         return nodes;

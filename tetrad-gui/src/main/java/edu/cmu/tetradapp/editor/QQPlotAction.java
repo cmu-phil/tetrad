@@ -76,7 +76,7 @@ class QQPlotAction extends AbstractAction {
             // warn user if they selected more than 10
             if (10 < selected.length) {
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                        " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
+                                                                        " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
                 if (option == JOptionPane.NO_OPTION) {
                     return;

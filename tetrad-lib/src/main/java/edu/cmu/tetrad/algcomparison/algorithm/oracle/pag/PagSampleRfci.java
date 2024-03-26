@@ -69,6 +69,7 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
      * The knowledge
      */
     private Knowledge knowledge;
+
     /**
      * Constructs a new instance of the PagSampleRfci algorithm.
      */

@@ -52,7 +52,7 @@ public class CorrMatrixConverter extends DataWrapper {
 
             if (!(dataSet.isContinuous())) {
                 throw new RuntimeException("Only continuous data sets can be " +
-                        "converted to correlation matrices.");
+                                           "converted to correlation matrices.");
             }
 
             covMatrix = new CorrelationMatrix(dataSet);

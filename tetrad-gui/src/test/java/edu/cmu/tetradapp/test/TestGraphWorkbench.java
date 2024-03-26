@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the GraphWorkbench class.

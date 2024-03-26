@@ -58,7 +58,7 @@ public class HandleyConvert {
     public static void main(String[] args) {
         if (args.length != 1) {
             throw new IllegalArgumentException("Expecting exactly one " +
-                    "argument, the filename " + "of the file to translate.");
+                                               "argument, the filename " + "of the file to translate.");
         }
 
         try {

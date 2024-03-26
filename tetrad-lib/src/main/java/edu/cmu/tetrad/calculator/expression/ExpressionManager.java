@@ -59,7 +59,7 @@ public class ExpressionManager {
         for (ExpressionDescriptor exp : this.descriptors) {
             if (this.tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
-                        + " is not unique.");
+                                                + " is not unique.");
             }
             this.tokenMap.put(exp.getToken(), exp);
         }
@@ -289,7 +289,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Ceil must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("ceil", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -313,7 +313,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Signum must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("signum", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -340,7 +340,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cos must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("cos", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -364,7 +364,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cosh must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("cosh", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -388,7 +388,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Acos must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("acos", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -416,7 +416,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("floor", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -443,7 +443,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("abs", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -467,7 +467,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Log10 must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("log10", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -532,7 +532,7 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     return getExpressions().get(0).evaluate(context)
-                            / getExpressions().get(1).evaluate(context);
+                           / getExpressions().get(1).evaluate(context);
                 }
             };
         }
@@ -554,7 +554,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("log must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("ln", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -607,7 +607,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Round must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("round", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -635,7 +635,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Tan must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("tan", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -659,7 +659,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Hyperbolic tangent must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("tanh", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -683,7 +683,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Atan must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("atan", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -707,7 +707,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Logistic function must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("logistic", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -735,7 +735,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Square Root must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("sqrt", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -762,7 +762,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sine must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("sin", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -786,7 +786,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sinh must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("sinh", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -810,7 +810,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Asin must have one and only one" +
-                        " argument.");
+                                                            " argument.");
             }
             return new AbstractExpression("asin", Position.PREFIX, expressions) {
                 private static final long serialVersionUID = 23L;
@@ -2360,7 +2360,7 @@ public class ExpressionManager {
                     }
 
                     throw new IllegalArgumentException("exps: " + expPrint + " err: " + err + " p: " + Arrays.toString(p)
-                            + " p2: " + Arrays.toString(p2));
+                                                       + " p2: " + Arrays.toString(p2));
                 }
 
                 private double[] convert(double... p) {

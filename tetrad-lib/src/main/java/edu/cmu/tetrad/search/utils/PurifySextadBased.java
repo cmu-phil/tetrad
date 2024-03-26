@@ -147,7 +147,7 @@ public class PurifySextadBased {
             impuritiesPerNode.remove(maxNode);
             eliminated.add(maxNode);
             System.out.println("Eliminated " + maxNode + " impurities = " + max +
-                    "q = " + nf.format(minP) + " maxP = " + nf.format(maxP));
+                               "q = " + nf.format(minP) + " maxP = " + nf.format(maxP));
         }
 
         return buildSolution(clustering, eliminated);
@@ -281,7 +281,7 @@ public class PurifySextadBased {
             int m6 = cluster.get(_n);
 
             if (eliminated.contains(m1) || eliminated.contains(m2) || eliminated.contains(m3) || eliminated.contains(m4)
-                    || eliminated.contains(m5) || eliminated.contains(m6)) {
+                || eliminated.contains(m5) || eliminated.contains(m6)) {
                 continue;
             }
 

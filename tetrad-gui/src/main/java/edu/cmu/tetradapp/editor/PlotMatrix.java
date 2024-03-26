@@ -333,7 +333,7 @@ public class PlotMatrix extends JPanel {
             public void mouseClicked(MouseEvent e) {
 //                if (e.getClickCount() == 1) {
                 if (rowSelector.getSelectedIndices().length == 1
-                        && colSelector.getSelectedIndices().length == 1) {
+                    && colSelector.getSelectedIndices().length == 1) {
                     rowSelector.setSelectedIndices(lastRows);
                     colSelector.setSelectedIndices(lastCols);
                     lastRows = new int[]{rowIndex};

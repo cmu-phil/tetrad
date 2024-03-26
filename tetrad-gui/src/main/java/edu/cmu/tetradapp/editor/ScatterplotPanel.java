@@ -165,7 +165,7 @@ class ScatterplotPanel extends JPanel {
             if (drawAxes) {
                 g.setStroke(new BasicStroke(3));
                 g.drawString("Correlation coef = " + this.nf.format(r)
-                        + "  (p=" + this.nf.format(p) + ")", 70, 21);
+                             + "  (p=" + this.nf.format(p) + ")", 70, 21);
             }
         }
     }

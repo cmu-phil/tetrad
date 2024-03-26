@@ -2126,10 +2126,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     StringBuilder text = new StringBuilder("<html>" + edge.getNode1().getName()
-                            + " " + endpoint1 + "-" + endpoint2 + " "
-                            + edge.getNode2().getName()
-                            + properties
-                            + "<br>");
+                                                           + " " + endpoint1 + "-" + endpoint2 + " "
+                                                           + edge.getNode2().getName()
+                                                           + properties
+                                                           + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();

@@ -97,8 +97,8 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The input dataset will be sampled with replacement to create a new" +
-                "<br>dataset with the number of samples entered below."));
+                          "The input dataset will be sampled with replacement to create a new" +
+                          "<br>dataset with the number of samples entered below."));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());

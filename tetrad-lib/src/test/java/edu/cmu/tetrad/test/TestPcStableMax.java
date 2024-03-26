@@ -35,7 +35,6 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the PC search.
@@ -91,14 +90,14 @@ public class TestPcStableMax {
     //    @Test
     public void testCites() {
         final String citesString = "164\n" +
-                "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
-                "1.0\n" +
-                ".62\t1.0\n" +
-                ".25\t.09\t1.0\n" +
-                ".16\t.28\t.07\t1.0\n" +
-                "-.10\t.00\t.03\t.10\t1.0\n" +
-                ".29\t.25\t.34\t.37\t.13\t1.0\n" +
-                ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
+                                   "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
+                                   "1.0\n" +
+                                   ".62\t1.0\n" +
+                                   ".25\t.09\t1.0\n" +
+                                   ".16\t.28\t.07\t1.0\n" +
+                                   "-.10\t.00\t.03\t.10\t1.0\n" +
+                                   ".29\t.25\t.34\t.37\t.13\t1.0\n" +
+                                   ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix dataSet = SimpleDataLoader.loadCovarianceMatrix(citesChars, "//", DelimiterType.WHITESPACE,

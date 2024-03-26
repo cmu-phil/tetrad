@@ -85,7 +85,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
 
                 if (edge.getNode1().getNodeType() == NodeType.LATENT
-                        && edge.getNode2().getNodeType() == NodeType.LATENT) {
+                    && edge.getNode2().getNodeType() == NodeType.LATENT) {
                     this.workbench.selectEdge(edge);
                 }
             }

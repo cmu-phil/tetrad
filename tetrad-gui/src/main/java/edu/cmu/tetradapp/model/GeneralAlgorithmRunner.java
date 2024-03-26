@@ -442,7 +442,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
                     if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
-                                + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
+                                                           + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
                     RandomUtil.shuffle(dataSets);
 
@@ -783,7 +783,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (this.independenceTests.isEmpty()) {
             throw new IllegalArgumentException("One or more of the parents was a search that didn't use "
-                    + "a test or a score.");
+                                               + "a test or a score.");
         }
 
         return this.independenceTests.get(0);

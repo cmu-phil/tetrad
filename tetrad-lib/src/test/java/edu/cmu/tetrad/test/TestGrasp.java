@@ -121,8 +121,8 @@ public final class TestGrasp {
 
         if (dag.getNumEdges() != g.getNumEdges()) {
             System.out.println("Failed " + alg +
-                    " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
-                    + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
+                               " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
+                               + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
             return true;
         }
 
@@ -562,7 +562,7 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
-                        + type, simulations,
+                                          + type, simulations,
                 algorithms, statistics, params);
     }
 
@@ -1191,7 +1191,7 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
-                        + numMeasures + "_" + avgDegree, simulations,
+                                          + numMeasures + "_" + avgDegree, simulations,
                 algorithms, statistics, params);
     }
 
@@ -1509,7 +1509,7 @@ public final class TestGrasp {
 
 //                            if (failingInitialPi != null) {
                             System.out.println("\t#### line = " + index + " FOUND NON-FRUGAL MODEL, INITIAL = " + failingInitialPi + " FINAL = "
-                                    + failingEstPi);
+                                               + failingEstPi);
                             printExistsNonfrugalCase(line, index, facts, spPi, spGraph, failingInitialPi, failingDag, failingEstPi);
 //                                existsNonfrugal++;
 //                            }
@@ -1521,7 +1521,7 @@ public final class TestGrasp {
 
                     if (failingInitialPi != null) {
                         System.out.println("\t#### line = " + index + " FOUND NON-FRUGAL MODEL, INITIAL = " + failingInitialPi + " FINAL = "
-                                + failingEstPi);
+                                           + failingEstPi);
                         printExistsNonfrugalCase(line, index, facts, spPi, spGraph, failingInitialPi, failingDag, failingEstPi);
                         existsNonfrugal++;
                     }

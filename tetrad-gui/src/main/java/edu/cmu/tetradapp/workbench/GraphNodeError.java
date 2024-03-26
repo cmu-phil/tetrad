@@ -52,7 +52,7 @@ public class GraphNodeError extends DisplayNode {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.ERROR) {
             throw new IllegalArgumentException("GraphNodeError requires " +
-                    "a GraphNode of type NodeType.ERROR.");
+                                               "a GraphNode of type NodeType.ERROR.");
         }
 
         setDisplayComp(new ErrorDisplayComp(modelNode.getName()));
@@ -134,11 +134,11 @@ public class GraphNodeError extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue loop;
                     }
                 }

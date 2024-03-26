@@ -145,7 +145,7 @@ public final class NumberObjectDataSet
         for (Number[] _data : data) {
             if (_data.length != variables.size()) {
                 throw new IllegalArgumentException("All rows must have a number " +
-                        "of elements in them equal to the number of variables.");
+                                                   "of elements in them equal to the number of variables.");
             }
         }
 
@@ -214,7 +214,7 @@ public final class NumberObjectDataSet
         } else {
             throw new IllegalArgumentException(
                     "The argument 'element' must be " +
-                            "either a Number or a String.");
+                    "either a Number or a String.");
         }
     }
 
@@ -373,7 +373,7 @@ public final class NumberObjectDataSet
         } else {
             throw new IllegalArgumentException(
                     "Expecting either a continuous " +
-                            "or a discrete variable.");
+                    "or a discrete variable.");
         }
     }
 
@@ -491,7 +491,7 @@ public final class NumberObjectDataSet
      */
     public void changeVariable(Node from, Node to) {
         if (!(from instanceof DiscreteVariable _from &&
-                to instanceof DiscreteVariable _to)) {
+              to instanceof DiscreteVariable _to)) {
             throw new IllegalArgumentException(
                     "Only discrete variables supported.");
         }
@@ -641,7 +641,7 @@ public final class NumberObjectDataSet
             do {
                 _name = "X" + (++i);
             } while (getVariable(_name) != null ||
-                    excludedVariableNames.contains(_name));
+                     excludedVariableNames.contains(_name));
 
             ContinuousVariable variable = new ContinuousVariable(_name);
             addVariable(variable);
@@ -834,7 +834,7 @@ public final class NumberObjectDataSet
             } else {
                 throw new IllegalArgumentException(
                         "Column not of type continuous" +
-                                "or of type discrete; can't classify this data set.");
+                        "or of type discrete; can't classify this data set.");
             }
         }
 
@@ -978,7 +978,7 @@ public final class NumberObjectDataSet
                 } else {
                     throw new IllegalStateException(
                             "Expecting either a continuous " +
-                                    "variable or a discrete variable.");
+                            "variable or a discrete variable.");
                 }
             }
 
@@ -1318,8 +1318,8 @@ public final class NumberObjectDataSet
                         accomodateIndex(variable, index);
                     } else {
                         throw new IllegalArgumentException("Variable " + variable +
-                                " is not accepting " +
-                                "new categories. Problem category is " + ".");
+                                                           " is not accepting " +
+                                                           "new categories. Problem category is " + ".");
                     }
                 }
 
@@ -1338,7 +1338,7 @@ public final class NumberObjectDataSet
             } else {
                 throw new IllegalArgumentException(
                         "The argument 'element' must be " +
-                                "either a Number or a String.");
+                        "either a Number or a String.");
             }
         } else {
             if (element instanceof Number) {
@@ -1361,7 +1361,7 @@ public final class NumberObjectDataSet
             } else {
                 throw new IllegalArgumentException(
                         "The argument 'element' must be " +
-                                "either a Number or a String.");
+                        "either a Number or a String.");
             }
         }
     }
@@ -1396,7 +1396,7 @@ public final class NumberObjectDataSet
     private void accomodateIndex(DiscreteVariable variable, int index) {
         if (!variable.isAccommodateNewCategories()) {
             throw new IllegalArgumentException("This variable is not set " +
-                    "to accomodate new categories.");
+                                               "to accomodate new categories.");
         }
 
         if (index >= variable.getNumCategories()) {

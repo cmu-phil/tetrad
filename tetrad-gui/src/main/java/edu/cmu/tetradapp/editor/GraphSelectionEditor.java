@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -34,8 +33,6 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -48,7 +45,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -400,7 +396,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
             for (Node node : selected) {
                 if (wrapper.getHighlightInEditor().contains(node)
-                        && workbench.getGraph().containsNode(node)) {
+                    && workbench.getGraph().containsNode(node)) {
                     workbench.selectNode(node);
                 }
             }

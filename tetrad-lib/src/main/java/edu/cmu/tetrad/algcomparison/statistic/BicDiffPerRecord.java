@@ -46,7 +46,7 @@ public class BicDiffPerRecord implements Statistic {
     @Override
     public String getDescription() {
         return "Difference between the true and estimated BIC scores, " +
-                "divided by the sample size";
+               "divided by the sample size";
     }
 
     /**

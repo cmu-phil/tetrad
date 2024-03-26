@@ -111,8 +111,8 @@ final class ArrUtils {
 
     private static String nullMessage() {
         return "\n" +
-                "\t" +
-                "<Matrix is null>";
+               "\t" +
+               "<Matrix is null>";
     }
 }
 

@@ -69,7 +69,7 @@ public class MeekRules {
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
         return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
+               !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -276,7 +276,7 @@ public class MeekRules {
         if (b4 && b5 && b6 && b7 && b8) {
             oriented = direct(d, a, graph, visited);
             log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
-                    + c, graph.getEdge(d, a)));
+                                               + c, graph.getEdge(d, a)));
         }
 
         return oriented;

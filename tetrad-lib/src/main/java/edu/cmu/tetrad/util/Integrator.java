@@ -56,8 +56,8 @@ public class Integrator {
         if (!(x1 <= x2)) {
             //            return Double.NaN;
             throw new IllegalArgumentException("Integrating area under curve " +
-                    "for interval [" + x1 + ", " + x2 + "], but " + x1 +
-                    " is not less than " + x2 + ".");
+                                               "for interval [" + x1 + ", " + x2 + "], but " + x1 +
+                                               " is not less than " + x2 + ".");
         }
 
         double deltaX = x2 - x1;

@@ -165,7 +165,7 @@ public class ZsbScore implements Score {
             varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                                       LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         int m0 = estMaxParents[i];
@@ -220,7 +220,7 @@ public class ZsbScore implements Score {
 
         if (exists) {
             throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
+                                               + ") in absolute value.");
         }
 
         this.sampleSize = covariances.getSampleSize();

@@ -362,9 +362,9 @@ public class DataForCalibrationRfci {
                     estType = 7;
             }
             print(n1 + ", " + n2 + ", " + trueType + ", " + AnilB + ", " +
-                    AtoB + ", " + BtoA + ", " +
-                    ACtoB + ", " + BCtoA + ", " +
-                    AccB + ", " + AbB + ", " + AuB + ", " + estType + "\n", outP);
+                  AtoB + ", " + BtoA + ", " +
+                  ACtoB + ", " + BCtoA + ", " +
+                  AccB + ", " + AbB + ", " + AuB + ", " + estType + "\n", outP);
         }
     }
 

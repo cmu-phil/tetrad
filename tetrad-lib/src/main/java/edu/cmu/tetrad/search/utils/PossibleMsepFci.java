@@ -64,11 +64,11 @@ public class PossibleMsepFci {
     public PossibleMsepFci(Graph graph, IndependenceTest test) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
-                    "PossibleMSepSearch constructor!");
+                                           "PossibleMSepSearch constructor!");
         }
         if (test == null) {
             throw new NullPointerException("null IndependenceChecker passed " +
-                    "in PossibleMSepSearch " + "constructor!");
+                                           "in PossibleMSepSearch " + "constructor!");
         }
 
         this.graph = graph;

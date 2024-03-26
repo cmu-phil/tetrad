@@ -658,7 +658,7 @@ class DataCellRenderer extends DefaultTableCellRenderer {
         DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
 
         if (this.dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
-                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         }
 

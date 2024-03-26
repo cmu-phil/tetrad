@@ -118,8 +118,8 @@ public class SemUpdaterEditor extends JPanel {
 
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>"
-                + "In the list below, specify values for variables you have evidence "
-                + "<br>for. Click the 'Do Update Now' button to view updated model."));
+                          + "In the list below, specify values for variables you have evidence "
+                          + "<br>for. Click the 'Do Update Now' button to view updated model."));
         b0.add(Box.createHorizontalGlue());
         b.add(b0);
         b.add(Box.createVerticalStrut(10));
@@ -153,7 +153,7 @@ public class SemUpdaterEditor extends JPanel {
                     int nodeIndex = this.labels.get(field);
 
                     if (Double.isNaN(value)
-                            && evidence.isManipulated(nodeIndex)) {
+                        && evidence.isManipulated(nodeIndex)) {
                         throw new IllegalArgumentException();
                     }
 

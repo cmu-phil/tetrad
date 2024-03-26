@@ -73,7 +73,7 @@ public class PagColorer extends JCheckBoxMenuItem {
                             if (!legalPag.isLegalPag()) {
                                 JOptionPane.showMessageDialog(workbench,
                                         "This is not a legal PAG--one reason is as follows:" +
-                                                "\n\n" + reason + ".",
+                                        "\n\n" + reason + ".",
                                         "Legal PAG check",
                                         JOptionPane.WARNING_MESSAGE);
                             } else {

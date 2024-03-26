@@ -118,9 +118,9 @@ public final class BasicLagGraph implements LagGraph {
             list.add(laggedFactor);
         } else {
             throw new IllegalArgumentException("Either factor not in graph (" +
-                    factor +
-                    ") or lagged factor not in graph or not into factor (" +
-                    laggedFactor + ").");
+                                               factor +
+                                               ") or lagged factor not in graph or not into factor (" +
+                                               laggedFactor + ").");
         }
     }
 
@@ -203,8 +203,8 @@ public final class BasicLagGraph implements LagGraph {
             list.remove(laggedFactor);
         } else {
             throw new IllegalArgumentException("Either factor not in graph (" +
-                    factor + ") or lagged factor not in graph or not into " +
-                    "factor (" + laggedFactor + ").");
+                                               factor + ") or lagged factor not in graph or not into " +
+                                               "factor (" + laggedFactor + ").");
         }
     }
 

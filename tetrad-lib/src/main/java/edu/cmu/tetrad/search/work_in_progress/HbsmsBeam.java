@@ -612,7 +612,7 @@ public final class HbsmsBeam implements Hbsms {
                 }
             }
             if (nodeA != null && nodeB != null && graph.isAdjacentTo(nodeA, nodeB) &&
-                    !graph.isChildOf(nodeA, nodeB)) {
+                !graph.isChildOf(nodeA, nodeB)) {
                 if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                     graph.removeEdges(nodeA, nodeB);
                     graph.addDirectedEdge(nodeB, nodeA);

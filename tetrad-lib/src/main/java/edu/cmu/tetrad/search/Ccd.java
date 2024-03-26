@@ -276,7 +276,7 @@ public final class Ccd implements IGraphSearch {
 
             for (Node node : adjx) {
                 if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                        && psi.isUnderlineTriple(y, x, node)) {
+                    && psi.isUnderlineTriple(y, x, node)) {
                     continue EDGE;
                 }
             }
@@ -292,7 +292,7 @@ public final class Ccd implements IGraphSearch {
 
                 // Orientable...
                 if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                        (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                      (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
                     continue;
                 }
 

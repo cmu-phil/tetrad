@@ -150,7 +150,7 @@ class BayesImNodeEditingTableObs extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will modify all values in the table. " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -179,7 +179,7 @@ class BayesImNodeEditingTableObs extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will delete all values in the table. " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -429,7 +429,7 @@ class BayesImNodeEditingTableObs extends JTable {
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Probabilities in the column must sum up to 1.0.\n"
-                                            + "Leave one row (or two) blank while working.");
+                                    + "Leave one row (or two) blank while working.");
                             this.failedRow = row;
                             this.failedCol = col;
                         }

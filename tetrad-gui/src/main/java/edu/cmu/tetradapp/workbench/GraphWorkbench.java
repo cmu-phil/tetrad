@@ -341,7 +341,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             this.nodeType = nodeType;
         } else {
             throw new IllegalArgumentException("The type of the node must be "
-                    + "MEASURED_NODE or LATENT_NODE.");
+                                               + "MEASURED_NODE or LATENT_NODE.");
         }
     }
 
@@ -371,8 +371,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
                 getWorkbench().getGraph().addEdge((Edge) graphElement);
             } else {
                 throw new IllegalArgumentException("The list of session "
-                        + "elements should contain only SessionNodeWrappers "
-                        + "and SessionEdges: " + graphElement);
+                                                   + "elements should contain only SessionNodeWrappers "
+                                                   + "and SessionEdges: " + graphElement);
             }
         }
     }

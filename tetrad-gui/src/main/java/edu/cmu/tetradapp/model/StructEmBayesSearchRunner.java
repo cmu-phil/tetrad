@@ -208,7 +208,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+                                       "and discrete data set do not match.");
         }
     }
 

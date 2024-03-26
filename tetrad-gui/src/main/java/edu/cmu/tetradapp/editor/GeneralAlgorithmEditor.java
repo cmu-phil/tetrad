@@ -250,7 +250,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         }
                     } catch (Exception exception) {
                         exception.printStackTrace(System.err);
-                        
+
                         disposeStopDialog();
 
                         disposeStopDialog();

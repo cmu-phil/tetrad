@@ -40,7 +40,7 @@ class IndTestMenuItems {
         DataModel dataModel = setter.getDataModel();
 
         if (dataModel == null &&
-                setter.getSourceGraph() != null) {
+            setter.getSourceGraph() != null) {
             IndTestMenuItems.addGraphTestMenuItems(test, setter);
         } else if (dataModel instanceof DataSet _dataSet) {
 
@@ -71,10 +71,10 @@ class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
 //                testType != IndTestType.FISHER_ZD &&
-                testType != IndTestType.SEM_BIC &&
-                testType != IndTestType.CONDITIONAL_CORRELATION &&
-                testType != IndTestType.LINEAR_REGRESSION &&
-                testType != IndTestType.MIXED_MLR) {
+            testType != IndTestType.SEM_BIC &&
+            testType != IndTestType.CONDITIONAL_CORRELATION &&
+            testType != IndTestType.LINEAR_REGRESSION &&
+            testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.FISHER_Z);
         }
 
@@ -160,9 +160,9 @@ class IndTestMenuItems {
     private static void addMultiTestMenuItems(JMenu test, IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
-                && testType != IndTestType.TIPPETT
-                && testType != IndTestType.FISHER
-                && testType != IndTestType.SEM_BIC) {
+            && testType != IndTestType.TIPPETT
+            && testType != IndTestType.FISHER
+            && testType != IndTestType.SEM_BIC) {
             setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
         }
 
@@ -262,8 +262,8 @@ class IndTestMenuItems {
     static void addDiscreteTestMenuItems(JMenu test, IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.CHI_SQUARE &&
-                testType != IndTestType.G_SQUARE &&
-                testType != IndTestType.MIXED_MLR) {
+            testType != IndTestType.G_SQUARE &&
+            testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.CHI_SQUARE);
         }
 

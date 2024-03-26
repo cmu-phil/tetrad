@@ -108,7 +108,7 @@ public final class ModelGenerator {
 
                 //If there is no edge between node1 and node2
                 if (!graph.isParentOf(node1, node2) &&
-                        !graph.isParentOf(node2, node1)) {
+                    !graph.isParentOf(node2, node1)) {
 
                     Graph toAdd1 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.

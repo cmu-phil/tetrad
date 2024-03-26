@@ -140,7 +140,7 @@ public final class IndependenceResult implements TetradSerializable {
      */
     public String toString() {
         return "Result: " + getFact() + "\t" + isIndependent() + "\t" +
-                NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
+               NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
     }
 
     /**

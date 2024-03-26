@@ -93,7 +93,7 @@ public class LogUtils {
         SimpleFormatter formatter = new SimpleFormatter() {
             public synchronized String format(LogRecord record) {
                 return record.getMessage() +
-                        "\n";
+                       "\n";
             }
         };
 

@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.Pcd;
 import edu.cmu.tetrad.search.test.MsepTest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 /**

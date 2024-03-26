@@ -73,7 +73,7 @@ public class LogisticRegressionEditor extends JPanel {
             if (node instanceof DiscreteVariable v) {
                 if (v.getNumCategories() != 2) {
                     throw new IllegalArgumentException("Logistic regression requires a dataset in which all variables " +
-                            "are either continuous or binary.");
+                                                       "are either continuous or binary.");
                 }
             }
         }

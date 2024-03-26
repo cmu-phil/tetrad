@@ -382,12 +382,12 @@ public final class SvarFciOrient {
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+            (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+                (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
+                        (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
+                        (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
                 if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
@@ -439,7 +439,7 @@ public final class SvarFciOrient {
                     }
 
                     if (!graph.isAdjacentTo(A, D) ||
-                            !graph.isAdjacentTo(C, D)) {
+                        !graph.isAdjacentTo(C, D)) {
                         continue;
                     }
 

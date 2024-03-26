@@ -64,7 +64,7 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
                         if (edge2 == null) continue;
 
                         if (!(edge2 != null && Edges.isBidirectedEdge(edge2)
-                                && existsLatentCommonAncestor(trueGraph, edge2))) {
+                              && existsLatentCommonAncestor(trueGraph, edge2))) {
                             fn++;
                         }
                     }

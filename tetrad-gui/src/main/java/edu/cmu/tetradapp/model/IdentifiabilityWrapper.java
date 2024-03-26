@@ -159,7 +159,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
             for (int i = 0; i < priors.length; i++) {
                 String message = category(evidence, nodeName, i) + "\t"
-                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
+                                 + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
                 TetradLogger.getInstance().forceLogMessage(message);
             }
         }

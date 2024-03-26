@@ -238,7 +238,7 @@ public final class IndTestCramerT implements IndependenceTest {
             submatrix = submatrix.inverse();
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         double a = -1.0 * submatrix.get(0, 1);

@@ -149,18 +149,18 @@ public class Sextad implements TetradSerializable {
         if (!(o instanceof Sextad sextad)) return false;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
-                this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
-                this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
-                this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
-                this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
-                this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
+                             this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
+                             this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
+                             this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
+                             this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
+                             this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
 
         boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
-                this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
-                this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
-                this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
-                this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
-                this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
+                              this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
+                              this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
+                              this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
+                              this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
+                              this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
 
         return leftEquals && rightEquals;
     }

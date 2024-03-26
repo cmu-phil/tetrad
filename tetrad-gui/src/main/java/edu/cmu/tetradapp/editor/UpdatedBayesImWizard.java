@@ -646,7 +646,7 @@ final class UpdaterEditingTable extends JTable {
         this.focusCol = FastMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
-                this.focusCol < getColumnCount()) {
+            this.focusCol < getColumnCount()) {
             setColumnSelectionInterval(this.focusCol, this.focusCol);
             editCellAt(this.focusRow, this.focusCol);
         }

@@ -91,15 +91,15 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The dataset will be used to iteratively estmate the parameters " +
-                "<br>of a Bayes IM until the distance between the vectors of parameters" +
-                "<br>of successive iterates is less than a tolerance set by the user" +
-                "</html>"));
+                          "The dataset will be used to iteratively estmate the parameters " +
+                          "<br>of a Bayes IM until the distance between the vectors of parameters" +
+                          "<br>of successive iterates is less than a tolerance set by the user" +
+                          "</html>"));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>The default value is 0.0001</i>" +
-                "</html>"));
+                          "</html>"));
         b7.add(toleranceField);
 
         b1.add(b2);

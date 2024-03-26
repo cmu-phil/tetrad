@@ -51,7 +51,7 @@ public class GraphNodeLocked extends DisplayNode {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.LATENT) {
             throw new IllegalArgumentException("GraphNodeLatent requires " +
-                    "a GraphNode of type NodeType.LATENT.");
+                                               "a GraphNode of type NodeType.LATENT.");
         }
 
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
@@ -70,7 +70,7 @@ public class GraphNodeLocked extends DisplayNode {
         boolean changed = false;
 
         if (this.getModelNode() != null &&
-                !newName.equals(this.getModelNode().getName())) {
+            !newName.equals(this.getModelNode().getName())) {
             this.getModelNode().setName(newName);
             firePropertyChange("resetGraph", null, null);
             changed = true;
@@ -139,11 +139,11 @@ public class GraphNodeLocked extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue LOOP;
                     }
                 }

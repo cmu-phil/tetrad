@@ -137,7 +137,7 @@ public class Mapping implements TetradSerializable {
      */
     public void setValue(double x) {
         if (this.semIm.isParameterBoundsEnforced() &&
-                getParameter().getType() == ParamType.VAR && x < 0.0) {
+            getParameter().getType() == ParamType.VAR && x < 0.0) {
             throw new IllegalArgumentException(
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
@@ -145,7 +145,7 @@ public class Mapping implements TetradSerializable {
         this.a.set(this.i, this.j, x);
 
         if (getParameter().getType() == ParamType.VAR ||
-                getParameter().getType() == ParamType.COVAR) {
+            getParameter().getType() == ParamType.COVAR) {
             this.a.set(this.j, this.i, x);
             this.a.set(this.i, this.j, x);
         }
@@ -168,7 +168,7 @@ public class Mapping implements TetradSerializable {
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + this.i + "][" + this.j + "]>";
+               "[" + this.i + "][" + this.j + "]>";
     }
 
     /**

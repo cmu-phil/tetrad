@@ -169,7 +169,7 @@ public final class BdeMetricCache {
             for (int j = 0; j < numRows; j++) {
                 for (int k = 0; k < numCols; k++) {
                     priorProbs[j][k] = 1.0 /
-                            (numRows * numCols);   //Per David Danks 12/21/04
+                                       (numRows * numCols);   //Per David Danks 12/21/04
                 }
             }
 
@@ -306,8 +306,8 @@ public final class BdeMetricCache {
 
                     for (int p = 0; p < parentVarIndices.length; p++) {
                         if (parValues[p] !=
-                                this.dataSet.getInt(i, parentVarIndices[p]) &&
-                                this.dataSet.getInt(i, parentVarIndices[p]) != -99) {
+                            this.dataSet.getInt(i, parentVarIndices[p]) &&
+                            this.dataSet.getInt(i, parentVarIndices[p]) != -99) {
                             parentMatch = false;
                             break;
                         }
@@ -445,7 +445,7 @@ public final class BdeMetricCache {
                     //in the observed counts table.
                     for (int p = 0; p < parentVarIndices.length; p++) {
                         if (parValues[p] !=
-                                this.dataSet.getInt(i, parentVarIndices[p])) {
+                            this.dataSet.getInt(i, parentVarIndices[p])) {
                             parentMatch = false;
                             break;
                         }

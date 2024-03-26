@@ -84,7 +84,7 @@ public final class TimeSeriesData implements DataModel {
         if (varNames.size() != matrix.getNumColumns()) {
             throw new IllegalArgumentException(
                     "Number of columns in the data " +
-                            "must match the number of variables.");
+                    "must match the number of variables.");
         }
         this.varNames = varNames;
         this.name = "Time Series Data";

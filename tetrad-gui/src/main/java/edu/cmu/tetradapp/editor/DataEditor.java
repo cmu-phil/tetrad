@@ -208,7 +208,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             DataModel dataModel = dataModelList.get(i);
 
             if (dataModel instanceof DataSet
-                    && ((DataSet) dataModel).getNumColumns() == 0) {
+                && ((DataSet) dataModel).getNumColumns() == 0) {
                 if (dataModelList.size() > 1) {
                     dataModelList.remove(dataModel);
                 }

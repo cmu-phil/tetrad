@@ -274,9 +274,9 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
             }
 
             throw new IllegalArgumentException("<html>" +
-                    "This dataModel set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithm in Tetrad currently to " +
-                    "<br>search over such data sets." + "</html>");
+                                               "This dataModel set contains a mixture of discrete and continuous " +
+                                               "<br>columns; there are no algorithm in Tetrad currently to " +
+                                               "<br>search over such data sets." + "</html>");
         } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;
         } else if (dataModel instanceof TimeSeriesData) {

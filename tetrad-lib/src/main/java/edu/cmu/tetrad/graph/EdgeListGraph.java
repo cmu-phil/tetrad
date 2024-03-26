@@ -635,7 +635,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (edges.size() > 1) {
             throw new IllegalStateException(
                     "There is more than one edge between " + node1 + " and "
-                            + node2);
+                    + node2);
         }
 
         removeTriplesNotInGraph();
@@ -872,7 +872,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         } else {
             Graph graph = (Graph) o;
             return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames()))
-                    && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
+                   && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
 
         }
     }
@@ -965,7 +965,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public void setNodes(List<Node> nodes) {
         if (nodes.size() != this.nodes.size()) {
             throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables "
-                    + "you are trying to set.");
+                                               + "you are trying to set.");
         }
 
         this.nodes.clear();
@@ -1141,7 +1141,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         for (Edge edge : edges) {
             if (nodes.contains(edge.getNode1())
-                    && nodes.contains(edge.getNode2())) {
+                && nodes.contains(edge.getNode2())) {
                 graph.addEdge(edge);
             }
         }
@@ -1444,20 +1444,20 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

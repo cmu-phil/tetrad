@@ -521,7 +521,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
             if (this.node != null) {
                 if (this.node.getNodeType() != NodeType.ERROR && !formula.contains(this.errorNode.getName())
-                        && this.errorTermCheckBox.isSelected()) {
+                    && this.errorTermCheckBox.isSelected()) {
                     if (!formula.trim().endsWith("+") && !formula.isEmpty()) {
                         formula += " + ";
                     }

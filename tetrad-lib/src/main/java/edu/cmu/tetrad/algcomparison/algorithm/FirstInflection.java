@@ -111,8 +111,8 @@ public class FirstInflection implements Algorithm {
                 int diff = edges2.size();
 
                 System.out.println(this.parameter + " = " + _parameters.getDouble(this.parameter)
-                        + " # edges = " + numEdges
-                        + " # additional = " + diff);
+                                   + " # edges = " + numEdges
+                                   + " # additional = " + diff);
 
                 if (diff >= _prevDiff) {
                     break;
@@ -140,8 +140,8 @@ public class FirstInflection implements Algorithm {
                     int diff = edges2.size();
 
                     System.out.println(this.parameter + " = " + _parameters.getDouble(this.parameter)
-                            + " # edges = " + numEdges
-                            + " # additional = " + diff);
+                                       + " # edges = " + numEdges
+                                       + " # additional = " + diff);
 
                     if (diff >= _prevDiff) {
                         break;
@@ -174,8 +174,8 @@ public class FirstInflection implements Algorithm {
                 int diff = edges2.size();
 
                 System.out.println(this.parameter + " = " + _parameters.getDouble(this.parameter)
-                        + " # edges = " + numEdges
-                        + " # additional = " + diff);
+                                   + " # edges = " + numEdges
+                                   + " # additional = " + diff);
 
                 if (diff >= _prevDiff) {
                     break;
@@ -203,8 +203,8 @@ public class FirstInflection implements Algorithm {
                     int diff = edges2.size();
 
                     System.out.println(this.parameter + " = " + _parameters.getDouble(this.parameter)
-                            + " # edges = " + numEdges
-                            + " # additional = " + diff);
+                                       + " # edges = " + numEdges
+                                       + " # additional = " + diff);
 
                     if (diff >= _prevDiff) {
                         break;

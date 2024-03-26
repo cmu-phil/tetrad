@@ -109,7 +109,7 @@ public class TruncatedNormal implements Distribution {
             this.high = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
-                    index + ": " + value);
+                                               index + ": " + value);
         }
     }
 

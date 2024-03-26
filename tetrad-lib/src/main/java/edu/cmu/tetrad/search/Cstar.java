@@ -645,9 +645,9 @@ public class Cstar {
         }
 
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
-                + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
-                "Top Bracket (‘q’) = " + this.topBracket +
-                "\n\n";
+                        + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
+                        "Top Bracket (‘q’) = " + this.topBracket +
+                        "\n\n";
 
         int numColumns = 6;
 

@@ -66,9 +66,9 @@ final class BayesUtils {
                     dataSet.changeVariable(from, to);
                 } else {
                     throw new IllegalArgumentException("Variable '" + name + "' " +
-                            "has more categories in the data than in the model." +
-                            "\n\tIn the model, the categories are: " + pmCategories + "." +
-                            "\n\tIn the data, the categories are: " + dataCategories + ".");
+                                                       "has more categories in the data than in the model." +
+                                                       "\n\tIn the model, the categories are: " + pmCategories + "." +
+                                                       "\n\tIn the data, the categories are: " + dataCategories + ".");
                 }
             }
         }

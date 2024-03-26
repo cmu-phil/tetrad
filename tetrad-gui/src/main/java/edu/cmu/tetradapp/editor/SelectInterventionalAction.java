@@ -70,7 +70,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
             if (comp instanceof DisplayEdge) {
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if ((edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
-                        || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
+                    || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                     this.workbench.selectEdge(edge);
                 }
             }

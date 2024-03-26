@@ -310,15 +310,15 @@ public class SimpleDataLoader {
             for (int j = 0; j <= i; j++) {
                 if (!st.hasMoreTokens()) {
                     throw new IllegalArgumentException("Expecting " + (i + 1)
-                            + " numbers on line " + (i + 1)
-                            + " of the covariance " + "matrix input.");
+                                                       + " numbers on line " + (i + 1)
+                                                       + " of the covariance " + "matrix input.");
                 }
 
                 String literal = st.nextToken();
 
                 if ("".equals(literal)) {
                     TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a "
-                            + "covariance value--ignoring.");
+                                                               + "covariance value--ignoring.");
                     continue;
                 }
 
@@ -705,12 +705,12 @@ public class SimpleDataLoader {
 
                     if (st.hasMoreTokens()) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
+                                                           + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
+                                                           + ": Line contains fewer than two elements.");
                     }
 
                     addVariable(knowledge, from);
@@ -756,12 +756,12 @@ public class SimpleDataLoader {
 
                     if (st.hasMoreTokens()) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
+                                                           + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
+                                                           + ": Line contains fewer than two elements.");
                     }
 
                     addVariable(knowledge, from);
@@ -772,7 +772,7 @@ public class SimpleDataLoader {
                 }
             } else {
                 throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                        + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
+                                                   + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
             }
         }
 

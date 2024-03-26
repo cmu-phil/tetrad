@@ -55,10 +55,10 @@ public class NbGeneOr extends AbstractNbComponent {
 
         if (getInhibitExcite()[0] > 0) {
             sum = getParents()[0].getValue() /
-                    (getParents()[0].getValue() + 1.0);
+                  (getParents()[0].getValue() + 1.0);
         } else {
             sum = 1.0 - (getParents()[0].getValue() /
-                    (getParents()[0].getValue() + 1.0));
+                         (getParents()[0].getValue() + 1.0));
         }
 
         for (int i = 1; i < getNparents(); i++) {
@@ -74,7 +74,7 @@ public class NbGeneOr extends AbstractNbComponent {
         if (getSd() == 0.0) {
         } else {
             double r = 1.0 +
-                    RandomUtil.getInstance().nextNormal(0, 1) * getSd();
+                       RandomUtil.getInstance().nextNormal(0, 1) * getSd();
             setValue(getValue() * r);
         }
 

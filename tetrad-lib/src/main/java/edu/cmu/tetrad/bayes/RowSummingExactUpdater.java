@@ -170,8 +170,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
-                    "given bayesIm must be compatible with the variable list " +
-                    "for this evidence.");
+                                               "given bayesIm must be compatible with the variable list " +
+                                               "for this evidence.");
         }
 
         this.evidence = evidence;

@@ -244,7 +244,8 @@ public class Ida {
      * @throws RuntimeException If a singularity is encountered during the regression process.
      */
     private double getBeta(List<Node> regressors, Node parent, Node child) {
-        if (!regressors.contains(parent)) throw new IllegalArgumentException("The regressors must contain the parent node.");
+        if (!regressors.contains(parent))
+            throw new IllegalArgumentException("The regressors must contain the parent node.");
 
         try {
             int xIndex = regressors.indexOf(parent);

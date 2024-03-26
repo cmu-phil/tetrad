@@ -139,7 +139,7 @@ public class PoissonPriorScore implements Score {
                     this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                                       LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double r = k * log(lambda);
@@ -183,7 +183,7 @@ public class PoissonPriorScore implements Score {
 
         if (exists) {
             throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
+                                               + ") in absolute value.");
         }
 
 

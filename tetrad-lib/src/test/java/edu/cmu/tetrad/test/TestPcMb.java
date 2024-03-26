@@ -34,7 +34,6 @@ import java.util.*;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestPcMb {
 
@@ -130,14 +129,14 @@ public class TestPcMb {
                             }
 
                             if ((Edges.isDirectedEdge(a) &&
-                                    Edges.isUndirectedEdge(b)) || (
-                                    Edges.isUndirectedEdge(a) &&
-                                            Edges.isDirectedEdge(b))) {
+                                 Edges.isUndirectedEdge(b)) || (
+                                        Edges.isUndirectedEdge(a) &&
+                                        Edges.isDirectedEdge(b))) {
                                 continue;
                             }
 
                             fail("EXTRA EDGE: Edge in result MB but not true MB = " +
-                                    resultEdge);
+                                 resultEdge);
                         }
 
                         assertEquals(resultEdge.getEndpoint1(),

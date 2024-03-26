@@ -110,7 +110,7 @@ final class SessionUtils {
                 Class<?> parameterType = (Class) j.next();
 
                 if (!(SessionModel.class.isAssignableFrom(parameterType) ||
-                        (Parameters.class.isAssignableFrom(parameterType)))) {
+                      (Parameters.class.isAssignableFrom(parameterType)))) {
                     continue PARENT_SET;
                 }
 

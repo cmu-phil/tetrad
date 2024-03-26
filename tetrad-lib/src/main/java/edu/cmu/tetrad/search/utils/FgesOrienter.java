@@ -402,7 +402,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
             throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
-                    + penaltyDiscount);
+                                               + penaltyDiscount);
         }
 
         this.penaltyDiscount = penaltyDiscount;
@@ -1104,7 +1104,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         if (this.log) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + t + " " + bump + " " + label;
+                             " " + t + " " + bump + " " + label;
             TetradLogger.getInstance().forceLogMessage(message);
         }
 
@@ -1114,7 +1114,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             this.out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + t + " " + bump + " " + label);
+                             " " + t + " " + bump + " " + label);
         }
 
         for (Node _t : t) {
@@ -1127,10 +1127,10 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
             if (this.log && this.verbose) {
                 String message = "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(_t, y);
+                                 graph.getEdge(_t, y);
                 TetradLogger.getInstance().forceLogMessage(message);
                 this.out.println("--- Directing " + oldEdge + " to " +
-                        graph.getEdge(_t, y));
+                                 graph.getEdge(_t, y));
             }
         }
     }
@@ -1157,10 +1157,10 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             Edge oldEdge = graph.getEdge(x, y);
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             String message = (graph.getNumEdges() - 1) + ". DELETE " + oldEdge +
-                    " " + subset + " (" + bump + ") " + label;
+                             " " + subset + " (" + bump + ") " + label;
             TetradLogger.getInstance().forceLogMessage(message);
             this.out.println((graph.getNumEdges()) + ". DELETE " + oldEdge +
-                    " " + subset + " (" + bump + ") " + label);
+                             " " + subset + " (" + bump + ") " + label);
         }
 
         for (Node h : subset) {
@@ -1171,13 +1171,13 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
             if (this.log) {
                 String message = "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h);
+                                 graph.getEdge(y, h);
                 TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (this.verbose) {
                 this.out.println("--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                                 graph.getEdge(y, h));
             }
 
             Edge edge = graph.getEdge(x, h);
@@ -1195,12 +1195,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
                 if (this.log) {
                     TetradLogger.getInstance().forceLogMessage("--- Directing " + oldEdge + " to " +
-                            edge);
+                                                               edge);
                 }
 
                 if (this.verbose) {
                     this.out.println("--- Directing " + oldEdge + " to " +
-                            edge);
+                                     edge);
                 }
             }
         }

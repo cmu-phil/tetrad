@@ -705,7 +705,7 @@ class GeneralizedTemplateEditor extends JComponent {
             for (String parameter : _parameters) {
                 Box c = Box.createHorizontalBox();
                 JLabel label = new JLabel(parameter + " ~ " +
-                        getSemPm().getParameterEstimationInitializationExpressionString(parameter));
+                                          getSemPm().getParameterEstimationInitializationExpressionString(parameter));
 
                 c.add(label);
                 c.add(Box.createHorizontalGlue());

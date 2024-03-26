@@ -67,7 +67,7 @@ public final class CaseExpander implements DataFilter {
                     newDataSet.setInt(index, j, dataSet.getInt(i, j));
                 } else {
                     throw new IllegalStateException("Expecting either a " +
-                            "continuous or a discrete variable.");
+                                                    "continuous or a discrete variable.");
                 }
 
             }

@@ -155,7 +155,7 @@ public final class SessionEditorNode extends DisplayNode {
                 sessionNode.setModelClasses(newModelClasses);
             } else {
                 throw new RuntimeException("Model classes for this session "
-                        + "node were not set in the configuration.");
+                                           + "node were not set in the configuration.");
             }
         }
     }
@@ -438,7 +438,7 @@ public final class SessionEditorNode extends DisplayNode {
                     }
                 } catch (Exception e) {
                     String message = "I could not make a model for this box, sorry. Maybe the \n"
-                            + "parents aren't right or have not been constructed yet.";
+                                     + "parents aren't right or have not been constructed yet.";
 
                     e.printStackTrace();
 
@@ -493,10 +493,10 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem cloneBox = new JMenuItem("Clone Note");
         cloneBox.setToolTipText("<html>"
-                + "Makes a copy of this session note and its contents. To clone<br>"
-                + "a whole subgraph, or to paste into a different sessions, select<br>"
-                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
-                + "</html>");
+                                + "Makes a copy of this session note and its contents. To clone<br>"
+                                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                                + "</html>");
         cloneBox.addActionListener((e) -> firePropertyChange("cloneMe", null, this));
 
         JMenuItem deleteBox = new JMenuItem("Delete Note");
@@ -516,8 +516,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Component centeringComp = this;
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "<html>"
-                                + "Really delete note? Any information it contains will<br>"
-                                + "be destroyed." + "</html>");
+                        + "Really delete note? Any information it contains will<br>"
+                        + "be destroyed." + "</html>");
 
                 if (ret != JOptionPane.YES_OPTION) {
                     return;
@@ -558,7 +558,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem createModel = new JMenuItem("Create Model");
         createModel.setToolTipText("<html>Creates a new model for this node"
-                + "<br>of the type selected.</html>");
+                                   + "<br>of the type selected.</html>");
 
         createModel.addActionListener((e) -> {
             try {
@@ -599,8 +599,8 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem destroyModel = new JMenuItem("Destroy Model");
         destroyModel.setToolTipText("<html>Destroys the model for this node, "
-                + "<br>if it has one, destroying any "
-                + "<br>downstream models as well.</html>");
+                                    + "<br>if it has one, destroying any "
+                                    + "<br>downstream models as well.</html>");
 
         destroyModel.addActionListener((e) -> {
             Component centeringComp = this;
@@ -624,7 +624,7 @@ public final class SessionEditorNode extends DisplayNode {
             if (found) {
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "Destroying the model in this box will also destroy models in any boxes\n"
-                                + "downstream. Is that OK?", null,
+                        + "downstream. Is that OK?", null,
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
 
@@ -648,8 +648,8 @@ public final class SessionEditorNode extends DisplayNode {
         JMenuItem propagateDownstream
                 = new JMenuItem("Propagate changes downstream");
         propagateDownstream.setToolTipText("<html>"
-                + "Fills in this box and downstream boxes with models,"
-                + "<br>overwriting any models that already exist.</html>");
+                                           + "Fills in this box and downstream boxes with models,"
+                                           + "<br>overwriting any models that already exist.</html>");
 
         propagateDownstream.addActionListener((e) -> {
             Component centeringComp = this;
@@ -695,10 +695,10 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem cloneBox = new JMenuItem("Clone Box");
         cloneBox.setToolTipText("<html>"
-                + "Makes a copy of this session box and its contents. To clone<br>"
-                + "a whole subgraph, or to paste into a different sessions, select<br>"
-                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
-                + "</html>");
+                                + "Makes a copy of this session box and its contents. To clone<br>"
+                                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                                + "</html>");
         cloneBox.addActionListener((e) -> firePropertyChange("cloneMe", null, this));
 
         JMenuItem deleteBox = new JMenuItem("Delete Box");
@@ -739,7 +739,7 @@ public final class SessionEditorNode extends DisplayNode {
                             editParameters(modelClass, param, arguments);
                             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Should I overwrite the contents of this box and all delete the contents\n"
-                                            + "of all boxes downstream?",
+                                    + "of all boxes downstream?",
                                     "Double check...", JOptionPane.YES_NO_OPTION);
                             if (ret == JOptionPane.YES_OPTION) {
                                 getSessionNode().destroyModel();
@@ -876,8 +876,8 @@ public final class SessionEditorNode extends DisplayNode {
         Component centeringComp = this;
         int selection = JOptionPane.showOptionDialog(centeringComp,
                 "Changing this node will affect its children.\n"
-                        + "Click on \"Execute\" to percolate changes down.\n"
-                        + "Click on \"Break Edges\" to leave the children the same.",
+                + "Click on \"Execute\" to percolate changes down.\n"
+                + "Click on \"Break Edges\" to leave the children the same.",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
@@ -1110,7 +1110,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // if finalizing editor, then deal with specially.
         return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
-                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
+                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
 
     }
 

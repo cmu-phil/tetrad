@@ -137,13 +137,13 @@ public class EbicScore implements Score {
                     this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                                       LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
         double score = -(this.N * log(varRy) + (pi * log(this.N)
-                + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+                                                + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;

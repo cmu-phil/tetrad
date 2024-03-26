@@ -87,7 +87,7 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         if (this.externalGraph == null) {
             throw new IllegalArgumentException(
                     "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                            + "will orient the edges in the input graph using the data");
+                    + "will orient the edges in the input graph using the data");
         }
 
         Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
@@ -117,7 +117,7 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     @Override
     public String getDescription() {
         return "RSkew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+                                                   + this.algorithm.getDescription() : "");
     }
 
     /**
@@ -159,7 +159,7 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
+                                               + "will orient the edges in the input graph using the data.");
         }
 
         this.algorithm = algorithm;

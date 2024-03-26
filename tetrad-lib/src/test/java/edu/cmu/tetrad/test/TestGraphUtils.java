@@ -261,7 +261,7 @@ public final class TestGraphUtils {
             Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
 
             if (graph.paths().isMSeparatedFrom(x, y, set(z1)) && graph.paths().isMSeparatedFrom(x, y, set(z2)) &&
-                    !graph.paths().isMSeparatedFrom(x, y, set(z1, z2))) {
+                !graph.paths().isMSeparatedFrom(x, y, set(z1, z2))) {
                 System.out.println("x = " + x);
                 System.out.println("y = " + y);
                 System.out.println("z1 = " + z1);

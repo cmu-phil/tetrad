@@ -156,7 +156,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
     @Override
     public String getDescription() {
         return "GRASP-FCI (GRaSP FCI) using " + this.test.getDescription()
-                + " and " + this.score.getDescription();
+               + " and " + this.score.getDescription();
     }
 
     /**

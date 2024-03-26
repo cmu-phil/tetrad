@@ -260,7 +260,7 @@ public final class PcCommon implements IGraphSearch {
 
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
+                                               "be in the domain of the independence test provided.");
         }
 
         Fas fas;
@@ -410,7 +410,7 @@ public final class PcCommon implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
@@ -643,14 +643,14 @@ public final class PcCommon implements IGraphSearch {
         boolean result = true;
         if (knowledge != null) {
             result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
-                    && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+                     && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
         }
         if (!result) return false;
         if (knowledge == null) {
             return true;
         }
         return !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
-                && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+               && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
     }
 
     /**
@@ -704,13 +704,13 @@ public final class PcCommon implements IGraphSearch {
                     boolean result1 = true;
                     if (knowledge != null) {
                         result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString())
-                                && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
+                                  && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
                     }
                     if (result1) {
                         boolean result = true;
                         if (knowledge != null) {
                             result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
-                                    && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                                     && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                         }
                         if (result) {
                             PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);

@@ -91,7 +91,7 @@ public final class BayesImEditorWizardObs extends JPanel {
         // Do Layout.
         Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Click in the appropriate box and assign "
-                + "a probability to each combination"));
+                          + "a probability to each combination"));
         b3.add(Box.createHorizontalGlue());
 
         Box b3a = Box.createHorizontalBox();
@@ -107,7 +107,7 @@ public final class BayesImEditorWizardObs extends JPanel {
 
         Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Note: Editing this table with arbitrary numbers "
-                + "may result in a table "));
+                          + "may result in a table "));
         b6.add(Box.createHorizontalGlue());
 
         Box b6a = Box.createHorizontalBox();

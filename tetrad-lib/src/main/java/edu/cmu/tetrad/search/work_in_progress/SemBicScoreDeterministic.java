@@ -270,7 +270,7 @@ public class SemBicScoreDeterministic implements Score {
             }
         } catch (SingularMatrixException ignored) {
             System.out.println("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(y, z));
+                               LogUtilsSearch.getScoreFact(y, z));
             return true;
         }
 

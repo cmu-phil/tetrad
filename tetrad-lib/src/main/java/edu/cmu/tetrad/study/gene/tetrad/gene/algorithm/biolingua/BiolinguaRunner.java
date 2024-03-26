@@ -33,8 +33,8 @@ public class BiolinguaRunner {
     static final String dashes =
             "===================================================================\n";
     static final String welcomeMsg = "\n" + BiolinguaRunner.dashes +
-            "edu.cmu.gene.algorithm.biolingua.BiolinguaRunner.java    IHMC-UWF    rsaavedr@ai.uwf.edu    Jan/2002\n" +
-            "Runs the Biolingua algorithm\n" + BiolinguaRunner.dashes;
+                                     "edu.cmu.gene.algorithm.biolingua.BiolinguaRunner.java    IHMC-UWF    rsaavedr@ai.uwf.edu    Jan/2002\n" +
+                                     "Runs the Biolingua algorithm\n" + BiolinguaRunner.dashes;
 
     // Default inputs for the run
     static String mfname = "ltm.txt";
@@ -59,16 +59,16 @@ public class BiolinguaRunner {
         }
         System.out.println(
                 "\nUsage  : java edu.cmu.gene.algorithm.biolingua.BiolinguaRunner [parameters]\n\n" +
-                        "Parameters:\n" +
-                        "    -mfile    Name of file containing the Correlation Matrix       (def=cm.txt)\n" +
-                        "    -gfile    Name of File containing the initial Graph            (def=g.txt)\n" +
-                        "    -ka#      Coefficient for Annotations in eval. metric function (def=.1)\n" +
-                        "    -ke#      Coefficient for Errors      in eval. metric function (def=3)\n" +
-                        "    -kl#      Coefficient for Links       in eval. metric function (def=4)\n" +
-                        "    -kp#      Coefficient for Predictions in eval. metric function (def=3)\n\n" +
-                        "Example: java edu.cmu.gene.algorithm.biolingua.BiolinguaRunner  -mcm.txt  -gg.txt  -ka.1  -ke3  -kl4  -kp3\n\n" +
-                        "  Runs biolingua with the correlation matrix in file cm.txt, starting search\n" +
-                        "  from graph in file g.txt, and using coefficients .1, 3, 4, and 3.");
+                "Parameters:\n" +
+                "    -mfile    Name of file containing the Correlation Matrix       (def=cm.txt)\n" +
+                "    -gfile    Name of File containing the initial Graph            (def=g.txt)\n" +
+                "    -ka#      Coefficient for Annotations in eval. metric function (def=.1)\n" +
+                "    -ke#      Coefficient for Errors      in eval. metric function (def=3)\n" +
+                "    -kl#      Coefficient for Links       in eval. metric function (def=4)\n" +
+                "    -kp#      Coefficient for Predictions in eval. metric function (def=3)\n\n" +
+                "Example: java edu.cmu.gene.algorithm.biolingua.BiolinguaRunner  -mcm.txt  -gg.txt  -ka.1  -ke3  -kl4  -kp3\n\n" +
+                "  Runs biolingua with the correlation matrix in file cm.txt, starting search\n" +
+                "  from graph in file g.txt, and using coefficients .1, 3, 4, and 3.");
     }
 
     /**

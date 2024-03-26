@@ -111,7 +111,7 @@ public abstract class BasicGraph {
         // Read graph name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (!strmTok.sval.toUpperCase().contains("GRAPH"))) {
+            (!strmTok.sval.toUpperCase().contains("GRAPH"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'GRAPH': " + strmTok.sval);
         }
@@ -226,7 +226,7 @@ public abstract class BasicGraph {
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.graphName + "\n" +
-                this.nNodes + " // <-- Total # nodes\n");
+                                            this.nNodes + " // <-- Total # nodes\n");
         s.append("\n// Node names:\n");
         for (int i = 0; i < this.nNodes; i++) {
             s.append(this.getNodeName(i)).append("\t// # ").append(i).append("\n");
@@ -242,7 +242,7 @@ public abstract class BasicGraph {
      */
     protected void badNodeIndex(int i) {
         throw new IllegalArgumentException("Bad node index " + i +
-                " for Graph with " + this.nNodes + " nodes");
+                                           " for Graph with " + this.nNodes + " nodes");
     }
 
     /**

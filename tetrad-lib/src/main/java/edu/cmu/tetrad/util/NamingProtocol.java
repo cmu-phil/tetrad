@@ -52,7 +52,7 @@ public class NamingProtocol {
      */
     public static String getProtocolDescription() {
         return "Names must begin with non-numeric characters and may not contain " +
-                "\nspaces or tabs.";
+               "\nspaces or tabs.";
     }
 }
 

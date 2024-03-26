@@ -909,16 +909,16 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nLambda hat\n" +
-                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nBeta hat\n" +
-                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nOmega hat\n" +
-                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nIterations\n" +
-                    getIterations() +
-                    "\n\ndiff = " + this.diff;
+                   MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nLambda hat\n" +
+                   MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nBeta hat\n" +
+                   MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nOmega hat\n" +
+                   MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nIterations\n" +
+                   getIterations() +
+                   "\n\ndiff = " + this.diff;
         }
 
         /**
@@ -1017,13 +1017,13 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                    this.shat +
-                    "\nDeviance\n" +
-                    this.deviance +
-                    "\nDf\n" +
-                    this.df +
-                    "\nIterations\n" +
-                    this.iterations;
+                   this.shat +
+                   "\nDeviance\n" +
+                   this.deviance +
+                   "\nDf\n" +
+                   this.df +
+                   "\nIterations\n" +
+                   this.iterations;
         }
     }
 }

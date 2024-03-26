@@ -376,7 +376,7 @@ public class SemBicScore implements Score {
         double c = getPenaltyDiscount();
 
         return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
-                - 2.0 * (sp1 - sp2);
+               - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -398,7 +398,7 @@ public class SemBicScore implements Score {
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                               LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 

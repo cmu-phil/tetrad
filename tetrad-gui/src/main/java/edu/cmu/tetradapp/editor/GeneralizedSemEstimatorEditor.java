@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * The GeneralizedSemEstimatorEditor class represents an editor for the GeneralizedSemEstimatorWrapper.
- * It provides a graphical user interface for editing variables, graph, and generating reports.
+ * The GeneralizedSemEstimatorEditor class represents an editor for the GeneralizedSemEstimatorWrapper. It provides a
+ * graphical user interface for editing variables, graph, and generating reports.
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
@@ -237,7 +237,8 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     /**
      * Retrieves the model edges to display from the graphical editor's workbench.
      *
-     * @return The model edges to display as a Map, where the keys are Edges and the values are their associated objects.
+     * @return The model edges to display as a Map, where the keys are Edges and the values are their associated
+     * objects.
      */
     @Override
     public Map getModelEdgesToDisplay() {

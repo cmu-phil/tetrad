@@ -63,7 +63,7 @@ public class F1All implements Statistic {
         double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
         double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
         return 4 * (adjPrecision * adjRecall * arrowPrecision * arrowRecall)
-                / (adjPrecision + adjRecall + arrowPrecision + arrowRecall);
+               / (adjPrecision + adjRecall + arrowPrecision + arrowRecall);
     }
 
     /**

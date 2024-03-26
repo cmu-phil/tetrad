@@ -58,7 +58,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
             this.setDataModel(RemoveSelectedVariablesWrapper.createCovarianceModel((ICovarianceMatrix) model));
         } else {
             throw new IllegalArgumentException("Expecting a rectangular data " +
-                    "set or a covariance matrix.");
+                                               "set or a covariance matrix.");
         }
 
         this.setSourceGraph(data.getSourceGraph());

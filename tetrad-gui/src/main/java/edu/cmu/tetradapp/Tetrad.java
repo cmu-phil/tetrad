@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp;
 
-import edu.cmu.tetrad.search.work_in_progress.DMSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -56,8 +55,7 @@ public final class Tetrad implements PropertyChangeListener {
      */
     public static boolean enableExperimental;
     /**
-     * The variable frame represents the main JFrame of the application.
-     * It is a static field of the Tetrad class.
+     * The variable frame represents the main JFrame of the application. It is a static field of the Tetrad class.
      */
     public static JFrame frame;
     /**
@@ -110,9 +108,9 @@ public final class Tetrad implements PropertyChangeListener {
 
 
     /**
-     * Sets the look and feel for the application based on the operating system.
-     * If the operating system is Windows XP, it sets the system look and feel.
-     * Throws an exception if encountering any errors while setting the look and feel.
+     * Sets the look and feel for the application based on the operating system. If the operating system is Windows XP,
+     * it sets the system look and feel. Throws an exception if encountering any errors while setting the look and
+     * feel.
      */
     private static void setLookAndFeel() {
         try {
