@@ -112,7 +112,7 @@ public final class TestEvidence {
 
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         Evidence evidence3 = new Evidence(evidence, bayesIm2);
-        TestCase.assertNotEquals(evidence3, evidence2);
+        assert(!evidence3.equals(evidence2));
     }
 }
 
