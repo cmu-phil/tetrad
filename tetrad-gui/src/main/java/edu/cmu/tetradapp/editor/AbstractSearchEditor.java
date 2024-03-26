@@ -286,7 +286,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 firePropertyChange("modelChanged", null, null);
             }
         }
-        ;
 
         new MyWatchedProcess();
 

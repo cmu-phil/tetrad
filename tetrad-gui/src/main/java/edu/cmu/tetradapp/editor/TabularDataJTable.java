@@ -188,8 +188,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
-        if (c instanceof JComponent) {
-            JComponent jc = (JComponent) c;
+        if (c instanceof JComponent jc) {
 
             Object o = getValueAt(rowIndex, vColIndex);
 

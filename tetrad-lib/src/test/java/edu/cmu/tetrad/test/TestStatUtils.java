@@ -40,8 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 
 /**
@@ -508,7 +507,7 @@ public class TestStatUtils {
         } else if (OS.contains("sunos")) {
             expectedPercentFailed = 0.6;
         } else {
-            assertFalse("Your OS is not supported for this unit test!!", true);
+            fail("Your OS is not supported for this unit test!!");
 
         }
         assertEquals(expectedPercentFailed, percentFailed, 0.01);

@@ -339,12 +339,12 @@ public class TestFci {
 
                 NumberFormat nf = new DecimalFormat("0.00");
 
-                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg) + "");
-                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg) + "");
-                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg) + "");
-                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg) + "");
-                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg) + "");
-                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg) + "");
+                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg));
+                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg));
+                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg));
+                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg));
+                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg));
+                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg));
                 table.setToken(4, 1, totalAncMarg + "");
                 table.setToken(4, 2, totalNancMarg + "");
 

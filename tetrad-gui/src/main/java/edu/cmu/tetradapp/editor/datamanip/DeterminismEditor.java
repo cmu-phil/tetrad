@@ -174,7 +174,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         }
 
         DataModel model = dataWrapper.getSelectedDataModel();
-        if (!(model instanceof DataSet)) {
+        if (!(model instanceof DataSet dataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
 
@@ -183,7 +183,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         }
 
         // Get the source dataset, keep it untouched
-        DataSet dataSet = (DataSet) model;
 
         this.sourceDataSet = dataSet;
 

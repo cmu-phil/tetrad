@@ -42,8 +42,7 @@ class IndTestMenuItems {
         if (dataModel == null &&
                 setter.getSourceGraph() != null) {
             IndTestMenuItems.addGraphTestMenuItems(test, setter);
-        } else if (dataModel instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataModel;
+        } else if (dataModel instanceof DataSet _dataSet) {
 
             if (_dataSet.isContinuous()) {
                 IndTestMenuItems.addContinuousTestMenuItems(test, setter);
@@ -57,8 +56,7 @@ class IndTestMenuItems {
             }
         } else if (dataModel instanceof ICovarianceMatrix) {
             IndTestMenuItems.addCovMatrixTestMenuItems(test, setter);
-        } else if (dataModel instanceof DataModelList) {
-            DataModelList dataSets = (DataModelList) dataModel;
+        } else if (dataModel instanceof DataModelList dataSets) {
 
             for (DataModel _dataModel : dataSets) {
                 DataSet dataSet = (DataSet) _dataModel;

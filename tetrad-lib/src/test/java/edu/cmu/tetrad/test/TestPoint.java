@@ -24,8 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.PointXy;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests basic functionality of the tetrad.util.Point class.
@@ -40,7 +39,7 @@ public class TestPoint {
         PointXy q = new PointXy(35, 55);
         PointXy r = new PointXy(25, 50);
 
-        assertTrue(!p.equals(q));
+        assertFalse(p.equals(q));
         assertEquals(p, r);
 
         PointXy s = new PointXy(q);

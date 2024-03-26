@@ -138,7 +138,6 @@ public class StabilityUtils {
                         addToMat(thetaMat, curAdj);
                     }
 
-                    return;
                 } else {
                     List<StabilityAction> tasks = new ArrayList<>();
 

@@ -260,14 +260,12 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     private DataModel getDataModel(DataWrapper dataWrapper) {
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataModelList) {
-            DataModelList dataModelList = (DataModelList) dataModel;
+        if (dataModel instanceof DataModelList dataModelList) {
             dataModel = dataModelList.getSelectedModel();
 
         }
 
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+        if (dataModel instanceof DataSet dataSet) {
 
             if (dataSet.isDiscrete()) {
                 return dataSet;

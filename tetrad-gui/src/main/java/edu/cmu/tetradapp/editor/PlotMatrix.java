@@ -263,14 +263,12 @@ public class PlotMatrix extends JPanel {
 //                    histogram.setTarget(nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
-                        if (node instanceof ContinuousVariable) {
-                            ContinuousVariable var = (ContinuousVariable) node;
+                        if (node instanceof ContinuousVariable var) {
                             VariableConditioningEditor.ContinuousConditioningPanel panel
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
                                     conditioningPanelMap.get(var);
                             histogram.addConditioningVariable(var.getName(), panel.getLow(), panel.getHigh());
-                        } else if (node instanceof DiscreteVariable) {
-                            DiscreteVariable var = (DiscreteVariable) node;
+                        } else if (node instanceof DiscreteVariable var) {
                             VariableConditioningEditor.DiscreteConditioningPanel panel
                                     = (VariableConditioningEditor.DiscreteConditioningPanel)
                                     conditioningPanelMap.get(var);
@@ -294,14 +292,12 @@ public class PlotMatrix extends JPanel {
                             nodes.get(rowIndex).getName(), removeZeroPointsPerPlot);
 
                     for (Node node : conditioningPanelMap.keySet()) {
-                        if (node instanceof ContinuousVariable) {
-                            ContinuousVariable var = (ContinuousVariable) node;
+                        if (node instanceof ContinuousVariable var) {
                             VariableConditioningEditor.ContinuousConditioningPanel panel
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
                                     conditioningPanelMap.get(var);
                             scatterPlot.addConditioningVariable(var.getName(), panel.getLow(), panel.getHigh());
-                        } else if (node instanceof DiscreteVariable) {
-                            DiscreteVariable var = (DiscreteVariable) node;
+                        } else if (node instanceof DiscreteVariable var) {
                             VariableConditioningEditor.DiscreteConditioningPanel panel
                                     = (VariableConditioningEditor.DiscreteConditioningPanel)
                                     conditioningPanelMap.get(var);

@@ -85,9 +85,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            return b.toString();
+            return "Load data sets and graphs from a directory." + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

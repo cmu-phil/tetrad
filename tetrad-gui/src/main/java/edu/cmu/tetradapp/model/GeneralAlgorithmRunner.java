@@ -464,8 +464,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
                     getDataModelList().forEach(dataModel -> {
-                        if (dataModel instanceof ICovarianceMatrix) {
-                            ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+                        if (dataModel instanceof ICovarianceMatrix dataSet) {
 
                             if (algo instanceof TakesGraph) {
                                 ((TakesGraph) algo).setGraph(this.sourceGraph);
@@ -480,8 +479,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             LayoutUtil.defaultLayout(graph);
 
                             graphList.add(graph);
-                        } else if (dataModel instanceof DataSet) {
-                            DataSet dataSet = (DataSet) dataModel;
+                        } else if (dataModel instanceof DataSet dataSet) {
 
                             if (!dataSet.isContinuous()) {
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");

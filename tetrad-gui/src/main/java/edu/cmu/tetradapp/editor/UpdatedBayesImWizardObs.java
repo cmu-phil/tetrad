@@ -602,9 +602,7 @@ final class UpdaterEditingTableObs extends JTable {
                                    TableCellRenderer renderer) {
         super.setDefaultRenderer(columnClass, renderer);
 
-        if (getModel() instanceof UpdaterEditingTableModelObs) {
-            UpdaterEditingTableModelObs model =
-                    (UpdaterEditingTableModelObs) getModel();
+        if (getModel() instanceof UpdaterEditingTableModelObs model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
 
             for (int i = 0; i < model.getColumnCount(); i++) {

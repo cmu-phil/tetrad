@@ -30,8 +30,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
@@ -78,13 +77,13 @@ public final class TestDag {
         assertTrue(graph.paths().isMConnectedTo(x1, x3, Collections.EMPTY_SET));
 
         assertTrue(graph.paths().existsDirectedPathFromTo(x1, x4));
-        assertTrue(!graph.paths().existsDirectedPathFromTo(x1, x5));
+        assertFalse(graph.paths().existsDirectedPathFromTo(x1, x5));
 
         assertTrue(graph.paths().isAncestorOf(x2, x4));
-        assertTrue(!graph.paths().isAncestorOf(x4, x2));
+        assertFalse(graph.paths().isAncestorOf(x4, x2));
 
         assertTrue(graph.paths().isDescendentOf(x4, x2));
-        assertTrue(!graph.paths().isDescendentOf(x2, x4));
+        assertFalse(graph.paths().isDescendentOf(x2, x4));
     }
 
     private void checkCopy(Graph graph) {

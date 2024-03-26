@@ -97,7 +97,6 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
                 }
             }
         }
-        ;
 
         new MyWatchedProcess();
     }

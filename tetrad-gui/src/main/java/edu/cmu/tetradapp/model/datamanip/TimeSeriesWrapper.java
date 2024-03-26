@@ -57,11 +57,10 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
         DataModelList timeSeriesDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
             DataSet timeSeries = TsUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());

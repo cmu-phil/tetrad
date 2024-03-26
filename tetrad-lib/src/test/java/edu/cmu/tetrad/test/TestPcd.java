@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.Pcd;
 import edu.cmu.tetrad.search.test.MsepTest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -92,7 +93,7 @@ public class TestPcd {
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(resultGraph, trueGraph);
     }
 
     /**
@@ -118,7 +119,7 @@ public class TestPcd {
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(resultGraph, trueGraph);
     }
 }
 

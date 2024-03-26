@@ -103,8 +103,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = parameters;
 
-        if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
+        if (graphSource instanceof Simulation simulation) {
             this.graphs = simulation.getGraphs();
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
@@ -178,8 +177,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public GraphWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
+        if (wrapper instanceof Simulation simulation) {
             this.graphs = simulation.getGraphs();
             this.numModels = this.graphs.size();
             this.modelIndex = 0;

@@ -188,9 +188,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         int deltaY = upperLeft.y - oldUpperLeft.y;
 
         for (Object sessionElement : sessionElements) {
-            if (sessionElement instanceof SessionNodeWrapper) {
-                SessionNodeWrapper wrapper =
-                        (SessionNodeWrapper) sessionElement;
+            if (sessionElement instanceof SessionNodeWrapper wrapper) {
                 sessionNodeWrappers.add(wrapper);
                 adjustNameAndPosition(wrapper, sessionNodeWrappers, deltaX,
                         deltaY);

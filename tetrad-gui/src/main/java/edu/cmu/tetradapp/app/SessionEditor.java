@@ -124,12 +124,10 @@ public final class SessionEditor extends JComponent
         List selectedModelComponents = new ArrayList();
 
         for (Object comp : selectedComponents) {
-            if (comp instanceof SessionEditorNode) {
-                SessionEditorNode editorNode = (SessionEditorNode) comp;
+            if (comp instanceof SessionEditorNode editorNode) {
                 Node modelNode = editorNode.getModelNode();
                 selectedModelComponents.add(modelNode);
-            } else if (comp instanceof SessionEditorEdge) {
-                SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
+            } else if (comp instanceof SessionEditorEdge editorEdge) {
                 Edge modelEdge = getWorkbench().getModelEdge(editorEdge);
                 selectedModelComponents.add(modelEdge);
             }

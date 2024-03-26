@@ -122,9 +122,8 @@ class BayesImNodeEditingTable extends JTable {
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
-        if (getModel() instanceof Model) {
+        if (getModel() instanceof Model model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
-            Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
                 TableColumn column = getColumnModel().getColumn(i);

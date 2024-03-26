@@ -207,7 +207,6 @@ public final class SemEstimatorEditor extends JPanel {
                     }
                 }
             }
-            ;
 
             new MyWatchedProcess();
         });

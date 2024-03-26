@@ -81,7 +81,7 @@ public final class TetradTestDiscrete implements TetradTest {
     /**
      * The dataset.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
     /**
      * the counts.
      */

@@ -118,7 +118,6 @@ class RunSimulationAction extends AbstractAction {
 
             }
         }
-        ;
 
         new MyWatchedProcess();
     }

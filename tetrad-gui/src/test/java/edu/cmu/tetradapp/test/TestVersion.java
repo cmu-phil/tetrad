@@ -40,7 +40,7 @@ public final class TestVersion {
         Version version = new Version("4.3.1-5");
         String versionString = version.toString();
         Version version2 = new Version(versionString);
-        assertTrue(version.equals(version2));
+        assertEquals(version, version2);
     }
 
     @Test

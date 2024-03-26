@@ -172,9 +172,7 @@ public class EnsembleMenu extends JMenu {
         } else {
             Edge edge = graph.getEdges().iterator().next();
 
-            return (edge.getEdgeTypeProbabilities() == null)
-                    ? false
-                    : !edge.getEdgeTypeProbabilities().isEmpty();
+            return edge.getEdgeTypeProbabilities() != null && !edge.getEdgeTypeProbabilities().isEmpty();
         }
     }
 

@@ -59,11 +59,10 @@ final class PasteSubsessionAction extends AbstractAction
         Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
-        if (!(transferable instanceof SubsessionSelection)) {
+        if (!(transferable instanceof SubsessionSelection selection)) {
             return;
         }
 
-        SubsessionSelection selection = (SubsessionSelection) transferable;
         DataFlavor flavor = new DataFlavor(SubsessionSelection.class,
                 "Subsession Selection");
 

@@ -534,7 +534,6 @@ public class MixedUtils {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        return;
     }
 
     //legacy

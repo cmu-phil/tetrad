@@ -30,8 +30,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author William Taysom
@@ -52,7 +51,7 @@ public final class TestProposition {
         assertEquals(prop1, prop2);
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         Proposition prop3 = new Proposition(bayesIm2, prop1);
-        assertTrue(!prop3.equals(prop1));
+        assertFalse(prop3.equals(prop1));
     }
 
     private BayesIm sampleBayesIm2() {

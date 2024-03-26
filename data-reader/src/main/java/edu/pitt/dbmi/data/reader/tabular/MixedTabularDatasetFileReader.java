@@ -113,8 +113,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     private Data toMixedData(Data data) {
-        if (data instanceof ContinuousData) {
-            ContinuousData continuousData = (ContinuousData) data;
+        if (data instanceof ContinuousData continuousData) {
             double[][] contData = continuousData.getData();
             int numOfRows = contData.length;
             int numOfCols = contData[0].length;
@@ -133,8 +132,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
             }
 
             return new MixedTabularData(numOfRows, columns, vertContData, new int[0][0]);
-        } else if (data instanceof DiscreteData) {
-            DiscreteData verticalDiscreteData = (DiscreteData) data;
+        } else if (data instanceof DiscreteData verticalDiscreteData) {
             int[][] discreteData = verticalDiscreteData.getData();
             int numOfRows = discreteData[0].length;
 
@@ -149,8 +147,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
                     }).toArray(DiscreteDataColumn[]::new);
 
             return new MixedTabularData(numOfRows, columns, new double[0][0], discreteData);
-        } else if (data instanceof MixedTabularData) {
-            MixedTabularData mixedTabularData = (MixedTabularData) data;
+        } else if (data instanceof MixedTabularData mixedTabularData) {
             DiscreteDataColumn[] columns = mixedTabularData.getDataColumns();
             double[][] continuousData = mixedTabularData.getContinuousData();
             int[][] discreteData = mixedTabularData.getDiscreteData();

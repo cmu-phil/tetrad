@@ -266,7 +266,6 @@ public final class SessionEditorNode extends DisplayNode {
                 launchEditorVisit();
             }
         }
-        ;
 
         new MyWatchedProcess();
     }
@@ -831,7 +830,6 @@ public final class SessionEditorNode extends DisplayNode {
                 workbench.getSimulationStudy().execute(sessionNode, true);
             }
         }
-        ;
 
         new MyWatchedProcess();
     }
@@ -852,7 +850,6 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
         }
-        ;
 
         new MyWatchedProcess();
     }
@@ -1094,8 +1091,7 @@ public final class SessionEditorNode extends DisplayNode {
             paramEditor.setParentModels(parentModels);
         }
         // If a finalizing editor and a dialog then let it handle things on itself onw.
-        if (paramEditor instanceof FinalizingParameterEditor && paramEditor instanceof JDialog) {
-            FinalizingParameterEditor e = (FinalizingParameterEditor) paramEditor;
+        if (paramEditor instanceof FinalizingParameterEditor e && paramEditor instanceof JDialog) {
             e.setup();
             return e.finalizeEdit();
         }

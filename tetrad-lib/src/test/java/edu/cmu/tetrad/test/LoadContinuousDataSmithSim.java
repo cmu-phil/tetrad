@@ -106,9 +106,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Smith sim ").append(this.index).append("\n\n");
-            return b.toString();
+            return "Smith sim " + this.index + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

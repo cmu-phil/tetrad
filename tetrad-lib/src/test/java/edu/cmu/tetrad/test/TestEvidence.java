@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
@@ -110,7 +111,7 @@ public final class TestEvidence {
 
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         Evidence evidence3 = new Evidence(evidence, bayesIm2);
-        assertTrue(!(evidence3.equals(evidence2)));
+        assertFalse(evidence3.equals(evidence2));
     }
 }
 

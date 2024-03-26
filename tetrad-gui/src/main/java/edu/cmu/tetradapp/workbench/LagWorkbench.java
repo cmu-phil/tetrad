@@ -333,8 +333,7 @@ public class LagWorkbench extends AbstractWorkbench {
 
         for (Object graphElement : graphElements) {
 
-            if (graphElement instanceof Node) {
-                Node node = (Node) graphElement;
+            if (graphElement instanceof Node node) {
                 adjustNameAndPosition(node, deltaX, deltaY);
                 getWorkbench().getGraph().addNode(node);
             } else if (graphElement instanceof Edge) {

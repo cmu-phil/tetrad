@@ -58,8 +58,7 @@ class TabularDataTransferHandler extends TransferHandler {
      * Create a Transferable to use as the source for a data transfer.
      */
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof TabularDataJTable) {
-            TabularDataJTable tabularData = (TabularDataJTable) c;
+        if (c instanceof TabularDataJTable tabularData) {
             DataSet dataSet = tabularData.getDataSet();
 
             int[] rows;
@@ -444,8 +443,7 @@ class TabularDataTransferHandler extends TransferHandler {
      * {@inheritDoc}
      */
     public void exportDone(JComponent source, Transferable data, int action) {
-        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable) {
-            TabularDataJTable tableTabular = (TabularDataJTable) source;
+        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable tableTabular) {
             tableTabular.deleteSelected();
         }
     }

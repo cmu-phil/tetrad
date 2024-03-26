@@ -68,11 +68,10 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
         Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
-        if (!(transferable instanceof SubgraphSelection)) {
+        if (!(transferable instanceof SubgraphSelection selection)) {
             return;
         }
 
-        SubgraphSelection selection = (SubgraphSelection) transferable;
         DataFlavor flavor =
                 new DataFlavor(SubgraphSelection.class, "Subgraph Selection");
 

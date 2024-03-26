@@ -162,7 +162,7 @@ public class TestPcStableMax {
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(resultGraph, trueGraph);
     }
 
     /**

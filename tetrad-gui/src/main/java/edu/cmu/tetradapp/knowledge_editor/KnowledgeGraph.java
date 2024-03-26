@@ -315,10 +315,9 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * {@inheritDoc}
      */
     public boolean addEdge(Edge edge) {
-        if (!(edge instanceof KnowledgeModelEdge)) {
+        if (!(edge instanceof KnowledgeModelEdge _edge)) {
             return false;
         }
-        KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
         KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
         KnowledgeModelNode _node2 = (KnowledgeModelNode) _edge.getNode2();
         String from = _node1.getName();

@@ -19,7 +19,7 @@ import java.util.Vector;
 class ScatterplotPanel extends JPanel {
     private final NumberFormat nf;
     private final boolean removeZeroPointsPerPlot;
-    private ScatterPlot scatterPlot;
+    private final ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
 

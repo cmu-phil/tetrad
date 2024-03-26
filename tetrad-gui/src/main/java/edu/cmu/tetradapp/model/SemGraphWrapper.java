@@ -91,8 +91,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
+        if (graphSource instanceof Simulation simulation) {
             List<Graph> graphs = simulation.getGraphs();
             this.graphs = new ArrayList<>();
             for (Graph graph : graphs) {
@@ -227,8 +226,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public SemGraphWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
+        if (wrapper instanceof Simulation simulation) {
             this.graphs = new ArrayList<>();
 
             for (Graph graph : simulation.getGraphs()) {

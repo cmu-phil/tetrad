@@ -192,7 +192,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     tabbedPaneGraphs(wrapper);
                 }
             }
-            ;
 
             new MyWatchedProcess();
         });
@@ -359,8 +358,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         tabbedPane.addChangeListener(e -> {
 
-            if (e.getSource() instanceof JTabbedPane) {
-                JTabbedPane panel = (JTabbedPane) e.getSource();
+            if (e.getSource() instanceof JTabbedPane panel) {
                 int selectedIndex = panel.getSelectedIndex();
                 selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
                 graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());

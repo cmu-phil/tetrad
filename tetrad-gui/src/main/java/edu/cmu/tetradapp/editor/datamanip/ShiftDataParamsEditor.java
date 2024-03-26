@@ -96,8 +96,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         DataModelList dataModelList = null;
 
         for (Object parentModel : this.parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel;
+            if (parentModel instanceof DataWrapper dataWrapper) {
                 dataModelList = dataWrapper.getDataModelList();
             }
         }
