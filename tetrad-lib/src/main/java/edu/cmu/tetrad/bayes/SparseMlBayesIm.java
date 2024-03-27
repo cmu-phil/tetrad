@@ -69,7 +69,7 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class MlBayesIm implements BayesIm {
+public final class SparseMlBayesIm implements BayesIm {
 
     /**
      * Inidicates that new rows in this BayesIm should be initialized as unknowns, forcing them to be specified
@@ -107,10 +107,6 @@ public final class MlBayesIm implements BayesIm {
      */
     private int[][] parents;
     /**
-     * The array of dimensionality of the nodes.
-     */
-    private int[] nodeDims;
-    /**
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
      */
     private int[][] parentDims;
@@ -137,8 +133,8 @@ public final class MlBayesIm implements BayesIm {
      * @throws IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
      *                                  the bayes parametric model provided.
      */
-    public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, MlBayesIm.MANUAL);
+    public SparseMlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
+        this(bayesPm, null, SparseMlBayesIm.MANUAL);
     }
 
     /**
@@ -151,7 +147,7 @@ public final class MlBayesIm implements BayesIm {
      * @throws IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
      *                                  the bayes parametric model provided.
      */
-    public MlBayesIm(BayesPm bayesPm, int initializationMethod)
+    public SparseMlBayesIm(BayesPm bayesPm, int initializationMethod)
             throws IllegalArgumentException {
         this(bayesPm, null, initializationMethod);
     }
@@ -169,7 +165,7 @@ public final class MlBayesIm implements BayesIm {
      * @throws IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
      *                                  the bayes parametric model provided.
      */
-    public MlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
+    public SparseMlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
                            int initializationMethod) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
@@ -193,7 +189,7 @@ public final class MlBayesIm implements BayesIm {
      * @param bayesIm a {@link BayesIm} object
      * @throws IllegalArgumentException if any.
      */
-    public MlBayesIm(BayesIm bayesIm) throws IllegalArgumentException {
+    public SparseMlBayesIm(BayesIm bayesIm) throws IllegalArgumentException {
         if (bayesIm == null) {
             throw new NullPointerException("BayesIm must not be null.");
         }
@@ -210,16 +206,16 @@ public final class MlBayesIm implements BayesIm {
         }
 
         // Copy all the old values over.
-        initialize(bayesIm, MlBayesIm.MANUAL);
+        initialize(bayesIm, SparseMlBayesIm.MANUAL);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @return a {@link MlBayesIm} object
+     * @return a {@link SparseMlBayesIm} object
      */
-    public static MlBayesIm serializableInstance() {
-        return new MlBayesIm(BayesPm.serializableInstance());
+    public static SparseMlBayesIm serializableInstance() {
+        return new SparseMlBayesIm(BayesPm.serializableInstance());
     }
 
     //===============================PUBLIC METHODS========================//
@@ -369,9 +365,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of columns.
      */
     public int getNumColumns(int nodeIndex) {
-        return nodeDims[nodeIndex];
-//        return getBayesPm().getNumCategories(nodes[nodeIndex]);
-//        return ((DiscreteVariable) nodes[nodeIndex]).getNumCategories();
+        return ((DiscreteVariable) nodes[nodeIndex]).getNumCategories();
 
 //        return this.probs[nodeIndex][0].length;
     }
@@ -510,7 +504,7 @@ public final class MlBayesIm implements BayesIm {
         long uniqueIndex = getUniqueIndex(nodeIndex, getParentValues(nodeIndex, rowIndex), colIndex);
 
         if (!this.probs.containsKey(uniqueIndex)) {
-            return Double.NaN;
+            return 0.0;
         }
 
         return this.probs.get(uniqueIndex);
@@ -632,7 +626,7 @@ public final class MlBayesIm implements BayesIm {
 
         long uniqueIndex = getUniqueIndex(nodeIndex, getParentValues(nodeIndex, rowIndex), colIndex);
 
-        if (Double.isNaN(value)) {
+        if (value == 0) {
             this.probs.remove(uniqueIndex);
         } else {
             this.probs.put(uniqueIndex, value);
@@ -676,7 +670,7 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         int size = getNumColumns(nodeIndex);
-        double[] randomWeights = MlBayesIm.getRandomWeights(size);
+        double[] randomWeights = SparseMlBayesIm.getRandomWeights(size);
 
         for (int colIndex = 0; colIndex < size; colIndex++) {
             setProbability(nodeIndex, rowIndex, colIndex, randomWeights[colIndex]);
@@ -1258,7 +1252,7 @@ public final class MlBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (abs(prob - otherProb) > MlBayesIm.ALLOWABLE_DIFFERENCE) {
+                    if (abs(prob - otherProb) > SparseMlBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1324,7 +1318,6 @@ public final class MlBayesIm implements BayesIm {
      */
     private void initialize(BayesIm oldBayesIm, int initializationMethod) {
         this.parents = new int[this.nodes.length][];
-        this.nodeDims = new int[this.nodes.length];
         this.parentDims = new int[this.nodes.length][];
         this.probs = new HashMap<>();
 //        this.probs = new double[this.nodes.length][][];
@@ -1354,10 +1347,6 @@ public final class MlBayesIm implements BayesIm {
         // Sort parent array.
         Arrays.sort(parentArray);
 
-        for (int index = 0; index < getBayesPm().getNumNodes(); index++) {
-            this.nodeDims[index] = getBayesPm().getNumCategories(this.nodes[index]);
-        }
-
         this.parents[nodeIndex] = parentArray;
 
         // Setup dimensions array for parents.
@@ -1384,13 +1373,13 @@ public final class MlBayesIm implements BayesIm {
             numRows *= dim;
         }
 
-//        int numCols = nodeDims[nodeIndex];// getBayesPm().getNumCategories(node);
+        int numCols = getBayesPm().getNumCategories(node);
 
         this.parentDims[nodeIndex] = dims;
 //        this.probs[nodeIndex] = new double[numRows][numCols];
 
         // Initialize each row.
-        if (initializationMethod == MlBayesIm.RANDOM) {
+        if (initializationMethod == SparseMlBayesIm.RANDOM) {
             randomizeTable(nodeIndex);
         } else {
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1406,9 +1395,9 @@ public final class MlBayesIm implements BayesIm {
 
     private void overwriteRow(int nodeIndex, int rowIndex,
                               int initializationMethod) {
-        if (initializationMethod == MlBayesIm.RANDOM) {
+        if (initializationMethod == SparseMlBayesIm.RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
-        } else if (initializationMethod == MlBayesIm.MANUAL) {
+        } else if (initializationMethod == SparseMlBayesIm.MANUAL) {
             initializeRowAsUnknowns(nodeIndex, rowIndex);
         } else {
             throw new IllegalArgumentException("Unrecognized state.");
