@@ -40,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
  * this table. The division of labor is as follows. The Dag is responsible for manipulating the basic graphical
- * structure of the Bayes net. Dag also stores and manipulates the names of the nodes in the graph; there are no method
+ * structure of the Bayes net. Dag also stores and manipulates the names of the nodes in the graph; there is no method
  * in either BayesPm or BayesIm to do this. BayesPm stores and manipulates the *categories* of each node in a DAG,
  * considered as a variable in a Bayes net. The number of categories for a variable can be changed there as well as the
  * names for those categories. This class, BayesIm, stores the actual probability tables which are implied by the
@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * corresponds to the nodes in the Bayes net. For each such node, the second dimension corresponds to a flat list of
  * combinations of parent categories for that node. The third dimension corresponds to the list of categories for that
  * node itself. Two methods allow these values to be set and retrieved: getWordRatio(int nodeIndex, int rowIndex, int
- * colIndex); and, setProbability(int nodeIndex, int rowIndex, int colIndex, int probability). To determine the index of
+ * colIndex); and setProbability(int nodeIndex, int rowIndex, int colIndex, int probability). To determine the index of
  * the node in question, use the method getNodeIndex(Node node). To determine the index of the row in question, use the
  * method getRowIndex(int[] parentVals). To determine the order of the parent values for a given node so that you can
  * build the parentVals[] array, use the method getParents(int nodeIndex). To determine the index of a category, use the
