@@ -59,10 +59,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * <p>
  * This version uses a different method for storing the probabilities. The previous version stored the probabilities in
  * a three-dimensional array, where the first dimension was the node, the second dimension was the row index, and the
- * third dimension was the column index. This version stores and array of Matrix objects, where each Matrix object
- * represents the conditional probability table for a node. This will allow us in the future to represent this as an of
- * Maps from Integers to Doubles and store only the non-NaN values. This will save space and time in the case of sparse
- * tables.
+ * third dimension was the column index. This version stores and array of CptMap objects, where each CptMap object
+ * represents the conditional probability table for a node. NaNs in these maps are not stored, allowing for a more
+ * compact representation so that huge conditional probability tables can be estimated from finite samples.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for advice and earlier versions.
  *
@@ -1216,15 +1215,6 @@ public final class MlBayesIm implements BayesIm {
         int numRows = 1;
 
         for (int dim : dims) {
-//            if (numRows > 1000000 /* Integer.MAX_VALUE / dim*/) {
-//                throw new IllegalArgumentException(
-//                        "The number of rows in the "
-//                        + "conditional probability table for "
-//                        + this.nodes[nodeIndex]
-//                        + " is greater than 1,000,000 and cannot be "
-//                        + "represented.");
-//            }
-
             numRows *= dim;
         }
 
