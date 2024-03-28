@@ -32,6 +32,9 @@ public class ProbMap implements TetradSerializable {
      * Constructs a new probability map, a map from a unique integer index for a particular node to the probability of
      * that node taking on that value, where NaN's are not stored. This probability map assumes that there is a certain
      * number of rows and a certain number of columns in the table.
+     *
+     * @param numRows the number of rows in the table
+     * @param numColumns the number of columns in the table
      */
     public ProbMap(int numRows, int numColumns) {
         if (numRows < 1 || numColumns < 1) {
@@ -71,6 +74,10 @@ public class ProbMap implements TetradSerializable {
 
     /**
      * Returns the probability of the node taking on the value specified by the given row and column.
+     *
+     * @param row the row of the node
+     * @param column the column of the node
+     * @return the probability of the node taking on the value specified by the given row and column
      */
     public double get(int row, int column) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
@@ -88,6 +95,11 @@ public class ProbMap implements TetradSerializable {
 
     /**
      * Sets the probability of the node taking on the value specified by the given row and column to the given value.
+     *
+     * @param row the row of the node
+     * @param column the column of the node
+     * @param value the probability of the node taking on the value specified by the given row and column
+     *              (NaN to remove the value)
      */
     public void set(int row, int column, double value) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {

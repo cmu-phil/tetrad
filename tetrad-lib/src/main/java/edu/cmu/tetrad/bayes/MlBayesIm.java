@@ -1449,8 +1449,18 @@ public final class MlBayesIm implements BayesIm {
         copyDataToProbMatrices();
     }
 
+    /**
+     * Copies data from the `probs` array to the `probMatrices` array.
+     * If the lengths of both arrays are equal, the `probMatrices` array is
+     * initialized with `ProbMap` objects, each containing the corresponding
+     * `probs` element. The `probs` array is then set to null and the
+     * `useProbMatrices` flag is set to true.
+     *
+     * Note: This method should only be called after the `probs` array has
+     *       been properly initialized.
+     */
     private void copyDataToProbMatrices() {
-        if (this.probs != null && this.probs.length == this.nodes.length) {
+        if (!this.useProbMatrices && this.probs != null && this.probs.length == this.nodes.length) {
             this.probMatrices = new ProbMap[this.probs.length];
 
             for (int i = 0; i < this.nodes.length; i++) {
