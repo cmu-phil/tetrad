@@ -59,7 +59,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * <p>
  * This version uses a sparse method for storing the probabilities, where NaNs are not stored. This allows BayesPms with
  * many categories per variable to be estimated from small samples without overflowing memory. The old method of storing
- * probabilities is kept here for backward compatibility.
+ * probabilities is kept here for backward compatibility, with an internal code flag to indicate which should be used.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for advice and earlier versions.
  *
