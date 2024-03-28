@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.bayes;
 
+import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.Vector;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,14 +11,21 @@ import java.util.Map;
  * Represents a probability map. A probability map is a map from a unique integer index for a particular node to the *
  * probability of that node taking on that value, where NaN's are not stored.
  */
-public class ProbMap {
-
+public class ProbMap implements TetradSerializable {
+    @Serial
+    private static final long serialVersionUID = 23L;
     /**
      * Constructs a new probability map, a map from a unique integer index for a particular node to the probability of
      * that node taking on that value, where NaN's are not stored.
      */
     private final Map<Integer, Double> map = new HashMap<>();
+    /**
+     * The number of rows in the table.
+     */
     private final int numRows;
+    /**
+     * The number of columns in the table.
+     */
     private final int numColumns;
 
     /**
@@ -33,7 +42,17 @@ public class ProbMap {
         this.numColumns = numColumns;
     }
 
+    /**
+     * Constructs a new probability map based on the given 2-dimensional array.
+     *
+     * @param probMatrix the 2-dimensional array representing the probability matrix
+     * @throws IllegalArgumentException if the number of columns in any row is different
+     */
     public ProbMap(double[][] probMatrix) {
+        if (probMatrix == null || probMatrix.length == 0 || probMatrix[0].length == 0) {
+            throw new IllegalArgumentException("Probability matrix must have at least one row and one column.");
+        }
+
         numRows = probMatrix.length;
         numColumns = probMatrix[0].length;
 
@@ -58,7 +77,13 @@ public class ProbMap {
             throw new IllegalArgumentException("Row and column must be within bounds.");
         }
 
-        return map.get(row * numColumns + column);
+        int key = row * numColumns + column;
+
+        if (!map.containsKey(key)) {
+            return Double.NaN;
+        }
+
+        return map.get(key);
     }
 
     /**
@@ -69,7 +94,14 @@ public class ProbMap {
             throw new IllegalArgumentException("Row and column must be within bounds.");
         }
 
-        map.put(row * numColumns + column, value);
+        int key = row * numColumns + column;
+
+        if (Double.isNaN(value)) {
+            map.remove(key);
+            return;
+        }
+
+        map.put(key, value);
     }
 
     /**
@@ -90,6 +122,13 @@ public class ProbMap {
         return numColumns;
     }
 
+    /**
+     * Assigns the values in the provided vector to a specific row in the probability map.
+     *
+     * @param rowIndex the index of the row to be assigned
+     * @param vector the vector containing the values to be assigned to the row
+     * @throws IllegalArgumentException if the size of the vector is not equal to the number of columns in the probability map
+     */
     public void assignRow(int rowIndex, Vector vector) {
         if (vector.size() != numColumns) {
             throw new IllegalArgumentException("Vector must have the same number of columns as the probability map.");
