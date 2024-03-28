@@ -25,11 +25,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Paths;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,7 +36,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
@@ -105,16 +102,20 @@ public final class MlBayesIm implements BayesIm {
      */
     private final Node[] nodes;
     /**
+     * A flag indicating whether to use probability matrices or not.
+     */
+    boolean useProbMatrices = true;
+    /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
      */
     private int[][] parents;
+
+    //===============================CONSTRUCTORS=========================//
     /**
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
      */
     private int[][] parentDims;
-
-    //===============================CONSTRUCTORS=========================//
     /**
      * The main data structure; stores the values of all of the conditional probabilities for the Bayes net of the form
      * P(N=v0 | P1=v1, P2=v2,...). The first dimension is the node N, in the order of 'nodes'. The second dimension is
@@ -127,13 +128,12 @@ public final class MlBayesIm implements BayesIm {
      * @serial
      */
     private double[][][] probs;
-
     /**
-     * The array of matrices that store the probabilities for each node.
+     * The array of probability maps for each node. The index of the node corresponds to the index of the probability
+     * map in this array. The probability map is a map from a unique integer index for a particular node to the
+     * probability of that node taking on that value, where NaN's are not stored.
      */
-    private Matrix[] probMatrices;
-
-    boolean useProbMatrices = true;
+    private ProbMap[] probMatrices;
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
@@ -588,7 +588,7 @@ public final class MlBayesIm implements BayesIm {
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         if (useProbMatrices) {
-            probMatrices[nodeIndex] = new Matrix(probMatrix);
+            probMatrices[nodeIndex] = new ProbMap(probMatrix);
         } else {
             for (int i = 0; i < probMatrix.length; i++) {
                 System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
@@ -1191,7 +1191,7 @@ public final class MlBayesIm implements BayesIm {
         this.parents = new int[this.nodes.length][];
         this.parentDims = new int[this.nodes.length][];
         this.probs = new double[this.nodes.length][][];
-        this.probMatrices = new Matrix[this.nodes.length];
+        this.probMatrices = new ProbMap[this.nodes.length];
 
         for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             initializeNode(nodeIndex, oldBayesIm, initializationMethod);
@@ -1248,7 +1248,7 @@ public final class MlBayesIm implements BayesIm {
 
         this.parentDims[nodeIndex] = dims;
         this.probs[nodeIndex] = new double[numRows][numCols];
-        this.probMatrices[nodeIndex] = new Matrix(numRows, numCols);
+        this.probMatrices[nodeIndex] = new ProbMap(numRows, numCols);
 
         // Initialize each row.
         if (initializationMethod == MlBayesIm.RANDOM) {
@@ -1470,7 +1470,7 @@ public final class MlBayesIm implements BayesIm {
         if (this.probs != null) {
             for (int i = 0; i < this.nodes.length; i++) {
                 if (useProbMatrices) {
-                    probMatrices[i] = new Matrix(probs[i]);
+                    probMatrices[i] = new ProbMap(probs[i]);
                 }
             }
         }
