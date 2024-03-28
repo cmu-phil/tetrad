@@ -57,11 +57,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * method  getCategoryIndex(Node node) in BayesPm. The rest of the methods in this class are easily understood as
  * variants of the methods above.
  * <p>
- * This version uses a different method for storing the probabilities. The previous version stored the probabilities in
- * a three-dimensional array, where the first dimension was the node, the second dimension was the row index, and the
- * third dimension was the column index. This version stores and array of CptMap objects, where each CptMap object
- * represents the conditional probability table for a node. NaNs in these maps are not stored, allowing for a more
- * compact representation so that huge conditional probability tables can be estimated from finite samples.
+ * This version uses a sparse method for storing the probabilities, where NaNs are not stored. This allows BayesPms with
+ * many categories per variable to be estimated from small samples without overflowing memory. The old method of storing
+ * probabilities is kept here for backward compatibility.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for advice and earlier versions.
  *
