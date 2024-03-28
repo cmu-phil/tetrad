@@ -8,16 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a conditional probability table (CPT) in a Bayes net. This represents the CPT as a  map from a unique
+ * Represents a conditional probability table (CPT) in a Bayes net. This represents the CPT as a map from a unique
  * integer index for a particular node to the probability of that node taking on that value, where NaN's are not
  * stored.
- * <p>
- * The goal of this is to allow huge conditional probability tables to be stored in a compact way when estimated from
- * finite samples. The idea is that the CPT is stored as a map from a unique integer index for a particular node to the
- * probability of that node taking on that value, where NaN's are not stored. This is useful because the CPTs can be
- * huge and sparse, and this allows them to be stored in a compact way. The unique integer index for a particular node
- * is calculated as follows: row * numColumns + column, where row is the row of the node and column is the column of the
- * node.
  */
 public class CptMap implements TetradSerializable {
     @Serial
