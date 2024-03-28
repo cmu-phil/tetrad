@@ -8,10 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a probability map. A probability map is a map from a unique integer index for a particular node to the *
- * probability of that node taking on that value, where NaN's are not stored.
+ * Represents a conditional probability table (CPT) in a Bayes net. This represents the CPT as a  map from a unique
+ * integer index for a particular node to the probability of that node taking on that value, where NaN's are not
+ * stored.
+ * <p>
+ * The goal of this is to allow huge conditional probability tables to be stored in a compact way.
  */
-public class ProbMap implements TetradSerializable {
+public class CptMap implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
@@ -33,10 +36,10 @@ public class ProbMap implements TetradSerializable {
      * that node taking on that value, where NaN's are not stored. This probability map assumes that there is a certain
      * number of rows and a certain number of columns in the table.
      *
-     * @param numRows the number of rows in the table
+     * @param numRows    the number of rows in the table
      * @param numColumns the number of columns in the table
      */
-    public ProbMap(int numRows, int numColumns) {
+    public CptMap(int numRows, int numColumns) {
         if (numRows < 1 || numColumns < 1) {
             throw new IllegalArgumentException("Number of rows and columns must be at least 1.");
         }
@@ -51,7 +54,7 @@ public class ProbMap implements TetradSerializable {
      * @param probMatrix the 2-dimensional array representing the probability matrix
      * @throws IllegalArgumentException if the number of columns in any row is different
      */
-    public ProbMap(double[][] probMatrix) {
+    public CptMap(double[][] probMatrix) {
         if (probMatrix == null || probMatrix.length == 0 || probMatrix[0].length == 0) {
             throw new IllegalArgumentException("Probability matrix must have at least one row and one column.");
         }
@@ -75,7 +78,7 @@ public class ProbMap implements TetradSerializable {
     /**
      * Returns the probability of the node taking on the value specified by the given row and column.
      *
-     * @param row the row of the node
+     * @param row    the row of the node
      * @param column the column of the node
      * @return the probability of the node taking on the value specified by the given row and column
      */
@@ -96,10 +99,10 @@ public class ProbMap implements TetradSerializable {
     /**
      * Sets the probability of the node taking on the value specified by the given row and column to the given value.
      *
-     * @param row the row of the node
+     * @param row    the row of the node
      * @param column the column of the node
-     * @param value the probability of the node taking on the value specified by the given row and column
-     *              (NaN to remove the value)
+     * @param value  the probability of the node taking on the value specified by the given row and column (NaN to
+     *               remove the value)
      */
     public void set(int row, int column, double value) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
@@ -138,8 +141,9 @@ public class ProbMap implements TetradSerializable {
      * Assigns the values in the provided vector to a specific row in the probability map.
      *
      * @param rowIndex the index of the row to be assigned
-     * @param vector the vector containing the values to be assigned to the row
-     * @throws IllegalArgumentException if the size of the vector is not equal to the number of columns in the probability map
+     * @param vector   the vector containing the values to be assigned to the row
+     * @throws IllegalArgumentException if the size of the vector is not equal to the number of columns in the
+     *                                  probability map
      */
     public void assignRow(int rowIndex, Vector vector) {
         if (vector.size() != numColumns) {

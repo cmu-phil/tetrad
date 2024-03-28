@@ -127,7 +127,7 @@ public final class MlBayesIm implements BayesIm {
      * map in this array. The probability map is a map from a unique integer index for a particular node to the
      * probability of that node taking on that value, where NaN's are not stored. Replaces the probs array.
      */
-    private ProbMap[] probMatrices;
+    private CptMap[] probMatrices;
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
@@ -575,7 +575,7 @@ public final class MlBayesIm implements BayesIm {
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         if (useProbMatrices) {
-            probMatrices[nodeIndex] = new ProbMap(probMatrix);
+            probMatrices[nodeIndex] = new CptMap(probMatrix);
         } else {
             for (int i = 0; i < probMatrix.length; i++) {
                 System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
@@ -1172,7 +1172,7 @@ public final class MlBayesIm implements BayesIm {
         this.parents = new int[this.nodes.length][];
         this.parentDims = new int[this.nodes.length][];
         this.probs = new double[this.nodes.length][][];
-        this.probMatrices = new ProbMap[this.nodes.length];
+        this.probMatrices = new CptMap[this.nodes.length];
 
         for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             initializeNode(nodeIndex, oldBayesIm, initializationMethod);
@@ -1229,7 +1229,7 @@ public final class MlBayesIm implements BayesIm {
 
         this.parentDims[nodeIndex] = dims;
         this.probs[nodeIndex] = new double[numRows][numCols];
-        this.probMatrices[nodeIndex] = new ProbMap(numRows, numCols);
+        this.probMatrices[nodeIndex] = new CptMap(numRows, numCols);
 
         // Initialize each row.
         if (initializationMethod == MlBayesIm.RANDOM) {
@@ -1461,10 +1461,10 @@ public final class MlBayesIm implements BayesIm {
      */
     private void copyDataToProbMatrices() {
         if (!this.useProbMatrices && this.probs != null && this.probs.length == this.nodes.length) {
-            this.probMatrices = new ProbMap[this.probs.length];
+            this.probMatrices = new CptMap[this.probs.length];
 
             for (int i = 0; i < this.nodes.length; i++) {
-                probMatrices[i] = new ProbMap(this.probs[i]);
+                probMatrices[i] = new CptMap(this.probs[i]);
             }
 
             this.probs = null;
