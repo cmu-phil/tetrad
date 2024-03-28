@@ -95,11 +95,10 @@ public final class MlBayesIm implements BayesIm {
      */
     private final Node[] nodes;
     /**
-     * A flag indicating whether to use probability matrices or not. If true, the probMatrices array is used; if false,
-     * the probs array is used. The probMatrices array is the new way of storing the probabilities; the probs array is
-     * kept here for backward compatibility.
+     * A flag indicating whether to use CptMaps or not. If true, CptMaps are used; if false, the probs array is used.
+     * The CptMap is the new way of storing the probabilities; the probs array is kept here for backward compatibility.
      */
-    boolean useProbMatrices = true;
+    boolean useCptMaps = true;
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
@@ -123,9 +122,8 @@ public final class MlBayesIm implements BayesIm {
      */
     private double[][][] probs;
     /**
-     * The array of probability maps for each node. The index of the node corresponds to the index of the probability
-     * map in this array. The probability map is a map from a unique integer index for a particular node to the
-     * probability of that node taking on that value, where NaN's are not stored. Replaces the probs array.
+     * The array of CPT maps for each node. The index of the node corresponds to the index of the probability map in
+     * this array. Replaces the probs array.
      */
     private CptMap[] probMatrices;
 
@@ -368,7 +366,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of columns.
      */
     public int getNumColumns(int nodeIndex) {
-        if (useProbMatrices) {
+        if (useCptMaps) {
             return probMatrices[nodeIndex].getNumColumns();
         } else {
             return this.probs[nodeIndex][0].length;
@@ -382,7 +380,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of rows in the node.
      */
     public int getNumRows(int nodeIndex) {
-        if (useProbMatrices) {
+        if (useCptMaps) {
             return probMatrices[nodeIndex].getNumRows();
         } else {
             return this.probs[nodeIndex].length;
@@ -488,7 +486,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the probability value for the given node.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        if (useProbMatrices) {
+        if (useCptMaps) {
             return probMatrices[nodeIndex].get(rowIndex, colIndex);
         } else {
             return this.probs[nodeIndex][rowIndex][colIndex];
@@ -574,7 +572,7 @@ public final class MlBayesIm implements BayesIm {
      */
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
-        if (useProbMatrices) {
+        if (useCptMaps) {
             probMatrices[nodeIndex] = new CptMap(probMatrix);
         } else {
             for (int i = 0; i < probMatrix.length; i++) {
@@ -606,7 +604,7 @@ public final class MlBayesIm implements BayesIm {
                                                + "between 0.0 and 1.0 or Double.NaN.");
         }
 
-        if (useProbMatrices) {
+        if (useCptMaps) {
             probMatrices[nodeIndex].set(rowIndex, colIndex, value);
         } else {
             this.probs[nodeIndex][rowIndex][colIndex] = value;
@@ -648,7 +646,7 @@ public final class MlBayesIm implements BayesIm {
         int size = getNumColumns(nodeIndex);
         double[] row = getRandomWeights(size);
 
-        if (useProbMatrices) {
+        if (useCptMaps) {
             for (int colIndex = 0; colIndex < size; colIndex++) {
                 probMatrices[nodeIndex].set(rowIndex, colIndex, row[colIndex]);
             }
@@ -1184,7 +1182,7 @@ public final class MlBayesIm implements BayesIm {
         double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
 
-        if (useProbMatrices) {
+        if (useCptMaps) {
             probMatrices[nodeIndex].assignRow(rowIndex, new Vector(row));
         } else {
             this.probs[nodeIndex][rowIndex] = row;
@@ -1343,7 +1341,7 @@ public final class MlBayesIm implements BayesIm {
      * Note: This method should only be called after the `probs` array has been properly initialized.
      */
     private void copyDataToProbMatrices() {
-        if (!this.useProbMatrices && this.probs != null && this.probs.length == this.nodes.length) {
+        if (!this.useCptMaps && this.probs != null && this.probs.length == this.nodes.length) {
             this.probMatrices = new CptMap[this.probs.length];
 
             for (int i = 0; i < this.nodes.length; i++) {
@@ -1351,7 +1349,7 @@ public final class MlBayesIm implements BayesIm {
             }
 
             this.probs = null;
-            this.useProbMatrices = true;
+            this.useCptMaps = true;
         }
     }
 }
