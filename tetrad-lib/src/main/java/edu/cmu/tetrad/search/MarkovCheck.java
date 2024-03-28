@@ -201,8 +201,7 @@ public class MarkovCheck {
                 while ((list = generator.next()) != null) {
                     Set<Node> z = GraphUtils.asSet(list, _other);
 
-                    if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
-                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                    if (!checkNodeIndependenceAndConditioning(x, y, z)) {
                         continue;
                     }
 
@@ -248,15 +247,10 @@ public class MarkovCheck {
      * @return The variables of the independence test.
      */
     public List<Node> getVariables(List<Node> graphNodes, List<Node> independenceNodes, List<Node> conditioningNodes) {
-        List<Node> vars = new ArrayList<>(graphNodes);
-
-        conditioningNodes = new ArrayList<>(conditioningNodes);
-        independenceNodes = new ArrayList<>(independenceNodes);
-
-        List<Node> sublistedVariables = independenceNodes;
+        List<Node> sublistedVariables = new ArrayList<>(independenceNodes);
         sublistedVariables.addAll(conditioningNodes);
+        List<Node> vars = new ArrayList<>(graphNodes);
         vars.retainAll(sublistedVariables);
-
         return vars;
     }
 
@@ -328,8 +322,7 @@ public class MarkovCheck {
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
-                    if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
-                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                    if (!checkNodeIndependenceAndConditioning(x, y, z)) {
                         continue;
                     }
 
@@ -772,18 +765,17 @@ public class MarkovCheck {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample);
-                    ((RowsSettable) independenceTest).setRows(rows);
-                    addResults(resultsIndep, resultsDep, fact, x, y, z);
-                } else {
-                    addResults(resultsIndep, resultsDep, fact, x, y, z);
+                    List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
+                    ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
                 }
+                addResults(resultsIndep, resultsDep, fact, x, y, z);
 
                 return new Pair<>(resultsIndep, resultsDep);
             }
 
             private void addResults(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep, IndependenceFact fact, Node x, Node y, Set<Node> z) {
                 boolean verbose = independenceTest.isVerbose();
+                // Temporarily turn off verbose
                 independenceTest.setVerbose(false);
                 IndependenceResult result;
                 try {
@@ -792,7 +784,7 @@ public class MarkovCheck {
                     throw new RuntimeException(e);
                 }
                 boolean indep = result.isIndependent();
-                double pValue = result.getPValue();
+                double pValue = result.getPValue(); // VBC TODO: is this the real pvalue for node x? or is it just storing d-speration fact? in IndTestFisherZ.java this is a real p value for x, given y, z.
                 independenceTest.setVerbose(verbose);
 
                 if (!Double.isNaN(pValue)) {
@@ -856,11 +848,6 @@ public class MarkovCheck {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
-        if (indep) {
-            fractionDependentIndep = dependent / (double) results.size();
-        } else {
-            fractionDependentDep = dependent / (double) results.size();
-        }
 
         List<Double> pValues = getPValues(results);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
@@ -868,6 +855,7 @@ public class MarkovCheck {
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
 
         if (indep) {
+            fractionDependentIndep = dependent / (double) results.size();
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
                 binomialPIndep = Double.NaN;
@@ -882,6 +870,7 @@ public class MarkovCheck {
                 andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
             }
         } else {
+            fractionDependentDep = dependent / (double) results.size();
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
                 binomialPDep = Double.NaN;
@@ -964,6 +953,20 @@ public class MarkovCheck {
         } else {
             return this.resultsDep;
         }
+    }
+
+    /**
+     * Checks if both nodes x and y are independent and if the set of conditioning nodes contains all elements of z.
+     *
+     * @param x Node to check for independence along with y.
+     * @param y Node to check for independence along with x.
+     * @param z Set of nodes to check if all are contained within the conditioning nodes.
+     * @return true if x and y are in the independence nodes and all elements of z are in the conditioning nodes; false otherwise.
+     */
+    private boolean checkNodeIndependenceAndConditioning(Node x, Node y, Set<Node> z) {
+        List<Node> independenceNodes = getIndependenceNodes();
+        return (independenceNodes.contains(x) && independenceNodes.contains(y)
+                && new HashSet<>(getConditioningNodes()).containsAll(z));
     }
 
     /**
