@@ -349,11 +349,11 @@ public final class MlBayesIm implements BayesIm {
      * @return a {@link java.util.List} object
      */
     public List<String> getVariableNames() {
+        List<Node> nodes = getVariables();
         List<String> variableNames = new LinkedList<>();
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            Node node = getNode(i);
-            variableNames.add(this.bayesPm.getVariable(node).getName());
+        for (Node node : nodes) {
+            variableNames.add(node.getName());
         }
 
         return variableNames;
