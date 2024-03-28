@@ -98,7 +98,9 @@ public final class MlBayesIm implements BayesIm {
      */
     private final Node[] nodes;
     /**
-     * A flag indicating whether to use probability matrices or not.
+     * A flag indicating whether to use probability matrices or not. If true, the probMatrices array is used; if false,
+     * the probs array is used. The probMatrices array is the new way of storing the probabilities; the probs array is
+     * kept here for backward compatibility.
      */
     boolean useProbMatrices = true;
     /**
@@ -118,8 +120,9 @@ public final class MlBayesIm implements BayesIm {
      * for each of the parent values; the order of the values in this array is the same as the order of node in
      * 'parents'; the value indices are obtained from the Bayes PM for each node. The column is the index of the value
      * of N, where this index is obtained from the Bayes PM.
-     *
-     * @serial
+     * <p>
+     * This is kept here for backward compatibility. The new way of storing the probabilities is in the probMatrices
+     * array.
      */
     private double[][][] probs;
     /**
