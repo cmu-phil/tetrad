@@ -53,7 +53,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * colIndex); and, setProbability(int nodeIndex, int rowIndex, int colIndex, int probability). To determine the index of
  * the node in question, use the method getNodeIndex(Node node). To determine the index of the row in question, use the
  * method getRowIndex(int[] parentVals). To determine the order of the parent values for a given node so that you can
- * build the parentVals[] array, use the method getParents(int nodeIndex) To determine the index of a category, use the
+ * build the parentVals[] array, use the method getParents(int nodeIndex). To determine the index of a category, use the
  * method  getCategoryIndex(Node node) in BayesPm. The rest of the methods in this class are easily understood as
  * variants of the methods above.
  * <p>
@@ -1350,42 +1350,6 @@ public final class MlBayesIm implements BayesIm {
             }
         }
 
-//        // Go through each parent of the node in the new BayesIm.
-//        for (int i = 0; i < oldBayesIm.getNumParents(oldNodeIndex); i++) {
-//
-//            // Get the index of the parent in the new graph and in the old
-//            // graph. If it's no longer in the new graph, skip to the next
-//            // parent.
-//            int oldParentNodeIndex = oldBayesIm.getParent(oldNodeIndex, i);
-//            int parentNodeIndex =
-//                    oldBayesIm.getCorrespondingNodeIndex(oldParentNodeIndex, this);
-//            int parentIndex = -1;
-//
-//            for (int j = 0; j < this.getNumParents(nodeIndex); j++) {
-//                if (parentNodeIndex == this.getParent(nodeIndex, j)) {
-//                    parentIndex = j;
-//                    break;
-//                }
-//            }
-//
-//            if (parentIndex == -1 ||
-//                    parentIndex >= this.getNumParents(nodeIndex)) {
-//                continue;
-//            }
-//
-//            // Look up that value index for the new BayesIm for that parent.
-//            // If it was a valid value index in the old BayesIm, record
-//            // that value in oldParentValues. Otherwise return -1.
-//            int parentValue = oldParentValues[i];
-//            int parentDim =
-//                    this.getParentDim(nodeIndex, parentIndex);
-//
-//            if (parentValue < parentDim) {
-//                oldParentValues[parentIndex] = oldParentValue;
-//            } else {
-//                return -1;
-//            }
-//        }
         // If there are any -1's in the combination at this point, return -1.
         for (int oldParentValue : oldParentValues) {
             if (oldParentValue == -1) {
@@ -1450,14 +1414,11 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * Copies data from the `probs` array to the `probMatrices` array.
-     * If the lengths of both arrays are equal, the `probMatrices` array is
-     * initialized with `ProbMap` objects, each containing the corresponding
-     * `probs` element. The `probs` array is then set to null and the
-     * `useProbMatrices` flag is set to true.
-     *
-     * Note: This method should only be called after the `probs` array has
-     *       been properly initialized.
+     * Copies data from the `probs` array to the `probMatrices` array. If the lengths of both arrays are equal, the
+     * `probMatrices` array is initialized with `ProbMap` objects, each containing the corresponding `probs` element.
+     * The `probs` array is then set to null and the `useProbMatrices` flag is set to true.
+     * <p>
+     * Note: This method should only be called after the `probs` array has been properly initialized.
      */
     private void copyDataToProbMatrices() {
         if (!this.useProbMatrices && this.probs != null && this.probs.length == this.nodes.length) {
