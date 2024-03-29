@@ -39,6 +39,7 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private Matrix bHat = new Matrix(0, 0);
 
     /**
      * Constructs a new instance of the IcaLingam algorithm.
@@ -65,7 +66,7 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
         edu.cmu.tetrad.search.IcaLingam icaLingam = new edu.cmu.tetrad.search.IcaLingam();
         icaLingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
         icaLingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
-        Matrix bHat = icaLingam.getAcyclicTrimmedBHat(W);
+        bHat = icaLingam.getAcyclicTrimmedBHat(W);
         Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
 
         if (parameters.getBoolean(Params.VERBOSE)) {
@@ -121,5 +122,14 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
         return parameters;
+    }
+
+    /**
+     * Retrieves the bHat matrix.
+     *
+     * @return The bHat matrix.
+     */
+    public Matrix getBHat() {
+        return bHat;
     }
 }

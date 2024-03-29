@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp;
 
+import edu.cmu.tetrad.search.work_in_progress.DMSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -55,7 +56,8 @@ public final class Tetrad implements PropertyChangeListener {
      */
     public static boolean enableExperimental;
     /**
-     * The variable frame represents the main JFrame of the application. It is a static field of the Tetrad class.
+     * The variable frame represents the main JFrame of the application.
+     * It is a static field of the Tetrad class.
      */
     public static JFrame frame;
     /**

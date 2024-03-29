@@ -673,6 +673,9 @@ public class MarkovCheckEditor extends JPanel {
                 } else if (column == 3) {
                     return "P-value or Bump";
                 }
+//                else if (model.getMarkovCheck().isCpdag() && column == 4) {
+//                    return "Min Beta";
+//                }
 
                 return null;
             }
