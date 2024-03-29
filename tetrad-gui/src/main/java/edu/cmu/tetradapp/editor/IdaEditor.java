@@ -217,11 +217,11 @@ public class IdaEditor extends JPanel {
             addStatToBox(avgSquaredDistLabel, statsBox);
 
             squaredDiffMinTotalLabel = new JLabel();
-            squaredDiffMinTotalLabel.setText("Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
+            squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMinTotalLabel, statsBox);
 
             squaredDiffMaxTotalLabel = new JLabel();
-            squaredDiffMaxTotalLabel.setText("Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
+            squaredDiffMaxTotalLabel.setText("Avearege Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMaxTotalLabel, statsBox);
         }
 
