@@ -1,13 +1,17 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
+import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
 
 /**
  * Displays an editor that lets the user interact with the Comparison class in the edu.cmu.tetrad.algcomparison package.
@@ -34,13 +38,13 @@ import java.util.Set;
  *
  * @author josephramsey 2024-3-29
  */
-public class AlgcomparisonEditor {
+public class AlgcomparisonEditor extends JPanel {
 
     /**
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application.
      * It contains methods and properties related to the comparison of algorithms.
      */
-    AlgcomparisonModel model = new AlgcomparisonModel();
+    AlgcomparisonModel model;
 
     /**
      * The constructor for the AlgcomparisonEditor class. The constructor will create a new Comparison object and pass
@@ -50,12 +54,24 @@ public class AlgcomparisonEditor {
      * the JFrame. The constructor will then add an ActionListener to the "Run Comparison" button that will call the
      * runComparison() method in the Comparison class. The constructor will then set the JFrame to be visible.
      */
-    public AlgcomparisonEditor() {
+    public AlgcomparisonEditor(AlgcomparisonModel model) {
+        this.model = model;
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+
         // Create a new Comparison object and pass in the PrintStream "localOut" to the constructor
         // Use the Reflection API to populate the lists of simulation methods, algorithms, and statistics
         // Pass these lists
 
 
+        tabbedPane.addTab("Selection", getSelectionBox(model));
+        tabbedPane.addTab("Parameters", new JPanel());
+        tabbedPane.addTab("Results", new JPanel());
+        tabbedPane.addTab("Help", new JPanel());
+        tabbedPane.setPreferredSize(new Dimension(800, 400));
+
+        setLayout(new BorderLayout());
+        add(tabbedPane, BorderLayout.CENTER);
 
         // Create a new JFrame
 
@@ -66,6 +82,47 @@ public class AlgcomparisonEditor {
         // Set the JFrame to be visible
 
 
+    }
+
+    @NotNull
+    private static Box getSelectionBox(AlgcomparisonModel model) {
+        java.util.List<String> simulations = model.getSimulationsNames();
+        java.util.List<String> algorithms = model.getAlgorithmsNames();
+        java.util.List<String> statistics = model.getStatisticsNames();
+
+        JList<Class<? extends Simulation>> simulationList = new JList(simulations.toArray());
+        JList<Class<? extends edu.cmu.tetrad.algcomparison.algorithm.Algorithm>> algorithmList = new JList(algorithms.toArray());
+        JList<Class<? extends edu.cmu.tetrad.algcomparison.statistic.Statistic>> statisticList = new JList(statistics.toArray());
+
+        Box horiz1 = Box.createHorizontalBox();
+
+        Box vert1 = Box.createVerticalBox();
+        vert1.add(new JLabel("Simulation:"));
+        vert1.add(new JScrollPane(simulationList));
+
+        Box vert2 = Box.createVerticalBox();
+        vert2.add(new JLabel("Algorithms:"));
+        vert2.add(new JScrollPane(algorithmList));
+
+        Box vert3 = Box.createVerticalBox();
+        vert3.add(new JLabel("Statistics:"));
+        vert3.add(new JScrollPane(statisticList));
+
+        JLabel label = new JLabel("Instructions: Select a simulation, one or more algorithms, and one or more statistics.");
+        Box horiz2 = Box.createHorizontalBox();
+        horiz2.add(label);
+        horiz2.add(Box.createHorizontalGlue());
+
+        Box vert4 = Box.createVerticalBox();
+        vert4.add(horiz2);
+
+        horiz1.add(vert1);
+        horiz1.add(vert2);
+        horiz1.add(vert3);
+
+        vert4.add(horiz1);
+
+        return vert4;
     }
 
 

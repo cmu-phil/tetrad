@@ -62,7 +62,9 @@ import java.util.concurrent.ForkJoinPool;
  * @author danielmalinsky
  * @version $Id: $Id
  */
-public class Comparison {
+public class Comparison implements TetradSerializable {
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * The number of threads to use.
@@ -77,7 +79,7 @@ public class Comparison {
     /**
      * The output stream.
      */
-    private PrintStream out;
+    private transient PrintStream out;
 
     /**
      * Whether to save the graphs.
@@ -140,7 +142,7 @@ public class Comparison {
     /**
      * The output stream for local output. Could be null.
      */
-    private PrintStream localOut = null;
+    private transient PrintStream localOut = null;
 
     /**
      * Initializes a new instance of the Comparison class.

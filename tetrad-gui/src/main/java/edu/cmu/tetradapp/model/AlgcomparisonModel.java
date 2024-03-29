@@ -75,7 +75,7 @@ public class AlgcomparisonModel implements SessionModel {
 
     private PrintStream localOut = null;
 
-    public AlgcomparisonModel() {
+    public AlgcomparisonModel(Parameters parameters) {
 
         Set<Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
                 edu.cmu.tetrad.algcomparison.simulation.Simulation.class);
@@ -302,22 +302,52 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * A list of possible simulations.
      */
-    public List<Class<? extends Simulation>> getSimulations() {
-        return simulations;
+    public List<String> getSimulationsNames() {
+        List<String> simulationsNames = new ArrayList<>();
+
+        for (Class<? extends Simulation> simulation : simulations) {
+            String[] split = simulation.getName().split("\\.");
+            String name = split[split.length - 1];
+            simulationsNames.add(name);
+        }
+
+        simulationsNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+        return simulationsNames;
     }
 
     /**
      * A private instance variable that holds a list of possible Algorithm objects.
      */
-    public List<Class<? extends Algorithm>> getAlgorithms() {
-        return algorithms;
+    public List<String> getAlgorithmsNames() {
+        List<String> algorithmsNames = new ArrayList<>();
+
+        for (Class<? extends Algorithm> algorithm : algorithms) {
+            String[] split = algorithm.getName().split("\\.");
+            String name = split[split.length - 1];
+            algorithmsNames.add(name);
+        }
+
+        algorithmsNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+        return algorithmsNames;
     }
 
     /**
      * A private instance variable that holds a list of possible Statistic objects.
      */
-    public List<Class<? extends Statistic>> getStatistics() {
-        return statistics;
+    public List<String> getStatisticsNames() {
+        List<String> statisticsNames = new ArrayList<>();
+
+        for (Class<? extends Statistic> statistic : statistics) {
+            String[] split = statistic.getName().split("\\.");
+            String name = split[split.length - 1];
+            statisticsNames.add(name);
+        }
+
+        statisticsNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+        return statisticsNames;
     }
 
     /**

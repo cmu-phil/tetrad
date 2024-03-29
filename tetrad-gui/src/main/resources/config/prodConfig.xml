@@ -1122,6 +1122,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
+            <model name="Algcomparison" acronym="Algcomparison"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.AlgcomparisonModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.AlgcomparisonEditor</editor-class>
+            </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>

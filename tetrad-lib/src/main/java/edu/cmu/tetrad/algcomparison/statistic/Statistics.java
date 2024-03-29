@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +14,10 @@ import java.util.Map;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Statistics {
+public class Statistics implements TetradSerializable {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * The list of statistics.
