@@ -115,11 +115,11 @@ public class IdaEditor extends JPanel {
                 }
 
                 if (squaredDiffMinTotalLabel != null) {
-                    squaredDiffMinTotalLabel.setText("Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(visiblePairs)));
+                    squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(visiblePairs)));
                 }
 
                 if (squaredDiffMaxTotalLabel != null) {
-                    squaredDiffMaxTotalLabel.setText("Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(visiblePairs)));
+                    squaredDiffMaxTotalLabel.setText("Average Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(visiblePairs)));
                 }
             }
         });
