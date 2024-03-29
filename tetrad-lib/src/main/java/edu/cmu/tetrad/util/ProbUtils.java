@@ -244,6 +244,7 @@ public class ProbUtils {
      */
     private static double vm_epsilon = 1.0;
     private static long seedi = 123456789L, seedj = 362436069L;
+
     /**
      * Private constructor to prevent instantiation.
      */
@@ -288,8 +289,8 @@ public class ProbUtils {
             f4 = f2 * 3 + z * f3;
             f5 = f3 * 4 + z * f4;
             dcphi = f + h * (f1 * 120. +
-                    h * (f2 * 60. + h * (f3 * 20. + h * (f4 * 5. + h * f5)))) /
-                    120.;
+                             h * (f2 * 60. + h * (f3 * 20. + h * (f4 * 5. + h * f5)))) /
+                        120.;
             dcphi = dcphi * .3989422804014326779 * FastMath.exp(x * -.5 * x);
         }
 
@@ -486,7 +487,7 @@ public class ProbUtils {
             //
             if (q > 1.0) {
                 xb = p * FastMath.log(y) + q * FastMath.log(1.0 - y) - ProbUtils.logbeta(p, q) -
-                        FastMath.log(q);
+                     FastMath.log(q);
                 ib = (int) FastMath.max(xb / alnsml, 0.0);
                 term = FastMath.exp(xb - ((double) ib) * alnsml);
                 c = 1.0 / (1.0 - y);
@@ -597,7 +598,7 @@ public class ProbUtils {
             return 0.0;
         } else {
             sx = FastMath.sqrt(a) * 3.0 *
-                    (FastMath.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
+                 (FastMath.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
 
             return ProbUtils.normalCdf(sx);
         }
@@ -785,8 +786,8 @@ public class ProbUtils {
                 b = 48.0 * a * a;
                 y = a * y;
                 y = (((((-0.4 * y - 3.3) * y - 24.0) * y - 85.5) /
-                        (0.8 * y * y + 100.0 + b) + y + 3.0) / b + 1.0) *
-                        FastMath.sqrt(y);
+                      (0.8 * y * y + 100.0 + b) + y + 3.0) / b + 1.0) *
+                    FastMath.sqrt(y);
                 y = -1.0 * y;
                 cdf = ProbUtils.normalCdf(y);
 
@@ -1177,7 +1178,7 @@ public class ProbUtils {
                 d_2 = (ProbUtils.c9 + ch * (ProbUtils.c10 + ProbUtils.three * ch)) / p2;
                 t = d_1 - d_2;
                 ch -= (ProbUtils.one - FastMath.exp(a + g + ProbUtils.half * ch + c * ProbUtils.aa) * p2 / p1) /
-                        t;
+                      t;
             } while (FastMath.abs(q / ch - ProbUtils.one) > ProbUtils.c1);
         }
 
@@ -1191,12 +1192,12 @@ public class ProbUtils {
             b = t / ch;
             a = ProbUtils.half * t - b * c;
             s1 = (ProbUtils.c19 +
-                    a * (ProbUtils.c17 + a * (ProbUtils.c14 + a * (ProbUtils.c13 + a * (ProbUtils.c12 + ProbUtils.c11 * a))))) /
-                    ProbUtils.c24;
+                  a * (ProbUtils.c17 + a * (ProbUtils.c14 + a * (ProbUtils.c13 + a * (ProbUtils.c12 + ProbUtils.c11 * a))))) /
+                 ProbUtils.c24;
             s2 = (ProbUtils.c24 + a * (ProbUtils.c29 + a * (ProbUtils.c32 + a * (ProbUtils.c33 + ProbUtils.c35 * a)))) / ProbUtils.c37;
             s3 = (ProbUtils.c19 + a * (ProbUtils.c25 + a * (ProbUtils.c28 + ProbUtils.c31 * a))) / ProbUtils.c37;
             s4 = (ProbUtils.c20 + a * (ProbUtils.c27 + ProbUtils.c34 * a) + c * (ProbUtils.c22 + a * (ProbUtils.c30 + ProbUtils.c36 * a))) /
-                    ProbUtils.c38;
+                 ProbUtils.c38;
             s5 = (ProbUtils.c13 + ProbUtils.c21 * a + c * (ProbUtils.c18 + ProbUtils.c26 * a)) / ProbUtils.c37;
             s6 = (ProbUtils.c15 + c * (ProbUtils.c23 + ProbUtils.c16 * c)) / ProbUtils.c38;
             d_1 = (s3 - b * (s4 - b * (s5 - b * s6)));
@@ -1266,7 +1267,7 @@ public class ProbUtils {
         if (FastMath.abs(q) <= ProbUtils.split) {
             r = q * q;
             ppn = q * (((ProbUtils.a3 * r + ProbUtils.a2) * r + ProbUtils.a1) * r + ProbUtils.a0) /
-                    ((((ProbUtils.b4 * r + ProbUtils.b3) * r + ProbUtils.b2) * r + ProbUtils.b1) * r + ProbUtils.one);
+                  ((((ProbUtils.b4 * r + ProbUtils.b3) * r + ProbUtils.b2) * r + ProbUtils.b1) * r + ProbUtils.one);
         } else {
             r = p;
 
@@ -1276,7 +1277,7 @@ public class ProbUtils {
 
             r = FastMath.sqrt(-FastMath.log(r));
             ppn = (((ProbUtils.cc3 * r + ProbUtils.cc2) * r + ProbUtils.cc1) * r + ProbUtils.cc0) /
-                    ((ProbUtils.d2 * r + ProbUtils.d1) * r + ProbUtils.one);
+                  ((ProbUtils.d2 * r + ProbUtils.d1) * r + ProbUtils.one);
 
             if (q < ProbUtils.zero) {
                 ppn = -ppn;
@@ -1405,13 +1406,13 @@ public class ProbUtils {
 
                 c = (((0.05 * d * x - 5.0) * x - 7.0) * x - 2.0) * x + b + c;
                 y = (((((0.4 * y + 6.3) * y + 36.0) * y + 94.5) / c - y - 3.0) /
-                        b + 1.0) * x;
+                     b + 1.0) * x;
                 y = a * y * y;
                 y = (y > .002) ? FastMath.exp(y) - 1.0 : 0.5 * y * y + y;
             } else {
                 y = ((1.0 / (((n + 6.0) / (n * y) - 0.089 * d - 0.822) *
-                        (n + 2.0) * 3.0) + 0.5 / (n + 4.0)) * y - 1.0) *
-                        (n + 1.0) / (n + 2.0) + 1.0 / y;
+                             (n + 2.0) * 3.0) + 0.5 / (n + 4.0)) * y - 1.0) *
+                    (n + 1.0) / (n + 2.0) + 1.0 / y;
             }
 
             sq = FastMath.sqrt(n * y);
@@ -1439,7 +1440,7 @@ public class ProbUtils {
             return 0.0;
         } else {
             return (FastMath.exp(FastMath.log(x) * (a - 1) + FastMath.log(1 - x) * (b - 1) -
-                    ProbUtils.logbeta(a, b)));
+                                 ProbUtils.logbeta(a, b)));
         }
     }
 
@@ -1461,8 +1462,8 @@ public class ProbUtils {
             return 0.0;
         } else {
             return (FastMath.exp(ProbUtils.lngamma(n + 1.0) - ProbUtils.lngamma(k + 1.0) -
-                    ProbUtils.lngamma(n - k + 1.0) + k * FastMath.log(p) +
-                    (n - k) * FastMath.log(1.0 - p)));
+                                 ProbUtils.lngamma(n - k + 1.0) + k * FastMath.log(p) +
+                                 (n - k) * FastMath.log(1.0 - p)));
         }
     }
 
@@ -1501,8 +1502,8 @@ public class ProbUtils {
             return 0.0;
         } else {
             return (FastMath.exp(0.5 * a * FastMath.log(a) + 0.5 * b * FastMath.log(b) +
-                    (0.5 * a - 1.0) * FastMath.log(x) - ProbUtils.logbeta(0.5 * a, 0.5 * b) -
-                    0.5 * (a + b) * FastMath.log(b + a * x)));
+                                 (0.5 * a - 1.0) * FastMath.log(x) - ProbUtils.logbeta(0.5 * a, 0.5 * b) -
+                                 0.5 * (a + b) * FastMath.log(b + a * x)));
         }
     }
 
@@ -1562,7 +1563,7 @@ public class ProbUtils {
 
         return ((1.0 / FastMath.sqrt(a * FastMath.PI)) * FastMath.exp(ProbUtils.lngamma(
                 0.5 * (a + 1)) - ProbUtils.lngamma(0.5 * a) -
-                0.5 * (a + 1) * FastMath.log(1.0 + x * x / a)));
+                                                                      0.5 * (a + 1) * FastMath.log(1.0 + x * x / a)));
     }
 
     /**
@@ -1639,7 +1640,7 @@ public class ProbUtils {
                 } while (k < 0);
 
                 t = 0.9 * (1.0 + y * y) *
-                        FastMath.exp(k * logxm - ProbUtils.lngamma((double) k + 1.0) - g);
+                    FastMath.exp(k * logxm - ProbUtils.lngamma((double) k + 1.0) - g);
             } while (ProbUtils.uniformRand() > t);
         }
 
@@ -1713,7 +1714,7 @@ public class ProbUtils {
 
                 em = FastMath.floor(em);
                 t = 1.2 * sq * (1.0 + y * y) * FastMath.exp(g - ProbUtils.lngamma(em + 1.0) -
-                        ProbUtils.lngamma(en - em + 1.0) + em * plog + (en - em) * pclog);
+                                                            ProbUtils.lngamma(en - em + 1.0) + em * plog + (en - em) * pclog);
             } while (ProbUtils.uniformRand() > t);
 
             k = (int) em;
@@ -1847,7 +1848,7 @@ public class ProbUtils {
 
                 w = c2 * u2 / u1;
             } while ((c3 * u1 + w + 1.0 / w) > c4 &&
-                    (c3 * FastMath.log(u1) - FastMath.log(w) + w) > 1.0);
+                     (c3 * FastMath.log(u1) - FastMath.log(w) + w) > 1.0);
 
             x = c1 * w;
         }
@@ -2182,14 +2183,14 @@ public class ProbUtils {
                         smallest = j;
                     }
                 } else if ((Double.isInfinite(a[smallest]) ||
-                        Double.isInfinite(b[smallest])) &&
-                        !Double.isInfinite(a[j]) && !Double.isInfinite(b[j])) {
+                            Double.isInfinite(b[smallest])) &&
+                           !Double.isInfinite(a[j]) && !Double.isInfinite(b[j])) {
                     smallest = j;
                 } else if (!Double.isInfinite(a[smallest]) &&
-                        !Double.isInfinite(b[smallest]) &&
-                        !Double.isInfinite(a[j]) && !Double.isInfinite(b[j]) &&
-                        FastMath.abs(b[j] - a[j]) <
-                                FastMath.abs(b[smallest] - a[smallest])) {
+                           !Double.isInfinite(b[smallest]) &&
+                           !Double.isInfinite(a[j]) && !Double.isInfinite(b[j]) &&
+                           FastMath.abs(b[j] - a[j]) <
+                           FastMath.abs(b[smallest] - a[smallest])) {
                     smallest = j;
                 }
             }

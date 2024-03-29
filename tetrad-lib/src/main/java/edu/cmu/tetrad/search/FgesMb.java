@@ -1018,9 +1018,9 @@ public final class FgesMb implements DagScorer {
             int cond = T.size() + getNaYX(x, y).size() + graph.getParents(y).size();
 
             final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
-                    + " " + T + " " + bump
-                    + " degree = " + GraphUtils.getDegree(graph)
-                    + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
+                                   + " " + T + " " + bump
+                                   + " degree = " + GraphUtils.getDegree(graph)
+                                   + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
             TetradLogger.getInstance().forceLogMessage(message);
         }
 
@@ -1064,7 +1064,7 @@ public final class FgesMb implements DagScorer {
         union.addAll(naYX);
 
         return isClique(union) && semidirectedPathCondition(y, x, union)
-                && !violatesKnowledge;
+               && !violatesKnowledge;
     }
 
     /**
@@ -1547,10 +1547,10 @@ public final class FgesMb implements DagScorer {
 
         public String toString() {
             return "Arrow<" + a + "->" + b + " bump = " + bump
-                    + " t/h = " + hOrT
-                    + " TNeighbors = " + getTNeighbors()
-                    + " parents = " + parents
-                    + " naYX = " + naYX + ">";
+                   + " t/h = " + hOrT
+                   + " TNeighbors = " + getTNeighbors()
+                   + " parents = " + parents
+                   + " naYX = " + naYX + ">";
         }
 
         public int getIndex() {

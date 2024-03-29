@@ -109,9 +109,9 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
                 } else {
                     throw new IllegalArgumentException(
                             "Off-diagonal element at (" + i + ", " + j +
-                                    ") cannot be converted to correlation: " +
-                                    d1 + " <= FastMath.pow(" + d2 + " * " + d3 +
-                                    ", 0.5)");
+                            ") cannot be converted to correlation: " +
+                            d1 + " <= FastMath.pow(" + d2 + " * " + d3 +
+                            ", 0.5)");
                 }
             }
         }

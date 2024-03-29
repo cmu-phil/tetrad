@@ -166,7 +166,7 @@ public final class Session implements TetradSerializable {
 
         if (!node.isFreshlyCreated()) {
             throw new IllegalArgumentException("Node must be freshly " +
-                    "created in order to be added to a session: " + node);
+                                               "created in order to be added to a session: " + node);
         }
 
         // Causing templates not to work sometimes. Unnecessary. jdramsey 6/5/2015
@@ -206,8 +206,8 @@ public final class Session implements TetradSerializable {
             if (existsNodeByName(node.getDisplayName())) {
                 throw new IllegalArgumentException(
                         "Attempt to add node to the " +
-                                "session with duplicate " + "name: " +
-                                node.getDisplayName());
+                        "session with duplicate " + "name: " +
+                        node.getDisplayName());
             }
         }
 

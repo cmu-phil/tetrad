@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -100,49 +100,49 @@ public final class TestParser {
         ExpressionParser parser = new ExpressionParser();
 
         Expression expression = parse(parser, "+(1,1)");
-        assertTrue(expression.evaluate(new TestingContext()) == 2.0);
+        assertEquals(2.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "*(+(1,2), 5)");
-        assertTrue(expression.evaluate(new TestingContext()) == 15.0);
+        assertEquals(15.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "1 + 2.5");
-        assertTrue(expression.evaluate(new TestingContext()) == 3.5);
+        assertEquals(3.5, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "(2 + 3)");
-        assertTrue(expression.evaluate(new TestingContext()) == 5.0);
+        assertEquals(5.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "1 + (3 + 4)");
-        assertTrue(expression.evaluate(new TestingContext()) == 8.0);
+        assertEquals(8.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "1 + 2 + 5");
-        assertTrue(expression.evaluate(new TestingContext()) == 8.0);
+        assertEquals(8.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "1 + (2 * 3)");
-        assertTrue(expression.evaluate(new TestingContext()) == 7.0);
+        assertEquals(7.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "1 + (2 + (3 * 4))");
-        assertTrue(expression.evaluate(new TestingContext()) == 15.0);
+        assertEquals(15.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "(2 * 3) + (4 * 5)");
-        assertTrue(expression.evaluate(new TestingContext()) == 26.0);
+        assertEquals(26.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "((2 * 3) + (1 + (2 + (3 * 4))))");
-        assertTrue(expression.evaluate(new TestingContext()) == 21.0);
+        assertEquals(21.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "pow(2,3)");
-        assertTrue(expression.evaluate(new TestingContext()) == 8.0);
+        assertEquals(8.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, "sqrt(pow(2,2))");
-        assertTrue(expression.evaluate(new TestingContext()) == 2.0);
+        assertEquals(2.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = parse(parser, ConstantExpression.E.getName());
-        assertTrue(expression.evaluate(new TestingContext()) == ConstantExpression.E.evaluate(null));
+        assertEquals(expression.evaluate(new TestingContext()), ConstantExpression.E.evaluate(null), 0.0);
 
         expression = parse(parser, ConstantExpression.PI.getName());
-        assertTrue(expression.evaluate(new TestingContext()) == ConstantExpression.PI.evaluate(null));
+        assertEquals(expression.evaluate(new TestingContext()), ConstantExpression.PI.evaluate(null), 0.0);
 
         expression = parse(parser, ConstantExpression.PI.getName() + "+ 2");
-        assertTrue(expression.evaluate(new TestingContext()) == FastMath.PI + 2);
+        assertEquals(FastMath.PI + 2, expression.evaluate(new TestingContext()), 0.0);
     }
 
     /**
@@ -155,18 +155,18 @@ public final class TestParser {
 
         Expression expression = parse(parser, "x");
         context.assign("x", 5.6);
-        assertTrue(expression.evaluate(context) == 5.6);
+        assertEquals(5.6, expression.evaluate(context), 0.0);
 
         expression = parse(parser, "(x + y) * z");
         context.assign("x", 1.0);
         context.assign("y", 2.0);
         context.assign("z", 3.0);
-        assertTrue(expression.evaluate(context) == 9.0);
+        assertEquals(9.0, expression.evaluate(context), 0.0);
 
         expression = parse(parser, "3 + (x + (3 * y))");
         context.assign("x", 4.0);
         context.assign("y", 2.0);
-        assertTrue(expression.evaluate(context) == 13.0);
+        assertEquals(13.0, expression.evaluate(context), 0.0);
     }
 
     //============================== Private Methods ===========================//
@@ -188,13 +188,13 @@ public final class TestParser {
         ExpressionParser parser = new ExpressionParser();
 
         Expression expression = TestParser.parse(parser, "1 + 2 + 3");
-        assertTrue(expression.evaluate(new TestingContext()) == 6.0);
+        assertEquals(6.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = TestParser.parse(parser, "1 + 1 + 1 + (3 * 4)");
-        assertTrue(expression.evaluate(new TestingContext()) == 15.0);
+        assertEquals(15.0, expression.evaluate(new TestingContext()), 0.0);
 
         expression = TestParser.parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
-        assertTrue(expression.evaluate(new TestingContext()) == 12.0);
+        assertEquals(12.0, expression.evaluate(new TestingContext()), 0.0);
     }
 
     //====================== Inner class ========================//

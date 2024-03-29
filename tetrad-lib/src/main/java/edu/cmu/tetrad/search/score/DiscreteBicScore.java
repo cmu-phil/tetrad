@@ -331,7 +331,7 @@ public class DiscreteBicScore implements DiscreteScore {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
                 throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
+                                                   "as the variable being substituted for it.");
             }
         }
 

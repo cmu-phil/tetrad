@@ -141,7 +141,7 @@ public class LTMatrixF extends BasicLTMatrix {
 
     private void upperTriangXcp(int r, int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
-                "," + c + ") -> " + "Upper Triangular region ");
+                                           "," + c + ") -> " + "Upper Triangular region ");
     }
 
 }

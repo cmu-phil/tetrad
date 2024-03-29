@@ -71,7 +71,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
 
         if (dirichletBayesIm.getNodeIndex(node) < 0) {
             throw new IllegalArgumentException("Node " + node +
-                    " is not a node" + " in this DirichletBayesIm.");
+                                               " is not a node" + " in this DirichletBayesIm.");
         }
 
         resetModel(node, dirichletBayesIm);
@@ -140,9 +140,8 @@ class DirichletBayesImNodeCountsTable extends JTable {
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
-        if (getModel() instanceof Model) {
+        if (getModel() instanceof Model model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
-            Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
                 TableColumn column = getColumnModel().getColumn(i);
@@ -225,7 +224,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will modify all values in the table. " +
-                                "Continue?", "Warning",
+                        "Continue?", "Warning",
                         JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.NO_OPTION) {
@@ -250,7 +249,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will modify all values in the entire Dirichlet model! " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -304,7 +303,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will delete all values in the table. " +
-                                "Continue?", "Warning",
+                        "Continue?", "Warning",
                         JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.NO_OPTION) {
@@ -413,7 +412,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
         this.focusCol = FastMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
-                this.focusCol < getColumnCount()) {
+            this.focusCol < getColumnCount()) {
             setColumnSelectionInterval(this.focusCol, this.focusCol);
             editCellAt(this.focusRow, this.focusCol);
         }

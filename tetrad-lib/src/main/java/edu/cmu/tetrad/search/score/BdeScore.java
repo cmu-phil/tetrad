@@ -103,7 +103,7 @@ public class BdeScore implements DiscreteScore {
 
                 if (parentValue == -99) {
                     throw new IllegalStateException("Please remove or impute " +
-                            "missing values.");
+                                                    "missing values.");
                 }
 
                 values[p] = parentValue;
@@ -113,7 +113,7 @@ public class BdeScore implements DiscreteScore {
 
             if (childValue == -99) {
                 throw new IllegalStateException("Please remove or impute missing " +
-                        "values (record " + n + " column " + i + ")");
+                                                "values (record " + n + " column " + i + ")");
 
             }
 

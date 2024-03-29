@@ -75,7 +75,7 @@ public final class Proposition implements TetradSerializable {
             if (!(variable instanceof DiscreteVariable)) {
                 throw new IllegalArgumentException(
                         "Variables for Propositions " +
-                                "must be DiscreteVariables.");
+                        "must be DiscreteVariables.");
             }
         }
 
@@ -311,7 +311,7 @@ public final class Proposition implements TetradSerializable {
     public void restrictToProposition(Proposition proposition) {
         if (proposition.getVariableSource() != this.variableSource) {
             throw new IllegalArgumentException("Can only restrict to " +
-                    "propositions for the same variable source.");
+                                               "propositions for the same variable source.");
         }
 
         for (int i = 0; i < this.allowedCategories.length; i++) {
@@ -459,7 +459,7 @@ public final class Proposition implements TetradSerializable {
         for (int i = 0; i < this.allowedCategories.length; i++) {
             for (int j = 0; j < this.allowedCategories[i].length; j++) {
                 if (this.allowedCategories[i][j] !=
-                        proposition.allowedCategories[i][j]) {
+                    proposition.allowedCategories[i][j]) {
                     return false;
                 }
             }

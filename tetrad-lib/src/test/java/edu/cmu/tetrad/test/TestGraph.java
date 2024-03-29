@@ -116,20 +116,20 @@ public final class TestGraph {
         graph.addUnderlineTriple(y, z, w);
         graph.addUnderlineTriple(y, z, x);
 
-        assertTrue(graph.getAmbiguousTriples().size() == 1);
-        assertTrue(graph.getUnderLines().size() == 3);
-        assertTrue(graph.getDottedUnderlines().size() == 1);
+        assertEquals(1, graph.getAmbiguousTriples().size());
+        assertEquals(3, graph.getUnderLines().size());
+        assertEquals(1, graph.getDottedUnderlines().size());
 
         assertTrue(graph.isAmbiguousTriple(x, z, w));
-        assertTrue(!graph.isAmbiguousTriple(y, z, w));
+        assertFalse(graph.isAmbiguousTriple(y, z, w));
 
         graph.removeAmbiguousTriple(x, z, w);
         graph.removeUnderlineTriple(x, z, w);
         graph.removeDottedUnderlineTriple(x, z, w);
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 2);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(2, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addAmbiguousTriple(x, z, w);
         graph.addUnderlineTriple(x, z, w);
@@ -139,9 +139,9 @@ public final class TestGraph {
 
         graph.removeTriplesNotInGraph();
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 0);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(0, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addNode(z);
 
@@ -160,9 +160,9 @@ public final class TestGraph {
 
         graph.removeTriplesNotInGraph();
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 1);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(1, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addDirectedEdge(z, w);
 

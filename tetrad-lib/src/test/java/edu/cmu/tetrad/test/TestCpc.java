@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the BooleanFunction class.
@@ -159,7 +159,7 @@ public class TestCpc {
         System.out.println("true graph = " + trueGraph + " result graph = " + resultGraph + " knowledge = " + knowledge);
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(resultGraph, trueGraph);
     }
 }
 

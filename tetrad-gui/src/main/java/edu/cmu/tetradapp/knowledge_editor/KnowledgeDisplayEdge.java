@@ -210,7 +210,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
-                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
+              type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
@@ -303,7 +303,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
-                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
+              type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
@@ -647,8 +647,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         if (this.mode != KnowledgeDisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
-                            "method when the edge is " +
-                            "not in HALF_ANCHORED mode.");
+                    "method when the edge is " +
+                    "not in HALF_ANCHORED mode.");
         }
 
         this.mouseTrackPoint = new Point(p);

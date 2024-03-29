@@ -273,7 +273,7 @@ public class Fofc {
             for (int j = 1; j < i; j++) {
 
                 if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
-                        || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
+                    || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
                     outlier[count * 2] = i;
                     outlier[count * 2 + 1] = j;
 
@@ -544,7 +544,7 @@ public class Fofc {
 
                 if (this.verbose) {
                     log("Grown " + (++count) + " of " + total + ": "
-                            + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
+                        + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
                 }
                 grown.add(_cluster);
             } while (!puretriples.isEmpty());

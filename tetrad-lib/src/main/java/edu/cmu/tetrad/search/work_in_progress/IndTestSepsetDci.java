@@ -158,7 +158,7 @@ public class IndTestSepsetDci implements IndependenceTest {
 
         if (Double.isNaN(getPValue())) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue(), getAlpha() - getPValue());

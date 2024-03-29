@@ -576,12 +576,12 @@ public final class MlBayesImObs implements BayesIm {
                                double value) {
         if (colIndex >= getNumColumns(nodeIndex)) {
             throw new IllegalArgumentException("Column out of range: "
-                    + colIndex + " >= " + getNumColumns(nodeIndex));
+                                               + colIndex + " >= " + getNumColumns(nodeIndex));
         }
 
         if (!(0.0 <= value && value <= 1.0) && !Double.isNaN(value)) {
             throw new IllegalArgumentException("Probability value must be "
-                    + "between 0.0 and 1.0 or Double.NaN.");
+                                               + "between 0.0 and 1.0 or Double.NaN.");
         }
 
         this.probs[nodeIndex][rowIndex][colIndex] = value;
@@ -766,8 +766,8 @@ public final class MlBayesImObs implements BayesIm {
 
                     if (Double.isNaN(probability)) {
                         throw new IllegalStateException("Some probability "
-                                + "values in the BayesIm are not filled in; "
-                                + "cannot simulate data.");
+                                                        + "values in the BayesIm are not filled in; "
+                                                        + "cannot simulate data.");
                     }
 
                     sum += probability;
@@ -824,8 +824,8 @@ public final class MlBayesImObs implements BayesIm {
     private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved) {
         if (dataSet.getNumColumns() != this.nodes.length) {
             throw new IllegalArgumentException("When rewriting the old data set, "
-                    + "number of variables in data set must equal number of variables "
-                    + "in Bayes net.");
+                                               + "number of variables in data set must equal number of variables "
+                                               + "in Bayes net.");
         }
 
         int sampleSize = dataSet.getNumRows();
@@ -899,8 +899,8 @@ public final class MlBayesImObs implements BayesIm {
 
                     if (Double.isNaN(probability)) {
                         throw new IllegalStateException("Some probability "
-                                + "values in the BayesIm are not filled in; "
-                                + "cannot simulate data.");
+                                                        + "values in the BayesIm are not filled in; "
+                                                        + "cannot simulate data.");
                     }
 
                     sum += probability;
@@ -1039,7 +1039,7 @@ public final class MlBayesImObs implements BayesIm {
     public void setProbability(int rowIndex, double value) {
         if (!(0.0 <= value && value <= 1.0) && !Double.isNaN(value)) {
             throw new IllegalArgumentException("Probability value must be "
-                    + "between 0.0 and 1.0 or Double.NaN.");
+                                               + "between 0.0 and 1.0 or Double.NaN.");
         }
         this.jpd.setCellProbability(getRowValues(rowIndex), value);
     }
@@ -1178,10 +1178,10 @@ public final class MlBayesImObs implements BayesIm {
             if (numRows > 1000000 /* Integer.MAX_VALUE / dim*/) {
                 throw new IllegalArgumentException(
                         "The number of rows in the "
-                                + "conditional probability table for "
-                                + this.nodes[nodeIndex]
-                                + " is greater than 1,000,000 and cannot be "
-                                + "represented.");
+                        + "conditional probability table for "
+                        + this.nodes[nodeIndex]
+                        + " is greater than 1,000,000 and cannot be "
+                        + "represented.");
             }
 
             numRows *= dim;

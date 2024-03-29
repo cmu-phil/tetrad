@@ -314,9 +314,9 @@ final class BayesPmEditorWizard extends JPanel {
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "<html>"
-                            + "The categories for this node have been copied; to transfer "
-                            + "<br>these categories, choose another node and paste. You may"
-                            + "<br>paste multiple times." + "</html>");
+                    + "The categories for this node have been copied; to transfer "
+                    + "<br>these categories, choose another node and paste. You may"
+                    + "<br>paste multiple times." + "</html>");
         });
 
         paste.addActionListener((e) -> pasteCategories());
@@ -638,7 +638,7 @@ final class BayesPmEditorWizard extends JPanel {
             if (categories.size() < 2) {
                 throw new IllegalArgumentException(
                         "Number of categories must be" + " >= 2: "
-                                + categories.size());
+                        + categories.size());
             }
 
             for (Object category : categories) {

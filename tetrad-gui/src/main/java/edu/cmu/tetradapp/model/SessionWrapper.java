@@ -188,9 +188,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         int deltaY = upperLeft.y - oldUpperLeft.y;
 
         for (Object sessionElement : sessionElements) {
-            if (sessionElement instanceof SessionNodeWrapper) {
-                SessionNodeWrapper wrapper =
-                        (SessionNodeWrapper) sessionElement;
+            if (sessionElement instanceof SessionNodeWrapper wrapper) {
                 sessionNodeWrappers.add(wrapper);
                 adjustNameAndPosition(wrapper, sessionNodeWrappers, deltaX,
                         deltaY);
@@ -200,8 +198,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
                 sessionEdges.add((Edge) sessionElement);
             } else {
                 throw new IllegalArgumentException("The list of session " +
-                        "elements should contain only SessionNodeWrappers " +
-                        "and SessionEdges: " + sessionElement);
+                                                   "elements should contain only SessionNodeWrappers " +
+                                                   "and SessionEdges: " + sessionElement);
             }
         }
 
@@ -210,7 +208,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             this.session.addNodeList(sessionNodes);
         } catch (Exception e) {
             throw new RuntimeException("There was an error when trying to " +
-                    "add session nodes to the session.", e);
+                                       "add session nodes to the session.", e);
         }
 
         // If that worked, go ahead and put the session node wrappers and
@@ -778,8 +776,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         public void addingEdge(SessionEvent event) {
             final String message =
                     "Child node already created. If you add this edge,\n" +
-                            "the content of the child node will be made\n" +
-                            "consistent with the parent.";
+                    "the content of the child node will be made\n" +
+                    "consistent with the parent.";
 
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(), message, "Warning",

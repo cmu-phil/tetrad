@@ -335,8 +335,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
         Hbsms search;
 
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+        if (dataModel instanceof DataSet dataSet) {
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new HbsmsBeam(graph2, dataSet, knowledge);
@@ -346,8 +345,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             } else {
                 throw new IllegalStateException();
             }
-        } else if (dataModel instanceof CovarianceMatrix) {
-            CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
+        } else if (dataModel instanceof CovarianceMatrix covarianceMatrix) {
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new HbsmsBeam(graph2, covarianceMatrix, knowledge);

@@ -598,8 +598,7 @@ class RegressionParamsEditorPanel extends JPanel {
                     try {
                         //noinspection unchecked
                         List<Comparable> o = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
-                        if (comp instanceof JList) {
-                            JList list = (JList) comp;
+                        if (comp instanceof JList list) {
                             VariableListModel model = (VariableListModel) list.getModel();
                             for (Comparable c : o) {
                                 model.removeFirst(c);
@@ -621,8 +620,7 @@ class RegressionParamsEditorPanel extends JPanel {
         public void dragGestureRecognized(DragGestureEvent dge) {
             Component comp = dge.getComponent();
             List selected = null;
-            if (comp instanceof JList) {
-                JList list = (JList) comp;
+            if (comp instanceof JList list) {
                 selected = list.getSelectedValuesList();
             } else {
                 JTextField pane = (JTextField) comp;

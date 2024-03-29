@@ -248,7 +248,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
                     JOptionPane.showMessageDialog(this, s);
                 } else {
                     JOptionPane.showMessageDialog(this, "Could not parse " +
-                            "equations.");
+                                                        "equations.");
                 }
 
                 e.printStackTrace();

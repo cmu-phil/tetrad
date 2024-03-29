@@ -154,7 +154,7 @@ public final class SemGraph implements Graph {
                     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
                 } else {
                     throw new IllegalArgumentException("A SEM graph may contain " +
-                            "only directed and bidirected edges: " + edge);
+                                                       "only directed and bidirected edges: " + edge);
                 }
             }
 
@@ -396,7 +396,7 @@ public final class SemGraph implements Graph {
         if (edges.size() > 1) {
             throw new IllegalStateException(
                     "There is more than one edge between " + node1 + " and " +
-                            node2);
+                    node2);
         }
 
         return removeEdges(edges);
@@ -528,7 +528,7 @@ public final class SemGraph implements Graph {
     public boolean addNode(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
             throw new IllegalArgumentException("Error nodes cannot be added " +
-                    "directly to the graph: " + node);
+                                               "directly to the graph: " + node);
         }
 
         return getGraph().addNode(node);
@@ -617,7 +617,7 @@ public final class SemGraph implements Graph {
         if (!getGraph().containsEdge(edge)) {
             throw new IllegalArgumentException(
                     "Can only remove edges that are " +
-                            "already in the graph: " + edge);
+                    "already in the graph: " + edge);
         }
 
         if (Edges.isDirectedEdge(edge)) {
@@ -665,7 +665,7 @@ public final class SemGraph implements Graph {
         if (node.getNodeType() == NodeType.ERROR) {
             throw new IllegalArgumentException(
                     "Error nodes cannot be removed " +
-                            "directly from the graph: " + node);
+                    "directly from the graph: " + node);
         }
 
         Node errorNode = getErrorNode(node);
@@ -1172,20 +1172,20 @@ public final class SemGraph implements Graph {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

@@ -166,11 +166,11 @@ public class FasDci {
             String name2 = _edge.getNode2().getName();
 
             if (this.knowledge.isForbidden(name1, name2) &&
-                    this.knowledge.isForbidden(name2, name1)) {
+                this.knowledge.isForbidden(name2, name1)) {
                 this.graph.removeEdge(_edge);
 
                 TetradLogger.getInstance().forceLogMessage("Removed " + _edge + " because it was " +
-                        "forbidden by background knowledge.");
+                                                           "forbidden by background knowledge.");
 
             }
         }
@@ -342,7 +342,7 @@ public class FasDci {
                                 for (int k = 0; k < this.marginalVars.size(); k++) {
                                     Set<Node> marginalSet = this.marginalVars.get(k);
                                     if (marginalSet.contains(x) && marginalSet.contains(y) &&
-                                            marginalSet.containsAll(condSet)) {
+                                        marginalSet.containsAll(condSet)) {
                                         testsWithVars.add(this.independenceTests.get(k));
                                     }
                                 }

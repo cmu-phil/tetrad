@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -51,10 +50,6 @@ public class MarkovCheck {
      */
     private final Graph graph;
     /**
-     * The independence test.
-     */
-    private final IndependenceTest independenceTest;
-    /**
      * The results of the Markov check for the independent case.
      */
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
@@ -63,13 +58,13 @@ public class MarkovCheck {
      */
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
     /**
-     * True just in case the given graph is a CPDAG (completed partially directed acyclic graph).
+     * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
     private final boolean isCpdag;
     /**
-     * This stores the dataset from the independence test provided.
+     * The independence test.
      */
-    private final DataSet dataSet;
+    private IndependenceTest independenceTest;
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -165,7 +160,6 @@ public class MarkovCheck {
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
         this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
-        this.dataSet = (DataSet) independenceTest.getData();
     }
 
     /**
@@ -220,25 +214,6 @@ public class MarkovCheck {
     }
 
     /**
-     * Calculates the minimum IDA beta value for a given causal relationship between two nodes.
-     *
-     * @param x the cause node
-     * @param y the effect node
-     * @return the minimum IDA beta value
-     * @throws IllegalArgumentException if the graph is not a CPDAG (partially directed acyclic graph)
-     */
-    public double getMinBeta(Node x, Node y) {
-        if (!isCpdag) {
-            throw new IllegalArgumentException("Can only calculate minimum IDA beta values for CPDAGs.");
-        }
-
-        List<Node> possibleCauses = new ArrayList<>();
-        possibleCauses.add(x);
-        Ida ida = new Ida(dataSet, graph, possibleCauses);
-        return ida.calculateMinimumEffectsOnY(y).get(x);
-    }
-
-    /**
      * Returns the variables of the independence test.
      *
      * @param graphNodes        a {@link java.util.List} object
@@ -260,11 +235,15 @@ public class MarkovCheck {
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
      * independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
+     * @param clear True, if the results should be cleared before generating new results; otherwise, the new results are
+     *              appended to the existing results.
      * @see #getResults(boolean)
      */
-    public void generateResults() {
-        resultsIndep.clear();
-        resultsDep.clear();
+    public void generateResults(boolean clear) {
+        if (clear) {
+            resultsIndep.clear();
+            resultsDep.clear();
+        }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts();
@@ -418,6 +397,22 @@ public class MarkovCheck {
     }
 
     /**
+     * Calculates the fraction of dependent results.
+     *
+     * @param results the list of IndependenceResult objects
+     * @return the fraction of dependent results as a double value
+     */
+    public double getFractionDependent(List<IndependenceResult> results) {
+        int dependent = 0;
+
+        for (IndependenceResult result : results) {
+            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
+        }
+
+        return dependent / (double) results.size();
+    }
+
+    /**
      * Returns the Kolmorogov-Smirnov p-value for the given list of results.
      *
      * @param indep True for the Markov results, false for the dependency results.
@@ -479,7 +474,7 @@ public class MarkovCheck {
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Binomial p-value for the given list of results.
      */
-    public double getBinomialP(boolean indep) {
+    public double getBinomialPValue(boolean indep) {
         if (indep) {
             return binomialPIndep;
         } else {
@@ -521,6 +516,20 @@ public class MarkovCheck {
     }
 
     /**
+     * Sets the independence test to be used for determining independence between variables.
+     *
+     * @param test the independence test to be set
+     * @throws IllegalArgumentException if the test parameter is null
+     */
+    public void setIndependenceTest(IndependenceTest test) {
+        if (test == null) {
+            throw new IllegalArgumentException("Independence test cannot be null.");
+        }
+
+        this.independenceTest = test;
+    }
+
+    /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
      * @param percentResample The percentage of all samples to use when resampling for each conditional independence
@@ -551,9 +560,9 @@ public class MarkovCheck {
     public void setKnowledge(Knowledge knowledge) {
         if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
             throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                    "| Z1,..,Zn.");
+                                               "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                                               "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                                               "| Z1,..,Zn.");
         }
 
         int lastTier = 0;
@@ -603,11 +612,11 @@ public class MarkovCheck {
      */
     public MarkovCheckRecord getMarkovCheckRecord() {
         setPercentResample(percentResample);
-        generateResults();
+        generateResults(true);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
-        double binIndep = getBinomialP(true);
-        double binDep = getBinomialP(false);
+        double binIndep = getBinomialPValue(true);
+        double binDep = getBinomialPValue(false);
         double fracDepInd = getFractionDependent(true);
         double fracDepDep = getFractionDependent(false);
         int numTestsInd = getNumTests(true);
@@ -626,13 +635,13 @@ public class MarkovCheck {
         MarkovCheckRecord record = getMarkovCheckRecord();
 
         return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
-                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
-                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
-                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
-                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
-                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
-                "Number of tests (indep): " + record.numTestsInd + "\n" +
-                "Number of tests (dep): " + record.numTestsDep;
+               "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
+               "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
+               "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
+               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
+               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
+               "Number of tests (indep): " + record.numTestsInd + "\n" +
+               "Number of tests (dep): " + record.numTestsDep;
     }
 
     /**
@@ -863,8 +872,8 @@ public class MarkovCheck {
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
-                ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                binomialPIndep = getBinomialP(pValues, independenceTest.getAlpha());
+                ksPValueIndep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                binomialPIndep = getBinomialPValue(pValues, independenceTest.getAlpha());
                 aSquaredIndep = aSquared;
                 aSquaredStarIndep = aSquaredStar;
                 andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
@@ -879,8 +888,8 @@ public class MarkovCheck {
                 andersonDarlingPDep = Double.NaN;
 
             } else {
-                ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                binomialPDep = getBinomialP(pValues, independenceTest.getAlpha());
+                ksPValueDep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                binomialPDep = getBinomialPValue(pValues, independenceTest.getAlpha());
                 aSquaredDep = aSquared;
                 aSquaredStarDep = aSquaredStar;
                 andersonDarlingPDep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
@@ -924,7 +933,7 @@ public class MarkovCheck {
      * @param alpha   The alpha level. Rejections with p-values less than this are considered dependent.
      * @return The Binomial p-value for non-uniformity.
      */
-    private double getBinomialP(List<Double> pValues, double alpha) {
+    private double getBinomialPValue(List<Double> pValues, double alpha) {
         int independentJudgements = 0;
 
         for (double pValue : pValues) {
@@ -976,6 +985,55 @@ public class MarkovCheck {
      */
     public boolean isCpdag() {
         return isCpdag;
+    }
+
+    /**
+     * Calculates the Kolmogorov-Smirnov (KS) p-value for a list of independence test results.
+     *
+     * @param visiblePairs a list of IndependenceResult objects representing the observed values and expected values for
+     *                     a series of tests
+     * @return the KS p-value calculated using the list of independence test results
+     */
+    public double getKsPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+    }
+
+    /**
+     * Calculates the binomial p-value based on the list of visible pairs.
+     *
+     * @param visiblePairs a list of IndependenceResult representing the visible pairs.
+     * @return the binomial p-value.
+     */
+    public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        return getBinomialPValue(pValues, independenceTest.getAlpha());
+    }
+
+    /**
+     * Calculates the Anderson-Darling A2 value for a list of independence results.
+     *
+     * @param visiblePairs the list of independence results
+     * @return the Anderson-Darling A2 value
+     */
+    public double getAndersonDarlingA2(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getASquared();
+    }
+
+    /**
+     * Calculates the Anderson-Darling p-value for a given list of independence results.
+     *
+     * @param visiblePairs the list of independence results
+     * @return the Anderson-Darling p-value
+     */
+    public double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+//        double aSquared = generalAndersonDarlingTest.getASquared();
+        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
 
     /**

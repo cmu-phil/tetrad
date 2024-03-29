@@ -546,7 +546,7 @@ public final class SemPm implements Pm, TetradSerializable {
         for (Node node : this.nodes) {
 
             if (node.getNodeType() == NodeType.MEASURED ||
-                    node.getNodeType() == NodeType.LATENT) {
+                node.getNodeType() == NodeType.LATENT) {
                 varNodes.add(node);
             }
         }
@@ -581,8 +581,8 @@ public final class SemPm implements Pm, TetradSerializable {
             }
 
             if (!SemGraph.isErrorEdge(edge) &&
-                    edge.getEndpoint1() == Endpoint.TAIL &&
-                    edge.getEndpoint2() == Endpoint.ARROW) {
+                edge.getEndpoint1() == Endpoint.TAIL &&
+                edge.getEndpoint2() == Endpoint.ARROW) {
                 if (!this.graph.isParameterizable(edge.getNode2())) {
                     continue;
                 }

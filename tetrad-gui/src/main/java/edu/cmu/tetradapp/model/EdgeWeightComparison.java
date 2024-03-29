@@ -121,7 +121,7 @@ public class EdgeWeightComparison implements SessionModel {
         for (int i = 0; i < ref.getEdgeCoef().getNumRows(); i++) {
             for (int j = 0; j < ref.getEdgeCoef().getNumColumns(); j++) {
                 score += (targetMatrix.get(i, j) - referenceMatrix.get(i, j))
-                        * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));
+                         * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));
             }
         }
 

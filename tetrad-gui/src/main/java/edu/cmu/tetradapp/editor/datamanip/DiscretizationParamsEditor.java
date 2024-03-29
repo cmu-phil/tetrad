@@ -151,16 +151,14 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         });
         // Add entries for previously selected variables.
         for (Node node : discretizeVars) {
-            if (node instanceof ContinuousVariable) {
-                ContinuousVariable continuousVariable = (ContinuousVariable) node;
+            if (node instanceof ContinuousVariable continuousVariable) {
                 ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
                         this.sourceDataSet, continuousVariable);
                 DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
                 editor.setDiscretizationSpec(spec);
                 this.nodeEditors.put(node, editor);
-            } else if (node instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) node;
+            } else if (node instanceof DiscreteVariable variable) {
                 DiscreteDiscretizationEditor editor = new DiscreteDiscretizationEditor(variable);
                 DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
@@ -324,8 +322,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         ContinuousDiscretizationEditor.Method method = null;
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
-            if (editor instanceof ContinuousDiscretizationEditor) {
-                ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
+            if (editor instanceof ContinuousDiscretizationEditor _editor) {
 
                 if (method != null && method != _editor.getMethod()) {
                     return null;
@@ -348,8 +345,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
         DiscretizationEditor editor = nodeEditors.get(nodes.get(0));
 
-        if (editor instanceof ContinuousDiscretizationEditor) {
-            ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
+        if (editor instanceof ContinuousDiscretizationEditor _editor) {
 
             int value = _editor.getNumCategories();
             for (int i = 1; i < nodes.size(); i++) {

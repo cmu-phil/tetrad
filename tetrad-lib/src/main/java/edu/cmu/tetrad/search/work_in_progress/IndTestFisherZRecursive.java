@@ -196,7 +196,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
 //            this.fisherZ = Double.POSITIVE_INFINITY;
 //            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
@@ -207,7 +207,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
         if (Double.isNaN(fisherZ)) {
             throw new RuntimeException("NaN Fisher's Z encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
 
         boolean independent = fisherZ < this.cutoff;

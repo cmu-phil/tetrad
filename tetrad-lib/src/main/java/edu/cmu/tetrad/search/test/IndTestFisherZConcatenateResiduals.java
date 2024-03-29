@@ -170,7 +170,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         if (r < -1.) r = -1.;
 
         double fisherZ = FastMath.sqrt(sampleSize - z.size() - 3.0) *
-                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                         0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
             return new IndependenceResult(new IndependenceFact(x, y, _z),

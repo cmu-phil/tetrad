@@ -290,7 +290,7 @@ public class BayesEstimatorWrapper implements SessionModel {
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IMs "
-                        + "with latents is not supported.");
+                                                   + "with latents is not supported.");
             }
         }
 
@@ -303,7 +303,7 @@ public class BayesEstimatorWrapper implements SessionModel {
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Value assignments between Bayes PM "
-                    + "and discrete data set do not match.");
+                                       + "and discrete data set do not match.");
         }
     }
 

@@ -142,8 +142,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
         Object myKnowledge = params.get("__myKnowledge");
         if (myKnowledge instanceof Knowledge
-                && new HashSet<>(((Knowledge) myKnowledge).getVariables())
-                .equals(new HashSet<>(variableNames))) {
+            && new HashSet<>(((Knowledge) myKnowledge).getVariables())
+                    .equals(new HashSet<>(variableNames))) {
             this.knowledge = (Knowledge) myKnowledge;
         } else {
             this.knowledge = new Knowledge();

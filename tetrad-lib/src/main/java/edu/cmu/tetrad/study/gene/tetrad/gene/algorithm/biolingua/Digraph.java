@@ -150,7 +150,7 @@ public class Digraph extends BasicGraph {
                 double e = this.getEdges().getDoubleValue(i, j);
                 if (e != 0.0) {
                     s = s + i + "  " + j + " \t" + e +
-                            "\n";  //+"\t// # "+ne+"\n";
+                        "\n";  //+"\t// # "+ne+"\n";
                     ne++;
                 }
             }

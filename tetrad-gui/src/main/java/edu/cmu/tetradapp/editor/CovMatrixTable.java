@@ -108,17 +108,17 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             return getVariableName(matrixRow);
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             return getVariableName(matrixCol);
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (matrixCol <= matrixRow)) {
+            (matrixCol <= matrixRow)) {
             return getValue(matrixRow, matrixCol);
         }
 
@@ -141,23 +141,23 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             return true;
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             return true;
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol < matrixRow)) {
+            (col >= firstDataCol) && (matrixCol < matrixRow)) {
             return true;
         }
 
         return !(this.covMatrix instanceof CorrelationMatrix) &&
-                (row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol == matrixRow);
+               (row >= firstDataRow) && (row < lastDataRow) &&
+               (col >= firstDataCol) && (matrixCol == matrixRow);
 
     }
 
@@ -180,19 +180,19 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             setVariableName(matrixRow, (String) aValue);
             fireTableDataChanged();
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             setVariableName(matrixCol, (String) aValue);
             fireTableDataChanged();
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (matrixCol <= matrixRow)) {
             String value = (String) aValue;
             double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);

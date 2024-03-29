@@ -465,7 +465,7 @@ public final class ResolveSepsets {
         Collections.sort(allPValues);
         int c = 0;
         while (c < allPValues.size() &&
-                allPValues.get(c) < independenceTests.iterator().next().getAlpha() * (c + 1.) / allPValues.size()) {
+               allPValues.get(c) < independenceTests.iterator().next().getAlpha() * (c + 1.) / allPValues.size()) {
             c++;
         }
 

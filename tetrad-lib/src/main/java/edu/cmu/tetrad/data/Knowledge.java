@@ -543,8 +543,8 @@ public final class Knowledge implements TetradSerializable {
      */
     public boolean isEmpty() {
         return this.forbiddenRulesSpecs.isEmpty()
-                && this.requiredRulesSpecs.isEmpty()
-                && this.tierSpecs.isEmpty();
+               && this.requiredRulesSpecs.isEmpty()
+               && this.tierSpecs.isEmpty();
     }
 
     /**
@@ -1022,8 +1022,8 @@ public final class Knowledge implements TetradSerializable {
         }
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
-                && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
-                && this.tierSpecs.equals(that.tierSpecs);
+               && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
+               && this.tierSpecs.equals(that.tierSpecs);
     }
 
     /**

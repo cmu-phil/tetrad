@@ -84,7 +84,7 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             this.externalGraph = graph;
         } else {
             throw new IllegalArgumentException("This Skew algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data");
+                                               + "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -116,7 +116,7 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     @Override
     public String getDescription() {
         return "Skew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+                                                  + this.algorithm.getDescription() : "");
     }
 
     /**
@@ -163,7 +163,7 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This Skew algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
+                                               + "will orient the edges in the input graph using the data.");
         }
 
         this.algorithm = algorithm;

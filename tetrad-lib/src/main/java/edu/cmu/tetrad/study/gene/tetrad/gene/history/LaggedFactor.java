@@ -156,7 +156,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
             return false;
         }
         return c.getFactor().equals(this.getFactor()) &&
-                c.getLag() == this.getLag();
+               c.getLag() == this.getLag();
     }
 
     /**

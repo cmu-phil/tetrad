@@ -243,7 +243,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         // Initialize to 0's.

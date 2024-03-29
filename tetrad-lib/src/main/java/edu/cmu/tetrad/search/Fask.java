@@ -546,29 +546,29 @@ public final class Fask implements IGraphSearch {
 
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "<->" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "<->" + Y
                         );
                         continue;
                     }
 
                     if (knowledgeOrients(X, Y)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "-->" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "-->" + Y
                         );
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "<--" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "<--" + Y
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {
                         if (zeroDiff(i, j, this.D)) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "...TC?..." + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "...TC?..." + Y
                             );
 
                             System.out.println(X + " " + Y + " lr = " + lr + " zero");
@@ -577,8 +577,8 @@ public final class Fask implements IGraphSearch {
 
                         if (this.twoCycleScreeningCutoff > 0 && abs(faskLeftRightV2(x, y, empirical, delta)) < this.twoCycleScreeningCutoff) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "...TC?..." + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "...TC?..." + Y
                             );
 
                             twoCycles.add(new NodePair(X, Y));
@@ -587,14 +587,14 @@ public final class Fask implements IGraphSearch {
 
                         if (lr > 0) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "-->" + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "-->" + Y
                             );
                             graph.addDirectedEdge(X, Y);
                         } else if (lr < 0) {
                             TetradLogger.getInstance().forceLogMessage(Y + "\t" + X + "\tleft-right"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + Y + "-->" + X
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + Y + "-->" + X
                             );
                             graph.addDirectedEdge(Y, X);
                         }
@@ -992,7 +992,7 @@ public final class Fask implements IGraphSearch {
         } catch (SingularMatrixException e) {
             List<Node> nodes = dataSet.getVariables();
             throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
-                    + nodes.get(i) + ", " + nodes.get(j));
+                                       + nodes.get(i) + ", " + nodes.get(j));
         }
 
         int nc1 = getRows(x, x, 0, +1).size();
@@ -1043,8 +1043,8 @@ public final class Fask implements IGraphSearch {
         double lr = leftRight(x, y);
 
         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t" + type
-                + "\t" + nf.format(lr)
-                + "\t" + X + "<=>" + Y
+                                                   + "\t" + nf.format(lr)
+                                                   + "\t" + X + "<=>" + Y
         );
     }
 

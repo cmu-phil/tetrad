@@ -43,8 +43,7 @@ class DescriptiveStatisticsTransferHandler extends TransferHandler {
      * Create a Transferable to use as the source for a data transfer.
      */
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof DescriptiveStatisticsJTable) {
-            DescriptiveStatisticsJTable tabularData = (DescriptiveStatisticsJTable) c;
+        if (c instanceof DescriptiveStatisticsJTable tabularData) {
 
             StringBuilder buf = new StringBuilder();
             final int[] selectedRows = tabularData.getSelectedRows();

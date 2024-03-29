@@ -262,7 +262,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.numCellsPerDish = numCellsPerDish;
         } else {
             throw new IllegalArgumentException("Number of cells per dish " +
-                    "must be > 0:" + numCellsPerDish);
+                                               "must be > 0:" + numCellsPerDish);
         }
     }
 
@@ -497,7 +497,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.dishDishVariability = dishDishVariability;
         } else {
             throw new IllegalArgumentException("Dish variability must " +
-                    "be > 0.0 and < 100.0: " + dishDishVariability);
+                                               "be > 0.0 and < 100.0: " + dishDishVariability);
         }
     }
 
@@ -532,7 +532,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.numSamplesPerDish = numSamplesPerDish;
         } else {
             throw new IllegalArgumentException("Number of chips per dish " +
-                    "must be > 0: " + numSamplesPerDish);
+                                               "must be > 0: " + numSamplesPerDish);
         }
     }
 
@@ -568,7 +568,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.sampleSampleVariability = sampleSampleVariability;
         } else {
             throw new IllegalArgumentException("Sample variability must be " +
-                    "> 0.0: " + sampleSampleVariability);
+                                               "> 0.0: " + sampleSampleVariability);
         }
     }
 
@@ -603,7 +603,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.chipChipVariability = chipChipVariability;
         } else {
             throw new IllegalArgumentException("Chip to chip variability " +
-                    "must be > 0.0 and < 1.0: " + chipChipVariability);
+                                               "must be > 0.0 and < 1.0: " + chipChipVariability);
         }
     }
 
@@ -636,7 +636,7 @@ public class MeasurementSimulator implements TetradSerializable {
 //            this.pixelDigitalization = pixelDigitalization;
         } else {
             throw new IllegalArgumentException("Pixel digitalization " +
-                    "must be > 0.0 and <" + " 1.0: " + pixelDigitalization);
+                                               "must be > 0.0 and <" + " 1.0: " + pixelDigitalization);
         }
     }
 
@@ -940,7 +940,7 @@ public class MeasurementSimulator implements TetradSerializable {
                                     aggregation[sIndex][f] / getNumCellsPerDish();
                             double pixelError = pixelErrorDist.nextRandom();
                             double measurement = average + sampleErrors[d][ch] +
-                                    chipErrors[d][ch] + pixelError;
+                                                 chipErrors[d][ch] + pixelError;
 
                             this.measuredData[f][sIndex][d * numChips + ch] =
                                     measurement;

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.calculator.parser.Token;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Tyler Gibson
@@ -39,26 +39,26 @@ public final class TestLexer {
         ExpressionLexer lexer = new ExpressionLexer(s);
 
         Token token = lexer.nextToken();
-        assertTrue(token == Token.LPAREN);
+        assertSame(token, Token.LPAREN);
         assertEquals("(", lexer.getTokenString());
 
         token = lexer.nextToken();
-        assertTrue(token == Token.NUMBER);
+        assertSame(token, Token.NUMBER);
         assertEquals("1", lexer.getTokenString());
 
         token = lexer.nextToken();
-        assertTrue(token == Token.OPERATOR);
+        assertSame(token, Token.OPERATOR);
         assertEquals("+", lexer.getTokenString());
 
         token = lexer.nextToken();
-        assertTrue(token == Token.NUMBER);
+        assertSame(token, Token.NUMBER);
         assertEquals("2.5", lexer.getTokenString());
 
         token = lexer.nextToken();
-        assertTrue(token == Token.RPAREN);
+        assertSame(token, Token.RPAREN);
         assertEquals(")", lexer.getTokenString());
 
-        assertTrue(lexer.nextToken() == Token.EOF);
+        assertSame(lexer.nextToken(), Token.EOF);
     }
 }
 

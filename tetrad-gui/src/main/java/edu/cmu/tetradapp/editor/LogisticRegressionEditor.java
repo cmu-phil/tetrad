@@ -70,11 +70,10 @@ public class LogisticRegressionEditor extends JPanel {
         DataSet dataSet = (DataSet) regressionRunner.getDataModel();
 
         for (Node node : dataSet.getVariables()) {
-            if (node instanceof DiscreteVariable) {
-                DiscreteVariable v = (DiscreteVariable) node;
+            if (node instanceof DiscreteVariable v) {
                 if (v.getNumCategories() != 2) {
                     throw new IllegalArgumentException("Logistic regression requires a dataset in which all variables " +
-                            "are either continuous or binary.");
+                                                       "are either continuous or binary.");
                 }
             }
         }

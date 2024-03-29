@@ -250,7 +250,7 @@ public final class VcPcFast implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;

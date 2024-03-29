@@ -326,7 +326,7 @@ public final class IndTestHsic implements IndependenceTest {
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         // reject if pvalue <= alpha

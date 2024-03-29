@@ -110,9 +110,9 @@ public final class Tetrad implements PropertyChangeListener {
 
 
     /**
-     * Sets the look and feel for the application based on the operating system.
-     * If the operating system is Windows XP, it sets the system look and feel.
-     * Throws an exception if encountering any errors while setting the look and feel.
+     * Sets the look and feel for the application based on the operating system. If the operating system is Windows XP,
+     * it sets the system look and feel. Throws an exception if encountering any errors while setting the look and
+     * feel.
      */
     private static void setLookAndFeel() {
         try {
@@ -167,7 +167,7 @@ public final class Tetrad implements PropertyChangeListener {
             public Dimension getPreferredSize() {
                 int preferredWindowWidth = Preferences.userRoot().getInt("preferredWindowWidth", 0);
                 int preferredWindowHeight = Preferences.userRoot().getInt("preferredWindowHeight", 0);
-                
+
                 if (preferredWindowWidth > 0 && preferredWindowHeight > 0) {
                     return new Dimension(preferredWindowWidth, preferredWindowHeight);
                 } else {
@@ -183,7 +183,7 @@ public final class Tetrad implements PropertyChangeListener {
                     } else {
                         dimension = new Dimension((int) (width * 0.65), (int) (height * 0.75));
                     }
-                    
+
                     Preferences.userRoot().putInt("preferredWindowWidth", dimension.width);
                     Preferences.userRoot().putInt("preferredWindowHeight", dimension.height);
 

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.graph.*;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the GraphConverter class.
@@ -65,7 +65,7 @@ public class TestGraphConverter {
                 "X1-->X2,X1---X3,X2<->X4,X3o->X4," + "X5<--X1,X5o-oX2,X5<-oX3");
 
         convertedGraph = GraphUtils.replaceNodes(convertedGraph, graph.getNodes());
-        assertTrue(graph.equals(convertedGraph));
+        assertEquals(graph, convertedGraph);
     }
 }
 

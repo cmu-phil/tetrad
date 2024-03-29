@@ -218,7 +218,7 @@ class RandomDagScaleFreeEditor extends JPanel {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
                     "Max # latent confounders must be" + " >= 0: " +
-                            numLatentNodes);
+                    numLatentNodes);
         }
 
         Preferences.userRoot().putInt("newGraphNumLatents", numLatentNodes);

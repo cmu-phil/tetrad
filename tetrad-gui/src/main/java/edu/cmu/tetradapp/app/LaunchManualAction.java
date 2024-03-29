@@ -51,7 +51,7 @@ final class LaunchManualAction extends AbstractAction {
         Desktop d = Desktop.getDesktop();
         try {
             d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/" +
-                    "tetrad-lib/src/main/resources/docs/manual/index.html"));
+                             "tetrad-lib/src/main/resources/docs/manual/index.html"));
         } catch (IOException | URISyntaxException e2) {
             e2.printStackTrace();
         }

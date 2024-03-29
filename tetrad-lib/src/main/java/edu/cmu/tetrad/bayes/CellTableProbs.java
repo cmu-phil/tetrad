@@ -196,7 +196,7 @@ public final class CellTableProbs implements DiscreteProbs {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
@@ -205,9 +205,9 @@ public final class CellTableProbs implements DiscreteProbs {
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
-                            " are either different or in a different order: " +
-                            "\n\tAssertion vars: " + assertionVars +
-                            "\n\tData vars: " + dataVars);
+                    " are either different or in a different order: " +
+                    "\n\tAssertion vars: " + assertionVars +
+                    "\n\tData vars: " + dataVars);
         }
 
         int[] variableValues = new int[condition.getNumVariables()];
@@ -306,9 +306,9 @@ public final class CellTableProbs implements DiscreteProbs {
             for (int i = 0; i < coords.length; i++) {
                 if ((coords[i] < 0) || (coords[i] >= this.dims[i])) {
                     throw new IllegalArgumentException("Coordinate #" + i +
-                            " for variable " + this.dataSet.getVariable(i) +
-                            " is out of bounds [0, " + (this.dims[i] - 1) + "]: " +
-                            coords[i]);
+                                                       " for variable " + this.dataSet.getVariable(i) +
+                                                       " is out of bounds [0, " + (this.dims[i] - 1) + "]: " +
+                                                       coords[i]);
                 }
             }
         }
@@ -319,7 +319,7 @@ public final class CellTableProbs implements DiscreteProbs {
 
             if (cellIndex == Integer.MAX_VALUE || cellIndex < 0) {
                 throw new ArrayIndexOutOfBoundsException("Cannot construct a " +
-                        "cell table with that many cells.");
+                                                         "cell table with that many cells.");
             }
         }
 

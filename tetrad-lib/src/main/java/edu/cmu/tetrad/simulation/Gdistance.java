@@ -74,7 +74,7 @@ public class Gdistance {
         //euclidian distance instead of taxicab
 
         return FastMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
-                (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
+                                                                                 (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
     }
 
     private static double edgesDistance(Edge edge1, Edge edge2, DataSet locationMap, double xD, double yD, double zD) {

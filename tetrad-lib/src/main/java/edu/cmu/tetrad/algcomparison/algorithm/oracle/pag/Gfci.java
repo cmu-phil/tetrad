@@ -135,7 +135,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public String getDescription() {
         return "GFCI (Greedy Fast Causal Inference) using " + this.test.getDescription()
-                + " and " + this.score.getDescription();
+               + " and " + this.score.getDescription();
     }
 
     /**

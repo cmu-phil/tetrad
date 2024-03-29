@@ -30,8 +30,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -256,7 +255,7 @@ public class TestExpressionParser {
         matcher = pattern.matcher(".");
         matches = matcher.matches();
 
-        assertTrue(!matches);
+        assertFalse(matches);
 
         matcher = pattern.matcher("-.5");
         matches = matcher.matches();
@@ -276,7 +275,7 @@ public class TestExpressionParser {
         matcher = pattern.matcher("-.");
         matches = matcher.matches();
 
-        assertTrue(!matches);
+        assertFalse(matches);
     }
 
     // Formulas that should and should not fail.

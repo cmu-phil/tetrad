@@ -334,8 +334,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      */
     private SessionNodeWrapper getSessionNodeWrapper(SessionNode sessionNode) {
         for (Object key : getModelNodesToDisplay().keySet()) {
-            if (key instanceof SessionNodeWrapper) {
-                SessionNodeWrapper wrapper = (SessionNodeWrapper) key;
+            if (key instanceof SessionNodeWrapper wrapper) {
 
                 if (wrapper.getSessionNode() == sessionNode) {
                     return wrapper;

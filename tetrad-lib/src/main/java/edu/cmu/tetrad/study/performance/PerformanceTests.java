@@ -918,7 +918,7 @@ public class PerformanceTests {
         //noinspection IfStatementWithIdenticalBranches
         if (continuous) {
             init(new File("fges.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -928,7 +928,7 @@ public class PerformanceTests {
 
         } else {
             init(new File("fges.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -1196,7 +1196,7 @@ public class PerformanceTests {
 
         if (continuous) {
             init(new File("FgesMb.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -1246,7 +1246,7 @@ public class PerformanceTests {
             fges.setMaxDegree(maxIndegree);
         } else {
             init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -1398,8 +1398,8 @@ public class PerformanceTests {
         NumberFormat nf = new DecimalFormat("0.00");
 
         String b = "\n" +
-                "APRE\tAREC\tOPRE\tOREC\n" +
-                nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
         return b;
     }
 
@@ -1421,7 +1421,7 @@ public class PerformanceTests {
         final boolean faithfulnessAssumed = true;
 
         init(new File("fci.algorithm.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
-                "." + numCases + ".txt"), "Num runs = " + numRuns);
+                      "." + numCases + ".txt"), "Num runs = " + numRuns);
         this.out.println("Num vars = " + numVars);
         this.out.println("Num edges = " + (int) (numVars * edgeFactor));
         this.out.println("Num cases = " + numCases);
@@ -1806,7 +1806,7 @@ public class PerformanceTests {
                 continue;
             }
             if (!(truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode1(), edge.getNode2()))
-                    || truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode2(), edge.getNode1())))) {
+                  || truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode2(), edge.getNode1())))) {
                 continue;
             }
 
@@ -1814,7 +1814,7 @@ public class PerformanceTests {
 
             for (Node latent : missingNodes) {
                 if (dag.paths().existsDirectedPathFromTo(latent, edge.getNode1())
-                        && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
+                    && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }
@@ -1909,8 +1909,8 @@ public class PerformanceTests {
         NumberFormat nf = new DecimalFormat("0.00");
 
         String b = "\n" +
-                "APRE\tAREC\tOPRE\tOREC\n" +
-                nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100) + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%";
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100) + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%";
 
         this.out.println(b);
     }
@@ -1951,8 +1951,8 @@ public class PerformanceTests {
         NumberFormat nf = new DecimalFormat("0.00");
 
         String b = "\n" +
-                "APRE\tAREC\tOPRE\tOREC\n" +
-                nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
 
         this.out.println(b);
     }
@@ -2025,7 +2025,7 @@ public class PerformanceTests {
         double recall = correctArrows / (double) totalTrueArrows;
         this.out.println("Arrow recall = " + nf.format(recall));
         double proportionCorrectNonAncestorRelationships = correctNonAncestorRelationships /
-                (double) totalEstimatedArrows;
+                                                           (double) totalEstimatedArrows;
         this.out.println("Proportion correct arrow nonancestor relationships " + nf.format(proportionCorrectNonAncestorRelationships));
 
         stats[0] = correctArrows;
@@ -2106,7 +2106,7 @@ public class PerformanceTests {
         double recall = correctTails / (double) totalTrueTails;
         this.out.println("Tail recall = " + nf.format(recall));
         double proportionCorrectAncestorRelationships = correctAncestorRelationships /
-                (double) totalEstimatedTails;
+                                                        (double) totalEstimatedTails;
         this.out.println("Proportion correct tail ancestor relationships " + nf.format(proportionCorrectAncestorRelationships));
 
         stats[0] = correctTails;

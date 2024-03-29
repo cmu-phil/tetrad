@@ -77,7 +77,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
 
         manual.setText("Manually");
         randomRetain.setText("Using a symmetric prior for each row of each conditional" +
-                " probability table.");
+                             " probability table.");
 
         ButtonGroup group = new ButtonGroup();
         group.add(manual);

@@ -310,7 +310,7 @@ public final class StatUtils {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
-                    "Quartile number must be 1, 2, or 3.");
+                                               "Quartile number must be 1, 2, or 3.");
         }
 
         long[] a = new long[N + 1];
@@ -382,7 +382,7 @@ public final class StatUtils {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
-                    "Quartile number must be 1, 2, or 3.");
+                                               "Quartile number must be 1, 2, or 3.");
         }
 
         double[] a = new double[N + 1];
@@ -703,7 +703,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
@@ -725,7 +725,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
@@ -895,7 +895,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
@@ -915,7 +915,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
@@ -960,7 +960,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
@@ -981,7 +981,7 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
@@ -1419,7 +1419,7 @@ public final class StatUtils {
 
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-                    "when the variance is zero.");
+                                          "when the variance is zero.");
         }
 
         return esss / FastMath.pow(ess, 1.5);
@@ -1708,7 +1708,7 @@ public final class StatUtils {
 
         for (int i = 0; i < 100; i++) {
             sum += (StatUtils.gamma(a) / StatUtils.gamma(a + 1.0 + (double) i)) *
-                    FastMath.pow(x, i);
+                   FastMath.pow(x, i);
         }
 
         return (coef * sum);

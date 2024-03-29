@@ -51,7 +51,7 @@ final class LaunchFlowchartAction extends AbstractAction {
         Desktop d = Desktop.getDesktop();
         try {
             d.browse(new URI("https://htmlpreview.github.io/?https://raw.githubusercontent.com/cmu-phil/tetrad/" +
-                    "development/docs/manual/flowchart.html"));
+                             "development/docs/manual/flowchart.html"));
         } catch (IOException | URISyntaxException e2) {
             e2.printStackTrace();
         }

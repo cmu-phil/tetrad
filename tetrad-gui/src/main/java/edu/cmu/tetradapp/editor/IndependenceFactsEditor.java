@@ -229,7 +229,7 @@ public class IndependenceFactsEditor extends JPanel {
                     vars.addLast(var);
                 }
             } else if ((vars.indexOf("?") < 2) && !(vars.contains("+")) &&
-                    !(vars.contains(var))) {
+                       !(vars.contains(var))) {
                 vars.add(var);
             }
 
@@ -639,7 +639,7 @@ public class IndependenceFactsEditor extends JPanel {
 
                     for (int prod = 0; prod < indTestProducers.size(); prod++) {
                         String[] vars4 = new String[fixedIndices.length + questionMarkFirstTwoIndices.length
-                                + questionMarkRestIndices.length + choice3.length];
+                                                    + questionMarkRestIndices.length + choice3.length];
 
                         for (int i = 0; i < fixedIndices.length; i++) {
                             vars4[fixedIndices[i]] = fixedVars[i];

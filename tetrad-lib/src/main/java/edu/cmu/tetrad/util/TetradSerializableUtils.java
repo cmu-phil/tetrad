@@ -170,8 +170,8 @@ public class TetradSerializableUtils {
                 }
 
                 if (TetradSerializable.class.isAssignableFrom(type) &&
-                        !TetradSerializableExcluded.class.isAssignableFrom(
-                                clazz)) {
+                    !TetradSerializableExcluded.class.isAssignableFrom(
+                            clazz)) {
                     continue;
                 }
 
@@ -194,7 +194,7 @@ public class TetradSerializableUtils {
         if (foundUnsafeField) {
             throw new RuntimeException(
                     "Unsafe serializable fields found. Please " +
-                            "fix immediately.");
+                    "fix immediately.");
         }
     }
 
@@ -226,7 +226,7 @@ public class TetradSerializableUtils {
 
         System.out.println(
                 "Serializing exemplars of instantiable TetradSerializable " +
-                        "in " + getSerializableScope() + ".");
+                "in " + getSerializableScope() + ".");
         System.out.println(
                 "Writing serialized examplars to " + getCurrentDirectory());
 
@@ -347,9 +347,9 @@ public class TetradSerializableUtils {
 
         if (!current.exists() || !current.isDirectory()) {
             throw new IllegalStateException("There is no " +
-                    current.getAbsolutePath() + " directory. " +
-                    "\nThis is where the serialized classes should be. " +
-                    "Please run serializeCurrentDirectory() first.");
+                                            current.getAbsolutePath() + " directory. " +
+                                            "\nThis is where the serialized classes should be. " +
+                                            "Please run serializeCurrentDirectory() first.");
         }
 
         try {
@@ -363,7 +363,7 @@ public class TetradSerializableUtils {
             if (!_static || !_final || !(23L == field.getLong(null))) {
                 throw new RuntimeException(
                         "Class " + clazz + " does not define static final " +
-                                "long serialVersionUID = 23L");
+                        "long serialVersionUID = 23L");
             }
 
             int numFields = getNumNonSerialVersionUIDFields(clazz);
@@ -410,16 +410,16 @@ public class TetradSerializableUtils {
             classFields.put(className, fieldList);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(("There is no static final long field " +
-                    "'serialVersionUID' in " + clazz +
-                    ". Please make one and set it " + "to 23L."));
+                                        "'serialVersionUID' in " + clazz +
+                                        ". Please make one and set it " + "to 23L."));
         } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
-                    "class " + clazz + " is not public.", e);
+                                       "class " + clazz + " is not public.", e);
         } catch (IOException e) {
             throw new RuntimeException(
                     "Could not create a new, writeable file " + "in " +
-                            getCurrentDirectory() +
-                            " when trying to serialize " + clazz + ".", e);
+                    getCurrentDirectory() +
+                    " when trying to serialize " + clazz + ".", e);
         }
     }
 
@@ -451,7 +451,7 @@ public class TetradSerializableUtils {
         }
 
         System.out.println("Finished deserializing classes in " +
-                getCurrentDirectory() + ".");
+                           getCurrentDirectory() + ".");
     }
 
     /**
@@ -468,14 +468,14 @@ public class TetradSerializableUtils {
             in.close();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("There is no class in the model API " +
-                    "to deserialize the object in " + file + ". Perhaps the " +
-                    "class was renamed, moved to another package, or removed. " +
-                    "In any case, please put it back where it was.", e);
+                                       "to deserialize the object in " + file + ". Perhaps the " +
+                                       "class was renamed, moved to another package, or removed. " +
+                                       "In any case, please put it back where it was.", e);
         } catch (IOException e) {
             throw new RuntimeException(
                     "There was an I/O error associated with " +
-                            "the process of deserializing the file " + file +
-                            ".", e);
+                    "the process of deserializing the file " + file +
+                    ".", e);
         }
     }
 
@@ -490,22 +490,22 @@ public class TetradSerializableUtils {
      */
     public void archiveCurrentDirectory() throws RuntimeException {
         System.out.println("Making zip archive of files in " +
-                getCurrentDirectory() + ", putting it in " +
-                getArchiveDirectory() + ".");
+                           getCurrentDirectory() + ", putting it in " +
+                           getArchiveDirectory() + ".");
 
         File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
             throw new IllegalArgumentException("There is no " +
-                    current.getAbsolutePath() + " directory. " +
-                    "\nThis is where the serialized classes should be. " +
-                    "Please run serializeCurrentDirectory() first.");
+                                               current.getAbsolutePath() + " directory. " +
+                                               "\nThis is where the serialized classes should be. " +
+                                               "Please run serializeCurrentDirectory() first.");
         }
 
         File archive = new File(getArchiveDirectory());
         if (archive.exists() && !archive.isDirectory()) {
             throw new IllegalArgumentException("Output directory " +
-                    archive.getAbsolutePath() + " is not a directory.");
+                                               archive.getAbsolutePath() + " is not a directory.");
         }
 
         if (!archive.exists()) {
@@ -560,8 +560,8 @@ public class TetradSerializableUtils {
         } catch (IOException e) {
             throw new RuntimeException(
                     "There was an I/O error associated with " +
-                            "the process of zipping up files in " +
-                            getCurrentDirectory() + ".", e);
+                    "the process of zipping up files in " +
+                    getCurrentDirectory() + ".", e);
         }
     }
 
@@ -574,7 +574,7 @@ public class TetradSerializableUtils {
      */
     public void deserializeArchivedVersions() throws RuntimeException {
         System.out.println("Deserializing archived instances in " +
-                getArchiveDirectory() + ".");
+                           getArchiveDirectory() + ".");
 
         File archive = new File(getArchiveDirectory());
 
@@ -619,11 +619,11 @@ public class TetradSerializableUtils {
 
                         if (field == null) {
                             throw new RuntimeException("Field '" + fieldName +
-                                    "' was dropped from class '" + className +
-                                    "' as a serializable field! Please " +
-                                    "put it back!!!" + "\nIt used to be in " +
-                                    className + " in this archive: " +
-                                    archiveName + ".");
+                                                       "' was dropped from class '" + className +
+                                                       "' as a serializable field! Please " +
+                                                       "put it back!!!" + "\nIt used to be in " +
+                                                       className + " in this archive: " +
+                                                       archiveName + ".");
                         }
                     }
                 }
@@ -632,7 +632,7 @@ public class TetradSerializableUtils {
                         "Could not read class_fields.ser in archive + " + archiveName + " .", e);
             } catch (IOException e) {
                 throw new RuntimeException("Problem reading archive" +
-                        archiveName + "; see cause.", e);
+                                           archiveName + "; see cause.", e);
             }
 
             System.out.println(
@@ -659,14 +659,14 @@ public class TetradSerializableUtils {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
                         "Could not read object zipped file " +
-                                zipEntry.getName() + " in archive " +
-                                archiveName + ". " +
-                                "Perhaps the class was renamed, moved to another package, or " +
-                                "removed. In any case, please put it back where it was.",
+                        zipEntry.getName() + " in archive " +
+                        archiveName + ". " +
+                        "Perhaps the class was renamed, moved to another package, or " +
+                        "removed. In any case, please put it back where it was.",
                         e);
             } catch (IOException e) {
                 throw new RuntimeException("Problem reading archive" +
-                        archiveName + "; see cause.", e);
+                                           archiveName + "; see cause.", e);
             }
         }
 

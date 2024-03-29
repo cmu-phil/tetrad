@@ -107,7 +107,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         for (JInternalFrame layer0Frame : layer0Frames) {
             String title = layer0Frame.getTitle();
             title = ((title == null) ||
-                    title.equals("")) ? "[untitled]" : title;
+                     title.equals("")) ? "[untitled]" : title;
             titles.add(title);
             titlesToFrames.put(title, layer0Frame);
         }

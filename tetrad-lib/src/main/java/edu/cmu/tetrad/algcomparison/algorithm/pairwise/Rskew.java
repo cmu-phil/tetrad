@@ -83,7 +83,7 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
             this.externalGraph = graph;
         } else {
             throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data");
+                                               + "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -114,7 +114,7 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     @Override
     public String getDescription() {
         return "RSkew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+                                                   + this.algorithm.getDescription() : "");
     }
 
     /**
@@ -155,7 +155,7 @@ public class Rskew extends AbstractBootstrapAlgorithm implements Algorithm, Take
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
+                                               + "will orient the edges in the input graph using the data.");
         }
 
         this.algorithm = algorithm;

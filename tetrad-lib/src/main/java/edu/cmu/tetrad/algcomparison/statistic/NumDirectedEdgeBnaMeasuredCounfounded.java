@@ -57,7 +57,7 @@ public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
                 Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x) &&
-                        (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge))) {
+                    (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge))) {
                     tp++;
                 }
             }

@@ -128,8 +128,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
             throw new NullPointerException();
         }
 
-        if (dataWrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) dataWrapper;
+        if (dataWrapper instanceof Simulation simulation) {
             this.numModels = dataWrapper.getDataModelList().size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
@@ -139,8 +138,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataModel;
+        if (dataModel instanceof DataSet _dataSet) {
             if (!_dataSet.isContinuous()) {
                 throw new IllegalArgumentException("Data set must be continuous.");
             }
@@ -250,8 +248,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         Node target;
         List<Node> regressors;
 
-        if (getDataModel() instanceof DataSet) {
-            DataSet _dataSet = (DataSet) getDataModel();
+        if (getDataModel() instanceof DataSet _dataSet) {
             regression = new RegressionDataset(_dataSet);
             target = _dataSet.getVariable(this.targetName);
             regressors = new LinkedList<>();
@@ -265,8 +262,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
             this.result = regression.regress(target, regressors);
             this.outGraph = regression.getGraph();
-        } else if (getDataModel() instanceof ICovarianceMatrix) {
-            ICovarianceMatrix covariances = (ICovarianceMatrix) getDataModel();
+        } else if (getDataModel() instanceof ICovarianceMatrix covariances) {
             regression = new RegressionCovariance(covariances);
             target = covariances.getVariable(this.targetName);
             regressors = new LinkedList<>();

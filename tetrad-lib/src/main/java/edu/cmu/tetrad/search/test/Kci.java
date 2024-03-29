@@ -256,7 +256,7 @@ public class Kci implements IndependenceTest {
             }
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
     }
 

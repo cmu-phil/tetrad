@@ -659,7 +659,7 @@ public final class ResolveSepsetsDci {
         Collections.sort(allPValues);
         int c = 0;
         while (c < allPValues.size() &&
-                allPValues.get(c) < independenceTests.get(0).getAlpha() * (c + 1.) / allPValues.size()) {
+               allPValues.get(c) < independenceTests.get(0).getAlpha() * (c + 1.) / allPValues.size()) {
             c++;
         }
 

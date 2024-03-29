@@ -170,7 +170,7 @@ public class GraphUtils {
                     numMeasuredMeasuredImpureAssociations);
         } else {
             throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                    "sorry dude.");
+                                               "sorry dude.");
         }
 
         return graph;

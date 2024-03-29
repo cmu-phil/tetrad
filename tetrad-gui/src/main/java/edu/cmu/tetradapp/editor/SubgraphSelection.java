@@ -62,10 +62,10 @@ class SubgraphSelection implements Transferable {
 
         for (Object graphElement : graphElements) {
             if (!(graphElement instanceof Node ||
-                    graphElement instanceof Edge)) {
+                  graphElement instanceof Edge)) {
                 throw new IllegalArgumentException("Model node list contains " +
-                        "an object that is not a Node or an Edge: " +
-                        graphElement);
+                                                   "an object that is not a Node or an Edge: " +
+                                                   graphElement);
             }
         }
 

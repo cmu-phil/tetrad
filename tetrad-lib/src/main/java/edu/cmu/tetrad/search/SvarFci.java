@@ -411,9 +411,9 @@ public final class SvarFci implements IGraphSearch {
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);
@@ -456,9 +456,9 @@ public final class SvarFci implements IGraphSearch {
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
 

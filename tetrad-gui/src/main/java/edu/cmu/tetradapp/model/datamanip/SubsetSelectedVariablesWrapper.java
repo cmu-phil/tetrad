@@ -58,7 +58,7 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
             this.setDataModel(SubsetSelectedVariablesWrapper.createCovarianceModel((ICovarianceMatrix) model));
         } else {
             throw new IllegalArgumentException("Expecting a rectangular data " +
-                    "set or a covariance matrix.");
+                                               "set or a covariance matrix.");
         }
 
         this.setSourceGraph(data.getSourceGraph());

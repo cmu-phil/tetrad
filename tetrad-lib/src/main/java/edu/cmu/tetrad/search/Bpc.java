@@ -129,7 +129,7 @@ public final class Bpc {
             initAlgorithm(alpha, sigTestType);
         } else if (dataSet.isDiscrete()) {
             throw new IllegalArgumentException("Discrete data is not supported " +
-                    "for this search.");
+                                               "for this search.");
         }
     }
 
@@ -228,7 +228,7 @@ public final class Bpc {
         this.outputMessage = true;
         this.sigTestType = sigTestType;
         this.scoreTestMode = (this.sigTestType == BpcTestType.DISCRETE ||
-                this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
+                              this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
 
         if (sigTestType == BpcTestType.DISCRETE) {
             this.numVariables = this.dataSet.getNumColumns();
@@ -241,11 +241,11 @@ public final class Bpc {
             BpcTestType type;
 
             if (sigTestType == BpcTestType.TETRAD_WISHART || sigTestType == BpcTestType.TETRAD_DELTA
-                    || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
+                || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
                 type = sigTestType;
             } else {
                 throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " +
-                        sigTestType);
+                                                   sigTestType);
             }
 
             if (this.dataSet != null) {
@@ -299,7 +299,7 @@ public final class Bpc {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v4);
         } else {
             if (cv[v1][v4] == this.EDGE_NONE && cv[v2][v4] == this.EDGE_NONE &&
-                    cv[v3][v4] == this.EDGE_NONE) {
+                cv[v3][v4] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -318,14 +318,14 @@ public final class Bpc {
     private boolean clusteredPartial2(int v1, int v2, int v3, int v4, int v5) {
         if (this.scoreTestMode) {
             return !this.tetradTest.oneFactorTest(v1, v2, v3, v5) ||
-                    this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) ||
-                    !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
+                   this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) ||
+                   !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
         } else {
             return !this.tetradTest.tetradScore3(v1, v2, v3, v5) ||
 
-                    !this.tetradTest.tetradScore1(v1, v2, v4, v5) ||
-                    !this.tetradTest.tetradScore1(v2, v3, v4, v5) ||
-                    !this.tetradTest.tetradScore1(v1, v3, v4, v5);
+                   !this.tetradTest.tetradScore1(v1, v2, v4, v5) ||
+                   !this.tetradTest.tetradScore1(v2, v3, v4, v5) ||
+                   !this.tetradTest.tetradScore1(v1, v3, v4, v5);
         }
     }
 
@@ -334,7 +334,7 @@ public final class Bpc {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v5);
         } else {
             if (cv[v1][v5] == this.EDGE_NONE && cv[v2][v5] == this.EDGE_NONE &&
-                    cv[v3][v5] == this.EDGE_NONE) {
+                cv[v3][v5] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -350,24 +350,24 @@ public final class Bpc {
                                         int v6) {
         if (this.scoreTestMode) {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v3) &&
-                    this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v3) &&
+                   this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
         } else {
             return
 
                     this.tetradTest.tetradScore3(v1, v2, v3, v6) &&
-                            this.tetradTest.tetradScore3(v4, v5, v6, v1) &&
-                            this.tetradTest.tetradScore3(v4, v5, v6, v2) &&
-                            this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
+                    this.tetradTest.tetradScore3(v4, v5, v6, v1) &&
+                    this.tetradTest.tetradScore3(v4, v5, v6, v2) &&
+                    this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
 
-                            this.tetradTest.tetradScore1(v1, v2, v4, v6) &&
-                            this.tetradTest.tetradScore1(v1, v2, v5, v6) &&
-                            this.tetradTest.tetradScore1(v2, v3, v4, v6) &&
-                            this.tetradTest.tetradScore1(v2, v3, v5, v6) &&
-                            this.tetradTest.tetradScore1(v1, v3, v4, v6) &&
-                            this.tetradTest.tetradScore1(v1, v3, v5, v6);
+                    this.tetradTest.tetradScore1(v1, v2, v4, v6) &&
+                    this.tetradTest.tetradScore1(v1, v2, v5, v6) &&
+                    this.tetradTest.tetradScore1(v2, v3, v4, v6) &&
+                    this.tetradTest.tetradScore1(v2, v3, v5, v6) &&
+                    this.tetradTest.tetradScore1(v1, v3, v4, v6) &&
+                    this.tetradTest.tetradScore1(v1, v3, v5, v6);
         }
     }
 
@@ -375,12 +375,12 @@ public final class Bpc {
                                              int v5, int v6, int[][] cv) {
         if (this.scoreTestMode) {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                    this.tetradTest.oneFactorTest(v4, v5, v6, v3);
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
+                   this.tetradTest.oneFactorTest(v4, v5, v6, v3);
         } else {
             if (cv[v1][v6] == this.EDGE_NONE && cv[v2][v6] == this.EDGE_NONE &&
-                    cv[v3][v6] == this.EDGE_NONE) {
+                cv[v3][v6] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -427,12 +427,12 @@ public final class Bpc {
     private boolean partialRule1_2(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
             return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                    this.tetradTest.twoFactorTest(x1, x2, y1, y2);
+                   this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
         return !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
-                !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
-                this.tetradTest.tetradHolds(x1, y1, y2, x2);
+               !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
+               this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
@@ -448,13 +448,13 @@ public final class Bpc {
     private boolean partialRule2_1(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
             return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                    this.tetradTest.twoFactorTest(x1, x2, y1, y2);
+                   this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
         return this.tetradTest.tetradHolds(x1, y1, y2, x2) &&
-                !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
-                !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
-                this.tetradTest.tetradHolds(x1, y1, y2, x2);
+               !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
+               !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
+               this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
@@ -953,7 +953,7 @@ public final class Bpc {
                         for (int value : nextCluster) {
                             impurities[currentCluster[jj]][value] =
                                     ng[currentCluster[jj]][value] !=
-                                            this.EDGE_NONE;
+                                    this.EDGE_NONE;
                             impurities[value][currentCluster[jj]] =
                                     impurities[currentCluster[jj]][value];
                         }
@@ -1079,7 +1079,7 @@ public final class Bpc {
             for (int k : next) {
                 for (int[] element : elements) {
                     if (element[0] == k &&
-                            !eliminated[element[0]]) {
+                        !eliminated[element[0]]) {
                         draftArea[draftCount++] = k;
                     }
                 }
@@ -1230,17 +1230,17 @@ public final class Bpc {
                 boolean notFound = true;
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
                     if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_NONE || ng[v1][v3] ==
-                            this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] ==
-                            this.EDGE_GRAY) {
+                                                                                this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] ==
+                                                                                                                                  this.EDGE_GRAY) {
                         continue;
                     }
                     for (int v4 = v3 + 1; v4 < numVariables() && notFound; v4++) {
                         if (v1 == v4 || v2 == v4 || ng[v1][v4] == this.EDGE_NONE ||
-                                ng[v1][v4] == this.EDGE_GRAY ||
-                                ng[v2][v4] == this.EDGE_NONE ||
-                                ng[v2][v4] == this.EDGE_GRAY ||
-                                ng[v3][v4] == this.EDGE_NONE ||
-                                ng[v3][v4] == this.EDGE_GRAY) {
+                            ng[v1][v4] == this.EDGE_GRAY ||
+                            ng[v2][v4] == this.EDGE_NONE ||
+                            ng[v2][v4] == this.EDGE_GRAY ||
+                            ng[v3][v4] == this.EDGE_NONE ||
+                            ng[v3][v4] == this.EDGE_GRAY) {
                             continue;
                         }
                         if (this.tetradTest.tetradScore3(v1, v2, v3, v4)) {
@@ -1279,50 +1279,50 @@ public final class Bpc {
 
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
                     if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
-                            ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY ||
-                            cv[v1][v3] != this.EDGE_BLACK ||
-                            cv[v2][v3] != this.EDGE_BLACK) {
+                        ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY ||
+                        cv[v1][v3] != this.EDGE_BLACK ||
+                        cv[v2][v3] != this.EDGE_BLACK) {
                         continue;
                     }
 
                     for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
                         if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
-                                ng[v1][v5] == this.EDGE_GRAY ||
-                                ng[v2][v5] == this.EDGE_GRAY ||
-                                ng[v3][v5] == this.EDGE_GRAY ||
-                                cv[v1][v5] != this.EDGE_BLACK ||
-                                cv[v2][v5] != this.EDGE_BLACK ||
-                                cv[v3][v5] != this.EDGE_BLACK ||
-                                clusteredPartial1(v1, v3, v5, v2)) {
+                            ng[v1][v5] == this.EDGE_GRAY ||
+                            ng[v2][v5] == this.EDGE_GRAY ||
+                            ng[v3][v5] == this.EDGE_GRAY ||
+                            cv[v1][v5] != this.EDGE_BLACK ||
+                            cv[v2][v5] != this.EDGE_BLACK ||
+                            cv[v3][v5] != this.EDGE_BLACK ||
+                            clusteredPartial1(v1, v3, v5, v2)) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 ||
-                                    ng[v1][v4] == this.EDGE_GRAY ||
-                                    ng[v2][v4] == this.EDGE_GRAY ||
-                                    ng[v3][v4] == this.EDGE_GRAY ||
-                                    ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
-                                    cv[v1][v4] != this.EDGE_BLACK ||
-                                    cv[v2][v4] != this.EDGE_BLACK ||
-                                    cv[v3][v4] != this.EDGE_BLACK ||
-                                    cv[v5][v4] != this.EDGE_BLACK ||
-                                    clusteredPartial2(v1, v3, v5, v2, v4)) {
+                                ng[v1][v4] == this.EDGE_GRAY ||
+                                ng[v2][v4] == this.EDGE_GRAY ||
+                                ng[v3][v4] == this.EDGE_GRAY ||
+                                ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
+                                cv[v1][v4] != this.EDGE_BLACK ||
+                                cv[v2][v4] != this.EDGE_BLACK ||
+                                cv[v3][v4] != this.EDGE_BLACK ||
+                                cv[v5][v4] != this.EDGE_BLACK ||
+                                clusteredPartial2(v1, v3, v5, v2, v4)) {
                                 continue;
                             }
 
                             for (int v6 = v4 + 1; v6 < numVariables() && notFound; v6++) {
                                 if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                        v5 == v6 || ng[v1][v6] == this.EDGE_GRAY ||
-                                        ng[v2][v6] == this.EDGE_GRAY ||
-                                        ng[v3][v6] == this.EDGE_GRAY ||
-                                        ng[v4][v6] == this.EDGE_GRAY ||
-                                        ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
-                                        cv[v1][v6] != this.EDGE_BLACK ||
-                                        cv[v2][v6] != this.EDGE_BLACK ||
-                                        cv[v3][v6] != this.EDGE_BLACK ||
-                                        cv[v4][v6] != this.EDGE_BLACK ||
-                                        cv[v5][v6] != this.EDGE_BLACK) {
+                                    v5 == v6 || ng[v1][v6] == this.EDGE_GRAY ||
+                                    ng[v2][v6] == this.EDGE_GRAY ||
+                                    ng[v3][v6] == this.EDGE_GRAY ||
+                                    ng[v4][v6] == this.EDGE_GRAY ||
+                                    ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
+                                    cv[v1][v6] != this.EDGE_BLACK ||
+                                    cv[v2][v6] != this.EDGE_BLACK ||
+                                    cv[v3][v6] != this.EDGE_BLACK ||
+                                    cv[v4][v6] != this.EDGE_BLACK ||
+                                    cv[v5][v6] != this.EDGE_BLACK) {
                                     continue;
                                 }
 
@@ -1358,51 +1358,51 @@ public final class Bpc {
                     //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
                     for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
                         if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_GRAY ||
-                                ng[v2][v3] == this.EDGE_GRAY ||
-                                cv[v1][v3] != this.EDGE_BLACK ||
-                                cv[v2][v3] != this.EDGE_BLACK) {
+                            ng[v2][v3] == this.EDGE_GRAY ||
+                            cv[v1][v3] != this.EDGE_BLACK ||
+                            cv[v2][v3] != this.EDGE_BLACK) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 ||
-                                    ng[v1][v4] == this.EDGE_GRAY ||
-                                    ng[v2][v4] == this.EDGE_GRAY ||
-                                    ng[v3][v4] == this.EDGE_GRAY ||
-                                    cv[v1][v4] != this.EDGE_BLACK ||
-                                    cv[v2][v4] != this.EDGE_BLACK ||
-                                    cv[v3][v4] != this.EDGE_BLACK ||
-                                    clusteredPartial1(v1, v2, v3, v4)) {
+                                ng[v1][v4] == this.EDGE_GRAY ||
+                                ng[v2][v4] == this.EDGE_GRAY ||
+                                ng[v3][v4] == this.EDGE_GRAY ||
+                                cv[v1][v4] != this.EDGE_BLACK ||
+                                cv[v2][v4] != this.EDGE_BLACK ||
+                                cv[v3][v4] != this.EDGE_BLACK ||
+                                clusteredPartial1(v1, v2, v3, v4)) {
                                 continue;
                             }
 
                             for (int v5 = v4 + 1; v5 < numVariables() - 1 && notFound; v5++) {
                                 if (v1 == v5 || v2 == v5 || v3 == v5 ||
-                                        ng[v1][v5] == this.EDGE_GRAY ||
-                                        ng[v2][v5] == this.EDGE_GRAY ||
-                                        ng[v3][v5] == this.EDGE_GRAY ||
-                                        ng[v4][v5] == this.EDGE_GRAY ||
-                                        cv[v1][v5] != this.EDGE_BLACK ||
-                                        cv[v2][v5] != this.EDGE_BLACK ||
-                                        cv[v3][v5] != this.EDGE_BLACK ||
-                                        cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
-                                        clusteredPartial2(v1, v2, v3, v4,
-                                                v5)) {
+                                    ng[v1][v5] == this.EDGE_GRAY ||
+                                    ng[v2][v5] == this.EDGE_GRAY ||
+                                    ng[v3][v5] == this.EDGE_GRAY ||
+                                    ng[v4][v5] == this.EDGE_GRAY ||
+                                    cv[v1][v5] != this.EDGE_BLACK ||
+                                    cv[v2][v5] != this.EDGE_BLACK ||
+                                    cv[v3][v5] != this.EDGE_BLACK ||
+                                    cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
+                                    clusteredPartial2(v1, v2, v3, v4,
+                                            v5)) {
                                     continue;
                                 }
 
                                 for (int v6 = v5 + 1; v6 < numVariables() && notFound; v6++) {
                                     if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                            ng[v1][v6] == this.EDGE_GRAY ||
-                                            ng[v2][v6] == this.EDGE_GRAY ||
-                                            ng[v3][v6] == this.EDGE_GRAY ||
-                                            ng[v4][v6] == this.EDGE_GRAY ||
-                                            ng[v5][v6] == this.EDGE_GRAY ||
-                                            cv[v1][v6] != this.EDGE_BLACK ||
-                                            cv[v2][v6] != this.EDGE_BLACK ||
-                                            cv[v3][v6] != this.EDGE_BLACK ||
-                                            cv[v4][v6] != this.EDGE_BLACK ||
-                                            cv[v5][v6] != this.EDGE_BLACK) {
+                                        ng[v1][v6] == this.EDGE_GRAY ||
+                                        ng[v2][v6] == this.EDGE_GRAY ||
+                                        ng[v3][v6] == this.EDGE_GRAY ||
+                                        ng[v4][v6] == this.EDGE_GRAY ||
+                                        ng[v5][v6] == this.EDGE_GRAY ||
+                                        cv[v1][v6] != this.EDGE_BLACK ||
+                                        cv[v2][v6] != this.EDGE_BLACK ||
+                                        cv[v3][v6] != this.EDGE_BLACK ||
+                                        cv[v4][v6] != this.EDGE_BLACK ||
+                                        cv[v5][v6] != this.EDGE_BLACK) {
                                         continue;
                                     }
 
@@ -1573,10 +1573,10 @@ public final class Bpc {
         for (int i = 0; i < numVariables(); i++) {
             for (int j = 0; j < numVariables(); j++) {
                 if (selected[i] && selected[j] &&
-                        (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
+                    (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
                     ng[i][j] = this.EDGE_RED;
                 } else if ((!selected[i] || !selected[j]) &&
-                        ng[i][j] == this.EDGE_YELLOW) {
+                           ng[i][j] == this.EDGE_YELLOW) {
                     ng[i][j] = this.EDGE_BLUE;
                 }
             }
@@ -1593,34 +1593,34 @@ public final class Bpc {
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
                     if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
-                            this.EDGE_NONE) {
+                                                                                this.EDGE_NONE) {
                         continue;
                     }
                     for (int x3 = 0; x3 < numVariables(); x3++) {
                         if (x1 == x3 || x2 == x3 || y1 == x3 ||
-                                cv[x1][x3] == this.EDGE_NONE ||
-                                cv[x2][x3] == this.EDGE_NONE ||
-                                cv[y1][x3] == this.EDGE_NONE ||
-                                !partialRule1_1(x1, x2, x3, y1)) {
+                            cv[x1][x3] == this.EDGE_NONE ||
+                            cv[x2][x3] == this.EDGE_NONE ||
+                            cv[y1][x3] == this.EDGE_NONE ||
+                            !partialRule1_1(x1, x2, x3, y1)) {
                             continue;
                         }
                         for (int y2 = 0; y2 < numVariables(); y2++) {
                             if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 ||
-                                    cv[x1][y2] == this.EDGE_NONE ||
-                                    cv[x2][y2] == this.EDGE_NONE ||
-                                    cv[x3][y2] == this.EDGE_NONE ||
-                                    cv[y1][y2] == this.EDGE_NONE ||
-                                    !partialRule1_2(x1, x2, y1, y2)) {
+                                cv[x1][y2] == this.EDGE_NONE ||
+                                cv[x2][y2] == this.EDGE_NONE ||
+                                cv[x3][y2] == this.EDGE_NONE ||
+                                cv[y1][y2] == this.EDGE_NONE ||
+                                !partialRule1_2(x1, x2, y1, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
-                                        y1 == y3 || y2 == y3 || cv[x1][y3] ==
-                                        this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE ||
-                                        cv[x3][y3] == this.EDGE_NONE ||
-                                        cv[y1][y3] == this.EDGE_NONE ||
-                                        cv[y2][y3] == this.EDGE_NONE ||
-                                        !partialRule1_3(x1, y1, y2, y3)) {
+                                    y1 == y3 || y2 == y3 || cv[x1][y3] ==
+                                                            this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE ||
+                                    cv[x3][y3] == this.EDGE_NONE ||
+                                    cv[y1][y3] == this.EDGE_NONE ||
+                                    cv[y2][y3] == this.EDGE_NONE ||
+                                    !partialRule1_3(x1, y1, y2, y3)) {
                                     continue;
                                 }
                                 ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
@@ -1641,37 +1641,37 @@ public final class Bpc {
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
                     if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
-                            this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
+                                                                                this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
                         continue;
                     }
                     for (int y2 = 0; y2 < numVariables(); y2++) {
                         if (x1 == y2 || x2 == y2 || y1 == y2 ||
-                                cv[x1][y2] == this.EDGE_NONE ||
-                                cv[x2][y2] == this.EDGE_NONE ||
-                                cv[y1][y2] == this.EDGE_NONE ||
-                                ng[y1][y2] == this.EDGE_GRAY ||
-                                !partialRule2_1(x1, x2, y1, y2)) {
+                            cv[x1][y2] == this.EDGE_NONE ||
+                            cv[x2][y2] == this.EDGE_NONE ||
+                            cv[y1][y2] == this.EDGE_NONE ||
+                            ng[y1][y2] == this.EDGE_GRAY ||
+                            !partialRule2_1(x1, x2, y1, y2)) {
                             continue;
                         }
                         for (int x3 = 0; x3 < numVariables(); x3++) {
                             if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 ||
-                                    ng[x1][x3] == this.EDGE_GRAY ||
-                                    cv[x1][x3] == this.EDGE_NONE ||
-                                    cv[x2][x3] == this.EDGE_NONE ||
-                                    cv[y1][x3] == this.EDGE_NONE ||
-                                    cv[y2][x3] == this.EDGE_NONE ||
-                                    !partialRule2_2(x1, x2, x3, y2)) {
+                                ng[x1][x3] == this.EDGE_GRAY ||
+                                cv[x1][x3] == this.EDGE_NONE ||
+                                cv[x2][x3] == this.EDGE_NONE ||
+                                cv[y1][x3] == this.EDGE_NONE ||
+                                cv[y2][x3] == this.EDGE_NONE ||
+                                !partialRule2_2(x1, x2, x3, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
-                                        y1 == y3 || y2 == y3 || ng[y1][y3] ==
-                                        this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE ||
-                                        cv[x2][y3] == this.EDGE_NONE ||
-                                        cv[x3][y3] == this.EDGE_NONE ||
-                                        cv[y1][y3] == this.EDGE_NONE ||
-                                        cv[y2][y3] == this.EDGE_NONE ||
-                                        !partialRule2_3(x2, y1, y2, y3)) {
+                                    y1 == y3 || y2 == y3 || ng[y1][y3] ==
+                                                            this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE ||
+                                    cv[x2][y3] == this.EDGE_NONE ||
+                                    cv[x3][y3] == this.EDGE_NONE ||
+                                    cv[y1][y3] == this.EDGE_NONE ||
+                                    cv[y2][y3] == this.EDGE_NONE ||
+                                    !partialRule2_3(x2, y1, y2, y3)) {
                                     continue;
                                 }
                                 ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
@@ -1770,8 +1770,8 @@ public final class Bpc {
                     }
                     for (int[] ints : newClustering) {
                         if (need3 &&
-                                !compatibility[j][clustering.indexOf(
-                                        ints)]) {
+                            !compatibility[j][clustering.indexOf(
+                                    ints)]) {
                             marked[j] = true;
                             continue next_choice;
                         }

@@ -118,13 +118,13 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
                                 String alphaString, String depthString, String priorString, String maxMissingString) {
         try {
             String s = "MbClassify " +
-                    trainPath + " " +
-                    testPath + " " +
-                    targetString + " " +
-                    alphaString + " " +
-                    depthString + " " +
-                    priorString + " " +
-                    maxMissingString + " ";
+                       trainPath + " " +
+                       testPath + " " +
+                       targetString + " " +
+                       alphaString + " " +
+                       depthString + " " +
+                       priorString + " " +
+                       maxMissingString + " ";
 
             TetradLogger.getInstance().forceLogMessage(s);
 
@@ -181,7 +181,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
         if (this.targetVariable == null) {
             throw new IllegalArgumentException("Target variable not in data: " +
-                    target);
+                                               target);
         }
     }
 
@@ -315,8 +315,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
             if (numMissing > this.maxMissing) {
                 TetradLogger.getInstance().forceLogMessage("classification(" + k + ") = " +
-                        "not done since number of missing values too high " +
-                        "(" + numMissing + ").");
+                                                           "not done since number of missing values too high " +
+                                                           "(" + numMissing + ").");
                 continue;
             }
 
@@ -348,7 +348,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             //training dataset.  If that happens skip the case.
             if (_category < 0) {
                 System.out.println("classification(" + k + ") is undefined " +
-                        "(undefined marginals).");
+                                   "(undefined marginals).");
                 continue;
             }
 

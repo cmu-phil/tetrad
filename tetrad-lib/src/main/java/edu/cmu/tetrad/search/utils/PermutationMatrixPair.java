@@ -98,8 +98,8 @@ public class PermutationMatrixPair {
      */
     public String toString() {
         return "Row perm " + Arrays.toString(this.rowPerm)
-                + "\nCol perm = " + Arrays.toString(this.colPerm)
-                + "\nPermuted matrix : " + getPermutedMatrix();
+               + "\nCol perm = " + Arrays.toString(this.colPerm)
+               + "\nPermuted matrix : " + getPermutedMatrix();
     }
 }
 

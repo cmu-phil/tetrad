@@ -208,7 +208,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             DataModel dataModel = dataModelList.get(i);
 
             if (dataModel instanceof DataSet
-                    && ((DataSet) dataModel).getNumColumns() == 0) {
+                && ((DataSet) dataModel).getNumColumns() == 0) {
                 if (dataModelList.size() > 1) {
                     dataModelList.remove(dataModel);
                 }
@@ -419,8 +419,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         DataModel dataModel = this.dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataModelList) {
-            DataModelList dataModelList = (DataModelList) dataModel;
+        if (dataModel instanceof DataModelList dataModelList) {
             dataModelList.setSelectedModel(selectedModel);
 
             firePropertyChange("modelChanged", null, null);
@@ -555,16 +554,14 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         ActionListener deleteSelectedRowsOrColumnsActionListener = e -> {
             JTable table = getSelectedJTable();
 
-            if (table instanceof TabularDataJTable) {
-                TabularDataJTable tableTabular = (TabularDataJTable) table;
+            if (table instanceof TabularDataJTable tableTabular) {
 
                 // When getRowSelectionAllowed() is false, getColumnSelectionAllowed() must be true, vise versa.
                 // But both can be true since we can select a data cell - Zhou
                 if (!tableTabular.getRowSelectionAllowed() || !tableTabular.getColumnSelectionAllowed()) {
                     tableTabular.deleteSelected();
                 }
-            } else if (table instanceof CovMatrixJTable) {
-                CovMatrixJTable covTable = (CovMatrixJTable) table;
+            } else if (table instanceof CovMatrixJTable covTable) {
                 covTable.deleteSelected();
             }
 
@@ -701,8 +698,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 = new JCheckBoxMenuItem("Show Category Names");
         JTable selectedJTable = getSelectedJTable();
 
-        if (selectedJTable instanceof TabularDataJTable) {
-            TabularDataJTable tableTabular = (TabularDataJTable) selectedJTable;
+        if (selectedJTable instanceof TabularDataJTable tableTabular) {
             categoryNames.setSelected(tableTabular.isShowCategoryNames());
         }
 

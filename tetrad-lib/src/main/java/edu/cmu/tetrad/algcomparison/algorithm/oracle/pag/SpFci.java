@@ -142,7 +142,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     @Override
     public String getDescription() {
         return "SP-FCI (SP-based FCI) using " + this.test.getDescription()
-                + " or " + this.score.getDescription();
+               + " or " + this.score.getDescription();
     }
 
     /**

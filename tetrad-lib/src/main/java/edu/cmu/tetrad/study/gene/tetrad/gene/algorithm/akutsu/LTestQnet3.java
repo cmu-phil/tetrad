@@ -124,7 +124,7 @@ public class LTestQnet3 {
             while ((regs = cg.next()) != null) {
                 System.out.println("Sets of " + k + " regulators are:");
                 System.out.println(regs[0] + " " + regs[1] + " " + regs[2] +
-                        " " + regs[3] + " " + regs[4]);
+                                   " " + regs[3] + " " + regs[4]);
 
                 for (int t = 1; t < ntimes; t++) {
                     String g0 = nf.format(gene[t][regs[0]]);
@@ -136,10 +136,10 @@ public class LTestQnet3 {
                     if (deriv[t][g] > 0.3) {
 
                         System.out.println(g0 + "a0+" + g1 + "a1+" + g2 +
-                                "a2+" + g3 + "a3+" + g4 + "a4+b > 0");
+                                           "a2+" + g3 + "a3+" + g4 + "a4+b > 0");
                     } else if (deriv[t][g] < -0.3) {
                         System.out.println(g0 + "a0+" + g1 + "a1+" + g2 +
-                                "a2+" + g3 + "a3+" + g4 + "a4+b< 0");
+                                           "a2+" + g3 + "a3+" + g4 + "a4+b< 0");
                     }
                 }
 

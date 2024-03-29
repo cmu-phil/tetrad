@@ -78,7 +78,7 @@ public class GraphHistory {
     public Graph next() {
         if (this.index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
-                    "initialized yet.");
+                                               "initialized yet.");
         }
 
         if (this.index < this.graphs.size() - 1) {
@@ -96,7 +96,7 @@ public class GraphHistory {
     public Graph previous() {
         if (this.index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
-                    "initialized yet.");
+                                               "initialized yet.");
         }
 
         if (this.index > 0) {

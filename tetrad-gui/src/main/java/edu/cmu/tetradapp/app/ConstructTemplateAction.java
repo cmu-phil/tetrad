@@ -445,13 +445,13 @@ final class ConstructTemplateAction extends AbstractAction {
         if (node1 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName1 in "
-                            + "the session wrapper: " + nodeName1);
+                    + "the session wrapper: " + nodeName1);
         }
 
         if (node2 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName2 in "
-                            + "the session wrapper: " + nodeName2);
+                    + "the session wrapper: " + nodeName2);
         }
 
         // Construct an edge.

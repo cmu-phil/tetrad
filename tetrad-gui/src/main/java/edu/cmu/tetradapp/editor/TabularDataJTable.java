@@ -188,8 +188,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
-        if (c instanceof JComponent) {
-            JComponent jc = (JComponent) c;
+        if (c instanceof JComponent jc) {
 
             Object o = getValueAt(rowIndex, vColIndex);
 
@@ -659,7 +658,7 @@ class DataCellRenderer extends DefaultTableCellRenderer {
         DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
 
         if (this.dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
-                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         }
 

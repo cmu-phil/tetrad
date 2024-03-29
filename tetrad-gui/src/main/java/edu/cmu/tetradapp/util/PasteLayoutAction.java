@@ -67,11 +67,10 @@ public class PasteLayoutAction extends AbstractAction
         Transferable transferable = InternalClipboard.getLayoutInstance()
                 .getContents(null);
 
-        if (!(transferable instanceof LayoutSelection)) {
+        if (!(transferable instanceof LayoutSelection selection)) {
             return;
         }
 
-        LayoutSelection selection = (LayoutSelection) transferable;
         DataFlavor flavor = new DataFlavor(LayoutSelection.class, "Layout");
 
         try {

@@ -217,7 +217,7 @@ public final class KnowledgeGroup implements TetradSerializable {
         }
 
         return this.type == thatGroup.type && this.fromGroup.equals(thatGroup.fromGroup)
-                && this.toGroup.equals(thatGroup.toGroup);
+               && this.toGroup.equals(thatGroup.toGroup);
 
     }
 

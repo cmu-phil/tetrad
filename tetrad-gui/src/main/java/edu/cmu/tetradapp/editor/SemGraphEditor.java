@@ -32,28 +32,21 @@ import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.Serial;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 

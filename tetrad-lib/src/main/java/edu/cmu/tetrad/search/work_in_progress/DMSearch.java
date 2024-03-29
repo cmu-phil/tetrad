@@ -1028,9 +1028,9 @@ public class DMSearch {
 
             for (Node node : latents) {
                 b.append("Latent:" + node + "\n "
-                        + "Inputs:" + inputs.get(node) + "\n "
-                        + "Outputs:" + outputs.get(node) + "\n "
-                        + "Latent Effects:" + latentEffects.get(node) + "\t\n");
+                         + "Inputs:" + inputs.get(node) + "\n "
+                         + "Outputs:" + outputs.get(node) + "\n "
+                         + "Latent Effects:" + latentEffects.get(node) + "\t\n");
             }
 
             b.append("\n");

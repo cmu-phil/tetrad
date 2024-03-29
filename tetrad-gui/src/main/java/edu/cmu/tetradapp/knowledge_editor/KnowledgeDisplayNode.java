@@ -129,11 +129,11 @@ public class KnowledgeDisplayNode extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue loop;
                     }
                 }

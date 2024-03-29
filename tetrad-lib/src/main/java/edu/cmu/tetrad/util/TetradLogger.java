@@ -332,7 +332,7 @@ public class TetradLogger {
             } catch (FileNotFoundException e) {
                 this.stream = old;
                 throw new IllegalStateException("Could not create file in output directory ("
-                        + dir.getAbsolutePath() + ").");
+                                                + dir.getAbsolutePath() + ").");
             }
             if (old != null) {
                 removeOutputStream(old);
@@ -349,12 +349,12 @@ public class TetradLogger {
         if (!dir.exists()) {
             if (!dir.mkdir()) {
                 throw new IllegalStateException("Could not create the output directory "
-                        + dir.getAbsolutePath() + ".");
+                                                + dir.getAbsolutePath() + ".");
             }
         }
         if (!dir.canWrite()) {
             throw new IllegalStateException("Cannot write to the directory chosen for saving output " +
-                    " logs (" + dir.getAbsolutePath() + "). Please pick another directory.");
+                                            " logs (" + dir.getAbsolutePath() + "). Please pick another directory.");
         }
         // get the next file name to use.
         String prefix = getLoggingFilePrefix();
@@ -495,7 +495,7 @@ public class TetradLogger {
 
             if (!selectedFile.canWrite()) {
                 throw new IllegalStateException("That output directory cannot be written to. " +
-                        "Keeping the old one.");
+                                                "Keeping the old one.");
             }
 
             if (!selectedFile.delete()) {

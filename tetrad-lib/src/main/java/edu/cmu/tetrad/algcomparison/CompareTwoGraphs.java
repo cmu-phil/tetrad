@@ -315,11 +315,11 @@ public class CompareTwoGraphs {
     @NotNull
     public static String getMisclassificationTable(Graph trueGraph, Graph targetGraph) {
         return "Edge Misclassification Table:" +
-                "\n" +
-                MisclassificationUtils.edgeMisclassifications(targetGraph, trueGraph) +
-                "\n\n" +
-                "Endpoint Misclassification Table:" +
-                "\n\n" +
-                MisclassificationUtils.endpointMisclassification(targetGraph, trueGraph);
+               "\n" +
+               MisclassificationUtils.edgeMisclassifications(targetGraph, trueGraph) +
+               "\n\n" +
+               "Endpoint Misclassification Table:" +
+               "\n\n" +
+               MisclassificationUtils.endpointMisclassification(targetGraph, trueGraph);
     }
 }

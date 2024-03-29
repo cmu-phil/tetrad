@@ -131,7 +131,7 @@ public class HistogramPanel extends JPanel {
         int paddingY = drawAxes ? 15 : 5;
         int height = getHeight() - 2;
         int width = getWidth() - (drawAxes ? 4 : 2);
-        int displayedHeight = (int) (height - paddingY);
+        int displayedHeight = height - paddingY;
         int space = drawAxes ? 2 : 1;
         int dash = 10;
 

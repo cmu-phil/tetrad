@@ -352,14 +352,14 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
         double fisherZ = FastMath.sqrt(rows.length - z.size() - 3.0) *
-                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                         0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
 
         if (Double.isNaN(fisherZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
-                    "score for independence fact " + xVar + " _||_ " + yVar +
-                    " | " + z + " is undefined.");
+                                               "score for independence fact " + xVar + " _||_ " + yVar +
+                                               " | " + z + " is undefined.");
         }
 
 

@@ -59,9 +59,9 @@ public class TestAnneAnalysis3 {
 
                 try {
                     File filecor = new File("/Users/josephramsey/Downloads/sldisco/sldisco_cormats_b5K/" +
-                            "cormats_p" + p + "_n" + nString + "_b5K.txt");
+                                            "cormats_p" + p + "_n" + nString + "_b5K.txt");
                     File adjout = new File("/Users/josephramsey/Downloads/sldisco/sldisco_adjout_b5K/" +
-                            "adjmatsout_p" + p + "_n" + nString + "_b5K.txt");
+                                           "adjmatsout_p" + p + "_n" + nString + "_b5K.txt");
 
                     filecor.mkdirs();
                     adjout.getParentFile().mkdirs();
@@ -105,8 +105,8 @@ public class TestAnneAnalysis3 {
                         for (int j = 0; j < vars.size(); j++) {
                             for (int i = 0; i < vars.size(); i++) {
                                 if (estCpdag.isAdjacentTo(vars.get(j), vars.get(i)) &&
-                                        (Edges.isUndirectedEdge(estCpdag.getEdge(vars.get(j), vars.get(i)))
-                                                || estCpdag.isParentOf(vars.get(j), vars.get(i)))) {
+                                    (Edges.isUndirectedEdge(estCpdag.getEdge(vars.get(j), vars.get(i)))
+                                     || estCpdag.isParentOf(vars.get(j), vars.get(i)))) {
                                     out.print("1");
                                 } else {
                                     out.print("0");
@@ -163,8 +163,8 @@ public class TestAnneAnalysis3 {
         for (int j = 0; j < vars.size(); j++) {
             for (int i = 0; i < vars.size(); i++) {
                 if (estCpdag.isAdjacentTo(vars.get(j), vars.get(i)) &&
-                        (Edges.isUndirectedEdge(estCpdag.getEdge(vars.get(j), vars.get(i)))
-                                || estCpdag.isParentOf(vars.get(j), vars.get(i)))) {
+                    (Edges.isUndirectedEdge(estCpdag.getEdge(vars.get(j), vars.get(i)))
+                     || estCpdag.isParentOf(vars.get(j), vars.get(i)))) {
                     out.print("1");
                 } else {
                     out.print("0");

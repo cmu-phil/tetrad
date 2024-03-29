@@ -161,10 +161,10 @@ public class DeltaSextadTest {
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
                     double rr = 0.5 * (r(e, f) * r(g, h))
-                            * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
-                            + r(e, g) * r(f, h) + r(e, h) * r(f, g)
-                            - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
-                            - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
+                                * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
+                                + r(e, g) * r(f, h) + r(e, h) * r(f, g)
+                                - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
+                                - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
 
                     // General.
 //                    double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *

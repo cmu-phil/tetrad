@@ -91,7 +91,7 @@ public class BoolSearch {
         }
 
         System.out.println("nrows = " + numberInputCombinations +
-                " number functions = " + numberBooleanFunctions);
+                           " number functions = " + numberBooleanFunctions);
 
         //for i = 1 to n do...
         for (int gchild = 0; gchild < this.ngenes; gchild++) {

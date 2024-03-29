@@ -1036,9 +1036,9 @@ public class StandardizedSemIm implements Simulator {
         public String toString() {
 
             return "\n\nRange for " + this.edge +
-                    "\nCurrent value = " + this.coef +
-                    "\nLow end of range = " + this.low +
-                    "\nHigh end of range = " + this.high;
+                   "\nCurrent value = " + this.coef +
+                   "\nLow end of range = " + this.low +
+                   "\nHigh end of range = " + this.high;
         }
     }
 }

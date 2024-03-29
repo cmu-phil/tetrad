@@ -38,7 +38,7 @@ public class TestMathUtils {
 
     @Test
     public void testLogistic() {
-        assertTrue(MathUtils.logistic(0.) == 0.5);
+        assertEquals(0.5, MathUtils.logistic(0.), 0.0);
         assertTrue(MathUtils.logistic(-10.) < 1.e-4);
         assertTrue(MathUtils.logistic(+10.) > 1. - 1.e-4);
     }

@@ -128,13 +128,13 @@ public class Tetrad {
         if (o == null) return false;
         if (!(o instanceof Tetrad tetrad)) return false;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
-                || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
-                || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)
-                || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.l && this.l == tetrad.k)
-                || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.i && this.l == tetrad.j)
-                || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.j && this.l == tetrad.i)
-                || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.i && this.l == tetrad.j)
-                || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.j && this.l == tetrad.i);
+               || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
+               || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)
+               || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.l && this.l == tetrad.k)
+               || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.i && this.l == tetrad.j)
+               || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.j && this.l == tetrad.i)
+               || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.i && this.l == tetrad.j)
+               || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.j && this.l == tetrad.i);
     }
 
     /**

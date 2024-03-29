@@ -118,7 +118,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fask search;
 
-        search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, this.score.getScore(dataSet, parameters),
+        search = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters),
                 this.test.getTest(dataSet, parameters));
 
         search.setDepth(parameters.getInt(DEPTH));

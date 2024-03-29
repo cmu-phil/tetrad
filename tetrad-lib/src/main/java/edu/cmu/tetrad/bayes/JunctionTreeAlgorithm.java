@@ -894,7 +894,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                     int indexChildNodeCPT = getIndexOfCPT(source.parentSeparator.nodes, values, this.nodes);
                     if (source.parentSeparator.parentPotentials[indexChildNodeCPT] != 0) {
                         this.prob[indexNodeCPT] *= source.parentSeparator.childPotentials[indexChildNodeCPT]
-                                / source.parentSeparator.parentPotentials[indexChildNodeCPT];
+                                                   / source.parentSeparator.parentPotentials[indexChildNodeCPT];
                     } else {
                         this.prob[indexNodeCPT] = 0;
                     }

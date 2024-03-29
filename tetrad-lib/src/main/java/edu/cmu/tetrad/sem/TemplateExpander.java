@@ -80,12 +80,12 @@ public class TemplateExpander {
 
         if (semPm == null && template.contains("$")) {
             throw new IllegalArgumentException("If semPm is null, the template may not contain any parameters or " +
-                    "$ expressions.");
+                                               "$ expressions.");
         }
 
         if (semPm == null && node != null) {
             throw new IllegalArgumentException("If semPm is not specified, then node may not be specified either. The" +
-                    " node must be for a specific generalized SEM PM.");
+                                               " node must be for a specific generalized SEM PM.");
         }
 
         // Must make sure the original template is parseable.
@@ -300,10 +300,10 @@ public class TemplateExpander {
 
                             if (allStar) {
                                 formula = formula.substring(0, first - 1) + " * " +
-                                        formula.substring(last + 1);
+                                          formula.substring(last + 1);
                             } else {
                                 formula = formula.substring(0, first - 1) + " + " +
-                                        formula.substring(last + 1);
+                                          formula.substring(last + 1);
                             }
                         }
 

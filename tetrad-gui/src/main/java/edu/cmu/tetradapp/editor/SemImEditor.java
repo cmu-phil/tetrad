@@ -567,9 +567,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     } else {
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j
-                                        + ") cannot be converted to correlation: "
-                                        + d1 + " <= FastMath.pow(" + d2 + " * " + d3
-                                        + ", 0.5)");
+                                + ") cannot be converted to correlation: "
+                                + d1 + " <= FastMath.pow(" + d2 + " * " + d3
+                                + ", 0.5)");
                     }
                 }
             }
@@ -667,28 +667,28 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             } else {
                 int numToFix = (int) FastMath.abs(modelDof);
                 append("\n\nA SEM with negative degrees of freedom is underidentified, "
-                        + "\nand other model statistics are meaningless.  Please increase "
-                        + "\nthe degrees of freedom to 0 or above by fixing at least "
-                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+                       + "\nand other model statistics are meaningless.  Please increase "
+                       + "\nthe degrees of freedom to 0 or above by fixing at least "
+                       + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
             }
 
             append("\n\nThe above chi square test assumes that the maximum "
-                    + "likelihood function over the measured variables has been "
-                    + "minimized. Under that assumption, the null hypothesis for "
-                    + "the test is that the population covariance matrix over all "
-                    + "of the measured variables is equal to the estimated covariance "
-                    + "matrix over all of the measured variables written as a function "
-                    + "of the free model parameters--that is, the unfixed parameters "
-                    + "for each directed edge (the linear coefficient for that edge), "
-                    + "each exogenous variable (the variance for the error term for "
-                    + "that variable), and each bidirected edge (the covariance for "
-                    + "the exogenous variables it connects).  The model is explained "
-                    + "in Bollen, Structural Equations with Latent Variable, 110. "
-                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
-                    + "is the number of linear coefficients, variance terms, and error "
-                    + "covariance terms that are not fixed in the model. For latent models, "
-                    + "the degrees of freedom are termed 'estimated' since extra contraints "
-                    + "(e.g. pentad constraints) are not taken into account.");
+                   + "likelihood function over the measured variables has been "
+                   + "minimized. Under that assumption, the null hypothesis for "
+                   + "the test is that the population covariance matrix over all "
+                   + "of the measured variables is equal to the estimated covariance "
+                   + "matrix over all of the measured variables written as a function "
+                   + "of the free model parameters--that is, the unfixed parameters "
+                   + "for each directed edge (the linear coefficient for that edge), "
+                   + "each exogenous variable (the variance for the error term for "
+                   + "that variable), and each bidirected edge (the covariance for "
+                   + "the exogenous variables it connects).  The model is explained "
+                   + "in Bollen, Structural Equations with Latent Variable, 110. "
+                   + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
+                   + "is the number of linear coefficients, variance terms, and error "
+                   + "covariance terms that are not fixed in the model. For latent models, "
+                   + "the degrees of freedom are termed 'estimated' since extra contraints "
+                   + "(e.g. pentad constraints) are not taken into account.");
 
         }
 
@@ -1246,7 +1246,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             double d = semIm().getParamValue(parameter);
 
             if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.COVAR) {
+                && parameter.getType() == ParamType.COVAR) {
                 Node nodeA = parameter.getNodeA();
                 Node nodeB = parameter.getNodeB();
 
@@ -1313,7 +1313,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             Parameter parameter = getNodeParameter(node);
             if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.VAR) {
+                && parameter.getType() == ParamType.VAR) {
                 return;
             }
 
@@ -1397,7 +1397,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         private Graph graph() {
-            return this.wrapper.getSemIm().getSemPm().getGraph();
+            SemIm semIm = this.wrapper.getSemIm();
+            return semIm.getSemPm().getGraph();
         }
 
         private GraphWorkbench workbench() {
@@ -1471,7 +1472,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                        && parameter.getType() == ParamType.COVAR) {
+                    && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -1501,7 +1502,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {
                     label.setToolTipText("SE=" + asString(standardError) + ", T="
-                            + asString(tValue) + ", P=" + asString(pValue));
+                                         + asString(tValue) + ", P=" + asString(pValue));
                 }
 
                 workbench().setEdgeLabel(edge, label);
@@ -1549,7 +1550,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         = semIm().getPValue(parameter, this.maxFreeParamsForStatistics);
 
                 tooltip = "SE=" + asString(standardError) + ", T="
-                        + asString(tValue) + ", P=" + asString(pValue);
+                          + asString(tValue) + ", P=" + asString(pValue);
             }
 
             if (!Double.isNaN(meanOrIntercept)) {
@@ -1558,18 +1559,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                 if (this.editor.isEditIntercepts()) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
-                            + asString(meanOrIntercept) + "</html>";
+                              + asString(meanOrIntercept) + "</html>";
                 } else {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
-                            + asString(meanOrIntercept) + "</html>";
+                              + asString(meanOrIntercept) + "</html>";
                 }
             } else if (!this.editor.isEditCovariancesAsCorrelations()
-                    && !Double.isNaN(stdDev)) {
+                       && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
 
                 tooltip = "<html>" + node.getName() + " ~ N(0," + asString(stdDev)
-                        + ")" + "<br><br>" + tooltip + "</html>";
+                          + ")" + "<br><br>" + tooltip + "</html>";
 
             } else if (this.editor.isEditCovariancesAsCorrelations()) {
                 label.setForeground(Color.GRAY);
@@ -1626,7 +1627,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 double d = Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                        && parameter.getType() == ParamType.COVAR) {
+                    && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -1640,7 +1641,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (!this.editor.isEditCovariancesAsCorrelations()
-                        && parameter.getType() == ParamType.COVAR) {
+                           && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {

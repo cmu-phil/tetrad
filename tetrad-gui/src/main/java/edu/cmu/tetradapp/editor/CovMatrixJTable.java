@@ -99,7 +99,7 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
                 int col = columnAtPoint(e.getPoint());
 
                 if (!(row >= 3 && row < 4 + covMatrix.getDimension() &&
-                        col < 1 + covMatrix.getDimension())) {
+                      col < 1 + covMatrix.getDimension())) {
                     ListSelectionModel rowSelectionModel = getSelectionModel();
                     ListSelectionModel colSelectionModel = getColumnModel()
                             .getSelectionModel();
@@ -340,7 +340,7 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         int numVars = variables.size();
 
         if (colVar >= 0 && colVar < numVars && rowVar >= 0 &&
-                rowVar < numVars && rowVar >= colVar) {
+            rowVar < numVars && rowVar >= colVar) {
             boolean rowSelected =
                     this.covMatrix.isSelected((Node) variables.get(rowVar));
             boolean colSelected =

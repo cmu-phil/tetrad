@@ -644,8 +644,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         if (this.mode != DisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
-                            "method when the edge is " +
-                            "not in HALF_ANCHORED mode.");
+                    "method when the edge is " +
+                    "not in HALF_ANCHORED mode.");
         }
 
         this.mouseTrackPoint = new Point(p);

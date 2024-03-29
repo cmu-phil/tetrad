@@ -102,7 +102,7 @@ public final class UpdatedBayesIm implements BayesIm {
         if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException(
                     "Variables for this evidence must be compatible with those "
-                            + "of the model Bayes IM");
+                    + "of the model Bayes IM");
         }
 
         this.bayesIm = bayesIm;
@@ -554,7 +554,7 @@ public final class UpdatedBayesIm implements BayesIm {
                 Node node1 = nodesInGraph.get(i);
 
                 if (getBayesIm().getDag().paths().isAncestorOf(node1, node2)
-                        || getBayesIm().getDag().isChildOf(node1, node2)) {
+                    || getBayesIm().getDag().isChildOf(node1, node2)) {
                     ancestorsOfEvidence[i] = true;
                 }
             }
@@ -566,8 +566,8 @@ public final class UpdatedBayesIm implements BayesIm {
     private double calcUpdatedProb(int nodeIndex, int rowIndex, int colIndex) {
         if (!this.affectedVars[nodeIndex]) {
             throw new IllegalStateException("Should not be calculating a "
-                    + "probability for a table that's not an ancestor of "
-                    + "evidence.");
+                                            + "probability for a table that's not an ancestor of "
+                                            + "evidence.");
         }
 
         Proposition assertion = Proposition.tautology(getBayesIm());
@@ -594,7 +594,7 @@ public final class UpdatedBayesIm implements BayesIm {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be "
-                            + "for the same Bayes IM.");
+                    + "for the same Bayes IM.");
         }
 
         for (int i = 0; i < relevantVars.length; i++) {

@@ -264,7 +264,7 @@ public class RegressionCovariance implements Regression {
                     bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
-                    LogUtilsSearch.getScoreFact(target, regressors));
+                                       LogUtilsSearch.getScoreFact(target, regressors));
         }
     }
 

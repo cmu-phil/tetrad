@@ -249,7 +249,7 @@ public class BayesNetSimulation implements Simulation {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"
-                    + "the parameters have been specified.");
+                                               + "the parameters have been specified.");
         }
     }
 

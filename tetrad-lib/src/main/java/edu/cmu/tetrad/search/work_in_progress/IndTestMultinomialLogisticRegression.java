@@ -243,7 +243,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
             if (Double.isNaN(p)) {
                 throw new RuntimeException("Undefined p-value encountered when testing " +
-                        LogUtilsSearch.independenceFact(x, y, z));
+                                           LogUtilsSearch.independenceFact(x, y, z));
             }
 
             pValues.add(p);
@@ -318,7 +318,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
 
         boolean indep = p > this.alpha;

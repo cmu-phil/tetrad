@@ -135,7 +135,7 @@ public class DagInCpcagIterator {
         }
 
         if (this.decoratedGraphs.size() == 1 && this.decoratedGraphs.getLast().getEdge() == null
-                && !this.returnedOne) {
+            && !this.returnedOne) {
             this.returnedOne = true;
             return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
         }
@@ -160,7 +160,7 @@ public class DagInCpcagIterator {
                 this.decoratedGraphs.addLast(graph);
             }
         } while (this.decoratedGraphs.getLast().getEdge() == null && !this.allowNewColliders &&
-                !GraphUtils.listColliderTriples(this.decoratedGraphs.getLast().getGraph()).equals(this.colliders));
+                 !GraphUtils.listColliderTriples(this.decoratedGraphs.getLast().getGraph()).equals(this.colliders));
 
         return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
     }
@@ -231,8 +231,8 @@ public class DagInCpcagIterator {
 
             return (!this.triedLeft && !this.graph.paths().isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
-                    (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
-                            !getKnowledge().isForbidden(node1.getName(), node2.getName()));
+                   (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
+                    !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
         }
 
@@ -242,7 +242,7 @@ public class DagInCpcagIterator {
             }
 
             if (!this.triedLeft && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
-                    !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
+                !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
@@ -275,7 +275,7 @@ public class DagInCpcagIterator {
             }
 
             if (!this.triedRight && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
-                    !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
+                !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);

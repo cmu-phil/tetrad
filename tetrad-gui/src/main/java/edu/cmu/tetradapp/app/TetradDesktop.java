@@ -176,7 +176,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // bounds when the users unmazimizes it.
         Dimension fullSize = this.desktopPane.getSize();
         int smallSize = FastMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
-                - TetradDesktop.MARGIN);
+                                                                            - TetradDesktop.MARGIN);
         Dimension size = new Dimension(smallSize, smallSize);
         TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
         this.desktopPane.add(frame);
@@ -214,7 +214,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
                 source.getLocation(), this);
 
         int x = convertedPoint.x + source.getWidth() / 2 - preferredSize.width
-                / 2;
+                                                           / 2;
         int y = convertedPoint.y - 25 + source.getHeight() / 2
                 - preferredSize.height / 2;
 
@@ -231,9 +231,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
 
         int height = FastMath.min(preferredSize.height, getHeight() - topMargin
-                - bottomMargin);
+                                                        - bottomMargin);
         int width = FastMath.min(preferredSize.width, getWidth() - leftMargin
-                - rightMargin);
+                                                      - rightMargin);
 
         if (x + width > getWidth() - rightMargin) {
             x = getWidth() - width - rightMargin;
@@ -428,7 +428,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     public void setMainTitle(String name) {
         JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         jFrame.setTitle(name + " - " + "Tetrad "
-                + Version.currentViewableVersion());
+                        + Version.currentViewableVersion());
     }
 
     /**
@@ -470,7 +470,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "Would you like to save the changes you made to " + name
-                            + "?", "Advise needed...",
+                    + "?", "Advise needed...",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -646,8 +646,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // ask the user whether they way the feature etc.
         if (allowed == null) {
             final String message = "<html>Whenever Tetrad's logging features are active any generated log <br>"
-                    + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
-                    + "to continue to automatically open the log display window whenever there is logging output?</html>";
+                                   + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
+                                   + "to continue to automatically open the log display window whenever there is logging output?</html>";
             int option = JOptionPane.showConfirmDialog(this, message,
                     "Automatic Logging", JOptionPane.YES_NO_OPTION);
             if (option == JOptionPane.NO_OPTION) {
@@ -674,7 +674,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             TetradLoggerConfig config = evt.getTetradLoggerConfig();
             // if logging is actually turned on, then open display.
             if (TetradLogger.getInstance().isLogging() && config.active()
-                    && TetradLogger.getInstance().isDisplayLogEnabled()) {
+                && TetradLogger.getInstance().isDisplayLogEnabled()) {
                 // if the log display isn't already up, open it.
                 if (!isDisplayLogging() && allowAutomaticLogPopup()) {
                     setDisplayLogging(true);

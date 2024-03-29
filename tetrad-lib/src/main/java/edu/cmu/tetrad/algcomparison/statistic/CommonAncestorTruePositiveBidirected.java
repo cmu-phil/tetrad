@@ -36,7 +36,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
         // edge X*-*Y where there is a common ancestor of X and Y in the graph.
         for (Node c : trueGraph.getNodes()) {
             if (trueGraph.paths().isAncestorOf(c, edge.getNode1())
-                    && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
+                && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
                 return true;
             }
         }

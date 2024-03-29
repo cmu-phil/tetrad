@@ -124,7 +124,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      */
     public String toString() {
         return "Zero partial correlation distribution with n = " + getN() +
-                " and k = " + getK() + "\n\n";
+               " and k = " + getK() + "\n\n";
     }
 
     private int getN() {

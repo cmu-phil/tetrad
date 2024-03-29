@@ -128,7 +128,7 @@ public final class TestBayesIm {
         BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.MANUAL);
 
         // Make sure the 'b' node has 2 rows of '?'s'.
-        assertTrue(bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)) == 2);
+        assertEquals(2, bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)));
         assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 0));
         assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 1));
     }

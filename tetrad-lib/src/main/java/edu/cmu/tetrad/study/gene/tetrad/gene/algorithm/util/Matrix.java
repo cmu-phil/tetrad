@@ -163,7 +163,7 @@ public class Matrix extends BasicMatrix {
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n";
+                   " // <- Total # rows\n";
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c < this.n; c++) {

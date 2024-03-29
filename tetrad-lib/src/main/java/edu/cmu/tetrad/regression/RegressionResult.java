@@ -341,11 +341,11 @@ public class RegressionResult implements TetradSerializable {
         String rssString = nf.format(this.rss);
         String r2String = nf.format(this.r2);
         return "\n REGRESSION RESULT" +
-                "\n n = " + this.n + ", k = " +
-                (getNumRegressors() + 1) + ", alpha = " + this.alpha +
-                "\n" + " SSE = " + rssString +
-                "\n" + " R^2 = " + r2String +
-                "\n";
+               "\n n = " + this.n + ", k = " +
+               (getNumRegressors() + 1) + ", alpha = " + this.alpha +
+               "\n" + " SSE = " + rssString +
+               "\n" + " R^2 = " + r2String +
+               "\n";
     }
 
     /**

@@ -586,9 +586,7 @@ final class UpdaterEditingTable extends JTable {
                                    TableCellRenderer renderer) {
         super.setDefaultRenderer(columnClass, renderer);
 
-        if (getModel() instanceof UpdaterEditingTableModel) {
-            UpdaterEditingTableModel model =
-                    (UpdaterEditingTableModel) getModel();
+        if (getModel() instanceof UpdaterEditingTableModel model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
 
             for (int i = 0; i < model.getColumnCount(); i++) {
@@ -648,7 +646,7 @@ final class UpdaterEditingTable extends JTable {
         this.focusCol = FastMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
-                this.focusCol < getColumnCount()) {
+            this.focusCol < getColumnCount()) {
             setColumnSelectionInterval(this.focusCol, this.focusCol);
             editCellAt(this.focusRow, this.focusCol);
         }

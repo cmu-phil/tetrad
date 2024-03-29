@@ -136,8 +136,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
                 if (Double.isNaN(probability)) {
                     throw new IllegalStateException("Some probability " +
-                            "values in the BayesIm are not filled in; " +
-                            "cannot simulate data to do approximate updating.");
+                                                    "values in the BayesIm are not filled in; " +
+                                                    "cannot simulate data to do approximate updating.");
                 }
 
                 sum += probability;
@@ -209,7 +209,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
-                    "evidence must be compatible with the Bayes IM being updated.");
+                                               "evidence must be compatible with the Bayes IM being updated.");
         }
 
         this.evidence = new Evidence(evidence);

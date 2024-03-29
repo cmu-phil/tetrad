@@ -354,7 +354,7 @@ public class LogisticRegression implements TetradSerializable {
 
         if (FastMath.abs(q) > 7.0) {
             return (1.0 - 1.0 / q + 3.0 / (q * q)) * FastMath.exp(-q / 2.0) /
-                    (FastMath.abs(z) * FastMath.sqrt(piOver2));
+                   (FastMath.abs(z) * FastMath.sqrt(piOver2));
         } else {
             return new ChiSquaredDistribution(1).cumulativeProbability(q);
         }

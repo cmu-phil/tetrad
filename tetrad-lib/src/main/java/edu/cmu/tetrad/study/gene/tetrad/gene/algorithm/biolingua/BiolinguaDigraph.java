@@ -133,14 +133,14 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.graphName + "\n" +
-                this.nNodes + "\t// <-- Total # nodes\n" + "// " +
-                this.getNumEdges() + "\t// <-- Total # edges\n";
+                   this.nNodes + "\t// <-- Total # nodes\n" + "// " +
+                   this.getNumEdges() + "\t// <-- Total # edges\n";
 
         s = s + "\n// Node names:\n";
         for (int i = 0; i < this.nNodes; i++) {
             s = s + this.getNodeName(i);
             s = s + "\t// #" + i + " \tParents = {" + this.strOfParents(i) +
-                    " }\n";
+                " }\n";
         }
 
         s = s + "\n// edges:\n";

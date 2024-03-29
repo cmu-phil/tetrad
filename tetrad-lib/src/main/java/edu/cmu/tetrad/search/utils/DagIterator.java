@@ -62,7 +62,7 @@ public class DagIterator {
             }
 
             throw new IllegalArgumentException("The graph may consist only of " +
-                    "directed and undirected edges: " + edge);
+                                               "directed and undirected edges: " + edge);
         }
 
         this.decoratedGraphs.add(new DecoratedGraph(CPDAG));
@@ -206,7 +206,7 @@ public class DagIterator {
             }
 
             if (this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2())
-                    && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1())) {
+                && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1())) {
                 this.wasDirectedLeft = true;
                 return directRight();
             }
@@ -229,7 +229,7 @@ public class DagIterator {
             }
 
             if (this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1())
-                    && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2())) {
+                && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2())) {
                 this.wasDirectedRight = true;
                 return directLeft();
             }

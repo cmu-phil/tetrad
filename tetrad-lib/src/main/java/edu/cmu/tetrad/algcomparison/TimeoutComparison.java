@@ -390,7 +390,7 @@ public class TimeoutComparison {
                 DataType simDataType = simulationWrapper.getDataType();
                 if (!(algDataType == DataType.Mixed || (algDataType == simDataType))) {
                     System.out.println("Type mismatch: " + algorithmWrapper.getDescription()
-                            + " / " + simulationWrapper.getDescription());
+                                       + " / " + simulationWrapper.getDescription());
                 }
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -664,7 +664,7 @@ public class TimeoutComparison {
 
                 for (Constructor constructor : constructors) {
                     if (constructor.getParameterTypes().length == 1
-                            && constructor.getParameterTypes()[0] == IndependenceWrapper.class) {
+                        && constructor.getParameterTypes()[0] == IndependenceWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(
                                 FisherZ.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
@@ -691,7 +691,7 @@ public class TimeoutComparison {
 
                 for (Constructor constructor : constructors) {
                     if (constructor.getParameterTypes().length == 1
-                            && constructor.getParameterTypes()[0] == ScoreWrapper.class) {
+                        && constructor.getParameterTypes()[0] == ScoreWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(
                                 BdeuScore.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
@@ -1200,7 +1200,7 @@ public class TimeoutComparison {
         Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
 
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
-                + " simulationWrapper: " + simulationWrapper.getDescription());
+                           + " simulationWrapper: " + simulationWrapper.getDescription());
 
         long start = MillisecondTimes.timeMillis();
         Graph out;
@@ -1231,7 +1231,7 @@ public class TimeoutComparison {
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
                         "randomSelectionSize");
                 for (int i = 0; i <
-                        FastMath.min(numDataModels, randomSelectionSize); i++) {
+                                FastMath.min(numDataModels, randomSelectionSize); i++) {
                     dataModels.add(simulationWrapper.getSimulation().getDataModel(indices.get(i)));
                 }
 
@@ -1493,7 +1493,7 @@ public class TimeoutComparison {
 
             int rows = algorithmSimulationWrappers.size() + 1;
             int cols = (isShowSimulationIndices() ? 1 : 0) + (isShowAlgorithmIndices() ? 1 : 0) + numStats
-                    + (isShowUtilities() ? 1 : 0);
+                       + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
             table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
@@ -1657,7 +1657,7 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable
-                        && node2 instanceof DiscreteVariable) {
+                    && node2 instanceof DiscreteVariable) {
                     newGraph.addEdge(edge);
                 }
             }
@@ -1671,7 +1671,7 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof ContinuousVariable
-                        && node2 instanceof ContinuousVariable) {
+                    && node2 instanceof ContinuousVariable) {
                     newGraph.addEdge(edge);
                 }
             }
@@ -1685,12 +1685,12 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable
-                        && node2 instanceof ContinuousVariable) {
+                    && node2 instanceof ContinuousVariable) {
                     newGraph.addEdge(edge);
                 }
 
                 if (node1 instanceof ContinuousVariable
-                        && node2 instanceof DiscreteVariable) {
+                    && node2 instanceof DiscreteVariable) {
                     newGraph.addEdge(edge);
                 }
             }

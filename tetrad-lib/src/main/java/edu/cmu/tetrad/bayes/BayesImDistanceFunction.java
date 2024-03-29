@@ -59,7 +59,7 @@ final class BayesImDistanceFunction {
 
                 for (int k = 0; k < numCols; k++) {
                     double diff = firstBn.getProbability(i, j, k) -
-                            secondBn.getProbability(i, j, k);
+                                  secondBn.getProbability(i, j, k);
                     sum += diff * diff;
                 }
             }

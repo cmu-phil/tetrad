@@ -260,14 +260,12 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     private DataModel getDataModel(DataWrapper dataWrapper) {
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataModelList) {
-            DataModelList dataModelList = (DataModelList) dataModel;
+        if (dataModel instanceof DataModelList dataModelList) {
             dataModel = dataModelList.getSelectedModel();
 
         }
 
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+        if (dataModel instanceof DataSet dataSet) {
 
             if (dataSet.isDiscrete()) {
                 return dataSet;
@@ -276,9 +274,9 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
             }
 
             throw new IllegalArgumentException("<html>" +
-                    "This dataModel set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithm in Tetrad currently to " +
-                    "<br>search over such data sets." + "</html>");
+                                               "This dataModel set contains a mixture of discrete and continuous " +
+                                               "<br>columns; there are no algorithm in Tetrad currently to " +
+                                               "<br>search over such data sets." + "</html>");
         } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;
         } else if (dataModel instanceof TimeSeriesData) {

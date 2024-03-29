@@ -120,7 +120,7 @@ class EvidenceEditorObs extends JPanel {
                             getEvidence().getProposition();
 
                     if (proposition.getNumAllowed(i1) ==
-                            getEvidence().getNumCategories(i1)) {
+                        getEvidence().getNumCategories(i1)) {
                         proposition.setCategory(i1, j1);
                         // for now, all evidence is assumed to be manipulated
                         // (for identifiability)
@@ -134,7 +134,7 @@ class EvidenceEditorObs extends JPanel {
                             // disallow selecting more than one category
                             // in a variable
                             if ((ActionEvent.SHIFT_MASK &
-                                    e.getModifiers()) != 1) {
+                                 e.getModifiers()) != 1) {
                                 proposition.setVariable(i1, false);
                             }
                             //proposition.addCategory(i, j);

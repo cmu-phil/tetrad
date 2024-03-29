@@ -118,8 +118,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             throw new NullPointerException();
         }
 
-        if (dataWrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) dataWrapper;
+        if (dataWrapper instanceof Simulation simulation) {
             DataModelList dataModelList = dataWrapper.getDataModelList();
             dataSets = new ArrayList<>();
 

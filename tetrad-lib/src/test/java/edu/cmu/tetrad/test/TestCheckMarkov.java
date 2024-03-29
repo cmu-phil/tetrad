@@ -61,7 +61,7 @@ public class TestCheckMarkov {
             List<Node> cond = dag.getParents(x);
 
             System.out.println("Node " + x + " parents = " + cond
-                    + " non-descendants = " + nondesc);
+                               + " non-descendants = " + nondesc);
 
             for (Node y : nondesc) {
                 System.out.print("\t" + LogUtilsSearch.independenceFact(x, y, new HashSet<>(cond)));
@@ -83,8 +83,8 @@ public class TestCheckMarkov {
 
         System.out.println();
         System.out.println("Alpha = " + alpha + " % Dependent = " +
-                NumberFormatUtil.getInstance().getNumberFormat().format(
-                        1d - numIndep / (double) total));
+                           NumberFormatUtil.getInstance().getNumberFormat().format(
+                                   1d - numIndep / (double) total));
     }
 
     /**

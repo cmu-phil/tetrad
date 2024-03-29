@@ -98,15 +98,15 @@ class KnowledgeEditorToolbar extends JPanel {
         ButtonInfo[] buttonInfos = {new ButtonInfo("Select",
                 "Select and Move", "move",
                 "<html>Select and move nodes or groups of nodes " +
-                        "<br>on the workbench.</html>"), new ButtonInfo("Forbidden",
+                "<br>on the workbench.</html>"), new ButtonInfo("Forbidden",
                 "Add Forbidden", "flow",
                 "<html>Add an edge from one node to another to indicate " +
-                        "<br>that for purposes of searches that edge will not be " +
-                        "<br>allowed in the graph.</html>"), new ButtonInfo(
+                "<br>that for purposes of searches that edge will not be " +
+                "<br>allowed in the graph.</html>"), new ButtonInfo(
                 "Required", "Add Required", "flow",
                 "<html>Add an edge from one node to another to indicate " +
-                        "<br>that for purposes of searches that edge will be " +
-                        "<br>required in the graph.</html>"), new ButtonInfo(
+                "<br>that for purposes of searches that edge will be " +
+                "<br>required in the graph.</html>"), new ButtonInfo(
                 "Source Layout", "Source Layout", "flow",
                 "<html>Lays out the nodes according to the source graph.</html>"),
                 new ButtonInfo("Knowledge Layout", "Knowledge Layout", "flow",
@@ -197,7 +197,7 @@ class KnowledgeEditorToolbar extends JPanel {
         } else {
             button.setName(buttonInfo.getNodeTypeName());
             button.setText("<html><center>" + buttonInfo.getDisplayName() +
-                    "</center></html>");
+                           "</center></html>");
         }
 
         button.setMaximumSize(new Dimension(100, 40)); // For a vertical box.

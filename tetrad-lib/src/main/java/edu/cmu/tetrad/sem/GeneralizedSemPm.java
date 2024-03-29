@@ -185,7 +185,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         for (Edge edge : this.graph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
                 throw new IllegalArgumentException("The generalized SEM PM cannot currently deal with bidirected " +
-                        "edges. Sorry.");
+                                                   "edges. Sorry.");
             }
         }
 
@@ -200,7 +200,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         for (Node variable : this.nodes) {
             if (variable.getNodeType() == NodeType.MEASURED ||
-                    variable.getNodeType() == NodeType.LATENT) {
+                variable.getNodeType() == NodeType.LATENT) {
                 this.variableNodes.add(variable);
             }
 
@@ -648,7 +648,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution for a parameter may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterExpressions.put(parameter, expression);
@@ -682,7 +682,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterEstimationInitializationExpressions.put(parameter, expression);
@@ -724,7 +724,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterExpressions.put(parameter, expression);
@@ -767,7 +767,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterEstimationInitializationExpressions.put(parameter, expression);
@@ -1169,7 +1169,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution for a parameter may not " +
-                    "contain parameters: " + expression.toString());
+                                               "contain parameters: " + expression.toString());
         }
 
         this.parametersTemplate = parametersTemplate;

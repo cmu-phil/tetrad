@@ -81,7 +81,7 @@ public class ExpressionParser {
 
         if (parameters.contains("$")) {
             throw new IllegalArgumentException("Variable list must not " +
-                    "contain the wildcard '$'.");
+                                               "contain the wildcard '$'.");
         }
 
         this.restrictionParameters = new LinkedHashSet<>(parameters);

@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.annotation.AlgType;

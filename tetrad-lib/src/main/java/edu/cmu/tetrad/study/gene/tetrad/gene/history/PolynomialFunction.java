@@ -116,7 +116,7 @@ public class PolynomialFunction implements UpdateFunction {
             values[i] = history[parent.getLag()][parent.getIndex()];
         }
         return this.polynomials[factorIndex].evaluate(values) +
-                this.errorDistributions[factorIndex].nextRandom();
+               this.errorDistributions[factorIndex].nextRandom();
     }
 
     /**

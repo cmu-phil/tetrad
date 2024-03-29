@@ -125,7 +125,7 @@ final class SaveDataAction extends AbstractAction {
         String name = dataModel.getName();
         if (name == null) name = "data";
 
-        if (dataModel instanceof DataSet) {
+        if (dataModel instanceof DataSet dataSet) {
             File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
@@ -146,8 +146,6 @@ final class SaveDataAction extends AbstractAction {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
             }
-
-            DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isContinuous()) {
                 DataWriter.writeRectangularData(dataSet, out, delimiter);
@@ -177,12 +175,10 @@ final class SaveDataAction extends AbstractAction {
             DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, this.nf);
 
             out.close();
-        } else if (dataModel instanceof DataModelList) {
+        } else if (dataModel instanceof DataModelList list) {
             File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             final char delimiter = '\t';
-
-            DataModelList list = (DataModelList) dataModel;
 
             for (int i = 0; i < list.size(); i++) {
 

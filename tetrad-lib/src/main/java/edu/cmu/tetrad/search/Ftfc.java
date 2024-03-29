@@ -890,7 +890,7 @@ public class Ftfc {
 
         if (new HashSet<>(sextet).size() < 6)
             throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
-                    + ", " + n4 + ", " + n5 + ", " + n6 + ">");
+                                               + ", " + n4 + ", " + n5 + ", " + n6 + ">");
 
         return sextet;
     }
@@ -916,7 +916,7 @@ public class Ftfc {
 
         if (new HashSet<>(pentad).size() < 5)
             throw new IllegalArgumentException("pentad elements must be unique: <" + n1 + ", " + n2 + ", " + n3
-                    + ", " + n4 + ", " + n5 + ">");
+                                               + ", " + n4 + ", " + n5 + ">");
 
         return pentad;
     }
@@ -936,9 +936,9 @@ public class Ftfc {
         int n6 = sextet.get(5);
 
         return vanishes(n1, n2, n3, n4, n5, n6)
-                && vanishes(n3, n2, n1, n6, n5, n4)
-                && vanishes(n4, n5, n6, n1, n2, n3)
-                && vanishes(n6, n5, n4, n3, n2, n1);
+               && vanishes(n3, n2, n1, n6, n5, n4)
+               && vanishes(n4, n5, n6, n1, n2, n3)
+               && vanishes(n6, n5, n4, n3, n2, n1);
     }
 
     /**

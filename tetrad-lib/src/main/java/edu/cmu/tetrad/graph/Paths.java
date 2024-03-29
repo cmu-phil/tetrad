@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -119,7 +120,7 @@ public class Paths implements TetradSerializable {
             do {
                 if (itr.hasNext()) x = itr.next();
                 else throw new IllegalArgumentException("The remaining graph does not have valid sink; there " +
-                        "could be a directed cycle or a non-chordal undirected cycle.");
+                                                        "could be a directed cycle or a non-chordal undirected cycle.");
             } while (invalidSink(x, _graph));
             order.add(x);
             _graph.removeNode(x);
@@ -154,6 +155,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Checks if the graph passed as parameter is a legal directed acyclic graph (DAG).
+     *
+     * @return true if the graph is a legal DAG, false otherwise.
+     */
+    public boolean isLegalDag() {
+        return GraphUtils.isDag(graph);
+    }
+
+    /**
      * Checks if the current graph is a legal CPDAG (completed partially directed acyclic graph).
      *
      * @return true if the graph is a legal CPDAG, false otherwise.
@@ -180,6 +190,59 @@ public class Paths implements TetradSerializable {
             System.out.println(e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Checks if the given Multi-Parent Directed Acyclic Graph (MPDAG) is legal. A MPDAG is considered legal if it is
+     * equivalent to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for maximum
+     * orientation.
+     *
+     * @return true if the MPDAG is legal, false otherwise.
+     */
+    public boolean isLegalMpdag() {
+        Graph g = this.graph;
+
+        for (Edge e : g.getEdges()) {
+            if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                return false;
+            }
+        }
+
+        List<Node> pi = new ArrayList<>(g.getNodes());
+
+        try {
+            g.paths().makeValidOrder(pi);
+            MsepTest msepTest = new MsepTest(g);
+            Graph dag = getDag(pi, msepTest);
+            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+
+            Graph _g = new EdgeListGraph(g);
+            _g = GraphTransforms.cpdagForDag(_g);
+
+            return _g.equals(cpdag);
+        } catch (Exception e) {
+            // There was no valid sink.
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the given graph is a legal mag.
+     *
+     * @return true if the graph is a legal mag, false otherwise
+     */
+    public boolean isLegalMag() {
+        return GraphSearchUtils.isLegalMag(graph).isLegalMag();
+    }
+
+    /**
+     * Checks if the given Directed Acyclic Graph (DAG) is a Legal Partial Ancestral Graph (PAG).
+     *
+     * @return true if the graph is a Legal PAG, false otherwise
+     */
+    public boolean isLegalPag() {
+        return GraphSearchUtils.isLegalPag(graph).isLegalPag();
     }
 
     /**
@@ -1442,14 +1505,14 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (Kevin Bui.
-     * March 2020.)
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object
      * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param z     a {@link java.util.Set} object
      * @return a boolean
+     * @author Kevin V. Bui (March 2020)
      */
     public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, Set<Node> z) {
         Dag dag = new Dag(graph);
@@ -2104,12 +2167,6 @@ public class Paths implements TetradSerializable {
      * An algorithm to find all cliques in a graph.
      */
     public static class AllCliquesAlgorithm {
-
-        /**
-         * Constructs a new algorithm.
-         */
-        public AllCliquesAlgorithm() {
-        }
 
         /**
          * Main method.

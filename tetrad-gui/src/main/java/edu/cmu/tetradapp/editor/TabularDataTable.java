@@ -111,7 +111,7 @@ class TabularDataTable extends AbstractTableModel {
 //        }
 //        else
         if (col >= getNumLeadingCols()
-                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = this.dataSet.getVariable(columnIndex);
 
             if (row == 0) {
@@ -189,7 +189,7 @@ class TabularDataTable extends AbstractTableModel {
         }
 
         if (col >= getNumLeadingCols()
-                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
             } else if (row > 1) {
@@ -246,8 +246,8 @@ class TabularDataTable extends AbstractTableModel {
         }
 
         if (!(variable instanceof DiscreteVariable)
-                && isEmpty(this.dataSet, dataCol)
-                && (quoted || !isNumber((String) value))) {
+            && isEmpty(this.dataSet, dataCol)
+            && (quoted || !isNumber((String) value))) {
             variable = swapDiscreteColumnForContinuous(col);
         }
 

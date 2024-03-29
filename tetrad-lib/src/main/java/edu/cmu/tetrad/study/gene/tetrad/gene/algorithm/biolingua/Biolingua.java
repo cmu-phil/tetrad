@@ -139,13 +139,13 @@ public class Biolingua {
 
         if (Biolingua.nvars != initGraph.getSize()) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + initGraph.getSize() +
-                    " in initial graph.");
+                                               Biolingua.nvars + " in Correl.Matrix, " + initGraph.getSize() +
+                                               " in initial graph.");
         }
         if ((signifMatrix != null) && (signifMatrix.getSize() != Biolingua.nvars)) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
-                    " in Significance Matrix.");
+                                               Biolingua.nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
+                                               " in Significance Matrix.");
         }
 
         Biolingua.path = new int[Biolingua.nvars];
@@ -337,7 +337,7 @@ public class Biolingua {
         int nEdges = Biolingua.g.getNumEdges();
 
         return Biolingua.bitsLinks * nEdges + Biolingua.bitsAnnotat * annotations +
-                Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
+               Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
     }
 
     // Think about a new name for this method, since it not only "finds"

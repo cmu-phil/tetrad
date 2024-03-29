@@ -46,8 +46,7 @@ public class InvertCovMatrixWrapper extends DataWrapper {
             throw new NullPointerException("The given data must not be null");
         }
         DataModel model = wrapper.getSelectedDataModel();
-        if (model instanceof ICovarianceMatrix) {
-            ICovarianceMatrix dataSet = (ICovarianceMatrix) model;
+        if (model instanceof ICovarianceMatrix dataSet) {
             Matrix data = dataSet.getMatrix();
             Matrix inverse = data.inverse();
             String[] varNames = dataSet.getVariableNames().toArray(new String[0]);

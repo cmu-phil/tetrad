@@ -101,7 +101,7 @@ public class GraphChange {
         for (Edge e : this.removes) {
             NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsOther.contains(rem) || nonColidePairsOther.contains(rem)
-                    || other.orients.contains(rem))
+                || other.orients.contains(rem))
                 return false;
         }
 
@@ -112,7 +112,7 @@ public class GraphChange {
         for (Edge e : other.removes) {
             NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsThis.contains(rem) || nonColidePairsThis.contains(rem)
-                    || this.orients.contains(rem))
+                || this.orients.contains(rem))
                 return false;
         }
 
@@ -277,9 +277,9 @@ public class GraphChange {
             return false;
 
         return otherGC.removes.equals(this.removes) &&
-                otherGC.colliders.equals(this.colliders) &&
-                otherGC.nonColliders.equals(this.nonColliders) &&
-                otherGC.orients.equals(this.orients);
+               otherGC.colliders.equals(this.colliders) &&
+               otherGC.nonColliders.equals(this.nonColliders) &&
+               otherGC.orients.equals(this.orients);
     }
 
 
@@ -363,7 +363,7 @@ public class GraphChange {
                 return false;
             }
             return this.getFirst().equals(thatPair.getFirst())
-                    && this.getSecond().equals(thatPair.getSecond());
+                   && this.getSecond().equals(thatPair.getSecond());
 
         }
     }

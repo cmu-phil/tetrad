@@ -153,7 +153,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
@@ -162,9 +162,9 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
-                            " are either different or in a different order: " +
-                            "\n\tAssertion vars: " + assertionVars +
-                            "\n\tData vars: " + dataVars);
+                    " are either different or in a different order: " +
+                    "\n\tAssertion vars: " + assertionVars +
+                    "\n\tData vars: " + dataVars);
         }
 
         int[] point = new int[this.dims.length];

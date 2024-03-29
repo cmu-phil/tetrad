@@ -58,7 +58,7 @@ public class Statistics {
 
         if (!set) {
             throw new IllegalArgumentException("No statistic has been added with that abbreviation: "
-                    + abbrebiation);
+                                               + abbrebiation);
         }
     }
 

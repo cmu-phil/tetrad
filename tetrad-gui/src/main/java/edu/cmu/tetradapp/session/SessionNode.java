@@ -225,7 +225,7 @@ public class SessionNode implements Node {
             if (!(SessionModel.class.isAssignableFrom(modelClasses[i]))) {
                 throw new ClassCastException(
                         "Model class must implement SessionModel: "
-                                + modelClasses[i]);
+                        + modelClasses[i]);
             }
         }
 
@@ -569,13 +569,13 @@ public class SessionNode implements Node {
             throws Exception {
         if (!Arrays.asList(this.modelClasses).contains(modelClass)) {
             throw new IllegalArgumentException("Class not among possible "
-                    + "model classes: " + modelClass);
+                                               + "model classes: " + modelClass);
         }
 
         this.loggerConfig = getLoggerConfig(modelClass);
         TetradLogger.getInstance().setTetradLoggerConfig(this.loggerConfig);
         String message1 = "\n========LOGGING " + getDisplayName()
-                + "\n";
+                          + "\n";
         TetradLogger.getInstance().forceLogMessage(message1);
 
         // Collect up the parentModels from the parents. If any model is
@@ -804,8 +804,8 @@ public class SessionNode implements Node {
      */
     public boolean isFreshlyCreated() {
         return (this.model == null) && (this.modelParamTypes == null)
-                && (this.parents.size() == 0) && (this.children.size() == 0)
-                && (this.sessionHandler == null) && (this.sessionSupport == null);
+               && (this.parents.size() == 0) && (this.children.size() == 0)
+               && (this.sessionHandler == null) && (this.sessionSupport == null);
     }
 
     /**
@@ -1242,7 +1242,7 @@ public class SessionNode implements Node {
             this.model.setName(getDisplayName());
 
             if (this.model instanceof ParamsResettable
-                    && temp instanceof ParamsResettable) {
+                && temp instanceof ParamsResettable) {
                 Object resettableParams = ((ParamsResettable) temp).getResettableParams();
                 ((ParamsResettable) this.model).resetParams(resettableParams);
             }
@@ -1662,7 +1662,7 @@ public class SessionNode implements Node {
             Object[] arguments = null;
 
             if (constructorTypes.length == 2 && constructorTypes[0].isArray()
-                    && constructorTypes[1] == Parameters.class) {
+                && constructorTypes[1] == Parameters.class) {
                 List<Object> _objects = new ArrayList<>();
                 Class<?> c1 = constructorTypes[0].getComponentType();
                 Parameters parameters = null;
@@ -1703,7 +1703,7 @@ public class SessionNode implements Node {
 
             if (constructorTypes.length == 0) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "UI models shouldn't have blank constructors. " +
-                        "This one did: " + modelClass.getName());
+                                                                            "This one did: " + modelClass.getName());
                 continue;
             }
 
@@ -1739,7 +1739,7 @@ public class SessionNode implements Node {
                     } else {
                         throw new InvocationTargetException(e,
                                 "Could not construct node; root cause: " + e.getCause().getMessage()
-                                        + " " + packagePath + " " + begin + " " + name
+                                + " " + packagePath + " " + begin + " " + name
                         );
                     }
                 }

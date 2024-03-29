@@ -162,9 +162,9 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         textArea.append("\nNumber of undirected edges: " + numUndirectedEdges);
         textArea.append("\nMax degree: " +
 
-                getGraph().
+                        getGraph().
 
-                        getDegree());
+                                getDegree());
         textArea.append("\nMax indegree: " + maxIndegree);
         textArea.append("\nMax outdegree: " + maxOutdegree);
 

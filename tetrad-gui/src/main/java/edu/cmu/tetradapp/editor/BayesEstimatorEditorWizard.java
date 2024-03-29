@@ -134,8 +134,7 @@ final class BayesEstimatorEditorWizard extends JPanel {
             if (evt.getPropertyName().equals("selectedNodes")) {
                 Object newValue = evt.getNewValue();
 
-                if (newValue instanceof List) {
-                    List selection = (List) newValue;
+                if (newValue instanceof List selection) {
                     if (selection.size() == 1) {
                         this.varNamesComboBox.setSelectedItem(selection.get(0));
                     }

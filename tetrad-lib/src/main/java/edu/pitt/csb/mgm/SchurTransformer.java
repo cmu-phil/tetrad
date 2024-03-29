@@ -324,8 +324,8 @@ class SchurTransformer {
 
             double lhs = FastMath.abs(this.matrixT[im][im - 1]) * (FastMath.abs(hVec[1]) + FastMath.abs(hVec[2]));
             double rhs = FastMath.abs(hVec[0]) * (FastMath.abs(this.matrixT[im - 1][im - 1]) +
-                    FastMath.abs(z) +
-                    FastMath.abs(this.matrixT[im + 1][im + 1]));
+                                                  FastMath.abs(z) +
+                                                  FastMath.abs(this.matrixT[im + 1][im + 1]));
 
             if (lhs < this.epsilon * rhs) {
                 break;
