@@ -1,8 +1,12 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.model.AlgcomparisonModel;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
@@ -31,6 +35,13 @@ import java.util.Set;
  * @author josephramsey 2024-3-29
  */
 public class AlgcomparisonEditor {
+
+    /**
+     * The AlgcomparisonModel class represents a model used in an algorithm comparison application.
+     * It contains methods and properties related to the comparison of algorithms.
+     */
+    AlgcomparisonModel model = new AlgcomparisonModel();
+
     /**
      * The constructor for the AlgcomparisonEditor class. The constructor will create a new Comparison object and pass
      * in the PrintStream "localOut" to the constructor. The constructor will then use the Reflection API to populate
@@ -58,15 +69,48 @@ public class AlgcomparisonEditor {
     }
 
 
-    /**
-     * Finds and returns a set of classes that implement a given interface within a specified package.
-     *
-     * @param packageName The name of the package to search in.
-     * @param interfaceClazz The interface class to find implementations of.
-     * @return A set of classes that implement the specified interface.
-     */
-    public static <T> Set<Class<? extends T>> findImplementations(String packageName, Class<T> interfaceClazz) {
-        Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
-        return reflections.getSubTypesOf(interfaceClazz);
+    public static class BufferedListeningByteArrayOutputStream extends ByteArrayOutputStream {
+        private final StringBuilder buffer = new StringBuilder();
+
+        @Override
+        public void write(int b) {
+            super.write(b);
+            // Convert single byte to character and add to buffer
+            char c = (char) b;
+            buffer.append(c);
+            if (c == '\n') {
+                processBuffer();
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) {
+            super.write(b, off, len);
+            // Convert bytes to string and add to buffer
+            String s = new String(b, off, len, StandardCharsets.UTF_8);
+            buffer.append(s);
+            // Process buffer if newline character is found
+            if (s.contains("\n")) {
+                processBuffer();
+            }
+        }
+
+        private void processBuffer() {
+            // Process the buffered data (print it in this case)
+            System.out.print("Buffered data: " + buffer.toString());
+            buffer.setLength(0); // Clear the buffer for next data
+        }
+
+        public static void main(String[] args) {
+            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos);
+
+            // Example usage
+            ps.println("Hello, world!");
+            ps.printf("Pi is approximately %.2f%n", Math.PI);
+
+            ps.close();
+        }
     }
+
 }

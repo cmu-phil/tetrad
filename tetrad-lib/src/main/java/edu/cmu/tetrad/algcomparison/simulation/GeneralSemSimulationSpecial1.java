@@ -199,7 +199,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
                 }
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println("Error in parsing the expression");
         }
 
         return pm;
