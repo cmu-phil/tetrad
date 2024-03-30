@@ -206,8 +206,8 @@ public class BayesPmWrapper implements SessionModel {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
         } else if (params.getString("bayesPmInitializationMode", "range").equals("range")) {
-            lowerBound = params.getInt("minCategories", 2);
-            upperBound = params.getInt("maxCategories", 4);
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
         } else {
             throw new IllegalStateException("Unrecognized type.");
