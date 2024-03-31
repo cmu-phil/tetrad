@@ -72,7 +72,7 @@ public class AdTreeTest {
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
         DataSet data = im.simulateData(rows, false);
 
         // This implementation uses a DataTable to represent the data

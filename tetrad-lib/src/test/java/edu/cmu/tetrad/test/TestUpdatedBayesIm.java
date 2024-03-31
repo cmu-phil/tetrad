@@ -59,7 +59,7 @@ public final class TestUpdatedBayesIm {
         graph.addDirectedEdge(x4Node, x2Node);
 
         BayesPm bayesPm = new BayesPm(graph);
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         UpdatedBayesIm updatedIm1 = new UpdatedBayesIm(bayesIm);
         assertEquals(bayesIm, updatedIm1);

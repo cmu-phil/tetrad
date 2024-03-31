@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -536,8 +537,9 @@ class BayesImNodeEditingTable extends JTable {
                 int colIndex = tableCol - parentVals.length;
 
                 if (colIndex < getBayesIm().getNumColumns(getNodeIndex())) {
-                    return getBayesIm().getProbability(getNodeIndex(), tableRow,
+                    double probability = getBayesIm().getProbability(getNodeIndex(), tableRow,
                             colIndex);
+                    return probability;
                 }
 
                 return "null";
@@ -555,10 +557,14 @@ class BayesImNodeEditingTable extends JTable {
          * Sets the value of the cell at (row, col) to 'aValue'.
          */
         public void setValueAt(Object aValue, int row, int col) {
+            if (getBayesIm().getCptMapType() == MlBayesIm.CptMapType.COUNT_MAP) {
+                return;
+            }
+
             int numParents = getBayesIm().getNumParents(getNodeIndex());
             int colIndex = col - numParents;
 
-            if ("".equals(aValue) || aValue == null) {
+            if (getBayesIm().getCptMapType() == MlBayesIm.CptMapType.PROB_MAP && ("".equals(aValue) || aValue == null)) {
                 getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                         Double.NaN);
                 fireTableRowsUpdated(row, row);
@@ -752,6 +758,8 @@ class BayesImNodeEditingTable extends JTable {
         public void resetFailedCol() {
             this.failedCol = -1;
         }
+
+
     }
 }
 

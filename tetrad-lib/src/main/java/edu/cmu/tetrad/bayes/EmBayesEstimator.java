@@ -490,7 +490,7 @@ public final class EmBayesEstimator {
         BayesUtils.ensureVarsInData(bayesPm.getVariables(), dataSet);
 
         // Create a new Bayes IM to store the estimated values.
-        this.estimatedIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        this.estimatedIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         int numNodes = this.estimatedIm.getNumNodes();
 

@@ -1026,7 +1026,7 @@ public class PerformanceTests {
             } else {
 
                 BayesPm pm = new BayesPm(dag, 3, 3);
-                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
                 DataSet data = im.simulateData(numCases, false, tiers);
 
@@ -1258,7 +1258,7 @@ public class PerformanceTests {
             this.out.println(new Date());
 
             BayesPm pm = new BayesPm(dag, 3, 3);
-            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
             DataSet data = im.simulateData(numCases, false, tiers);
 

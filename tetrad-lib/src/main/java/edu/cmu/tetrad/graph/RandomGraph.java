@@ -228,7 +228,7 @@ public class RandomGraph {
      *                                  negative or exceeds the number of nodes
      */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle) {
-        if (nodes.size() == 0) {
+        if (nodes.isEmpty()) {
             throw new IllegalArgumentException("NumNodes most be > 0");
         }
 

@@ -300,7 +300,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.MANUAL);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {

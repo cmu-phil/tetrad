@@ -393,4 +393,8 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * @return a string representation for this Bayes net.
      */
     String toString();
+
+    default MlBayesIm.CptMapType getCptMapType() {
+        return MlBayesIm.CptMapType.PROB_MAP;
+    }
 }

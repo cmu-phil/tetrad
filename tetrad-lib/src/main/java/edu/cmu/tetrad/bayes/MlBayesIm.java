@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Paths;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,12 +36,11 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
  * this table. The division of labor is as follows. The Dag is responsible for manipulating the basic graphical
- * structure of the Bayes net. Dag also stores and manipulates the names of the nodes in the graph; there are no method
+ * structure of the Bayes net. Dag also stores and manipulates the names of the nodes in the graph; there is no method
  * in either BayesPm or BayesIm to do this. BayesPm stores and manipulates the *categories* of each node in a DAG,
  * considered as a variable in a Bayes net. The number of categories for a variable can be changed there as well as the
  * names for those categories. This class, BayesIm, stores the actual probability tables which are implied by the
@@ -50,47 +49,35 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * probabilities is organized in this class as a three-dimensional table of double values. The first dimension
  * corresponds to the nodes in the Bayes net. For each such node, the second dimension corresponds to a flat list of
  * combinations of parent categories for that node. The third dimension corresponds to the list of categories for that
- * node itself. Two methods allow these values to be set and retrieved: <ul> <li>getWordRatio(int nodeIndex, int
- * rowIndex, int colIndex); and, <li>setProbability(int nodeIndex, int rowIndex, int colIndex, int probability). </ul>
- * To determine the index of the node in question, use the method <ul> <li> getNodeIndex(Node node). </ul> To determine
- * the index of the row in question, use the method
- * <ul> <li>getRowIndex(int[] parentVals). </ul> To determine the order of the
- * parent values for a given node so that you can build the parentVals[] array,
- * use the method <ul> <li> getParents(int nodeIndex) </ul> To determine the
- * index of a category, use the method <ul> <li> getCategoryIndex(Node node)
- * </ul> in BayesPm. The rest of the methods in this class are easily understood
- * as variants of the methods above.
+ * node itself. Two methods allow these values to be set and retrieved: getWordRatio(int nodeIndex, int rowIndex, int
+ * colIndex); and setProbability(int nodeIndex, int rowIndex, int colIndex, int probability). To determine the index of
+ * the node in question, use the method getNodeIndex(Node node). To determine the index of the row in question, use the
+ * method getRowIndex(int[] parentVals). To determine the order of the parent values for a given node so that you can
+ * build the parentVals[] array, use the method getParents(int nodeIndex). To determine the index of a category, use the
+ * method  getCategoryIndex(Node node) in BayesPm. The rest of the methods in this class are easily understood as
+ * variants of the methods above.
  * <p>
- * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
- * advice and earlier versions.
+ * This version uses a sparse method for storing the probabilities, where NaNs are not stored. This allows BayesPms with
+ * many categories per variable to be estimated from small samples without overflowing memory. The old method of storing
+ * probabilities is kept here for backward compatibility, with an internal code flag to indicate which should be used.
+ * <p>
+ * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for advice and earlier versions.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public final class MlBayesIm implements BayesIm {
-
-    /**
-     * Inidicates that new rows in this BayesIm should be initialized as unknowns, forcing them to be specified
-     * manually. This is the default.
-     */
-    public static final int MANUAL = 0;
-    /**
-     * Indicates that new rows in this BayesIm should be initialized randomly.
-     */
     public static final int RANDOM = 1;
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * Tolerance.
      */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
-
     /**
      * Random number generator.
      */
     static private final Random random = new Random();
-
     /**
      * The associated Bayes PM model.
      */
@@ -99,6 +86,7 @@ public final class MlBayesIm implements BayesIm {
      * The array of nodes from the graph. Order is important.
      */
     private final Node[] nodes;
+    private CptMapType cptMapType = null;
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
@@ -108,8 +96,6 @@ public final class MlBayesIm implements BayesIm {
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
      */
     private int[][] parentDims;
-
-    //===============================CONSTRUCTORS=========================//
     /**
      * The main data structure; stores the values of all of the conditional probabilities for the Bayes net of the form
      * P(N=v0 | P1=v1, P2=v2,...). The first dimension is the node N, in the order of 'nodes'. The second dimension is
@@ -118,10 +104,16 @@ public final class MlBayesIm implements BayesIm {
      * for each of the parent values; the order of the values in this array is the same as the order of node in
      * 'parents'; the value indices are obtained from the Bayes PM for each node. The column is the index of the value
      * of N, where this index is obtained from the Bayes PM.
-     *
-     * @serial
+     * <p>
+     * This is kept here for backward compatibility. The new way of storing the probabilities is in the probMatrices
+     * array.
      */
     private double[][][] probs;
+    /**
+     * The array of CPT maps for each node. The index of the node corresponds to the index of the probability map in
+     * this array. Replaces the probs array.
+     */
+    private CptMap[] probMatrices;
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
@@ -131,7 +123,7 @@ public final class MlBayesIm implements BayesIm {
      *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, MlBayesIm.MANUAL);
+        this(bayesPm, null, InitializationMethod.MANUAL);
     }
 
     /**
@@ -144,16 +136,90 @@ public final class MlBayesIm implements BayesIm {
      * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes
      *                                            contained in the bayes parametric model provided.
      */
-    public MlBayesIm(BayesPm bayesPm, int initializationMethod)
+    public MlBayesIm(BayesPm bayesPm, InitializationMethod initializationMethod)
             throws IllegalArgumentException {
         this(bayesPm, null, initializationMethod);
+    }
+
+    /**
+     * Constructs an instance of MlBayesIm.
+     *
+     * @param bayesPm    the BayesPm object that represents the Bayesian network.
+     * @param countsOnly should be set to true for this constructor.
+     * @throws IllegalArgumentException if countsOnly is false.
+     * @throws NullPointerException     if bayesPm is null.
+     */
+    public MlBayesIm(BayesPm bayesPm, boolean countsOnly) {
+        if (!countsOnly) {
+            throw new IllegalArgumentException("countsOnly must be true for this constructor.");
+        }
+
+        if (bayesPm == null) {
+            throw new NullPointerException("BayesPm must not be null.");
+        }
+
+
+
+        this.bayesPm = new BayesPm(bayesPm);
+
+        // Get the nodes from the BayesPm. This fixes the order of the nodes
+        // in the BayesIm, independently of any change to the BayesPm.
+        // (This order must be maintained.)
+        Graph graph = bayesPm.getDag();
+        this.nodes = graph.getNodes().toArray(new Node[0]);
+
+        this.cptMapType = CptMapType.COUNT_MAP;
+
+        this.parents = new int[this.nodes.length][];
+        this.parentDims = new int[this.nodes.length][];
+        this.probs = new double[this.nodes.length][][];
+        this.probMatrices = new CptMapCounts[this.nodes.length];
+
+        for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
+            Node node = this.nodes[nodeIndex];
+
+            // Set up parents array.  Should store the parents of
+            // each node as ints in a particular order.
+            List<Node> parentList = new ArrayList<>(graph.getParents(node));
+            int[] parentArray = new int[parentList.size()];
+
+            for (int i = 0; i < parentList.size(); i++) {
+                parentArray[i] = getNodeIndex(parentList.get(i));
+            }
+
+            // Sort parent array.
+            Arrays.sort(parentArray);
+
+            this.parents[nodeIndex] = parentArray;
+
+            // Setup dimensions array for parents.
+            int[] dims = new int[parentArray.length];
+
+            for (int i = 0; i < dims.length; i++) {
+                Node parNode = this.nodes[parentArray[i]];
+                dims[i] = getBayesPm().getNumCategories(parNode);
+            }
+
+            // Calculate dimensions of table.
+            int numRows = 1;
+
+            for (int dim : dims) {
+                numRows *= dim;
+            }
+
+            int numCols = getBayesPm().getNumCategories(node);
+
+            this.parentDims[nodeIndex] = dims;
+            this.probs[nodeIndex] = new double[numRows][numCols];
+            this.probMatrices[nodeIndex] = new CptMapCounts(numRows, numCols);
+        }
     }
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing values either as MANUAL or RANDOM, but using values
      * from the old BayesIm provided where posssible. If initialized manually, all values that cannot be retrieved from
      * oldBayesIm will be set to Double.NaN ("?") in each such row; if initialized randomly, all values that cannot be
-     * retrieved from oldBayesIm will distributed randomly in each such row.
+     * retrieved from oldBayesIm will be distributed randomly in each such row.
      *
      * @param bayesPm              the given Bayes PM. Carries with it the underlying graph model.
      * @param oldBayesIm           an already-constructed BayesIm whose values may be used where possible to initialize
@@ -163,7 +229,7 @@ public final class MlBayesIm implements BayesIm {
      *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
-                     int initializationMethod) throws IllegalArgumentException {
+                     InitializationMethod initializationMethod) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -203,7 +269,7 @@ public final class MlBayesIm implements BayesIm {
         }
 
         // Copy all the old values over.
-        initialize(bayesIm, MlBayesIm.MANUAL);
+        initialize(bayesIm, InitializationMethod.MANUAL);
     }
 
     /**
@@ -214,8 +280,6 @@ public final class MlBayesIm implements BayesIm {
     public static MlBayesIm serializableInstance() {
         return new MlBayesIm(BayesPm.serializableInstance());
     }
-
-    //===============================PUBLIC METHODS========================//
 
     /**
      * <p>getParameterNames.</p>
@@ -250,6 +314,8 @@ public final class MlBayesIm implements BayesIm {
 
         return row;
     }
+
+    //===============================PUBLIC METHODS========================//
 
     /**
      * <p>Getter for the field <code>bayesPm</code>.</p>
@@ -345,11 +411,11 @@ public final class MlBayesIm implements BayesIm {
      * @return a {@link java.util.List} object
      */
     public List<String> getVariableNames() {
+        List<Node> nodes = getVariables();
         List<String> variableNames = new LinkedList<>();
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            Node node = getNode(i);
-            variableNames.add(this.bayesPm.getVariable(node).getName());
+        for (Node node : nodes) {
+            variableNames.add(node.getName());
         }
 
         return variableNames;
@@ -362,7 +428,11 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of columns.
      */
     public int getNumColumns(int nodeIndex) {
-        return this.probs[nodeIndex][0].length;
+        if (cptMapType != null) {
+            return probMatrices[nodeIndex].getNumColumns();
+        } else {
+            return this.probs[nodeIndex][0].length;
+        }
     }
 
     /**
@@ -372,7 +442,11 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of rows in the node.
      */
     public int getNumRows(int nodeIndex) {
-        return this.probs[nodeIndex].length;
+        if (cptMapType != null) {
+            return probMatrices[nodeIndex].getNumRows();
+        } else {
+            return this.probs[nodeIndex].length;
+        }
     }
 
     /**
@@ -474,7 +548,11 @@ public final class MlBayesIm implements BayesIm {
      * @return the probability value for the given node.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        return this.probs[nodeIndex][rowIndex][colIndex];
+        if (cptMapType != null) {
+            return probMatrices[nodeIndex].get(rowIndex, colIndex);
+        } else {
+            return this.probs[nodeIndex][rowIndex][colIndex];
+        }
     }
 
     /**
@@ -556,8 +634,22 @@ public final class MlBayesIm implements BayesIm {
      */
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
-        for (int i = 0; i < probMatrix.length; i++) {
-            System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
+        if (cptMapType == CptMapType.PROB_MAP) {
+            probMatrices[nodeIndex] = new CptMapProbs(probMatrix);
+        } else if (cptMapType == CptMapType.COUNT_MAP) {
+            throw new IllegalArgumentException("Cannot set probability matrix for an estimated Bayes IM.");
+        } else {
+            for (int i = 0; i < probMatrix.length; i++) {
+                System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
+            }
+        }
+    }
+
+    public void setCountMap(int nodeIndex, CptMapCounts countMap) {
+        if (cptMapType == CptMapType.COUNT_MAP) {
+            probMatrices[nodeIndex] = countMap;
+        } else {
+            throw new IllegalArgumentException("Cannot set count map for a non-estimated Bayes IM.");
         }
     }
 
@@ -584,7 +676,13 @@ public final class MlBayesIm implements BayesIm {
                                                + "between 0.0 and 1.0 or Double.NaN.");
         }
 
-        this.probs[nodeIndex][rowIndex][colIndex] = value;
+        if (cptMapType == CptMapType.PROB_MAP) {
+            ((CptMapProbs) probMatrices[nodeIndex]).set(rowIndex, colIndex, value);
+        } else if (cptMapType == CptMapType.COUNT_MAP) {
+            throw new IllegalArgumentException("Cannot set probability value for an estimated Bayes IM.");
+        } else {
+            this.probs[nodeIndex][rowIndex][colIndex] = value;
+        }
     }
 
     /**
@@ -620,7 +718,19 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights(size);
+        double[] row = getRandomWeights(size);
+
+        if (cptMapType == CptMapType.PROB_MAP) {
+            for (int colIndex = 0; colIndex < size; colIndex++) {
+                ((CptMapProbs) probMatrices[nodeIndex]).set(rowIndex, colIndex, row[colIndex]);
+            }
+        } else if (cptMapType == CptMapType.COUNT_MAP) {
+            throw new IllegalArgumentException("Cannot randomize row for an estimated Bayes IM.");
+        } else {
+            this.probs[nodeIndex][rowIndex] = row;
+        }
+
+//        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights(size);
     }
 
     /**
@@ -644,95 +754,6 @@ public final class MlBayesIm implements BayesIm {
     public void randomizeTable(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             randomizeRow(nodeIndex, rowIndex);
-        }
-    }
-
-    private int score(int nodeIndex) {
-        double[][] p = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-        copy(this.probs[nodeIndex], p);
-        int num = 0;
-
-        int numRows = getNumRows(nodeIndex);
-
-        for (int r = 0; r < p.length; r++) {
-            for (int c = 0; c < p[0].length; c++) {
-                p[r][c] /= numRows;
-            }
-        }
-
-        int[] parents = getParents(nodeIndex);
-
-        for (int t = 0; t < parents.length; t++) {
-            int numParentValues = getParentDim(nodeIndex, t);
-            int numColumns = getNumColumns(nodeIndex);
-
-            double[][] table = new double[numParentValues][numColumns];
-
-            for (int childCol = 0; childCol < numColumns; childCol++) {
-                for (int parentValue = 0; parentValue < numParentValues; parentValue++) {
-                    for (int row = 0; row < numRows; row++) {
-                        if (getParentValues(nodeIndex, row)[t] == parentValue) {
-                            table[parentValue][childCol] += p[row][childCol];
-                        }
-                    }
-                }
-            }
-
-            final double N = 1000.0;
-
-            for (int r = 0; r < table.length; r++) {
-                for (int c = 0; c < table[0].length; c++) {
-                    table[r][c] *= N;
-                }
-            }
-
-            double chisq = 0.0;
-
-            for (int r = 0; r < table.length; r++) {
-                for (int c = 0; c < table[0].length; c++) {
-                    double _sumRow = sumRow(table, r);
-                    double _sumCol = sumCol(table, c);
-                    double exp = (_sumRow / N) * (_sumCol / N) * N;
-                    double obs = table[r][c];
-                    chisq += pow(obs - exp, 2) / exp;
-                }
-            }
-
-            int dof = (table.length - 1) * (table[0].length - 1);
-
-            ChiSquaredDistribution distribution = new ChiSquaredDistribution(dof);
-            double prob = 1 - distribution.cumulativeProbability(chisq);
-
-            num += prob < 0.0001 ? 1 : 0;
-        }
-
-//        return num == parents.length ? -score : 0;
-        return num;
-    }
-
-    private double sumCol(double[][] marginals, int j) {
-        double sum = 0.0;
-
-        for (double[] marginal : marginals) {
-            sum += marginal[j];
-        }
-
-        return sum;
-    }
-
-    private double sumRow(double[][] marginals, int i) {
-        double sum = 0.0;
-
-        for (int h = 0; h < marginals[i].length; h++) {
-            sum += marginals[i][h];
-        }
-
-        return sum;
-    }
-
-    private void copy(double[][] a, double[][] b) {
-        for (int r = 0; r < a.length; r++) {
-            System.arraycopy(a[r], 0, b[r], 0, a[r].length);
         }
     }
 
@@ -1016,75 +1037,6 @@ public final class MlBayesIm implements BayesIm {
 
     private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
-//        //Do the simulation.
-//        class SimulationTask extends RecursiveTask<Boolean> {
-//            private int chunk;
-//            private int from;
-//            private int to;
-//            private int[] tiers;
-//            private DataSet dataSet;
-//            private int[] map;
-//
-//            public SimulationTask(int chunk, int from, int to, int[] tiers, DataSet dataSet, int[] map) {
-//                this.chunk = chunk;
-//                this.from = from;
-//                this.to = to;
-//                this.tiers = tiers;
-//                this.dataSet = dataSet;
-//                this.map = map;
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                if (to - from <= chunk) {
-//                    RandomGenerator randomGenerator = new Well1024a(++seed[0]);
-//
-//                    for (int row = from; row < to; row++) {
-//                        for (int t : tiers) {
-//                            int[] parentValues = new int[parents[t].length];
-//
-//                            for (int k = 0; k < parentValues.length; k++) {
-//                                parentValues[k] = dataSet.getInt(row, parents[t][k]);
-//                            }
-//
-//                            int rowIndex = getRowIndex(t, parentValues);
-//                            double sum = 0.0;
-//                            double r;
-//
-//                            r = randomGenerator.nextDouble();
-//
-//                            for (int k = 0; k < getNumColumns(t); k++) {
-//                                double probability = getProbability(t, rowIndex, k);
-//                                sum += probability;
-//
-//                                if (sum >= r) {
-//                                    dataSet.setInt(row, map[t], k);
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    return true;
-//                } else {
-//                    int mid = (to + from) / 2;
-//                    SimulationTask left = new SimulationTask(chunk, from, mid, tiers, dataSet, map);
-//                    SimulationTask right = new SimulationTask(chunk, mid, to, tiers, dataSet, map);
-//
-//                    left.fork();
-//                    right.compute();
-//                    left.join();
-//
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        int chunk = 25;
-//
-//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-//        SimulationTask task = new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map);
-//        pool.invoke(task);
         // Construct the sample.
         for (int i = 0; i < sampleSize; i++) {
             for (int t : tiers) {
@@ -1167,8 +1119,6 @@ public final class MlBayesIm implements BayesIm {
         return true;
     }
 
-    //=============================PRIVATE METHODS=======================//
-
     /**
      * Prints out the probability table for each variable.
      *
@@ -1221,21 +1171,30 @@ public final class MlBayesIm implements BayesIm {
      * @see #initializeNode
      * @see #randomizeRow
      */
-    private void initialize(BayesIm oldBayesIm, int initializationMethod) {
+    private void initialize(BayesIm oldBayesIm, InitializationMethod initializationMethod) {
         this.parents = new int[this.nodes.length][];
         this.parentDims = new int[this.nodes.length][];
         this.probs = new double[this.nodes.length][][];
+        this.probMatrices = new CptMapProbs[this.nodes.length];
+
+        this.cptMapType = CptMapType.PROB_MAP;
 
         for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             initializeNode(nodeIndex, oldBayesIm, initializationMethod);
         }
     }
 
+    //=============================PRIVATE METHODS=======================//
+
     /**
      * This method initializes the node indicated.
      */
     private void initializeNode(int nodeIndex, BayesIm oldBayesIm,
-                                int initializationMethod) {
+                                InitializationMethod initializationMethod) {
+        if (cptMapType != CptMapType.PROB_MAP) {
+            throw new IllegalArgumentException("Cannot initialize a Bayes IM randomly without a probability map.");
+        }
+
         Node node = this.nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
@@ -1265,15 +1224,6 @@ public final class MlBayesIm implements BayesIm {
         int numRows = 1;
 
         for (int dim : dims) {
-            if (numRows > 1000000 /* Integer.MAX_VALUE / dim*/) {
-                throw new IllegalArgumentException(
-                        "The number of rows in the "
-                        + "conditional probability table for "
-                        + this.nodes[nodeIndex]
-                        + " is greater than 1,000,000 and cannot be "
-                        + "represented.");
-            }
-
             numRows *= dim;
         }
 
@@ -1281,9 +1231,10 @@ public final class MlBayesIm implements BayesIm {
 
         this.parentDims[nodeIndex] = dims;
         this.probs[nodeIndex] = new double[numRows][numCols];
+        this.probMatrices[nodeIndex] = new CptMapProbs(numRows, numCols);
 
         // Initialize each row.
-        if (initializationMethod == MlBayesIm.RANDOM) {
+        if (initializationMethod == InitializationMethod.RANDOM) {
             randomizeTable(nodeIndex);
         } else {
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1298,10 +1249,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     private void overwriteRow(int nodeIndex, int rowIndex,
-                              int initializationMethod) {
-        if (initializationMethod == MlBayesIm.RANDOM) {
+                              InitializationMethod initializationMethod) {
+        if (initializationMethod == InitializationMethod.RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
-        } else if (initializationMethod == MlBayesIm.MANUAL) {
+        } else if (initializationMethod == InitializationMethod.MANUAL) {
             initializeRowAsUnknowns(nodeIndex, rowIndex);
         } else {
             throw new IllegalArgumentException("Unrecognized state.");
@@ -1312,14 +1263,21 @@ public final class MlBayesIm implements BayesIm {
         int size = getNumColumns(nodeIndex);
         double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
-        this.probs[nodeIndex][rowIndex] = row;
+
+        if (cptMapType == CptMapType.PROB_MAP) {
+            ((CptMapProbs) probMatrices[nodeIndex]).assignRow(rowIndex, new Vector(row));
+        } else if (cptMapType == CptMapType.COUNT_MAP) {
+            throw new IllegalArgumentException("Cannot initialize a row as unknowns in an estimated Bayes IM.");
+        } else {
+            this.probs[nodeIndex][rowIndex] = row;
+        }
     }
 
     /**
      * This method initializes the node indicated.
      */
     private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
-                                        BayesIm oldBayesIm, int initializationMethod) {
+                                        BayesIm oldBayesIm, InitializationMethod initializationMethod) {
 
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
 
@@ -1396,42 +1354,6 @@ public final class MlBayesIm implements BayesIm {
             }
         }
 
-//        // Go through each parent of the node in the new BayesIm.
-//        for (int i = 0; i < oldBayesIm.getNumParents(oldNodeIndex); i++) {
-//
-//            // Get the index of the parent in the new graph and in the old
-//            // graph. If it's no longer in the new graph, skip to the next
-//            // parent.
-//            int oldParentNodeIndex = oldBayesIm.getParent(oldNodeIndex, i);
-//            int parentNodeIndex =
-//                    oldBayesIm.getCorrespondingNodeIndex(oldParentNodeIndex, this);
-//            int parentIndex = -1;
-//
-//            for (int j = 0; j < this.getNumParents(nodeIndex); j++) {
-//                if (parentNodeIndex == this.getParent(nodeIndex, j)) {
-//                    parentIndex = j;
-//                    break;
-//                }
-//            }
-//
-//            if (parentIndex == -1 ||
-//                    parentIndex >= this.getNumParents(nodeIndex)) {
-//                continue;
-//            }
-//
-//            // Look up that value index for the new BayesIm for that parent.
-//            // If it was a valid value index in the old BayesIm, record
-//            // that value in oldParentValues. Otherwise return -1.
-//            int parentValue = oldParentValues[i];
-//            int parentDim =
-//                    this.getParentDim(nodeIndex, parentIndex);
-//
-//            if (parentValue < parentDim) {
-//                oldParentValues[parentIndex] = oldParentValue;
-//            } else {
-//                return -1;
-//            }
-//        }
         // If there are any -1's in the combination at this point, return -1.
         for (int oldParentValue : oldParentValues) {
             if (oldParentValue == -1) {
@@ -1492,8 +1414,42 @@ public final class MlBayesIm implements BayesIm {
             throw new NullPointerException();
         }
 
-        if (this.probs == null) {
-            throw new NullPointerException();
+        copyDataToProbMatrices();
+    }
+
+    /**
+     * Copies data from the `probs` array to the `probMatrices` array. If the lengths of both arrays are equal, the
+     * `probMatrices` array is initialized with `ProbMap` objects, each containing the corresponding `probs` element.
+     * The `probs` array is then set to null and the `useProbMatrices` flag is set to true.
+     * <p>
+     * Note: This method should only be called after the `probs` array has been properly initialized.
+     */
+    private void copyDataToProbMatrices() {
+        if (cptMapType == null && this.probs != null && this.probs.length == this.nodes.length) {
+            this.probMatrices = new CptMapProbs[this.probs.length];
+
+            for (int i = 0; i < this.nodes.length; i++) {
+                probMatrices[i] = new CptMapProbs(this.probs[i]);
+            }
+
+            this.probs = null;
+            this.cptMapType = CptMapType.PROB_MAP;
         }
+    }
+
+    /**
+     * A flag indicating whether to use CptMaps or not. If true, CptMaps are used; if false, the probs array is used.
+     * The CptMap is the new way of storing the probabilities; the probs array is kept here for backward compatibility.
+     */
+    public CptMapType getCptMapType() {
+        return cptMapType;
+    }
+
+    public enum CptMapType {
+        PROB_MAP, COUNT_MAP
+    }
+
+    public enum InitializationMethod {
+        MANUAL, RANDOM
     }
 }

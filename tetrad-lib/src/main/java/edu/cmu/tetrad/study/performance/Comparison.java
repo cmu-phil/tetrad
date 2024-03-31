@@ -112,7 +112,7 @@ public class Comparison {
                 }
 
                 BayesPm pm = new BayesPm(trueDag, 3, 3);
-                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                 dataSet = im.simulateData(params.getSampleSize(), false, tiers);
             } else {
                 throw new IllegalArgumentException("Unrecognized data type.");

@@ -1173,6 +1173,13 @@ public class SessionNode implements Node {
      * @return a boolean
      */
     public boolean existsParameterizedConstructor(Class modelClass) {
+        if (modelClass == null) {
+
+            // If the model class is null, then there is no constructor, so display a dialog to the users by
+            // return false here.
+            return false;
+        }
+
         Object param = getParam(modelClass);
         List parentModels = listParentModels();
         parentModels.add(param);

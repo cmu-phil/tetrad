@@ -66,7 +66,7 @@ public final class TestBayesIm {
         Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         assertEquals(bayesIm, bayesIm2);
     }
@@ -102,9 +102,9 @@ public final class TestBayesIm {
         dag.addDirectedEdge(a, b);
 
         BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
+        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.InitializationMethod.MANUAL);
 
         assertEquals(bayesIm, bayesIm2);
 
@@ -113,7 +113,7 @@ public final class TestBayesIm {
         dag.addDirectedEdge(c, b);
 
         BayesPm bayesPm3 = new BayesPm(dag, bayesPm);
-        BayesIm bayesIm3 = new MlBayesIm(bayesPm3, bayesIm2, MlBayesIm.MANUAL);
+        BayesIm bayesIm3 = new MlBayesIm(bayesPm3, bayesIm2, MlBayesIm.InitializationMethod.MANUAL);
 
         // Make sure the rows got repeated.
 //        assertTrue(rowsEqual(bayesIm3, bayesIm3.getNodeIndex(b), 0, 1));
@@ -125,7 +125,7 @@ public final class TestBayesIm {
 
         dag.removeNode(c);
         BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
-        BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.MANUAL);
+        BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.InitializationMethod.MANUAL);
 
         // Make sure the 'b' node has 2 rows of '?'s'.
         assertEquals(2, bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)));
@@ -157,17 +157,17 @@ public final class TestBayesIm {
         assertTrue(Edges.isDirectedEdge(dag.getEdge(a, b)));
 
         BayesPm bayesPm = new BayesPm(dag, 3, 3);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         bayesPm.setNumCategories(a, 4);
         bayesPm.setNumCategories(c, 4);
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
+        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.InitializationMethod.MANUAL);
 
         bayesPm.setNumCategories(a, 2);
-        BayesIm bayesIm3 = new MlBayesIm(bayesPm, bayesIm2, MlBayesIm.MANUAL);
+        BayesIm bayesIm3 = new MlBayesIm(bayesPm, bayesIm2, MlBayesIm.InitializationMethod.MANUAL);
 
         bayesPm.setNumCategories(b, 2);
-        BayesIm bayesIm4 = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm4 = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         // At this point, a has 2 categories, b has 2 categories, and c has 4 categories.
 

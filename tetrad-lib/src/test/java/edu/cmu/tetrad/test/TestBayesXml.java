@@ -112,7 +112,7 @@ public final class TestBayesXml {
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        return new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private static BayesIm sampleBayesIm3() {
@@ -138,7 +138,7 @@ public final class TestBayesXml {
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        return new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     /**

@@ -65,7 +65,7 @@ public class HsimRobustCompare {
         Graph odag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm bayesPm = new BayesPm(odag, 2, 2);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
         //oData is the original data set, and odag is the original dag.
         DataSet oData = bayesIm.simulateData(numCases, false);
         //System.out.println(oData);

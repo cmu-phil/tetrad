@@ -53,7 +53,7 @@ public final class TestBayesDiscreteBicScorer {
 
         final int numCategories = 8;
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
         DataSet data = im.simulateData(1000, false);
 

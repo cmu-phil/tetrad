@@ -481,7 +481,7 @@ class RandomGraphEditor extends JPanel {
      * @return a boolean
      */
     public boolean isRandomForward() {
-        return this.parameters.getBoolean("graphRandomFoward", true);
+        return this.parameters.getBoolean("graphRandomForward", true);
     }
 
     private void setRandomForward(boolean randomFoward) {
