@@ -67,14 +67,12 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @version $Id: $Id
  */
 public final class MlBayesIm implements BayesIm {
-    /**
-     * Inidicates that new rows in this BayesIm should be initialized as unknowns, forcing them to be specified
-     * manually. This is the default.
-     */
-    public static final int MANUAL = 0;
-    /**
-     * Indicates that new rows in this BayesIm should be initialized randomly.
-     */
+    private enum CptMapType {
+        COUNT_MAP, PROB_MAP
+    }
+    public enum InitializationMethod {
+        MANUAL, RANDOM
+    }
     public static final int RANDOM = 1;
     @Serial
     private static final long serialVersionUID = 23L;
@@ -98,7 +96,7 @@ public final class MlBayesIm implements BayesIm {
      * A flag indicating whether to use CptMaps or not. If true, CptMaps are used; if false, the probs array is used.
      * The CptMap is the new way of storing the probabilities; the probs array is kept here for backward compatibility.
      */
-    boolean useCptMaps = true;
+    private CptMapType cptMapType = null;
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
@@ -125,7 +123,7 @@ public final class MlBayesIm implements BayesIm {
      * The array of CPT maps for each node. The index of the node corresponds to the index of the probability map in
      * this array. Replaces the probs array.
      */
-    private CptMap[] probMatrices;
+    private CptMapProbs[] probMatrices;
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
@@ -135,7 +133,7 @@ public final class MlBayesIm implements BayesIm {
      *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, MlBayesIm.MANUAL);
+        this(bayesPm, null, InitializationMethod.MANUAL);
     }
 
     /**
@@ -148,7 +146,7 @@ public final class MlBayesIm implements BayesIm {
      * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes
      *                                            contained in the bayes parametric model provided.
      */
-    public MlBayesIm(BayesPm bayesPm, int initializationMethod)
+    public MlBayesIm(BayesPm bayesPm, InitializationMethod initializationMethod)
             throws IllegalArgumentException {
         this(bayesPm, null, initializationMethod);
     }
@@ -167,7 +165,7 @@ public final class MlBayesIm implements BayesIm {
      *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
-                     int initializationMethod) throws IllegalArgumentException {
+                     InitializationMethod initializationMethod) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -207,7 +205,7 @@ public final class MlBayesIm implements BayesIm {
         }
 
         // Copy all the old values over.
-        initialize(bayesIm, MlBayesIm.MANUAL);
+        initialize(bayesIm, InitializationMethod.MANUAL);
     }
 
     /**
@@ -366,7 +364,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of columns.
      */
     public int getNumColumns(int nodeIndex) {
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             return probMatrices[nodeIndex].getNumColumns();
         } else {
             return this.probs[nodeIndex][0].length;
@@ -380,7 +378,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of rows in the node.
      */
     public int getNumRows(int nodeIndex) {
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             return probMatrices[nodeIndex].getNumRows();
         } else {
             return this.probs[nodeIndex].length;
@@ -486,7 +484,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the probability value for the given node.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             return probMatrices[nodeIndex].get(rowIndex, colIndex);
         } else {
             return this.probs[nodeIndex][rowIndex][colIndex];
@@ -572,8 +570,8 @@ public final class MlBayesIm implements BayesIm {
      */
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
-        if (useCptMaps) {
-            probMatrices[nodeIndex] = new CptMap(probMatrix);
+        if (cptMapType == CptMapType.PROB_MAP) {
+            probMatrices[nodeIndex] = new CptMapProbs(probMatrix);
         } else {
             for (int i = 0; i < probMatrix.length; i++) {
                 System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
@@ -604,7 +602,7 @@ public final class MlBayesIm implements BayesIm {
                                                + "between 0.0 and 1.0 or Double.NaN.");
         }
 
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             probMatrices[nodeIndex].set(rowIndex, colIndex, value);
         } else {
             this.probs[nodeIndex][rowIndex][colIndex] = value;
@@ -646,7 +644,7 @@ public final class MlBayesIm implements BayesIm {
         int size = getNumColumns(nodeIndex);
         double[] row = getRandomWeights(size);
 
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             for (int colIndex = 0; colIndex < size; colIndex++) {
                 probMatrices[nodeIndex].set(rowIndex, colIndex, row[colIndex]);
             }
@@ -1097,11 +1095,11 @@ public final class MlBayesIm implements BayesIm {
      * @see #initializeNode
      * @see #randomizeRow
      */
-    private void initialize(BayesIm oldBayesIm, int initializationMethod) {
+    private void initialize(BayesIm oldBayesIm, InitializationMethod initializationMethod) {
         this.parents = new int[this.nodes.length][];
         this.parentDims = new int[this.nodes.length][];
         this.probs = new double[this.nodes.length][][];
-        this.probMatrices = new CptMap[this.nodes.length];
+        this.probMatrices = new CptMapProbs[this.nodes.length];
 
         for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             initializeNode(nodeIndex, oldBayesIm, initializationMethod);
@@ -1112,7 +1110,7 @@ public final class MlBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void initializeNode(int nodeIndex, BayesIm oldBayesIm,
-                                int initializationMethod) {
+                                InitializationMethod initializationMethod) {
         Node node = this.nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
@@ -1149,10 +1147,10 @@ public final class MlBayesIm implements BayesIm {
 
         this.parentDims[nodeIndex] = dims;
         this.probs[nodeIndex] = new double[numRows][numCols];
-        this.probMatrices[nodeIndex] = new CptMap(numRows, numCols);
+        this.probMatrices[nodeIndex] = new CptMapProbs(numRows, numCols);
 
         // Initialize each row.
-        if (initializationMethod == MlBayesIm.RANDOM) {
+        if (initializationMethod == InitializationMethod.RANDOM) {
             randomizeTable(nodeIndex);
         } else {
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1167,10 +1165,10 @@ public final class MlBayesIm implements BayesIm {
     }
 
     private void overwriteRow(int nodeIndex, int rowIndex,
-                              int initializationMethod) {
-        if (initializationMethod == MlBayesIm.RANDOM) {
+                              InitializationMethod initializationMethod) {
+        if (initializationMethod == InitializationMethod.RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
-        } else if (initializationMethod == MlBayesIm.MANUAL) {
+        } else if (initializationMethod == InitializationMethod.MANUAL) {
             initializeRowAsUnknowns(nodeIndex, rowIndex);
         } else {
             throw new IllegalArgumentException("Unrecognized state.");
@@ -1182,7 +1180,7 @@ public final class MlBayesIm implements BayesIm {
         double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
 
-        if (useCptMaps) {
+        if (cptMapType == CptMapType.PROB_MAP) {
             probMatrices[nodeIndex].assignRow(rowIndex, new Vector(row));
         } else {
             this.probs[nodeIndex][rowIndex] = row;
@@ -1193,7 +1191,7 @@ public final class MlBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
-                                        BayesIm oldBayesIm, int initializationMethod) {
+                                        BayesIm oldBayesIm, InitializationMethod initializationMethod) {
 
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
 
@@ -1341,15 +1339,15 @@ public final class MlBayesIm implements BayesIm {
      * Note: This method should only be called after the `probs` array has been properly initialized.
      */
     private void copyDataToProbMatrices() {
-        if (!this.useCptMaps && this.probs != null && this.probs.length == this.nodes.length) {
-            this.probMatrices = new CptMap[this.probs.length];
+        if (cptMapType == null && this.probs != null && this.probs.length == this.nodes.length) {
+            this.probMatrices = new CptMapProbs[this.probs.length];
 
             for (int i = 0; i < this.nodes.length; i++) {
-                probMatrices[i] = new CptMap(this.probs[i]);
+                probMatrices[i] = new CptMapProbs(this.probs[i]);
             }
 
             this.probs = null;
-            this.useCptMaps = true;
+            this.cptMapType = CptMapType.PROB_MAP;
         }
     }
 }

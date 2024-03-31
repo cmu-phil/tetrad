@@ -441,7 +441,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         Dag gD = new Dag(this.bayesIm.getDag().subgraph(dNodes));
 
         BayesPm bayesPmD = new BayesPm(gD, this.bayesIm.getBayesPm());
-        BayesIm bayesImD = new MlBayesIm(bayesPmD, this.bayesIm, MlBayesIm.RANDOM);
+        BayesIm bayesImD = new MlBayesIm(bayesPmD, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
 
         if (this.debug) {
             System.out.println("------ bayeIm.getDag() -------------");
@@ -919,7 +919,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         // construct an IM with the dag graphA
         BayesPm bayesPmA = new BayesPm(graphA, this.bayesIm.getBayesPm());
-        BayesIm bayesImA = new MlBayesIm(bayesPmA, this.bayesIm, MlBayesIm.RANDOM);
+        BayesIm bayesImA = new MlBayesIm(bayesPmA, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
 
         // get c-components of graphA
         int[] cComponentsA = getCComponents(bayesImA);
@@ -967,7 +967,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {

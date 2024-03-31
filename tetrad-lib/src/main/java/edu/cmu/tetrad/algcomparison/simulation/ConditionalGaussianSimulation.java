@@ -320,7 +320,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         BayesPm bayesPm = new BayesPm(AG);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         SemPm semPm = new SemPm(XG);
 

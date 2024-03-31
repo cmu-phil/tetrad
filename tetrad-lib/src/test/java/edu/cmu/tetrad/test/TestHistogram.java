@@ -90,7 +90,7 @@ public final class TestHistogram {
 
         // Discrete
         BayesPm bayesPm = new BayesPm(trueGraph);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
         DataSet data2 = bayesIm.simulateData(sampleSize, false);
 
         // For some reason these are giving different

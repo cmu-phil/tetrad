@@ -248,7 +248,7 @@ public class TestGFci {
         Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(g);
         BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         DataSet data = bayesIm.simulateData(sampleSize, false);
 

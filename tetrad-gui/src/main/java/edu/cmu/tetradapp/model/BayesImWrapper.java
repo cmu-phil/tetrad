@@ -36,6 +36,7 @@ import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntBinaryOperator;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
@@ -90,11 +91,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }
 
@@ -193,9 +194,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             setBayesIm(new MlBayesIm(bayesPm));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }
 
@@ -342,9 +343,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //============================== private methods ============================//
 
-    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
+    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, MlBayesIm.InitializationMethod initializationMethod) {
         this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, initializationMethod));
     }
 
     /**

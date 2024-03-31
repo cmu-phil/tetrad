@@ -344,7 +344,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {

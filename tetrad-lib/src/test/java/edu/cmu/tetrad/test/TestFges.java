@@ -227,7 +227,7 @@ public class TestFges {
                 30, 15, 15, false, true);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
         DataSet data = im.simulateData(numCases, false);
 
         BdeScore score = new BdeScore(data);

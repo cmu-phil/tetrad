@@ -238,9 +238,9 @@ public class BayesNetSimulation implements Simulation {
                     int minCategories = parameters.getInt(Params.MIN_CATEGORIES);
                     int maxCategories = parameters.getInt(Params.MAX_CATEGORIES);
                     pm = new BayesPm(graph, minCategories, maxCategories);
-                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                 } else {
-                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                     this.im = im;
                 }
             }

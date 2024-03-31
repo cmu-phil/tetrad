@@ -81,7 +81,7 @@ public class TestRfciBsc {
         // set a number of latent variables
 
         BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         RandomUtil.getInstance().setSeed(seed);
 
