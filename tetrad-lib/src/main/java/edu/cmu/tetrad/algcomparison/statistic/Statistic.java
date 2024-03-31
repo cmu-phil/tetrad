@@ -43,7 +43,7 @@ public interface Statistic extends Serializable {
 
     /**
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better. This is used for a
-     * calculation of a utility for an algorithm.If the statistic is already between 0 and 1, you can just return the
+     * calculation of a utility for an algorithm. If the statistic is already between 0 and 1, you can just return the
      * statistic.
      *
      * @param value The value of the statistic.
