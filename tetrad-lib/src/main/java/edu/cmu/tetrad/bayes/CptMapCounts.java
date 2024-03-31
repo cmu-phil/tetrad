@@ -123,6 +123,26 @@ public class CptMapCounts implements CptMap {
         return cellCount / (double) rowCount;
     }
 
+    public void addCounts(int row, int column, int count) {
+        if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
+            throw new IllegalArgumentException("Row and column must be within bounds.");
+        }
+
+        int key = row * numColumns + column;
+
+        if (!cellCounts.containsKey(key)) {
+            cellCounts.put(key, count);
+        } else {
+            cellCounts.put(key, cellCounts.get(key) + count);
+        }
+
+        if (!rowCounts.containsKey(row)) {
+            rowCounts.put(row, count);
+        } else {
+            rowCounts.put(row, rowCounts.get(row) + count);
+        }
+    }
+
     /**
      * Returns the number of rows in the probability map.
      *
