@@ -56,7 +56,7 @@ public class Mgm extends AbstractBootstrapAlgorithm implements Algorithm {
 
         if (!dataSet.isMixed()) {
             throw new IllegalArgumentException("Expecting mixed data for MGM--at least one discrete column and at least" +
-                    " one continuous column.");
+                                               " one continuous column.");
         }
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {

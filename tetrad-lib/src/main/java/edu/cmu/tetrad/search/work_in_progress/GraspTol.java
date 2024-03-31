@@ -198,9 +198,9 @@ public class GraspTol {
 
                             if (verbose) {
                                 System.out.println("# Edges = " + scorer.getNumEdges()
-                                        + " Score = " + scorer.score()
-                                        + " (betterMutation)"
-                                        + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " sp"));
+                                                   + " Score = " + scorer.score()
+                                                   + " (betterMutation)"
+                                                   + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " sp"));
                             }
                         }
                     }
@@ -311,9 +311,9 @@ public class GraspTol {
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (GRaSP)"
-                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                                                       + " Score = " + scorer.score()
+                                                       + " (GRaSP)"
+                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

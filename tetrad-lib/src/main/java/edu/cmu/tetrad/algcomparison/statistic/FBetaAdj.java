@@ -60,7 +60,7 @@ public class FBetaAdj implements Statistic {
         double adjPrecision = adjTp / (double) (adjTp + adjFp);
         double adjRecall = adjTp / (double) (adjTp + adjFn);
         return (1 + beta * beta) * (adjPrecision * adjRecall)
-                / (beta * beta * adjPrecision + adjRecall);
+               / (beta * beta * adjPrecision + adjRecall);
     }
 
     /**

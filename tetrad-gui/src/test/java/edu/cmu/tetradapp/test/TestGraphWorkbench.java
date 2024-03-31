@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the GraphWorkbench class.
@@ -45,7 +45,7 @@ public class TestGraphWorkbench {
         setUp();
 
         // change the workbench.
-        assertTrue("X1".equals(this.graphWorkbench.nextVariableName("X")));
+        assertEquals("X1", this.graphWorkbench.nextVariableName("X"));
     }
 }
 

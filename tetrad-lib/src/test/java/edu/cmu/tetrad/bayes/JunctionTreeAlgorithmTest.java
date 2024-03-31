@@ -151,6 +151,7 @@ public class JunctionTreeAlgorithmTest {
             conProb = jta.getConditionalProbability(iNode, value, parents, parentValues);
             actual = (long) (Double.parseDouble(df.format(conProb)) * multiplier);
             expected = 803233;
+//            expected = 104396;
             Assert.assertEquals(expected, actual);
 
             // P(v1=1|v2=0)
@@ -168,6 +169,7 @@ public class JunctionTreeAlgorithmTest {
             conProb = jta.getConditionalProbability(iNode, value, parents, parentValues);
             actual = (long) (Double.parseDouble(df.format(conProb)) * multiplier);
             expected = 196768;
+//            expected = 895605;
             Assert.assertEquals(expected, actual);
 
             Node[] nodes = jta.getNodes().toArray(new Node[jta.getNumberOfNodes()]);

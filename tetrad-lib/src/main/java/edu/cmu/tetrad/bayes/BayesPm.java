@@ -314,7 +314,7 @@ public final class BayesPm implements Pm, VariableSource {
 
             if (newCategories.contains(proposedName)) {
                 throw new IllegalArgumentException("Default name already in " +
-                        "list of categories: " + proposedName);
+                                                   "list of categories: " + proposedName);
             }
 
             newCategories.add(proposedName);
@@ -532,7 +532,7 @@ public final class BayesPm implements Pm, VariableSource {
 
             if (values.contains(proposedName)) {
                 throw new IllegalArgumentException("Default name already in " +
-                        "list of values: " + proposedName);
+                                                   "list of values: " + proposedName);
             }
 
             values.add(proposedName);

@@ -174,7 +174,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for this evidence " +
-                    "must be compatible with the variable list of the stored IM.");
+                                               "must be compatible with the variable list of the stored IM.");
         }
 
         this.evidence = evidence;

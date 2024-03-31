@@ -239,20 +239,20 @@ public class Underlines implements TripleClassifier, TetradSerializable {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!graph.containsNode(triple.getX()) || !graph.containsNode(triple.getY())
-                    || !graph.containsNode(triple.getZ())) {
+                || !graph.containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!graph.isAdjacentTo(triple.getX(), triple.getY())
-                    || !graph.isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !graph.isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!graph.containsNode(triple.getX()) || !graph.containsNode(triple.getY())
-                    || !graph.containsNode(triple.getZ())) {
+                || !graph.containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

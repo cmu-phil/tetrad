@@ -41,7 +41,7 @@ class ExpressionUtils {
         List<Expression> expressions = expression.getExpressions();
 
         if (position == ExpressionDescriptor.Position.INFIX
-                || (position == ExpressionDescriptor.Position.BOTH && expressions.size() == 2)) {
+            || (position == ExpressionDescriptor.Position.BOTH && expressions.size() == 2)) {
             Expression expression1 = expressions.get(0);
             Expression expression2 = expressions.get(1);
 

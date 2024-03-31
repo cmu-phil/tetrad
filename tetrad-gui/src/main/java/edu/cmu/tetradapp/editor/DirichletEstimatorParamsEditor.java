@@ -88,22 +88,22 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "If you make a Dirichlet estimator using a Bayes PM and a " +
-                "<br>discrete data set as parents, a Dirichlet Bayes IM will" +
-                "<br>be created behind the scenes for you using the number you" +
-                "<br>provide below as pseudocount for every cell. This Dirichlet" +
-                "<br>Bayes IM will be used as the prior for the estimation. If" +
-                "<br>you would like to have more control over how this prior is" +
-                "<br>created, please remove the PM-->Estimator edge, add a new" +
-                "<br>IM box, connect it as PM-->IM-->Estimator, and create the" +
-                "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
-                "</html>"));
+                          "If you make a Dirichlet estimator using a Bayes PM and a " +
+                          "<br>discrete data set as parents, a Dirichlet Bayes IM will" +
+                          "<br>be created behind the scenes for you using the number you" +
+                          "<br>provide below as pseudocount for every cell. This Dirichlet" +
+                          "<br>Bayes IM will be used as the prior for the estimation. If" +
+                          "<br>you would like to have more control over how this prior is" +
+                          "<br>created, please remove the PM-->Estimator edge, add a new" +
+                          "<br>IM box, connect it as PM-->IM-->Estimator, and create the" +
+                          "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
+                          "</html>"));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" +
-                "<i>Estimate using a prior with all pseudocounts =</i>" +
-                "</html>"));
+                          "<i>Estimate using a prior with all pseudocounts =</i>" +
+                          "</html>"));
         b7.add(symmetricAlphaField);
 
         b1.add(b2);

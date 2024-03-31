@@ -84,8 +84,8 @@ public final class TetradTestContinuous implements TetradTest {
         }
 
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -115,8 +115,8 @@ public final class TetradTestContinuous implements TetradTest {
     public TetradTestContinuous(ICovarianceMatrix covMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
         this.dataSet = null;
@@ -143,8 +143,8 @@ public final class TetradTestContinuous implements TetradTest {
     public TetradTestContinuous(CorrelationMatrix correlationMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -287,7 +287,7 @@ public final class TetradTestContinuous implements TetradTest {
      */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
         return tetradHolds(v1, v3, v4, v2) && !tetradHolds(v1, v3, v2, v4) &&
-                !tetradHolds(v1, v4, v2, v3);
+               !tetradHolds(v1, v4, v2, v3);
     }
 
     /**
@@ -372,7 +372,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, k) * this.rho.get(j, l);
+                  this.rho.get(i, k) * this.rho.get(j, l);
 
         double SD = wishartTestTetradDifference(i, j, k, l);
 
@@ -382,7 +382,7 @@ public final class TetradTestContinuous implements TetradTest {
         this.prob[0] = 2.0 * ProbUtils.normalCdf(abs(ratio));
 
         TAUijlk = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, j, l, k);
 
@@ -392,7 +392,7 @@ public final class TetradTestContinuous implements TetradTest {
         this.prob[1] = 2.0 * ProbUtils.normalCdf(abs(ratio));
 
         TAUiklj = this.rho.get(i, k) * this.rho.get(j, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, k, l, j);   // A C D B
 
@@ -408,7 +408,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, k) * this.rho.get(j, l);
+                  this.rho.get(i, k) * this.rho.get(j, l);
 
         double SD = wishartTestTetradDifference(i, j, k, l);
 
@@ -418,7 +418,7 @@ public final class TetradTestContinuous implements TetradTest {
         boolean holds1 = 2.0 * ProbUtils.normalCdf(abs(ratio)) > alpha;
 
         TAUijlk = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, j, l, k);
 
@@ -455,7 +455,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i1, j1) * this.rho.get(k1, l1) -
-                this.rho.get(i2, j2) * this.rho.get(k2, l2);
+                  this.rho.get(i2, j2) * this.rho.get(k2, l2);
 
         double SD = wishartTestTetradDifference(i1, j2, k2, l2);
 
@@ -517,13 +517,13 @@ public final class TetradTestContinuous implements TetradTest {
         double a44 = m.get(3, 3);
 
         return a14 * a23 * a32 * a41 - a13 * a24 * a32 * a41 - a14 * a22 * a33 * a41 +
-                a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 - a12 * a23 * a34 * a41 -
-                a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 + a14 * a21 * a33 * a42 -
-                a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 + a11 * a23 * a34 * a42 +
-                a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 - a14 * a21 * a32 * a43 +
-                a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 - a11 * a22 * a34 * a43 -
-                a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 + a13 * a21 * a32 * a44 -
-                a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 + a11 * a22 * a33 * a44;
+               a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 - a12 * a23 * a34 * a41 -
+               a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 + a14 * a21 * a33 * a42 -
+               a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 + a11 * a23 * a34 * a42 +
+               a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 - a14 * a21 * a32 * a43 +
+               a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 - a11 * a22 * a34 * a43 -
+               a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 + a13 * a21 * a32 * a44 -
+               a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 + a11 * a22 * a33 * a44;
     }
 
     /**
@@ -575,7 +575,7 @@ public final class TetradTestContinuous implements TetradTest {
 
         TetradLogger.getInstance().forceLogMessage(new Tetrad(this.variables.get(i),
                 this.variables.get(j), this.variables.get(k), this.variables.get(l))
-                + " = 0, p = " + this.prob[0]);
+                                                   + " = 0, p = " + this.prob[0]);
 
 
     }

@@ -61,7 +61,7 @@ public final class RandomSampler {
 
         if (dataSet.getNumRows() < newSampleSize) {
             throw new IllegalArgumentException("Not enough cases in data to " +
-                    "generate " + newSampleSize + " samples without replacement.");
+                                               "generate " + newSampleSize + " samples without replacement.");
         }
 
         List<Integer> indices = new ArrayList<>(dataSet.getNumRows());

@@ -228,7 +228,7 @@ public final class Clusters implements TetradSerializable {
             if (name.equals(_name)) {
                 throw new IllegalArgumentException(
                         "That is the name for cluster " + "#" + (i + 1) + ": " +
-                                name);
+                        name);
             }
         }
 

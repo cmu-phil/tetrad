@@ -2113,7 +2113,7 @@ public final class GraphUtils {
             if (edge != null) {
                 throw new IllegalArgumentException(
                         "Multiple edges connecting " +
-                                "nodes is not supported.");
+                        "nodes is not supported.");
             }
 
             if (edgeSpec.lastIndexOf("-->") != -1) {
@@ -2169,16 +2169,16 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (referenceCpdag.isDefCollider(a, b, c)
-                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                    && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)
-                            && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }

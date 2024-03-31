@@ -90,7 +90,7 @@ public class TestSimulatedFmri {
 
         String dir;
         final String subdir = "data_fslfilter";
-        if (!false) {
+        if (true) {
             dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -191,7 +191,7 @@ public class TestSimulatedFmri {
 
         String directory;
 
-        if (!false) {
+        if (true) {
             directory = "comparison_training";
         } else {
             directory = "comparison_testing";

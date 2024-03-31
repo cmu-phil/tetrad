@@ -118,7 +118,7 @@ public abstract class BasicMatrix {
         // Read matrix name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (!strmTok.sval.toUpperCase().contains("MATRIX"))) {
+            (!strmTok.sval.toUpperCase().contains("MATRIX"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'MATRIX': " + strmTok.sval);
         }
@@ -160,7 +160,7 @@ public abstract class BasicMatrix {
                 }
             } else {
                 throw new IllegalArgumentException("Error parsing element [" +
-                        row + "," + col + "]: " + strmTok.sval);
+                                                   row + "," + col + "]: " + strmTok.sval);
             }
         }
         in.close();
@@ -200,7 +200,7 @@ public abstract class BasicMatrix {
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n");
+                                            " // <- Total # rows\n");
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c < this.n; c++) {

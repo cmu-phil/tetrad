@@ -232,7 +232,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Using previously set knowledge. (To edit, use " +
-                                            "the Knowledge menu.)");
+                                    "the Knowledge menu.)");
                             AbstractSearchEditor.this.knowledgeMessageShown = true;
                         }
                     }
@@ -286,7 +286,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 firePropertyChange("modelChanged", null, null);
             }
         }
-        ;
 
         new MyWatchedProcess();
 

@@ -56,6 +56,7 @@ public class MixedUtils {
     public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
     //labels corresponding to values from allEdgeStats
+
     /**
      * Prevents instantiation.
      */
@@ -534,7 +535,6 @@ public class MixedUtils {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        return;
     }
 
     //legacy

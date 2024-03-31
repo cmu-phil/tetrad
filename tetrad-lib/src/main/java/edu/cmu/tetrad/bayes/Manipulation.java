@@ -78,7 +78,7 @@ public final class Manipulation implements TetradSerializable {
 
         if (manipulation.getVariableSource() == null) {
             throw new NullPointerException("Please reconstruct this part of the " +
-                    "session; there was an error.");
+                                           "session; there was an error.");
         }
 
         this.variableSource = manipulation.getVariableSource();

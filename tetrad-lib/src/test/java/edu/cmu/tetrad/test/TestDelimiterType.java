@@ -24,7 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DelimiterType;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
@@ -35,10 +36,10 @@ public final class TestDelimiterType {
 
     @Test
     public void testTypes() {
-        assertTrue("Tab".equals(DelimiterType.TAB.toString()));
-        assertTrue("Whitespace".equals(DelimiterType.WHITESPACE.toString()));
-        assertTrue("Comma".equals(DelimiterType.COMMA.toString()));
-        assertTrue(!(DelimiterType.TAB.equals(DelimiterType.WHITESPACE)));
+        assertEquals("Tab", DelimiterType.TAB.toString());
+        assertEquals("Whitespace", DelimiterType.WHITESPACE.toString());
+        assertEquals("Comma", DelimiterType.COMMA.toString());
+        assertNotEquals(DelimiterType.TAB, DelimiterType.WHITESPACE);
     }
 }
 

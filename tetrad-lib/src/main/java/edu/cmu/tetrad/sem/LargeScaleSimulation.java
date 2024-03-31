@@ -355,7 +355,7 @@ public final class LargeScaleSimulation {
         int size = this.variableNodes.size();
         if (shocks[0].length != size) {
             throw new IllegalArgumentException("The number of columns in the shocks matrix does not equal "
-                    + "the number of variables.");
+                                               + "the number of variables.");
         }
 
         setupModel(size);

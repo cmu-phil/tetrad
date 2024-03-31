@@ -129,13 +129,13 @@ public final class Parameter implements TetradSerializable {
         if (type == ParamType.VAR && nodeA != nodeB) {
             throw new IllegalArgumentException(
                     "Variance parameters must have " +
-                            "nodeA and nodeB the same.");
+                    "nodeA and nodeB the same.");
         }
 
         if (type == ParamType.COVAR && nodeA == nodeB) {
             throw new IllegalArgumentException(
                     "Covariance parameters must have " +
-                            "nodeA and nodeB different.");
+                    "nodeA and nodeB different.");
         }
 
         this.name = name;
@@ -189,7 +189,7 @@ public final class Parameter implements TetradSerializable {
      */
     public String toString() {
         return "<" + this.name + ", " + this.type + ", " + this.nodeA + ", " +
-                this.nodeB + ", " + (this.fixed ? "fixed" : "free") + ">";
+               this.nodeB + ", " + (this.fixed ? "fixed" : "free") + ">";
     }
 
     /**

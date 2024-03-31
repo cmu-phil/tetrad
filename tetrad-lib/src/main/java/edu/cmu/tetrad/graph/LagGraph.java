@@ -730,20 +730,20 @@ public class LagGraph implements Graph {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

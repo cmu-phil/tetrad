@@ -145,8 +145,8 @@ public class TestSimpleRandomizer extends TestCase {
                 sum += parents.size();
 
                 System.out.println("# Nonhousekeeping = " + numNonHousekeeping +
-                        " This num parents = " + parents.size() + " sum = " +
-                        sum);
+                                   " This num parents = " + parents.size() + " sum = " +
+                                   sum);
             }
         }
 

@@ -120,7 +120,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
         if (lowerBound >= basalExpression) {
             throw new IllegalArgumentException("Lower bound must be " +
-                    "less than basal " + "expression.");
+                                               "less than basal " + "expression.");
         }
 
         this.lowerBound = lowerBound;
@@ -312,7 +312,7 @@ public class BooleanGlassFunction implements UpdateFunction {
         if ((decayRate <= 0.0) || (decayRate > 1.0)) {
             throw new IllegalArgumentException(
                     "Suggested rate out of bounds (0.0 <= decayRate < 1.0): " +
-                            decayRate);
+                    decayRate);
         }
 
         this.decayRate = decayRate;
@@ -338,7 +338,7 @@ public class BooleanGlassFunction implements UpdateFunction {
         if (booleanInfluenceRate <= 0.0) {
             throw new IllegalArgumentException(
                     "Suggested rate out of bounds (0.0 <= " +
-                            "booleanInfluenceRate): " + booleanInfluenceRate);
+                    "booleanInfluenceRate): " + booleanInfluenceRate);
         }
 
         this.booleanInfluenceRate = booleanInfluenceRate;

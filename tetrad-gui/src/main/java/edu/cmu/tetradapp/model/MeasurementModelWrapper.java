@@ -104,8 +104,7 @@ public final class MeasurementModelWrapper implements ParamsResettable,
      * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
-        if (knowledgeInput instanceof GraphSource) {
-            GraphSource graphWrapper = (GraphSource) knowledgeInput;
+        if (knowledgeInput instanceof GraphSource graphWrapper) {
             Graph mim = graphWrapper.getGraph();
 
             Clusters clusters = ClusterUtils.mimClusters(mim);

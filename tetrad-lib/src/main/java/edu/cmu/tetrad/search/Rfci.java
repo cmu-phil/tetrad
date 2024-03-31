@@ -396,16 +396,16 @@ public final class Rfci implements IGraphSearch {
                 while (iter.hasNext()) {
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
-                            ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent2 && (curTuple[1] == k) &&
-                                    ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent1 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == i) || (curTuple[2] == i)))
-                            ||
-                            (independent2 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent2 && (curTuple[1] == k) &&
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent1 && (curTuple[1] == j) &&
+                         ((curTuple[0] == i) || (curTuple[2] == i)))
+                        ||
+                        (independent2 && (curTuple[1] == j) &&
+                         ((curTuple[0] == k) || (curTuple[2] == k)))) {
                         iter.remove();
                     }
                 }
@@ -416,16 +416,16 @@ public final class Rfci implements IGraphSearch {
                 while (iter.hasNext()) {
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
-                            ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent2 && (curTuple[1] == k) &&
-                                    ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent1 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == i) || (curTuple[2] == i)))
-                            ||
-                            (independent2 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent2 && (curTuple[1] == k) &&
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent1 && (curTuple[1] == j) &&
+                         ((curTuple[0] == i) || (curTuple[2] == i)))
+                        ||
+                        (independent2 && (curTuple[1] == j) &&
+                         ((curTuple[0] == k) || (curTuple[2] == k)))) {
                         iter.remove();
                     }
                 }
@@ -445,7 +445,7 @@ public final class Rfci implements IGraphSearch {
             }
 
             if (!sepset.contains(j)
-                    && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
+                && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
                 if (!FciOrient.isArrowheadAllowed(i, j, graph, knowledge)) {
                     continue;

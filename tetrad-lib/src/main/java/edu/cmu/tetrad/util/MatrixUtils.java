@@ -557,14 +557,14 @@ public final class MatrixUtils {
     public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             throw new IllegalArgumentException("Edge coefficient matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         final int sampleSize = 10000;
@@ -596,14 +596,14 @@ public final class MatrixUtils {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
             throw new IllegalArgumentException("Edge coefficient matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
 //        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
@@ -1175,8 +1175,8 @@ public final class MatrixUtils {
     //=========================PRIVATE METHODS===========================//
     private static String nullMessage() {
         return "\n"
-                + "\t"
-                + "<Matrix is null>";
+               + "\t"
+               + "<Matrix is null>";
     }
 
     /**

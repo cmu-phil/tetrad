@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp;
 
+import edu.cmu.tetrad.search.work_in_progress.DMSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -27,9 +28,12 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -39,34 +43,30 @@ import java.util.Locale;
 import java.util.prefs.Preferences;
 
 /**
- * Launches Tetrad as an application. The intended class path in either case is "edu.cmu.tetradapp.Tetrad", so care
- * should be taken not to move this class out of the "INSTANCE" package. The launch itself is carried out by the method
- * "launchFrame()", which generates a new frame for the application.
- * <p>
- * Note to programmers: <b>Please don't make any changes to this class.</b> If you need another way of launching Tetrad
- * for special purposes, it's easy enough to create a copy of this class with a different name and modify it.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The Tetrad class represents the main class of the Tetrad application.
  */
 public final class Tetrad implements PropertyChangeListener {
 
-    // The experimental option
-    private static final String EXP_OPT = "--experimental";
-    // Whether to enable experimental features
     /**
-     * Constant <code>enableExperimental=// Whether to enable experimental features</code>
+     * The experimental option
+     */
+    private static final String EXP_OPT = "--experimental";
+    /**
+     * Whether to enable experimental features
      */
     public static boolean enableExperimental;
     /**
-     * Constant <code>frame</code>
+     * The variable frame represents the main JFrame of the application.
+     * It is a static field of the Tetrad class.
      */
     public static JFrame frame;
-    // The launch frame.
-    // The main application title.
-    private final String mainTitle
-            = "Tetrad " + Version.currentViewableVersion();
-    // The desktop placed into the launch frame.
+    /**
+     * The main application title.
+     */
+    private final String mainTitle = "Tetrad " + Version.currentViewableVersion();
+    /**
+     * The desktop placed into the launch frame.
+     */
     private TetradDesktop desktop;
 
     //==============================CONSTRUCTORS===========================//
@@ -81,7 +81,7 @@ public final class Tetrad implements PropertyChangeListener {
 
     /**
      * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
-     * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
+     * <pre>java -jar jarname.jar</pre>
      * <p>
      * where "jarname.jar" is a jar containing all the classes of Tetrad IV, properly compiled, along with all the
      * auxiliary jar contents and all the images which Tetrad IV uses, all in their proper relative directories.&gt; 0
@@ -108,7 +108,12 @@ public final class Tetrad implements PropertyChangeListener {
         Tetrad.enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
     }
 
-    //===============================PRIVATE METHODS=======================//
+
+    /**
+     * Sets the look and feel for the application based on the operating system. If the operating system is Windows XP,
+     * it sets the system look and feel. Throws an exception if encountering any errors while setting the look and
+     * feel.
+     */
     private static void setLookAndFeel() {
         try {
             String os = System.getProperties().getProperty("os.name");
@@ -133,7 +138,9 @@ public final class Tetrad implements PropertyChangeListener {
         }
     }
 
-    // Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
+    /**
+     * Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
+     */
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
@@ -158,32 +165,61 @@ public final class Tetrad implements PropertyChangeListener {
 
             @Override
             public Dimension getPreferredSize() {
-                GraphicsDevice graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-                double width = graphicsDevice.getDisplayMode().getWidth();
-                double height = graphicsDevice.getDisplayMode().getHeight();
+                int preferredWindowWidth = Preferences.userRoot().getInt("preferredWindowWidth", 0);
+                int preferredWindowHeight = Preferences.userRoot().getInt("preferredWindowHeight", 0);
 
-                // On a super-small screen, make the window a bigger.
-                if (height <= 900) {
-                    return new Dimension((int) width, (int) height);
+                if (preferredWindowWidth > 0 && preferredWindowHeight > 0) {
+                    return new Dimension(preferredWindowWidth, preferredWindowHeight);
                 } else {
-                    height *= 0.75;
-                    width = height * 1.333333333;
-                }
+                    GraphicsDevice graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                    double width = graphicsDevice.getDisplayMode().getWidth();
+                    double height = graphicsDevice.getDisplayMode().getHeight();
 
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-                return new Dimension((int) width, (int) height);
+                    Dimension dimension;
+
+                    // On a super-small screen, make the window a bit bigger.
+                    if (height <= 900) {
+                        dimension = new Dimension((int) (width * 0.9), (int) (height * 0.8));
+                    } else {
+                        dimension = new Dimension((int) (width * 0.65), (int) (height * 0.75));
+                    }
+
+                    Preferences.userRoot().putInt("preferredWindowWidth", dimension.width);
+                    Preferences.userRoot().putInt("preferredWindowHeight", dimension.height);
+
+                    return dimension;
+                }
             }
 
+            @NotNull
+            public Point getLocation() {
+                int preferredWindowX = Preferences.userRoot().getInt("preferredWindowX", 0);
+                int preferredWindowY = Preferences.userRoot().getInt("preferredWindowY", 0);
+
+                if (preferredWindowX > 0 && preferredWindowY > 0) {
+                    return new Point(preferredWindowX, preferredWindowY);
+                } else {
+                    Dimension preferredSize = getPreferredSize();
+                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+                    int x = (screenSize.width - preferredSize.width) / 2;
+                    int y = (screenSize.height - preferredSize.height) / 2;
+
+                    return new Point(x, y);
+                }
+            }
         };
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left-hand corner of the screen.
-        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+//        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setPreferredSize(frame.getPreferredSize());
+        frame.setLocation(frame.getLocation());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
-        getFrame().setLocationRelativeTo(null);
+//        getFrame().setLocationRelativeTo(null);
 
         // This doesn't let the user resize the main window.
         Image image = ImageUtils.getImage(this, "tyler16.png");
@@ -193,13 +229,28 @@ public final class Tetrad implements PropertyChangeListener {
         // from here, not in the constructor of TetradDesktop.
         getDesktop().newSessionEditor();
         getFrame().setVisible(true);
-        getFrame().setDefaultCloseOperation(
-                WindowConstants.DO_NOTHING_ON_CLOSE);
+        getFrame().setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 exitApplication();
+            }
+        });
+
+        getFrame().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Preferences.userRoot().putInt("preferredWindowWidth", getFrame().getWidth());
+                Preferences.userRoot().putInt("preferredWindowHeight", getFrame().getHeight());
+                super.componentResized(e);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                Preferences.userRoot().putInt("preferredWindowX", getFrame().getX());
+                Preferences.userRoot().putInt("preferredWindowY", getFrame().getY());
+                super.componentMoved(e);
             }
         });
 

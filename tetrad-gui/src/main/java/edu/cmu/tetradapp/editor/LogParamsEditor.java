@@ -109,8 +109,8 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
-                "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
+                          "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
+                          "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
 
         Box b9 = Box.createHorizontalBox();

@@ -446,7 +446,7 @@ public final class ExploreAutisticsNeurotypicals {
 
                 for (int i = 0; i < prefixes.length; i++) {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
-                            && !file.getName().contains("tet")) {
+                        && !file.getName().contains("tet")) {
                         DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                                 "*", true, Delimiter.TAB, false);
 

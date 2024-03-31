@@ -116,7 +116,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
         this.workbench.addPropertyChangeListener(evt -> {
             if (BayesUpdaterEditor.this.mode == BayesUpdaterEditor.MULTI_VALUE
-                    && "selectedNodes".equals(evt.getPropertyName())) {
+                && "selectedNodes".equals(evt.getPropertyName())) {
                 setMode(BayesUpdaterEditor.MULTI_VALUE);
             }
         });

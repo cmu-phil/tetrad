@@ -164,7 +164,7 @@ final class QList {
      */
     public void printQList(int index1, int index2) {
         System.out.println("======= " + index1 + "  " + index2 +
-                ": printQList");
+                           ": printQList");
         System.out.println("inNumerator: " + this.inNumerator);
 
         System.out.print("sumOverVariables: ");
@@ -185,16 +185,16 @@ final class QList {
         // increment index1 and reset index2 to 0
         {
             System.out.println("--------------------------------------- "
-                    + (index1 + 1) + "  " + 0 +
-                    ": subList");
+                               + (index1 + 1) + "  " + 0 +
+                               ": subList");
             this.subList.printQList(index1 + 1, 0);
         }
 
         if (this.nextTerm != null) {
             index2++;
             System.out.println("---------------------------- "
-                    + index1 + "  " + index2 +
-                    ": nextTerm");
+                               + index1 + "  " + index2 +
+                               ": nextTerm");
             this.nextTerm.printQList(index1, index2);
         }
     }
@@ -335,16 +335,16 @@ final class QList {
 
             // compose next variable value configuration
             if ((this.sumOverVariables[curVar] == 1) &&
-                    (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
+                (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
             ) {
                 loopVarValues[curVar]++;
             } else {
                 while ((curVar >= 0)
-                        &&
-                        ((this.sumOverVariables[curVar] != 1)
-                                ||
-                                (loopVarValues[curVar] ==
-                                        bayesIm.getNumColumns(curVar) - 1))
+                       &&
+                       ((this.sumOverVariables[curVar] != 1)
+                        ||
+                        (loopVarValues[curVar] ==
+                         bayesIm.getNumColumns(curVar) - 1))
                 ) {
                     curVar--;
                 }

@@ -39,7 +39,7 @@ abstract class AbstractExpression implements Expression {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The sub expressionts
+     * The subexpressions
      */
     private final List<Expression> expressions;
 

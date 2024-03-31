@@ -110,7 +110,7 @@ public class TestFci {
     @Test
     public void testSearch7() {
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
-                        "H-->M,L-->M,S-->D,I-->S,P-->S",
+                    "H-->M,L-->M,S-->D,I-->S,P-->S",
                 "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge());
     }
 
@@ -131,7 +131,7 @@ public class TestFci {
     @Test
     public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
-                        "H-->D,D-->A,T2-->D,T2-->E",
+                    "H-->D,D-->A,T2-->D,T2-->E",
                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
 //                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
     }
@@ -339,12 +339,12 @@ public class TestFci {
 
                 NumberFormat nf = new DecimalFormat("0.00");
 
-                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg) + "");
-                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg) + "");
-                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg) + "");
-                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg) + "");
-                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg) + "");
-                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg) + "");
+                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg));
+                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg));
+                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg));
+                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg));
+                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg));
+                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg));
                 table.setToken(4, 1, totalAncMarg + "");
                 table.setToken(4, 2, totalNancMarg + "");
 

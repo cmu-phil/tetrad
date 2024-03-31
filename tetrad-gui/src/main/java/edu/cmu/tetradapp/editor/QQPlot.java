@@ -272,7 +272,7 @@ class QQPlot {
             double value = this.dataSet.getDouble(i, columnIndex);
 
             if (Double.isNaN(value) || value == Double.NEGATIVE_INFINITY
-                    || value == Double.POSITIVE_INFINITY) {
+                || value == Double.POSITIVE_INFINITY) {
                 continue;
             }
 
@@ -289,12 +289,12 @@ class QQPlot {
                 double value2 = this.dataSet.getDouble(k, columnIndex);
 
                 if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
-                        || value1 == Double.POSITIVE_INFINITY) {
+                    || value1 == Double.POSITIVE_INFINITY) {
                     continue;
                 }
 
                 if (Double.isNaN(value2) || value2 == Double.NEGATIVE_INFINITY
-                        || value2 == Double.POSITIVE_INFINITY) {
+                    || value2 == Double.POSITIVE_INFINITY) {
                     continue;
                 }
 
@@ -314,12 +314,12 @@ class QQPlot {
             double value2 = this.dataSet.getDouble(i, columnIndex);
 
             if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
-                    || value1 == Double.POSITIVE_INFINITY) {
+                || value1 == Double.POSITIVE_INFINITY) {
                 continue;
             }
 
             if (Double.isNaN(value2) || value2 == Double.NEGATIVE_INFINITY
-                    || value2 == Double.POSITIVE_INFINITY) {
+                || value2 == Double.POSITIVE_INFINITY) {
                 continue;
             }
 

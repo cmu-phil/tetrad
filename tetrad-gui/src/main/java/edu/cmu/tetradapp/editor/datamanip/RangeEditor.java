@@ -164,7 +164,7 @@ final class RangeEditor extends JComponent {
 
                     for (int i1 = 0; i1 < RangeEditor.this.categories.size(); i1++) {
                         if (i1 != index &&
-                                RangeEditor.this.categories.get(i1).equals(value)) {
+                            RangeEditor.this.categories.get(i1).equals(value)) {
                             value = RangeEditor.this.categories.get(index);
                             break;
                         }
@@ -225,12 +225,12 @@ final class RangeEditor extends JComponent {
                         int index = label;
 
                         if (index - 1 > 0 &&
-                                !(RangeEditor.this.breakpoints[index - 2] < value)) {
+                            !(RangeEditor.this.breakpoints[index - 2] < value)) {
                             value = RangeEditor.this.breakpoints[index - 1];
                         }
 
                         if (index - 1 < RangeEditor.this.breakpoints.length - 1 &&
-                                !(value < RangeEditor.this.breakpoints[index])) {
+                            !(value < RangeEditor.this.breakpoints[index])) {
                             value = RangeEditor.this.breakpoints[index - 1];
                         }
 

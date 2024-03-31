@@ -438,7 +438,7 @@ public class EigenDecomposition {
             do {
                 for (m = j; m < n - 1; m++) {
                     double delta = FastMath.abs(this.realEigenvalues[m]) +
-                            FastMath.abs(this.realEigenvalues[m + 1]);
+                                   FastMath.abs(this.realEigenvalues[m + 1]);
                     if (FastMath.abs(e[m]) + delta == delta) {
                         break;
                     }
@@ -567,7 +567,7 @@ public class EigenDecomposition {
 
         for (int i = 0; i < this.realEigenvalues.length; i++) {
             if (i == (this.realEigenvalues.length - 1) ||
-                    Precision.equals(matT[i + 1][i], 0.0, EigenDecomposition.EPSILON)) {
+                Precision.equals(matT[i + 1][i], 0.0, EigenDecomposition.EPSILON)) {
                 this.realEigenvalues[i] = matT[i][i];
             } else {
                 double x = matT[i + 1][i + 1];
@@ -659,7 +659,7 @@ public class EigenDecomposition {
                             double x = matrixT[i][i + 1];
                             double y = matrixT[i + 1][i];
                             q = (this.realEigenvalues[i] - p) * (this.realEigenvalues[i] - p) +
-                                    this.imagEigenvalues[i] * this.imagEigenvalues[i];
+                                this.imagEigenvalues[i] * this.imagEigenvalues[i];
                             double t = (x * s - z * r) / q;
                             matrixT[i][idx] = t;
                             if (FastMath.abs(x) > FastMath.abs(z)) {
@@ -720,12 +720,12 @@ public class EigenDecomposition {
                             double x = matrixT[i][i + 1];
                             double y = matrixT[i + 1][i];
                             double vr = (this.realEigenvalues[i] - p) * (this.realEigenvalues[i] - p) +
-                                    this.imagEigenvalues[i] * this.imagEigenvalues[i] - q * q;
+                                        this.imagEigenvalues[i] * this.imagEigenvalues[i] - q * q;
                             double vi = (this.realEigenvalues[i] - p) * 2.0 * q;
                             if (Precision.equals(vr, 0.0) && Precision.equals(vi, 0.0)) {
                                 vr = Precision.EPSILON * norm *
-                                        (FastMath.abs(w) + FastMath.abs(q) + FastMath.abs(x) +
-                                                FastMath.abs(y) + FastMath.abs(z));
+                                     (FastMath.abs(w) + FastMath.abs(q) + FastMath.abs(x) +
+                                      FastMath.abs(y) + FastMath.abs(z));
                             }
                             Complex c = cdiv(x * r - z * ra + q * sa,
                                     x * s - z * sa - q * ra, vr, vi);
@@ -734,9 +734,9 @@ public class EigenDecomposition {
 
                             if (FastMath.abs(x) > (FastMath.abs(z) + FastMath.abs(q))) {
                                 matrixT[i + 1][idx - 1] = (-ra - w * matrixT[i][idx - 1] +
-                                        q * matrixT[i][idx]) / x;
+                                                           q * matrixT[i][idx]) / x;
                                 matrixT[i + 1][idx] = (-sa - w * matrixT[i][idx] -
-                                        q * matrixT[i][idx - 1]) / x;
+                                                       q * matrixT[i][idx - 1]) / x;
                             } else {
                                 Complex c2 = cdiv(-r - y * matrixT[i][idx - 1],
                                         -s - y * matrixT[i][idx], z, q);

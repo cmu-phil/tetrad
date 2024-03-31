@@ -116,7 +116,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
         if (allEmpty) {
             textArea.append(
                     "\n\nNo underlinings were marked in this graph. All triple classifications not marked are " +
-                            "inferable from the graph itself.");
+                    "inferable from the graph itself.");
         }
 
         Box b2 = Box.createHorizontalBox();

@@ -188,7 +188,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(variables.get(i).getName())) {
                 throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
-                        + "as the variable being substituted for it.");
+                                                   + "as the variable being substituted for it.");
             }
             this.variables = variables;
         }
@@ -345,9 +345,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         if (!missing.isEmpty()) {
             throw new IllegalArgumentException(
                     "The following variables in the submatrix are missing from the data: " +
-                            "\n   " + missing +
-                            "\nIf there are lagged variables, try using the data box to convert the data to time " +
-                            "\nlagged data first.");
+                    "\n   " + missing +
+                    "\nIf there are lagged variables, try using the data box to convert the data to time " +
+                    "\nlagged data first.");
         }
 
 //        if (!getVariables().containsAll(submatrixVars)) {

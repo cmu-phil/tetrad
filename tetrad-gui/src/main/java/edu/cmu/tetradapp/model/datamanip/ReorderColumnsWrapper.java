@@ -75,8 +75,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
 //                newData.add(_newData);
 //            }
 //            else
-                if (dataModel instanceof CovarianceMatrix) {
-                    CovarianceMatrix cov = (CovarianceMatrix) dataModel;
+                if (dataModel instanceof CovarianceMatrix cov) {
 
                     List<String> vars = new ArrayList<>();
 

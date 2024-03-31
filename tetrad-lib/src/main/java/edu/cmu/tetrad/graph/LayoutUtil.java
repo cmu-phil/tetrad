@@ -894,7 +894,7 @@ public class LayoutUtil {
             List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
             edges.removeIf(edge -> !nodes.contains(edge.getNode1()) ||
-                    !nodes.contains(edge.getNode2()));
+                                   !nodes.contains(edge.getNode2()));
 
             this.edges = new int[edges.size()][2];
 
@@ -957,7 +957,7 @@ public class LayoutUtil {
                     nodeDisposition()[v][1] -= attractY;
 
                     if (Double.isNaN(nodeDisposition()[v][0]) ||
-                            Double.isNaN(nodeDisposition()[v][1])) {
+                        Double.isNaN(nodeDisposition()[v][1])) {
                         throw new IllegalStateException("Undefined disposition.");
                     }
 
@@ -965,7 +965,7 @@ public class LayoutUtil {
                     nodeDisposition()[u][1] += attractY;
 
                     if (Double.isNaN(nodeDisposition()[u][0]) ||
-                            Double.isNaN(nodeDisposition()[u][1])) {
+                        Double.isNaN(nodeDisposition()[u][1])) {
                         throw new IllegalStateException("Undefined disposition.");
                     }
                 }
@@ -974,12 +974,12 @@ public class LayoutUtil {
                     double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
 
                     nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                            FastMath.min(norm, getTemperature());
+                                            FastMath.min(norm, getTemperature());
                     nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                            FastMath.min(norm, getTemperature());
+                                            FastMath.min(norm, getTemperature());
 
                     if (Double.isNaN(nodePosition()[v][0]) ||
-                            Double.isNaN(nodePosition()[v][1])) {
+                        Double.isNaN(nodePosition()[v][1])) {
                         throw new IllegalStateException("Undefined position.");
                     }
                 }

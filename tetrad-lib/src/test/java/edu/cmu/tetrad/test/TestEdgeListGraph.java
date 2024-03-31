@@ -30,8 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
@@ -79,7 +78,7 @@ public final class TestEdgeListGraph {
         this.graph.removeNode(this.x2);
 
         // No cycles.
-        assertTrue(!this.graph.paths().existsDirectedCycle());
+        assertFalse(this.graph.paths().existsDirectedCycle());
 
         // Copy the graph.
         Graph graph2 = new EdgeListGraph(this.graph);
@@ -101,7 +100,7 @@ public final class TestEdgeListGraph {
         this.graph.addNode(this.x4);
         this.graph.addNode(this.x5);
 
-        assertTrue(!this.graph.paths().existsDirectedCycle());
+        assertFalse(this.graph.paths().existsDirectedCycle());
 
         this.graph.addDirectedEdge(this.x1, this.x3);
 
@@ -142,9 +141,9 @@ public final class TestEdgeListGraph {
 
         Edge e2 = new Edge(this.x2, this.x1, Endpoint.TAIL, Endpoint.TAIL);
 
-        assertTrue(e1.equals(e2));
+        assertEquals(e1, e2);
 
-        assertTrue(e1.hashCode() == e2.hashCode());
+        assertEquals(e1.hashCode(), e2.hashCode());
     }
 
     @Test

@@ -361,7 +361,7 @@ public final class SemEstimator implements TetradSerializable {
         SemOptimizer optimizer;
 
         if (containsFixedParam() || getSemPm().getGraph().paths().existsDirectedCycle() ||
-                SemEstimator.containsCovarParam(getSemPm())) {
+            SemEstimator.containsCovarParam(getSemPm())) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();
@@ -394,7 +394,7 @@ public final class SemEstimator implements TetradSerializable {
             e.printStackTrace();
             throw new RuntimeException(
                     "All of the variables from the SEM parameterized model " +
-                            "must be in the data set.", e);
+                    "must be in the data set.", e);
         }
     }
 

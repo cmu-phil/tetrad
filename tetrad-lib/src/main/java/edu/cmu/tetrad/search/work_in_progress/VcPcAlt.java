@@ -235,7 +235,7 @@ public final class VcPcAlt implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
@@ -558,7 +558,7 @@ public final class VcPcAlt implements IGraphSearch {
             }
 
             TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                    "\nthere is ambiguous data about whether they are colliders or not):");
+                                                       "\nthere is ambiguous data about whether they are colliders or not):");
 
             for (Triple triple : getAmbiguousTriples()) {
                 TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);

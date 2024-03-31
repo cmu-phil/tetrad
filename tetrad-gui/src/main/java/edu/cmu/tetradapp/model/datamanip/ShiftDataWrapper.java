@@ -62,13 +62,11 @@ public class ShiftDataWrapper extends DataWrapper {
         final int cols = -1;
 
         for (DataModel model : dataModelList) {
-            if (!(model instanceof DataSet)) {
+            if (!(model instanceof DataSet dataSet)) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "For the shift search, all of the data in the data box must be in the form of data sets.");
                 return;
             }
-
-            DataSet dataSet = (DataSet) model;
 
         }
 

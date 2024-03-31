@@ -76,8 +76,7 @@ final class IndTestChooser {
             throw new NullPointerException();
         }
 
-        if (dataSource instanceof DataModelList) {
-            DataModelList datasets = (DataModelList) dataSource;
+        if (dataSource instanceof DataModelList datasets) {
 
             List<DataSet> _dataSets = new ArrayList<>();
 
@@ -88,8 +87,7 @@ final class IndTestChooser {
             return getMultiContinuousTest(_dataSets, params, testType);
         }
 
-        if (dataSource instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataSource;
+        if (dataSource instanceof DataSet dataSet) {
 
             if (dataSet.isContinuous() || dataSet.getNumColumns() == 0) {
                 DataSet dataContinuous =

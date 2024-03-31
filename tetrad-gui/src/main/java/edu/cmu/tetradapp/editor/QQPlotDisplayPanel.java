@@ -183,7 +183,7 @@ class QQPlotDisplayPanel extends JPanel {
             double y = (this.qqPlot.getComparisonVariable()[i]);
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
-                    && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
+                && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
                 double[] result = plotPoint(x, y, FastMath.floor(this.qqPlot.getMinSample()), FastMath.ceil(this.qqPlot.getMaxSample()));
 
                 g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));

@@ -159,7 +159,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         boolean independent = pValue > this.alpha;

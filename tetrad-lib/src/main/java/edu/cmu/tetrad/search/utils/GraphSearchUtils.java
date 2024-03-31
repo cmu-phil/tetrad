@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -32,6 +34,9 @@ import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -179,7 +184,7 @@ public final class GraphSearchUtils {
                 }
 
                 if (!GraphSearchUtils.isArrowheadAllowed(x, y, knowledge)
-                        || !GraphSearchUtils.isArrowheadAllowed(z, y, knowledge)) {
+                    || !GraphSearchUtils.isArrowheadAllowed(z, y, knowledge)) {
                     continue;
                 }
 
@@ -263,11 +268,11 @@ public final class GraphSearchUtils {
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
-                        && GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)) {
+                    && GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)) {
                     boolean result = true;
                     if (knowledge != null) {
                         result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
-                                && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                                 && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                     }
                     if (result) {
                         if (verbose) {
@@ -311,7 +316,7 @@ public final class GraphSearchUtils {
             return true;
         }
         return !knowledge.isRequired(to.toString(), from.toString())
-                && !knowledge.isForbidden(from.toString(), to.toString());
+               && !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -390,10 +395,10 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * <p>isLegalPag.</p>
+     * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
-     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.LegalPagRet} object
+     * @param pag The Directed Acyclic Graph (PAG) to be checked
+     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
      */
     public static LegalPagRet isLegalPag(Graph pag) {
 
@@ -422,7 +427,7 @@ public final class GraphSearchUtils {
 
                 if (!e.equals(e2)) {
                     edgeMismatch = "For example, the original PAG has edge " + e
-                            + " whereas the reconstituted graph has edge " + e2;
+                                   + " whereas the reconstituted graph has edge " + e2;
                 }
             }
 
@@ -430,12 +435,12 @@ public final class GraphSearchUtils {
 
             if (legalMag.isLegalMag()) {
                 reason = "The MAG implied by this graph was a legal MAG, but still one cannot recover the original graph " +
-                        "by finding the PAG of an implied MAG, so this is between a MAG and PAG";
+                         "by finding the PAG of an implied MAG, so this is between a MAG and PAG";
 
             } else {
                 reason = "The MAG implied by this graph was not legal MAG, but in any case one cannot recover " +
-                        "the original graph by finding the PAG of an implied MAG, so this is could be between " +
-                        "a MAG and PAG";
+                         "the original graph by finding the PAG of an implied MAG, so this is could be between " +
+                         "a MAG and PAG";
             }
 
             if (!edgeMismatch.isEmpty()) {
@@ -448,7 +453,13 @@ public final class GraphSearchUtils {
         return new LegalPagRet(true, "This is a legal PAG");
     }
 
-    private static LegalMagRet isLegalMag(Graph mag) {
+    /**
+     * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
+     *
+     * @param mag the graph to be checked
+     * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
+     */
+    public static LegalMagRet isLegalMag(Graph mag) {
         for (Node n : mag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT)
                 return new LegalMagRet(false,
@@ -474,7 +485,7 @@ public final class GraphSearchUtils {
                 if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
                     return new LegalMagRet(false,
                             "Edge " + e + " should be dir" +
-                                    "ected, bidirected, or undirected.");
+                            "ected, bidirected, or undirected.");
                 }
             }
         }
@@ -494,14 +505,14 @@ public final class GraphSearchUtils {
                     List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
-                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                            + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                            + "An example path is " + GraphUtils.pathString(mag, path));
                 } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
                     List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
-                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                            ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                            + "An example path is " + GraphUtils.pathString(mag, path));
                 }
             }
         }
@@ -1057,7 +1068,7 @@ public final class GraphSearchUtils {
                 Endpoint e2b = _edge.getProximalEndpoint(node2);
 
                 if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a)
-                        || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
+                      || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
                 }
             }
@@ -1156,11 +1167,40 @@ public final class GraphSearchUtils {
             out.println();
             out.println("APRE\tAREC\tOPRE\tOREC");
             out.println(nf.format(adjPrecision * 100) + "%\t" + nf.format(adjRecall * 100)
-                    + "%\t" + nf.format(arrowPrecision * 100) + "%\t" + nf.format(arrowRecall * 100) + "%");
+                        + "%\t" + nf.format(arrowPrecision * 100) + "%\t" + nf.format(arrowRecall * 100) + "%");
             out.println();
         }
 
         return counts;
+    }
+
+    /**
+     * Checks if the provided algorithm is a latent variable algorithm by inspecting the associated annotation.
+     *
+     * @param algorithm The algorithm to check.
+     * @return true if the algorithm is a latent variable algorithm, false otherwise.
+     * @throws NullPointerException if the algorithm is null.
+     * @throws RuntimeException     if there is an error in getting the algorithm type from the annotation.
+     */
+    public static boolean isLatentVariableAlgorithmByAnnotation(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new NullPointerException("Algorithm must not be null.");
+        }
+
+        Annotation annotation = algorithm.getClass().getAnnotationsByType(edu.cmu.tetrad.annotation.Algorithm.class)[0];
+
+        try {
+            Method method = annotation.annotationType().getDeclaredMethod("algoType");
+            AlgType ret = (AlgType) method.invoke(annotation);
+
+            if (ret == AlgType.allow_latent_common_causes) {
+                return true;
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException("Error in getting algorithm type from annotation", e);
+        }
+
+        return false;
     }
 
     /**

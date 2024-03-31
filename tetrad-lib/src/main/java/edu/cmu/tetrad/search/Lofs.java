@@ -642,8 +642,8 @@ public class Lofs {
                         if ((yPlus <= yMinus + delta && xMinus <= xPlus + delta) || forbiddenRight) {
 
                             String s = "\nStrong " + y + "->" + x + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
 
@@ -655,8 +655,8 @@ public class Lofs {
                         } else {
 
                             String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
                         }
@@ -666,8 +666,8 @@ public class Lofs {
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
 
                             String s = "\nStrong " + x + "->" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
 
@@ -679,8 +679,8 @@ public class Lofs {
                         } else {
 
                             String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
                         }
@@ -688,16 +688,16 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     }
@@ -706,8 +706,8 @@ public class Lofs {
                         double score = combinedScore(xPlus, yMinus);
 
                         String s = "\nWeak " + y + "->" + x + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
 
@@ -720,8 +720,8 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nWeak " + x + "->" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
 
@@ -734,16 +734,16 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     }
@@ -922,7 +922,7 @@ public class Lofs {
             }
 
             double R = -maxEntApprox(xData) - maxEntApprox(d)
-                    + maxEntApprox(yData) + maxEntApprox(e);
+                       + maxEntApprox(yData) + maxEntApprox(e);
 
             if (R > 0) {
                 _graph.addDirectedEdge(x, y);

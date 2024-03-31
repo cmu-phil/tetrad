@@ -19,7 +19,7 @@ import java.util.Vector;
 class ScatterplotPanel extends JPanel {
     private final NumberFormat nf;
     private final boolean removeZeroPointsPerPlot;
-    private ScatterPlot scatterPlot;
+    private final ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
 
@@ -165,7 +165,7 @@ class ScatterplotPanel extends JPanel {
             if (drawAxes) {
                 g.setStroke(new BasicStroke(3));
                 g.drawString("Correlation coef = " + this.nf.format(r)
-                        + "  (p=" + this.nf.format(p) + ")", 70, 21);
+                             + "  (p=" + this.nf.format(p) + ")", 70, 21);
             }
         }
     }

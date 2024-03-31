@@ -79,7 +79,7 @@ public class InverseCorrelation {
                 int z = this.data.getNumColumns();
 
                 double fisherZ = FastMath.sqrt(sampleSize - z - 3.0) *
-                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
                 double p = getPValue(fisherZ);
 

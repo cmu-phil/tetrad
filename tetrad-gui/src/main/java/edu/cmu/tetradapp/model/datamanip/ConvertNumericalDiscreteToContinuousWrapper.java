@@ -51,11 +51,10 @@ public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
         DataModelList convertedDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet originalData)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            DataSet originalData = (DataSet) dataModel;
             DataSet convertedData;
 
             try {

@@ -102,16 +102,16 @@ public class LayoutMenu extends JMenu {
 
             likeLag0.addActionListener(e -> {
                 if (LayoutUtils.getLayout() == LayoutUtils.Layout.topToBottom
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
+                    || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
                     LayoutUtils.copyLag0LayoutTopToBottom(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.bottomToTop
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
                     LayoutUtils.copyLag0LayoutBottomToTop(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.leftToRight
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
                     LayoutUtils.copyLag0LayoutLeftToRight(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.rightToLeft
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
                     LayoutUtils.copyLag0LayoutRightToLeft(LayoutMenu.this.getLayoutEditable());
                 }
 

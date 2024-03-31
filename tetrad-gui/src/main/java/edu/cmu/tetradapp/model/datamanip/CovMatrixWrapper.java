@@ -51,8 +51,7 @@ public class CovMatrixWrapper extends DataWrapper {
         DataModelList out = new DataModelList();
 
         for (DataModel model : models) {
-            if (model instanceof DataSet) {
-                DataSet dataSet = (DataSet) model;
+            if (model instanceof DataSet dataSet) {
 
                 if (!(dataSet.isContinuous())) {
                     throw new IllegalArgumentException("The data must be continuous");

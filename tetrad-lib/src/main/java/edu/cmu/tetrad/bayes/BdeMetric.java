@@ -148,7 +148,7 @@ final class BdeMetric {
                 try {
                     double numerator = Gamma.gamma(priorProbsRowSum[i][j]);
                     double denom = Gamma.gamma(priorProbsRowSum[i][j] +
-                            observedCountsRowSum[i][j]);
+                                               observedCountsRowSum[i][j]);
                     //System.out.println("num = " + numerator + " denom = " + denom);
                     prodj *= (numerator / denom);
                 } catch (Exception e) {
@@ -161,7 +161,7 @@ final class BdeMetric {
                     try {
                         prodk *= Gamma.gamma(
                                 priorProbs[i][j][k] + this.observedCounts[i][j][k]) /
-                                Gamma.gamma(priorProbs[i][j][k]);
+                                 Gamma.gamma(priorProbs[i][j][k]);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -218,7 +218,7 @@ final class BdeMetric {
 
                         for (int p = 0; p < parentVarIndices.length; p++) {
                             if (parValues[p] !=
-                                    this.dataSet.getInt(i, parentVarIndices[p])) {
+                                this.dataSet.getInt(i, parentVarIndices[p])) {
                                 parentMatch = false;
                                 break;
                             }

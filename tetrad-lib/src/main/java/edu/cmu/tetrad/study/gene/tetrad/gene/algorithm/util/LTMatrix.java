@@ -150,7 +150,7 @@ public class LTMatrix extends BasicLTMatrix {
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n";
+                   " // <- Total # rows\n";
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c <= r; c++) {
@@ -163,7 +163,7 @@ public class LTMatrix extends BasicLTMatrix {
 
     private void upperTriangXcp(int r, int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
-                "," + c + ") -> " + "Upper Triangular region ");
+                                           "," + c + ") -> " + "Upper Triangular region ");
     }
 
 }

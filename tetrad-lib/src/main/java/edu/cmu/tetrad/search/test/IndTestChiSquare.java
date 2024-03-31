@@ -223,7 +223,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
                 throw new IllegalArgumentException("Variable " + i +
-                        " was not used in the constructor.");
+                                                   " was not used in the constructor.");
             }
         }
 

@@ -85,7 +85,7 @@ public class Uniform implements Distribution {
             this.b = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
-                    index + ": " + value);
+                                               index + ": " + value);
         }
     }
 

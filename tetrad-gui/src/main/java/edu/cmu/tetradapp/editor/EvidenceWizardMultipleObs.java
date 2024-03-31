@@ -81,10 +81,10 @@ class EvidenceWizardMultipleObs extends JPanel {
         // Do Layout.
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
-                "Select a set of nodes (by holding down the shift key) whose" +
-                "<br>marginals you would like to see given the evidence indicated" +
-                "<br>above.  Click the 'Calculate Marginals' button to view" +
-                "<br>marginals and log odds results."));
+                          "Select a set of nodes (by holding down the shift key) whose" +
+                          "<br>marginals you would like to see given the evidence indicated" +
+                          "<br>above.  Click the 'Calculate Marginals' button to view" +
+                          "<br>marginals and log odds results."));
         b0.add(Box.createHorizontalGlue());
         add(b0);
         add(Box.createVerticalStrut(10));
@@ -171,16 +171,16 @@ class EvidenceWizardMultipleObs extends JPanel {
                 // identifiability returns -1 if the requested prob is unidentifiable
                 if (prob < 0.0) {
                     marginalsArea.append("Category " +
-                            bayesPm.getCategory(selectedNode, j) + ": p = " +
-                            "Unidentifiable" + ",  log odds = " +
-                            "*" + "\n");
+                                         bayesPm.getCategory(selectedNode, j) + ": p = " +
+                                         "Unidentifiable" + ",  log odds = " +
+                                         "*" + "\n");
                 } else {
                     double logOdds = FastMath.log(prob / (1. - prob));
 
                     marginalsArea.append("Category " +
-                            bayesPm.getCategory(selectedNode, j) + ": p = " +
-                            nf.format(prob) + ",  log odds = " +
-                            nf.format(logOdds) + "\n");
+                                         bayesPm.getCategory(selectedNode, j) + ": p = " +
+                                         nf.format(prob) + ",  log odds = " +
+                                         nf.format(logOdds) + "\n");
                 }
             }
 
@@ -191,7 +191,7 @@ class EvidenceWizardMultipleObs extends JPanel {
                              BayesIm manipulatedIm, NumberFormat nf) {
         if (!getUpdaterWrapper().getBayesUpdater().isJointMarginalSupported()) {
             marginalsArea.append("\n\n(Calculation of joint not supported " +
-                    "for this updater.)");
+                                 "for this updater.)");
             return;
         }
 

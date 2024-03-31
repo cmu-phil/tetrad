@@ -127,7 +127,7 @@ public class Discretizer {
             if (!(cutoffs[i] <= cutoffs[i + 1])) {
                 System.out.println(
                         "Cutoffs should be in nondecreasing order: "
-                                + Arrays.toString(cutoffs)
+                        + Arrays.toString(cutoffs)
                 );
             }
         }
@@ -140,8 +140,8 @@ public class Discretizer {
 
         if (categories != null && categories.size() != numCategories) {
             throw new IllegalArgumentException("If specified, the list of " +
-                    "categories names must be one longer than the length of " +
-                    "the cutoffs array.");
+                                               "categories names must be one longer than the length of " +
+                                               "the cutoffs array.");
         }
 
         DiscreteVariable variable;
@@ -163,8 +163,8 @@ public class Discretizer {
 
             for (int j = 0; j < cutoffs.length; j++) {
                 if (_data[i] > Double.NEGATIVE_INFINITY
-                        && _data[i] < Double.POSITIVE_INFINITY
-                        && _data[i] < cutoffs[j]) {
+                    && _data[i] < Double.POSITIVE_INFINITY
+                    && _data[i] < cutoffs[j]) {
                     discreteData[i] = j;
                     continue loop;
                 }

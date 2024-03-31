@@ -80,7 +80,7 @@ public class Comparison2 {
             for (File file : files) {
 
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
-                        && file.getName().endsWith(".g.txt")) {
+                    && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
                     trueDag = GraphSaveLoadUtils.loadGraphTxt(file);
                     break;

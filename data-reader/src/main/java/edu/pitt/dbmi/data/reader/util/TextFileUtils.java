@@ -152,7 +152,7 @@ public class TextFileUtils {
                                 } else {
 
                                     // Do not delete this casting; it is needed to fix a versioning problem.
-                                    if (((java.nio.Buffer) buffer).position() > 0) {
+                                    if (buffer.position() > 0) {
                                         byteBuffer.flip();
                                         while (byteBuffer.hasRemaining() && !Thread.currentThread().isInterrupted()) {
                                             byte c = byteBuffer.get();

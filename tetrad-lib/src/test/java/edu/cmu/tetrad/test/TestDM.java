@@ -33,6 +33,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import java.io.*;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -100,7 +101,7 @@ public class TestDM {
 
 //        System.out.println(trueGraph);
 
-        assertTrue(trueGraph.equals(foundGraph));
+        assertEquals(trueGraph, foundGraph);
     }
 
     public void test2() {
@@ -179,7 +180,7 @@ public class TestDM {
         System.out.println(foundGraph);
         System.out.println(trueGraph);
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
     }
 
     public void test3() {
@@ -287,7 +288,7 @@ public class TestDM {
         trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X11"));
 
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
     }
 
     //Three latent fork case
@@ -348,7 +349,7 @@ public class TestDM {
 
         trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
 
     }
 
@@ -411,7 +412,7 @@ public class TestDM {
         trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
         trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
     }
 
     //Four latent case.
@@ -494,7 +495,7 @@ public class TestDM {
         trueGraph.addDirectedEdge(new GraphNode("L3"), new GraphNode("X7"));
 
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
     }
 
     public void rtest7() {
@@ -1198,7 +1199,7 @@ public class TestDM {
         search.setInputs(inputs);
         search.setOutputs(outputs);
 
-        if (useGES == false) {
+        if (!useGES) {
 
             search.setAlphaPC(.05);
             search.setUseFgES(false);

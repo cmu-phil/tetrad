@@ -301,7 +301,7 @@ public class FasFdr implements IFas {
                 double r = -inv.get(i, j) / sqrt(inv.get(i, i) * inv.get(j, j));
 
                 double fisherZ = sqrt(sampleSize - (nodes.size() - 2) - 3.0) *
-                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
                 double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
 
                 boolean independent = pvalue > test.getAlpha();
@@ -340,7 +340,7 @@ public class FasFdr implements IFas {
                         if (this.verbose) {
                             IndependenceResult result = this.test.checkIndependence(x, y, theRest);
                             this.out.println(x + " _||_ " + y + " | the rest" + " p = " +
-                                    this.nf.format(result.getPValue()));
+                                             this.nf.format(result.getPValue()));
                         }
 
                         removed = true;
@@ -376,9 +376,9 @@ public class FasFdr implements IFas {
         String name2 = y.getName();
 
         if (this.knowledge.isForbidden(name1, name2) &&
-                this.knowledge.isForbidden(name2, name1)) {
+            this.knowledge.isForbidden(name2, name1)) {
             String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.";
+                             "forbidden by background knowledge.";
             TetradLogger.getInstance().forceLogMessage(message);
 
             return true;
@@ -427,7 +427,7 @@ public class FasFdr implements IFas {
 
                             if (this.verbose) {
                                 this.out.println(LogUtilsSearch.independenceFact(x, y, condSet) + " p = " +
-                                        this.nf.format(result.getPValue()));
+                                                 this.nf.format(result.getPValue()));
                             }
                             continue EDGE;
                         }

@@ -147,7 +147,7 @@ public class HsimRepeatAutoRun {
 
         if (this.verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
-                    + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
+                               + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
         return evalTotal;
     }

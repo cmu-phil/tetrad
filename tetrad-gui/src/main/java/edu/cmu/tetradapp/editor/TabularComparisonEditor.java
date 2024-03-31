@@ -70,7 +70,7 @@ public class TabularComparisonEditor extends JPanel {
 
         StringBuilder b0 = new StringBuilder();
         String trueGraphAndTarget = "Target graphs from " + this.comparison.getTargetName()
-                + "\nTrue graphs from " + this.comparison.getReferenceName();
+                                    + "\nTrue graphs from " + this.comparison.getReferenceName();
         b0.append(trueGraphAndTarget).append("\n\n");
         b0.append(table);
 

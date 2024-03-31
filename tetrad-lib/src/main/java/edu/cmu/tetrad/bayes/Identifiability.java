@@ -180,8 +180,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
-                    "given bayesIm must be compatible with the variable list " +
-                    "for this evidence.");
+                                               "given bayesIm must be compatible with the variable list " +
+                                               "for this evidence.");
         }
 
         this.evidence = evidence;
@@ -317,8 +317,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                         sNodes.remove(tNodeInBayesIm);
                         if (this.debug) {
                             System.out.println("sNode removed: index: "
-                                    + tNodeInBayesIm
-                                    + "; name: " + tNodeStr);
+                                               + tNodeInBayesIm
+                                               + "; name: " + tNodeStr);
                         }
                     } else
                     // S and T have different values for this same variable
@@ -363,7 +363,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         if (this.debug) {
             for (int i = 0; i < nCComponents; i++) {
                 System.out.println("c-component " + i + ": " +
-                        cComponentNodes.get(i));
+                                   cComponentNodes.get(i));
             }
         }
 
@@ -394,8 +394,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
             if (this.debug) {
                 System.out.println("cFactors " + i + "   " +
-                        this.bayesIm.getDag().getNodes() + "   " +
-                        cComponentNodes.get(i)
+                                   this.bayesIm.getDag().getNodes() + "   " +
+                                   cComponentNodes.get(i)
                 );
                 System.out.println("============== QList: qV ==============");
                 qV.printQList(0, 0);
@@ -409,7 +409,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             );
             if (this.debug) {
                 System.out.println("============== QList: cFactors[" + i +
-                        "] ==============");
+                                   "] ==============");
                 cFactors[i].printQList(0, 0);
             }
         }
@@ -478,7 +478,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     if (this.debug) {
                         System.out.println("----- Di   Sj --------");
                         System.out.println(i + "   " + cComponentNodesDi
-                                + "    " + cComponentNodesSj);
+                                           + "    " + cComponentNodesSj);
                     }
 
                     flag = true;
@@ -491,7 +491,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     if (qD[i] == null) {
                         if (this.debug) {
                             System.out.println("----- FAIL qD[" + i
-                                    + "] --------");
+                                               + "] --------");
                         }
                         // fail: P_t(s) not identifiable with this algorithm
                         return -1.0;
@@ -499,7 +499,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
                     if (this.debug) {
                         System.out.println("======================== QList: qD["
-                                + i + "] =================");
+                                           + i + "] =================");
                         qD[i].printQList(0, 0);
                     }
                 }
@@ -640,7 +640,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             for (int i = 0; i < nParents; i++) {
                 int parentIndex = bayesIm.getParent(nodeIndex, i);
                 if (bayesIm.getNode(parentIndex).getNodeType() ==
-                        NodeType.LATENT
+                    NodeType.LATENT
                 ) {
                     int cComponentIndexOld = cComponents1[parentIndex];
                     if (cComponentIndexOld != cComponentIndexNew) {
@@ -716,7 +716,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     //
     private void printCComponents(int[] cComponents) {
         System.out.println("----- printCComponents: total " +
-                nCComponents(cComponents) + " -----");
+                           nCComponents(cComponents) + " -----");
 
         for (int i = 0; i < cComponents.length; i++) {
             System.out.println(i + ": " + cComponents[i]);
@@ -771,7 +771,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             int nodeHjIndex = graphWhole.getNodeIndex(nodeHj);
 
             if (graphWhole.getNode(nodeHjIndex).getNodeType() ==
-                    NodeType.MEASURED)  // skip latent variables
+                NodeType.MEASURED)  // skip latent variables
             {
                 // get index of node hj in the tier ordering of the nodes
                 //of the original graph
@@ -798,7 +798,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 }
                 for (int i = nodeHjTierIndex + 1; i < tierSize; i++) {
                     if (graphWhole.getNode(tiers[i]).getNodeType() ==
-                            NodeType.MEASURED
+                        NodeType.MEASURED
                     ) {
                         sumOverVariables[tiers[i]] = 1;
                     }
@@ -843,7 +843,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         for (Node node1 : bigSet) {
             if (!smallSet.contains(node1) &&
-                    node1.getNodeType() == NodeType.MEASURED) {
+                node1.getNodeType() == NodeType.MEASURED) {
                 sumOverVariables[this.bayesIm.getNodeIndex(node1)] = 1;
             }
         }
@@ -875,9 +875,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             System.out.println("nodesT: " + nodesT);
             System.out.println("nodesA: " + nodesA);
             System.out.println("nodesC containsAll nodesA: " +
-                    nodesC.containsAll(nodesA));
+                               nodesC.containsAll(nodesA));
             System.out.println("nodesA containsAll nodesT: " +
-                    nodesA.containsAll(nodesT));
+                               nodesA.containsAll(nodesT));
         }
 
         /////////////////////////////////
@@ -944,7 +944,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 System.out.println("identify Q[A]: i: " + i);
                 System.out.println("cComponentNodesT2: " + cComponentNodesT2);
                 System.out.println("cComponentNodesT2.containsAll(nodesC): " +
-                        cComponentNodesT2.containsAll(nodesC));
+                                   cComponentNodesT2.containsAll(nodesC));
             }
 
             if (cComponentNodesT2.containsAll(nodesC)) {

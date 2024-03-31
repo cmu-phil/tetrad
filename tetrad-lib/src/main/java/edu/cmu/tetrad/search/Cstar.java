@@ -346,7 +346,7 @@ public class Cstar {
 
                         TetradLogger.getInstance().forceLogMessage("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
-                            Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
+                            Map<Node, Double> minEffects = ida.calculateMinimumTotalEffectsOnY(this.possibleEffects.get(e));
 
                             for (int c = 0; c < this.possibleCauses.size(); c++) {
                                 final Double _e = minEffects.get(this.possibleCauses.get(c));
@@ -645,9 +645,9 @@ public class Cstar {
         }
 
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
-                + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
-                "Top Bracket (‘q’) = " + this.topBracket +
-                "\n\n";
+                        + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
+                        "Top Bracket (‘q’) = " + this.topBracket +
+                        "\n\n";
 
         int numColumns = 6;
 

@@ -147,7 +147,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     @Override
     public String getDescription() {
         return "BFCI (Best-order FCI) using " + this.test.getDescription()
-                + " and " + this.score.getDescription();
+               + " and " + this.score.getDescription();
     }
 
     /**

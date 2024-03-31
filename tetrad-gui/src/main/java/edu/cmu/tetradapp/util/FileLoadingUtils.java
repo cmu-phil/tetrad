@@ -28,7 +28,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Sundry utilities for loading files.
@@ -54,7 +54,7 @@ public class FileLoadingUtils {
         // Create a read-only CharBuffer on the file
         ByteBuffer bbuf =
                 fc.map(FileChannel.MapMode.READ_ONLY, 0, (int) fc.size());
-        CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
+        CharBuffer cbuf = StandardCharsets.ISO_8859_1.newDecoder().decode(bbuf);
 
         String s = cbuf.toString();
         fis.close();

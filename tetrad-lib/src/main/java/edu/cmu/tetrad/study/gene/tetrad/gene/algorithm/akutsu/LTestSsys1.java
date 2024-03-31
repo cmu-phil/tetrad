@@ -139,7 +139,7 @@ public class LTestSsys1 {
             while ((regs = cg.next()) != null) {
                 System.out.println("Sets of " + k + " regulators are:");
                 System.out.println(regs[0] + " " + regs[1] + " " + regs[2] +
-                        " " + regs[3] + " " + regs[4]);
+                                   " " + regs[3] + " " + regs[4]);
 
                 for (int t = 1; t < ntimes; t++) {
                     String g0 =
@@ -156,12 +156,12 @@ public class LTestSsys1 {
                     if (deriv[t][g] > 0.35) {
 
                         System.out.println("lnamlnb+" + g0 + "gmh0+" + g1 +
-                                "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
-                                "gmh4 > 0");
+                                           "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
+                                           "gmh4 > 0");
                     } else if (deriv[t][g] < -0.35) {
                         System.out.println("lnamlnb+" + g0 + "gmh0+" + g1 +
-                                "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
-                                "gmh4 < 0");
+                                           "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
+                                           "gmh4 < 0");
                     }
                 }
 

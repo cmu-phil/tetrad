@@ -72,7 +72,7 @@ public class LogUtilsSearch {
      */
     public static String colliderOrientedMsg(String note, Node x, Node y, Node z) {
         return "Orienting collider (" + note + "): " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName();
+               y.getName() + " <-* " + z.getName();
     }
 
     /**
@@ -85,7 +85,7 @@ public class LogUtilsSearch {
      */
     public static String colliderOrientedMsg(Node x, Node y, Node z) {
         return "Orienting collider: " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName();
+               y.getName() + " <-* " + z.getName();
     }
 
     /**
@@ -99,8 +99,8 @@ public class LogUtilsSearch {
      */
     public static String colliderOrientedMsg(Node x, Node y, Node z, Set<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
-                ")";
+               y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
+               ")";
     }
 
     /**
@@ -294,7 +294,7 @@ public class LogUtilsSearch {
      */
     public static void stampWithBic(Graph graph, DataModel dataModel) {
         if (dataModel != null && (dataModel.isContinuous() || dataModel.isDiscrete())
-                && !graph.getAllAttributes().containsKey("BIC")) {
+            && !graph.getAllAttributes().containsKey("BIC")) {
             try {
                 graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
             } catch (Exception e) {

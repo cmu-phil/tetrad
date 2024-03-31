@@ -48,11 +48,10 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
         DataModelList timeSeriesDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
             DataSet timeSeries = TsUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());

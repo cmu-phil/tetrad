@@ -152,10 +152,10 @@ public class DeltaTetradTest {
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
                     double rr = 0.5 * (sxy(e, f) * sxy(g, h))
-                            * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
-                            + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
-                            - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
-                            - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
+                                * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
+                                + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
+                                - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
+                                - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
 
                     sigma_ss.set(i, j, rr);
                 } else if (this.cov != null && this.dataSet == null) {

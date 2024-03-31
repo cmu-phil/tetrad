@@ -101,9 +101,9 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The input dataset will have missing data values inserted " +
-                "<br>independently for each variable in each case with the" +
-                "<br>probability specified." + "</html>"));
+                          "The input dataset will have missing data values inserted " +
+                          "<br>independently for each variable in each case with the" +
+                          "<br>probability specified." + "</html>"));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());

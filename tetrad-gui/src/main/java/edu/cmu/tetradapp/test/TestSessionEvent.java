@@ -25,7 +25,7 @@ import edu.cmu.tetradapp.session.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 /**
  * Tests the basic function of the SessionEvent class--that is, whether events can be constructed properly and whether
@@ -50,7 +50,7 @@ public class TestSessionEvent {
         SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.NODE_ADDED);
 
-        assertTrue(node == event.getNode());
+        assertSame(node, event.getNode());
         assertEquals(SessionEvent.NODE_ADDED, event.getType());
     }
 
@@ -64,7 +64,7 @@ public class TestSessionEvent {
         SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.NODE_REMOVED);
 
-        assertTrue(node == event.getNode());
+        assertSame(node, event.getNode());
         assertEquals(SessionEvent.NODE_REMOVED, event.getType());
     }
 
@@ -78,7 +78,7 @@ public class TestSessionEvent {
         SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_CREATED);
 
-        assertTrue(node == event.getNode());
+        assertSame(node, event.getNode());
         assertEquals(SessionEvent.MODEL_CREATED, event.getType());
     }
 
@@ -91,7 +91,7 @@ public class TestSessionEvent {
         SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_DESTROYED);
 
-        assertTrue(node == event.getNode());
+        assertSame(node, event.getNode());
         assertEquals(SessionEvent.MODEL_DESTROYED, event.getType());
     }
 
@@ -104,7 +104,7 @@ public class TestSessionEvent {
         SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_UNCLEAR);
 
-        assertTrue(node == event.getNode());
+        assertSame(node, event.getNode());
         assertEquals(SessionEvent.MODEL_UNCLEAR, event.getType());
     }
 
@@ -118,8 +118,8 @@ public class TestSessionEvent {
         SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_ADDED);
 
-        assertTrue(child == event.getChild());
-        assertTrue(parent == event.getParent());
+        assertSame(child, event.getChild());
+        assertSame(parent, event.getParent());
         assertEquals(SessionEvent.PARENT_ADDED, event.getType());
     }
 
@@ -133,8 +133,8 @@ public class TestSessionEvent {
         SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_REMOVED);
 
-        assertTrue(child == event.getChild());
-        assertTrue(parent == event.getParent());
+        assertSame(child, event.getChild());
+        assertSame(parent, event.getParent());
         assertEquals(SessionEvent.PARENT_REMOVED, event.getType());
     }
 }

@@ -853,7 +853,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         if (numVars != matrix.getNumRows() || numVars != matrix.getNumColumns()) {
             throw new IllegalArgumentException("Number of variables does not " +
-                    "equal the dimension of the matrix.");
+                                               "equal the dimension of the matrix.");
         }
     }
 

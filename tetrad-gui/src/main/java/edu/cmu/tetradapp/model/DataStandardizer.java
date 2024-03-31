@@ -51,11 +51,9 @@ public class DataStandardizer extends DataWrapper {
         DataModelList outList = new DataModelList();
 
         for (DataModel model : inList) {
-            if (!(model instanceof DataSet)) {
+            if (!(model instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
-
-            DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());

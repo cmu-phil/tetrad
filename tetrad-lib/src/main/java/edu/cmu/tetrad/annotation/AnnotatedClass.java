@@ -89,7 +89,7 @@ public final class AnnotatedClass<T extends Annotation> implements Serializable 
         if (obj == null || obj.getClass() != this.getClass()) return false;
         @SuppressWarnings("rawtypes") var that = (AnnotatedClass) obj;
         return Objects.equals(this.clazz, that.clazz) &&
-                Objects.equals(this.annotation, that.annotation);
+               Objects.equals(this.annotation, that.annotation);
     }
 
     @Override
@@ -100,8 +100,8 @@ public final class AnnotatedClass<T extends Annotation> implements Serializable 
     @Override
     public String toString() {
         return "AnnotatedClass[" +
-                "clazz=" + clazz + ", " +
-                "annotation=" + annotation + ']';
+               "clazz=" + clazz + ", " +
+               "annotation=" + annotation + ']';
     }
 
 

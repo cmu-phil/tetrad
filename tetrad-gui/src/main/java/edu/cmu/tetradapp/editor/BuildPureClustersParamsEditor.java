@@ -112,8 +112,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         DataModel dataModel = null;
 
         for (Object parentModel : this.parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel;
+            if (parentModel instanceof DataWrapper dataWrapper) {
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }

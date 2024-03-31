@@ -262,18 +262,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<IDisplayEdge> graphEdges = new ArrayList<>();
 
         for (Component comp : components) {
-            if (comp instanceof DisplayNode) {
+            if (comp instanceof DisplayNode node) {
                 if (!isDeleteVariablesAllowed()) {
                     continue;
                 }
 
-                DisplayNode node = (DisplayNode) comp;
-
                 if (node.isSelected()) {
                     graphNodes.add(node);
                 }
-            } else if (comp instanceof IDisplayEdge) {
-                IDisplayEdge edge = (IDisplayEdge) comp;
+            } else if (comp instanceof IDisplayEdge edge) {
 
                 if (edge.isSelected()) {
                     graphEdges.add(edge);
@@ -763,8 +760,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Component[] components = getComponents();
 
         for (Component comp : components) {
-            if (comp instanceof IDisplayEdge) {
-                IDisplayEdge graphEdge = (IDisplayEdge) comp;
+            if (comp instanceof IDisplayEdge graphEdge) {
                 DisplayNode node1 = graphEdge.getComp1();
                 DisplayNode node2 = graphEdge.getComp2();
 
@@ -788,8 +784,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Component[] components = getComponents();
 
         for (Component comp : components) {
-            if (comp instanceof IDisplayEdge) {
-                IDisplayEdge graphEdge = (IDisplayEdge) comp;
+            if (comp instanceof IDisplayEdge graphEdge) {
                 DisplayNode node1 = graphEdge.getComp1();
                 DisplayNode node2 = graphEdge.getComp2();
 
@@ -1233,9 +1228,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         Map<DisplayNode, Node> trashMap = new HashMap<>();
         this.displayToModel.forEach((k, v) -> {
-            if (k instanceof DisplayNode && v instanceof Node) {
-                DisplayNode displayNode = (DisplayNode) k;
-                Node node = (Node) v;
+            if (k instanceof DisplayNode displayNode && v instanceof Node node) {
 
                 if (!this.graph.containsNode(node)) {
                     trashMap.put(displayNode, node);
@@ -1406,8 +1399,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int index = -1;
 
         for (int i = 0; i < components.length; i++) {
-            if (components[i] instanceof DisplayNode) {
-                DisplayNode node = (DisplayNode) components[i];
+            if (components[i] instanceof DisplayNode node) {
 
                 distance = AbstractWorkbench.distance(p, node.getCenterPoint());
 
@@ -1494,8 +1486,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<Node> selection = new LinkedList<>();
 
         for (Component component : components) {
-            if (component instanceof DisplayNode) {
-                DisplayNode displayNode = (DisplayNode) component;
+            if (component instanceof DisplayNode displayNode) {
 
                 if (displayNode.isSelected()) {
                     Node modelNode = (Node) (getDisplayToModel().get(displayNode));
@@ -1722,10 +1713,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<DisplayNode> selectedNodes = new ArrayList<>();
 
         for (Component comp : components) {
-            if (comp instanceof DisplayNode) {
+            if (comp instanceof DisplayNode graphNode) {
                 Rectangle bounds = comp.getBounds();
                 bounds.translate(-rubberLoc.x, -rubberLoc.y);
-                DisplayNode graphNode = (DisplayNode) comp;
 
                 if (rubberShape.intersects(bounds)) {
                     selectedNodes.add(graphNode);
@@ -2136,10 +2126,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     StringBuilder text = new StringBuilder("<html>" + edge.getNode1().getName()
-                            + " " + endpoint1 + "-" + endpoint2 + " "
-                            + edge.getNode2().getName()
-                            + properties
-                            + "<br>");
+                                                           + " " + endpoint1 + "-" + endpoint2 + " "
+                                                           + edge.getNode2().getName()
+                                                           + properties
+                                                           + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();
@@ -2206,8 +2196,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (source instanceof DisplayNode) {
-            DisplayNode displayNode = (DisplayNode) source;
+        if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();

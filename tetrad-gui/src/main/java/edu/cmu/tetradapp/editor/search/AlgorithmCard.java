@@ -617,12 +617,12 @@ public class AlgorithmCard extends JPanel {
             // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().annotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
-                    || cmd.equalsIgnoreCase("ts-gfci")
-                    || cmd.equalsIgnoreCase("ts-imgs")) {
+                || cmd.equalsIgnoreCase("ts-gfci")
+                || cmd.equalsIgnoreCase("ts-imgs")) {
                 DataModel dataModel = this.algorithmRunner.getDataModel();
                 Knowledge knowledge = this.algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
-                        && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
+                    && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
                     firePropertyChange("algoFwdBtn", null, false);
                     JOptionPane.showMessageDialog(this.desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
                 }

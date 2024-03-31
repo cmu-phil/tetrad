@@ -272,7 +272,7 @@ public class TeyssierScorer {
 
         if (integer == null)
             throw new IllegalArgumentException("First 'evaluate' a permutation containing variable "
-                    + v + ".");
+                                               + v + ".");
 
         return integer;
     }

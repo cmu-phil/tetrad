@@ -54,7 +54,7 @@ public class TestSemIm {
         ArrayList<Edge> edgesToRemove = new ArrayList<>();
         for (Edge e : removedDoubleArrowEdges.getEdges()) {
             if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
-                    (e.getEndpoint2().equals(Endpoint.ARROW))) {
+                (e.getEndpoint2().equals(Endpoint.ARROW))) {
                 edgesToRemove.add(e);
             }
         }
@@ -95,7 +95,7 @@ public class TestSemIm {
                 if (edgesConnectingParentAndTarget.size() > 1) {
                     for (Edge e : edgesConnectingParentAndTarget) {
                         if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
-                                (e.getEndpoint2().equals(Endpoint.ARROW))) {
+                            (e.getEndpoint2().equals(Endpoint.ARROW))) {
                             Edge directedEdge1 = new
                                     Edge(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                     modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
@@ -111,9 +111,9 @@ public class TestSemIm {
                                                 modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()));
                             }
                             varianceToAddToTargetAfterEdgeRemoval += (2 *
-                                    directedEdgeCoef *
-                                    modifiedAndUpdatedSemIm.getErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
-                                            modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName())));
+                                                                      directedEdgeCoef *
+                                                                      modifiedAndUpdatedSemIm.getErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
+                                                                              modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName())));
                             modifiedAndUpdatedSemIm.setErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                     modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
                                     0.0);

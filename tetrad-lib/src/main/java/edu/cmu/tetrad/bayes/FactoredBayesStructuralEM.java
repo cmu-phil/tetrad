@@ -209,7 +209,7 @@ public final class FactoredBayesStructuralEM {
         BayesPm bayesPmTest0 = new BayesPm(dag0);
 
         TetradLogger.getInstance().forceLogMessage("Observed conts for nodes of L1,X1,X2,X3 (no edges) " +
-                "using the MAP parameters based on that same graph");
+                                                   "using the MAP parameters based on that same graph");
 
         TetradLogger.getInstance().forceLogMessage("Graph of PM:  ");
         TetradLogger.getInstance().forceLogMessage("" + bayesPmTest0.getDag());
@@ -312,7 +312,7 @@ public final class FactoredBayesStructuralEM {
 
                 this.bayesPmMn = this.bayesPmMnplus1;
                 TetradLogger.getInstance().forceLogMessage("In Factored Bayes Struct EM Iteration number " +
-                        this.iteration);
+                                                           this.iteration);
 
                 //Compute the MAP parameters for Mn given o.
                 TetradLogger.getInstance().forceLogMessage("Starting EM Bayes estimator to get MAP parameters of Mn");
@@ -367,7 +367,7 @@ public final class FactoredBayesStructuralEM {
 
                 TetradLogger.getInstance().forceLogMessage("In iteration:  " + this.iteration);
                 TetradLogger.getInstance().forceLogMessage("bestScore, oldBestScore " + bestScore + " " +
-                        this.oldBestScore);
+                                                           this.oldBestScore);
                 EdgeListGraph edgesBest =
                         new EdgeListGraph(this.bayesPmMnplus1.getDag());
                 TetradLogger.getInstance().forceLogMessage("Graph of model:  \n" + edgesBest);

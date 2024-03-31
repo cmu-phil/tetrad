@@ -88,11 +88,11 @@ public final class SaveSessionAsAction extends AbstractAction {
 
         if ((DesktopController.getInstance().existsSessionByName(
                 file.getName())
-                && !(sessionWrapper.getName().equals(file.getName())))) {
+             && !(sessionWrapper.getName().equals(file.getName())))) {
             saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                            + "\nclose that session first.");
+                    + "\nclose that session first.");
             return;
         }
 

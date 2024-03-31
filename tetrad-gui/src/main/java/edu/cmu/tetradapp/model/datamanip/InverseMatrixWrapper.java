@@ -48,8 +48,7 @@ public class InverseMatrixWrapper extends DataWrapper {
             throw new NullPointerException("The given data must not be null");
         }
         DataModel model = wrapper.getSelectedDataModel();
-        if (model instanceof DataSet) {
-            DataSet dataSet = (DataSet) model;
+        if (model instanceof DataSet dataSet) {
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("The data must be continuous");
             }
@@ -59,8 +58,7 @@ public class InverseMatrixWrapper extends DataWrapper {
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());
-        } else if (model instanceof ICovarianceMatrix) {
-            ICovarianceMatrix cov = (ICovarianceMatrix) model;
+        } else if (model instanceof ICovarianceMatrix cov) {
             Matrix _data = cov.getMatrix();
             Matrix _data2 = _data.inverse();
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());

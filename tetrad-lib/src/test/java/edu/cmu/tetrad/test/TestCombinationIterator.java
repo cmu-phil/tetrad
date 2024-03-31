@@ -24,11 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Iterator;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestCombinationIterator {
 
@@ -41,7 +40,7 @@ public class TestCombinationIterator {
         int[] combination = (int[]) i.next();
 
         /* check first combination */
-        assertTrue(Arrays.equals(combination, new int[]{0, 0, 0, 0}));
+        assertArrayEquals(combination, new int[]{0, 0, 0, 0});
 
         /* check expected count */
         while (i.hasNext()) {
@@ -60,7 +59,7 @@ public class TestCombinationIterator {
         for (int j = 0; j < values.length; j++) {
             lastCombination[j]++;
         }
-        assertTrue(Arrays.equals(lastCombination, values));
+        assertArrayEquals(lastCombination, values);
     }
 }
 

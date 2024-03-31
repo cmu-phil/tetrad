@@ -77,7 +77,7 @@ public class LTestReveal {
         }
 
         System.out.println("case 0 " + LTestReveal.cases[0][0] + " " + LTestReveal.cases[0][1] + " " +
-                LTestReveal.cases[0][2] + " " + LTestReveal.cases[0][3] + " " + LTestReveal.cases[0][4]);
+                           LTestReveal.cases[0][2] + " " + LTestReveal.cases[0][3] + " " + LTestReveal.cases[0][4]);
         for (int k = 0; k < LTestReveal.ntimes; k++) {
             for (int j = 0; j < LTestReveal.ngenes; j++) {
                 if (LTestReveal.cases[k][j] == -1) {
@@ -127,7 +127,7 @@ public class LTestReveal {
                         ppp[2] = p3;
                         double mmm = LTestReveal.mutualInformation(child, ppp, lag);
                         System.out.println("for parents = " + p1 + "," + p2 +
-                                "," + p3 + " m = " + mmm);
+                                           "," + p3 + " m = " + mmm);
                     }
                 }
             }

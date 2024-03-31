@@ -286,7 +286,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
                 if (variable == null) {
                     throw new NullPointerException("Variable " + variable + " doesn't "
-                            + "exist in the input data.");
+                                                   + "exist in the input data.");
                 }
 
                 if (!(variable instanceof ContinuousVariable)) {

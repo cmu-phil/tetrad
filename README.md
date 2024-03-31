@@ -5,27 +5,27 @@ contributors, some history, documentation, descriptions, links for our various p
 
 ## Tetrad Application
 
-See out insructions
+See our instructions
 for [Installing the Tetrad Application](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
 
 ## Tetrad in Python
 
 We have a project, [py-tetrad](https://github.com/cmu-phil/py-tetrad), that allows you to incorporate arbitrary Tetrad
 code into a Python workflow. It's new, and the installation is still nonstandard, but it had a good response. This
-requires Python 3.5+. and Java JDK 9+.
+requires Python 3.5+. and Java JDK 17+.
 
 ## Tetrad in R
 
 We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to
 incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but
-has gotten good feedback. This requires Python 3.5+ and Java JDK 9+.
+has gotten good feedback. This requires Python 3.5+ and Java JDK 17+.
 
 Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-in-r?authuser=0).
 
 ## Tetrad at the Command Line
 
-In addition, we have a fully-developed tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run
-arbitrary Tetrad searches at the command likne.
+In addition, we have a fully developed tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run
+arbitrary Tetrad searches at the command line.
 
 ## Installallation for Programmers
 

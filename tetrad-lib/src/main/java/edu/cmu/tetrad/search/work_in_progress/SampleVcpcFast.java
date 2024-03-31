@@ -192,7 +192,7 @@ public final class SampleVcpcFast implements IGraphSearch {
     public static boolean isArrowheadAllowed1(Node from, Node to,
                                               Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
+                                    !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -291,7 +291,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
@@ -763,7 +763,7 @@ public final class SampleVcpcFast implements IGraphSearch {
             }
 
             TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                    "\nthere is ambiguous data about whether they are colliders or not):");
+                                                       "\nthere is ambiguous data about whether they are colliders or not):");
 
             for (Triple triple : getAmbiguousTriples()) {
                 TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
@@ -829,7 +829,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return SampleVcpcFast.isArrowheadAllowed1(x, y, knowledge) &&
-                SampleVcpcFast.isArrowheadAllowed1(z, y, knowledge);
+               SampleVcpcFast.isArrowheadAllowed1(z, y, knowledge);
     }
 
     /**

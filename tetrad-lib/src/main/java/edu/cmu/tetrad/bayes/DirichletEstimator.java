@@ -108,7 +108,7 @@ public final class DirichletEstimator {
                         // Ignore cases where one of the parents has a
                         // missing value.
                         if (dataSet.getInt(i, varIndices[p + 1]) ==
-                                DiscreteVariable.MISSING_VALUE) {
+                            DiscreteVariable.MISSING_VALUE) {
                             satisfied = false;
                             break;
                         }

@@ -77,7 +77,7 @@ public class KnowledgeModelEdge extends Edge
         super(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
 
         if (this.type != KnowledgeModelEdge.FORBIDDEN_EXPLICITLY && this.type != KnowledgeModelEdge.FORBIDDEN_BY_TIERS
-                && this.type != KnowledgeModelEdge.REQUIRED && this.type != KnowledgeModelEdge.FORBIDDEN_BY_GROUPS && this.type != KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
+            && this.type != KnowledgeModelEdge.REQUIRED && this.type != KnowledgeModelEdge.FORBIDDEN_BY_GROUPS && this.type != KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("The given type is not known");
         }
 

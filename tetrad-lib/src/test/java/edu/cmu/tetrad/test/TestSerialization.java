@@ -123,7 +123,7 @@ public class TestSerialization {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +
-                    "errors.");
+                 "errors.");
         }
     }
 

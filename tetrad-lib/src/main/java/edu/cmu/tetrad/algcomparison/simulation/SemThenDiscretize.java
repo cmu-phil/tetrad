@@ -134,7 +134,7 @@ public class SemThenDiscretize implements Simulation {
     @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables, using " +
-                this.randomGraph.getDescription();
+               this.randomGraph.getDescription();
     }
 
     /**

@@ -46,6 +46,7 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
      * Knowledge
      */
     private Knowledge knowledge = new Knowledge();
+
     /**
      * Blank constructor.
      */

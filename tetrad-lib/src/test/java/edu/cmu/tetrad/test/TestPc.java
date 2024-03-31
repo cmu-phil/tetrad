@@ -94,14 +94,14 @@ public class TestPc {
     @Test
     public void testCites() {
         final String citesString = "164\n" +
-                "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
-                "1.0\n" +
-                ".62\t1.0\n" +
-                ".25\t.09\t1.0\n" +
-                ".16\t.28\t.07\t1.0\n" +
-                "-.10\t.00\t.03\t.10\t1.0\n" +
-                ".29\t.25\t.34\t.37\t.13\t1.0\n" +
-                ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
+                                   "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
+                                   "1.0\n" +
+                                   ".62\t1.0\n" +
+                                   ".25\t.09\t1.0\n" +
+                                   ".16\t.28\t.07\t1.0\n" +
+                                   "-.10\t.00\t.03\t.10\t1.0\n" +
+                                   ".29\t.25\t.34\t.37\t.13\t1.0\n" +
+                                   ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix dataSet = SimpleDataLoader.loadCovarianceMatrix(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
@@ -122,18 +122,18 @@ public class TestPc {
         Graph CPDAG = pc.search();
 
         final String trueString = "Graph Nodes:\n" +
-                "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
-                "\n" +
-                "Graph Edges:\n" +
-                "1. ABILITY --> CITES\n" +
-                "2. ABILITY --> GPQ\n" +
-                "3. ABILITY --> PREPROD\n" +
-                "4. GPQ --> QFJ\n" +
-                "5. PREPROD --> CITES\n" +
-                "6. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
-                "8. QFJ --> PUBS\n" +
-                "9. SEX --> PUBS";
+                                  "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
+                                  "\n" +
+                                  "Graph Edges:\n" +
+                                  "1. ABILITY --> CITES\n" +
+                                  "2. ABILITY --> GPQ\n" +
+                                  "3. ABILITY --> PREPROD\n" +
+                                  "4. GPQ --> QFJ\n" +
+                                  "5. PREPROD --> CITES\n" +
+                                  "6. PUBS --> CITES\n" +
+                                  "7. QFJ --> CITES\n" +
+                                  "8. QFJ --> PUBS\n" +
+                                  "9. SEX --> PUBS";
 
         Graph trueGraph = null;
 
@@ -372,13 +372,13 @@ public class TestPc {
 //            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
-                if (true && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
+                if (!(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
                     continue;
                 }
 
                 if (edge.getEndpoint1() == Endpoint.ARROW) {
                     if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2()) &&
-                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
+                        dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -389,7 +389,7 @@ public class TestPc {
 
                 if (edge.getEndpoint2() == Endpoint.ARROW) {
                     if (!dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1()) &&
-                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
+                        dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -420,8 +420,8 @@ public class TestPc {
 
                 if (Edges.isBidirectedEdge(edge)) {
                     if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())
-                            && !dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())
-                            && dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
+                        && !dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())
+                        && dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         bidirectedTp++;
                     } else {
                         bidirectedFp++;

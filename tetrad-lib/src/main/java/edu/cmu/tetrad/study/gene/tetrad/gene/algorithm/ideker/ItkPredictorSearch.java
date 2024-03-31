@@ -100,9 +100,9 @@ public class ItkPredictorSearch {
 
             //Exclude row pairs in which the given gene was perturbed.
             if (this.expression[rows[0]][gene] == -1 ||
-                    this.expression[rows[0]][gene] == 2 ||
-                    this.expression[rows[1]][gene] == -1 ||
-                    this.expression[rows[1]][gene] == 2) {
+                this.expression[rows[0]][gene] == 2 ||
+                this.expression[rows[1]][gene] == -1 ||
+                this.expression[rows[1]][gene] == 2) {
                 continue;
             }
 
@@ -368,9 +368,9 @@ public class ItkPredictorSearch {
      */
     public boolean differByPerturbation(int gene, int p0, int p1) {
         return !(this.expression[p0][gene] == this.expression[p1][gene] ||
-                (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
-                (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
-                (this.expression[p0][gene] * this.expression[p1][gene] == 2));
+                 (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
+                 (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
+                 (this.expression[p0][gene] * this.expression[p1][gene] == 2));
     }
 
     /**

@@ -32,28 +32,21 @@ import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.Serial;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 
@@ -318,39 +311,39 @@ public final class SemGraphEditor extends JPanel
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
+        JLabel label = new JLabel("Double click variable/node to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Initialize helpSet
-                final String helpHS = "/docs/javahelp/TetradHelp.hs";
-
-                try {
-                    URL url = this.getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
-
-                    helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                    listener.actionPerformed(e);
-                } catch (Exception ee) {
-                    System.out.println("HelpSet " + ee.getMessage());
-                    System.out.println("HelpSet " + helpHS + " not found");
-                    throw new IllegalArgumentException();
-                }
-            }
-        });
+//        infoBtn.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                // Initialize helpSet
+//                final String helpHS = "/docs/javahelp/TetradHelp.hs";
+//
+//                try {
+//                    URL url = this.getClass().getResource(helpHS);
+//                    HelpSet helpSet = new HelpSet(null, url);
+//
+//                    helpSet.setHomeID("graph_edge_types");
+//                    HelpBroker broker = helpSet.createHelpBroker();
+//                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+//                    listener.actionPerformed(e);
+//                } catch (Exception ee) {
+//                    System.out.println("HelpSet " + ee.getMessage());
+//                    System.out.println("HelpSet " + helpHS + " not found");
+//                    throw new IllegalArgumentException();
+//                }
+//            }
+//        });
 
         instructionBox.add(label);
         instructionBox.add(Box.createHorizontalStrut(2));
-        instructionBox.add(infoBtn);
+//        instructionBox.add(infoBtn);
 
         // Add to topBox
         topBox.add(topGraphBox);

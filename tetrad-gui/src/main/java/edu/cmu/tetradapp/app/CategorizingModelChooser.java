@@ -104,7 +104,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         if (path == null) {
             throw new NullPointerException("I had a problem figuring out the models for this box given the parents. Maybe\n" +
-                    "the parents are wrong, or maybe this isn't the box you were intending to use.");
+                                           "the parents are wrong, or maybe this isn't the box you were intending to use.");
         }
 
         Object selected = path.getLastPathComponent();
@@ -217,7 +217,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
             Class<?> model = getSelectedModel();
             if (model == null) {
                 JOptionPane.showMessageDialog(this, "No node selected. Select" +
-                        " a node to get help for it.");
+                                                    " a node to get help for it.");
             } else {
                 SessionUtils.showPermissibleParentsDialog(model,
                         this, false, false);

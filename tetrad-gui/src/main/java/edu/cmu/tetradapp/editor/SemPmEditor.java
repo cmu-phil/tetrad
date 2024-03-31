@@ -122,7 +122,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         fixOneLoadingPerLatent.addActionListener(e -> {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "This will fix one measurement for each latent to 1.0 "
-                            + "and cannot be undone. Proceed?", "Confirm",
+                    + "and cannot be undone. Proceed?", "Confirm",
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (ret == JOptionPane.YES_OPTION) {
@@ -150,7 +150,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         startFactorLoadingsAtOne.addActionListener(e -> {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "This will start all factor loadings at 1.0 "
-                            + "for purposes of estimation. Proceed?", "Confirm",
+                    + "for purposes of estimation. Proceed?", "Confirm",
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (ret == JOptionPane.YES_OPTION) {
@@ -164,14 +164,14 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
                     if (edge.pointsTowards(x)) {
                         if (!(x.getNodeType() == NodeType.MEASURED
-                                && y.getNodeType() == NodeType.LATENT)) {
+                              && y.getNodeType() == NodeType.LATENT)) {
                             continue;
                         }
 
                         p = getSemPm().getParameter(y, x);
                     } else {
                         if (!(y.getNodeType() == NodeType.MEASURED
-                                && x.getNodeType() == NodeType.LATENT)) {
+                              && x.getNodeType() == NodeType.LATENT)) {
                             continue;
                         }
 
@@ -382,7 +382,7 @@ class SemPmGraphicalEditor extends JPanel {
         if (parameter == null) {
             throw new IllegalStateException(
                     "There is no variance parameter in " + "model for node "
-                            + node + ".");
+                    + node + ".");
         }
 
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
@@ -662,7 +662,7 @@ class SemPmGraphicalEditor extends JPanel {
 
                     // Ignore if paramName already exists.
                     if (paramForName == null
-                            && !value.equals(getParamName())) {
+                        && !value.equals(getParamName())) {
                         setParamName(value);
                     }
 

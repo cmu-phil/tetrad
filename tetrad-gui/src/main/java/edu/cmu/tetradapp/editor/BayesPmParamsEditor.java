@@ -118,9 +118,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(25));
         b4.add(new JLabel("<html>" +
-                "All variables will initially have 3 categories, '0', '1' and '2', " +
-                "<br>which can then be changed variable by variable in the editor." +
-                "</html>"));
+                          "All variables will initially have 3 categories, '0', '1' and '2', " +
+                          "<br>which can then be changed variable by variable in the editor." +
+                          "</html>"));
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
@@ -133,8 +133,8 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalStrut(25));
         b6.add(new JLabel("<html>" +
-                "Each variable will be automatically be assigned a number of categories" +
-                "<br>in a range." + "</html>"));
+                          "Each variable will be automatically be assigned a number of categories" +
+                          "<br>in a range." + "</html>"));
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
         b1.add(Box.createVerticalStrut(10));

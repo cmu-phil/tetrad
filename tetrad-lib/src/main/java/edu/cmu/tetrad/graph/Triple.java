@@ -148,8 +148,8 @@ public final class Triple implements TetradSerializable {
 
         return (this.x == triple.x && this.y == triple.y &&
                 this.z == triple.z)
-                || (this.x == triple.z && this.y == triple.y &&
-                this.z == triple.x);
+               || (this.x == triple.z && this.y == triple.y &&
+                   this.z == triple.x);
     }
 
     /**

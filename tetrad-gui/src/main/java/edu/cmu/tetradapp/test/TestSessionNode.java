@@ -71,12 +71,12 @@ public class TestSessionNode {
         Class[] testSet5 = {Type3.class, Type4.class};
         Class[] testSet6 = {Type2.class, Type2.class};
 
-        assertTrue(!node.existsConstructor(Type1.class, testSet1));
+        assertFalse(node.existsConstructor(Type1.class, testSet1));
         assertTrue(node.existsConstructor(Type1.class, testSet2));
         assertTrue(node.existsConstructor(Type1.class, testSet3));
         assertTrue(node.existsConstructor(Type1.class, testSet4));
-        assertTrue(!node.existsConstructor(Type1.class, testSet5));
-        assertTrue(!node.existsConstructor(Type1.class, testSet6));
+        assertFalse(node.existsConstructor(Type1.class, testSet5));
+        assertFalse(node.existsConstructor(Type1.class, testSet6));
     }
 
     /**
@@ -153,7 +153,7 @@ public class TestSessionNode {
                     {Type2.class, Type3.class, null};
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
-                    "parameter in the list.");
+                 "parameter in the list.");
         } catch (NullPointerException e) {
             // What we wanted.
         }
@@ -216,7 +216,7 @@ public class TestSessionNode {
         // a 3, it should fail.
         parents.remove(node6);
         parents.add(node7);
-        assertTrue(!node1.isConsistentModelClass(Type1.class, parents, false));
+        assertFalse(node1.isConsistentModelClass(Type1.class, parents, false));
     }
 
     /**
@@ -249,9 +249,9 @@ public class TestSessionNode {
         assertTrue(node1.addParent(node2));
         assertEquals(1, node2.getNumChildren());
         assertEquals(1, node1.getNumParents());
-        assertTrue(!node1.addParent(node4));
+        assertFalse(node1.addParent(node4));
         assertTrue(node1.addParent(node3));
-        assertTrue(!node1.removeParent(node4));
+        assertFalse(node1.removeParent(node4));
         assertTrue(node1.removeParent(node2));
         assertEquals(1, node1.getNumParents());
         assertTrue(node1.removeParent(node3));
@@ -271,9 +271,9 @@ public class TestSessionNode {
         assertTrue(node2.addChild(node1));
         assertEquals(1, node2.getNumChildren());
         assertEquals(1, node1.getNumParents());
-        assertTrue(!node4.addChild(node1));
+        assertFalse(node4.addChild(node1));
         assertTrue(node3.addChild(node1));
-        assertTrue(!node4.removeChild(node1));
+        assertFalse(node4.removeChild(node1));
         assertEquals(1, node2.getNumChildren());
         assertEquals(1, node3.getNumChildren());
         assertTrue(node2.removeChild(node1));
@@ -497,7 +497,7 @@ public class TestSessionNode {
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
             assertTrue(node1.isStructurallyIdentical(node1));
-            assertTrue(!node1.isStructurallyIdentical(node2));
+            assertFalse(node1.isStructurallyIdentical(node2));
         } catch (Exception e) {
             fail(e.getMessage());
         }

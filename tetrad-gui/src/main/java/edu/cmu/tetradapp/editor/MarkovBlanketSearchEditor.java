@@ -149,7 +149,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
                                 "Using previously set knowledge. (To edit, use " +
-                                        "the Knowledge menu.)");
+                                "the Knowledge menu.)");
                         MarkovBlanketSearchEditor.this.knowledgeMessageShown = true;
                     }
                 }
@@ -228,8 +228,8 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
         Box b3 = Box.createHorizontalBox();
         JLabel label = new JLabel("<html>" + "*Please note that some" +
-                "<br>searches may take a" + "<br>long time to complete." +
-                "</html>");
+                                  "<br>searches may take a" + "<br>long time to complete." +
+                                  "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.CENTER);
         label.setBorder(new TitledBorder(""));

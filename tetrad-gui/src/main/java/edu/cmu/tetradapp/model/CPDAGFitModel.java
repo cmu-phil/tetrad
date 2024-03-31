@@ -159,7 +159,7 @@ public final class CPDAGFitModel implements SessionModel {
             Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
-                        "with latents is not supported.");
+                                                   "with latents is not supported.");
             }
         }
 
@@ -173,7 +173,7 @@ public final class CPDAGFitModel implements SessionModel {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+                                       "and discrete data set do not match.");
         }
     }
 
@@ -184,7 +184,7 @@ public final class CPDAGFitModel implements SessionModel {
             Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
-                        "with latents is not supported.");
+                                                   "with latents is not supported.");
             }
         }
 
@@ -198,7 +198,7 @@ public final class CPDAGFitModel implements SessionModel {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+                                       "and discrete data set do not match.");
         }
     }
 
@@ -209,7 +209,7 @@ public final class CPDAGFitModel implements SessionModel {
             Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
-                        "with latents is not supported.");
+                                                   "with latents is not supported.");
             }
         }
 
@@ -224,7 +224,7 @@ public final class CPDAGFitModel implements SessionModel {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+                                       "and discrete data set do not match.");
         }
     }
 

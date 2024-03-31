@@ -169,10 +169,10 @@ public class Version implements TetradSerializable {
         } catch (IOException e) {
             throw new RuntimeException(
                     "Please correct the file project/resources/version " +
-                            "\nso that it contains a version number of the form " +
-                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
-                            "\nNormally this is set automatically by the Maven build " +
-                            "\nsystem.");
+                    "\nso that it contains a version number of the form " +
+                    "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                    "\nNormally this is set automatically by the Maven build " +
+                    "\nsystem.");
         }
     }
 
@@ -190,10 +190,10 @@ public class Version implements TetradSerializable {
             if (url == null) {
                 throw new RuntimeException(
                         "Please correct the file project/resources/version " +
-                                "\nso that it contains a version number of the form " +
-                                "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
-                                "\nNormally this is set automatically by the Maven build " +
-                                "\nsystem.");
+                        "\nso that it contains a version number of the form " +
+                        "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                        "\nNormally this is set automatically by the Maven build " +
+                        "\nsystem.");
             }
 
             InputStream inStream = url.openStream();
@@ -210,10 +210,10 @@ public class Version implements TetradSerializable {
 
         throw new RuntimeException(
                 "Please correct the file project/resources/version " +
-                        "\nso that it contains a version number of the form " +
-                        "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
-                        "\nNormally this is set automatically by the Maven build " +
-                        "\nsystem.");
+                "\nso that it contains a version number of the form " +
+                "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                "\nNormally this is set automatically by the Maven build " +
+                "\nsystem.");
     }
 
     /**
@@ -296,7 +296,7 @@ public class Version implements TetradSerializable {
      */
     public String toString() {
         return majorVersion() + "." + minorVersion() + "." + minorSubversion()
-                + "-" + incrementalRelease();
+               + "-" + incrementalRelease();
     }
 
     //===========================PRIVATE METHODS=========================//

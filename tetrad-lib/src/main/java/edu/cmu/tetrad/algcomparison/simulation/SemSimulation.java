@@ -277,7 +277,6 @@ public class SemSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(SemIm im, Parameters parameters) {
-        this.ims.add(this.im);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 }

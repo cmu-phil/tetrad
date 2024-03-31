@@ -72,16 +72,14 @@ public final class TetradTestDiscrete implements TetradTest {
             -1.94496294918625384190191671547, -1.44893425065073196265729314868,
             -0.961499634418369064279422271352,
             -0.479450707079107576294598103513};
-
+    /**
+     * The dataset.
+     */
+    private final DataSet dataSet;
     /**
      * Whether to print out verbose information.
      */
     public boolean verbose;
-
-    /**
-     * The dataset.
-     */
-    private DataSet dataSet;
     /**
      * the counts.
      */
@@ -523,7 +521,7 @@ public final class TetradTestDiscrete implements TetradTest {
         for (int i = 0; i < outputCorr.length; i++) {
             for (int j = 0; j <= i; j++) {
                 System.out.print((double) ((int) (100. * outputCorr[i][j])) /
-                        100. + "\t");
+                                 100. + "\t");
             }
             System.out.println();
         }
@@ -600,7 +598,7 @@ public final class TetradTestDiscrete implements TetradTest {
             for (int j = 0; j < this.values[this.currentVar2].length; j++) {
                 score -=
                         this.currentCounts[this.currentVar1][this.currentVar2][i][j] *
-                                FastMath.log(this.currentPi[i][j]);
+                        FastMath.log(this.currentPi[i][j]);
             }
         }
         return score;
@@ -614,9 +612,9 @@ public final class TetradTestDiscrete implements TetradTest {
         for (int i = 0; i < this.values[this.currentVar1].length; i++) {
             for (int j = 0; j < this.values[this.currentVar2].length; j++) {
                 this.currentPi[i][j] = this.currentFiBuffer[i + 1][j + 1] -
-                        this.currentFiBuffer[i][j + 1] -
-                        this.currentFiBuffer[i + 1][j] +
-                        this.currentFiBuffer[i][j];
+                                       this.currentFiBuffer[i][j + 1] -
+                                       this.currentFiBuffer[i + 1][j] +
+                                       this.currentFiBuffer[i][j];
             }
         }
     }

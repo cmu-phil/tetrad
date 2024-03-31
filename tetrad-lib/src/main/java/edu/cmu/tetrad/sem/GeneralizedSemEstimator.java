@@ -206,8 +206,8 @@ public class GeneralizedSemEstimator {
         this.aSquaredStar = aSquaredStar;
 
         this.report = "Report:\n" +
-                "\nModel A^2* (Anderson Darling) = " + aSquaredStar + "\n" +
-                builder;
+                      "\nModel A^2* (Anderson Darling) = " + aSquaredStar + "\n" +
+                      builder;
 
         return estIm;
     }
@@ -524,7 +524,7 @@ public class GeneralizedSemEstimator {
 
             if (dist == null) {
                 throw new IllegalArgumentException("For estimation, only error distributions may be used for which " +
-                        "a p.d.f. is available.");
+                                                   "a p.d.f. is available.");
 
             }
 

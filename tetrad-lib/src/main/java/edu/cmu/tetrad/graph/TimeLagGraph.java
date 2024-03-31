@@ -417,7 +417,7 @@ public class TimeLagGraph implements Graph {
         String[] tokens = _name.split(":");
         if (tokens.length > 2) throw new IllegalArgumentException("Name may contain only one colon: " + _name);
         if (tokens[0].length() == 0) throw new IllegalArgumentException("Part to the left of the colon may " +
-                "not be empty; that's the name of the variable: " + _name);
+                                                                        "not be empty; that's the name of the variable: " + _name);
         String name = tokens[0];
         int lag;
 
@@ -1296,20 +1296,20 @@ public class TimeLagGraph implements Graph {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                    || !containsNode(triple.getZ())) {
+                || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

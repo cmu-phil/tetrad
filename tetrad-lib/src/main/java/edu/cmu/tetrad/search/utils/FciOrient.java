@@ -127,7 +127,7 @@ public final class FciOrient {
 
         Node prev = soFar.get(soFar.size() - 1);
         if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
-                || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
+            || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
             return; // Adding curr would make soFar not p.d.
         } else if (soFar.size() >= 2) {
             Node prev2 = soFar.get(soFar.size() - 2);
@@ -537,7 +537,7 @@ public final class FciOrient {
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
-                    && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+                && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
@@ -996,7 +996,7 @@ public final class FciOrient {
 
             if (verbose) {
                 this.logger.forceLogMessage("R8: Orient circle undirectedPaths " +
-                        GraphUtils.pathString(graph, n1, n2));
+                                            GraphUtils.pathString(graph, n1, n2));
             }
         }
     }

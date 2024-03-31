@@ -52,10 +52,9 @@ public class ResidualsWrapper extends DataWrapper {
         DataModelList newList = new DataModelList();
 
         for (DataModel dataModel : list) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
-            DataSet dataSet = (DataSet) dataModel;
             Graph dag = dagWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
@@ -80,10 +79,9 @@ public class ResidualsWrapper extends DataWrapper {
         DataModelList newList = new DataModelList();
 
         for (DataModel dataModel : list) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
-            DataSet dataSet = (DataSet) dataModel;
             Graph graph = graphWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);
@@ -107,10 +105,9 @@ public class ResidualsWrapper extends DataWrapper {
         DataModelList newList = new DataModelList();
 
         for (DataModel dataModel : list) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
-            DataSet dataSet = (DataSet) dataModel;
             Graph graph = wrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);

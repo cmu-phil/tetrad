@@ -115,8 +115,8 @@ public class SessionEvent extends EventObject {
             default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
-                                "requires zero session nodes " +
-                                "as arguments.");
+                        "requires zero session nodes " +
+                        "as arguments.");
         }
     }
 
@@ -160,7 +160,7 @@ public class SessionEvent extends EventObject {
             default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
-                                "requires one session node " + "as argument.");
+                        "requires one session node " + "as argument.");
         }
     }
 
@@ -191,8 +191,8 @@ public class SessionEvent extends EventObject {
             default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
-                                "requires two session nodes " +
-                                "as arguments.");
+                        "requires two session nodes " +
+                        "as arguments.");
         }
     }
 

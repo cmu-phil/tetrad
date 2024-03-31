@@ -60,7 +60,7 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
                 Node y = nodes.get(j);
 
                 if (existsCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))
-                        && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
+                    && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

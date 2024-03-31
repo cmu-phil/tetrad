@@ -165,7 +165,7 @@ public final class TsDagToPag {
 
             if (graph.isDefCollider(a, b, c)) {
                 if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
-                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
+                      (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
                     continue;
                 }
             }

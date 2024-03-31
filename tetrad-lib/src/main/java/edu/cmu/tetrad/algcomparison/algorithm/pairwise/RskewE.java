@@ -83,7 +83,7 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
             this.externalGraph = graph;
         } else {
             throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data");
+                                               + "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -115,7 +115,7 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     @Override
     public String getDescription() {
         return "RSkewE" + (this.externalGraph != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+                                                        + this.algorithm.getDescription() : "");
     }
 
     /**
@@ -157,7 +157,7 @@ public class RskewE extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
+                                               + "will orient the edges in the input graph using the data.");
         }
 
         this.algorithm = algorithm;

@@ -788,13 +788,13 @@ public class FastIca {
          */
         public String toString() {
             return "\n\nX:\n" +
-                    this.X +
-                    "\n\nK:\n" +
-                    this.K +
-                    "\n\nW:\n" +
-                    this.W +
-                    "\n\nS:\n" +
-                    this.S;
+                   this.X +
+                   "\n\nK:\n" +
+                   this.K +
+                   "\n\nW:\n" +
+                   this.W +
+                   "\n\nS:\n" +
+                   this.S;
         }
     }
 }

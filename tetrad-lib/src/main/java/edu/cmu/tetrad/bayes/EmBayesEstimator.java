@@ -160,7 +160,7 @@ public final class EmBayesEstimator {
             } catch (Exception e) {
                 throw new IllegalArgumentException(
                         "Some observed ar in the Bayes net " +
-                                "is not in the dataset: " + observedVar);
+                        "is not in the dataset: " + observedVar);
             }
         }
 
@@ -352,9 +352,9 @@ public final class EmBayesEstimator {
 
                         for (int p = 0; p < parentVarIndices.length; p++) {
                             if (parValues[p] !=
-                                    this.mixedData.getInt(i, parentVarIndices[p]) &&
-                                    this.mixedData.getInt(i, parentVarIndices[p]) !=
-                                            -99) {
+                                this.mixedData.getInt(i, parentVarIndices[p]) &&
+                                this.mixedData.getInt(i, parentVarIndices[p]) !=
+                                -99) {
                                 parentMatch = false;
                                 break;
                             }
@@ -421,7 +421,7 @@ public final class EmBayesEstimator {
                     for (int m = 0; m < numCols; m++) {
                         if (this.estimatedCountsDenom[j][row] != 0.0) {
                             this.condProbs[j][row][m] = this.estimatedCounts[j][row][m] /
-                                    this.estimatedCountsDenom[j][row];
+                                                        this.estimatedCountsDenom[j][row];
                         } else {
                             this.condProbs[j][row][m] = Double.NaN;
                         }

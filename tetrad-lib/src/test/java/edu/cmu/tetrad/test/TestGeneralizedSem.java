@@ -34,8 +34,7 @@ import org.junit.Test;
 import java.text.ParseException;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -85,7 +84,7 @@ public class TestGeneralizedSem {
             print("Parameters referenced by X3 are: " + referencedParameters);
 
             assertTrue(referencedParameters.contains(b1) && referencedParameters.contains(b2));
-            assertTrue(!(referencedParameters.contains(b1) && referencedParameters.contains(b3)));
+            assertFalse(referencedParameters.contains(b1) && referencedParameters.contains(b3));
 
             Node e_x3 = pm.getNode("E_X3");
 //
@@ -101,18 +100,18 @@ public class TestGeneralizedSem {
 
             Set<Node> referencingX3 = pm.getReferencingNodes(x3);
             assertTrue(referencingX3.contains(x4));
-            assertTrue(!referencingX3.contains(x5));
+            assertFalse(referencingX3.contains(x5));
 
             Set<Node> referencedByX3 = pm.getReferencedNodes(x3);
             assertTrue(referencedByX3.contains(x1) && referencedByX3.contains(x2) && referencedByX3.contains(e_x3)
-                    && !referencedByX3.contains(x4));
+                       && !referencedByX3.contains(x4));
 
             pm.setNodeExpression(x5, "a * E^X2 + X4 + E_X5");
 
             Node e_x5 = pm.getErrorNode(x5);
 
             graph.setShowErrorTerms(true);
-            assertTrue(e_x5.equals(graph.getExogenous(x5)));
+            assertEquals(e_x5, graph.getExogenous(x5));
 
             pm.setNodeExpression(e_x5, "Beta(3, 5)");
 
