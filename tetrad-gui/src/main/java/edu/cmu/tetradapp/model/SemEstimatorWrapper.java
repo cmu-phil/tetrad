@@ -116,6 +116,17 @@ public class SemEstimatorWrapper implements SessionModel {
     }
 
     /**
+     * Constructs a SemEstimatorWrapper object.
+     *
+     * @param simulation      a Simulation object
+     * @param semPmWrapper    a SemPmWrapper object
+     * @param parameters      a Parameters object
+     */
+    public SemEstimatorWrapper(Simulation simulation, SemPmWrapper semPmWrapper, Parameters parameters) {
+        this(new DataWrapper(simulation, parameters), semPmWrapper, parameters);
+    }
+
+    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object

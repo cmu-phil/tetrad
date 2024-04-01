@@ -239,7 +239,7 @@ public final class SessionEditorNode extends DisplayNode {
                 return modelClass.getSimpleName();
             }
 
-            return modelConfig.getAcronym();
+            return modelConfig.acronym();
         }
     }
 
@@ -297,7 +297,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             ModificationRegistery.registerEditor(sessionNode, editor);
 
-            String descrip = modelConfig.getName();
+            String descrip = modelConfig.name();
             editor.setName(getName() + " (" + descrip + ")");
 
             EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, this);
@@ -1100,7 +1100,7 @@ public final class SessionEditorNode extends DisplayNode {
         JComponent editor = (JComponent) paramEditor;
         SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
         String buttonType = nodeWrapper.getButtonType();
-        editor.setName(buttonType + " Structure Editor");
+        editor.setName(buttonType + " Parameter Editor");
         Component centeringComp = this;
 
         int ret = JOptionPane.showOptionDialog(centeringComp, editor,

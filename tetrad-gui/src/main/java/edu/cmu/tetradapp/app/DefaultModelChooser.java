@@ -113,9 +113,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         List<ClassWrapper> wrapperList = new LinkedList<>();
 
         for (SessionNodeModelConfig config : configs) {
-            Class<?> modelClass = config.getModel();
+            Class<?> modelClass = config.model();
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
-                wrapperList.add(new ClassWrapper(modelClass, config.getName()));
+                wrapperList.add(new ClassWrapper(modelClass, config.name()));
             }
         }
 

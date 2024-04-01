@@ -693,7 +693,7 @@ public class TimeoutComparison {
                     if (constructor.getParameterTypes().length == 1
                         && constructor.getParameterTypes()[0] == ScoreWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(
-                                BdeuScore.class.newInstance());
+                                BdeuScore.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
                             printParameters(algorithm.getParameters(), allParams, out);

@@ -167,8 +167,10 @@ public final class CPDAGFitModel implements SessionModel {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
+        double prior = parameters.getDouble("bayesEstimatorCellPrior", 1.0);
+
         try {
-            MlBayesEstimator estimator = new MlBayesEstimator();
+            MlBayesEstimator estimator = new MlBayesEstimator(prior);
             return estimator.estimate(bayesPm, dataSet);
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

@@ -65,7 +65,7 @@ final class SessionUtils {
 
         StringBuilder b = new StringBuilder();
         b.append("<html>");
-        b.append("The combinations of parent models you can use for ").append(modelConfig.getName()).append(" are:");
+        b.append("The combinations of parent models you can use for ").append(modelConfig.name()).append(" are:");
 
         for (int i = 0; i < parentCombinations.length; i++) {
             String[] parentCombination = parentCombinations[i];
@@ -88,7 +88,7 @@ final class SessionUtils {
         final int messageType = JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
-                "Information on \"" + modelConfig.getName() + "\"", messageType);
+                "Information on \"" + modelConfig.name() + "\"", messageType);
     }
 
     /**
@@ -172,7 +172,7 @@ final class SessionUtils {
             return null;
         }
         SessionNodeModelConfig modelConfig = config.getModelConfig(model);
-        return modelConfig.getName();
+        return modelConfig.name();
     }
 
 

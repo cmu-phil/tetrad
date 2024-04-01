@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -72,8 +73,8 @@ public class BayesEstimatorEditor extends JPanel {
      * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
-    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
-        this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
+    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet, Parameters parameters) {
+        this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm), parameters));
     }
 
     /**

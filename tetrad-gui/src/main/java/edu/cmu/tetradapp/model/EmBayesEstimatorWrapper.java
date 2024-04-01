@@ -64,6 +64,17 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     //============================CONSTRUCTORS==========================//
 
     /**
+     * Initializes an instance of the EmBayesEstimatorWrapper class.
+     *
+     * @param simulation     The simulation used for estimation.
+     * @param bayesPmWrapper The BayesPmWrapper used for estimation.
+     * @param params         The parameters for the estimator.
+     */
+    public EmBayesEstimatorWrapper(Simulation simulation, BayesPmWrapper bayesPmWrapper, Parameters params) {
+        this(new DataWrapper(simulation, params), bayesPmWrapper, params);
+    }
+
+    /**
      * <p>Constructor for EmBayesEstimatorWrapper.</p>
      *
      * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object

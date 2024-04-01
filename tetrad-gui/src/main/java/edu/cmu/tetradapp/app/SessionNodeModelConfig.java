@@ -47,7 +47,7 @@ public interface SessionNodeModelConfig {
      * @return the category that this model config belongs to or null if there isn't one. This allows you to organize
      * models into various groupings.
      */
-    String getCategory();
+    String category();
 
 
     /**
@@ -55,7 +55,7 @@ public interface SessionNodeModelConfig {
      *
      * @return the model class
      */
-    Class<?> getModel();
+    Class<?> model();
 
 
     /**
@@ -63,7 +63,7 @@ public interface SessionNodeModelConfig {
      *
      * @return a descriptive name for the model.
      */
-    String getName();
+    String name();
 
 
     /**
@@ -71,7 +71,7 @@ public interface SessionNodeModelConfig {
      *
      * @return the acronym for the model.
      */
-    String getAcronym();
+    String acronym();
 
 
     /**

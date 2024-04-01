@@ -30,6 +30,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -62,6 +63,12 @@ public class BayesEstimatorWrapper implements SessionModel {
     private final List<BayesIm> bayesIms = new ArrayList<>();
 
     /**
+     * The private final parameters variable holds the parameters for the given instance.
+     * It is of type Parameters.
+     */
+    private final Parameters parameters;
+
+    /**
      * The name of the Bayes Pm.
      */
     private String name;
@@ -89,13 +96,24 @@ public class BayesEstimatorWrapper implements SessionModel {
     //=================================CONSTRUCTORS========================//
 
     /**
+     * Constructs a new BayesEstimatorWrapper object.
+     *
+     * @param simulation the Simulation object
+     * @param bayesPmWrapper the BayesPmWrapper object
+     * @param parameters the Parameters object
+     */
+    public BayesEstimatorWrapper(Simulation simulation, BayesPmWrapper bayesPmWrapper, Parameters parameters) {
+        this(new DataWrapper(simulation, parameters), bayesPmWrapper, parameters);
+    }
+
+    /**
      * <p>Constructor for BayesEstimatorWrapper.</p>
      *
      * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesPmWrapper bayesPmWrapper) {
+                                 BayesPmWrapper bayesPmWrapper, Parameters parameters) {
 
         if (dataWrapper == null) {
             throw new NullPointerException(
@@ -103,6 +121,7 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
 
         this.dataWrapper = dataWrapper;
+        this.parameters = parameters;
 
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null");
@@ -122,7 +141,7 @@ public class BayesEstimatorWrapper implements SessionModel {
             }
 
             this.bayesIm = this.bayesIms.get(0);
-            log(this.bayesIm);
+//            log(this.bayesIm);
 
         } else {
             throw new IllegalArgumentException("Data must consist of discrete data sets.");
@@ -143,8 +162,8 @@ public class BayesEstimatorWrapper implements SessionModel {
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesImWrapper bayesImWrapper) {
-        this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
+                                 BayesImWrapper bayesImWrapper, Parameters parameters) {
+        this(dataWrapper, new BayesPmWrapper(bayesImWrapper), parameters);
     }
 
     /**
@@ -298,8 +317,10 @@ public class BayesEstimatorWrapper implements SessionModel {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
+        double prior = parameters.getDouble("bayesEstimatorCellPrior", 1.0);
+
         try {
-            MlBayesEstimator estimator = new MlBayesEstimator();
+            MlBayesEstimator estimator = new MlBayesEstimator(prior);
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Value assignments between Bayes PM "
