@@ -1201,6 +1201,7 @@ public final class MlBayesIm implements BayesIm {
         // each node as ints in a particular order.
         Graph graph = getBayesPm().getDag();
         List<Node> parentList = new ArrayList<>(graph.getParents(node));
+        Collections.sort(parentList);
         int[] parentArray = new int[parentList.size()];
 
         for (int i = 0; i < parentList.size(); i++) {
@@ -1208,7 +1209,7 @@ public final class MlBayesIm implements BayesIm {
         }
 
         // Sort parent array.
-        Arrays.sort(parentArray);
+//        Arrays.sort(parentArray);
 
         this.parents[nodeIndex] = parentArray;
 

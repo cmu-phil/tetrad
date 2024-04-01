@@ -649,7 +649,7 @@ public class SessionNode implements Node {
      * @param modelClass a {@link java.lang.Class} object
      * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
      */
-    public TetradLoggerConfig getLoggerConfig(Class modelClass) {
+    public TetradLoggerConfig getLoggerConfig(Class<?> modelClass) {
         TetradLoggerConfig oldConfig = this.loggerConfig;
         TetradLoggerConfig newConfig = TetradLogger.getInstance().getLoggerForClass(modelClass);
 
@@ -658,7 +658,7 @@ public class SessionNode implements Node {
         }
 
         // Copy event activations over.
-        if (oldConfig != null && newConfig != null) {
+        if (oldConfig != null) {
             for (TetradLoggerConfig.Event event : newConfig.getSupportedEvents()) {
                 for (TetradLoggerConfig.Event _event : oldConfig.getSupportedEvents()) {
                     if (event.getId().equals(_event.getId())) {

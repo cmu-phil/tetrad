@@ -239,7 +239,7 @@ public final class SessionEditorNode extends DisplayNode {
                 return modelClass.getSimpleName();
             }
 
-            return modelConfig.getAcronym();
+            return modelConfig.acronym();
         }
     }
 
@@ -298,7 +298,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             ModificationRegistery.registerEditor(sessionNode, editor);
 
-            String descrip = modelConfig.getName();
+            String descrip = modelConfig.name();
             editor.setName(getName() + " (" + descrip + ")");
 
             EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, this);

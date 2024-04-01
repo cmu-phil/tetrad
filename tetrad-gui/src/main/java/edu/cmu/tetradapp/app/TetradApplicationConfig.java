@@ -34,6 +34,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -72,6 +73,7 @@ public class TetradApplicationConfig {
         }
 
         try {
+            assert tetradGuiPropertiesStream != null;
             tetradGuiPropertiesStream.close();
         } catch (IOException ex) {
             throw new IllegalStateException("Could not close the tetradGuiPropertiesStream", ex);
@@ -153,7 +155,7 @@ public class TetradApplicationConfig {
      */
     private static String getValue(Element value) {
         String v = value.getValue();
-        if (v != null && v.length() == 0) {
+        if (v != null && v.isEmpty()) {
             return null;
         }
         return v;
@@ -174,7 +176,6 @@ public class TetradApplicationConfig {
             String category = model.getAttributeValue("category");
             Class<?> modelClass = null;
             Class<?> editorClass = null;
-            Class<?> paramsClass = null;
             Class<?> paramsEditorClass = null;
             TetradLoggerConfig loggerConfig = null;
             Elements elements = model.getChildElements();
@@ -184,8 +185,6 @@ public class TetradApplicationConfig {
                     modelClass = TetradApplicationConfig.loadClass(loader, element.getValue());
                 } else if ("editor-class".equals(element.getQualifiedName())) {
                     editorClass = TetradApplicationConfig.loadClass(loader, element.getValue());
-//                } else if ("params-class".equals(element.getQualifiedName())) {
-//                    paramsClass = loadClass(loader, element.getValue());
                 } else if ("params-editor-class".equals(element.getQualifiedName())) {
                     paramsEditorClass = TetradApplicationConfig.loadClass(loader, element.getValue());
                 } else if ("logger".equals(element.getQualifiedName())) {
@@ -199,7 +198,7 @@ public class TetradApplicationConfig {
                 TetradLogger.getInstance().addTetradLoggerConfig(modelClass, loggerConfig);
             }
 
-            SessionNodeModelConfig config = new DefaultModelConfig(modelClass, paramsClass,
+            SessionNodeModelConfig config = new DefaultModelConfig(modelClass,
                     paramsEditorClass, editorClass, name, acronym, help, category);
             configs.add(config);
         }
@@ -241,9 +240,9 @@ public class TetradApplicationConfig {
         }
         try {
             if (image == null) {
-                return (SessionDisplayComp) compClass.newInstance();
+                return (SessionDisplayComp) compClass.getDeclaredConstructor().newInstance();
             }
-            Constructor constructor = compClass.getConstructor(String.class);
+            Constructor<?> constructor = compClass.getConstructor(String.class);
             return (SessionDisplayComp) constructor.newInstance(image);
         } catch (Exception ex) {
             throw new IllegalStateException("Could not create display component", ex);
@@ -325,22 +324,13 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * <p>getSessionNodeConfig.</p>
+     * Returns the SessionNodeConfig for the given model class.
      *
-     * @param model a {@link java.lang.Class<?>} object
-     * @return the <code>SessionNodeConfig</code> that the given model is part of.
+     * @param model the model class for which the SessionNodeConfig is requested
+     * @return the SessionNodeConfig for the given model class, or null if there isn't one defined
      */
     public SessionNodeConfig getSessionNodeConfig(Class<?> model) {
         return this.classMap.get(model);
-    }
-
-    /**
-     * A map from ids to node configs.
-     *
-     * @return a {@link java.util.Map} object
-     */
-    public Map<String, SessionNodeConfig> getConfigs() {
-        return this.configs;
     }
 
     /**
@@ -375,7 +365,7 @@ public class TetradApplicationConfig {
         public Class<?>[] getModels() {
             Class<?>[] modelClasses = new Class[this.models.size()];
             for (int i = 0; i < this.models.size(); i++) {
-                modelClasses[i] = this.models.get(i).getModel();
+                modelClasses[i] = this.models.get(i).model();
             }
             return modelClasses;
         }
@@ -397,9 +387,9 @@ public class TetradApplicationConfig {
                 chooser = new DefaultModelChooser();
             } else {
                 try {
-                    chooser = (ModelChooser) this.chooserClass.newInstance();
+                    chooser = (ModelChooser) this.chooserClass.getDeclaredConstructor().newInstance();
                     chooser.setSessionNode(sessionNode);
-                } catch (InstantiationException | IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new IllegalStateException("Model chooser must have empty constructor", e);
                 }
             }
@@ -409,7 +399,7 @@ public class TetradApplicationConfig {
             List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
 
             for (SessionNodeModelConfig config : this.models) {
-                Class<?> clazz = config.getModel();
+                Class<?> clazz = config.model();
 
                 boolean exists = false;
 
@@ -456,110 +446,78 @@ public class TetradApplicationConfig {
         private void setSessionNodeModelConfig(List<SessionNodeModelConfig> configs) {
             this.models = configs;
             for (SessionNodeModelConfig config : configs) {
-                this.modelMap.put(config.getModel(), config);
+                this.modelMap.put(config.model(), config);
             }
         }
     }
 
     /**
-     * THe default implementation of the model config.
-     */
-    private static class DefaultModelConfig implements SessionNodeModelConfig {
+         * THe default implementation of the model config.
+         */
+        private record DefaultModelConfig(Class<?> model, Class<?> paramsEditor, Class<?> editor, String name,
+                                          String acronym, String help, String category) implements SessionNodeModelConfig {
 
-        private final Class<?> model;
-        private final Class<?> paramsEditor;
-        private final Class<?> editor;
-        private final String name;
-        private final String acronym;
-        private final String help;
-        private final String category;
-
-        public DefaultModelConfig(Class<?> model, Class<?> params, Class<?> paramsEditor, Class<?> editor,
-                                  String name, String acronym, String help, String category
-        ) {
+        private DefaultModelConfig {
             if (model == null || editor == null || name == null || acronym == null) {
                 throw new NullPointerException("Values must not be null");
             }
-            this.model = model;
-            this.paramsEditor = paramsEditor;
-            this.editor = editor;
-            this.name = name;
-            this.help = help;
-            this.acronym = acronym;
-            this.category = category;
         }
 
-        public String getHelpIdentifier() {
-            return this.help;
-        }
-
-        public String getCategory() {
-            return this.category;
-        }
-
-        public Class<?> getModel() {
-            return this.model;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public String getAcronym() {
-            return this.acronym;
-        }
-
-        public JPanel getEditorInstance(Object[] arguments) {
-            Class[] parameters = new Class[arguments.length];
-
-            for (int i = 0; i < arguments.length; i++) {
-                parameters[i] = arguments[i].getClass();
+            public String getHelpIdentifier() {
+                return this.help;
             }
 
-            Constructor constructor = null;
+            public JPanel getEditorInstance(Object[] arguments) {
+                Class<?>[] parameters = new Class[arguments.length];
 
-            try {
-                constructor = this.editor.getConstructor(parameters);
-            } catch (Exception ex) {
-                // do nothing, try to find a constructor below.
-            }
+                for (int i = 0; i < arguments.length; i++) {
+                    parameters[i] = arguments[i].getClass();
+                }
 
-            if (constructor == null) {
-                // try to find object-compatable constructor.
-                Constructor[] constructors = this.editor.getConstructors();
-                for (Constructor _constructor : constructors) {
-                    Class[] params = _constructor.getParameterTypes();
-                    if (TetradApplicationConfig.matches(params, arguments)) {
-                        constructor = _constructor;
-                        break;
+                Constructor<?> constructor = null;
+
+                try {
+                    constructor = this.editor.getConstructor(parameters);
+                } catch (Exception ex) {
+                    // do nothing, try to find a constructor below.
+                }
+
+                if (constructor == null) {
+                    // try to find object-compatable constructor.
+                    Constructor<?>[] constructors = this.editor.getConstructors();
+                    for (Constructor<?> _constructor : constructors) {
+                        Class<?>[] params = _constructor.getParameterTypes();
+                        if (TetradApplicationConfig.matches(params, arguments)) {
+                            constructor = _constructor;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (constructor == null) {
-                throw new NullPointerException("Could not find constructor in " + this.editor + " for model: " + this.model);
-            }
+                if (constructor == null) {
+                    throw new NullPointerException("Could not find constructor in " + this.editor + " for model: " + this.model);
+                }
 
-            try {
-                return (JPanel) constructor.newInstance(arguments);
-            } catch (Exception ex) {
-                throw new IllegalStateException("Could not construct editor", ex);
-            }
-        }
-
-        public ParameterEditor getParameterEditorInstance() {
-            if (this.paramsEditor != null) {
                 try {
-                    return (ParameterEditor) this.paramsEditor.newInstance();
-                } catch (ClassCastException e) {
-                    throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);
+                    return (JPanel) constructor.newInstance(arguments);
+                } catch (Exception ex) {
+                    throw new IllegalStateException("Could not construct editor", ex);
                 }
             }
-            return null;
-        }
 
-    }
+            public ParameterEditor getParameterEditorInstance() {
+                if (this.paramsEditor != null) {
+                    try {
+                        return (ParameterEditor) this.paramsEditor.getDeclaredConstructor().newInstance();
+                    } catch (ClassCastException e) {
+                        throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
+                    } catch (Exception e) {
+                        throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);
+                    }
+                }
+                return null;
+            }
+
+        }
 
 }

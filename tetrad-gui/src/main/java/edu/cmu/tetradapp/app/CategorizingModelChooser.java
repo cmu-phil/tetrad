@@ -302,9 +302,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         public ChooserTreeModel(List<SessionNodeModelConfig> configs) {
             for (SessionNodeModelConfig config : configs) {
-                String category = config.getCategory();
+                String category = config.category();
                 if (category == null) {
-                    throw new NullPointerException("No Category name associated with model: " + config.getModel());
+                    throw new NullPointerException("No Category name associated with model: " + config.model());
                 }
 
                 if ("Unlisted".equals(category)) {
@@ -316,7 +316,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                 }
 
                 List<ModelWrapper> models = this.map.computeIfAbsent(category, k -> new LinkedList<>());
-                models.add(new ModelWrapper(config.getName(), config.getModel()));
+                models.add(new ModelWrapper(config.name(), config.model()));
             }
         }
 

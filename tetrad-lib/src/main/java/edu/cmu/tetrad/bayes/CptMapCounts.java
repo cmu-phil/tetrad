@@ -39,7 +39,7 @@ public class CptMapCounts implements CptMap {
     /**
      * The prior count for all cells.
      */
-    private double priorCount = 2;
+    private double priorCount = 1;
 
     /**
      * Constructs a new probability map, a map from a unique integer index for a particular node to the probability of

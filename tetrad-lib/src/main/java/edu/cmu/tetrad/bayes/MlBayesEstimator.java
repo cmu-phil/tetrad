@@ -25,9 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
@@ -74,6 +72,7 @@ public final class MlBayesEstimator {
             // Set up parents array.  Should store the parents of
             // each node as ints in a particular order.
             List<Node> parentList = new ArrayList<>(graph.getParents(node));
+            Collections.sort(parentList);
             int[] parentArray = new int[parentList.size()];
 
             for (int i = 0; i < parentList.size(); i++) {
@@ -81,7 +80,7 @@ public final class MlBayesEstimator {
             }
 
             // Sort the parent array.
-            Arrays.sort(parentArray);
+//            Arrays.sort(parentArray);
 
             // Setup dimensions array for parents.
             int[] dims = new int[parentArray.length];

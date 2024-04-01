@@ -881,9 +881,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesEstimatorEditor
                 </editor-class>
-<!--                <params-editor-class>-->
-<!--                    edu.cmu.tetradapp.editor.BayesEstimatorParamsEditor-->
-<!--                </params-editor-class>-->
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.BayesEstimatorParamsEditor
+                </params-editor-class>
             </model>
             <model name="SEM Estimator" acronym="SEM Est" help="sem_estimator">
                 <logger>
