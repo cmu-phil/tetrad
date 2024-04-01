@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemEstimator;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -77,6 +78,10 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     private String report = "";
 
     //==============================CONSTRUCTORS==========================//
+
+    public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, Simulation simulation, Parameters parameters) {
+        this(semPm, new DataWrapper(simulation, parameters));
+    }
 
     /**
      * <p>Constructor for GeneralizedSemEstimatorWrapper.</p>

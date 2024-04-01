@@ -95,6 +95,13 @@ public class BayesEstimatorWrapper implements SessionModel {
 
     //=================================CONSTRUCTORS========================//
 
+    /**
+     * Constructs a new BayesEstimatorWrapper object.
+     *
+     * @param simulation the Simulation object
+     * @param bayesPmWrapper the BayesPmWrapper object
+     * @param parameters the Parameters object
+     */
     public BayesEstimatorWrapper(Simulation simulation, BayesPmWrapper bayesPmWrapper, Parameters parameters) {
         this(new DataWrapper(simulation, parameters), bayesPmWrapper, parameters);
     }
