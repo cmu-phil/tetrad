@@ -523,7 +523,7 @@ public class AlgorithmCard extends JPanel {
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
-        if (algorithm != null && algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
+        if (algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
             Algorithm externalGraph = new SingleGraphAlg(this.algorithmRunner.getSourceGraph());
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
@@ -572,12 +572,12 @@ public class AlgorithmCard extends JPanel {
         firePropertyChange("algoFwdBtn", null, true);
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        Class algoClass = algoModel.getAlgorithm().clazz();
+        Class<?> algoClass = algoModel.getAlgorithm().clazz();
 
         if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
             String msg;
             try {
-                Object algo = algoClass.newInstance();
+                Object algo = algoClass.getDeclaredConstructor().newInstance();
                 Method m = algoClass.getDeclaredMethod("getDescription");
                 m.setAccessible(true);
                 try {
@@ -586,7 +586,7 @@ public class AlgorithmCard extends JPanel {
                     msg = "";
                 }
 
-            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
                 TetradLogger.getInstance().forceLogMessage(exception.toString());
                 msg = "";
             }
@@ -598,7 +598,7 @@ public class AlgorithmCard extends JPanel {
             if (TakesExternalGraph.class.isAssignableFrom(algoClass)) {
                 if (this.algorithmRunner.getSourceGraph() == null || this.algorithmRunner.getDataModelList().isEmpty()) {
                     try {
-                        Object algo = algoClass.newInstance();
+                        Object algo = algoClass.getDeclaredConstructor().newInstance();
                         Method m = algoClass.getDeclaredMethod("setExternalGraph", Algorithm.class);
                         m.setAccessible(true);
                         try {
@@ -608,7 +608,7 @@ public class AlgorithmCard extends JPanel {
                             firePropertyChange("algoFwdBtn", null, false);
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
-                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
                         TetradLogger.getInstance().forceLogMessage(exception.toString());
                     }
                 }
@@ -642,19 +642,19 @@ public class AlgorithmCard extends JPanel {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
-                            .forEach(e -> this.algoModels.addElement(e));
+                            .forEach(this.algoModels::addElement);
                 } else {
-                    algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
-                            .forEach(e -> this.algoModels.addElement(e));
+                    algorithmModels.getModels(this.dataType, this.multiDataAlgo)
+                            .forEach(this.algoModels::addElement);
                 }
             } else {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
-                            .forEach(e -> this.algoModels.addElement(e));
+                            .forEach(this.algoModels::addElement);
                 } else {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
-                            .forEach(e -> this.algoModels.addElement(e));
+                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo)
+                            .forEach(this.algoModels::addElement);
                 }
             }
 
@@ -679,18 +679,19 @@ public class AlgorithmCard extends JPanel {
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                        .forEach(this.indTestComboBox::addItem);
             } else if (this.mixedRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                for (IndependenceTestModel e : models) {
+                    if (e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class)) {
+                        this.indTestComboBox.addItem(e);
+                    }
+                }
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(General.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                        .forEach(this.indTestComboBox::addItem);
             } else if (this.allRadBtn.isSelected()) {
-                models.stream()
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                models.forEach(this.indTestComboBox::addItem);
             }
         }
         this.updatingTestModels = false;
@@ -730,18 +731,17 @@ public class AlgorithmCard extends JPanel {
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(Mixed.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(General.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.allRadBtn.isSelected()) {
-                models.stream()
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                models.forEach(this.scoreComboBox::addItem);
             }
         }
         this.updatingScoreModels = false;
@@ -825,6 +825,7 @@ public class AlgorithmCard extends JPanel {
 
     private static class DescriptionPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = 2329356999486712496L;
 
         final String borderTitle;
@@ -865,6 +866,7 @@ public class AlgorithmCard extends JPanel {
 
     private class AlgorithmListPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -7068543172769683902L;
 
         public AlgorithmListPanel() {
@@ -898,6 +900,7 @@ public class AlgorithmCard extends JPanel {
 
     private class AlgorithmFilterPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -3120503093689632462L;
 
         public AlgorithmFilterPanel() {
@@ -997,6 +1000,7 @@ public class AlgorithmCard extends JPanel {
 
     private class TestAndScorePanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -1594897454478052884L;
 
         public TestAndScorePanel() {
