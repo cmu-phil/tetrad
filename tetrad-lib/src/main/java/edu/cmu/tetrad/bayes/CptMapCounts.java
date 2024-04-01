@@ -37,9 +37,9 @@ public class CptMapCounts implements CptMap {
      */
     private final int numColumns;
     /**
-     * The prior count for all cells.
+     * The prior count for all cells. '0' is maximimum likelihood estimate.
      */
-    private double priorCount = 1;
+    private double priorCount = 0;
 
     /**
      * Constructs a new probability map, a map from a unique integer index for a particular node to the probability of

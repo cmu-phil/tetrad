@@ -141,7 +141,7 @@ public class BayesEstimatorWrapper implements SessionModel {
             }
 
             this.bayesIm = this.bayesIms.get(0);
-            log(this.bayesIm);
+//            log(this.bayesIm);
 
         } else {
             throw new IllegalArgumentException("Data must consist of discrete data sets.");
