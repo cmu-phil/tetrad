@@ -831,7 +831,7 @@
 
     <session-node id="Estimator">
         <models>
-            <model name="ML Bayes Estimator" acronym="ML Bayes Est"
+            <model name="Bayes Estimator" acronym="Bayes Est"
                    help="bayes_estimator">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -841,6 +841,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesEstimatorEditor
                 </editor-class>
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BayesEstimatorParamsEditor-->
+<!--                </params-editor-class>-->
             </model>
             <model name="SEM Estimator" acronym="SEM Est" help="sem_estimator">
                 <logger>

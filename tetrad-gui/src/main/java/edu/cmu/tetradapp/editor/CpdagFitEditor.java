@@ -44,7 +44,6 @@ public class CpdagFitEditor extends JPanel {
      */
     private final CPDAGFitModel comparison;
 
-
     /**
      * Constructs the editor given the model
      *

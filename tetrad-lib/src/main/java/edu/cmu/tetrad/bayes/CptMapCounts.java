@@ -39,7 +39,7 @@ public class CptMapCounts implements CptMap {
     /**
      * The prior count for all cells.
      */
-    private int priorCount = 1;
+    private double priorCount = 2;
 
     /**
      * Constructs a new probability map, a map from a unique integer index for a particular node to the probability of
@@ -118,11 +118,11 @@ public class CptMapCounts implements CptMap {
         }
 
         int key = row * numColumns + column;
-        int rowCount = rowCounts.getOrDefault(row, 0);
-        int cellCount = cellCounts.getOrDefault(key, 0);
+        double rowCount = rowCounts.getOrDefault(row, 0);
+        double cellCount = cellCounts.getOrDefault(key, 0);
         rowCount += priorCount * numColumns;
         cellCount += priorCount;
-        return cellCount / (double) rowCount;
+        return cellCount / rowCount;
     }
 
     public void addCounts(int row, int column, int count) {
@@ -168,7 +168,7 @@ public class CptMapCounts implements CptMap {
     /**
      * The prior count for all cells.
      */
-    public int getPriorCount() {
+    public double getPriorCount() {
         return priorCount;
     }
 
