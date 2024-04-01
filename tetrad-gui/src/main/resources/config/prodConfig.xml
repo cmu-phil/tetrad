@@ -268,7 +268,7 @@
     </session-node>
     <session-node id="IM">
         <models>
-            <model name="Bayes Instantiated Model" acronym="Bayes IM"
+            <model name="ML Bayes Instantiated Model" acronym="ML Bayes IM"
                    help="bayes_im">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -831,7 +831,7 @@
 
     <session-node id="Estimator">
         <models>
-            <model name="Bayes Estimator" acronym="Bayes Est"
+            <model name="ML Bayes Estimator" acronym="ML Bayes Est"
                    help="bayes_estimator">
                 <logger>
                     <event id="info" description="Information" default="on"/>
