@@ -35,11 +35,13 @@ import java.util.*;
  */
 public final class MlBayesEstimator {
 
+    private final double prior;
+
     /**
      * <p>Constructor for MlBayesEstimator.</p>
      */
-    public MlBayesEstimator() {
-
+    public MlBayesEstimator(double prior) {
+        this.prior = prior;
     }
 
     /**
@@ -100,6 +102,7 @@ public final class MlBayesEstimator {
             int numCols = bayesPm.getNumCategories(node);
 
             CptMapCounts counts = new CptMapCounts(numRows, numCols);
+            counts.setPriorCount(prior);
 
             for (int row = 0; row < dataSet.getNumRows(); row++) {
                 int[] parentValues = new int[parentArray.length];

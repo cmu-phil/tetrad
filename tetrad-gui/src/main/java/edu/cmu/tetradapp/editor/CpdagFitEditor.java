@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.CPDAGFitModel;
 
 import javax.swing.*;
@@ -69,7 +70,7 @@ public class CpdagFitEditor extends JPanel {
 
         if (bayesIms != null) {
             for (int i = 0; i < bayesIms.size(); i++) {
-                BayesEstimatorEditor editor = new BayesEstimatorEditor(bayesIms.get(i), (DataSet) data.get(i));
+                BayesEstimatorEditor editor = new BayesEstimatorEditor(bayesIms.get(i), (DataSet) data.get(i), new Parameters());
 
                 JPanel panel = new JPanel();
 

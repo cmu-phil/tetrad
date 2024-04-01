@@ -72,11 +72,11 @@ public class BayesEstimatorParamsEditor extends JPanel implements ParameterEdito
     public void setup() {
         setLayout(new BorderLayout());
 
-        DoubleTextField symmetricAlphaField = new DoubleTextField(
-                this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
-        symmetricAlphaField.setFilter((value, oldValue) -> {
+        DoubleTextField priorField = new DoubleTextField(
+                this.params.getDouble("bayesEstimatorCellPrior", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
+        priorField.setFilter((value, oldValue) -> {
             try {
-                BayesEstimatorParamsEditor.this.params.set("symmetricAlpha", value);
+                BayesEstimatorParamsEditor.this.params.set("bayesEstimatorCellPrior", value);
                 return value;
             } catch (IllegalArgumentException e) {
                 return oldValue;
@@ -86,27 +86,13 @@ public class BayesEstimatorParamsEditor extends JPanel implements ParameterEdito
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("<html>" +
-                          "If you make a Dirichlet estimator using a Bayes PM and a " +
-                          "<br>discrete data set as parents, a Dirichlet Bayes IM will" +
-                          "<br>be created behind the scenes for you using the number you" +
-                          "<br>provide below as pseudocount for every cell. This Dirichlet" +
-                          "<br>Bayes IM will be used as the prior for the estimation. If" +
-                          "<br>you would like to have more control over how this prior is" +
-                          "<br>created, please remove the PM-->Estimator edge, add a new" +
-                          "<br>IM box, connect it as PM-->IM-->Estimator, and create the" +
-                          "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
-                          "</html>"));
-
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" +
-                          "<i>Estimate using a prior with all pseudocounts =</i>" +
+                          "<i>Estimate using a prior for each cell in each CPT =</i>" +
                           "</html>"));
-        b7.add(symmetricAlphaField);
+        b7.add(priorField);
 
-        b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
         b1.add(b7);
         b1.add(Box.createHorizontalGlue());

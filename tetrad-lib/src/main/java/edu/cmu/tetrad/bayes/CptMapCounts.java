@@ -175,7 +175,7 @@ public class CptMapCounts implements CptMap {
     /**
      * The prior count for all cells.
      */
-    public void setPriorCount(int priorCount) {
+    public void setPriorCount(double priorCount) {
         this.priorCount = priorCount;
     }
 }
