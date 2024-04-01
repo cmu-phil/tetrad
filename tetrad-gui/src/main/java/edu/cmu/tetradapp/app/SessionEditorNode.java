@@ -1104,7 +1104,7 @@ public final class SessionEditorNode extends DisplayNode {
         JComponent editor = (JComponent) paramEditor;
         SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
         String buttonType = nodeWrapper.getButtonType();
-        editor.setName(buttonType + " Structure Editor");
+        editor.setName(buttonType + " Parameter Editor");
         Component centeringComp = this;
 
         int ret = JOptionPane.showOptionDialog(centeringComp, editor,
