@@ -1,13 +1,11 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
 import org.jetbrains.annotations.NotNull;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -41,8 +39,8 @@ import java.nio.charset.StandardCharsets;
 public class AlgcomparisonEditor extends JPanel {
 
     /**
-     * The AlgcomparisonModel class represents a model used in an algorithm comparison application.
-     * It contains methods and properties related to the comparison of algorithms.
+     * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
+     * and properties related to the comparison of algorithms.
      */
     AlgcomparisonModel model;
 
@@ -86,13 +84,33 @@ public class AlgcomparisonEditor extends JPanel {
 
     @NotNull
     private static Box getSelectionBox(AlgcomparisonModel model) {
-        java.util.List<String> simulations = model.getSimulationsNames();
-        java.util.List<String> algorithms = model.getAlgorithmsNames();
+        java.util.List<String> simulations = model.getSimulationName();
+        java.util.List<String> algorithms = model.getAlgorithmsName();
         java.util.List<String> statistics = model.getStatisticsNames();
 
-        JList<Class<? extends Simulation>> simulationList = new JList(simulations.toArray());
-        JList<Class<? extends edu.cmu.tetrad.algcomparison.algorithm.Algorithm>> algorithmList = new JList(algorithms.toArray());
-        JList<Class<? extends edu.cmu.tetrad.algcomparison.statistic.Statistic>> statisticList = new JList(statistics.toArray());
+        JList<String> simulationList = new JList<>(simulations.toArray(new String[0]));
+        JList<String> algorithmList = new JList<>(algorithms.toArray(new String[0]));
+        JList<String> statisticList = new JList<>(statistics.toArray(new String[0]));
+
+        simulationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        algorithmList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        statisticList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        simulationList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) { // This condition checks that the user has finished changing the selection.
+                    JList source = (JList) e.getSource();
+                    String selected = (String) source.getSelectedValue();
+
+                    model.setSelectedSimulation(selected);
+
+                    // Update the algorithm list based on the selected simulation
+                    java.util.List<String> algorithms = model.getAlgorithmsName();
+                    algorithmList.setListData(algorithms.toArray(new String[0]));
+                }
+            }
+        });
 
         Box horiz1 = Box.createHorizontalBox();
 
@@ -129,6 +147,17 @@ public class AlgcomparisonEditor extends JPanel {
     public static class BufferedListeningByteArrayOutputStream extends ByteArrayOutputStream {
         private final StringBuilder buffer = new StringBuilder();
 
+        public static void main(String[] args) {
+            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos);
+
+            // Example usage
+            ps.println("Hello, world!");
+            ps.printf("Pi is approximately %.2f%n", Math.PI);
+
+            ps.close();
+        }
+
         @Override
         public void write(int b) {
             super.write(b);
@@ -156,17 +185,6 @@ public class AlgcomparisonEditor extends JPanel {
             // Process the buffered data (print it in this case)
             System.out.print("Buffered data: " + buffer.toString());
             buffer.setLength(0); // Clear the buffer for next data
-        }
-
-        public static void main(String[] args) {
-            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-            PrintStream ps = new PrintStream(baos);
-
-            // Example usage
-            ps.println("Hello, world!");
-            ps.printf("Pi is approximately %.2f%n", Math.PI);
-
-            ps.close();
         }
     }
 

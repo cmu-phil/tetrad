@@ -246,6 +246,16 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     /**
+     * Returns the short name of the simulation.
+     *
+     * @return The short name of the simulation.
+     */
+    @Override
+    public String getShortName() {
+        return "General SEM Simulation";
+    }
+
+    /**
      * Retrieves the parameters required for the simulation.
      *
      * @return A list of String names representing the parameters.

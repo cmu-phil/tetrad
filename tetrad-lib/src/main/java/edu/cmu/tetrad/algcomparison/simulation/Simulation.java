@@ -67,6 +67,15 @@ public interface Simulation extends HasParameters, TetradSerializable {
     String getDescription();
 
     /**
+     * Returns the short name of the simulation.
+     *
+     * @return The short name of the simulation.
+     */
+    default String getShortName() {
+        return getClass().getSimpleName();
+    }
+
+    /**
      * Returns the list of parameters used in the simulation.
      *
      * @return Returns the parameters used in the simulation. These are the parameters whose values can be varied.

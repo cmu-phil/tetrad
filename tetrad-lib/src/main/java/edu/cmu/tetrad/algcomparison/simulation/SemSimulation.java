@@ -240,6 +240,15 @@ public class SemSimulation implements Simulation {
     }
 
     /**
+     * Returns the short name of the simulation.
+     *
+     * @return The short name of the simulation.
+     */
+    public String getShortName() {
+        return "Linear SEM Simulation";
+    }
+
+    /**
      * Retrieves the parameters required for the simulation.
      *
      * @return A list of String names representing the parameters.

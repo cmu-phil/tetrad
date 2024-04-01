@@ -1,10 +1,7 @@
 package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
-import edu.cmu.tetradapp.model.Simulation;
 
 import java.util.List;
 
@@ -19,8 +16,8 @@ public class TestAlgorithmModel {
 
         AlgcomparisonModel algcomparisonModel = new AlgcomparisonModel(new Parameters());
 
-        List<String> simulations = algcomparisonModel.getSimulationsNames();
-        List<String> algorithms =  algcomparisonModel.getAlgorithmsNames();
+        List<String> simulations = algcomparisonModel.getSimulationName();
+        List<String> algorithms =  algcomparisonModel.getAlgorithmsName();
         List<String> statistics = algcomparisonModel.getStatisticsNames();
 
         System.out.println("Simulations: ");

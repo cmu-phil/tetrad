@@ -140,6 +140,14 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "General SEM Special 1";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);

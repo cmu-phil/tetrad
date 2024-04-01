@@ -24,10 +24,14 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.reflections.Reflections;
@@ -35,6 +39,8 @@ import org.reflections.scanners.Scanners;
 
 import java.io.PrintStream;
 import java.io.Serial;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -54,14 +60,16 @@ public class AlgcomparisonModel implements SessionModel {
      * list of parameters will be given that depend on the simulation and the algorithms selected.
      */
     private final Comparison comparison = new Comparison();
-
-    private List<Class<? extends Simulation>> simulations;
-    private List<Class<? extends Algorithm>> algorithms ;
-    private List<Class<? extends Statistic>> statistics;
+    private final List<String> statNames;
+    private final List<String> simNames;
+    private final List<Class<? extends Simulation>> simulations;
+    private final List<Class<? extends Algorithm>> algorithms;
+    private final List<Class<? extends Statistic>> statistics;
     /**
      * A private instance variable that holds a list of possible Parameter objects.
      */
     private final Parameters parameters = new Parameters();
+    private List<String> algNames;
     private Simulations selectedSimulations = new Simulations();
     private Algorithms selectedAlgorithms = new Algorithms();
     private Statistics selectedStatistics = new Statistics();
@@ -74,6 +82,9 @@ public class AlgcomparisonModel implements SessionModel {
     private String outputFileName = "Comparison";
 
     private PrintStream localOut = null;
+    private Map<String, Class<? extends Simulation>> simulationMap;
+    private Map<String, Class<? extends Statistic>> statisticsMap;
+    private Map<String, Class<? extends Algorithm>> algorithmMap;
 
     public AlgcomparisonModel(Parameters parameters) {
 
@@ -95,6 +106,27 @@ public class AlgcomparisonModel implements SessionModel {
         this.algorithms.sort(Comparator.comparing(Class::getName));
         this.statistics.sort(Comparator.comparing(Class::getName));
 
+        algNames = getAlgorithmNamesFromAnnotations(algorithms);
+        statNames = getStatisticsNamesFromImplemenations(statistics);
+        simNames = getSimulationNamesFromImplemenations(simulations);
+
+        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
+        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
+        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+    }
+
+    /**
+     * Finds and returns a set of classes that implement a given interface within a specified package.
+     *
+     * @param packageName    The name of the package to search in.
+     * @param interfaceClazz The interface class to find implementations of.
+     * @return A set of classes that implement the specified interface.
+     */
+    private static <T> Set<Class<? extends T>> findImplementations(String packageName, Class<T> interfaceClazz) {
+        Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
+        Set<Class<? extends T>> subTypesOf = reflections.getSubTypesOf(interfaceClazz);
+        return subTypesOf;
     }
 
     public void doComparison() {
@@ -142,25 +174,62 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * Sets the selected simulations in the AlgcomparisonModel.
      *
-     * @param selectedSimulations The selected simulations to be set.
+     * @param name The name of the selected simulation to be set.
      * @throws IllegalArgumentException if the selected simulations is null, empty, or not in the list of simulations.
      */
-    public void setSelectedSimulations(Simulations selectedSimulations) {
-        if (selectedSimulations == null) {
-            throw new IllegalArgumentException("Selected simulation must not be null.");
+    public void setSelectedSimulation(String name) {
+        if (!simulationMap.containsKey(name)) {
+            throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
         }
 
-        if (selectedSimulations.getSimulations().isEmpty()) {
-            throw new IllegalArgumentException("Selected simulation must not be empty.");
+        Class<? extends Simulation> simulation = simulationMap.get(name);
+
+        if (!(simulations.contains(simulation))) {
+            throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
         }
 
-        for (edu.cmu.tetrad.algcomparison.simulation.Simulation simulation : selectedSimulations.getSimulations()) {
-            if (!(simulations.contains(simulation))) {
-                throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
+        try {
+
+            RandomGraph graph = new RandomForward();
+
+            Simulation _simulation = simulation.getConstructor(RandomGraph.class).newInstance(graph);
+
+            this.selectedSimulations = new Simulations();
+            this.selectedSimulations.getSimulations().add(_simulation);
+            DataType dataType = _simulation.getDataType();
+
+            List<Class<? extends Algorithm>> algorithms = new ArrayList<>();
+
+            for (Class<? extends Algorithm> algorithm : this.algorithms) {
+                try {
+                    Constructor<? extends Algorithm> constructor = algorithm.getConstructor();
+
+                    Algorithm _algorithm = constructor.newInstance();
+
+                    if (_algorithm instanceof TakesIndependenceWrapper) {
+                        TakesIndependenceWrapper takesIndependenceWrapper = (TakesIndependenceWrapper) _algorithm;
+                        takesIndependenceWrapper.setIndependenceWrapper(null);
+                    }
+
+                    if (_algorithm.getDataType() == dataType) {
+                        algorithms.add(algorithm);
+                    }
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                         IllegalAccessException e) {
+//                    e.printStackTrace();
+                }
             }
-        }
 
-        this.selectedSimulations = selectedSimulations;
+            List<String> algorithmNames = getAlgorithmNamesFromAnnotations(algorithms);
+            algorithmNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+            System.out.println(algorithmNames);
+
+            this.algNames = algorithmNames;
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            throw new IllegalArgumentException("Selected simulation must have a constructor that takes a RandomGraph.");
+        }
     }
 
     /**
@@ -233,16 +302,70 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     /**
-     * Finds and returns a set of classes that implement a given interface within a specified package.
-     *
-     * @param packageName The name of the package to search in.
-     * @param interfaceClazz The interface class to find implementations of.
-     * @return A set of classes that implement the specified interface.
+     * For each algorithm class, use reflection to get the annotation for that class, and add the name of the algorithm
+     * to a list of algorithm names.
      */
-    private static <T> Set<Class<? extends T>> findImplementations(String packageName, Class<T> interfaceClazz) {
-        Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
-        Set<Class<? extends T>> subTypesOf = reflections.getSubTypesOf(interfaceClazz);
-        return subTypesOf;
+    private List<String> getAlgorithmNamesFromAnnotations(List<Class<? extends Algorithm>> algorithmClasses) {
+        List<String> algorithmNames = new ArrayList<>();
+        Map<String, Class<? extends Algorithm>> algorithmMap = new HashMap<>();
+
+        for (Class<? extends Algorithm> algorithm : algorithmClasses) {
+            edu.cmu.tetrad.annotation.Algorithm algAnnotation = algorithm.getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class);
+
+            if (algAnnotation != null) {
+                String _name = algAnnotation.name();
+                algorithmNames.add(_name);
+                algorithmMap.put(_name, algorithm);
+            }
+        }
+
+        this.algorithmMap = algorithmMap;
+
+        return algorithmNames;
+    }
+
+    private List<String> getStatisticsNamesFromImplemenations(List<Class<? extends Statistic>> algorithmClasses) {
+        List<String> statisticsNames = new ArrayList<>();
+        Map<String, Class<? extends Statistic>> statisticsMap = new HashMap<>();
+
+        for (Class<? extends Statistic> statistic : algorithmClasses) {
+            try {
+                Statistic _statistic = statistic.getConstructor().newInstance();
+                String abbreviation = _statistic.getAbbreviation();
+                statisticsNames.add(abbreviation);
+                statisticsMap.put(abbreviation, statistic);
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                // Skip.
+            }
+        }
+
+        this.statisticsMap = statisticsMap;
+
+        return statisticsNames;
+    }
+
+    private List<String> getSimulationNamesFromImplemenations(List<Class<? extends Simulation>> algorithmClasses) {
+        List<String> simulationNames = new ArrayList<>();
+        Map<String, Class<? extends Simulation>> simulationMap = new HashMap<>();
+
+        RandomGraph graph = new RandomForward();
+
+        for (Class<? extends Simulation> statistic : algorithmClasses) {
+            try {
+                Simulation _statistic = statistic.getConstructor(RandomGraph.class).newInstance(graph);
+                String shortName = _statistic.getShortName();
+                simulationNames.add(shortName);
+                simulationMap.put(shortName, statistic);
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                // Skip.
+            }
+        }
+
+        this.simulationMap = simulationMap;
+
+        return simulationNames;
     }
 
     /**
@@ -302,52 +425,22 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * A list of possible simulations.
      */
-    public List<String> getSimulationsNames() {
-        List<String> simulationsNames = new ArrayList<>();
-
-        for (Class<? extends Simulation> simulation : simulations) {
-            String[] split = simulation.getName().split("\\.");
-            String name = split[split.length - 1];
-            simulationsNames.add(name);
-        }
-
-        simulationsNames.sort(String.CASE_INSENSITIVE_ORDER);
-
-        return simulationsNames;
+    public List<String> getSimulationName() {
+        return simNames;
     }
 
     /**
      * A private instance variable that holds a list of possible Algorithm objects.
      */
-    public List<String> getAlgorithmsNames() {
-        List<String> algorithmsNames = new ArrayList<>();
-
-        for (Class<? extends Algorithm> algorithm : algorithms) {
-            String[] split = algorithm.getName().split("\\.");
-            String name = split[split.length - 1];
-            algorithmsNames.add(name);
-        }
-
-        algorithmsNames.sort(String.CASE_INSENSITIVE_ORDER);
-
-        return algorithmsNames;
+    public List<String> getAlgorithmsName() {
+        return algNames;
     }
 
     /**
      * A private instance variable that holds a list of possible Statistic objects.
      */
     public List<String> getStatisticsNames() {
-        List<String> statisticsNames = new ArrayList<>();
-
-        for (Class<? extends Statistic> statistic : statistics) {
-            String[] split = statistic.getName().split("\\.");
-            String name = split[split.length - 1];
-            statisticsNames.add(name);
-        }
-
-        statisticsNames.sort(String.CASE_INSENSITIVE_ORDER);
-
-        return statisticsNames;
+        return statNames;
     }
 
     /**

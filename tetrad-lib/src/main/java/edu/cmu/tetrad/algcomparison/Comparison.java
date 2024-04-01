@@ -62,7 +62,9 @@ import java.util.concurrent.ForkJoinPool;
  * @author danielmalinsky
  * @version $Id: $Id
  */
-public class Comparison {
+public class Comparison implements TetradSerializable {
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * The number of threads to use.
@@ -77,7 +79,7 @@ public class Comparison {
     /**
      * The output stream.
      */
-    private PrintStream out;
+    private transient PrintStream out;
 
     /**
      * Whether to save the graphs.
@@ -137,6 +139,10 @@ public class Comparison {
      * Indicates whether the tables are tab-delimited.
      */
     private boolean tabDelimitedTables = false;
+    /**
+     * The output stream for local output. Could be null.
+     */
+    private transient PrintStream localOut = null;
 
     /**
      * Initializes a new instance of the Comparison class.
@@ -296,6 +302,11 @@ public class Comparison {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
     }
 
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
+        compareFromSimulations(resultsPath, simulations, outputFileName, System.out, algorithms, statistics, parameters);
+    }
+
     /**
      * Compares the results from simulations using various algorithms and statistics.
      *
@@ -306,8 +317,14 @@ public class Comparison {
      * @param statistics     The Statistics object containing the statistics to use for comparison.
      * @param parameters     The Parameters object containing the necessary parameters for the comparison.
      */
-    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms, Statistics statistics, Parameters parameters) {
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
+
+        if (localOut != null) {
+            this.localOut = localOut;
+        }
+
         setNumThreads(parameters.getInt(Params.NUM_THREADS));
 
         PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
@@ -322,7 +339,7 @@ public class Comparison {
             throw new RuntimeException(e);
         }
 
-        this.out.println(new Date());
+        println(new Date().toString());
 
         // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameter object.
@@ -438,76 +455,76 @@ public class Comparison {
                 }
             }
 
-            this.out.println();
-            this.out.println("Simulations:");
-            this.out.println();
+            println();
+            println("Simulations:");
+            println();
 
             int i = 0;
 
             for (SimulationWrapper simulation : simulationWrappers) {
-                this.out.print("Simulation " + (++i) + ": ");
-                this.out.println(simulation.getDescription());
-                this.out.println();
+                println("Simulation " + (++i) + ": ");
+                println(simulation.getDescription());
+                println();
 
-                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), this.out);
+                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters());
 
-                this.out.println();
+                println();
             }
 
-            this.out.println("Algorithms:");
-            this.out.println();
+            println("Algorithms:");
+            println();
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 AlgorithmSimulationWrapper wrapper = algorithmSimulationWrappers.get(t);
 
                 if (wrapper.getSimulationWrapper() == simulationWrappers.get(0)) {
-                    this.out.println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
+                    println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
                 }
             }
 
 
             // Print out the preliminary information for statistics types, etc.
-            this.out.println();
-            this.out.println("Statistics:");
-            this.out.println();
+            println();
+            println("Statistics:");
+            println();
 
             for (Statistic stat : statistics.getStatistics()) {
-                this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
+                println(stat.getAbbreviation() + " = " + stat.getDescription());
             }
 
-            this.out.println();
+            println();
 
             if (isSortByUtility()) {
-                this.out.println();
-                this.out.println("Sorting by utility, high to low.");
+                println();
+                println("Sorting by utility, high to low.");
             }
 
             if (isShowUtilities()) {
-                this.out.println();
-                this.out.println("Weighting of statistics:");
-                this.out.println();
-                this.out.println("U = ");
+                println();
+                println("Weighting of statistics:");
+                println();
+                println("U = ");
 
                 for (Statistic stat : statistics.getStatistics()) {
                     String statName = stat.getAbbreviation();
                     double weight = statistics.getWeight(stat);
                     if (weight != 0.0) {
-                        this.out.println("    " + weight + " * f(" + statName + ")");
+                        println("    " + weight + " * f(" + statName + ")");
                     }
                 }
 
-                this.out.println();
-                this.out.println("...normed to range between 0 and 1.");
+                println();
+                println("...normed to range between 0 and 1.");
 
-                this.out.println();
-                this.out.println("Note that f for each statistic is a function that maps the statistic to the ");
-                this.out.println("interval [0, 1], with higher being better.");
+                println();
+                println("Note that f for each statistic is a function that maps the statistic to the ");
+                println("interval [0, 1], with higher being better.");
             }
 
-            this.out.println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
-            this.out.println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
+            println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
+            println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
 
-            this.out.println();
+            println();
 
             statTables = calcStatTables(allStats, Mode.Average, numTables, algorithmSimulationWrappers, numStats, statistics);
 
@@ -567,7 +584,31 @@ public class Comparison {
             saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
         }
 
+        close();
+    }
+
+    private void println(String s) {
+        this.out.println(s);
+
+        if (localOut != null) {
+            localOut.println(s);
+        }
+    }
+
+    private void println() {
+        this.out.println();
+
+        if (localOut != null) {
+            localOut.println();
+        }
+    }
+
+    private void close() {
         this.out.close();
+
+        if (localOut != null) {
+            localOut.close();
+        }
     }
 
     /**
@@ -783,7 +824,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(FisherZ.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                         if (TakesExternalGraph.class.isAssignableFrom(clazz)) {
                             out.println("\t" + clazz.getSimpleName() + " can take an external graph from some other algorithm as input");
@@ -808,7 +849,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(BdeuScore.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                     }
 
@@ -831,7 +872,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                     }
                 }
@@ -872,7 +913,7 @@ public class Comparison {
                         IndependenceWrapper independence = (IndependenceWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + independence.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(independence.getParameters(), allParams, out);
+                            printParameters(independence.getParameters(), allParams);
                         }
                     }
                 }
@@ -894,7 +935,7 @@ public class Comparison {
                         ScoreWrapper score = (ScoreWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + score.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(score.getParameters(), allParams, out);
+                            printParameters(score.getParameters(), allParams);
                         }
                     }
                 }
@@ -916,7 +957,7 @@ public class Comparison {
                         Simulation simulation = (Simulation) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(simulation.getParameters(), allParams, out);
+                            printParameters(simulation.getParameters(), allParams);
                         }
                     }
                 }
@@ -1182,8 +1223,8 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
-    private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-        out.println("Comparison.printParameters");
+    private void printParameters(List<String> names, Parameters parameters) {
+        println("Parameters:");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
@@ -1192,14 +1233,14 @@ public class Comparison {
             Object value = parameters.get(name);
 
             if (defaultValue instanceof Double) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Integer) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Boolean) {
                 boolean b = (Boolean) value;
-                out.println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
+                println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
             } else if (defaultValue instanceof String) {
-                out.println(description.getShortDescription() + " = " + value);
+                println(description.getShortDescription() + " = " + value);
             }
         }
     }
@@ -1494,15 +1535,15 @@ public class Comparison {
     private void printStats(double[][][] statTables, Statistics statistics, Mode mode, int[] newOrder, List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers, double[] utilities, Parameters parameters) {
 
         if (mode == Mode.Average) {
-            this.out.println("AVERAGE VALUE");
+            println("AVERAGE VALUE");
         } else if (mode == Mode.StandardDeviation) {
-            this.out.println("STANDARD DEVIATION");
+            println("STANDARD DEVIATION");
         } else if (mode == Mode.MinValue) {
-            this.out.println("MIN VALUE");
+            println("MIN VALUE");
         } else if (mode == Mode.MaxValue) {
-            this.out.println("MAX VALUE");
+            println("MAX VALUE");
         } else if (mode == Mode.MedianValue) {
-            this.out.println("MEDIAN VALUE");
+            println("MEDIAN VALUE");
         } else {
             throw new IllegalStateException();
         }
@@ -1513,7 +1554,7 @@ public class Comparison {
         NumberFormat nf = new DecimalFormat("0.00");
         NumberFormat smallNf = new DecimalFormat("0.00E0");
 
-        this.out.println();
+        println();
 
         for (int u = 0; u < numTables; u++) {
             if (!this.graphTypeUsed[u]) {
@@ -1603,9 +1644,9 @@ public class Comparison {
                 }
             }
 
-            this.out.println(getHeader(u));
-            this.out.println();
-            this.out.println(table);
+            println(getHeader(u));
+            println();
+            println(table.toString());
         }
     }
 

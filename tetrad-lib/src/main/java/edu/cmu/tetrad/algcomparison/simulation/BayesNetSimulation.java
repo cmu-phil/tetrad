@@ -169,6 +169,16 @@ public class BayesNetSimulation implements Simulation {
     /**
      * {@inheritDoc}
      * <p>
+     * Returns the short name.
+     */
+    @Override
+    public String getShortName() {
+        return "Bayes Net Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters.
      */
     @Override
