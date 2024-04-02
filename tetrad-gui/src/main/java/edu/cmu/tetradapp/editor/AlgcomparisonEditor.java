@@ -1,62 +1,61 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.statistic.Statistic;
+import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.app.TetradApplicationConfig;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.ui.model.ScoreModel;
 import edu.cmu.tetradapp.ui.model.ScoreModels;
-import edu.cmu.tetradapp.util.ParameterComponents;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.ParameterDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
- * Displays an editor that lets the user interact with the Comparison class in the edu.cmu.tetrad.algcomparison package.
- * The user can select from a list of simulation methods, a list of algorithms, a list of statistics, and a list of
- * parameters. The list of parameters will be populated based on the simulation method, algorithm, and statistics
- * selected. The user can then run the comparison and view the results in a JTextArea, where the string displayed is
- * written to using the PrintStream "localOut" in the Comparison class. The variables 'localOut' needs to be passed in
- * as a parameter to the constructor of the Comparison class.
+ * The AlgcomparisonEditor class is a JPanel that allows users to compare and analyze different algorithms and
+ * simulation methods. It provides a graphical user interface to select and configure various simulation methods,
+ * algorithms, and statistics.
  * <p>
- * The list of simulation methods, algorithms, statistics, and parameters are populated by the methods in the Comparison
- * class. The lists of simulation methods, algorithms, statistics, and parameters are obtained using the Reflection API.
- * Simulations are classes that implement the edu.cmu.tetrad.algcomparison.simulation.Simulation interface, algorithms
- * are classes that implement the edu.cmu.tetrad.algcomparison.algorithm.Algorithm interface, and statistics are classes
- * that implement the edu.cmu.tetrad.algcomparison.statistic.Statistic interface. The simulation statistics are obtained
- * by a method as yet unknown. The algorithm statistics displayed may be obtained by calling the getStatistics() method
- * in the Algorithm interface. The parameters are obtained by calling the getParameters() method in the Algorithm
- * interface.
+ * The class contains the following fields: - simulationChoiceTextArea: JTextArea to display the selected simulation
+ * method. - algorithmChoiceTextArea: JTextArea to display the selected algorithm. - statisticsChoiceTextArea: JTextArea
+ * to display the selected statistics. - resultsTextArea: JTextArea to display the comparison results. -
+ * helpChoiceTextArea: JTextArea to display help information. - addSimulation: Button to add a new simulation. - model:
+ * An AlgcomparisonModel object that holds the data and handles the comparison logic. - independenceTestDropdown:
+ * Dropdown to select the independence test method.
  * <p>
- * The simulations, algorithms, and statistics are each presented in a JList in a JScrollPane. The user can select one
- * simulation method, one or more algorithms, and one or more statistics. The parameters are presented in a parameter
- * panel that will be coded in the ParameterPanel class. The user can select the parameters for each algorithm and will
- * dynamically change based on the simulation method and algorithms selected. The user can then run the comparison by
- * clicking the "Run Comparison" button. The results will be displayed in a JTextArea in a JScrollPane.
- *
- * @author josephramsey 2024-3-29
+ * The AlgcomparisonEditor class provides the following methods: - AlgcomparisonEditor: The constructor for the
+ * AlgcomparisonEditor class. It creates a new Comparison object, populates the lists of simulation methods, algorithms,
+ * and statistics , and initializes the GUI components. It sets up an ActionListener for the "Run Comparison" button to
+ * trigger the comparison. - getSimulation: A utility method to retrieve a specific simulation object using the given
+ * graph and simulation class names. - addTestAndScoreDropdowns: A utility method to add the independence test and score
+ * dropdowns to the provided Box container. - getParameterText: A utility method to retrieve the parameter text to be
+ * displayed for a given set of parameter names and their values. - addAddSimulationListener: A method to add an
+ * ActionListener to handle adding a new simulation with the given parameters. - setSimulationText: A method to update
+ * the simulationChoiceTextArea with the selected simulation method. - getSimulationParameterText: A method to retrieve
+ * the simulation parameters information as text. - getAlgorithmParameterText: A method to retrieve the algorithm
+ * parameters information as text. - setAlgorithmText: A method to update the algorithmChoiceTextArea with the selected
+ * algorithm. - setStatisticsText: A method to update the statisticsChoiceTextArea with the selected statistics. -
+ * setResultsText: A method to update the resultsTextArea with the comparison results. - setHelpText: A method to update
+ * the helpChoiceTextArea with help information.
+ * <p>
+ * The AlgcomparisonEditor class extends javax.swing.JPanel.
  */
 public class AlgcomparisonEditor extends JPanel {
 
@@ -66,6 +65,7 @@ public class AlgcomparisonEditor extends JPanel {
     private final JTextArea resultsTextArea;
     private final JTextArea helpChoiceTextArea;
     private final JButton addSimulation;
+    private final JButton addAlgorithm;
     /**
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
@@ -87,22 +87,10 @@ public class AlgcomparisonEditor extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabPlacement(JTabbedPane.TOP);
 
-        // Create a new Comparison object and pass in the PrintStream "localOut" to the constructor
-        // Use the Reflection API to populate the lists of simulation methods, algorithms, and statistics
-        // Pass these lists
-        edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
-        try {
-            simulation = getSimulation(RandomForward.class,
-                    edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation.class);
-            model.addSimulation(simulation);
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                 IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
         simulationChoiceTextArea = new JTextArea();
         simulationChoiceTextArea.setLineWrap(true);
         simulationChoiceTextArea.setWrapStyleWord(true);
+        simulationChoiceTextArea.setEditable(false);
 
         setSimulationText();
 
@@ -116,15 +104,12 @@ public class AlgcomparisonEditor extends JPanel {
         simulationSelectionBox.add(Box.createHorizontalGlue());
 
         addSimulation = new JButton("Add Simulation");
-        addAddSimulationListener(model.getParameters(), simulation);
+        addAddSimulationListener(model.getParameters());
 
         JButton removeLastSimulation = new JButton("Remove Last Simulation");
-        removeLastSimulation.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                model.removeLastSimulation();
-                setSimulationText();
-            }
+        removeLastSimulation.addActionListener(e -> {
+            model.removeLastSimulation();
+            setSimulationText();
         });
 
         simulationSelectionBox.add(addSimulation);
@@ -136,17 +121,16 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Simulations", simulationChoice);
 
         algorithChoiceTextArea = new JTextArea();
+        algorithChoiceTextArea.setLineWrap(true);
+        algorithChoiceTextArea.setWrapStyleWord(true);
+        algorithChoiceTextArea.setEditable(false);
         setAlgorithmText();
 
         Box algorithSelectionBox = Box.createHorizontalBox();
         algorithSelectionBox.add(Box.createHorizontalGlue());
 
-        JButton addAlgorithm = new JButton("Add Algorithm");
-        addAlgorithm.addActionListener(e -> {
-            Algorithm algorithm = new Pc();
-            model.addAlgorithm(algorithm);
-            setAlgorithmText();
-        });
+        addAlgorithm = new JButton("Add Algorithm");
+        addAddAlgorithmListener(model.getParameters());
 
         JButton removeLastAlgorithm = new JButton("Remove Last Algorithm");
         removeLastAlgorithm.addActionListener(e -> {
@@ -171,6 +155,9 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Algorithms", algorithmChoice);
 
         statisticsChoiceTextArea = new JTextArea();
+        statisticsChoiceTextArea.setLineWrap(true);
+        statisticsChoiceTextArea.setWrapStyleWord(true);
+        statisticsChoiceTextArea.setEditable(false);
         setStatisticsText();
 
         Box statisticsSelectionBox = Box.createHorizontalBox();
@@ -187,8 +174,11 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Statistics", statisticsChoice);
 
         resultsTextArea = new JTextArea();
-        setResultsText();
+        resultsTextArea.setLineWrap(false);
+        resultsTextArea.setWrapStyleWord(false);
         resultsTextArea.setEditable(false);
+
+        setResultsText();
 
         Box resultsSelectionBox = Box.createHorizontalBox();
         resultsSelectionBox.add(Box.createHorizontalGlue());
@@ -207,8 +197,11 @@ public class AlgcomparisonEditor extends JPanel {
         JPanel helpChoice = new JPanel();
         helpChoice.setLayout(new BorderLayout());
         helpChoiceTextArea = new JTextArea();
-        setHelpText();
+        helpChoiceTextArea.setLineWrap(true);
+        helpChoiceTextArea.setWrapStyleWord(true);
         helpChoiceTextArea.setEditable(false);
+
+        setHelpText();
         helpChoice.add(helpChoiceTextArea, BorderLayout.CENTER);
 
         Box helpSelectionBox = Box.createHorizontalBox();
@@ -229,16 +222,6 @@ public class AlgcomparisonEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
-
-        // Create a new JFrame
-
-        // Add the JLists, ParameterPanel, and JTextArea to the JFrame
-
-        // Add an ActionListener to the "Run Comparison" button that will call the runComparison() method in the Comparison class
-
-        // Set the JFrame to be visible
-
-
     }
 
     @NotNull
@@ -282,70 +265,25 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     @NotNull
-    private static Box getSelectionBox(AlgcomparisonModel model) {
-        java.util.List<String> simulations = model.getSimulationName();
-        java.util.List<String> algorithms = model.getAlgorithmsName();
-        java.util.List<String> statistics = model.getStatisticsNames();
+    private static String getParameterText(Set<String> paramNamesSet, Parameters parameters) {
+        List<String> paramNames = new ArrayList<>(paramNamesSet);
+        Collections.sort(paramNames);
 
-        JList<String> simulationList = new JList<>(simulations.toArray(new String[0]));
-        JList<String> algorithmList = new JList<>(algorithms.toArray(new String[0]));
-        JList<String> statisticList = new JList<>(statistics.toArray(new String[0]));
+        StringBuilder paramText = new StringBuilder();
 
-        simulationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        algorithmList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        statisticList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
 
-        simulationList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) { // This condition checks that the user has finished changing the selection.
-                    JList source = (JList) e.getSource();
-                    String selected = (String) source.getSelectedValue();
+        for (String name : paramNames) {
+            ParamDescription description = paramDescriptions.get(name);
+            paramText.append("\n\n- ").append(name).append(" = ").append(parameters.get(name));
+            paramText.append("\n").append(description.getShortDescription());
+            paramText.append("--that is, ").append(description.getLongDescription());
+        }
 
-                    model.setSelectedSimulation(selected);
-
-                    // Update the algorithm list based on the selected simulation
-                    java.util.List<String> algorithms = model.getAlgorithmsName();
-                    algorithmList.setListData(algorithms.toArray(new String[0]));
-                }
-            }
-        });
-
-        Box horiz1 = Box.createHorizontalBox();
-
-        Box vert1 = Box.createVerticalBox();
-        vert1.add(new JLabel("Simulation:"));
-//        vert1.add(new JScrollPane(simulationList));
-
-        Box vert2 = Box.createVerticalBox();
-        vert2.add(new JLabel("Algorithms:"));
-//        vert2.add(new JScrollPane(algorithmList));
-
-        Box vert3 = Box.createVerticalBox();
-        vert3.add(new JLabel("Statistics:"));
-        vert3.add(new JScrollPane(statisticList,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-
-        JLabel label = new JLabel("Instructions: Select a simulation, one or more algorithms, and one or more statistics.");
-        Box horiz2 = Box.createHorizontalBox();
-        horiz2.add(label);
-        horiz2.add(Box.createHorizontalGlue());
-
-        Box vert4 = Box.createVerticalBox();
-        vert4.add(horiz2);
-
-        horiz1.add(vert1);
-        horiz1.add(vert2);
-        horiz1.add(vert3);
-
-        vert4.add(horiz1);
-
-        return vert4;
+        return paramText.toString();
     }
 
-
-    private void addAddSimulationListener(Parameters parameters, edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+    private void addAddSimulationListener(Parameters parameters) {
         addSimulation.addActionListener(e -> {
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -401,71 +339,185 @@ public class AlgcomparisonEditor extends JPanel {
             JButton cancelButton = new JButton("Cancel");
 
             // Add action listeners for the buttons
-            addButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String graphString = (String) graphsDropdown.getSelectedItem();
-                    String simulationString = (String) simulationsDropdown.getSelectedItem();
+            addButton.addActionListener(e1 -> {
+                String graphString = (String) graphsDropdown.getSelectedItem();
+                String simulationString = (String) simulationsDropdown.getSelectedItem();
 
-                    List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
+                List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
 
-                    Class<? extends RandomGraph> graphClazz = switch (graphTypeStrings.indexOf(graphString)) {
-                        case 0:
-                            yield RandomForward.class;
-                        case 1:
-                            yield ErdosRenyi.class;
-                        case 2:
-                            yield ScaleFree.class;
-                        case 4:
-                            yield Cyclic.class;
-                        case 5:
-                            yield RandomSingleFactorMim.class;
-                        case 6:
-                            yield RandomTwoFactorMim.class;
-                        default:
-                            throw new IllegalArgumentException("Unexpected value: " + graphString);
-                    };
+                Class<? extends RandomGraph> graphClazz = switch (graphTypeStrings.indexOf(graphString)) {
+                    case 0:
+                        yield RandomForward.class;
+                    case 1:
+                        yield ErdosRenyi.class;
+                    case 2:
+                        yield ScaleFree.class;
+                    case 4:
+                        yield Cyclic.class;
+                    case 5:
+                        yield RandomSingleFactorMim.class;
+                    case 6:
+                        yield RandomTwoFactorMim.class;
+                    default:
+                        throw new IllegalArgumentException("Unexpected value: " + graphString);
+                };
 
-                    List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
+                List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
 
-                    Class<? extends Simulation> simulationClass = switch(simulationTypeStrings.indexOf(simulationString)) {
-                        case 0:
-                            yield edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation.class;
-                        case 1:
-                            yield edu.cmu.tetrad.algcomparison.simulation.SemSimulation.class;
-                        case 2:
-                            yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
-                        case 3:
-                            yield edu.cmu.tetrad.algcomparison.simulation.NLSemSimulation.class;
-                        case 4:
-                            yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
-                        case 5:
-                            yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
-                        case 6:
-                            yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
-                        default:
-                            throw new IllegalArgumentException("Unexpected value: " + simulationString);
-                    };
+                Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
+                    case 0:
+                        yield edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation.class;
+                    case 1:
+                        yield edu.cmu.tetrad.algcomparison.simulation.SemSimulation.class;
+                    case 2:
+                        yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
+                    case 3:
+                        yield edu.cmu.tetrad.algcomparison.simulation.NLSemSimulation.class;
+                    case 4:
+                        yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
+                    case 5:
+                        yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                    case 6:
+                        yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
+                    default:
+                        throw new IllegalArgumentException("Unexpected value: " + simulationString);
+                };
 
-                    try {
-                        model.addSimulation(getSimulation(graphClazz, simulationClass));
-                        setSimulationText();
-                    } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                             IllegalAccessException ex) {
-                        throw new RuntimeException(ex);
-                    }
-
-                    dialog.dispose(); // Close the dialog
+                try {
+                    model.addSimulation(getSimulation(graphClazz, simulationClass));
+                    setSimulationText();
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                         IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
                 }
+
+                dialog.dispose(); // Close the dialog
             });
 
-            cancelButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // Handle the Cancel button click event
-                    System.out.println("Cancel button clicked");
-                    dialog.dispose(); // Close the dialog
+            cancelButton.addActionListener(e12 -> {
+                // Handle the Cancel button click event
+                System.out.println("Cancel button clicked");
+                dialog.dispose(); // Close the dialog
+            });
+
+            // Add the buttons to the button panel
+            buttonPanel.add(addButton);
+            buttonPanel.add(cancelButton);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            // Set the dialog size, position, and visibility
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
+    }
+
+    private void addAddAlgorithmListener(Parameters parameters) {
+        addAlgorithm.addActionListener(e -> {
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            Box vert1 = Box.createVerticalBox();
+            Box horiz2 = Box.createHorizontalBox();
+            horiz2.add(new JLabel("Choose a graph type:"));
+            horiz2.add(Box.createHorizontalGlue());
+            JComboBox<String> graphsDropdown = new JComboBox<>();
+
+            Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
+            graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
+            graphsDropdown.setSelectedItem(parameters.getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
+//            graphsDropdown.addActionListener(e -> refreshParameters());
+
+            horiz2.add(graphsDropdown);
+            vert1.add(horiz2);
+            Box horiz3 = Box.createHorizontalBox();
+            horiz3.add(new JLabel("Choose an algorithm:"));
+            horiz3.add(Box.createHorizontalGlue());
+
+            JComboBox<String> simulationsDropdown = new JComboBox<>();
+
+            Arrays.stream(ParameterTab.MODEL_TYPE_ITEMS).forEach(simulationsDropdown::addItem);
+            simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
+
+            horiz3.add(simulationsDropdown);
+            vert1.add(horiz3);
+
+            addTestAndScoreDropdowns(vert1);
+
+            panel.add(vert1, BorderLayout.NORTH);
+
+            // Create the JDialog. Use the parent frame to make it modal.
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+            dialog.add(panel, BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton addButton = new JButton("Add");
+            JButton cancelButton = new JButton("Cancel");
+
+            // Add action listeners for the buttons
+            addButton.addActionListener(e1 -> {
+                String graphString = (String) graphsDropdown.getSelectedItem();
+                String simulationString = (String) simulationsDropdown.getSelectedItem();
+
+                List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
+
+                Class<? extends RandomGraph> graphClazz = switch (graphTypeStrings.indexOf(graphString)) {
+                    case 0:
+                        yield RandomForward.class;
+                    case 1:
+                        yield ErdosRenyi.class;
+                    case 2:
+                        yield ScaleFree.class;
+                    case 4:
+                        yield Cyclic.class;
+                    case 5:
+                        yield RandomSingleFactorMim.class;
+                    case 6:
+                        yield RandomTwoFactorMim.class;
+                    default:
+                        throw new IllegalArgumentException("Unexpected value: " + graphString);
+                };
+
+                List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
+
+                Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
+                    case 0:
+                        yield edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation.class;
+                    case 1:
+                        yield edu.cmu.tetrad.algcomparison.simulation.SemSimulation.class;
+                    case 2:
+                        yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
+                    case 3:
+                        yield edu.cmu.tetrad.algcomparison.simulation.NLSemSimulation.class;
+                    case 4:
+                        yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
+                    case 5:
+                        yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                    case 6:
+                        yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
+                    default:
+                        throw new IllegalArgumentException("Unexpected value: " + simulationString);
+                };
+
+                try {
+                    model.addSimulation(getSimulation(graphClazz, simulationClass));
+                    setSimulationText();
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                         IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
                 }
+
+                dialog.dispose(); // Close the dialog
+            });
+
+            cancelButton.addActionListener(e12 -> {
+                // Handle the Cancel button click event
+                System.out.println("Cancel button clicked");
+                dialog.dispose(); // Close the dialog
             });
 
             // Add the buttons to the button panel
@@ -490,14 +542,13 @@ public class AlgcomparisonEditor extends JPanel {
 
         if (simulations.isEmpty()) {
             simulationChoiceTextArea.append("""
-
                      ** No simulations have been selected. Please select at least one simulation using the Add Simulation button below. **
                     """);
             return;
         } else if (simulations.size() == 1) {
             simulationChoiceTextArea.setText("""
                     The following simulation has been selected. This simulations will be run with the selected algorithms.
-                    
+                                        
                     """);
 
             Simulation simulation = simulations.get(0);
@@ -532,69 +583,114 @@ public class AlgcomparisonEditor extends JPanel {
             paramNamesSet.addAll(simulation.getParameters());
         }
 
-        List<String> paramNames = new ArrayList<>(paramNamesSet);
-        Collections.sort(paramNames);
-
         StringBuilder paramText;
 
         if (simulations.size() == 1) {
-            paramText = new StringBuilder("\nParameter choices:");
+            paramText = new StringBuilder("\nParameter choices for this simulation:");
         } else {
             paramText = new StringBuilder("\nParameter choices for all simulations:");
         }
 
-        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        paramText.append(getParameterText(paramNamesSet, parameters));
+        return paramText.toString();
+    }
 
-        for (String name : paramNames) {
-            ParamDescription description = paramDescriptions.get(name);
-            paramText.append("\n\n- ").append(name).append(" = ").append(parameters.get(name));
-            paramText.append("\n").append(description.getShortDescription());
-            paramText.append("--that is, ").append(description.getLongDescription());
+    private String getAlgorithmParameterText() {
+        Parameters parameters = model.getParameters();
+
+        List<Algorithm> simulations = model.getSelectedAlgorithms().getAlgorithms();
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
         }
 
+        StringBuilder paramText;
+
+        if (simulations.size() == 1) {
+            paramText = new StringBuilder("\nParameter choices for this algorithm:");
+        } else {
+            paramText = new StringBuilder("\nParameter choices for all algorithms:");
+        }
+
+        paramText.append(getParameterText(paramNamesSet, parameters));
         return paramText.toString();
     }
 
     private void setAlgorithmText() {
-        algorithChoiceTextArea.setText("""
-                The following algorithms have been selected:
-                                
-                These algorithms will be run with the selected simulations.
-                                
-                Algorithm #1 = PC (Peter and Clark)
-                                
-                Algorithm #2 = FCI (Fast Causal Inference)
-                                
-                Algorithm #3 = GFCI (Greedy Fast Causal Inference)
-                                
-                Algorithm #4 = BOSS (Best Order Score Search)
-                                
-                Parameter choices for all algorithms:
-                - Alpha = 0.05
-                - Max degree = 3
-                - Max path length = 3
-                - Depth = 3, 4, 5
-                - Seed = 0
-                ...
-                """);
+        algorithChoiceTextArea.setText("");
+
+        Algorithms selectedAlgorithms = model.getSelectedAlgorithms();
+        List<Algorithm> algorithms = selectedAlgorithms.getAlgorithms();
+
+        if (algorithms.isEmpty()) {
+            algorithChoiceTextArea.append("""
+                     ** No algorithm have been selected. Please select at least one algorithm using the Add Algorithm button below. **
+                    """);
+            return;
+        } else if (algorithms.size() == 1) {
+            algorithChoiceTextArea.setText("""
+                    The following algorithm has been selected. This algorithm will be run with the selected simulations.
+                                        
+                    """);
+
+            Algorithm algorithm = algorithms.get(0);
+            Class<? extends Algorithm> algorithmClass = algorithm.getClass();
+            algorithChoiceTextArea.append("Selected algorithm = " + algorithmClass.getSimpleName() + "\n");
+        } else {
+            algorithChoiceTextArea.setText("""
+                    The following simulations have been selected. These simulations will be run with the selected algorithms.
+                    """);
+            for (int i = 0; i < algorithms.size(); i++) {
+                algorithChoiceTextArea.append("\n");
+                algorithChoiceTextArea.append("Algorithm #" + (i + 1) + ":\n");
+                algorithChoiceTextArea.append("Selected graph type = " + algorithms.get(i).getClass().getSimpleName() + "\n");
+                algorithChoiceTextArea.append("Selected simulation type = " + algorithms.get(i).getClass().getSimpleName() + "\n");
+            }
+        }
+
+        algorithChoiceTextArea.append(getAlgorithmParameterText());
+        algorithChoiceTextArea.setCaretPosition(0);
     }
 
     private void setStatisticsText() {
-        statisticsChoiceTextArea.setText("""
-                The following statistics have been selected.
-                                
-                These statistics will be calculated for the selected simulations and algorithms.
-                                
-                The comparison table will include these statistics as columns in the table.
-                                
-                - AP (Average Precision)
-                                
-                - AR (Average Recall)
-                                
-                - AHP (Average Hit Precision)
-                                
-                - AHR (Average Hit Recall)
-                """);
+        statisticsChoiceTextArea.setText("");
+
+        Statistics selectedStatistics = model.getSelectedStatistics();
+        List<Statistic> statistics = selectedStatistics.getStatistics();
+
+        if (statistics.isEmpty()) {
+            statisticsChoiceTextArea.append("""
+                     ** No statistics have been selected. Please select at least one statistic using the Add Statistic(s) button below. **
+                    """);
+            return;
+        } else if (statistics.size() == 1) {
+            statisticsChoiceTextArea.setText("""
+                    The following statistics has been selected. The comparison table will include these statistics as columns in the table.
+                                        
+                    """);
+        } else {
+            statisticsChoiceTextArea.setText("""
+                    The following simulations have been selected. The comparison table will include these statistics as columns in the table.
+                    """);
+        }
+
+        for (int i = 0; i < statistics.size(); i++) {
+            Statistic statistic = statistics.get(i);
+            Class<? extends Statistic> statisticClass = statistic.getClass();
+
+            try {
+                Statistic statistic1 = statisticClass.getConstructor().newInstance();
+                statisticsChoiceTextArea.append("\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
+
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        statisticsChoiceTextArea.append(getAlgorithmParameterText());
+        statisticsChoiceTextArea.setCaretPosition(0);
     }
 
     private void setResultsText() {
@@ -676,7 +772,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         private void processBuffer() {
             // Process the buffered data (print it in this case)
-            System.out.print("Buffered data: " + buffer.toString());
+            System.out.print("Buffered data: " + buffer);
             buffer.setLength(0); // Clear the buffer for next data
         }
     }
