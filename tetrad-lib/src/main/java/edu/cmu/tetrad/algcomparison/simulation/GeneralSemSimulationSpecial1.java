@@ -158,6 +158,16 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         return parameters;
     }
 
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
     private GeneralizedSemPm getPm(Graph graph) {
 
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);

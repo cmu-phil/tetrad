@@ -263,6 +263,16 @@ public class LinearFisherModel implements Simulation, TakesData {
         return parameters;
     }
 
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -1125,7 +1125,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
-            <model name="Algcomparison" acronym="Algcomparison"
+            <model name="Algcomparison" acronym="Compare Algorithms"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>

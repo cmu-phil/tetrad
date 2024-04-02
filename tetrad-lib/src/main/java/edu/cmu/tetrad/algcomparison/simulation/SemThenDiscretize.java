@@ -161,6 +161,16 @@ public class SemThenDiscretize implements Simulation {
         return parameters;
     }
 
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
     /**
      * {@inheritDoc}
      */

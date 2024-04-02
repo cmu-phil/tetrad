@@ -62,16 +62,13 @@ public class AlgcomparisonModel implements SessionModel {
     private final Comparison comparison = new Comparison();
     private final List<String> statNames;
     private final List<String> simNames;
-    private final List<Class<? extends Simulation>> simulations;
-    private final List<Class<? extends Algorithm>> algorithms;
-    private final List<Class<? extends Statistic>> statistics;
-    /**
-     * A private instance variable that holds a list of possible Parameter objects.
-     */
+    private final List<Class<? extends Simulation>> simulationClasses;
+    private final List<Class<? extends Algorithm>> algorithmClasses;
+    private final List<Class<? extends Statistic>> statisticsClasses;
     private final Parameters parameters = new Parameters();
     private List<String> algNames;
-    private Simulations selectedSimulations = new Simulations();
-    private Algorithms selectedAlgorithms = new Algorithms();
+    private LinkedList<Simulation> selectedSimulations = new LinkedList<>();
+    private LinkedList<Algorithm> selectedAlgorithms = new LinkedList<>();
     private Statistics selectedStatistics = new Statistics();
     private List<String> selectedParameters = new LinkedList<>();
 
@@ -82,7 +79,7 @@ public class AlgcomparisonModel implements SessionModel {
     private String outputFileName = "Comparison";
 
     private PrintStream localOut = null;
-    private Map<String, Class<? extends Simulation>> simulationMap;
+    private Map<String, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> simulationMap;
     private Map<String, Class<? extends Statistic>> statisticsMap;
     private Map<String, Class<? extends Algorithm>> algorithmMap;
 
@@ -90,25 +87,25 @@ public class AlgcomparisonModel implements SessionModel {
 
         Set<Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
                 edu.cmu.tetrad.algcomparison.simulation.Simulation.class);
-        simulations = new ArrayList<>(_simulations);
+        simulationClasses = new ArrayList<>(_simulations);
 
         Set<Class<? extends Algorithm>> _algorithms = findImplementations("edu.cmu.tetrad.algcomparison.algorithm",
                 Algorithm.class);
 
-        this.algorithms = new ArrayList<>(_algorithms);
+        this.algorithmClasses = new ArrayList<>(_algorithms);
 
         Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic",
                 Statistic.class);
 
-        this.statistics = new ArrayList<>(_statistics);
+        this.statisticsClasses = new ArrayList<>(_statistics);
 
-        this.simulations.sort(Comparator.comparing(Class::getName));
-        this.algorithms.sort(Comparator.comparing(Class::getName));
-        this.statistics.sort(Comparator.comparing(Class::getName));
+        this.simulationClasses.sort(Comparator.comparing(Class::getName));
+        this.algorithmClasses.sort(Comparator.comparing(Class::getName));
+        this.statisticsClasses.sort(Comparator.comparing(Class::getName));
 
-        algNames = getAlgorithmNamesFromAnnotations(algorithms);
-        statNames = getStatisticsNamesFromImplemenations(statistics);
-        simNames = getSimulationNamesFromImplemenations(simulations);
+        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
+        statNames = getStatisticsNamesFromImplemenations(statisticsClasses);
+        simNames = getSimulationNamesFromImplemenations(simulationClasses);
 
         this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
         this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
@@ -130,8 +127,14 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public void doComparison() {
-        comparison.compareFromSimulations(resultsPath, selectedSimulations, outputFileName, localOut,
-                selectedAlgorithms, selectedStatistics, parameters);
+        Simulations simulations = new Simulations();
+        for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
+
+        Algorithms algorithms = new Algorithms();
+        for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
+
+        comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
+                algorithms, selectedStatistics, parameters);
     }
 
     /**
@@ -168,7 +171,10 @@ public class AlgcomparisonModel implements SessionModel {
      * selected simulation.
      */
     public Simulations getSelectedSimulations() {
-        return selectedSimulations;
+        Simulations simulations = new Simulations();
+        for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
+
+        return simulations;
     }
 
     /**
@@ -182,85 +188,21 @@ public class AlgcomparisonModel implements SessionModel {
             throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
         }
 
-        Class<? extends Simulation> simulation = simulationMap.get(name);
+        Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulation = simulationMap.get(name);
 
-        if (!(simulations.contains(simulation))) {
+        if (!(simulationClasses.contains(simulation))) {
             throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
         }
 
-        try {
-
-            RandomGraph graph = new RandomForward();
-
-            Simulation _simulation = simulation.getConstructor(RandomGraph.class).newInstance(graph);
-
-            this.selectedSimulations = new Simulations();
-            this.selectedSimulations.getSimulations().add(_simulation);
-            DataType dataType = _simulation.getDataType();
-
-            List<Class<? extends Algorithm>> algorithms = new ArrayList<>();
-
-            for (Class<? extends Algorithm> algorithm : this.algorithms) {
-                try {
-                    Constructor<? extends Algorithm> constructor = algorithm.getConstructor();
-
-                    Algorithm _algorithm = constructor.newInstance();
-
-                    if (_algorithm instanceof TakesIndependenceWrapper) {
-                        TakesIndependenceWrapper takesIndependenceWrapper = (TakesIndependenceWrapper) _algorithm;
-                        takesIndependenceWrapper.setIndependenceWrapper(null);
-                    }
-
-                    if (_algorithm.getDataType() == dataType) {
-                        algorithms.add(algorithm);
-                    }
-                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                         IllegalAccessException e) {
-//                    e.printStackTrace();
-                }
-            }
-
-            List<String> algorithmNames = getAlgorithmNamesFromAnnotations(algorithms);
-            algorithmNames.sort(String.CASE_INSENSITIVE_ORDER);
-
-            System.out.println(algorithmNames);
-
-            this.algNames = algorithmNames;
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                 IllegalAccessException e) {
-            throw new IllegalArgumentException("Selected simulation must have a constructor that takes a RandomGraph.");
-        }
     }
 
     /**
      * A private instance variable that holds a list of selected Algorithm objects.
      */
     public Algorithms getSelectedAlgorithms() {
-        return selectedAlgorithms;
-    }
-
-    /**
-     * Sets the selected algorithms in the AlgcomparisonModel.
-     *
-     * @param selectedAlgorithms The selected algorithms to be set.
-     * @throws IllegalArgumentException If the selected algorithms is null, empty, or not in the list of algorithms.
-     */
-    public void setSelectedAlgorithms(Algorithms selectedAlgorithms) {
-        if (selectedAlgorithms == null) {
-            throw new IllegalArgumentException("Selected algorithms must not be null.");
-        }
-
-        if (selectedAlgorithms.getAlgorithms().isEmpty()) {
-            throw new IllegalArgumentException("Selected algorithms must not be empty.");
-        }
-
-        for (Algorithm algorithm : selectedAlgorithms.getAlgorithms()) {
-            if (!(algorithms.contains(algorithm))) {
-                throw new IllegalArgumentException("Selected algorithm must be in the list of algorithms.");
-            }
-        }
-
-        this.selectedAlgorithms = selectedAlgorithms;
+        Algorithms algorithms = new Algorithms();
+        for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
+        return algorithms;
     }
 
     /**
@@ -286,7 +228,7 @@ public class AlgcomparisonModel implements SessionModel {
         }
 
         for (Statistic statistic : selectedStatistics.getStatistics()) {
-            if (!(statistics.contains(statistic))) {
+            if (!(statisticsClasses.contains(statistic))) {
                 throw new IllegalArgumentException("Selected statistic must be in the list of statistics.");
             }
         }
@@ -450,6 +392,27 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public void setLocalOut(PrintStream localOut) {
         this.localOut = localOut;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    public void addSimulation(Simulation simulation) {
+        selectedSimulations.add(simulation);
+        System.out.println("Adding simulation: " + simulation);
+    }
+
+    public void removeLastSimulation() {
+        selectedSimulations.removeLast();
+    }
+
+    public void addAlgorithm(Algorithm algorithm) {
+        selectedAlgorithms.add(algorithm);
+    }
+
+    public void removeLastAlgorithm() {
+        selectedAlgorithms.removeLast();
     }
 }
 

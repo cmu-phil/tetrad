@@ -209,6 +209,16 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     }
 
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
     /**
      * {@inheritDoc}
      */

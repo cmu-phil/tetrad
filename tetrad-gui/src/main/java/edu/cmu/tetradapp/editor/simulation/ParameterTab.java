@@ -47,7 +47,7 @@ public class ParameterTab extends JPanel {
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
 
-    private static final String[] GRAPH_ITEMS = {
+    public static final String[] GRAPH_TYPE_ITEMS = {
             GraphTypes.RANDOM_FOWARD_DAG,
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
@@ -56,7 +56,7 @@ public class ParameterTab extends JPanel {
             GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
 
-    private static final String[] SOURCE_GRAPH_ITEMS = {
+    public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
@@ -302,16 +302,16 @@ public class ParameterTab extends JPanel {
 
         // type of graph options
         if (!this.simulation.isFixedGraph()) {
-            Arrays.stream(ParameterTab.GRAPH_ITEMS).forEach(this.graphsDropdown::addItem);
+            Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(this.graphsDropdown::addItem);
             this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
-            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_ITEMS[0]));
+            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
             this.graphsDropdown.addActionListener(e -> refreshParameters());
 
             simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        String[] simulationItems = getSimulationItems(this.simulation);
+        String[] simulationItems = getSimulationItems();
         Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
         this.simulationsDropdown.setSelectedItem(
@@ -376,43 +376,8 @@ public class ParameterTab extends JPanel {
         return box;
     }
 
-    private String[] getSimulationItems(Simulation simulation) {
-        String[] items;
-
-        if (simulation.isFixedSimulation()) {
-            if (simulation.getSimulation() instanceof BayesNetSimulation) {
-                items = new String[]{
-                        SimulationTypes.BAYS_NET
-                };
-            } else if (simulation.getSimulation() instanceof SemSimulation) {
-                items = new String[]{
-                        SimulationTypes.STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof LinearFisherModel) {
-                items = new String[]{
-                        SimulationTypes.LINEAR_FISHER_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
-                items = new String[]{
-                        SimulationTypes.STANDARDIZED_STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
-                items = new String[]{
-                        SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
-                items = new String[]{
-                        SimulationTypes.LOADED_FROM_FILES
-                };
-            } else {
-                throw new IllegalStateException("Not expecting that model type: "
-                                                + simulation.getSimulation().getClass());
-            }
-        } else {
-            items = ParameterTab.SOURCE_GRAPH_ITEMS;
-        }
-
-        return items;
+    public static String[] getSimulationItems() {
+        return ParameterTab.MODEL_TYPE_ITEMS;
     }
 
     /**

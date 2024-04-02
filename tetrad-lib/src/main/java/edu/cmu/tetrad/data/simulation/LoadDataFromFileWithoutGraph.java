@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.data.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
@@ -99,6 +100,16 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     @Override
     public List<String> getParameters() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**
