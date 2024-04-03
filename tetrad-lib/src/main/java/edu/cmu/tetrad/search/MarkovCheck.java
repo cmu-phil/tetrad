@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
@@ -212,6 +213,43 @@ public class MarkovCheck {
 
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
+
+    public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
+        Set<Node> parents = new HashSet<>(graph.getParents(x));
+
+        // Remove all parent nodes and x node itself from the graph
+        List<Node> graphNodes_others = graph.getNodes();
+        graphNodes_others.remove(x);
+        for (Node p : parents) graphNodes_others.remove(p);
+
+        List<IndependenceFact> factList = new ArrayList<>();
+        for (Node y : graphNodes_others) {
+            // TODO: shall i check if independenceTest is msepTest?
+            IndependenceResult testRes = independenceTest.checkIndependence(x, y, parents);
+            if (testRes.isValid()) factList.add(testRes.getFact());
+        }
+        return factList;
+    }
+
+    public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
+        // Default the independenceTest that we pass in be FisherZ test
+        // call pvalue function on each item, only include the non-null ones
+        List<Double> pVals = new ArrayList<>();
+        for (IndependenceFact f : facts) {
+            double pV;
+            if (independenceTest instanceof IndTestFisherZ) {
+                pV = ((IndTestFisherZ) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                pVals.add(pV);
+            }
+        }
+        return pVals;
+    }
+
+    public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getP();
+    }
+
 
     /**
      * Returns the variables of the independence test.
@@ -560,9 +598,9 @@ public class MarkovCheck {
     public void setKnowledge(Knowledge knowledge) {
         if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
             throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                                               "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                                               "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                                               "| Z1,..,Zn.");
+                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                    "| Z1,..,Zn.");
         }
 
         int lastTier = 0;
@@ -635,13 +673,13 @@ public class MarkovCheck {
         MarkovCheckRecord record = getMarkovCheckRecord();
 
         return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
-               "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
-               "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
-               "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
-               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
-               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
-               "Number of tests (indep): " + record.numTestsInd + "\n" +
-               "Number of tests (dep): " + record.numTestsDep;
+                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
+                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
+                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
+                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
+                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
+                "Number of tests (indep): " + record.numTestsInd + "\n" +
+                "Number of tests (dep): " + record.numTestsDep;
     }
 
     /**
@@ -793,7 +831,7 @@ public class MarkovCheck {
                     throw new RuntimeException(e);
                 }
                 boolean indep = result.isIndependent();
-                double pValue = result.getPValue(); // VBC TODO: is this the real pvalue for node x? or is it just storing d-speration fact? in IndTestFisherZ.java this is a real p value for x, given y, z.
+                double pValue = result.getPValue();
                 independenceTest.setVerbose(verbose);
 
                 if (!Double.isNaN(pValue)) {
@@ -856,7 +894,6 @@ public class MarkovCheck {
         for (IndependenceResult result : results) {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
-
 
         List<Double> pValues = getPValues(results);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));

@@ -378,7 +378,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */
-    private double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
+    public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
