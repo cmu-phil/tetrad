@@ -3,10 +3,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.*;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
@@ -22,19 +20,22 @@ import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The AlgcomparisonEditor class is a JPanel that allows users to compare and analyze different algorithms and
@@ -83,6 +84,9 @@ public class AlgcomparisonEditor extends JPanel {
      * and properties related to the comparison of algorithms.
      */
     private final AlgcomparisonModel model;
+    private final Box parameterBox = Box.createVerticalBox();
+    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+
 
     /**
      * The constructor for the AlgcomparisonEditor class. The constructor will create a new Comparison object and pass
@@ -122,9 +126,64 @@ public class AlgcomparisonEditor extends JPanel {
             setComparisonText();
         });
 
+        JButton editSimulationParameters = new JButton("Edit Parameters");
+
+        editSimulationParameters.addActionListener(e -> {
+            List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
+            Set<String> params = getAllSimulationParameters(simulations);
+
+            this.parameterBox.removeAll();
+
+            if (params.isEmpty()) {
+                this.parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+            } else {
+                Box parameters = Box.createVerticalBox();
+                Box[] paramBoxes = toArray(
+                        createParameterComponents(params, model.getParameters()));
+                int lastIndex = paramBoxes.length - 1;
+                for (int i = 0; i < lastIndex; i++) {
+                    parameters.add(paramBoxes[i]);
+                    parameters.add(Box.createVerticalStrut(10));
+                }
+                parameters.add(paramBoxes[lastIndex]);
+
+                this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+            }
+
+            this.parameterBox.validate();
+            this.parameterBox.repaint();
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Simulation Parameters", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            // Add your panel to the center of the dialog
+            dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton doneButton = new JButton("Done");
+
+            doneButton.addActionListener(e1 -> {
+//                Parameters parameters1 = ParameterComponents.toParameters(paramBoxes);
+//                model.setParameters(parameters1);
+                setSimulationText();
+                setComparisonText();
+                dialog.dispose();
+            });
+
+            buttonPanel.add(doneButton);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
+
         simulationSelectionBox.add(addSimulation);
         simulationSelectionBox.add(removeLastSimulation);
-        simulationSelectionBox.add(new JButton("Edit Parameters"));
+        simulationSelectionBox.add(editSimulationParameters);
         simulationSelectionBox.add(Box.createHorizontalGlue());
         simulationChoice.add(simulationSelectionBox, BorderLayout.SOUTH);
 
@@ -150,6 +209,59 @@ public class AlgcomparisonEditor extends JPanel {
         });
 
         JButton editAlgorithmParameters = new JButton("Edit Parameters");
+
+        editAlgorithmParameters.addActionListener(e -> {
+            List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
+            Set<String> params = getAllAlgorithmParameters(algorithm);
+
+            this.parameterBox.removeAll();
+
+            if (params.isEmpty()) {
+                this.parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+            } else {
+                Box parameters = Box.createVerticalBox();
+                Box[] paramBoxes = ParameterComponents.toArray(
+                        createParameterComponents(params, model.getParameters()));
+                int lastIndex = paramBoxes.length - 1;
+                for (int i = 0; i < lastIndex; i++) {
+                    parameters.add(paramBoxes[i]);
+                    parameters.add(Box.createVerticalStrut(10));
+                }
+                parameters.add(paramBoxes[lastIndex]);
+
+                this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+            }
+
+            this.parameterBox.validate();
+            this.parameterBox.repaint();
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            // Add your panel to the center of the dialog
+            dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton doneButton = new JButton("Done");
+
+            doneButton.addActionListener(e1 -> {
+//                Parameters parameters1 = ParameterComponents.toParameters(paramBoxes);
+//                model.setParameters(parameters1);
+                setAlgorithmText();
+                setComparisonText();
+                dialog.dispose();
+            });
+
+            buttonPanel.add(doneButton);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
 
         algorithSelectionBox.add(addAlgorithm);
         algorithSelectionBox.add(removeLastAlgorithm);
@@ -221,9 +333,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
 
-        setComparisonParameters.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison.");
-        });
+        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
@@ -302,11 +412,314 @@ public class AlgcomparisonEditor extends JPanel {
         add(tabbedPane, BorderLayout.CENTER);
     }
 
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    public static Box[] toArray(Map<String, Box> parameterComponents) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+
+        List<Box> boolComps = new LinkedList<>();
+        List<Box> otherComps = new LinkedList<>();
+        parameterComponents.forEach((k, v) -> {
+            if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
+                boolComps.add(v);
+            } else {
+                otherComps.add(v);
+            }
+        });
+
+        return Stream.concat(otherComps.stream(), boolComps.stream())
+                .toArray(Box[]::new);
+    }
+
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundDouble, upperBoundDouble);
+//            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundInt, upperBoundInt);
+////            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundInt = paramDesc.getLowerBoundLong();
+            long upperBoundInt = paramDesc.getUpperBoundLong();
+            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundInt, upperBoundInt);
+//            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundInt, upperBoundInt);
+//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    public static NumberListTextField getNumberListField(String parameter, Parameters parameters,
+                                                 Number[] defaultValues, double lowerBound, double upperBound) {
+        NumberListTextField field = new NumberListTextField(defaultValues,
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+
+        field.setFilter((values, oldValues) -> {
+            if (values == field.getValues()) {
+                return oldValues;
+            }
+
+//            if (value < lowerBound) {
+//                return oldValue;
+//            }
+//
+//            if (value > upperBound) {
+//                return oldValue;
+//            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+
+    /**
+     * <p>getDoubleField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a double
+     * @param lowerBound   a double
+     * @param upperBound   a double
+     * @return a {@link edu.cmu.tetradapp.util.DoubleTextField} object
+     */
+    public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                                 double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * <p>getIntTextField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a int
+     * @param lowerBound   a double
+     * @param upperBound   a double
+     * @return a {@link edu.cmu.tetradapp.util.IntTextField} object
+     */
+    public static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                               int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * <p>getLongTextField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a long
+     * @param lowerBound   a double
+     * @param upperBound   a double
+     * @return a {@link edu.cmu.tetradapp.util.LongTextField} object
+     */
+    public static LongTextField getLongTextField(String parameter, Parameters parameters,
+                                                 long defaultValue, double lowerBound, double upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * <p>getBooleanSelectionBox.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a boolean
+     * @return a {@link javax.swing.Box} object
+     */
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
+            }
+        });
+
+        return selectionBox;
+    }
+
+    /**
+     * <p>getStringField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
+     */
+    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+
+        field.setFilter((value, oldValue) -> {
+            if (value.equals(field.getValue().trim())) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+
+
     @NotNull
     private static String getXmlText() {
         return """
                 ** This is placeholder text **
-                
+                                
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 <comparison>
                     <compareBy>
@@ -407,6 +820,17 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         return paramText.toString();
+    }
+
+    @NotNull
+    private static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Simulation simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
     }
 
     private void addAddSimulationListener(Parameters parameters) {
@@ -638,7 +1062,6 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
-
     private void addAddStatisticsListener() {
         addStatistics.addActionListener(e -> {
 
@@ -777,12 +1200,7 @@ public class AlgcomparisonEditor extends JPanel {
         Parameters parameters = model.getParameters();
 
         List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Simulation simulation : simulations) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
+        Set<String> paramNamesSet = getAllSimulationParameters(simulations);
         StringBuilder paramText;
 
         if (simulations.size() == 1) {
@@ -797,17 +1215,11 @@ public class AlgcomparisonEditor extends JPanel {
 
     private String getAlgorithmParameterText() {
         Parameters parameters = model.getParameters();
-
-        List<Algorithm> simulations = model.getSelectedAlgorithms().getAlgorithms();
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Algorithm simulation : simulations) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
+        List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
+        Set<String> paramNamesSet = getAllAlgorithmParameters(algorithm);
         StringBuilder paramText;
 
-        if (simulations.size() == 1) {
+        if (algorithm.size() == 1) {
             paramText = new StringBuilder("\nParameter choices for this algorithm:");
         } else {
             paramText = new StringBuilder("\nParameter choices for all algorithms:");
@@ -815,6 +1227,17 @@ public class AlgcomparisonEditor extends JPanel {
 
         paramText.append(getParameterText(paramNamesSet, parameters));
         return paramText.toString();
+    }
+
+    @NotNull
+    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : algorithm) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
     }
 
     private void setAlgorithmText() {
@@ -909,14 +1332,14 @@ public class AlgcomparisonEditor extends JPanel {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
             || model.getSelectedStatistics().getStatistics().isEmpty()) {
             comparisonTextArea.setText(
-                """
-                ** You have made an empty selection; look back at the Simulation, Algorithm, and Statistics tabs **
-                """);
+                    """
+                            ** You have made an empty selection; look back at the Simulation, Algorithm, and Statistics tabs **
+                            """);
         } else {
             comparisonTextArea.setText
                     ("""
-                    ** Your selection is non-empty, but you have not yet run a comparison for it **
-                    """);
+                            ** Your selection is non-empty, but you have not yet run a comparison for it **
+                            """);
         }
     }
 
