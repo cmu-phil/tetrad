@@ -134,8 +134,11 @@ public class AlgcomparisonModel implements SessionModel {
         for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
 
         Comparison comparison = new Comparison();
+
+        // Making a copy of the parameters to send to Comparison since Comparison iterates
+        // over the parameters and modifies them.
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
-                algorithms, statistics, parameters);
+                algorithms, statistics, new Parameters(parameters));
     }
 
     /**

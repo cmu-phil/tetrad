@@ -37,12 +37,12 @@ import java.text.NumberFormat;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class NumberListTextField extends JTextField {
+public class ListDoubleTextField extends JTextField {
 
     /**
      * The getModel value of the text field.
      */
-    private Number[] values;
+    private Double[] values;
 
     /**
      * The number formatter for the number displayed.
@@ -74,7 +74,7 @@ public class NumberListTextField extends JTextField {
      * @param width  the width (in characters) of the text field.
      * @param format the number formatter, for example new Decimal("0.0000").
      */
-    public NumberListTextField(Number[] values, int width, NumberFormat format) {
+    public ListDoubleTextField(Double[] values, int width, NumberFormat format) {
         super(width);
         setup(values, format, format, 1e-4);
     }
@@ -82,22 +82,22 @@ public class NumberListTextField extends JTextField {
     /**
      * <p>Constructor for DoubleTextField.</p>
      *
-     * @param values            a Number[] array
+     * @param values            a Double[] array
      * @param width             a int
      * @param format            a {@link NumberFormat} object
      * @param smallNumberFormat a {@link NumberFormat} object
      * @param smallNumberCutoff a double
      */
-    public NumberListTextField(Number[] values, int width, NumberFormat format, NumberFormat smallNumberFormat,
+    public ListDoubleTextField(Double[] values, int width, NumberFormat format, NumberFormat smallNumberFormat,
                                double smallNumberCutoff) {
         super(width);
         setup(values, format, smallNumberFormat, smallNumberCutoff);
     }
 
     @NotNull
-    private static Number[] getNumbers(String actionCommand) {
+    private static Double[] getNumbers(String actionCommand) {
         String[] split = actionCommand.split(",");
-        Number[] values1 = new Number[split.length];
+        Double[] values1 = new Double[split.length];
 
         for (int i = 0; i < split.length; i++) {
             values1[i] = Double.parseDouble(split[i].trim());
@@ -110,7 +110,7 @@ public class NumberListTextField extends JTextField {
      *
      * @return the getModel value.
      */
-    public Number[] getValues() {
+    public Double[] getValues() {
         return this.values;
     }
 
@@ -119,26 +119,36 @@ public class NumberListTextField extends JTextField {
      *
      * @param values the values to be set.
      */
-    public void setValues(Number[] values) {
+    public void setValues(Double[] values) {
         if (values == this.values) {
             return;
         }
 
-        Number[] newValues = filter(values, this.values);
+        Double[] newValues = filter(values, this.values);
 
-        if (newValues == this.values) { // todo
-            smartSetText(this.format, this.values);
-        } else {
-            this.values = newValues;
-            smartSetText(this.format, this.values);
-            firePropertyChange("newValue", null, this.values);
+        // check if the values are the same
+        if (newValues.length == this.values.length) {
+            boolean same = true;
+            for (int i = 0; i < newValues.length; i++) {
+                if (!newValues[i].equals(this.values[i])) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                return;
+            }
         }
+
+        this.values = newValues;
+        smartSetText(this.format, this.values);
+        firePropertyChange("newValue", null, this.values);
     }
 
     /**
      * Sets whether the given value should be accepted.
      *
-     * @param filter a {@link NumberListTextField.Filter} object
+     * @param filter a {@link ListDoubleTextField.Filter} object
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -163,7 +173,7 @@ public class NumberListTextField extends JTextField {
         return getPreferredSize();
     }
 
-    private Number[] filter(Number[] values, Number[] oldValues) {
+    private Double[] filter(Double[] values, Double[] oldValues) {
         if (this.filter == null) {
             return values;
         }
@@ -171,13 +181,13 @@ public class NumberListTextField extends JTextField {
         return this.filter.filter(values, oldValues);
     }
 
-    private void setup(Number[] values, NumberFormat nf, NumberFormat smallNumberFormat, double smallNumberCutoff) {
+    private void setup(Double[] values, NumberFormat nf, NumberFormat smallNumberFormat, double smallNumberCutoff) {
         if (nf == null) {
             throw new NullPointerException();
         }
 
-        Number _default = Double.NaN;
-        Number[] defaultValues = new Number[values.length];
+        Double _default = Double.NaN;
+        Double[] defaultValues = new Double[values.length];
         for (int i = 0; i < values.length; i++) {
             defaultValues[i] = _default;
         }
@@ -191,16 +201,16 @@ public class NumberListTextField extends JTextField {
         addActionListener(e -> {
             try {
                 String actionCommand = e.getActionCommand();
-                Number[] values1 = getNumbers(actionCommand);
+                Double[] values1 = getNumbers(actionCommand);
                 setValues(values1);
             } catch (NumberFormatException e1) {
-                setText(NumberListTextField.this.format.format(getValues()));
+                setText(ListDoubleTextField.this.format.format(getValues()));
             }
         });
 
         addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                NumberListTextField source = (NumberListTextField) e.getSource();
+                ListDoubleTextField source = (ListDoubleTextField) e.getSource();
 
                 if (source.isEditable()) {
                     source.selectAll();
@@ -209,11 +219,11 @@ public class NumberListTextField extends JTextField {
 
             public void focusLost(FocusEvent e) {
                 try {
-                    Number[] values1 = getNumbers(getText());
+                    Double[] values1 = getNumbers(getText());
                     setValues(values1);
                 } catch (NumberFormatException e1) {
                     if (getText().trim().isEmpty()) {
-                        setValues(new Number[]{});
+                        setValues(new Double[]{});
                     } else {
                         setValues(getValues());
                     }
@@ -262,7 +272,7 @@ public class NumberListTextField extends JTextField {
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
          * @return The value that should be displayed.
          */
-        Number[] filter(Number[] value, Number[] oldValue);
+        Double[] filter(Double[] value, Double[] oldValue);
     }
 }
 

@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
@@ -68,13 +69,13 @@ import java.util.stream.Stream;
  */
 public class AlgcomparisonEditor extends JPanel {
 
+    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     private static JComboBox<IndependenceTestModel> indTestComboBox;
     private static JComboBox<ScoreModel> scoreModelComboBox;
     private final JTextArea simulationChoiceTextArea;
     private final JTextArea algorithChoiceTextArea;
     private final JTextArea statisticsChoiceTextArea;
     private final JTextArea comparisonTextArea;
-
     private final JTextArea helpChoiceTextArea;
     private final JButton addSimulation;
     private final JButton addAlgorithm;
@@ -85,7 +86,6 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private final AlgcomparisonModel model;
     private final Box parameterBox = Box.createVerticalBox();
-    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
 
 
     /**
@@ -331,13 +331,13 @@ public class AlgcomparisonEditor extends JPanel {
             new MyWatchedProcess();
         });
 
-        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
+//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
 
-        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
+//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
-        comparisonSelectionBox.add(setComparisonParameters);
+//        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
@@ -382,7 +382,7 @@ public class AlgcomparisonEditor extends JPanel {
         xmlSelectionBox.add(Box.createHorizontalGlue());
 
         xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
-        tabbedPane.addTab("XML", xmlPanel);
+//        tabbedPane.addTab("XML", xmlPanel);
 
 
         JPanel helpChoice = new JPanel();
@@ -444,24 +444,33 @@ public class AlgcomparisonEditor extends JPanel {
     private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
+
+        Object[] defaultValues = parameters.getValues(parameter);
+
         if (defaultValue instanceof Double) {
             double lowerBoundDouble = paramDesc.getLowerBoundDouble();
             double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundDouble, upperBoundDouble);
-//            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
-//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+            Double[] defValues = new Double[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Double) defaultValues[i];
+            }
+            component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
         } else if (defaultValue instanceof Integer) {
             int lowerBoundInt = paramDesc.getLowerBoundInt();
             int upperBoundInt = paramDesc.getUpperBoundInt();
-            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundInt, upperBoundInt);
-////            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
-//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+            Integer[] defValues = new Integer[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Integer) defaultValues[i];
+            }
+            component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Long) {
-            long lowerBoundInt = paramDesc.getLowerBoundLong();
-            long upperBoundInt = paramDesc.getUpperBoundLong();
-            component = getNumberListField(parameter, parameters, new Number[0], lowerBoundInt, upperBoundInt);
-//            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundInt, upperBoundInt);
-//            component = getStringField(parameter, parameters, String.valueOf(defaultValue));
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            Long[] defValues = new Long[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Long) defaultValues[i];
+            }
+            component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
@@ -484,14 +493,98 @@ public class AlgcomparisonEditor extends JPanel {
         return paramRow;
     }
 
-    public static NumberListTextField getNumberListField(String parameter, Parameters parameters,
-                                                 Number[] defaultValues, double lowerBound, double upperBound) {
-        NumberListTextField field = new NumberListTextField(defaultValues,
+    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters,
+                                                             Double[] defaultValues, double lowerBound, double upperBound) {
+        ListDoubleTextField field = new ListDoubleTextField(defaultValues,
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
 
         field.setFilter((values, oldValues) -> {
-            if (values == field.getValues()) {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] < lowerBound) {
+                    return oldValues;
+                }
+
+                if (values[i] > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters,
+                                                       Integer[] defaultValues, double lowerBound, double upperBound) {
+        ListIntTextField field = new ListIntTextField(defaultValues, 8);
+
+        field.setFilter((values, oldValues) -> {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] < lowerBound) {
+                    return oldValues;
+                }
+
+                if (values[i] > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
+                return oldValues;
+            }
+
+//            if (value < lowerBound) {
+//                return oldValue;
+//            }
+//
+//            if (value > upperBound) {
+//                return oldValue;
+//            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
+                                                         Long[] defaultValues, double lowerBound, double upperBound) {
+        ListLongTextField field = new ListLongTextField(defaultValues, 8);
+
+
+        field.setFilter((values, oldValues) -> {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] < lowerBound) {
+                    return oldValues;
+                }
+
+                if (values[i] > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
                 return oldValues;
             }
 
@@ -714,7 +807,6 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
 
-
     @NotNull
     private static String getXmlText() {
         return """
@@ -811,10 +903,31 @@ public class AlgcomparisonEditor extends JPanel {
         StringBuilder paramText = new StringBuilder();
 
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        NumberFormat nf = new DecimalFormat("0.####");
 
         for (String name : paramNames) {
             ParamDescription description = paramDescriptions.get(name);
-            paramText.append("\n\n- ").append(name).append(" = ").append(parameters.get(name));
+            Object[] values = parameters.getValues(name);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < values.length; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+
+                if (values[i] instanceof Double)
+                    sb.append(nf.format((double) values[i]));
+                else if (values[i] instanceof Integer)
+                    sb.append((int) values[i]);
+                else if (values[i] instanceof Long)
+                    sb.append((long) values[i]);
+                else
+                    sb.append(values[i]);
+
+//                sb.append(nf.format((double) values[i]));
+            }
+
+            paramText.append("\n\n- ").append(name).append(" = ").append(sb);
             paramText.append("\n").append(description.getShortDescription());
             paramText.append(". ").append(description.getLongDescription());
         }
@@ -827,6 +940,17 @@ public class AlgcomparisonEditor extends JPanel {
         Set<String> paramNamesSet = new HashSet<>();
 
         for (Simulation simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+    @NotNull
+    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : algorithm) {
             paramNamesSet.addAll(simulation.getParameters());
         }
 
@@ -1227,17 +1351,6 @@ public class AlgcomparisonEditor extends JPanel {
 
         paramText.append(getParameterText(paramNamesSet, parameters));
         return paramText.toString();
-    }
-
-    @NotNull
-    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Algorithm simulation : algorithm) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
     }
 
     private void setAlgorithmText() {
