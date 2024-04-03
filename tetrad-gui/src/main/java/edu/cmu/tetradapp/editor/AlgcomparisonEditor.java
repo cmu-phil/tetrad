@@ -117,7 +117,7 @@ public class AlgcomparisonEditor extends JPanel {
         addAlgorithmTab(tabbedPane);
         addStatisticsTab(tabbedPane);
         addComparisonTab(tabbedPane);
-        addXmlTab(tabbedPane);
+//        addXmlTab(tabbedPane); // todo work on this later.
         addHelpTab(tabbedPane);
 
         setLayout(new BorderLayout());
@@ -831,7 +831,7 @@ public class AlgcomparisonEditor extends JPanel {
         statisticsChoice.add(statisticsChoiceTextArea, BorderLayout.CENTER);
         statisticsChoice.add(statisticsSelectionBox, BorderLayout.SOUTH);
 
-        tabbedPane.addTab("Statistics", statisticsChoice);
+        tabbedPane.addTab("Table Columns", statisticsChoice);
     }
 
     /**
@@ -866,13 +866,14 @@ public class AlgcomparisonEditor extends JPanel {
             new MyWatchedProcess();
         });
 
-        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
+        // todo work on this later.
+//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
 
-        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
+//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
-        comparisonSelectionBox.add(setComparisonParameters);
+//        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
