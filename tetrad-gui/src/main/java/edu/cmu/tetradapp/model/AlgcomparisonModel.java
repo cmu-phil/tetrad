@@ -55,17 +55,17 @@ public class AlgcomparisonModel implements SessionModel {
      * algorithms may be selected depending on the type of the algorithm, and a variety of statistics may be selected. A
      * list of parameters will be given that depend on the simulation and the algorithms selected.
      */
-    private final List<String> statNames;
-    private final List<String> simNames;
-    private final List<Class<? extends Simulation>> simulationClasses;
-    private final List<Class<? extends Algorithm>> algorithmClasses;
-    private final List<Class<? extends Statistic>> statisticsClasses;
-    private final Parameters parameters = new Parameters();
-    private List<String> algNames;
-    private LinkedList<Simulation> selectedSimulations = new LinkedList<>();
-    private LinkedList<Algorithm> selectedAlgorithms = new LinkedList<>();
-    private LinkedList<Statistic> selectedStatistics = new LinkedList<>();
-    private List<String> selectedParameters = new LinkedList<>();
+    private transient final List<String> statNames;
+    private transient final List<String> simNames;
+    private transient final List<Class<? extends Simulation>> simulationClasses;
+    private transient final List<Class<? extends Algorithm>> algorithmClasses;
+    private transient final List<Class<? extends Statistic>> statisticsClasses;
+    private final transient Parameters parameters;
+    private final transient List<String> algNames;
+    private final transient LinkedList<Simulation> selectedSimulations;
+    private final transient LinkedList<Algorithm> selectedAlgorithms;
+    private final transient LinkedList<Statistic> selectedStatistics;
+    private final transient List<String> selectedParameters;
 
     private String name = "Algcomparison";
 
@@ -77,6 +77,7 @@ public class AlgcomparisonModel implements SessionModel {
     private Map<String, Class<? extends Algorithm>> algorithmMap;
 
     public AlgcomparisonModel(Parameters parameters) {
+        this.parameters = parameters;
 
         Set<Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
                 edu.cmu.tetrad.algcomparison.simulation.Simulation.class);
@@ -104,6 +105,10 @@ public class AlgcomparisonModel implements SessionModel {
         this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
         this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
 
+        selectedStatistics = new LinkedList<>();
+        selectedAlgorithms = new LinkedList<>();
+        selectedSimulations = new LinkedList<>();
+        selectedParameters = new LinkedList<>();
     }
 
     /**
@@ -169,7 +174,6 @@ public class AlgcomparisonModel implements SessionModel {
     public Simulations getSelectedSimulations() {
         Simulations simulations = new Simulations();
         for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
-
         return simulations;
     }
 
