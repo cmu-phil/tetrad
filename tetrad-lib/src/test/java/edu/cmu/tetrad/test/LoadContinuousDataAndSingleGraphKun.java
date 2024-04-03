@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.*;
@@ -72,6 +73,16 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     @Override

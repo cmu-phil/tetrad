@@ -106,6 +106,16 @@ public class SpecialDataClark implements Simulation {
     }
 
     @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
+    @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }

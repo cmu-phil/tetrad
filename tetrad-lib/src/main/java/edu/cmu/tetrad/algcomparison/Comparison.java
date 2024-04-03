@@ -2233,7 +2233,7 @@ public class Comparison implements TetradSerializable {
         /**
          * The standard output.
          */
-        private final PrintStream stdout;
+        private transient final PrintStream stdout;
 
         /**
          * Constructs a new algorithm task.

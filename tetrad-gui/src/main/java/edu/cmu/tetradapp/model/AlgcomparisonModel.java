@@ -35,7 +35,6 @@ import edu.cmu.tetradapp.session.SessionModel;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -56,7 +55,6 @@ public class AlgcomparisonModel implements SessionModel {
      * algorithms may be selected depending on the type of the algorithm, and a variety of statistics may be selected. A
      * list of parameters will be given that depend on the simulation and the algorithms selected.
      */
-    private final Comparison comparison = new Comparison();
     private final List<String> statNames;
     private final List<String> simNames;
     private final List<Class<? extends Simulation>> simulationClasses;
@@ -71,11 +69,9 @@ public class AlgcomparisonModel implements SessionModel {
 
     private String name = "Algcomparison";
 
+
     private String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
-
     private String outputFileName = "Comparison";
-
-    private PrintStream localOut = null;
     private Map<String, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> simulationMap;
     private Map<String, Class<? extends Statistic>> statisticsMap;
     private Map<String, Class<? extends Algorithm>> algorithmMap;
@@ -119,11 +115,10 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private static <T> Set<Class<? extends T>> findImplementations(String packageName, Class<T> interfaceClazz) {
         Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
-        Set<Class<? extends T>> subTypesOf = reflections.getSubTypesOf(interfaceClazz);
-        return subTypesOf;
+        return reflections.getSubTypesOf(interfaceClazz);
     }
 
-    public void doComparison() {
+    public void runComparison(java.io.PrintStream localOut) {
         Simulations simulations = new Simulations();
         for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
 
@@ -133,6 +128,7 @@ public class AlgcomparisonModel implements SessionModel {
         Statistics statistics = new Statistics();
         for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
 
+        Comparison comparison = new Comparison();
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, statistics, parameters);
     }
@@ -363,15 +359,6 @@ public class AlgcomparisonModel implements SessionModel {
         return statNames;
     }
 
-    /**
-     * Sets the PrintStream to be used for local output. This is used in the interface to display output to the user.
-     *
-     * @param localOut the PrintStream to be set for local output.
-     */
-    public void setLocalOut(PrintStream localOut) {
-        this.localOut = localOut;
-    }
-
     public Parameters getParameters() {
         return parameters;
     }
@@ -398,6 +385,10 @@ public class AlgcomparisonModel implements SessionModel {
 
     public void addStatistic(Statistic selectedItem) {
         selectedStatistics.add(selectedItem);
+    }
+
+    public List<Class<? extends Statistic>> getStatisticsClasses() {
+        return statisticsClasses;
     }
 }
 

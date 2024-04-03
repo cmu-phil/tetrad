@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -38,7 +37,7 @@ import java.util.*;
  * <p>
  * The class contains the following fields: - simulationChoiceTextArea: JTextArea to display the selected simulation
  * method. - algorithmChoiceTextArea: JTextArea to display the selected algorithm. - statisticsChoiceTextArea: JTextArea
- * to display the selected statistics. - resultsTextArea: JTextArea to display the comparison results. -
+ * to display the selected statistics. - comparisonTextArea: JTextArea to display the comparison comparison. -
  * helpChoiceTextArea: JTextArea to display help information. - addSimulation: Button to add a new simulation. - model:
  * An AlgcomparisonModel object that holds the data and handles the comparison logic. - independenceTestDropdown:
  * Dropdown to select the independence test method.
@@ -55,8 +54,8 @@ import java.util.*;
  * the simulation parameters information as text. - getAlgorithmParameterText: A method to retrieve the algorithm
  * parameters information as text. - setAlgorithmText: A method to update the algorithmChoiceTextArea with the selected
  * algorithm. - setStatisticsText: A method to update the statisticsChoiceTextArea with the selected statistics. -
- * setResultsText: A method to update the resultsTextArea with the comparison results. - setHelpText: A method to update
- * the helpChoiceTextArea with help information.
+ * setcomparisonText: A method to update the comparisonTextArea with the comparison comparison. - setHelpText: A method
+ * to update the helpChoiceTextArea with help information.
  * <p>
  * The AlgcomparisonEditor class extends javax.swing.JPanel.
  */
@@ -65,7 +64,7 @@ public class AlgcomparisonEditor extends JPanel {
     private final JTextArea simulationChoiceTextArea;
     private final JTextArea algorithChoiceTextArea;
     private final JTextArea statisticsChoiceTextArea;
-    private final JTextArea resultsTextArea;
+    private final JTextArea comparisonTextArea;
     private final JTextArea helpChoiceTextArea;
     private final JButton addSimulation;
     private final JButton addAlgorithm;
@@ -74,7 +73,7 @@ public class AlgcomparisonEditor extends JPanel {
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
      */
-    AlgcomparisonModel model;
+    private AlgcomparisonModel model;
     private JComboBox<Object> independenceTestDropdown;
 
     /**
@@ -187,26 +186,84 @@ public class AlgcomparisonEditor extends JPanel {
 
         tabbedPane.addTab("Statistics", statisticsChoice);
 
-        resultsTextArea = new JTextArea();
-        resultsTextArea.setLineWrap(false);
-        resultsTextArea.setWrapStyleWord(false);
-        resultsTextArea.setEditable(false);
+        JPanel xmlPanel = new JPanel();
+        xmlPanel.setLayout(new BorderLayout());
+        JTextArea xmlTextArea = new JTextArea();
+        xmlTextArea.setLineWrap(false);
+        xmlTextArea.setWrapStyleWord(false);
+        xmlTextArea.setEditable(false);
+        xmlTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        xmlTextArea.setText(getXmlText());
+        xmlPanel.add(new JScrollPane(xmlTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
-        setResultsText();
+        JButton loadXml = new JButton("Load XML");
+        JButton saveXml = new JButton("Save XML");
 
-        Box resultsSelectionBox = Box.createHorizontalBox();
-        resultsSelectionBox.add(Box.createHorizontalGlue());
-        resultsSelectionBox.add(new JButton("Run Comparison"));
-        resultsSelectionBox.add(Box.createHorizontalGlue());
+        loadXml.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" +
+                                                " configuration of this tool.");
+            setSimulationText();
+            setAlgorithmText();
+            setStatisticsText();
+        });
 
-        JPanel resultsPanel = new JPanel();
-        resultsPanel.setLayout(new BorderLayout());
-        resultsPanel.add(new JScrollPane(resultsTextArea,
+        saveXml.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
+            setSimulationText();
+            setAlgorithmText();
+            setStatisticsText();
+        });
+
+        Box xmlSelectionBox = Box.createHorizontalBox();
+        xmlSelectionBox.add(Box.createHorizontalGlue());
+        xmlSelectionBox.add(loadXml);
+        xmlSelectionBox.add(saveXml);
+        xmlSelectionBox.add(Box.createHorizontalGlue());
+
+        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
+        tabbedPane.addTab("XML", xmlPanel);
+
+        comparisonTextArea = new JTextArea();
+        comparisonTextArea.setLineWrap(false);
+        comparisonTextArea.setWrapStyleWord(false);
+        comparisonTextArea.setEditable(false);
+        comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        setcomparisonText();
+
+        JButton runComparison = new JButton("Run Comparison");
+
+        runComparison.addActionListener(e -> {
+            ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+            java.io.PrintStream ps = new java.io.PrintStream(baos);
+            model.runComparison(ps);
+            ps.flush();
+            comparisonTextArea.setText(baos.toString());
+        });
+
+        JButton setComparisonParameters = new JButton("Set Comparison Parameters");
+
+        setComparisonParameters.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " +
+                                                "the comparison.");
+        });
+
+        Box comparisonSelectionBox = Box.createHorizontalBox();
+        comparisonSelectionBox.add(Box.createHorizontalGlue());
+        comparisonSelectionBox.add(runComparison);
+        comparisonSelectionBox.add(setComparisonParameters);
+        comparisonSelectionBox.add(Box.createHorizontalGlue());
+
+        JPanel comparisonPanel = new JPanel();
+        comparisonPanel.setLayout(new BorderLayout());
+        comparisonPanel.add(new JScrollPane(comparisonTextArea,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        resultsPanel.add(resultsSelectionBox, BorderLayout.SOUTH);
+        comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
-        tabbedPane.addTab("Results", resultsPanel);
+        tabbedPane.addTab("Comparison", comparisonPanel);
+
 
         JPanel helpChoice = new JPanel();
         helpChoice.setLayout(new BorderLayout());
@@ -220,7 +277,6 @@ public class AlgcomparisonEditor extends JPanel {
 
         Box helpSelectionBox = Box.createHorizontalBox();
         helpSelectionBox.add(Box.createHorizontalGlue());
-        helpSelectionBox.add(new JCheckBox("Show Algcomparison XML"));
         helpSelectionBox.add(Box.createHorizontalGlue());
 
         JPanel helpPanel = new JPanel();
@@ -236,6 +292,54 @@ public class AlgcomparisonEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    @NotNull
+    private static String getXmlText() {
+        return """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <comparison>
+                    <compareBy>
+                        <search>
+                            <simulations>
+                                <simulation source="directory">
+                                    <path>src/test/resources/data/simulation</path>
+                                </simulation>
+                                <simulation source="generate">
+                                    <graphtype>RandomForward</graphtype>
+                                    <modeltype>SemSimulation</modeltype>
+                                </simulation>
+                            </simulations>
+                            <algorithms>
+                                <algorithm name="gfci">
+                                    <test>fisher-z-test</test>
+                                    <score>sem-bic-score</score>
+                                </algorithm>
+                                <algorithm name="fges">
+                                    <score>sem-bic-score</score>
+                                </algorithm>
+                            </algorithms>
+                            <parameters>
+                                <parameter name="numRuns">1</parameter>
+                                <parameter name="numMeasures">4,6</parameter>
+                                <parameter name="avgDegree">4</parameter>
+                            </parameters>
+                        </search>
+                    </compareBy>
+                    <statistics>
+                        <statistic>adjacencyPrecision</statistic>
+                        <statistic>arrowheadRecall</statistic>
+                        <statistic>adjacencyRecall</statistic>
+                    </statistics>
+                    <properties>
+                        <property name="showAlgorithmIndices">true</property>
+                        <property name="showSimulationIndices">true</property>
+                        <property name="sortByUtility">true</property>
+                        <property name="showUtilities">true</property>
+                        <property name="saveSearchGraphs">true</property>
+                        <property name="tabDelimitedTables">true</property>
+                    </properties>
+                </comparison>""";
     }
 
     @NotNull
@@ -522,7 +626,7 @@ public class AlgcomparisonEditor extends JPanel {
     private void addAddStatisticsListener() {
         addStatistics.addActionListener(e -> {
 
-            List<Statistic> statistics = model.getSelectedStatistics().getStatistics();
+            List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
 
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -530,9 +634,16 @@ public class AlgcomparisonEditor extends JPanel {
             JComboBox<String> statisticsDropdown = new JComboBox<>();
             Map<String, Statistic> statisticMap = new HashMap<>();
 
-            for (Statistic statistic : statistics) {
-                statisticsDropdown.addItem(statistic.getAbbreviation());
-                statisticMap.put(statistic.getAbbreviation(), statistic);
+            for (Class<? extends Statistic> statisticClass : statisticClasses) {
+                try {
+                    Statistic statistic = statisticClass.getConstructor().newInstance();
+                    statisticsDropdown.addItem(statistic.getAbbreviation());
+                    statisticMap.put(statistic.getAbbreviation(), statistic);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
+
+                    ex.printStackTrace();
+                }
             }
 
             Box vert1 = Box.createVerticalBox();
@@ -556,15 +667,17 @@ public class AlgcomparisonEditor extends JPanel {
 
             // Add action listeners for the buttons
             addButton.addActionListener(e1 -> {
-                Statistic selectedItem = (Statistic) statisticsDropdown.getSelectedItem();
+                String statAbbr = (String) statisticsDropdown.getSelectedItem();
 
-                if (selectedItem == null) {
+                if (statAbbr == null) {
                     return;
                 }
 
-                model.addStatistic(statisticMap.get((String) statisticsDropdown.getSelectedItem()));
+                System.out.println("Adding statistic: " + statAbbr);
 
-                setSimulationText();
+                model.addStatistic(statisticMap.get(statAbbr));
+
+                setStatisticsText();
                 dialog.dispose();
             });
 
@@ -735,7 +848,6 @@ public class AlgcomparisonEditor extends JPanel {
         } else if (statistics.size() == 1) {
             statisticsChoiceTextArea.setText("""
                     The following statistics has been selected. The comparison table will include these statistics as columns in the table.
-                                        
                     """);
         } else {
             statisticsChoiceTextArea.setText("""
@@ -749,7 +861,7 @@ public class AlgcomparisonEditor extends JPanel {
 
             try {
                 Statistic statistic1 = statisticClass.getConstructor().newInstance();
-                statisticsChoiceTextArea.append("\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
+                statisticsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
 
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e) {
@@ -757,15 +869,14 @@ public class AlgcomparisonEditor extends JPanel {
             }
         }
 
-        statisticsChoiceTextArea.append(getAlgorithmParameterText());
         statisticsChoiceTextArea.setCaretPosition(0);
     }
 
-    private void setResultsText() {
-        resultsTextArea.setText("""
-                We have some massive and impressive results for you!
+    private void setcomparisonText() {
+        comparisonTextArea.setText("""
+                We have some massive and impressive comparison for you!
                                 
-                The results are as follows:
+                The comparison are as follows:
                                 
                 (Comparison output goes here)
                 """);
@@ -778,7 +889,7 @@ public class AlgcomparisonEditor extends JPanel {
                 To run a comparison, select a simulation, one or more algorithms, and one or more statistics.
                 Then click the "Run Comparison" button.
                                 
-                The results will be displayed in the "Results" tab.
+                The comparison will be displayed in the "comparison" tab.
                                 
                 Here is some information on the graph type you have selected:
                                 
@@ -804,16 +915,16 @@ public class AlgcomparisonEditor extends JPanel {
     public static class BufferedListeningByteArrayOutputStream extends ByteArrayOutputStream {
         private final StringBuilder buffer = new StringBuilder();
 
-        public static void main(String[] args) {
-            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-            PrintStream ps = new PrintStream(baos);
-
-            // Example usage
-            ps.println("Hello, world!");
-            ps.printf("Pi is approximately %.2f%n", Math.PI);
-
-            ps.close();
-        }
+//        public static void main(String[] args) {
+//            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+//            PrintStream ps = new PrintStream(baos);
+//
+//            // Example usage
+//            ps.println("Hello, world!");
+//            ps.printf("Pi is approximately %.2f%n", Math.PI);
+//
+//            ps.close();
+//        }
 
         @Override
         public void write(int b) {
