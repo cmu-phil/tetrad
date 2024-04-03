@@ -2,21 +2,24 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.graph.*;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
-import edu.cmu.tetradapp.ui.model.ScoreModel;
-import edu.cmu.tetradapp.ui.model.ScoreModels;
+import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -66,6 +69,7 @@ public class AlgcomparisonEditor extends JPanel {
     private final JTextArea helpChoiceTextArea;
     private final JButton addSimulation;
     private final JButton addAlgorithm;
+    private final JButton addStatistics;
     /**
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
@@ -162,8 +166,18 @@ public class AlgcomparisonEditor extends JPanel {
 
         Box statisticsSelectionBox = Box.createHorizontalBox();
         statisticsSelectionBox.add(Box.createHorizontalGlue());
-        statisticsSelectionBox.add(new JButton("Add Statistic(s)"));
-        statisticsSelectionBox.add(new JButton("Remove Last Statistic"));
+
+        addStatistics = new JButton("Add Statistic(s)");
+        addAddStatisticsListener();
+
+        JButton removeLastStatistic = new JButton("Remove Last Statistic");
+        removeLastStatistic.addActionListener(e -> {
+            model.removeLastStatistic();
+            setStatisticsText();
+        });
+
+        statisticsSelectionBox.add(addStatistics);
+        statisticsSelectionBox.add(removeLastStatistic);
         statisticsSelectionBox.add(Box.createHorizontalGlue());
 
         JPanel statisticsChoice = new JPanel();
@@ -416,33 +430,25 @@ public class AlgcomparisonEditor extends JPanel {
 
     private void addAddAlgorithmListener(Parameters parameters) {
         addAlgorithm.addActionListener(e -> {
+            DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
+            AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
+            List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(DataType.Continuous, false);
+
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
 
+            JComboBox<AlgorithmModel> algorithmDropdown = new JComboBox<>();
+
+            for (AlgorithmModel model : algorithmModels1) {
+                algorithmDropdown.addItem(model);
+            }
+
             Box vert1 = Box.createVerticalBox();
             Box horiz2 = Box.createHorizontalBox();
-            horiz2.add(new JLabel("Choose a graph type:"));
+            horiz2.add(new JLabel("Choose an algorithm:"));
             horiz2.add(Box.createHorizontalGlue());
-            JComboBox<String> graphsDropdown = new JComboBox<>();
-
-            Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
-            graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
-            graphsDropdown.setSelectedItem(parameters.getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
-//            graphsDropdown.addActionListener(e -> refreshParameters());
-
-            horiz2.add(graphsDropdown);
+            horiz2.add(algorithmDropdown);
             vert1.add(horiz2);
-            Box horiz3 = Box.createHorizontalBox();
-            horiz3.add(new JLabel("Choose an algorithm:"));
-            horiz3.add(Box.createHorizontalGlue());
-
-            JComboBox<String> simulationsDropdown = new JComboBox<>();
-
-            Arrays.stream(ParameterTab.MODEL_TYPE_ITEMS).forEach(simulationsDropdown::addItem);
-            simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
-
-            horiz3.add(simulationsDropdown);
-            vert1.add(horiz3);
 
             addTestAndScoreDropdowns(vert1);
 
@@ -460,58 +466,106 @@ public class AlgcomparisonEditor extends JPanel {
 
             // Add action listeners for the buttons
             addButton.addActionListener(e1 -> {
-                String graphString = (String) graphsDropdown.getSelectedItem();
-                String simulationString = (String) simulationsDropdown.getSelectedItem();
+                AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
 
-                List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
+                if (selectedItem == null) {
+                    return;
+                }
 
-                Class<? extends RandomGraph> graphClazz = switch (graphTypeStrings.indexOf(graphString)) {
-                    case 0:
-                        yield RandomForward.class;
-                    case 1:
-                        yield ErdosRenyi.class;
-                    case 2:
-                        yield ScaleFree.class;
-                    case 4:
-                        yield Cyclic.class;
-                    case 5:
-                        yield RandomSingleFactorMim.class;
-                    case 6:
-                        yield RandomTwoFactorMim.class;
-                    default:
-                        throw new IllegalArgumentException("Unexpected value: " + graphString);
-                };
+                Class<?> algorithm = selectedItem.getAlgorithm().clazz();
 
-                List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
-
-                Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
-                    case 0:
-                        yield edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation.class;
-                    case 1:
-                        yield edu.cmu.tetrad.algcomparison.simulation.SemSimulation.class;
-                    case 2:
-                        yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
-                    case 3:
-                        yield edu.cmu.tetrad.algcomparison.simulation.NLSemSimulation.class;
-                    case 4:
-                        yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
-                    case 5:
-                        yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
-                    case 6:
-                        yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
-                    default:
-                        throw new IllegalArgumentException("Unexpected value: " + simulationString);
-                };
+                IndependenceWrapper independenceWrapper = new FisherZ();
+                ScoreWrapper scoreWrapper = new SemBicScore();
 
                 try {
-                    model.addSimulation(getSimulation(graphClazz, simulationClass));
-                    setSimulationText();
-                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                         IllegalAccessException ex) {
+                    Algorithm algorithmImpl = (Algorithm) algorithm.getConstructor().newInstance();
+
+                    if (algorithmImpl instanceof TakesIndependenceWrapper) {
+                        ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
+                    }
+
+                    if (algorithmImpl instanceof UsesScoreWrapper) {
+                        ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                    }
+
+                    model.addAlgorithm(algorithmImpl);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
                     throw new RuntimeException(ex);
                 }
 
+                setAlgorithmText();
+                dialog.dispose();
+            });
+
+            cancelButton.addActionListener(e12 -> {
+                // Handle the Cancel button click event
+                System.out.println("Cancel button clicked");
                 dialog.dispose(); // Close the dialog
+            });
+
+            // Add the buttons to the button panel
+            buttonPanel.add(addButton);
+            buttonPanel.add(cancelButton);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            // Set the dialog size, position, and visibility
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
+    }
+
+
+    private void addAddStatisticsListener() {
+        addStatistics.addActionListener(e -> {
+
+            List<Statistic> statistics = model.getSelectedStatistics().getStatistics();
+
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            JComboBox<String> statisticsDropdown = new JComboBox<>();
+            Map<String, Statistic> statisticMap = new HashMap<>();
+
+            for (Statistic statistic : statistics) {
+                statisticsDropdown.addItem(statistic.getAbbreviation());
+                statisticMap.put(statistic.getAbbreviation(), statistic);
+            }
+
+            Box vert1 = Box.createVerticalBox();
+            Box horiz2 = Box.createHorizontalBox();
+            horiz2.add(new JLabel("Choose an statistic:"));
+            horiz2.add(Box.createHorizontalGlue());
+            horiz2.add(statisticsDropdown);
+            vert1.add(horiz2);
+
+            panel.add(vert1, BorderLayout.NORTH);
+
+            // Create the JDialog. Use the parent frame to make it modal.
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+            dialog.add(panel, BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton addButton = new JButton("Add");
+            JButton cancelButton = new JButton("Cancel");
+
+            // Add action listeners for the buttons
+            addButton.addActionListener(e1 -> {
+                Statistic selectedItem = (Statistic) statisticsDropdown.getSelectedItem();
+
+                if (selectedItem == null) {
+                    return;
+                }
+
+                model.addStatistic(statisticMap.get((String) statisticsDropdown.getSelectedItem()));
+
+                setSimulationText();
+                dialog.dispose();
             });
 
             cancelButton.addActionListener(e12 -> {
@@ -635,17 +689,31 @@ public class AlgcomparisonEditor extends JPanel {
                     """);
 
             Algorithm algorithm = algorithms.get(0);
-            Class<? extends Algorithm> algorithmClass = algorithm.getClass();
-            algorithChoiceTextArea.append("Selected algorithm = " + algorithmClass.getSimpleName() + "\n");
+            algorithChoiceTextArea.append("Selected algorithm: " + algorithm.getDescription() + "\n");
+
+            if (algorithm instanceof TakesIndependenceWrapper) {
+                algorithChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
+            }
+
+            if (algorithm instanceof UsesScoreWrapper) {
+                algorithChoiceTextArea.append("Selected score = " + ((UsesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
+            }
+
         } else {
             algorithChoiceTextArea.setText("""
-                    The following simulations have been selected. These simulations will be run with the selected algorithms.
+                    The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
             for (int i = 0; i < algorithms.size(); i++) {
-                algorithChoiceTextArea.append("\n");
-                algorithChoiceTextArea.append("Algorithm #" + (i + 1) + ":\n");
-                algorithChoiceTextArea.append("Selected graph type = " + algorithms.get(i).getClass().getSimpleName() + "\n");
-                algorithChoiceTextArea.append("Selected simulation type = " + algorithms.get(i).getClass().getSimpleName() + "\n");
+                Algorithm algorithm = algorithms.get(i);
+                algorithChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getDescription() + "\n");
+
+                if (algorithm instanceof TakesIndependenceWrapper) {
+                    algorithChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
+                }
+
+                if (algorithm instanceof UsesScoreWrapper) {
+                    algorithChoiceTextArea.append("Selected score = " + ((UsesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
+                }
             }
         }
 

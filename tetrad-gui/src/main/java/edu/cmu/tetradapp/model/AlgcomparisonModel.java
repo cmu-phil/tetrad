@@ -30,8 +30,6 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.reflections.Reflections;
@@ -39,7 +37,6 @@ import org.reflections.scanners.Scanners;
 
 import java.io.PrintStream;
 import java.io.Serial;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -69,7 +66,7 @@ public class AlgcomparisonModel implements SessionModel {
     private List<String> algNames;
     private LinkedList<Simulation> selectedSimulations = new LinkedList<>();
     private LinkedList<Algorithm> selectedAlgorithms = new LinkedList<>();
-    private Statistics selectedStatistics = new Statistics();
+    private LinkedList<Statistic> selectedStatistics = new LinkedList<>();
     private List<String> selectedParameters = new LinkedList<>();
 
     private String name = "Algcomparison";
@@ -133,8 +130,11 @@ public class AlgcomparisonModel implements SessionModel {
         Algorithms algorithms = new Algorithms();
         for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
 
+        Statistics statistics = new Statistics();
+        for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
+
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
-                algorithms, selectedStatistics, parameters);
+                algorithms, statistics, parameters);
     }
 
     /**
@@ -209,31 +209,9 @@ public class AlgcomparisonModel implements SessionModel {
      * A private instance variable that holds a list of selected Statistic objects.
      */
     public Statistics getSelectedStatistics() {
-        return selectedStatistics;
-    }
-
-    /**
-     * Sets the selected statistics in the AlgcomparisonModel.
-     *
-     * @param selectedStatistics The selected statistics to be set.
-     * @throws IllegalArgumentException if the selected statistics is null, empty, or not in the list of statistics.
-     */
-    public void setSelectedStatistics(Statistics selectedStatistics) {
-        if (selectedStatistics == null) {
-            throw new IllegalArgumentException("Selected statistics must not be null.");
-        }
-
-        if (selectedStatistics.getStatistics().isEmpty()) {
-            throw new IllegalArgumentException("Selected statistics must not be empty.");
-        }
-
-        for (Statistic statistic : selectedStatistics.getStatistics()) {
-            if (!(statisticsClasses.contains(statistic))) {
-                throw new IllegalArgumentException("Selected statistic must be in the list of statistics.");
-            }
-        }
-
-        this.selectedStatistics = selectedStatistics;
+        Statistics statistics = new Statistics();
+        for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
+        return statistics;
     }
 
     /**
@@ -400,7 +378,6 @@ public class AlgcomparisonModel implements SessionModel {
 
     public void addSimulation(Simulation simulation) {
         selectedSimulations.add(simulation);
-        System.out.println("Adding simulation: " + simulation);
     }
 
     public void removeLastSimulation() {
@@ -413,6 +390,14 @@ public class AlgcomparisonModel implements SessionModel {
 
     public void removeLastAlgorithm() {
         selectedAlgorithms.removeLast();
+    }
+
+    public void removeLastStatistic() {
+        selectedStatistics.removeLast();
+    }
+
+    public void addStatistic(Statistic selectedItem) {
+        selectedStatistics.add(selectedItem);
     }
 }
 
