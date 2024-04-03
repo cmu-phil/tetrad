@@ -69,39 +69,90 @@ import java.util.stream.Stream;
  */
 public class AlgcomparisonEditor extends JPanel {
 
+    /**
+     * JLabel representing a message indicating that there are no parameters to edit.
+     */
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+    /**
+     * A JComboBox that holds instances of IndependenceTestModel.
+     */
     private static JComboBox<IndependenceTestModel> indTestComboBox;
+    /**
+     * ComboBox for selecting a ScoreModel.
+     */
     private static JComboBox<ScoreModel> scoreModelComboBox;
-    private final JTextArea simulationChoiceTextArea;
-    private final JTextArea algorithChoiceTextArea;
-    private final JTextArea statisticsChoiceTextArea;
-    private final JTextArea comparisonTextArea;
-    private final JTextArea helpChoiceTextArea;
-    private final JButton addSimulation;
-    private final JButton addAlgorithm;
-    private final JButton addStatistics;
     /**
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
      */
     private final AlgcomparisonModel model;
+    /**
+     * Represents a box for holding parameter components.
+     */
     private final Box parameterBox = Box.createVerticalBox();
-
+    /**
+     * JTextArea used for displaying simulation choice information.
+     */
+    private JTextArea simulationChoiceTextArea;
+    /**
+     * The TextArea component used for displaying algorithm choices.
+     */
+    private JTextArea algorithChoiceTextArea;
+    /**
+     * JTextArea used for displaying statistics choices.
+     */
+    private JTextArea statisticsChoiceTextArea;
+    /**
+     * JTextArea used for displaying comparison results.
+     */
+    private JTextArea comparisonTextArea;
+    /**
+     * JTextArea used for displaying help choice information.
+     */
+    private JTextArea helpChoiceTextArea;
+    /**
+     * Button used to add a simulation.
+     */
+    private JButton addSimulation;
+    /**
+     * Button used to add an algorithm.
+     */
+    private JButton addAlgorithm;
+    /**
+     * Button used to add statistics.
+     */
+    private JButton addStatistics;
 
     /**
-     * The constructor for the AlgcomparisonEditor class. The constructor will create a new Comparison object and pass
-     * in the PrintStream "localOut" to the constructor. The constructor will then use the Reflection API to populate
-     * the lists of simulation methods, algorithms, and statistics, and pass these to the Comparison class through its
-     * constructor. The constructor will then create a new JFrame and add the JLists, ParameterPanel, and JTextArea to
-     * the JFrame. The constructor will then add an ActionListener to the "Run Comparison" button that will call the
-     * runComparison() method in the Comparison class. The constructor will then set the JFrame to be visible.
+     * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane
+     * that displays different tabs for simulation, algorithm, statistics, comparison, XML, and help.
+     *
+     * @param model the AlgcomparisonModel to use for the editor
      */
     public AlgcomparisonEditor(AlgcomparisonModel model) {
         this.model = model;
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
+        tabbedPane.setPreferredSize(new Dimension(800, 400));
 
+        addSimulationTab(tabbedPane);
+        addAlgorithmTab(tabbedPane);
+        addStatisticsTab( tabbedPane);
+        addComparisonTab( tabbedPane);
+        addXmlTab(tabbedPane);
+        addHelpTab(tabbedPane);
+
+        setLayout(new BorderLayout());
+        add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    /**
+     * Adds a simulation tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to which the simulation tab is added
+     */
+    private void addSimulationTab(JTabbedPane tabbedPane) {
         simulationChoiceTextArea = new JTextArea();
         simulationChoiceTextArea.setLineWrap(true);
         simulationChoiceTextArea.setWrapStyleWord(true);
@@ -164,8 +215,6 @@ public class AlgcomparisonEditor extends JPanel {
             JButton doneButton = new JButton("Done");
 
             doneButton.addActionListener(e1 -> {
-//                Parameters parameters1 = ParameterComponents.toParameters(paramBoxes);
-//                model.setParameters(parameters1);
                 setSimulationText();
                 setComparisonText();
                 dialog.dispose();
@@ -188,7 +237,14 @@ public class AlgcomparisonEditor extends JPanel {
         simulationChoice.add(simulationSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Simulations", simulationChoice);
+    }
 
+    /**
+     * Adds an algorithm tab to the given JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the algorithm tab to
+     */
+    private void addAlgorithmTab(JTabbedPane tabbedPane) {
         algorithChoiceTextArea = new JTextArea();
         algorithChoiceTextArea.setLineWrap(true);
         algorithChoiceTextArea.setWrapStyleWord(true);
@@ -246,8 +302,6 @@ public class AlgcomparisonEditor extends JPanel {
             JButton doneButton = new JButton("Done");
 
             doneButton.addActionListener(e1 -> {
-//                Parameters parameters1 = ParameterComponents.toParameters(paramBoxes);
-//                model.setParameters(parameters1);
                 setAlgorithmText();
                 setComparisonText();
                 dialog.dispose();
@@ -274,7 +328,14 @@ public class AlgcomparisonEditor extends JPanel {
         algorithmChoice.add(algorithSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Algorithms", algorithmChoice);
+    }
 
+    /**
+     * Adds a statistics tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the statistics tab to
+     */
+    private void addStatisticsTab(JTabbedPane tabbedPane) {
         statisticsChoiceTextArea = new JTextArea();
         statisticsChoiceTextArea.setLineWrap(true);
         statisticsChoiceTextArea.setWrapStyleWord(true);
@@ -304,7 +365,14 @@ public class AlgcomparisonEditor extends JPanel {
         statisticsChoice.add(statisticsSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Statistics", statisticsChoice);
+    }
 
+    /**
+     * Adds a comparison tab to the given JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the comparison tab to
+     */
+    private void addComparisonTab(JTabbedPane tabbedPane) {
         comparisonTextArea = new JTextArea();
         comparisonTextArea.setLineWrap(false);
         comparisonTextArea.setWrapStyleWord(false);
@@ -331,13 +399,13 @@ public class AlgcomparisonEditor extends JPanel {
             new MyWatchedProcess();
         });
 
-//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
+        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
 
-//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
+        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
-//        comparisonSelectionBox.add(setComparisonParameters);
+        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
@@ -347,7 +415,14 @@ public class AlgcomparisonEditor extends JPanel {
         comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Comparison", comparisonPanel);
+    }
 
+    /**
+     * Adds an XML tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to which the XML tab is added
+     */
+    private void addXmlTab(JTabbedPane tabbedPane) {
         JPanel xmlPanel = new JPanel();
         xmlPanel.setLayout(new BorderLayout());
         JTextArea xmlTextArea = new JTextArea();
@@ -382,9 +457,15 @@ public class AlgcomparisonEditor extends JPanel {
         xmlSelectionBox.add(Box.createHorizontalGlue());
 
         xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
-//        tabbedPane.addTab("XML", xmlPanel);
+        tabbedPane.addTab("XML", xmlPanel);
+    }
 
-
+    /**
+     * Adds a help tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to which the help tab is added
+     */
+    private void addHelpTab(JTabbedPane tabbedPane) {
         JPanel helpChoice = new JPanel();
         helpChoice.setLayout(new BorderLayout());
         helpChoiceTextArea = new JTextArea();
@@ -405,558 +486,16 @@ public class AlgcomparisonEditor extends JPanel {
         helpPanel.add(helpSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Help", helpPanel);
-
-        tabbedPane.setPreferredSize(new Dimension(800, 400));
-
-        setLayout(new BorderLayout());
-        add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
-        return params.stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
-                        (u, v) -> {
-                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
-                        },
-                        TreeMap::new));
-    }
-
-    public static Box[] toArray(Map<String, Box> parameterComponents) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
-
-        List<Box> boolComps = new LinkedList<>();
-        List<Box> otherComps = new LinkedList<>();
-        parameterComponents.forEach((k, v) -> {
-            if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
-                boolComps.add(v);
-            } else {
-                otherComps.add(v);
-            }
-        });
-
-        return Stream.concat(otherComps.stream(), boolComps.stream())
-                .toArray(Box[]::new);
-    }
-
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
-        JComponent component;
-        Object defaultValue = paramDesc.getDefaultValue();
-
-        Object[] defaultValues = parameters.getValues(parameter);
-
-        if (defaultValue instanceof Double) {
-            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
-            double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            Double[] defValues = new Double[defaultValues.length];
-            for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Double) defaultValues[i];
-            }
-            component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
-        } else if (defaultValue instanceof Integer) {
-            int lowerBoundInt = paramDesc.getLowerBoundInt();
-            int upperBoundInt = paramDesc.getUpperBoundInt();
-            Integer[] defValues = new Integer[defaultValues.length];
-            for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Integer) defaultValues[i];
-            }
-            component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
-        } else if (defaultValue instanceof Long) {
-            long lowerBoundLong = paramDesc.getLowerBoundLong();
-            long upperBoundLong = paramDesc.getUpperBoundLong();
-            Long[] defValues = new Long[defaultValues.length];
-            for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Long) defaultValues[i];
-            }
-            component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
-        } else if (defaultValue instanceof Boolean) {
-            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
-        } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
-        } else {
-            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
-        }
-
-        Box paramRow = Box.createHorizontalBox();
-
-        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
-        if (longDescription != null) {
-            paramLabel.setToolTipText(longDescription);
-        }
-        paramRow.add(paramLabel);
-        paramRow.add(Box.createHorizontalGlue());
-        paramRow.add(component);
-
-        return paramRow;
-    }
-
-    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters,
-                                                             Double[] defaultValues, double lowerBound, double upperBound) {
-        ListDoubleTextField field = new ListDoubleTextField(defaultValues,
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
-
-
-        field.setFilter((values, oldValues) -> {
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] < lowerBound) {
-                    return oldValues;
-                }
-
-                if (values[i] > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
-                return oldValues;
-            }
-
-            try {
-                parameters.set(parameter, (Object[]) values);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return values;
-        });
-
-        return field;
-    }
-
-    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters,
-                                                       Integer[] defaultValues, double lowerBound, double upperBound) {
-        ListIntTextField field = new ListIntTextField(defaultValues, 8);
-
-        field.setFilter((values, oldValues) -> {
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] < lowerBound) {
-                    return oldValues;
-                }
-
-                if (values[i] > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
-                return oldValues;
-            }
-
-//            if (value < lowerBound) {
-//                return oldValue;
-//            }
-//
-//            if (value > upperBound) {
-//                return oldValue;
-//            }
-
-            try {
-                parameters.set(parameter, (Object[]) values);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return values;
-        });
-
-        return field;
-    }
-
-    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
-                                                         Long[] defaultValues, double lowerBound, double upperBound) {
-        ListLongTextField field = new ListLongTextField(defaultValues, 8);
-
-
-        field.setFilter((values, oldValues) -> {
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] < lowerBound) {
-                    return oldValues;
-                }
-
-                if (values[i] > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
-                return oldValues;
-            }
-
-//            if (value < lowerBound) {
-//                return oldValue;
-//            }
-//
-//            if (value > upperBound) {
-//                return oldValue;
-//            }
-
-            try {
-                parameters.set(parameter, (Object[]) values);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return values;
-        });
-
-        return field;
-    }
-
-
-    /**
-     * <p>getDoubleField.</p>
-     *
-     * @param parameter    a {@link java.lang.String} object
-     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param defaultValue a double
-     * @param lowerBound   a double
-     * @param upperBound   a double
-     * @return a {@link edu.cmu.tetradapp.util.DoubleTextField} object
-     */
-    public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                                 double defaultValue, double lowerBound, double upperBound) {
-        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
     }
 
     /**
-     * <p>getIntTextField.</p>
+     * Adds a listener to the "Add Simulation" button.
+     * When the button is clicked, a dialog is displayed to choose the graph type and simulation type.
+     * If the "Add" button in the dialog is clicked, the selected graph and simulation types are used to
+     * create a simulation and add it to the model.
      *
-     * @param parameter    a {@link java.lang.String} object
-     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param defaultValue a int
-     * @param lowerBound   a double
-     * @param upperBound   a double
-     * @return a {@link edu.cmu.tetradapp.util.IntTextField} object
+     * @param parameters the parameters object
      */
-    public static IntTextField getIntTextField(String parameter, Parameters parameters,
-                                               int defaultValue, double lowerBound, double upperBound) {
-        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
-    }
-
-    /**
-     * <p>getLongTextField.</p>
-     *
-     * @param parameter    a {@link java.lang.String} object
-     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param defaultValue a long
-     * @param lowerBound   a double
-     * @param upperBound   a double
-     * @return a {@link edu.cmu.tetradapp.util.LongTextField} object
-     */
-    public static LongTextField getLongTextField(String parameter, Parameters parameters,
-                                                 long defaultValue, double lowerBound, double upperBound) {
-        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
-    }
-
-    /**
-     * <p>getBooleanSelectionBox.</p>
-     *
-     * @param parameter    a {@link java.lang.String} object
-     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param defaultValue a boolean
-     * @return a {@link javax.swing.Box} object
-     */
-    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
-        Box selectionBox = Box.createHorizontalBox();
-
-        JRadioButton yesButton = new JRadioButton("Yes");
-        JRadioButton noButton = new JRadioButton("No");
-
-        // Button group to ensure only only one option can be selected
-        ButtonGroup selectionBtnGrp = new ButtonGroup();
-        selectionBtnGrp.add(yesButton);
-        selectionBtnGrp.add(noButton);
-
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-
-        // Set default selection
-        if (aBoolean) {
-            yesButton.setSelected(true);
-        } else {
-            noButton.setSelected(true);
-        }
-
-        // Add to containing box
-        selectionBox.add(yesButton);
-        selectionBox.add(noButton);
-
-        // Event listener
-        yesButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
-            if (button.isSelected()) {
-                parameters.set(parameter, true);
-            }
-        });
-
-        // Event listener
-        noButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
-            if (button.isSelected()) {
-                parameters.set(parameter, false);
-            }
-        });
-
-        return selectionBox;
-    }
-
-    /**
-     * <p>getStringField.</p>
-     *
-     * @param parameter    a {@link java.lang.String} object
-     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param defaultValue a {@link java.lang.String} object
-     * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
-     */
-    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
-        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
-
-        field.setFilter((value, oldValue) -> {
-            if (value.equals(field.getValue().trim())) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
-    }
-
-
-    @NotNull
-    private static String getXmlText() {
-        return """
-                ** This is placeholder text **
-                                
-                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <comparison>
-                    <compareBy>
-                        <search>
-                            <simulations>
-                                <simulation source="directory">
-                                    <path>src/test/resources/data/simulation</path>
-                                </simulation>
-                                <simulation source="generate">
-                                    <graphtype>RandomForward</graphtype>
-                                    <modeltype>SemSimulation</modeltype>
-                                </simulation>
-                            </simulations>
-                            <algorithms>
-                                <algorithm name="gfci">
-                                    <test>fisher-z-test</test>
-                                    <score>sem-bic-score</score>
-                                </algorithm>
-                                <algorithm name="fges">
-                                    <score>sem-bic-score</score>
-                                </algorithm>
-                            </algorithms>
-                            <parameters>
-                                <parameter name="numRuns">1</parameter>
-                                <parameter name="numMeasures">4,6</parameter>
-                                <parameter name="avgDegree">4</parameter>
-                            </parameters>
-                        </search>
-                    </compareBy>
-                    <statistics>
-                        <statistic>adjacencyPrecision</statistic>
-                        <statistic>arrowheadRecall</statistic>
-                        <statistic>adjacencyRecall</statistic>
-                    </statistics>
-                    <properties>
-                        <property name="showAlgorithmIndices">true</property>
-                        <property name="showSimulationIndices">true</property>
-                        <property name="sortByUtility">true</property>
-                        <property name="showUtilities">true</property>
-                        <property name="saveSearchGraphs">true</property>
-                        <property name="tabDelimitedTables">true</property>
-                    </properties>
-                </comparison>""";
-    }
-
-    @NotNull
-    private static edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        RandomGraph randomGraph = graphClazz.getConstructor().newInstance();
-        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
-    }
-
-    private static void addTestAndScoreDropdowns(Box vert1) {
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        List<IndependenceTestModel> models = independenceTestModels.getModels();
-
-        indTestComboBox = new JComboBox<>();
-
-        for (IndependenceTestModel model : models) {
-            indTestComboBox.addItem(model);
-        }
-
-        Box horiz4 = Box.createHorizontalBox();
-        horiz4.add(new JLabel("Choose an independence test:"));
-        horiz4.add(Box.createHorizontalGlue());
-        horiz4.add(indTestComboBox);
-        vert1.add(horiz4);
-
-        ScoreModels scoreModels = ScoreModels.getInstance();
-        List<ScoreModel> scoreModelsList = scoreModels.getModels();
-
-        scoreModelComboBox = new JComboBox<>();
-
-        for (ScoreModel model : scoreModelsList) {
-            scoreModelComboBox.addItem(model);
-        }
-
-        Box horiz5 = Box.createHorizontalBox();
-        horiz5.add(new JLabel("Choose a score:"));
-        horiz5.add(Box.createHorizontalGlue());
-        horiz5.add(scoreModelComboBox);
-        vert1.add(horiz5);
-    }
-
-    @NotNull
-    private static String getParameterText(Set<String> paramNamesSet, Parameters parameters) {
-        List<String> paramNames = new ArrayList<>(paramNamesSet);
-        Collections.sort(paramNames);
-
-        StringBuilder paramText = new StringBuilder();
-
-        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
-        NumberFormat nf = new DecimalFormat("0.####");
-
-        for (String name : paramNames) {
-            ParamDescription description = paramDescriptions.get(name);
-            Object[] values = parameters.getValues(name);
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < values.length; i++) {
-                if (i > 0) {
-                    sb.append(", ");
-                }
-
-                if (values[i] instanceof Double)
-                    sb.append(nf.format((double) values[i]));
-                else if (values[i] instanceof Integer)
-                    sb.append((int) values[i]);
-                else if (values[i] instanceof Long)
-                    sb.append((long) values[i]);
-                else
-                    sb.append(values[i]);
-
-//                sb.append(nf.format((double) values[i]));
-            }
-
-            paramText.append("\n\n- ").append(name).append(" = ").append(sb);
-            paramText.append("\n").append(description.getShortDescription());
-            paramText.append(". ").append(description.getLongDescription());
-        }
-
-        return paramText.toString();
-    }
-
-    @NotNull
-    private static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Simulation simulation : simulations) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
-    }
-
-    @NotNull
-    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Algorithm simulation : algorithm) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
-    }
-
     private void addAddSimulationListener(Parameters parameters) {
         addSimulation.addActionListener(e -> {
             JPanel panel = new JPanel();
@@ -1078,6 +617,11 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
+    /**
+     * Adds an ActionListener to the addAlgorithm button
+     *
+     * @param parameters The Parameters object that holds the necessary data for the method
+     */
     private void addAddAlgorithmListener(Parameters parameters) {
         addAlgorithm.addActionListener(e -> {
             DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
@@ -1186,6 +730,9 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
+    /**
+     * Adds a listener to the "Add Statistics" button. When the button is clicked, a dialog is displayed where the user can select multiple statistics to add to the model.
+     */
     private void addAddStatisticsListener() {
         addStatistics.addActionListener(e -> {
 
@@ -1281,6 +828,13 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
+    /**
+     * Sets the text in the simulationChoiceTextArea based on the selected simulations in the model.
+     * If no simulations are selected, it displays a message indicating that at least one simulation needs to be selected.
+     * If only one simulation is selected, it displays information about the selected simulation.
+     * If multiple simulations are selected, it displays information about each of the selected simulations.
+     * It also appends the simulation parameter text obtained from getSimulationParameterText() method.
+     */
     private void setSimulationText() {
         simulationChoiceTextArea.setText("");
 
@@ -1319,6 +873,11 @@ public class AlgcomparisonEditor extends JPanel {
         simulationChoiceTextArea.setCaretPosition(0);
     }
 
+    /**
+     * Retrieves the simulation parameter text for displaying the parameter choices
+     *
+     * @return a string containing the simulation parameter text
+     */
     @NotNull
     private String getSimulationParameterText() {
         Parameters parameters = model.getParameters();
@@ -1337,6 +896,11 @@ public class AlgcomparisonEditor extends JPanel {
         return paramText.toString();
     }
 
+    /**
+     * Retrieves the algorithm parameter choices as text.
+     *
+     * @return The algorithm parameter choices as text.
+     */
     private String getAlgorithmParameterText() {
         Parameters parameters = model.getParameters();
         List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
@@ -1403,6 +967,9 @@ public class AlgcomparisonEditor extends JPanel {
         algorithChoiceTextArea.setCaretPosition(0);
     }
 
+    /**
+     * Sets the text in the statisticsChoiceTextArea based on the selected statistics.
+     */
     private void setStatisticsText() {
         statisticsChoiceTextArea.setText("");
 
@@ -1441,6 +1008,11 @@ public class AlgcomparisonEditor extends JPanel {
         statisticsChoiceTextArea.setCaretPosition(0);
     }
 
+    /**
+     * Sets the text of the comparisonTextArea based on the selected simulations, algorithms, and statistics.
+     * If any of the simulations, algorithms, or statistics are empty, it sets a message indicating that the selection is empty.
+     * Otherwise, it sets a message indicating that a comparison has not been run for the selection.
+     */
     private void setComparisonText() {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
             || model.getSelectedStatistics().getStatistics().isEmpty()) {
@@ -1456,6 +1028,9 @@ public class AlgcomparisonEditor extends JPanel {
         }
     }
 
+    /**
+     * Sets the help text for the tool.
+     */
     private void setHelpText() {
         helpChoiceTextArea.setText("""
                 This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, statistics, and parameter settings.
@@ -1486,19 +1061,504 @@ public class AlgcomparisonEditor extends JPanel {
                                 """);
     }
 
+    /**
+     * Creates a map of parameter components for the given set of parameters and a Parameters object.
+     *
+     * @param params      the set of parameter names
+     * @param parameters  the Parameters object containing the parameter values
+     * @return a map of parameter names to corresponding Box components
+     */
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    /**
+     * Converts a map of parameter components to an array of Box objects.
+     *
+     * @param parameterComponents a map of parameter names to corresponding Box components
+     * @return an array of Box objects containing the parameter components
+     */
+    public static Box[] toArray(Map<String, Box> parameterComponents) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+
+        List<Box> boolComps = new LinkedList<>();
+        List<Box> otherComps = new LinkedList<>();
+        parameterComponents.forEach((k, v) -> {
+            if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
+                boolComps.add(v);
+            } else {
+                otherComps.add(v);
+            }
+        });
+
+        return Stream.concat(otherComps.stream(), boolComps.stream())
+                .toArray(Box[]::new);
+    }
+
+    /**
+     * Creates a component for a specific parameter based on its type and default value.
+     *
+     * @param parameter  the name of the parameter
+     * @param parameters  the Parameters object containing the parameter values
+     * @param paramDesc  the ParamDescription object containing information about the parameter
+     * @return a Box component representing the parameter
+     */
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+
+        Object[] defaultValues = parameters.getValues(parameter);
+
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            Double[] defValues = new Double[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Double) defaultValues[i];
+            }
+            component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            Integer[] defValues = new Integer[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Integer) defaultValues[i];
+            }
+            component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            Long[] defValues = new Long[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Long) defaultValues[i];
+            }
+            component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    /**
+     * Creates a ListDoubleTextField component with the given parameters.
+     *
+     * @param parameter      the name of the parameter
+     * @param parameters     the Parameters object containing the parameter values
+     * @param defaultValues  the default values for the component
+     * @param lowerBound     the lower bound for the values
+     * @param upperBound     the upper bound for the values
+     * @return a ListDoubleTextField component with the specified parameters
+     */
+    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters,
+                                                             Double[] defaultValues, double lowerBound, double upperBound) {
+        ListDoubleTextField field = new ListDoubleTextField(defaultValues,
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+
+        field.setFilter((values, oldValues) -> {
+            for (Double value : values) {
+                if (value < lowerBound) {
+                    return oldValues;
+                }
+
+                if (value > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a ListIntTextField component with the specified parameters.
+     *
+     * @param parameter     the name of the parameter
+     * @param parameters    the Parameters object containing the parameter values
+     * @param defaultValues the default values for the component
+     * @param lowerBound    the lower bound for the values
+     * @param upperBound    the upper bound for the values
+     * @return a ListIntTextField component with the specified parameters
+     */
+    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters,
+                                                       Integer[] defaultValues, double lowerBound, double upperBound) {
+        ListIntTextField field = new ListIntTextField(defaultValues, 8);
+
+        field.setFilter((values, oldValues) -> {
+            for (Integer value : values) {
+                if (value < lowerBound) {
+                    return oldValues;
+                }
+
+                if (value > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
+                                                         Long[] defaultValues, double lowerBound, double upperBound) {
+        ListLongTextField field = new ListLongTextField(defaultValues, 8);
+
+
+        field.setFilter((values, oldValues) -> {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] < lowerBound) {
+                    return oldValues;
+                }
+
+                if (values[i] > upperBound) {
+                    return oldValues;
+                }
+            }
+
+            // Check if the values have changed
+            if (Arrays.equals(values, field.getValues())) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, (Object[]) values);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return values;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a Box component representing a boolean selection box.
+     *
+     * @param parameter    the name of the parameter
+     * @param parameters   the Parameters object containing the parameter values
+     * @param defaultValue the default value for the selection box
+     * @return a Box component representing the boolean selection box
+     */
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
+            }
+        });
+
+        return selectionBox;
+    }
+
+    /**
+     * Creates a StringTextField component with the specified parameters.
+     *
+     * @param parameter    the name of the parameter
+     * @param parameters   the Parameters object containing the parameter values
+     * @param defaultValue the default value for the component
+     * @return a StringTextField component with the specified parameters
+     */
+    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+
+        field.setFilter((value, oldValue) -> {
+            if (value.equals(field.getValue().trim())) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns the XML text used for the XML tab in the AlgcomparisonEditor.
+     *
+     * @return the XML text
+     */
+    @NotNull
+    private static String getXmlText() {
+        return """
+                ** This is placeholder text **
+                                
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <comparison>
+                    <compareBy>
+                        <search>
+                            <simulations>
+                                <simulation source="directory">
+                                    <path>src/test/resources/data/simulation</path>
+                                </simulation>
+                                <simulation source="generate">
+                                    <graphtype>RandomForward</graphtype>
+                                    <modeltype>SemSimulation</modeltype>
+                                </simulation>
+                            </simulations>
+                            <algorithms>
+                                <algorithm name="gfci">
+                                    <test>fisher-z-test</test>
+                                    <score>sem-bic-score</score>
+                                </algorithm>
+                                <algorithm name="fges">
+                                    <score>sem-bic-score</score>
+                                </algorithm>
+                            </algorithms>
+                            <parameters>
+                                <parameter name="numRuns">1</parameter>
+                                <parameter name="numMeasures">4,6</parameter>
+                                <parameter name="avgDegree">4</parameter>
+                            </parameters>
+                        </search>
+                    </compareBy>
+                    <statistics>
+                        <statistic>adjacencyPrecision</statistic>
+                        <statistic>arrowheadRecall</statistic>
+                        <statistic>adjacencyRecall</statistic>
+                    </statistics>
+                    <properties>
+                        <property name="showAlgorithmIndices">true</property>
+                        <property name="showSimulationIndices">true</property>
+                        <property name="sortByUtility">true</property>
+                        <property name="showUtilities">true</property>
+                        <property name="saveSearchGraphs">true</property>
+                        <property name="tabDelimitedTables">true</property>
+                    </properties>
+                </comparison>""";
+    }
+
+    /**
+     * Retrieves a simulation object based on the provided graph and simulation classes.
+     *
+     * @param graphClazz      The class of the random graph object.
+     * @param simulationClazz The class of the simulation object.
+     * @return The simulation object.
+     * @throws NoSuchMethodException      If the constructor for the graph or simulation class cannot be found.
+     * @throws InvocationTargetException If an error occurs while invoking the graph or simulation constructor.
+     * @throws InstantiationException    If the graph or simulation class cannot be instantiated.
+     * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
+     */
+    @NotNull
+    private static edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        RandomGraph randomGraph = graphClazz.getConstructor().newInstance();
+        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
+    }
+
+    /**
+     * Adds the dropdowns for selecting an independence test and a score to the given Box.
+     *
+     * @param vert1 the Box to which the dropdowns will be added
+     */
+    private static void addTestAndScoreDropdowns(Box vert1) {
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        List<IndependenceTestModel> models = independenceTestModels.getModels();
+
+        indTestComboBox = new JComboBox<>();
+
+        for (IndependenceTestModel model : models) {
+            indTestComboBox.addItem(model);
+        }
+
+        Box horiz4 = Box.createHorizontalBox();
+        horiz4.add(new JLabel("Choose an independence test:"));
+        horiz4.add(Box.createHorizontalGlue());
+        horiz4.add(indTestComboBox);
+        vert1.add(horiz4);
+
+        ScoreModels scoreModels = ScoreModels.getInstance();
+        List<ScoreModel> scoreModelsList = scoreModels.getModels();
+
+        scoreModelComboBox = new JComboBox<>();
+
+        for (ScoreModel model : scoreModelsList) {
+            scoreModelComboBox.addItem(model);
+        }
+
+        Box horiz5 = Box.createHorizontalBox();
+        horiz5.add(new JLabel("Choose a score:"));
+        horiz5.add(Box.createHorizontalGlue());
+        horiz5.add(scoreModelComboBox);
+        vert1.add(horiz5);
+    }
+
+    /**
+     * Retrieves the parameter text for the given set of parameter names and parameters.
+     *
+     * @param paramNamesSet the set of parameter names
+     * @param parameters the Parameters object containing the parameter values
+     * @return the parameter text
+     */
+    @NotNull
+    private static String getParameterText(Set<String> paramNamesSet, Parameters parameters) {
+        List<String> paramNames = new ArrayList<>(paramNamesSet);
+        Collections.sort(paramNames);
+
+        StringBuilder paramText = new StringBuilder();
+
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        NumberFormat nf = new DecimalFormat("0.####");
+
+        for (String name : paramNames) {
+            ParamDescription description = paramDescriptions.get(name);
+            Object[] values = parameters.getValues(name);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < values.length; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+
+                if (values[i] instanceof Double)
+                    sb.append(nf.format((double) values[i]));
+                else if (values[i] instanceof Integer)
+                    sb.append((int) values[i]);
+                else if (values[i] instanceof Long)
+                    sb.append((long) values[i]);
+                else
+                    sb.append(values[i]);
+
+//                sb.append(nf.format((double) values[i]));
+            }
+
+            paramText.append("\n\n- ").append(name).append(" = ").append(sb);
+            paramText.append("\n").append(description.getShortDescription());
+            paramText.append(". ").append(description.getLongDescription());
+        }
+
+        return paramText.toString();
+    }
+
+    /**
+     * Retrieves all simulation parameters from a list of simulation objects.
+     *
+     * @param simulations the list of simulation objects
+     * @return a set of all simulation parameters
+     */
+    @NotNull
+    private static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Simulation simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+    /**
+     * Retrieves all algorithm parameters from a list of Algorithm objects.
+     *
+     * @param algorithm the list of Algorithm objects
+     * @return a set of all algorithm parameters
+     */
+    @NotNull
+    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : algorithm) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+
+
+    /**
+     * This class extends ByteArrayOutputStream and adds buffering and listening functionality.
+     * It overrides the write methods to capture the data being written and process it when a newline character is encountered.
+     */
     public static class BufferedListeningByteArrayOutputStream extends ByteArrayOutputStream {
         private final StringBuilder buffer = new StringBuilder();
-
-//        public static void main(String[] args) {
-//            BufferedListeningByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-//            PrintStream ps = new PrintStream(baos);
-//
-//            // Example usage
-//            ps.println("Hello, world!");
-//            ps.printf("Pi is approximately %.2f%n", Math.PI);
-//
-//            ps.close();
-//        }
 
         @Override
         public void write(int b) {
