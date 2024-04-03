@@ -43,6 +43,8 @@ import java.util.prefs.Preferences;
 /**
  * The AlgcomparisonModel class is a session model that allows for running comparisons of algorithms. It provides
  * methods for selecting algorithms, simulations, statistics, and parameters , and then running the comparison.
+ *
+ * @author josephramsey
  */
 public class AlgcomparisonModel implements SessionModel {
     @Serial
