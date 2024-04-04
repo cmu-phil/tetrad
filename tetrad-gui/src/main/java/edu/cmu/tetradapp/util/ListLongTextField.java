@@ -27,29 +27,27 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-
+import java.util.ArrayList;
 
 /**
- * A text field which is specialized for displaying and editing doubles. Handles otherwise annoying GUI-related
- * functions like keeping the textbox the right size and listening to itself.
+ * A custom text field for displaying and editing a list of Long values.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public class ListLongTextField extends JTextField {
 
     /**
-     * The getModel value of the text field.
+     * The list of Long values.
      */
     private Long[] values;
 
     /**
-     * If set, filters the value input by the user. (Side effects are allowed.)
+     * Filters the value input by the user.
      */
     private Filter filter;
 
     /**
-     * Constructs a new text field to display double values and allow them to be edited. The initial value and character
+     * Constructs a new text field to display int values and allow them to be edited. The initial value and character
      * width of the text field can be specified, along with the format with which the numbers should be displayed. To
      * accept only certain values, set a value filter using the
      * <code>setValueChecker</code> method.
@@ -62,15 +60,28 @@ public class ListLongTextField extends JTextField {
         setup(values);
     }
 
+    /**
+     * Retrieves a list of numbers from the given action command.
+     *
+     * @param actionCommand the action command containing the numbers separated by commas
+     * @return an array of Longs representing the numbers extracted from the action command
+     */
     @NotNull
     private static Long[] getNumbers(String actionCommand) {
         String[] split = actionCommand.split(",");
-        Long[] values1 = new Long[split.length];
+        java.util.List<Long> values = new ArrayList<>();
 
-        for (int i = 0; i < split.length; i++) {
-            values1[i] = Long.parseLong(split[i].trim());
+        for (String s : split) {
+            String string = s.trim();
+
+            try {
+                values.add(Long.parseLong(string));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
         }
-        return values1;
+
+        return values.toArray(new Long[0]);
     }
 
     /**
@@ -83,40 +94,26 @@ public class ListLongTextField extends JTextField {
     }
 
     /**
-     * Sets the value of the text field to the given int values. Should be overridden for more specific behavior.
+     * Sets the values for the object.
      *
-     * @param values the values to be set.
+     * @param values an array of Long values to be set
      */
     public void setValues(Long[] values) {
-        if (values == this.values) {
-            return;
-        }
-
         Long[] newValues = filter(values, this.values);
 
-        // check if the values are the same
-        if (newValues.length == this.values.length) {
-            boolean same = true;
-            for (int i = 0; i < newValues.length; i++) {
-                if (!newValues[i].equals(this.values[i])) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
-                return;
-            }
+        if (newValues.length > 0) {
+            this.values = newValues;
         }
 
-        this.values = newValues;
         smartSetText(this.values);
         firePropertyChange("newValue", null, this.values);
     }
 
     /**
-     * Sets whether the given value should be accepted.
+     * Sets the filter for the ListLongTextField. The filter is used to determine which values should be displayed in the
+     * text field.
      *
-     * @param filter a {@link ListLongTextField.Filter} object
+     * @param filter the filter to be set
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -141,6 +138,13 @@ public class ListLongTextField extends JTextField {
         return getPreferredSize();
     }
 
+    /**
+     * Filters an array of Longs based on a provided filter.
+     *
+     * @param values    the array of Longs to be filtered
+     * @param oldValues the previous array of Longs before applying the filter
+     * @return the filtered array of Longs
+     */
     private Long[] filter(Long[] values, Long[] oldValues) {
         if (this.filter == null) {
             return values;
@@ -149,24 +153,30 @@ public class ListLongTextField extends JTextField {
         return this.filter.filter(values, oldValues);
     }
 
+    /**
+     * Sets up the ListLongTextField with the given values.
+     *
+     * @param values an array of Longs representing the initial values
+     */
     private void setup(Long[] values) {
 
-        long _default = -99L;
+        long _default = -99;
         Long[] defaultValues = new Long[values.length];
         for (int i = 0; i < values.length; i++) {
             defaultValues[i] = _default;
         }
 
         this.values = filter(values, defaultValues);
-        smartSetText(this.values);
+        setValues(this.values);
 
         addActionListener(e -> {
-            try {
-                String actionCommand = e.getActionCommand();
-                Long[] values1 = getNumbers(actionCommand);
-                setValues(values1);
-            } catch (NumberFormatException e1) {
-                smartSetText(values);
+            Long[] values1 = getNumbers(getText());
+            Long[] filtered = filter(values1, values);
+
+            if (filtered.length > 0) {
+                setValues(filtered);
+            } else {
+                setValues(values);
             }
         });
 
@@ -180,44 +190,44 @@ public class ListLongTextField extends JTextField {
             }
 
             public void focusLost(FocusEvent e) {
-                try {
-                    Long[] values1 = getNumbers(getText());
-                    setValues(values1);
-                } catch (NumberFormatException e1) {
-                    if (getText().trim().isEmpty()) {
-                        setValues(new Long[]{});
-                    } else {
-                        setValues(getValues());
-                    }
+                Long[] values1 = getNumbers(getText());
+                Long[] filtered = filter(values1, values);
+
+                if (filtered.length > 0) {
+                    setValues(filtered);
+                } else {
+                    setValues(values);
                 }
             }
         });
     }
 
-    private void smartSetText(Number[] values) {
+    /**
+     * Sets the text of the component with the provided values. The values are converted to a comma-separated string and
+     * appended to the component's text.
+     *
+     * @param values the values to set as text
+     */
+    private void smartSetText(Long[] values) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            if (i > 0) {
+        java.util.List<String> valueStrings = new ArrayList<>();
+
+        for (Long aLong : values) {
+            if (aLong != null) {
+                long value = aLong;
+                valueStrings.add(Long.toString(value));
+            }
+        }
+
+        for (int i = 0; i < valueStrings.size(); i++) {
+            sb.append(valueStrings.get(i));
+
+            if (i < valueStrings.size() - 1) {
                 sb.append(", ");
             }
-            sb.append(values[i]);
         }
 
         setText(sb.toString());
-
-
-//        if (Double.isNaN(values)) {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//            setText("");
-//        } else {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//
-//            if (FastMath.abs(value) < this.smallNumberCutoff && value != 0.0) {
-//                setText(this.smallNumberFormat.format(value));
-//            } else {
-//                setText(nf.format(value));
-//            }
-//        }
     }
 
     /**

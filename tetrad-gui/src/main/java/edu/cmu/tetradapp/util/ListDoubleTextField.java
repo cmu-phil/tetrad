@@ -28,14 +28,14 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 
 /**
- * A text field which is specialized for displaying and editing doubles. Handles otherwise annoying GUI-related
- * functions like keeping the textbox the right size and listening to itself.
+ * ListDoubleTextField is a custom JTextField class that is designed to display and edit comma-separated lists of double
+ * values. It supports formatting and filtering of the input values.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public class ListDoubleTextField extends JTextField {
 
@@ -65,28 +65,13 @@ public class ListDoubleTextField extends JTextField {
     private Filter filter;
 
     /**
-     * Constructs a new text field to display double values and allow them to be edited. The initial value and character
-     * width of the text field can be specified, along with the format with which the numbers should be displayed. To
-     * accept only certain values, set a value filter using the
-     * <code>setValueChecker</code> method.
+     * Creates a ListDoubleTextField component with the given parameters.
      *
-     * @param values the initial values to be displayed.
-     * @param width  the width (in characters) of the text field.
-     * @param format the number formatter, for example new Decimal("0.0000").
-     */
-    public ListDoubleTextField(Double[] values, int width, NumberFormat format) {
-        super(width);
-        setup(values, format, format, 1e-4);
-    }
-
-    /**
-     * <p>Constructor for DoubleTextField.</p>
-     *
-     * @param values            a Double[] array
-     * @param width             a int
-     * @param format            a {@link NumberFormat} object
-     * @param smallNumberFormat a {@link NumberFormat} object
-     * @param smallNumberCutoff a double
+     * @param values            the array of double values to be displayed and edited
+     * @param width             the width of the text field in characters
+     * @param format            the NumberFormat object used to format the values
+     * @param smallNumberFormat the NumberFormat object used to format small values
+     * @param smallNumberCutoff the cutoff value below which smallNumberFormat is used
      */
     public ListDoubleTextField(Double[] values, int width, NumberFormat format, NumberFormat smallNumberFormat,
                                double smallNumberCutoff) {
@@ -94,21 +79,33 @@ public class ListDoubleTextField extends JTextField {
         setup(values, format, smallNumberFormat, smallNumberCutoff);
     }
 
+    /**
+     * Parses a comma-separated string of numbers and returns an array of Double values.
+     *
+     * @param actionCommand a String containing comma-separated numbers
+     * @return an array of Double values parsed from the actionCommand string
+     * @throws NullPointerException if the actionCommand is null
+     */
     @NotNull
-    private static Double[] getNumbers(String actionCommand) {
+    public static Double[] getNumbers(String actionCommand) {
         String[] split = actionCommand.split(",");
-        Double[] values1 = new Double[split.length];
+        java.util.List<Double> values = new ArrayList<>();
 
-        for (int i = 0; i < split.length; i++) {
-            values1[i] = Double.parseDouble(split[i].trim());
+        for (String s : split) {
+            try {
+                values.add(Double.parseDouble(s.trim()));
+            } catch (NumberFormatException e) {
+                // Skip.
+            }
         }
-        return values1;
+
+        return values.toArray(new Double[0]);
     }
 
     /**
-     * Accesses the double value currently displayed.
+     * Retrieves the array of double values stored in the ListDoubleTextField.
      *
-     * @return the getModel value.
+     * @return the array of double values
      */
     public Double[] getValues() {
         return this.values;
@@ -120,27 +117,12 @@ public class ListDoubleTextField extends JTextField {
      * @param values the values to be set.
      */
     public void setValues(Double[] values) {
-        if (values == this.values) {
-            return;
-        }
-
         Double[] newValues = filter(values, this.values);
 
-        // check if the values are the same
-        if (newValues.length == this.values.length) {
-            boolean same = true;
-            for (int i = 0; i < newValues.length; i++) {
-                if (!newValues[i].equals(this.values[i])) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
-                return;
-            }
+        if (newValues.length > 0) {
+            this.values = newValues;
         }
 
-        this.values = newValues;
         smartSetText(this.format, this.values);
         firePropertyChange("newValue", null, this.values);
     }
@@ -173,6 +155,15 @@ public class ListDoubleTextField extends JTextField {
         return getPreferredSize();
     }
 
+    /**
+     * Filters the given value, returning the value that should actually be displayed. Typical use is to return either
+     * the value or the old value, depending on whether the value is in range, though more complicated uses are
+     * permitted. Side effects (such as storing the value in the process of filtering it) are permitted.
+     *
+     * @param values    The value entered by the user.
+     * @param oldValues The value previously displayed, in case it needs to be reverted to.
+     * @return The value that should be displayed.
+     */
     private Double[] filter(Double[] values, Double[] oldValues) {
         if (this.filter == null) {
             return values;
@@ -181,12 +172,26 @@ public class ListDoubleTextField extends JTextField {
         return this.filter.filter(values, oldValues);
     }
 
+    /**
+     * Sets up the ListDoubleTextField with the given values and formats.
+     *
+     * @param values            the initial values for the ListDoubleTextField
+     * @param nf                the format for displaying the values
+     * @param smallNumberFormat the format for displaying small numbers
+     * @param smallNumberCutoff the cutoff value for determining small numbers
+     * @throws NullPointerException     if nf is null
+     * @throws IllegalArgumentException if smallNumberCutoff is negative
+     */
     private void setup(Double[] values, NumberFormat nf, NumberFormat smallNumberFormat, double smallNumberCutoff) {
         if (nf == null) {
             throw new NullPointerException();
         }
 
-        Double _default = Double.NaN;
+        if (smallNumberCutoff < 0.0) {
+            throw new IllegalArgumentException("smallNumberCutoff must be non-negative");
+        }
+
+        double _default = Double.NaN;
         Double[] defaultValues = new Double[values.length];
         for (int i = 0; i < values.length; i++) {
             defaultValues[i] = _default;
@@ -199,12 +204,13 @@ public class ListDoubleTextField extends JTextField {
         smartSetText(nf, this.values);
 
         addActionListener(e -> {
-            try {
-                String actionCommand = e.getActionCommand();
-                Double[] values1 = getNumbers(actionCommand);
-                setValues(values1);
-            } catch (NumberFormatException e1) {
-                setText(ListDoubleTextField.this.format.format(getValues()));
+            Double[] values1 = getNumbers(getText());
+            Double[] filtered = filter(values1, values);
+
+            if (filtered.length > 0) {
+                setValues(filtered);
+            } else {
+                setValues(values);
             }
         });
 
@@ -218,44 +224,54 @@ public class ListDoubleTextField extends JTextField {
             }
 
             public void focusLost(FocusEvent e) {
-                try {
-                    Double[] values1 = getNumbers(getText());
-                    setValues(values1);
-                } catch (NumberFormatException e1) {
-                    if (getText().trim().isEmpty()) {
-                        setValues(new Double[]{});
-                    } else {
-                        setValues(getValues());
-                    }
+                Double[] values1 = getNumbers(getText());
+                Double[] filtered = filter(values1, values);
+
+                if (filtered.length > 0) {
+                    setValues(filtered);
+                } else {
+                    setValues(values);
                 }
             }
         });
     }
 
-    private void smartSetText(NumberFormat nf, Number[] values) {
+    /**
+     * Sets the text of the component by formatting an array of Double values with the given NumberFormat. If a value is
+     * null or NaN, it is skipped in the formatting process. Values smaller than the smallNumberCutoff are formatted
+     * using the smallNumberFormat, while values equal or larger than the smallNumberCutoff are formatted using the
+     * provided NumberFormat.
+     *
+     * @param nf     The NumberFormat to use for formatting the values equal or larger than the smallNumberCutoff
+     * @param values The array of Double values to format
+     */
+    private void smartSetText(NumberFormat nf, Double[] values) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            if (i > 0) {
+        java.util.List<String> valueStrings = new ArrayList<>();
+
+        for (Double aDouble : values) {
+            if (aDouble != null) {
+                double value = aDouble;
+
+                if (!Double.isNaN(value) && !Double.isInfinite(value)) {
+                    if (Math.abs(value) < this.smallNumberCutoff && value != 0.0) {
+                        valueStrings.add(this.smallNumberFormat.format(value));
+                    } else {
+                        valueStrings.add(nf.format(value));
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < valueStrings.size(); i++) {
+            sb.append(valueStrings.get(i));
+
+            if (i < valueStrings.size() - 1) {
                 sb.append(", ");
             }
-            sb.append(nf.format(values[i]));
         }
 
         setText(sb.toString());
-
-
-//        if (Double.isNaN(values)) {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//            setText("");
-//        } else {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//
-//            if (FastMath.abs(value) < this.smallNumberCutoff && value != 0.0) {
-//                setText(this.smallNumberFormat.format(value));
-//            } else {
-//                setText(nf.format(value));
-//            }
-//        }
     }
 
     /**

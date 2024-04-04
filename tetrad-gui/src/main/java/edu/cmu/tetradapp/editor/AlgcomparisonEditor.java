@@ -242,30 +242,42 @@ public class AlgcomparisonEditor extends JPanel {
         ListDoubleTextField field = new ListDoubleTextField(defaultValues,
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
-
         field.setFilter((values, oldValues) -> {
-            for (Double value : values) {
-                if (value < lowerBound) {
-                    return oldValues;
-                }
-
-                if (value > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
+            if (values.length == 0) {
                 return oldValues;
             }
 
+            List<Double> valuesList = new ArrayList<>();
+
+            for (Double value : values) {
+                if (Double.isNaN(value)) {
+                    continue;
+                }
+
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Double[] newValues = valuesList.toArray(new Double[0]);
+
             try {
-                parameters.set(parameter, (Object[]) values);
+                parameters.set(parameter, (Object[]) newValues);
             } catch (Exception e) {
                 // Ignore.
             }
 
-            return values;
+            return newValues;
         });
 
         return field;
@@ -286,61 +298,78 @@ public class AlgcomparisonEditor extends JPanel {
         ListIntTextField field = new ListIntTextField(defaultValues, 8);
 
         field.setFilter((values, oldValues) -> {
-            for (Integer value : values) {
-                if (value < lowerBound) {
-                    return oldValues;
-                }
-
-                if (value > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
+            if (values.length == 0) {
                 return oldValues;
             }
 
+            List<Integer> valuesList = new ArrayList<>();
+
+            for (Integer value : values) {
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Integer[] newValues = valuesList.toArray(new Integer[0]);
+
             try {
-                parameters.set(parameter, (Object[]) values);
+                parameters.set(parameter, (Object[]) newValues);
             } catch (Exception e) {
                 // Ignore.
             }
 
-            return values;
+            return newValues;
         });
 
         return field;
     }
 
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
-                                                         Long[] defaultValues, double lowerBound, double upperBound) {
+                                                         Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);
 
-
         field.setFilter((values, oldValues) -> {
-            for (Long value : values) {
-                if (value < lowerBound) {
-                    return oldValues;
-                }
-
-                if (value > upperBound) {
-                    return oldValues;
-                }
-            }
-
-            // Check if the values have changed
-            if (Arrays.equals(values, field.getValues())) {
+            if (values.length == 0) {
                 return oldValues;
             }
 
+            List<Long> valuesList = new ArrayList<>();
+
+            for (Long value : values) {
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Long[] newValues = valuesList.toArray(new Long[0]);
+
             try {
-                parameters.set(parameter, (Object[]) values);
+                parameters.set(parameter, newValues);
             } catch (Exception e) {
                 // Ignore.
             }
 
-            return values;
+            return newValues;
         });
 
         return field;
@@ -626,6 +655,28 @@ public class AlgcomparisonEditor extends JPanel {
         }
     }
 
+    @NotNull
+    private static Class<? extends RandomGraph> getGraphClazz(String graphString) {
+        List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
+
+        return switch (graphTypeStrings.indexOf(graphString)) {
+            case 0:
+                yield RandomForward.class;
+            case 1:
+                yield ErdosRenyi.class;
+            case 2:
+                yield ScaleFree.class;
+            case 4:
+                yield Cyclic.class;
+            case 5:
+                yield RandomSingleFactorMim.class;
+            case 6:
+                yield RandomTwoFactorMim.class;
+            default:
+                throw new IllegalArgumentException("Unexpected value: " + graphString);
+        };
+    }
+
     /**
      * Adds a simulation tab to the provided JTabbedPane.
      *
@@ -881,36 +932,6 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Comparison", comparisonPanel);
     }
 
-    @NotNull
-    private JButton runComparisonButton() {
-        JButton runComparison = new JButton("Run Comparison");
-
-        runComparison.addActionListener(e -> {
-
-            class MyWatchedProcess extends WatchedProcess {
-
-                public void watch() {
-                    ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-                    java.io.PrintStream ps = new java.io.PrintStream(baos);
-                    model.runComparison(ps);
-                    ps.flush();
-                    comparisonTextArea.setText(baos.toString());
-
-                    SwingUtilities.invokeLater(() -> {
-                        try {
-                            scrollToWord(comparisonTextArea, "STANDARD DEVIATION");
-                        } catch (BadLocationException ex) {
-                            System.out.println("Scrolling operation failed.");
-                        }
-                    });
-                }
-            }
-
-            new MyWatchedProcess();
-        });
-        return runComparison;
-    }
-
 //    /**
 //     * Adds an XML tab to the provided JTabbedPane.
 //     *
@@ -953,6 +974,36 @@ public class AlgcomparisonEditor extends JPanel {
 //        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
 //        tabbedPane.addTab("XML", xmlPanel);
 //    }
+
+    @NotNull
+    private JButton runComparisonButton() {
+        JButton runComparison = new JButton("Run Comparison");
+
+        runComparison.addActionListener(e -> {
+
+            class MyWatchedProcess extends WatchedProcess {
+
+                public void watch() {
+                    ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+                    java.io.PrintStream ps = new java.io.PrintStream(baos);
+                    model.runComparison(ps);
+                    ps.flush();
+                    comparisonTextArea.setText(baos.toString());
+
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            scrollToWord(comparisonTextArea, "STANDARD DEVIATION");
+                        } catch (BadLocationException ex) {
+                            System.out.println("Scrolling operation failed.");
+                        }
+                    });
+                }
+            }
+
+            new MyWatchedProcess();
+        });
+        return runComparison;
+    }
 
     /**
      * Adds a help tab to the provided JTabbedPane.
@@ -1092,28 +1143,6 @@ public class AlgcomparisonEditor extends JPanel {
         buttonPanel.add(addButton);
         buttonPanel.add(cancelButton);
         return buttonPanel;
-    }
-
-    @NotNull
-    private static Class<? extends RandomGraph> getGraphClazz(String graphString) {
-        List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
-
-        return switch (graphTypeStrings.indexOf(graphString)) {
-            case 0:
-                yield RandomForward.class;
-            case 1:
-                yield ErdosRenyi.class;
-            case 2:
-                yield ScaleFree.class;
-            case 4:
-                yield Cyclic.class;
-            case 5:
-                yield RandomSingleFactorMim.class;
-            case 6:
-                yield RandomTwoFactorMim.class;
-            default:
-                throw new IllegalArgumentException("Unexpected value: " + graphString);
-        };
     }
 
     /**

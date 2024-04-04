@@ -28,29 +28,28 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 
 /**
- * A text field which is specialized for displaying and editing doubles. Handles otherwise annoying GUI-related
- * functions like keeping the textbox the right size and listening to itself.
+ * A custom text field for displaying and editing a list of integer values.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public class ListIntTextField extends JTextField {
 
     /**
-     * The getModel value of the text field.
+     * The list of integer values.
      */
     private Integer[] values;
 
     /**
-     * If set, filters the value input by the user. (Side effects are allowed.)
+     * Filters the value input by the user.
      */
     private Filter filter;
 
     /**
-     * Constructs a new text field to display double values and allow them to be edited. The initial value and character
+     * Constructs a new text field to display int values and allow them to be edited. The initial value and character
      * width of the text field can be specified, along with the format with which the numbers should be displayed. To
      * accept only certain values, set a value filter using the
      * <code>setValueChecker</code> method.
@@ -63,15 +62,28 @@ public class ListIntTextField extends JTextField {
         setup(values);
     }
 
+    /**
+     * Retrieves a list of numbers from the given action command.
+     *
+     * @param actionCommand the action command containing the numbers separated by commas
+     * @return an array of Integers representing the numbers extracted from the action command
+     */
     @NotNull
     private static Integer[] getNumbers(String actionCommand) {
         String[] split = actionCommand.split(",");
-        Integer[] values1 = new Integer[split.length];
+        java.util.List<Integer> values = new ArrayList<>();
 
-        for (int i = 0; i < split.length; i++) {
-            values1[i] = Integer.parseInt(split[i].trim());
+        for (String s : split) {
+            String string = s.trim();
+
+            try {
+                values.add(Integer.parseInt(string));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
         }
-        return values1;
+
+        return values.toArray(new Integer[0]);
     }
 
     /**
@@ -84,40 +96,26 @@ public class ListIntTextField extends JTextField {
     }
 
     /**
-     * Sets the value of the text field to the given int values. Should be overridden for more specific behavior.
+     * Sets the values for the object.
      *
-     * @param values the values to be set.
+     * @param values an array of Integer values to be set
      */
     public void setValues(Integer[] values) {
-        if (values == this.values) {
-            return;
-        }
-
         Integer[] newValues = filter(values, this.values);
 
-        // check if the values are the same
-        if (newValues.length == this.values.length) {
-            boolean same = true;
-            for (int i = 0; i < newValues.length; i++) {
-                if (!newValues[i].equals(this.values[i])) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
-                return;
-            }
+        if (newValues.length > 0) {
+            this.values = newValues;
         }
 
-        this.values = newValues;
         smartSetText(this.values);
         firePropertyChange("newValue", null, this.values);
     }
 
     /**
-     * Sets whether the given value should be accepted.
+     * Sets the filter for the ListIntTextField. The filter is used to determine which values should be displayed in the
+     * text field.
      *
-     * @param filter a {@link ListIntTextField.Filter} object
+     * @param filter the filter to be set
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -142,6 +140,13 @@ public class ListIntTextField extends JTextField {
         return getPreferredSize();
     }
 
+    /**
+     * Filters an array of integers based on a provided filter.
+     *
+     * @param values    the array of integers to be filtered
+     * @param oldValues the previous array of integers before applying the filter
+     * @return the filtered array of integers
+     */
     private Integer[] filter(Integer[] values, Integer[] oldValues) {
         if (this.filter == null) {
             return values;
@@ -150,9 +155,14 @@ public class ListIntTextField extends JTextField {
         return this.filter.filter(values, oldValues);
     }
 
+    /**
+     * Sets up the ListIntTextField with the given values.
+     *
+     * @param values an array of Integers representing the initial values
+     */
     private void setup(Integer[] values) {
 
-        Integer _default = -99;
+        int _default = -99;
         Integer[] defaultValues = new Integer[values.length];
         for (int i = 0; i < values.length; i++) {
             defaultValues[i] = _default;
@@ -162,12 +172,13 @@ public class ListIntTextField extends JTextField {
         smartSetText(this.values);
 
         addActionListener(e -> {
-            try {
-                String actionCommand = e.getActionCommand();
-                Integer[] values1 = getNumbers(actionCommand);
-                setValues(values1);
-            } catch (NumberFormatException e1) {
-                smartSetText(values);
+            Integer[] values1 = getNumbers(getText());
+            Integer[] filtered = filter(values1, values);
+
+            if (filtered.length > 0) {
+                setValues(filtered);
+            } else {
+                setValues(values);
             }
         });
 
@@ -181,44 +192,44 @@ public class ListIntTextField extends JTextField {
             }
 
             public void focusLost(FocusEvent e) {
-                try {
-                    Integer[] values1 = getNumbers(getText());
-                    setValues(values1);
-                } catch (NumberFormatException e1) {
-                    if (getText().trim().isEmpty()) {
-                        setValues(new Integer[]{});
-                    } else {
-                        setValues(getValues());
-                    }
+                Integer[] values1 = getNumbers(getText());
+                Integer[] filtered = filter(values1, values);
+
+                if (filtered.length > 0) {
+                    setValues(filtered);
+                } else {
+                    setValues(values);
                 }
             }
         });
     }
 
-    private void smartSetText(Number[] values) {
+    /**
+     * Sets the text of the component with the provided values. The values are converted to a comma-separated string and
+     * appended to the component's text.
+     *
+     * @param values the values to set as text
+     */
+    private void smartSetText(Integer[] values) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            if (i > 0) {
+        java.util.List<String> valueStrings = new ArrayList<>();
+
+        for (Integer anInt : values) {
+            if (anInt != null) {
+                int value = anInt;
+                valueStrings.add(Integer.toString(value));
+            }
+        }
+
+        for (int i = 0; i < valueStrings.size(); i++) {
+            sb.append(valueStrings.get(i));
+
+            if (i < valueStrings.size() - 1) {
                 sb.append(", ");
             }
-            sb.append(values[i]);
         }
 
         setText(sb.toString());
-
-
-//        if (Double.isNaN(values)) {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//            setText("");
-//        } else {
-//            setHorizontalAlignment(SwingConstants.RIGHT);
-//
-//            if (FastMath.abs(value) < this.smallNumberCutoff && value != 0.0) {
-//                setText(this.smallNumberFormat.format(value));
-//            } else {
-//                setText(nf.format(value));
-//            }
-//        }
     }
 
     /**
