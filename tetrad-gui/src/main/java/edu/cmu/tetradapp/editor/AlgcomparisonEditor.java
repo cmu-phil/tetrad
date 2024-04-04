@@ -15,6 +15,7 @@ import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -27,6 +28,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.RowSorterEvent;
+import javax.swing.table.*;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +42,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -125,6 +131,7 @@ public class AlgcomparisonEditor extends JPanel {
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
     }
+
 
     /**
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
@@ -366,7 +373,7 @@ public class AlgcomparisonEditor extends JPanel {
             Long[] newValues = valuesList.toArray(new Long[0]);
 
             try {
-                parameters.set(parameter, newValues);
+                parameters.set(parameter, (Object[]) newValues);
             } catch (Exception e) {
                 // Ignore.
             }
@@ -377,11 +384,66 @@ public class AlgcomparisonEditor extends JPanel {
         return field;
     }
 
+//    /**
+//     * Returns the XML text used for the XML tab in the AlgcomparisonEditor.
+//     *
+//     * @return the XML text
+//     */
+//    @NotNull
+//    private static String getXmlText() {
+//        return """
+//                ** This is placeholder text **
+//
+//                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+//                <comparison>
+//                    <compareBy>
+//                        <search>
+//                            <simulations>
+//                                <simulation source="directory">
+//                                    <path>src/test/resources/data/simulation</path>
+//                                </simulation>
+//                                <simulation source="generate">
+//                                    <graphtype>RandomForward</graphtype>
+//                                    <modeltype>SemSimulation</modeltype>
+//                                </simulation>
+//                            </simulations>
+//                            <algorithms>
+//                                <algorithm name="gfci">
+//                                    <test>fisher-z-test</test>
+//                                    <score>sem-bic-score</score>
+//                                </algorithm>
+//                                <algorithm name="fges">
+//                                    <score>sem-bic-score</score>
+//                                </algorithm>
+//                            </algorithms>
+//                            <parameters>
+//                                <parameter name="numRuns">1</parameter>
+//                                <parameter name="numMeasures">4,6</parameter>
+//                                <parameter name="avgDegree">4</parameter>
+//                            </parameters>
+//                        </search>
+//                    </compareBy>
+//                    <statistics>
+//                        <statistic>adjacencyPrecision</statistic>
+//                        <statistic>arrowheadRecall</statistic>
+//                        <statistic>adjacencyRecall</statistic>
+//                    </statistics>
+//                    <properties>
+//                        <property name="showAlgorithmIndices">true</property>
+//                        <property name="showSimulationIndices">true</property>
+//                        <property name="sortByUtility">true</property>
+//                        <property name="showUtilities">true</property>
+//                        <property name="saveSearchGraphs">true</property>
+//                        <property name="tabDelimitedTables">true</property>
+//                    </properties>
+//                </comparison>""";
+//    }
+
     /**
      * Returns a Box component representing a boolean selection box.
      *
-     * @param parameter    the name of the parameter
-     * @param parameters   the Parameters object containing the parameter values
+     * @param parameter         the name of the parameter
+     * @param parameters        the Parameters object containing the parameter values
      * @param bothOptionAllowed whether the option is allows to select both true and false
      * @return a Box component representing the boolean selection box
      */
@@ -408,7 +470,7 @@ public class AlgcomparisonEditor extends JPanel {
         // Set default selection
         if (booleans.length == 1 && booleans[0]) {
             yesButton.setSelected(true);
-        } else if (booleans.length == 1 && !booleans[0]) {
+        } else if (booleans.length == 1) {
             noButton.setSelected(true);
         } else if (booleans.length == 2 && bothOptionAllowed) {
             bothButton.setSelected(true);
@@ -477,61 +539,6 @@ public class AlgcomparisonEditor extends JPanel {
 
         return field;
     }
-
-//    /**
-//     * Returns the XML text used for the XML tab in the AlgcomparisonEditor.
-//     *
-//     * @return the XML text
-//     */
-//    @NotNull
-//    private static String getXmlText() {
-//        return """
-//                ** This is placeholder text **
-//
-//                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-//                <comparison>
-//                    <compareBy>
-//                        <search>
-//                            <simulations>
-//                                <simulation source="directory">
-//                                    <path>src/test/resources/data/simulation</path>
-//                                </simulation>
-//                                <simulation source="generate">
-//                                    <graphtype>RandomForward</graphtype>
-//                                    <modeltype>SemSimulation</modeltype>
-//                                </simulation>
-//                            </simulations>
-//                            <algorithms>
-//                                <algorithm name="gfci">
-//                                    <test>fisher-z-test</test>
-//                                    <score>sem-bic-score</score>
-//                                </algorithm>
-//                                <algorithm name="fges">
-//                                    <score>sem-bic-score</score>
-//                                </algorithm>
-//                            </algorithms>
-//                            <parameters>
-//                                <parameter name="numRuns">1</parameter>
-//                                <parameter name="numMeasures">4,6</parameter>
-//                                <parameter name="avgDegree">4</parameter>
-//                            </parameters>
-//                        </search>
-//                    </compareBy>
-//                    <statistics>
-//                        <statistic>adjacencyPrecision</statistic>
-//                        <statistic>arrowheadRecall</statistic>
-//                        <statistic>adjacencyRecall</statistic>
-//                    </statistics>
-//                    <properties>
-//                        <property name="showAlgorithmIndices">true</property>
-//                        <property name="showSimulationIndices">true</property>
-//                        <property name="sortByUtility">true</property>
-//                        <property name="showUtilities">true</property>
-//                        <property name="saveSearchGraphs">true</property>
-//                        <property name="tabDelimitedTables">true</property>
-//                    </properties>
-//                </comparison>""";
-//    }
 
     /**
      * Retrieves a simulation object based on the provided graph and simulation classes.
@@ -899,78 +906,6 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Algorithms", algorithmChoice);
     }
 
-    /**
-     * Adds a table columns tab to the provided JTabbedPane.
-     *
-     * @param tabbedPane the JTabbedPane to add the statistics tab to
-     */
-    private void addTableColumnsTab(JTabbedPane tabbedPane) {
-        tableColumnsChoiceTextArea = new JTextArea();
-        tableColumnsChoiceTextArea.setLineWrap(true);
-        tableColumnsChoiceTextArea.setWrapStyleWord(true);
-        tableColumnsChoiceTextArea.setEditable(false);
-        setTableColumnsText();
-
-        Box tableColumnsSelectionBox = Box.createHorizontalBox();
-        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
-
-        addTableColumns = new JButton("Add Table Column(s)");
-        addAddTableColumnsListener();
-
-        JButton removeLastStatistic = new JButton("Remove Last Column");
-        removeLastStatistic.addActionListener(e -> {
-            model.removeLastTableColumn();
-            setTableColumnsText();
-            setComparisonText();
-        });
-
-        tableColumnsSelectionBox.add(addTableColumns);
-        tableColumnsSelectionBox.add(removeLastStatistic);
-        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
-
-        JPanel tableColumnsChoice = new JPanel();
-        tableColumnsChoice.setLayout(new BorderLayout());
-        tableColumnsChoice.add(tableColumnsChoiceTextArea, BorderLayout.CENTER);
-        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
-
-        tabbedPane.addTab("Table Columns", tableColumnsChoice);
-    }
-
-    /**
-     * Adds a comparison tab to the given JTabbedPane.
-     *
-     * @param tabbedPane the JTabbedPane to add the comparison tab to
-     */
-    private void addComparisonTab(JTabbedPane tabbedPane) {
-        comparisonTextArea = new JTextArea();
-        comparisonTextArea.setLineWrap(false);
-        comparisonTextArea.setWrapStyleWord(false);
-        comparisonTextArea.setEditable(false);
-        comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-        setComparisonText();
-
-        JButton runComparison = runComparisonButton();
-
-        // todo work on this later.
-//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
-
-//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
-
-        Box comparisonSelectionBox = Box.createHorizontalBox();
-        comparisonSelectionBox.add(Box.createHorizontalGlue());
-//        comparisonSelectionBox.add(setComparisonParameters);
-        comparisonSelectionBox.add(runComparison);
-        comparisonSelectionBox.add(Box.createHorizontalGlue());
-
-        JPanel comparisonPanel = new JPanel();
-        comparisonPanel.setLayout(new BorderLayout());
-        comparisonPanel.add(new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
-
-        tabbedPane.addTab("Comparison", comparisonPanel);
-    }
-
 //    /**
 //     * Adds an XML tab to the provided JTabbedPane.
 //     *
@@ -1013,6 +948,79 @@ public class AlgcomparisonEditor extends JPanel {
 //        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
 //        tabbedPane.addTab("XML", xmlPanel);
 //    }
+
+    /**
+     * Adds a table columns tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the statistics tab to
+     */
+    private void addTableColumnsTab(JTabbedPane tabbedPane) {
+        tableColumnsChoiceTextArea = new JTextArea();
+        tableColumnsChoiceTextArea.setLineWrap(true);
+        tableColumnsChoiceTextArea.setWrapStyleWord(true);
+        tableColumnsChoiceTextArea.setEditable(false);
+        setTableColumnsText();
+
+        Box tableColumnsSelectionBox = Box.createHorizontalBox();
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
+
+        addTableColumns = new JButton("Add Table Column(s)");
+        addAddTableColumnsListener2();
+
+        JButton removeLastStatistic = new JButton("Remove Last Column");
+        removeLastStatistic.addActionListener(e -> {
+            model.removeLastTableColumn();
+            setTableColumnsText();
+            setComparisonText();
+        });
+
+        tableColumnsSelectionBox.add(addTableColumns);
+        tableColumnsSelectionBox.add(removeLastStatistic);
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
+
+        JPanel tableColumnsChoice = new JPanel();
+        tableColumnsChoice.setLayout(new BorderLayout());
+        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
+
+        tabbedPane.addTab("Table Columns", tableColumnsChoice);
+    }
+
+    /**
+     * Adds a comparison tab to the given JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the comparison tab to
+     */
+    private void addComparisonTab(JTabbedPane tabbedPane) {
+        comparisonTextArea = new JTextArea();
+        comparisonTextArea.setLineWrap(false);
+        comparisonTextArea.setWrapStyleWord(false);
+        comparisonTextArea.setEditable(false);
+        comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        setComparisonText();
+
+        JButton runComparison = runComparisonButton();
+
+        // todo work on this later.
+//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
+
+//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
+
+        Box comparisonSelectionBox = Box.createHorizontalBox();
+        comparisonSelectionBox.add(Box.createHorizontalGlue());
+//        comparisonSelectionBox.add(setComparisonParameters);
+        comparisonSelectionBox.add(runComparison);
+        comparisonSelectionBox.add(Box.createHorizontalGlue());
+
+        JPanel comparisonPanel = new JPanel();
+        comparisonPanel.setLayout(new BorderLayout());
+        comparisonPanel.add(new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
+
+        tabbedPane.addTab("Comparison", comparisonPanel);
+    }
 
     @NotNull
     private JButton runComparisonButton() {
@@ -1306,8 +1314,8 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the user
-     * can select multiple statistics to add to the model.
+     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the
+     * user can select multiple statistics to add to the model.
      */
     private void addAddTableColumnsListener() {
         addTableColumns.addActionListener(e -> {
@@ -1379,6 +1387,186 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
+    /**
+     * Adds an action listener to the addTableColumns button. This action listener creates a table model, adds a JTable
+     * to the panel, and sets a row sorter for the table based on user input. It also creates a text field with a
+     * document listener to filter the table based on user input.
+     */
+    private void addAddTableColumnsListener2() {
+        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
+
+        List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
+
+        for (Class<? extends Statistic> statisticClass : statisticClasses) {
+            try {
+                Statistic statistic = statisticClass.getConstructor().newInstance();
+
+                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                allTableColumns.add(column);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                System.out.println("Error creating statistic: " + ex.getMessage());
+            }
+        }
+
+        java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
+
+        addTableColumns.addActionListener(e -> {
+
+            // Create a table idaCheckEst for the results of the IDA check
+            TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
+            this.setLayout(new BorderLayout());
+
+            // Add the table to the left
+            JTable table = new JTable(columnSelectionTableModel);
+            NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
+            IdaEditor.NumberFormatRenderer numberRenderer = new IdaEditor.NumberFormatRenderer(numberFormat);
+            table.setDefaultRenderer(Double.class, numberRenderer);
+            table.setAutoCreateRowSorter(true);
+            table.setFillsViewportHeight(true);
+            ((TableColumnSelectionModel) table.getModel()).setTableRef(table); // Set the table reference
+
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+            TableColumnModel columnModel = table.getColumnModel();
+            columnModel.getColumn(0).setCellRenderer(centerRenderer);
+
+            this.add(new JScrollPane(table));
+
+            // Create a TableRowSorter and set it to the JTable
+            TableRowSorter<TableColumnSelectionModel> sorter = new TableRowSorter<>(columnSelectionTableModel);
+            table.setRowSorter(sorter);
+
+            sorter.addRowSorterListener(e2 -> {
+
+                if (e2.getType() == RowSorterEvent.Type.SORTED) {
+                    List<AlgcomparisonModel.MyTableColumn> visiblePairs = new ArrayList<>();
+                    int rowCount = table.getRowCount();
+
+                    for (int i = 0; i < rowCount; i++) {
+                        int modelIndex = table.convertRowIndexToModel(i);
+                        visiblePairs.add(allTableColumns.get(modelIndex));
+                    }
+                }
+            });
+
+            // Create the text field
+            JLabel label = new JLabel("Regexes (semicolon separated):");
+            JTextField filterText = new JTextField(15);
+            filterText.setMaximumSize(new Dimension(500, 20));
+            label.setLabelFor(filterText);
+
+            // Create a listener for the text field that will update the table's row sort
+            filterText.getDocument().addDocumentListener(new DocumentListener() {
+
+                /**
+                 * Filters the table based on the text in the text field.
+                 */
+                private void filter() {
+                    String text = filterText.getText();
+                    if (text.trim().isEmpty()) {
+                        sorter.setRowFilter(null);
+                    } else {
+                        String[] textParts = text.split(";+");
+                        List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
+                        for (String part : textParts) {
+                            try {
+                                String trim = part.trim();
+
+//                                // Swap escapes for parentheses and pipes
+//                                trim = trim.replace("\\(", "<+++<");
+//                                trim = trim.replace("\\)", ">+++>");
+//                                trim = trim.replace("\\|", "|+++|");
+//                                trim = trim.replace("(", "\\(");
+//                                trim = trim.replace(")", "\\)");
+//                                trim = trim.replace("|", "\\|");
+//                                trim = trim.replace("<+++<", "(");
+//                                trim = trim.replace(">+++>", ")");
+//                                trim = trim.replace("|+++|", "|");
+
+                                filters.add(RowFilter.regexFilter(trim));
+                            } catch (PatternSyntaxException e) {
+                                // ignore
+                            }
+                        }
+
+                        sorter.setRowFilter(RowFilter.orFilter(filters));
+                    }
+                }
+
+
+                /**
+                 * Inserts text into the text field.
+                 *
+                 * @param e the document event.
+                 */
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    filter();
+                }
+
+                /**
+                 * Removes text from the text field.
+                 *
+                 * @param e the document event.
+                 */
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    filter();
+                }
+
+                /**
+                 * Changes text in the text field.
+                 *
+                 * @param e the document event.
+                 */
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    // this method won't be called for plain text fields
+                }
+            });
+
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            Box vert1 = Box.createVerticalBox();
+            vert1.add(new JLabel("Choose new columns for your tables:"));
+
+            Box horiz2 = Box.createHorizontalBox();
+            horiz2.add(label);
+            horiz2.add(filterText);
+            vert1.add(horiz2);
+            vert1.add(Box.createVerticalStrut(5));
+
+            vert1.add(new JScrollPane(table));
+            vert1.add(Box.createVerticalStrut(10));
+
+            panel.add(vert1, BorderLayout.CENTER);
+            panel.setPreferredSize(new Dimension(500, 500));
+
+            // Create the JDialog. Use the parent frame to make it modal.
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+            dialog.add(panel, BorderLayout.CENTER);
+
+             // Create a panel for the buttons
+            JPanel buttonPanel = getButtonPanel2(columnSelectionTableModel, dialog);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            // Set the dialog size, position, and visibility
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
+
+
+    }
+
+
     @NotNull
     private JPanel getButtonPanel(JList<String> statisticsList, Map<String, Statistic> statisticMap, JDialog dialog) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -1391,6 +1579,46 @@ public class AlgcomparisonEditor extends JPanel {
 
             for (String value : valuesList) {
                 model.addStatistic(statisticMap.get(value));
+            }
+
+            setTableColumnsText();
+            setComparisonText();
+            dialog.dispose();
+        });
+
+        cancelButton.addActionListener(e12 -> {
+            // Handle the Cancel button click event
+            System.out.println("Cancel button clicked");
+            dialog.dispose(); // Close the dialog
+        });
+
+        // Add the buttons to the button panel
+        buttonPanel.add(addButton);
+        buttonPanel.add(cancelButton);
+        return buttonPanel;
+    }
+
+    @NotNull
+    private JPanel getButtonPanel2(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addButton = new JButton("Add");
+        JButton cancelButton = new JButton("Cancel");
+
+        // Add action listeners for the buttons
+        addButton.addActionListener(e1 -> {
+            List<AlgcomparisonModel.MyTableColumn> _selectedStatistics = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
+            _selectedStatistics.sort((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName()));
+
+            for (AlgcomparisonModel.MyTableColumn column : _selectedStatistics) {
+                try {
+                    Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                    model.addStatistic(statistic);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+
+                model.addTableColumn(column);
             }
 
             setTableColumnsText();
@@ -1511,7 +1739,7 @@ public class AlgcomparisonEditor extends JPanel {
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
 
-    Statistics selectedTableColumns = model.getSelectedStatistics();
+        Statistics selectedTableColumns = model.getSelectedStatistics();
         List<Statistic> statistics = selectedTableColumns.getStatistics();
 
         if (statistics.isEmpty()) {
@@ -1580,7 +1808,7 @@ public class AlgcomparisonEditor extends JPanel {
                 Every viable combination of parameter options will be explored. Bear in mind that not all combinations you can select in this tool are stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
 
                 If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
-                
+                                
                     java -Xmx4g -jar [tetrad.jar]
                     
                 Here, "[tetrad.jar]" should be replaced by the name of the Tetrad jar you have downloaded. This would set the maximum memory available to the JVM to 4 gigabytes. You can increase this number to increase the memory available to the JVM up to the limit of what you have available on your machine. The default is 1 gigabyte.
@@ -1676,4 +1904,138 @@ public class AlgcomparisonEditor extends JPanel {
             buffer.setLength(0); // Clear the buffer for next data
         }
     }
+
+    /**
+     * A table model for the results of the IDA check. This table can be sorted by clicking on the column headers, up or
+     * down. The table can be copied and pasted into a text file or into Excel.
+     */
+    private static class TableColumnSelectionModel extends AbstractTableModel {
+
+        /**
+         * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
+         * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
+         * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
+         * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
+         * If the true model is not given, the last two columns are not included.
+         */
+        private final String[] columnNames = {"Index", "Column Name", "Description", "Selected"};
+        /**
+         * The data for the table.
+         */
+        private final Object[][] data;
+        private final List<AlgcomparisonModel.MyTableColumn> allTableColumns;
+        private final Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns;
+        private JTable tableRef;
+
+        /**
+         * Constructs a new table estModel for the results of the IDA check.
+         */
+        public TableColumnSelectionModel(List<AlgcomparisonModel.MyTableColumn> allTableColumns, Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns) {
+            if (allTableColumns == null) {
+                throw new IllegalArgumentException("allTableColumns is null");
+            }
+
+            if (selectedTableColumns == null) {
+                throw new IllegalArgumentException("selectedTableColumns is null");
+            }
+
+            if (!new HashSet<>(allTableColumns).containsAll(selectedTableColumns)) {
+                throw new IllegalArgumentException("selectedTableColumns contains elements not in allTableColumns");
+            }
+
+            // Create the data for the table
+            this.data = new Object[allTableColumns.size()][4];
+            this.allTableColumns = allTableColumns;
+            this.selectedTableColumns = new HashSet<>(selectedTableColumns);
+
+            for (int i = 0; i < allTableColumns.size(); i++) {
+                AlgcomparisonModel.MyTableColumn tableColumn = allTableColumns.get(i);
+                this.data[i][0] = Integer.toUnsignedLong(i + 1); // 1-based index (not 0-based index)
+                this.data[i][1] = tableColumn.getColumnName();
+                this.data[i][2] = tableColumn.getDescription();
+                this.data[i][3] = selectedTableColumns.contains(tableColumn) ? "Selected" : "";
+            }
+        }
+
+        /**
+         * Returns the number of rows in the table.
+         *
+         * @return the number of rows in the table.
+         */
+        @Override
+        public int getRowCount() {
+            return this.data.length;
+        }
+
+        /**
+         * Returns the number of columns in the table.
+         *
+         * @return the number of columns in the table.
+         */
+        @Override
+        public int getColumnCount() {
+            return data[0].length;
+        }
+
+        /**
+         * Returns the name of the column at the given index.
+         *
+         * @param col the index of the column.
+         * @return the name of the column at the given index.
+         */
+        @Override
+        public String getColumnName(int col) {
+            return this.columnNames[col];
+        }
+
+        /**
+         * Returns the value at the given row and column.
+         *
+         * @param row the row.
+         * @param col the column.
+         * @return the value at the given row and column.
+         */
+        @Override
+        public Object getValueAt(int row, int col) {
+            if (tableRef == null) return "";
+            int index = tableRef.convertRowIndexToView(row);
+            boolean rowSelected = false;
+
+            if (index != -1) {
+                rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
+
+                if (rowSelected) {
+                    selectedTableColumns.add(allTableColumns.get(index));
+                } else {
+                    selectedTableColumns.remove(allTableColumns.get(index));
+                }
+            }
+
+            if (col == 3) {
+                return rowSelected ? "Selected" : "";
+            } else {
+                return this.data[row][col];
+            }
+        }
+
+        /**
+         * Returns the class of the column at the given index.
+         *
+         * @param c the index of the column.
+         * @return the class of the column at the given index.
+         */
+        @Override
+        public Class<?> getColumnClass(int c) {
+            return getValueAt(0, c).getClass();
+        }
+
+        public Set<AlgcomparisonModel.MyTableColumn> getSelectedTableColumns() {
+            return selectedTableColumns;
+        }
+
+        public void setTableRef(JTable tableRef) {
+            this.tableRef = tableRef;
+        }
+    }
+
 }

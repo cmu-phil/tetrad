@@ -36,7 +36,6 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
-import javax.swing.table.TableColumn;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -100,11 +99,11 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * The selected statistics for the AlgcomparisonModel.
      */
-    private transient LinkedList<Statistic> selectedStatistics;
+    private transient LinkedList<Statistic>  selectedStatistics;
     /**
      * The selected table columns for the AlgcomparisonModel.
      */
-    private transient LinkedList<TableColumn> selectedTableColumns;
+    private transient LinkedList<MyTableColumn> selectedTableColumns;
     /**
      * The name of the AlgcomparisonModel.
      */
@@ -257,7 +256,7 @@ public class AlgcomparisonModel implements SessionModel {
      *
      * @param tableColumn The table column to add.
      */
-    public void addTableColumn(TableColumn tableColumn) {
+    public void addTableColumn(MyTableColumn tableColumn) {
         initializeIfNull();
         selectedTableColumns.add(tableColumn);
     }
@@ -336,6 +335,10 @@ public class AlgcomparisonModel implements SessionModel {
         Statistics statistics = new Statistics();
         for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
         return statistics;
+    }
+
+    public List<MyTableColumn> getSelectedTableColumns() {
+        return new ArrayList<>(selectedTableColumns);
     }
 
     /**
@@ -502,35 +505,52 @@ public class AlgcomparisonModel implements SessionModel {
         return simulationNames;
     }
 
-    public static class TableColumn {
-        private enum ColumnType {
+    public static class MyTableColumn {
+
+
+        public String getDescription() {
+            return description;
+        }
+
+        public enum ColumnType {
             STATISTIC,
             PARAMETER
         }
 
-        private final String name;
+        private final String columnName;
+        private final String description;
         private final Class<? extends Statistic> statistic;
 
         private final String parameter;
 
         private final ColumnType type;
 
-        public TableColumn(String name, Class<? extends Statistic> statistic) {
-            this.name = name;
+        public MyTableColumn(String name, String description, Class<? extends Statistic> statistic) {
+            this.columnName = name;
+            this.description = description;
             this.statistic = statistic;
             this.parameter = null;
             this.type = ColumnType.STATISTIC;
         }
 
-        public TableColumn(String name, String parameter) {
-            this.name = name;
+        public MyTableColumn(String name, String description, String parameter) {
+            this.columnName = name;
+            this.description = description;
             this.statistic = null;
             this.parameter = parameter;
             this.type = ColumnType.PARAMETER;
         }
 
-        public String getName() {
-            return name;
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public String getdescription() {
+            return description;
+        }
+
+        public ColumnType getType() {
+            return type;
         }
 
         public Class<? extends Statistic> getStatistic() {
