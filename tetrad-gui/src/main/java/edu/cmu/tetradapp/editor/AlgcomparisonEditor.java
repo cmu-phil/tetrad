@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -81,7 +80,7 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * JTextArea used for displaying statistics choices.
      */
-    private JTextArea statisticsChoiceTextArea;
+    private JTextArea tableColumnsChoiceTextArea;
     /**
      * JTextArea used for displaying comparison results.
      */
@@ -99,13 +98,13 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private JButton addAlgorithm;
     /**
-     * Button used to add statistics.
+     * Button used to add table columns.
      */
-    private JButton addStatistics;
+    private JButton addTableColumns;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
-     * tabs for simulation, algorithm, statistics, comparison, XML, and help.
+     * tabs for simulation, algorithm, table columns, comparison and help.
      *
      * @param model the AlgcomparisonModel to use for the editor
      */
@@ -118,7 +117,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         addSimulationTab(tabbedPane);
         addAlgorithmTab(tabbedPane);
-        addStatisticsTab(tabbedPane);
+        addTableColumnsTab(tabbedPane);
         addComparisonTab(tabbedPane);
 //        addXmlTab(tabbedPane); // todo work on this later.
         addHelpTab(tabbedPane);
@@ -901,40 +900,40 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Adds a statistics tab to the provided JTabbedPane.
+     * Adds a table columns tab to the provided JTabbedPane.
      *
      * @param tabbedPane the JTabbedPane to add the statistics tab to
      */
-    private void addStatisticsTab(JTabbedPane tabbedPane) {
-        statisticsChoiceTextArea = new JTextArea();
-        statisticsChoiceTextArea.setLineWrap(true);
-        statisticsChoiceTextArea.setWrapStyleWord(true);
-        statisticsChoiceTextArea.setEditable(false);
-        setStatisticsText();
+    private void addTableColumnsTab(JTabbedPane tabbedPane) {
+        tableColumnsChoiceTextArea = new JTextArea();
+        tableColumnsChoiceTextArea.setLineWrap(true);
+        tableColumnsChoiceTextArea.setWrapStyleWord(true);
+        tableColumnsChoiceTextArea.setEditable(false);
+        setTableColumnsText();
 
-        Box statisticsSelectionBox = Box.createHorizontalBox();
-        statisticsSelectionBox.add(Box.createHorizontalGlue());
+        Box tableColumnsSelectionBox = Box.createHorizontalBox();
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
-        addStatistics = new JButton("Add Table Column(s)");
-        addAddStatisticsListener();
+        addTableColumns = new JButton("Add Table Column(s)");
+        addAddTableColumnsListener();
 
         JButton removeLastStatistic = new JButton("Remove Last Column");
         removeLastStatistic.addActionListener(e -> {
-            model.removeLastStatistic();
-            setStatisticsText();
+            model.removeLastTableColumn();
+            setTableColumnsText();
             setComparisonText();
         });
 
-        statisticsSelectionBox.add(addStatistics);
-        statisticsSelectionBox.add(removeLastStatistic);
-        statisticsSelectionBox.add(Box.createHorizontalGlue());
+        tableColumnsSelectionBox.add(addTableColumns);
+        tableColumnsSelectionBox.add(removeLastStatistic);
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
-        JPanel statisticsChoice = new JPanel();
-        statisticsChoice.setLayout(new BorderLayout());
-        statisticsChoice.add(statisticsChoiceTextArea, BorderLayout.CENTER);
-        statisticsChoice.add(statisticsSelectionBox, BorderLayout.SOUTH);
+        JPanel tableColumnsChoice = new JPanel();
+        tableColumnsChoice.setLayout(new BorderLayout());
+        tableColumnsChoice.add(tableColumnsChoiceTextArea, BorderLayout.CENTER);
+        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
 
-        tabbedPane.addTab("Table Columns", statisticsChoice);
+        tabbedPane.addTab("Table Columns", tableColumnsChoice);
     }
 
     /**
@@ -995,14 +994,14 @@ public class AlgcomparisonEditor extends JPanel {
 //            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" + " configuration of this tool.");
 //            setSimulationText();
 //            setAlgorithmText();
-//            setStatisticsText();
+//            setTableColumnsText();
 //        });
 //
 //        saveXml.addActionListener(e -> {
 //            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
 //            setSimulationText();
 //            setAlgorithmText();
-//            setStatisticsText();
+//            setTableColumnsText();
 //        });
 //
 //        Box xmlSelectionBox = Box.createHorizontalBox();
@@ -1307,11 +1306,11 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Adds a listener to the "Add Statistics" button. When the button is clicked, a dialog is displayed where the user
+     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the user
      * can select multiple statistics to add to the model.
      */
-    private void addAddStatisticsListener() {
-        addStatistics.addActionListener(e -> {
+    private void addAddTableColumnsListener() {
+        addTableColumns.addActionListener(e -> {
 
             List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
 
@@ -1394,7 +1393,7 @@ public class AlgcomparisonEditor extends JPanel {
                 model.addStatistic(statisticMap.get(value));
             }
 
-            setStatisticsText();
+            setTableColumnsText();
             setComparisonText();
             dialog.dispose();
         });
@@ -1509,23 +1508,23 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * Sets the text in the statisticsChoiceTextArea based on the selected statistics.
      */
-    private void setStatisticsText() {
-        statisticsChoiceTextArea.setText("");
+    private void setTableColumnsText() {
+        tableColumnsChoiceTextArea.setText("");
 
-        Statistics selectedStatistics = model.getSelectedStatistics();
-        List<Statistic> statistics = selectedStatistics.getStatistics();
+    Statistics selectedTableColumns = model.getSelectedStatistics();
+        List<Statistic> statistics = selectedTableColumns.getStatistics();
 
         if (statistics.isEmpty()) {
-            statisticsChoiceTextArea.append("""
+            tableColumnsChoiceTextArea.append("""
                      ** No statistics have been selected. Please select at least one statistic using the Add Statistic(s) button below. **
                     """);
             return;
         } else if (statistics.size() == 1) {
-            statisticsChoiceTextArea.setText("""
+            tableColumnsChoiceTextArea.setText("""
                     The following statistics has been selected. The comparison table will include these statistics as columns in the table.
                     """);
         } else {
-            statisticsChoiceTextArea.setText("""
+            tableColumnsChoiceTextArea.setText("""
                     The following simulations have been selected. The comparison table will include these statistics as columns in the table.
                     """);
         }
@@ -1536,7 +1535,7 @@ public class AlgcomparisonEditor extends JPanel {
 
             try {
                 Statistic statistic1 = statisticClass.getConstructor().newInstance();
-                statisticsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
+                tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
 
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e) {
@@ -1544,7 +1543,7 @@ public class AlgcomparisonEditor extends JPanel {
             }
         }
 
-        statisticsChoiceTextArea.setCaretPosition(0);
+        tableColumnsChoiceTextArea.setCaretPosition(0);
     }
 
     /**
@@ -1557,7 +1556,7 @@ public class AlgcomparisonEditor extends JPanel {
             || model.getSelectedStatistics().getStatistics().isEmpty()) {
             comparisonTextArea.setText(
                     """
-                            ** You have made an empty selection; look back at the Simulation, Algorithm, and Statistics tabs **
+                            ** You have made an empty selection; look back at the Simulation, Algorithm, and TableColumns tabs **
                             """);
         } else {
             comparisonTextArea.setText
@@ -1592,7 +1591,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                 This selection implies a list of parameters for all of the simulations. These parameters may be edited by clicking the Edit Parameters button. Note that parameters may be given a list of comma-separated values; each combination of parameters will be explored in the comparison.
 
-                The Algorithm tab and Statistics tab work similarly. An algorithm selection requires one to select an algorithm type and then an independence test and/or a score depending on the requirements of the algorithm.
+                The Algorithm tab and TableColumns tab work similarly. An algorithm selection requires one to select an algorithm type and then an independence test and/or a score depending on the requirements of the algorithm.
 
                 For the Algorithm tab, once one has selected all algorithms, one may edit the parameters for these algorithms.
 
