@@ -26,6 +26,8 @@ import edu.cmu.tetradapp.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -132,12 +134,12 @@ public class AlgcomparisonEditor extends JPanel {
      * @param parameters the Parameters object containing the parameter values
      * @return a map of parameter names to corresponding Box components
      */
-    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters, boolean bothOptionAllowed) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), bothOptionAllowed),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -175,7 +177,8 @@ public class AlgcomparisonEditor extends JPanel {
      * @param paramDesc  the ParamDescription object containing information about the parameter
      * @return a Box component representing the parameter
      */
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc,
+                                                boolean bothOptionAllowed) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
 
@@ -206,7 +209,7 @@ public class AlgcomparisonEditor extends JPanel {
             }
             component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
         } else if (defaultValue instanceof Boolean) {
-            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+            component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
         } else if (defaultValue instanceof String) {
             component = getStringField(parameter, parameters, (String) defaultValue);
         } else {
@@ -380,38 +383,51 @@ public class AlgcomparisonEditor extends JPanel {
      *
      * @param parameter    the name of the parameter
      * @param parameters   the Parameters object containing the parameter values
-     * @param defaultValue the default value for the selection box
+     * @param bothOptionAllowed whether the option is allows to select both true and false
      * @return a Box component representing the boolean selection box
      */
-    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean bothOptionAllowed) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
         JRadioButton noButton = new JRadioButton("No");
+        JRadioButton bothButton = new JRadioButton("Both");
 
         // Button group to ensure only one option can be selected
         ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
+        selectionBtnGrp.add(bothButton);
 
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        Object[] values = parameters.getValues(parameter);
+
+        Boolean[] booleans = new Boolean[values.length];
+        for (int i = 0; i < values.length; i++) {
+            booleans[i] = (Boolean) values[i];
+        }
 
         // Set default selection
-        if (aBoolean) {
+        if (booleans.length == 1 && booleans[0]) {
             yesButton.setSelected(true);
-        } else {
+        } else if (booleans.length == 1 && !booleans[0]) {
             noButton.setSelected(true);
+        } else if (booleans.length == 2 && bothOptionAllowed) {
+            bothButton.setSelected(true);
         }
 
         // Add to containing box
         selectionBox.add(yesButton);
         selectionBox.add(noButton);
 
+        if (bothOptionAllowed) {
+            selectionBox.add(bothButton);
+        }
+
         // Event listener
         yesButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
-                parameters.set(parameter, true);
+                parameters.set(parameter, (Object) new Boolean[]{true});
             }
         });
 
@@ -419,9 +435,18 @@ public class AlgcomparisonEditor extends JPanel {
         noButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
-                parameters.set(parameter, false);
+                parameters.set(parameter, (Object[]) new Boolean[]{false});
             }
         });
+
+        if (bothOptionAllowed) {
+            bothButton.addActionListener((e) -> {
+                JRadioButton button = (JRadioButton) e.getSource();
+                if (button.isSelected()) {
+                    parameters.set(parameter, (Object[]) new Boolean[]{true, false});
+                }
+            });
+        }
 
         return selectionBox;
     }
@@ -720,7 +745,7 @@ public class AlgcomparisonEditor extends JPanel {
             } else {
                 Box parameters = Box.createVerticalBox();
                 Box[] paramBoxes = toArray(
-                        createParameterComponents(params, model.getParameters()));
+                        createParameterComponents(params, model.getParameters(), false));
                 int lastIndex = paramBoxes.length - 1;
                 for (int i = 0; i < lastIndex; i++) {
                     parameters.add(paramBoxes[i]);
@@ -728,7 +753,15 @@ public class AlgcomparisonEditor extends JPanel {
                 }
                 parameters.add(paramBoxes[lastIndex]);
 
+                Box horiz = Box.createHorizontalBox();
+                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+                horiz.add(Box.createHorizontalGlue());
+                horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
+                this.parameterBox.add(horiz, BorderLayout.NORTH);
                 this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+                this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+                this.parameterBox.setPreferredSize(new Dimension(700, 400));
+
             }
 
             this.parameterBox.validate();
@@ -738,7 +771,7 @@ public class AlgcomparisonEditor extends JPanel {
             dialog.setLayout(new BorderLayout());
 
             // Add your panel to the center of the dialog
-            dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
+            dialog.add(parameterBox, BorderLayout.CENTER);
 
             // Create a panel for the buttons
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -807,7 +840,7 @@ public class AlgcomparisonEditor extends JPanel {
             } else {
                 Box parameters = Box.createVerticalBox();
                 Box[] paramBoxes = ParameterComponents.toArray(
-                        createParameterComponents(params, model.getParameters()));
+                        createParameterComponents(params, model.getParameters(), true));
                 int lastIndex = paramBoxes.length - 1;
                 for (int i = 0; i < lastIndex; i++) {
                     parameters.add(paramBoxes[i]);
@@ -815,7 +848,14 @@ public class AlgcomparisonEditor extends JPanel {
                 }
                 parameters.add(paramBoxes[lastIndex]);
 
+                Box horiz = Box.createHorizontalBox();
+                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+                horiz.add(Box.createHorizontalGlue());
+                horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
+                this.parameterBox.add(horiz, BorderLayout.NORTH);
                 this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+                this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+                this.parameterBox.setPreferredSize(new Dimension(700, 400));
             }
 
             this.parameterBox.validate();
@@ -875,10 +915,10 @@ public class AlgcomparisonEditor extends JPanel {
         Box statisticsSelectionBox = Box.createHorizontalBox();
         statisticsSelectionBox.add(Box.createHorizontalGlue());
 
-        addStatistics = new JButton("Add Statistic(s)");
+        addStatistics = new JButton("Add Table Column(s)");
         addAddStatisticsListener();
 
-        JButton removeLastStatistic = new JButton("Remove Last Statistic");
+        JButton removeLastStatistic = new JButton("Remove Last Column");
         removeLastStatistic.addActionListener(e -> {
             model.removeLastStatistic();
             setStatisticsText();
@@ -1538,7 +1578,13 @@ public class AlgcomparisonEditor extends JPanel {
 
                 The comparison will be displayed in the "comparison" tab.
 
-                Not all combinations you can select in this tool are stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller number of combinations. Also, some of the algorithms may be slow. In fact, it may not make sense to run larger comparisons in this interface at all; you may with to use the command line tool or Python to do it.
+                Every viable combination of parameter options will be explored. Bear in mind that not all combinations you can select in this tool are stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
+
+                If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
+                
+                    java -Xmx4g -jar [tetrad.jar]
+                    
+                Here, "[tetrad.jar]" should be replaced by the name of the Tetrad jar you have downloaded. This would set the maximum memory available to the JVM to 4 gigabytes. You can increase this number to increase the memory available to the JVM up to the limit of what you have available on your machine. The default is 1 gigabyte.
 
                 In the Simulation tab, simulations may be added by clicking the Add Simulation button. The last one in the list may be removed by clicking the Remove Last Simulation button.
 
@@ -1550,14 +1596,8 @@ public class AlgcomparisonEditor extends JPanel {
 
                 For the Algorithm tab, once one has selected all algorithms, one may edit the parameters for these algorithms.
 
-                In the Comparison tab, there are some properties of the comparison itself; these may be edited by clicking the Edit Comparison Parameters button.
-
-                The XML tab allows one to save and load XML specifications of the information in this tool, suitable for use with the command-line Algcomparison tool. These may also be used to save the setup for this tool to a hard drive and load it in later for further exploration. This XML file will be saved along with full results to the user's hard drive.
-
-                In further work, we plan to allow the Simulation and Search boxes in the Tetrad UI to be made parents of this algorithm comparison box. Information in these boxes, such as simulation selections and parameters and algorithm selections and parameters, may be used to set up a comparison, though it will still be possible to edit the comparison after this information has been gleaned.
-
-                Also, in future work, we may include a method to insert results from other tools into the tables generated here.
-                                """);
+                In the Comparison tab, there is a button to run the comparison and display the results.
+                """);
     }
 
     /**
