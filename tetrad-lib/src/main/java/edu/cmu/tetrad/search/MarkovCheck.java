@@ -598,9 +598,9 @@ public class MarkovCheck {
     public void setKnowledge(Knowledge knowledge) {
         if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
             throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                    "| Z1,..,Zn.");
+                                               "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                                               "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                                               "| Z1,..,Zn.");
         }
 
         int lastTier = 0;
@@ -672,14 +672,14 @@ public class MarkovCheck {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
-        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
-                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
-                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
-                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
-                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
-                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
-                "Number of tests (indep): " + record.numTestsInd + "\n" +
-                "Number of tests (dep): " + record.numTestsDep;
+        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n"+
+               "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
+               "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
+               "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
+               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
+               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
+               "Number of tests (indep): " + record.numTestsInd + "\n" +
+               "Number of tests (dep): " + record.numTestsDep;
     }
 
     /**
