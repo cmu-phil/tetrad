@@ -55,31 +55,31 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private final Parameters parameters;
     /**
-     * This variable holds a list of statNames.
-     *
-     * <p>
-     * The statNames list is a private instance variable of type List&lt;String&gt;.
-     * </p>
+     * The results path for the AlgcomparisonModel.
+     */
+    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
+    /**
+     * The list of statistic names.
      */
     private transient List<String> statNames;
     /**
-     * A private transient final variable that holds a list of simulation names.
+     * The list of simulation names.
      */
     private transient List<String> simNames;
     /**
-     * A private transient final variable that holds a list of simulation classes.
+     * The list of simulation classes.
      */
     private transient List<Class<? extends Simulation>> simulationClasses;
     /**
-     * A private transient final variable that holds a list of statistic classes.
+     * The list of statistic classes.
      */
     private transient List<Class<? extends Statistic>> statisticsClasses;
     /**
-     * A private final transient variable that holds a list of algorithm classes.
+     * The list of algorithm classes.
      */
     private transient List<Class<? extends Algorithm>> algorithmClasses;
     /**
-     * A private final transient variable that holds a list of algorithm names.
+     * The list of algorithm names.
      */
     private transient List<String> algNames;
     /**
@@ -105,10 +105,6 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private String name = "Algcomparison";
     /**
-     * The results path for the AlgcomparisonModel.
-     */
-    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
-    /**
      * A private final transient variable that holds a map of simulation names to simulation classes.
      */
     private Map<String, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> simulationMap;
@@ -123,6 +119,11 @@ public class AlgcomparisonModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Finds and returns a list of algorithm classes that implement the Algorithm interface.
+     *
+     * @return A list of algorithm classes.
+     */
     @NotNull
     private static List<Class<? extends Algorithm>> findAlgorithmClasses() {
         Set<Class<? extends Algorithm>> _algorithms = findImplementations("edu.cmu.tetrad.algcomparison.algorithm",
@@ -348,6 +349,21 @@ public class AlgcomparisonModel implements SessionModel {
         return statistics;
     }
 
+    /**
+     * Initializes the necessary variables if they are null.
+     * <p>
+     * This method checks if the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
+     * variables are null. If any of them is null, it calls the initializeSimulationsEtc() method to initialize them.
+     * <p>
+     * It also checks if the selectedParameters variable is null. If it is null, it initializes it as an empty
+     * LinkedList.
+     * <p>
+     * It then checks if the simulationClasses, algorithmClasses, and statisticsClasses variables are null. If any of
+     * them is null, it calls the initializeClasses() method to initialize them.
+     * <p>
+     * Finally, it checks if the algNames, statNames, and simNames variables are null. If any of them is null, it calls
+     * the initializeNames() method to initialize them.
+     */
     private void initializeIfNull() {
         if (selectedSimulations == null || selectedAlgorithms == null || selectedStatistics == null
             || selectedParameters == null) {
@@ -367,6 +383,12 @@ public class AlgcomparisonModel implements SessionModel {
         }
     }
 
+    /**
+     * Initializes the necessary variables for simulations, algorithms, statistics, and parameters.
+     * <p>
+     * This method initializes the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
+     * variables as new LinkedLists if they are null.
+     */
     private void initializeSimulationsEtc() {
         this.selectedSimulations = new LinkedList<>();
         this.selectedAlgorithms = new LinkedList<>();
@@ -374,12 +396,18 @@ public class AlgcomparisonModel implements SessionModel {
         this.selectedParameters = new LinkedList<>();
     }
 
+    /**
+     * Initializes the necessary simulation, algorithm, and statistics classes.
+     */
     private void initializeClasses() {
         simulationClasses = findSimulationClasses();
         algorithmClasses = findAlgorithmClasses();
         statisticsClasses = findStatisticsClasses();
     }
 
+    /**
+     * Initializes the names of algorithms, statistics, and simulations.
+     */
     private void initializeNames() {
         algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
         statNames = getStatisticsNamesFromImplemenations(statisticsClasses);
@@ -390,6 +418,11 @@ public class AlgcomparisonModel implements SessionModel {
         this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
     }
 
+    /**
+     * Finds and returns a list of simulation classes that implement the Simulation interface.
+     *
+     * @return A list of simulation classes.
+     */
     @NotNull
     private List<Class<? extends Simulation>> findSimulationClasses() {
         Set<Class<? extends Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
@@ -399,6 +432,11 @@ public class AlgcomparisonModel implements SessionModel {
         return simulationClasses;
     }
 
+    /**
+     * Finds and returns a list of classes that implement the Statistic interface within the specified package.
+     *
+     * @return A list of Statistic classes.
+     */
     private List<Class<? extends Statistic>> findStatisticsClasses() {
         Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic",
                 Statistic.class);
@@ -425,12 +463,15 @@ public class AlgcomparisonModel implements SessionModel {
             }
         }
 
-        /**
-         * A private final transient variable that holds a map of statistic names to statistic classes.
-         */
         return algorithmNames;
     }
 
+    /**
+     * Retrieves the abbreviations of statistics from a list of implementation classes.
+     *
+     * @param algorithmClasses The list of implementation classes of statistics.
+     * @return The abbreviations of the statistics.
+     */
     private List<String> getStatisticsNamesFromImplemenations(List<Class<? extends Statistic>> algorithmClasses) {
         List<String> statisticsNames = new ArrayList<>();
         Map<String, Class<? extends Statistic>> statisticsMap = new HashMap<>();
@@ -447,13 +488,15 @@ public class AlgcomparisonModel implements SessionModel {
             }
         }
 
-        /**
-         * A private final transient variable that holds a map of algorithm names to algorithm classes.
-         */
-
         return statisticsNames;
     }
 
+    /**
+     * Retrieves the names of simulations from a list of implementation classes.
+     *
+     * @param algorithmClasses The list of implementation classes of simulations.
+     * @return The names of the simulations.
+     */
     private List<String> getSimulationNamesFromImplemenations(List<Class<? extends Simulation>> algorithmClasses) {
         List<String> simulationNames = new ArrayList<>();
         Map<String, Class<? extends Simulation>> simulationMap = new HashMap<>();
@@ -473,10 +516,8 @@ public class AlgcomparisonModel implements SessionModel {
         }
 
         this.simulationMap = simulationMap;
-
         return simulationNames;
     }
-
 }
 
 
