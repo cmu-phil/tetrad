@@ -7,8 +7,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.Statistic;
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
@@ -30,7 +28,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.RowSorterEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -48,6 +45,8 @@ import java.util.function.Function;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
 
 /**
  * AlgcomparisonEditor is a JPanel that displays a JTabbedPane with tabs for simulation, algorithm, statistics,
@@ -644,39 +643,6 @@ public class AlgcomparisonEditor extends JPanel {
         return paramText.toString();
     }
 
-    /**
-     * Retrieves all simulation parameters from a list of simulation objects.
-     *
-     * @param simulations the list of simulation objects
-     * @return a set of all simulation parameters
-     */
-    @NotNull
-    private static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Simulation simulation : simulations) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
-    }
-
-    /**
-     * Retrieves all algorithm parameters from a list of Algorithm objects.
-     *
-     * @param algorithm the list of Algorithm objects
-     * @return a set of all algorithm parameters
-     */
-    @NotNull
-    private static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Algorithm simulation : algorithm) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
-    }
 
     public static void scrollToWord(JTextArea textArea, String word) throws BadLocationException {
         String text = textArea.getText();
@@ -840,7 +806,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         editAlgorithmParameters.addActionListener(e -> {
             List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-            Set<String> params = getAllAlgorithmParameters(algorithm);
+            Set<String> params = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
 
             this.parameterBox.removeAll();
 
@@ -970,15 +936,15 @@ public class AlgcomparisonEditor extends JPanel {
         addTableColumns = new JButton("Add Table Column(s)");
         addAddTableColumnsListener2();
 
-        JButton removeLastStatistic = new JButton("Remove Last Column");
-        removeLastStatistic.addActionListener(e -> {
+        JButton removeLastTableColumn = new JButton("Remove Last Column");
+        removeLastTableColumn.addActionListener(e -> {
             model.removeLastTableColumn();
             setTableColumnsText();
             setComparisonText();
         });
 
         tableColumnsSelectionBox.add(addTableColumns);
-        tableColumnsSelectionBox.add(removeLastStatistic);
+        tableColumnsSelectionBox.add(removeLastTableColumn);
         tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
         JPanel tableColumnsChoice = new JPanel();
@@ -1316,79 +1282,79 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
-    /**
-     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the
-     * user can select multiple statistics to add to the model.
-     */
-    private void addAddTableColumnsListener() {
-        addTableColumns.addActionListener(e -> {
-
-            List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
-
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-
-            List<String> statisticsStrings = new ArrayList<>();
-            Map<String, Statistic> statisticMap = new HashMap<>();
-
-            for (Class<? extends Statistic> statisticClass : statisticClasses) {
-                try {
-                    Statistic statistic = statisticClass.getConstructor().newInstance();
-                    statisticsStrings.add(statistic.getAbbreviation());
-                    statisticMap.put(statistic.getAbbreviation(), statistic);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException ex) {
-                    System.out.println("Error creating statistic: " + ex.getMessage());
-                }
-            }
-
-            Collections.sort(statisticsStrings);
-            String[] _statistics = statisticsStrings.toArray(new String[0]);
-            JList<String> statisticsList = new JList<>(_statistics);
-            statisticsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            JScrollPane scrollPane = new JScrollPane(statisticsList);
-            scrollPane.setPreferredSize(new Dimension(100, 200));
-
-            System.out.println(statisticsStrings);
-
-            JButton selectDefault = new JButton("Select Defaults");
-
-            List<String> defaults = Arrays.asList("AP", "AR", "AHP", "AHR", "AHPC", "AHRC");
-
-            selectDefault.addActionListener(e13 -> {
-                for (int i = 0; i < _statistics.length; i++) {
-                    if (defaults.contains(_statistics[i])) {
-                        statisticsList.addSelectionInterval(i, i);
-                    }
-                }
-            });
-
-            Box vert1 = Box.createVerticalBox();
-            vert1.add(new JLabel("Choose an statistic:"));
-            vert1.add(Box.createVerticalStrut(5));
-            vert1.add(scrollPane);
-            vert1.add(Box.createVerticalStrut(10));
-            vert1.add(selectDefault);
-
-            panel.add(vert1, BorderLayout.NORTH);
-
-            // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
-            dialog.setLayout(new BorderLayout());
-            dialog.add(panel, BorderLayout.CENTER);
-
-            // Create a panel for the buttons
-            JPanel buttonPanel = getButtonPanel(statisticsList, statisticMap, dialog);
-
-            // Add the button panel to the bottom of the dialog
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-            // Set the dialog size, position, and visibility
-            dialog.pack(); // Adjust dialog size to fit its contents
-            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
-            dialog.setVisible(true);
-        });
-    }
+//    /**
+//     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the
+//     * user can select multiple statistics to add to the model.
+//     */
+//    private void addAddTableColumnsListener() {
+//        addTableColumns.addActionListener(e -> {
+//
+//            List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
+//
+//            JPanel panel = new JPanel();
+//            panel.setLayout(new BorderLayout());
+//
+//            List<String> statisticsStrings = new ArrayList<>();
+//            Map<String, Statistic> statisticMap = new HashMap<>();
+//
+//            for (Class<? extends Statistic> statisticClass : statisticClasses) {
+//                try {
+//                    Statistic statistic = statisticClass.getConstructor().newInstance();
+//                    statisticsStrings.add(statistic.getAbbreviation());
+//                    statisticMap.put(statistic.getAbbreviation(), statistic);
+//                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+//                         NoSuchMethodException ex) {
+//                    System.out.println("Error creating statistic: " + ex.getMessage());
+//                }
+//            }
+//
+//            Collections.sort(statisticsStrings);
+//            String[] _statistics = statisticsStrings.toArray(new String[0]);
+//            JList<String> statisticsList = new JList<>(_statistics);
+//            statisticsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//            JScrollPane scrollPane = new JScrollPane(statisticsList);
+//            scrollPane.setPreferredSize(new Dimension(100, 200));
+//
+//            System.out.println(statisticsStrings);
+//
+//            JButton selectDefault = new JButton("Select Defaults");
+//
+//            List<String> defaults = Arrays.asList("AP", "AR", "AHP", "AHR", "AHPC", "AHRC");
+//
+//            selectDefault.addActionListener(e13 -> {
+//                for (int i = 0; i < _statistics.length; i++) {
+//                    if (defaults.contains(_statistics[i])) {
+//                        statisticsList.addSelectionInterval(i, i);
+//                    }
+//                }
+//            });
+//
+//            Box vert1 = Box.createVerticalBox();
+//            vert1.add(new JLabel("Choose an statistic:"));
+//            vert1.add(Box.createVerticalStrut(5));
+//            vert1.add(scrollPane);
+//            vert1.add(Box.createVerticalStrut(10));
+//            vert1.add(selectDefault);
+//
+//            panel.add(vert1, BorderLayout.NORTH);
+//
+//            // Create the JDialog. Use the parent frame to make it modal.
+//            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
+//            dialog.setLayout(new BorderLayout());
+//            dialog.add(panel, BorderLayout.CENTER);
+//
+//            // Create a panel for the buttons
+//            JPanel buttonPanel = getButtonPanel2(model.getSelectedTableColumns(), dialog);
+//
+//            // Add the button panel to the bottom of the dialog
+//            dialog.add(buttonPanel, BorderLayout.SOUTH);
+//
+//            // Set the dialog size, position, and visibility
+//            dialog.pack(); // Adjust dialog size to fit its contents
+//            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+//            dialog.setVisible(true);
+//        });
+//    }
 
     /**
      * Adds an action listener to the addTableColumns button. This action listener creates a table model, adds a JTable
@@ -1398,7 +1364,7 @@ public class AlgcomparisonEditor extends JPanel {
     private void addAddTableColumnsListener2() {
         addTableColumns.addActionListener(e -> {
             java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
-            List<AlgcomparisonModel.MyTableColumn> allTableColumns = getAllTableColumns();
+            List<AlgcomparisonModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
 
             // Create a table idaCheckEst for the results of the IDA check
             TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
@@ -1426,18 +1392,18 @@ public class AlgcomparisonEditor extends JPanel {
             TableRowSorter<TableColumnSelectionModel> sorter = new TableRowSorter<>(columnSelectionTableModel);
             table.setRowSorter(sorter);
 
-            sorter.addRowSorterListener(e2 -> {
-
-                if (e2.getType() == RowSorterEvent.Type.SORTED) {
-                    List<AlgcomparisonModel.MyTableColumn> visiblePairs = new ArrayList<>();
-                    int rowCount = table.getRowCount();
-
-                    for (int i = 0; i < rowCount; i++) {
-                        int modelIndex = table.convertRowIndexToModel(i);
-                        visiblePairs.add(allTableColumns.get(modelIndex));
-                    }
-                }
-            });
+//            sorter.addRowSorterListener(e2 -> {
+//
+//                if (e2.getType() == RowSorterEvent.Type.SORTED) {
+//                    List<AlgcomparisonModel.MyTableColumn> visiblePairs = new ArrayList<>();
+//                    int rowCount = table.getRowCount();
+//
+//                    for (int i = 0; i < rowCount; i++) {
+//                        int modelIndex = table.convertRowIndexToModel(i);
+//                        visiblePairs.add(allTableColumns.get(modelIndex));
+//                    }
+//                }
+//            });
 
             // Create the text field
             JLabel label = new JLabel("Regexes (semicolon separated):");
@@ -1553,71 +1519,37 @@ public class AlgcomparisonEditor extends JPanel {
 
     }
 
-    @NotNull
-    private List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
-        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
 
-        List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
-
-        for (Class<? extends Statistic> statisticClass : statisticClasses) {
-            try {
-                Statistic statistic = statisticClass.getConstructor().newInstance();
-                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
-                allTableColumns.add(column);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException ex) {
-                System.out.println("Error creating statistic: " + ex.getMessage());
-            }
-        }
-
-        List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
-        List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
-
-        for (String columnName : getAllSimulationParameters(simulations)) {
-            String description = "Simulation Parameter";
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
-            allTableColumns.add(column);
-        }
-
-        for (String columnName : getAllAlgorithmParameters(algorithms)) {
-            String description = "Algorithm Parameter";
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
-            allTableColumns.add(column);
-        }
-        return allTableColumns;
-    }
-
-
-    @NotNull
-    private JPanel getButtonPanel(JList<String> statisticsList, Map<String, Statistic> statisticMap, JDialog dialog) {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton addButton = new JButton("Add");
-        JButton cancelButton = new JButton("Cancel");
-
-        // Add action listeners for the buttons
-        addButton.addActionListener(e1 -> {
-            List<String> valuesList = statisticsList.getSelectedValuesList();
-
-            for (String value : valuesList) {
-                model.addStatistic(statisticMap.get(value));
-            }
-
-            setTableColumnsText();
-            setComparisonText();
-            dialog.dispose();
-        });
-
-        cancelButton.addActionListener(e12 -> {
-            // Handle the Cancel button click event
-            System.out.println("Cancel button clicked");
-            dialog.dispose(); // Close the dialog
-        });
-
-        // Add the buttons to the button panel
-        buttonPanel.add(addButton);
-        buttonPanel.add(cancelButton);
-        return buttonPanel;
-    }
+//    @NotNull
+//    private JPanel getButtonPanel(JList<String> statisticsList, Map<String, Statistic> statisticMap, JDialog dialog) {
+//        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+//        JButton addButton = new JButton("Add");
+//        JButton cancelButton = new JButton("Cancel");
+//
+//        // Add action listeners for the buttons
+//        addButton.addActionListener(e1 -> {
+//            List<String> valuesList = statisticsList.getSelectedValuesList();
+//
+//            for (String value : valuesList) {
+//                model.addStatistic(statisticMap.get(value));
+//            }
+//
+//            setTableColumnsText();
+//            setComparisonText();
+//            dialog.dispose();
+//        });
+//
+//        cancelButton.addActionListener(e12 -> {
+//            // Handle the Cancel button click event
+//            System.out.println("Cancel button clicked");
+//            dialog.dispose(); // Close the dialog
+//        });
+//
+//        // Add the buttons to the button panel
+//        buttonPanel.add(addButton);
+//        buttonPanel.add(cancelButton);
+//        return buttonPanel;
+//    }
 
     @NotNull
     private JPanel getButtonPanel2(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog) {
@@ -1627,18 +1559,10 @@ public class AlgcomparisonEditor extends JPanel {
 
         // Add action listeners for the buttons
         addButton.addActionListener(e1 -> {
-            List<AlgcomparisonModel.MyTableColumn> _selectedStatistics = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
-            _selectedStatistics.sort((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName()));
+            List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
+            selectedTableColumns.sort((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName()));
 
-            for (AlgcomparisonModel.MyTableColumn column : _selectedStatistics) {
-                try {
-                    Statistic statistic = column.getStatistic().getConstructor().newInstance();
-                    model.addStatistic(statistic);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-
+            for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
             }
 
@@ -1760,15 +1684,14 @@ public class AlgcomparisonEditor extends JPanel {
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
 
-        Statistics selectedTableColumns = model.getSelectedStatistics();
-        List<Statistic> statistics = selectedTableColumns.getStatistics();
+        List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = model.getSelectedTableColumns();
 
-        if (statistics.isEmpty()) {
+        if (selectedTableColumns.isEmpty()) {
             tableColumnsChoiceTextArea.append("""
                      ** No statistics have been selected. Please select at least one statistic using the Add Statistic(s) button below. **
                     """);
             return;
-        } else if (statistics.size() == 1) {
+        } else if (selectedTableColumns.size() == 1) {
             tableColumnsChoiceTextArea.setText("""
                     The following statistics has been selected. The comparison table will include these statistics as columns in the table.
                     """);
@@ -1778,18 +1701,9 @@ public class AlgcomparisonEditor extends JPanel {
                     """);
         }
 
-        for (int i = 0; i < statistics.size(); i++) {
-            Statistic statistic = statistics.get(i);
-            Class<? extends Statistic> statisticClass = statistic.getClass();
-
-            try {
-                Statistic statistic1 = statisticClass.getConstructor().newInstance();
-                tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic1.getAbbreviation() + " (" + statistic1.getDescription() + ")");
-
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
+        for (int i = 0; i < selectedTableColumns.size(); i++) {
+            AlgcomparisonModel.MyTableColumn statistic = selectedTableColumns.get(i);
+            tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic.getColumnName() + " (" + statistic.getDescription() + ")");
         }
 
         tableColumnsChoiceTextArea.setCaretPosition(0);
@@ -1826,7 +1740,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                 The comparison will be displayed in the "comparison" tab.
 
-                Every viable combination of parameter options will be explored. Bear in mind that not all combinations you can select in this tool are stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
+                Not all combinations you can select in this tool may be stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
 
                 If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
                                 
@@ -1876,7 +1790,7 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private String getAlgorithmParameterText() {
         List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-        Set<String> paramNamesSet = getAllAlgorithmParameters(algorithm);
+        Set<String> paramNamesSet = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
         StringBuilder paramText;
 
         if (algorithm.size() == 1) {

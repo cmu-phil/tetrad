@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.util.Parameters;
@@ -36,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import javax.swing.text.SimpleAttributeSet;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -97,10 +99,6 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private transient LinkedList<Algorithm> selectedAlgorithms;
     /**
-     * The selected statistics for the AlgcomparisonModel.
-     */
-    private transient LinkedList<Statistic>  selectedStatistics;
-    /**
      * The selected table columns for the AlgcomparisonModel.
      */
     private transient LinkedList<MyTableColumn> selectedTableColumns;
@@ -159,16 +157,13 @@ public class AlgcomparisonModel implements SessionModel {
         Algorithms algorithms = new Algorithms();
         for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
 
-        Statistics statistics = new Statistics();
-        for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
-
         Comparison comparison = new Comparison();
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
         String outputFileName = "Comparison";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
-                algorithms, statistics, new Parameters(parameters));
+                algorithms, getSelectedStatistics(), new Parameters(parameters));
     }
 
     /**
@@ -242,16 +237,6 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     /**
-     * Add a statistic to the list of selected statistics.
-     *
-     * @param statistic The statistic to add.
-     */
-    public void addStatistic(Statistic statistic) {
-        initializeIfNull();
-        selectedStatistics.add(statistic);
-    }
-
-    /**
      * Add a table column to the list of selected table columns.
      *
      * @param tableColumn The table column to add.
@@ -266,8 +251,8 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public void removeLastTableColumn() {
         initializeIfNull();
-        if (!selectedStatistics.isEmpty()) {
-            selectedStatistics.removeLast();
+        if (!selectedTableColumns.isEmpty()) {
+            selectedTableColumns.removeLast();
         }
     }
 
@@ -328,15 +313,6 @@ public class AlgcomparisonModel implements SessionModel {
         return algorithms;
     }
 
-    /**
-     * A private instance variable that holds a list of selected Statistic objects.
-     */
-    public Statistics getSelectedStatistics() {
-        Statistics statistics = new Statistics();
-        for (Statistic statistic : this.selectedStatistics) statistics.add(statistic);
-        return statistics;
-    }
-
     public List<MyTableColumn> getSelectedTableColumns() {
         return new ArrayList<>(selectedTableColumns);
     }
@@ -357,7 +333,7 @@ public class AlgcomparisonModel implements SessionModel {
      * the initializeNames() method to initialize them.
      */
     private void initializeIfNull() {
-        if (selectedSimulations == null || selectedAlgorithms == null || selectedStatistics == null
+        if (selectedSimulations == null || selectedAlgorithms == null || selectedTableColumns == null
             || selectedParameters == null) {
             initializeSimulationsEtc();
         }
@@ -384,7 +360,6 @@ public class AlgcomparisonModel implements SessionModel {
     private void initializeSimulationsEtc() {
         this.selectedSimulations = new LinkedList<>();
         this.selectedAlgorithms = new LinkedList<>();
-        this.selectedStatistics = new LinkedList<>();
         this.selectedTableColumns = new LinkedList<>();
         this.selectedParameters = new LinkedList<>();
     }
@@ -505,24 +480,105 @@ public class AlgcomparisonModel implements SessionModel {
         return simulationNames;
     }
 
+    public Statistics getSelectedStatistics() {
+        List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
+
+        Statistics selectedStatistics = new Statistics();
+
+        for (MyTableColumn column : selectedTableColumns) {
+            if (column.getType() == MyTableColumn.ColumnType.STATISTIC) {
+                try {
+                    Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                    selectedStatistics.add(statistic);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
+                    System.out.println("Error creating statistic: " + ex.getMessage());
+                }
+            } else if (column.getType() == MyTableColumn.ColumnType.PARAMETER) {
+                String parameter = column.getColumnName();
+                selectedStatistics.add(new ParameterColumn(parameter));
+            }
+        }
+
+        return selectedStatistics;
+    }
+
+    @NotNull
+    public List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
+        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
+
+        List<Class<? extends Statistic>> statisticClasses = getStatisticsClasses();
+
+        for (Class<? extends Statistic> statisticClass : statisticClasses) {
+            try {
+                Statistic statistic = statisticClass.getConstructor().newInstance();
+                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                allTableColumns.add(column);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                System.out.println("Error creating statistic: " + ex.getMessage());
+            }
+        }
+
+        List<Simulation> simulations = getSelectedSimulations().getSimulations();
+        List<Algorithm> algorithms = getSelectedAlgorithms().getAlgorithms();
+
+        for (String columnName : getAllSimulationParameters(simulations)) {
+            String description = "Simulation Parameter";
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+            allTableColumns.add(column);
+        }
+
+        for (String columnName : getAllAlgorithmParameters(algorithms)) {
+            String description = "Algorithm Parameter";
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+            allTableColumns.add(column);
+        }
+        return allTableColumns;
+    }
+
+    /**
+     * Retrieves all simulation parameters from a list of simulation objects.
+     *
+     * @param simulations the list of simulation objects
+     * @return a set of all simulation parameters
+     */
+    @NotNull
+    public static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Simulation simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+
+    /**
+     * Retrieves all algorithm parameters from a list of Algorithm objects.
+     *
+     * @param algorithm the list of Algorithm objects
+     * @return a set of all algorithm parameters
+     */
+    @NotNull
+    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : algorithm) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
     public static class MyTableColumn {
 
-
-        public String getDescription() {
-            return description;
-        }
-
-        public enum ColumnType {
-            STATISTIC,
-            PARAMETER
-        }
 
         private final String columnName;
         private final String description;
         private final Class<? extends Statistic> statistic;
-
         private final String parameter;
-
         private final ColumnType type;
 
         public MyTableColumn(String name, String description, Class<? extends Statistic> statistic) {
@@ -541,6 +597,10 @@ public class AlgcomparisonModel implements SessionModel {
             this.type = ColumnType.PARAMETER;
         }
 
+        public String getDescription() {
+            return description;
+        }
+
         public String getColumnName() {
             return columnName;
         }
@@ -554,11 +614,18 @@ public class AlgcomparisonModel implements SessionModel {
         }
 
         public Class<? extends Statistic> getStatistic() {
+            if (type != ColumnType.STATISTIC) throw new IllegalStateException("Not a statistic column");
             return statistic;
         }
 
         public String getParameter() {
+            if (type != ColumnType.PARAMETER) throw new IllegalStateException("Not a parameter column");
             return parameter;
+        }
+
+        public enum ColumnType {
+            STATISTIC,
+            PARAMETER
         }
     }
 
