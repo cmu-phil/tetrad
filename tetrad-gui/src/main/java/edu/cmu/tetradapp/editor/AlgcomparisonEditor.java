@@ -26,6 +26,7 @@ import edu.cmu.tetradapp.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -614,6 +615,17 @@ public class AlgcomparisonEditor extends JPanel {
         return paramNamesSet;
     }
 
+    public static void scrollToWord(JTextArea textArea, String word) throws BadLocationException {
+        String text = textArea.getText();
+        int pos = text.indexOf(word);
+        if (pos >= 0) {
+            Rectangle viewRect = textArea.modelToView2D(pos).getBounds();
+            if (viewRect != null) {
+                textArea.scrollRectToVisible(viewRect);
+            }
+        }
+    }
+
     /**
      * Adds a simulation tab to the provided JTabbedPane.
      *
@@ -635,7 +647,7 @@ public class AlgcomparisonEditor extends JPanel {
         simulationSelectionBox.add(Box.createHorizontalGlue());
 
         addSimulation = new JButton("Add Simulation");
-        addAddSimulationListener(model.getParameters());
+        addAddSimulationListener();
 
         JButton removeLastSimulation = new JButton("Remove Last Simulation");
         removeLastSimulation.addActionListener(e -> {
@@ -722,7 +734,7 @@ public class AlgcomparisonEditor extends JPanel {
         algorithSelectionBox.add(Box.createHorizontalGlue());
 
         addAlgorithm = new JButton("Add Algorithm");
-        addAddAlgorithmListener(model.getParameters());
+        addAddAlgorithmListener();
 
         JButton removeLastAlgorithm = new JButton("Remove Last Algorithm");
         removeLastAlgorithm.addActionListener(e -> {
@@ -860,6 +872,14 @@ public class AlgcomparisonEditor extends JPanel {
                     model.runComparison(ps);
                     ps.flush();
                     comparisonTextArea.setText(baos.toString());
+
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            scrollToWord(comparisonTextArea, "STANDARD DEVIATION");
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
                 }
             }
 
@@ -960,10 +980,8 @@ public class AlgcomparisonEditor extends JPanel {
      * Adds a listener to the "Add Simulation" button. When the button is clicked, a dialog is displayed to choose the
      * graph type and simulation type. If the "Add" button in the dialog is clicked, the selected graph and simulation
      * types are used to create a simulation and add it to the model.
-     *
-     * @param parameters the parameters object
      */
-    private void addAddSimulationListener(Parameters parameters) {
+    private void addAddSimulationListener() {
         addSimulation.addActionListener(e -> {
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -976,7 +994,7 @@ public class AlgcomparisonEditor extends JPanel {
 
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
-            graphsDropdown.setSelectedItem(parameters.getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
+            graphsDropdown.setSelectedItem(model.getParameters().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
 
             horiz2.add(graphsDropdown);
             vert1.add(horiz2);
@@ -1083,12 +1101,9 @@ public class AlgcomparisonEditor extends JPanel {
 
     /**
      * Adds an ActionListener to the addAlgorithm button
-     *
-     * @param parameters The Parameters object that holds the necessary data for the method
      */
-    private void addAddAlgorithmListener(Parameters parameters) {
+    private void addAddAlgorithmListener() {
         addAlgorithm.addActionListener(e -> {
-            DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
             AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
             List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(DataType.Continuous, false);
 
@@ -1489,8 +1504,6 @@ public class AlgcomparisonEditor extends JPanel {
      */
     @NotNull
     private String getSimulationParameterText() {
-        Parameters parameters = model.getParameters();
-
         List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
         Set<String> paramNamesSet = getAllSimulationParameters(simulations);
         StringBuilder paramText;
@@ -1501,7 +1514,7 @@ public class AlgcomparisonEditor extends JPanel {
             paramText = new StringBuilder("\nParameter choices for all simulations:");
         }
 
-        paramText.append(getParameterText(paramNamesSet, parameters));
+        paramText.append(getParameterText(paramNamesSet, model.getParameters()));
         return paramText.toString();
     }
 
@@ -1511,7 +1524,6 @@ public class AlgcomparisonEditor extends JPanel {
      * @return The algorithm parameter choices as text.
      */
     private String getAlgorithmParameterText() {
-        Parameters parameters = model.getParameters();
         List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
         Set<String> paramNamesSet = getAllAlgorithmParameters(algorithm);
         StringBuilder paramText;
@@ -1522,7 +1534,7 @@ public class AlgcomparisonEditor extends JPanel {
             paramText = new StringBuilder("\nParameter choices for all algorithms:");
         }
 
-        paramText.append(getParameterText(paramNamesSet, parameters));
+        paramText.append(getParameterText(paramNamesSet, model.getParameters()));
         return paramText.toString();
     }
 
@@ -1562,5 +1574,4 @@ public class AlgcomparisonEditor extends JPanel {
             buffer.setLength(0); // Clear the buffer for next data
         }
     }
-
 }

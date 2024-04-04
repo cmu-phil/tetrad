@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
+import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
@@ -50,55 +51,55 @@ public class AlgcomparisonModel implements SessionModel {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
+     * A private final variable that holds a Parameters object.
+     */
+    private final Parameters parameters;
+    /**
      * This variable holds a list of statNames.
      *
      * <p>
-     *     The statNames list is a private instance variable of type List&lt;String&gt;.
+     * The statNames list is a private instance variable of type List&lt;String&gt;.
      * </p>
      */
-    private transient final List<String> statNames;
+    private transient List<String> statNames;
     /**
      * A private transient final variable that holds a list of simulation names.
      */
-    private transient final List<String> simNames;
+    private transient List<String> simNames;
     /**
      * A private transient final variable that holds a list of simulation classes.
      */
-    private transient final List<Class<? extends Simulation>> simulationClasses;
-    /**
-     * A private transient final variable that holds a list of algorithm classes.
-     */
-    private transient final List<Class<? extends Algorithm>> algorithmClasses;
+    private transient List<Class<? extends Simulation>> simulationClasses;
     /**
      * A private transient final variable that holds a list of statistic classes.
      */
-    private transient final List<Class<? extends Statistic>> statisticsClasses;
+    private transient List<Class<? extends Statistic>> statisticsClasses;
     /**
-     * A private final transient variable that holds a Parameters object.
+     * A private final transient variable that holds a list of algorithm classes.
      */
-    private final transient Parameters parameters;
+    private transient List<Class<? extends Algorithm>> algorithmClasses;
     /**
      * A private final transient variable that holds a list of algorithm names.
      */
-    private final transient List<String> algNames;
-    /**
-     * The list of selected simulations in the AlgcomparisonModel.
-     * This list holds Simulation objects, which are implementations of the Simulation interface.
-     * It is a transient field, meaning it is not serialized when the object is saved.
-     */
-    private final transient LinkedList<Simulation> selectedSimulations;
-    /**
-     * The selected algorithms for the AlgcomparisonModel.
-     */
-    private final transient LinkedList<Algorithm> selectedAlgorithms;
-    /**
-     * The selected statistics for the AlgcomparisonModel.
-     */
-    private final transient LinkedList<Statistic> selectedStatistics;
+    private transient List<String> algNames;
     /**
      * The selected parameters for the AlgcomparisonModel.
      */
-    private final transient List<String> selectedParameters;
+    private transient List<String> selectedParameters;
+    /**
+     * The list of selected simulations in the AlgcomparisonModel. This list holds Simulation objects, which are
+     * implementations of the Simulation interface. It is a transient field, meaning it is not serialized when the
+     * object is saved.
+     */
+    private transient LinkedList<Simulation> selectedSimulations;
+    /**
+     * The selected algorithms for the AlgcomparisonModel.
+     */
+    private transient LinkedList<Algorithm> selectedAlgorithms;
+    /**
+     * The selected statistics for the AlgcomparisonModel.
+     */
+    private transient LinkedList<Statistic> selectedStatistics;
     /**
      * The name of the AlgcomparisonModel.
      */
@@ -106,23 +107,11 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * The results path for the AlgcomparisonModel.
      */
-    private String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
-    /**
-     * The output file name for the AlgcomparisonModel.
-     */
-    private String outputFileName = "Comparison";
+    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
     /**
      * A private final transient variable that holds a map of simulation names to simulation classes.
      */
     private Map<String, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> simulationMap;
-    /**
-     * A private final transient variable that holds a map of algorithm names to algorithm classes.
-     */
-    private Map<String, Class<? extends Statistic>> statisticsMap;
-    /**
-     * A private final transient variable that holds a map of statistic names to statistic classes.
-     */
-    private Map<String, Class<? extends Algorithm>> algorithmMap;
 
     /**
      * Constructs a new AlgcomparisonModel with the specified parameters.
@@ -131,37 +120,16 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public AlgcomparisonModel(Parameters parameters) {
         this.parameters = parameters;
+        initializeIfNull();
+    }
 
-        Set<Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
-                edu.cmu.tetrad.algcomparison.simulation.Simulation.class);
-        simulationClasses = new ArrayList<>(_simulations);
-
+    @NotNull
+    private static List<Class<? extends Algorithm>> findAlgorithmClasses() {
         Set<Class<? extends Algorithm>> _algorithms = findImplementations("edu.cmu.tetrad.algcomparison.algorithm",
                 Algorithm.class);
-
-        this.algorithmClasses = new ArrayList<>(_algorithms);
-
-        Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic",
-                Statistic.class);
-
-        this.statisticsClasses = new ArrayList<>(_statistics);
-
-        this.simulationClasses.sort(Comparator.comparing(Class::getName));
-        this.algorithmClasses.sort(Comparator.comparing(Class::getName));
-        this.statisticsClasses.sort(Comparator.comparing(Class::getName));
-
-        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
-        statNames = getStatisticsNamesFromImplemenations(statisticsClasses);
-        simNames = getSimulationNamesFromImplemenations(simulationClasses);
-
-        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
-
-        selectedStatistics = new LinkedList<>();
-        selectedAlgorithms = new LinkedList<>();
-        selectedSimulations = new LinkedList<>();
-        selectedParameters = new LinkedList<>();
+        final List<Class<? extends Algorithm>> algorithmClasses = new ArrayList<>(_algorithms);
+        algorithmClasses.sort(Comparator.comparing(Class::getName));
+        return algorithmClasses;
     }
 
     /**
@@ -182,6 +150,8 @@ public class AlgcomparisonModel implements SessionModel {
      * @param localOut The output stream to write the comparison results.
      */
     public void runComparison(java.io.PrintStream localOut) {
+        initializeIfNull();
+
         Simulations simulations = new Simulations();
         for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
 
@@ -195,8 +165,110 @@ public class AlgcomparisonModel implements SessionModel {
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
+        /**
+         * The output file name for the AlgcomparisonModel.
+         */
+        String outputFileName = "Comparison";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, statistics, new Parameters(parameters));
+    }
+
+    /**
+     * A list of possible simulations.
+     */
+    public List<String> getSimulationName() {
+        return simNames;
+    }
+
+    /**
+     * A private instance variable that holds a list of possible Algorithm objects.
+     */
+    public List<String> getAlgorithmsName() {
+        return algNames;
+    }
+
+    /**
+     * A private instance variable that holds a list of possible Statistic objects.
+     */
+    public List<String> getStatisticsNames() {
+        return statNames;
+    }
+
+    /**
+     * A private instance variable that holds a list of possible parameters.
+     *
+     * @return A list of possible parameters.
+     */
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    /**
+     * Add a simulation to the list of selected simulations.
+     *
+     * @param simulation The simulation to add.
+     */
+    public void addSimulation(Simulation simulation) {
+        initializeIfNull();
+        selectedSimulations.add(simulation);
+    }
+
+    /**
+     * Remove the last simulation from the list of selected simulations.
+     */
+    public void removeLastSimulation() {
+        initializeIfNull();
+        if (!selectedSimulations.isEmpty()) {
+            selectedSimulations.removeLast();
+        }
+    }
+
+    /**
+     * Add an algorithm to the list of selected algorithms.
+     *
+     * @param algorithm The algorithm to add.
+     */
+    public void addAlgorithm(Algorithm algorithm) {
+        initializeIfNull();
+        selectedAlgorithms.add(algorithm);
+    }
+
+    /**
+     * Remove the last algorithm from the list of selected algorithms.
+     */
+    public void removeLastAlgorithm() {
+        initializeIfNull();
+        if (!selectedAlgorithms.isEmpty()) {
+            selectedAlgorithms.removeLast();
+        }
+    }
+
+    /**
+     * Add a statistic to the list of selected statistics.
+     *
+     * @param statistic The statistic to add.
+     */
+    public void addStatistic(Statistic statistic) {
+        initializeIfNull();
+        selectedStatistics.add(statistic);
+    }
+
+    /**
+     * Remove the last statistic from the list of selected statistics.
+     */
+    public void removeLastStatistic() {
+        initializeIfNull();
+        if (!selectedStatistics.isEmpty()) {
+            selectedStatistics.removeLast();
+        }
+    }
+
+    /**
+     * Returns the list of statistics classes.
+     */
+    public List<Class<? extends Statistic>> getStatisticsClasses() {
+        initializeIfNull();
+        return new ArrayList<>(statisticsClasses);
     }
 
     /**
@@ -233,6 +305,7 @@ public class AlgcomparisonModel implements SessionModel {
      * selected simulation.
      */
     public Simulations getSelectedSimulations() {
+        initializeIfNull();
         Simulations simulations = new Simulations();
         for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
         return simulations;
@@ -275,6 +348,65 @@ public class AlgcomparisonModel implements SessionModel {
         return statistics;
     }
 
+    private void initializeIfNull() {
+        if (selectedSimulations == null || selectedAlgorithms == null || selectedStatistics == null
+            || selectedParameters == null) {
+            initializeSimulationsEtc();
+        }
+
+        if (this.selectedParameters == null) {
+            this.selectedParameters = new LinkedList<>();
+        }
+
+        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
+            initializeClasses();
+        }
+
+        if (algNames == null || statNames == null || simNames == null) {
+            initializeNames();
+        }
+    }
+
+    private void initializeSimulationsEtc() {
+        this.selectedSimulations = new LinkedList<>();
+        this.selectedAlgorithms = new LinkedList<>();
+        this.selectedStatistics = new LinkedList<>();
+        this.selectedParameters = new LinkedList<>();
+    }
+
+    private void initializeClasses() {
+        simulationClasses = findSimulationClasses();
+        algorithmClasses = findAlgorithmClasses();
+        statisticsClasses = findStatisticsClasses();
+    }
+
+    private void initializeNames() {
+        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
+        statNames = getStatisticsNamesFromImplemenations(statisticsClasses);
+        simNames = getSimulationNamesFromImplemenations(simulationClasses);
+
+        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
+        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
+        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+    }
+
+    @NotNull
+    private List<Class<? extends Simulation>> findSimulationClasses() {
+        Set<Class<? extends Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
+                Simulation.class);
+        final List<Class<? extends Simulation>> simulationClasses = new ArrayList<>(_simulations);
+        simulationClasses.sort(Comparator.comparing(Class::getName));
+        return simulationClasses;
+    }
+
+    private List<Class<? extends Statistic>> findStatisticsClasses() {
+        Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic",
+                Statistic.class);
+        final List<Class<? extends Statistic>> statisticsClasses = new ArrayList<>(_statistics);
+        statisticsClasses.sort(Comparator.comparing(Class::getName));
+        return statisticsClasses;
+    }
+
     /**
      * For each algorithm class, use reflection to get the annotation for that class, and add the name of the algorithm
      * to a list of algorithm names.
@@ -293,8 +425,9 @@ public class AlgcomparisonModel implements SessionModel {
             }
         }
 
-        this.algorithmMap = algorithmMap;
-
+        /**
+         * A private final transient variable that holds a map of statistic names to statistic classes.
+         */
         return algorithmNames;
     }
 
@@ -314,7 +447,9 @@ public class AlgcomparisonModel implements SessionModel {
             }
         }
 
-        this.statisticsMap = statisticsMap;
+        /**
+         * A private final transient variable that holds a map of algorithm names to algorithm classes.
+         */
 
         return statisticsNames;
     }
@@ -342,86 +477,6 @@ public class AlgcomparisonModel implements SessionModel {
         return simulationNames;
     }
 
-    /**
-     * A list of possible simulations.
-     */
-    public List<String> getSimulationName() {
-        return simNames;
-    }
-
-    /**
-     * A private instance variable that holds a list of possible Algorithm objects.
-     */
-    public List<String> getAlgorithmsName() {
-        return algNames;
-    }
-
-    /**
-     * A private instance variable that holds a list of possible Statistic objects.
-     */
-    public List<String> getStatisticsNames() {
-        return statNames;
-    }
-
-    /**
-     * A private instance variable that holds a list of possible parameters.
-     * @return A list of possible parameters.
-     */
-    public Parameters getParameters() {
-        return parameters;
-    }
-
-    /**
-     * Add a simulation to the list of selected simulations.
-     * @param simulation The simulation to add.
-     */
-    public void addSimulation(Simulation simulation) {
-        selectedSimulations.add(simulation);
-    }
-
-    /**
-     * Remove the last simulation from the list of selected simulations.
-     */
-    public void removeLastSimulation() {
-        selectedSimulations.removeLast();
-    }
-
-    /**
-     * Add an algorithm to the list of selected algorithms.
-     * @param algorithm The algorithm to add.
-     */
-    public void addAlgorithm(Algorithm algorithm) {
-        selectedAlgorithms.add(algorithm);
-    }
-
-    /**
-     * Remove the last algorithm from the list of selected algorithms.
-     */
-    public void removeLastAlgorithm() {
-        selectedAlgorithms.removeLast();
-    }
-
-    /**
-     * Add a statistic to the list of selected statistics.
-     * @param statistic The statistic to add.
-     */
-    public void addStatistic(Statistic statistic) {
-        selectedStatistics.add(statistic);
-    }
-
-    /**
-     * Remove the last statistic from the list of selected statistics.
-     */
-    public void removeLastStatistic() {
-        selectedStatistics.removeLast();
-    }
-
-    /**
-     * Returns the list of statistics classes.
-     */
-    public List<Class<? extends Statistic>> getStatisticsClasses() {
-        return new ArrayList<>(statisticsClasses);
-    }
 }
 
 
