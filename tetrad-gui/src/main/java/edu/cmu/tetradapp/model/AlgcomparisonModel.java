@@ -104,10 +104,6 @@ public class AlgcomparisonModel implements SessionModel {
      * The name of the AlgcomparisonModel.
      */
     private String name = "Algcomparison";
-    /**
-     * A private final transient variable that holds a map of simulation names to simulation classes.
-     */
-    private Map<String, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>> simulationMap;
 
     /**
      * Constructs a new AlgcomparisonModel with the specified parameters.
@@ -166,9 +162,6 @@ public class AlgcomparisonModel implements SessionModel {
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
-        /**
-         * The output file name for the AlgcomparisonModel.
-         */
         String outputFileName = "Comparison";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, statistics, new Parameters(parameters));
@@ -313,25 +306,6 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     /**
-     * Sets the selected simulations in the AlgcomparisonModel.
-     *
-     * @param name The name of the selected simulation to be set.
-     * @throws IllegalArgumentException if the selected simulations is null, empty, or not in the list of simulations.
-     */
-    public void setSelectedSimulation(String name) {
-        if (!simulationMap.containsKey(name)) {
-            throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
-        }
-
-        Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulation = simulationMap.get(name);
-
-        if (!(simulationClasses.contains(simulation))) {
-            throw new IllegalArgumentException("Selected simulation must be in the list of simulations.");
-        }
-
-    }
-
-    /**
      * A private instance variable that holds a list of selected Algorithm objects.
      */
     public Algorithms getSelectedAlgorithms() {
@@ -410,8 +384,8 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private void initializeNames() {
         algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
-        statNames = getStatisticsNamesFromImplemenations(statisticsClasses);
-        simNames = getSimulationNamesFromImplemenations(simulationClasses);
+        statNames = getStatisticsNamesFromImplementations(statisticsClasses);
+        simNames = getSimulationNamesFromImplementations(simulationClasses);
 
         this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
         this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
@@ -451,7 +425,6 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private List<String> getAlgorithmNamesFromAnnotations(List<Class<? extends Algorithm>> algorithmClasses) {
         List<String> algorithmNames = new ArrayList<>();
-        Map<String, Class<? extends Algorithm>> algorithmMap = new HashMap<>();
 
         for (Class<? extends Algorithm> algorithm : algorithmClasses) {
             edu.cmu.tetrad.annotation.Algorithm algAnnotation = algorithm.getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class);
@@ -459,7 +432,6 @@ public class AlgcomparisonModel implements SessionModel {
             if (algAnnotation != null) {
                 String _name = algAnnotation.name();
                 algorithmNames.add(_name);
-                algorithmMap.put(_name, algorithm);
             }
         }
 
@@ -472,16 +444,14 @@ public class AlgcomparisonModel implements SessionModel {
      * @param algorithmClasses The list of implementation classes of statistics.
      * @return The abbreviations of the statistics.
      */
-    private List<String> getStatisticsNamesFromImplemenations(List<Class<? extends Statistic>> algorithmClasses) {
+    private List<String> getStatisticsNamesFromImplementations(List<Class<? extends Statistic>> algorithmClasses) {
         List<String> statisticsNames = new ArrayList<>();
-        Map<String, Class<? extends Statistic>> statisticsMap = new HashMap<>();
 
         for (Class<? extends Statistic> statistic : algorithmClasses) {
             try {
                 Statistic _statistic = statistic.getConstructor().newInstance();
                 String abbreviation = _statistic.getAbbreviation();
                 statisticsNames.add(abbreviation);
-                statisticsMap.put(abbreviation, statistic);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
                 // Skip.
@@ -497,9 +467,8 @@ public class AlgcomparisonModel implements SessionModel {
      * @param algorithmClasses The list of implementation classes of simulations.
      * @return The names of the simulations.
      */
-    private List<String> getSimulationNamesFromImplemenations(List<Class<? extends Simulation>> algorithmClasses) {
+    private List<String> getSimulationNamesFromImplementations(List<Class<? extends Simulation>> algorithmClasses) {
         List<String> simulationNames = new ArrayList<>();
-        Map<String, Class<? extends Simulation>> simulationMap = new HashMap<>();
 
         RandomGraph graph = new RandomForward();
 
@@ -508,14 +477,12 @@ public class AlgcomparisonModel implements SessionModel {
                 Simulation _statistic = statistic.getConstructor(RandomGraph.class).newInstance(graph);
                 String shortName = _statistic.getShortName();
                 simulationNames.add(shortName);
-                simulationMap.put(shortName, statistic);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
                 // Skip.
             }
         }
 
-        this.simulationMap = simulationMap;
         return simulationNames;
     }
 }
