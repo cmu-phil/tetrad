@@ -31,7 +31,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -1393,25 +1396,9 @@ public class AlgcomparisonEditor extends JPanel {
      * document listener to filter the table based on user input.
      */
     private void addAddTableColumnsListener2() {
-        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
-
-        List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
-
-        for (Class<? extends Statistic> statisticClass : statisticClasses) {
-            try {
-                Statistic statistic = statisticClass.getConstructor().newInstance();
-
-                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
-                allTableColumns.add(column);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException ex) {
-                System.out.println("Error creating statistic: " + ex.getMessage());
-            }
-        }
-
-        java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
-
         addTableColumns.addActionListener(e -> {
+            java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
+            List<AlgcomparisonModel.MyTableColumn> allTableColumns = getAllTableColumns();
 
             // Create a table idaCheckEst for the results of the IDA check
             TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
@@ -1551,7 +1538,7 @@ public class AlgcomparisonEditor extends JPanel {
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
 
-             // Create a panel for the buttons
+            // Create a panel for the buttons
             JPanel buttonPanel = getButtonPanel2(columnSelectionTableModel, dialog);
 
             // Add the button panel to the bottom of the dialog
@@ -1564,6 +1551,40 @@ public class AlgcomparisonEditor extends JPanel {
         });
 
 
+    }
+
+    @NotNull
+    private List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
+        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
+
+        List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
+
+        for (Class<? extends Statistic> statisticClass : statisticClasses) {
+            try {
+                Statistic statistic = statisticClass.getConstructor().newInstance();
+                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                allTableColumns.add(column);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                System.out.println("Error creating statistic: " + ex.getMessage());
+            }
+        }
+
+        List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
+        List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
+
+        for (String columnName : getAllSimulationParameters(simulations)) {
+            String description = "Simulation Parameter";
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+            allTableColumns.add(column);
+        }
+
+        for (String columnName : getAllAlgorithmParameters(algorithms)) {
+            String description = "Algorithm Parameter";
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+            allTableColumns.add(column);
+        }
+        return allTableColumns;
     }
 
 
