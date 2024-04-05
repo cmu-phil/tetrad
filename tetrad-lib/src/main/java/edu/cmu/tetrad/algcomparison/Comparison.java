@@ -2012,6 +2012,9 @@ public class Comparison implements TetradSerializable {
         }
     }
 
+    /**
+     * A simulation wrapper.
+     */
     private static class SimulationWrapper implements Simulation {
         @Serial
         private static final long serialVersionUID = 23L;
