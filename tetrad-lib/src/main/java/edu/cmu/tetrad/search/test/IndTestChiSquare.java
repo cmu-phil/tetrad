@@ -246,6 +246,21 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * Returns the pvalue if the fact of X _||_ Y | Z is within the cache of results for independence fact.
+     * @param x
+     * @param y
+     * @param z
+     * @return the pValue result or null if not within the cache
+     */
+    public Double getPValue(Node x, Node y, Set<Node> z) {
+        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
+            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, z));
+            return result.getPValue();
+        }
+        return null;
+    }
+
+    /**
      * Determines whether variable x is independent of variable y given a list of conditioning nodes.
      *
      * @param z The list of conditioning nodes.
