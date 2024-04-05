@@ -1672,11 +1672,13 @@ public class AlgcomparisonEditor extends JPanel {
 
         model.getSelectedAlgorithmModels();
 
-        algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
+        if (!model.getSelectedAlgorithmModels().isEmpty()) {
+            algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
+        }
 
         for (AlgorithmModel algorithmModel1 : model.getSelectedAlgorithmModels()) {
             algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getName());
-            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription());
+            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription().replace("\n", "\n\n"));
         }
 
         List<IndependenceWrapper> independenceWrappers = new ArrayList<>();
@@ -1698,24 +1700,31 @@ public class AlgcomparisonEditor extends JPanel {
         IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
         List<IndependenceTestModel> independenceTestModels1 = independenceTestModels.getModels();
 
+        if (!independenceWrappers.isEmpty()) {
+            algorithmChoiceTextArea.append("\n\nIndependence Test Descriptions:");
+        }
+
         for (IndependenceTestModel independenceTestModel : independenceTestModels1) {
             independenceWrappers.forEach(independenceWrapper -> {
                 if (independenceTestModel.getIndependenceTest().clazz().equals(independenceWrapper.getClass())) {
                     algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getName());
-                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getDescription());
+                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getDescription().replace("\n", "\n\n"));
                 }
             });
         }
 
         ScoreModels scoreModels = ScoreModels.getInstance();
-
         List<ScoreModel> scoreModels1 = scoreModels.getModels();
+
+        if (!scoreWrappers.isEmpty()) {
+            algorithmChoiceTextArea.append("\n\nScore Descriptions:");
+        }
 
         for (ScoreModel scoreModel : scoreModels1) {
             scoreWrappers.forEach(scoreWrapper -> {
                 if (scoreModel.getScore().clazz().equals(scoreWrapper.getClass())) {
                     algorithmChoiceTextArea.append("\n\n" + scoreModel.getName());
-                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getDescription());
+                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getDescription().replace("\n", "\n\n"));
                 }
             });
         }
