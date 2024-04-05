@@ -83,7 +83,18 @@ public interface Simulation extends HasParameters, TetradSerializable {
      */
     List<String> getParameters();
 
+    /**
+     * Retrieves the class of a random graph for the simulation.
+     *
+     * @return The class of a random graph for the simulation.
+     */
     Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> getRandomGraphClass();
 
+    /**
+     * Returns the class of the simulation. This method is used to retrieve the class
+     * of a simulation based on the selected simulations in the model.
+     *
+     * @return The class of the simulation.
+     */
     Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> getSimulationClass();
 }

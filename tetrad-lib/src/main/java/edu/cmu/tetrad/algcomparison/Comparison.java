@@ -303,20 +303,31 @@ public class Comparison implements TetradSerializable {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
     }
 
+    /**
+     * Compares the results obtained from simulations.
+     *
+     * @param resultsPath      The path to the directory containing the simulation results.
+     * @param simulations      The simulations to compare the results from.
+     * @param outputFileName   The name of the output file.
+     * @param algorithms       The algorithms used in the simulations.
+     * @param statistics       The statistics used in the simulations.
+     * @param parameters       The parameters used in the simulations.
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
         compareFromSimulations(resultsPath, simulations, outputFileName, System.out, algorithms, statistics, parameters);
     }
 
     /**
-     * Compares the results from simulations using various algorithms and statistics.
+     * Compares the results of different simulations and algorithms.
      *
-     * @param resultsPath    The path to the result directory.
-     * @param simulations    The Simulations object containing the simulations to compare.
-     * @param outputFileName The name of the output file.
-     * @param algorithms     The Algorithms object containing the algorithms to compare.
-     * @param statistics     The Statistics object containing the statistics to use for comparison.
-     * @param parameters     The Parameters object containing the necessary parameters for the comparison.
+     * @param resultsPath      the path to the results directory
+     * @param simulations      the simulations object containing the simulation data
+     * @param outputFileName   the name of the output file
+     * @param localOut         the local output stream
+     * @param algorithms       the algorithms object containing the algorithm data
+     * @param statistics       the statistics object containing the statistics data
+     * @param parameters       the parameters object containing the parameter data
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {

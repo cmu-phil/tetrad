@@ -394,6 +394,11 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      */
     String toString();
 
+    /**
+     * Retrieves the CptMapType for this instance.
+     *
+     * @return the CptMapType for this instance
+     */
     default MlBayesIm.CptMapType getCptMapType() {
         return MlBayesIm.CptMapType.PROB_MAP;
     }
