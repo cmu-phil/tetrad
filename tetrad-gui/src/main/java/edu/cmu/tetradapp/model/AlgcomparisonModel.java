@@ -40,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import java.io.File;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -62,7 +63,8 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * The results path for the AlgcomparisonModel.
      */
-    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
+//    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
+    private final String resultsRoot = System.getProperty("user.home");
     /**
      * The list of statistic names.
      */
@@ -224,6 +226,23 @@ public class AlgcomparisonModel implements SessionModel {
         for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
 
         Comparison comparison = new Comparison();
+        comparison.setSaveData(true);
+        comparison.setSaveGraphs(true);
+        comparison.setSaveCPDAGs(true);
+        comparison.setSavePags(true);
+
+        String resultsPath;
+
+        for (int i = 1; ; i++) {
+            File resultsDir = new File(resultsRoot + "/comparison-results-" + i);
+            if (!resultsDir.exists()) {
+                if (!resultsDir.mkdirs()) {
+                    throw new IllegalStateException("Could not create directory: " + resultsDir);
+                }
+                resultsPath = resultsRoot + "/comparison-results-" + i;
+                break;
+            }
+        }
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.

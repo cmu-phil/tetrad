@@ -306,12 +306,12 @@ public class Comparison implements TetradSerializable {
     /**
      * Compares the results obtained from simulations.
      *
-     * @param resultsPath      The path to the directory containing the simulation results.
-     * @param simulations      The simulations to compare the results from.
-     * @param outputFileName   The name of the output file.
-     * @param algorithms       The algorithms used in the simulations.
-     * @param statistics       The statistics used in the simulations.
-     * @param parameters       The parameters used in the simulations.
+     * @param resultsPath    The path to the directory containing the simulation results.
+     * @param simulations    The simulations to compare the results from.
+     * @param outputFileName The name of the output file.
+     * @param algorithms     The algorithms used in the simulations.
+     * @param statistics     The statistics used in the simulations.
+     * @param parameters     The parameters used in the simulations.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
@@ -321,13 +321,13 @@ public class Comparison implements TetradSerializable {
     /**
      * Compares the results of different simulations and algorithms.
      *
-     * @param resultsPath      the path to the results directory
-     * @param simulations      the simulations object containing the simulation data
-     * @param outputFileName   the name of the output file
-     * @param localOut         the local output stream
-     * @param algorithms       the algorithms object containing the algorithm data
-     * @param statistics       the statistics object containing the statistics data
-     * @param parameters       the parameters object containing the parameter data
+     * @param resultsPath    the path to the results directory
+     * @param simulations    the simulations object containing the simulation data
+     * @param outputFileName the name of the output file
+     * @param localOut       the local output stream
+     * @param algorithms     the algorithms object containing the algorithm data
+     * @param statistics     the statistics object containing the statistics data
+     * @param parameters     the parameters object containing the parameter data
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
@@ -352,6 +352,7 @@ public class Comparison implements TetradSerializable {
         }
 
         println(new Date().toString());
+        println("Results are being saved to " + resultsPath);
 
         // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameter object.
@@ -1187,9 +1188,9 @@ public class Comparison implements TetradSerializable {
     }
 
     /**
-     * <p>isSaveData.</p>
+     * Returns the status of whether data is being saved or not.
      *
-     * @return True if CPDAGs should be saved out.
+     * @return {@code true} if data is being saved, {@code false} otherwise.
      */
     public boolean isSaveData() {
         return saveData;
@@ -2036,11 +2037,22 @@ public class Comparison implements TetradSerializable {
          * {@inheritDoc}
          */
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
+            if (simulation == null) {
+                throw new NullPointerException("Simulation cannot be null.");
+            }
+
             this.simulation = simulation;
 
             // There is no harm in allowing the simulation code to add parameters here; they can
             // be displayed in the output table if desired. Jdramsey 20170118
             this.parameters = new Parameters(parameters);
+
+            this.graphs = new ArrayList<>();
+            this.dataModels = new ArrayList<>();
+            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                this.graphs.add(this.simulation.getTrueGraph(i));
+                this.dataModels.add(this.simulation.getDataModel(i));
+            }
         }
 
         /**
@@ -2050,12 +2062,13 @@ public class Comparison implements TetradSerializable {
         public void createData(Parameters parameters, boolean newModel) {
             if (newModel) {
                 this.simulation.createData(parameters, newModel);
-                this.graphs = new ArrayList<>();
-                this.dataModels = new ArrayList<>();
-                for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-                    this.graphs.add(this.simulation.getTrueGraph(i));
-                    this.dataModels.add(this.simulation.getDataModel(i));
-                }
+            }
+
+            this.graphs = new ArrayList<>();
+            this.dataModels = new ArrayList<>();
+            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                this.graphs.add(this.simulation.getTrueGraph(i));
+                this.dataModels.add(this.simulation.getDataModel(i));
             }
         }
 
