@@ -1379,7 +1379,6 @@ public class AlgcomparisonEditor extends JPanel {
             table.setFillsViewportHeight(true);
             ((TableColumnSelectionModel) table.getModel()).setTableRef(table); // Set the table reference
 
-
             DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
             centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 
@@ -1422,23 +1421,11 @@ public class AlgcomparisonEditor extends JPanel {
                     if (text.trim().isEmpty()) {
                         sorter.setRowFilter(null);
                     } else {
-                        String[] textParts = text.split(";+");
+                        String[] textParts = text.split(";");
                         List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
                         for (String part : textParts) {
                             try {
                                 String trim = part.trim();
-
-//                                // Swap escapes for parentheses and pipes
-//                                trim = trim.replace("\\(", "<+++<");
-//                                trim = trim.replace("\\)", ">+++>");
-//                                trim = trim.replace("\\|", "|+++|");
-//                                trim = trim.replace("(", "\\(");
-//                                trim = trim.replace(")", "\\)");
-//                                trim = trim.replace("|", "\\|");
-//                                trim = trim.replace("<+++<", "(");
-//                                trim = trim.replace(">+++>", ")");
-//                                trim = trim.replace("|+++|", "|");
-
                                 filters.add(RowFilter.regexFilter(trim));
                             } catch (PatternSyntaxException e) {
                                 // ignore
@@ -1560,7 +1547,20 @@ public class AlgcomparisonEditor extends JPanel {
         // Add action listeners for the buttons
         addButton.addActionListener(e1 -> {
             List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
-            selectedTableColumns.sort((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName()));
+
+            selectedTableColumns.sort((o1, o2) -> {
+                if (o1 == o2) {
+                    return 0;
+                }
+
+                if (o1.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.PARAMETER
+                        && o2.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.STATISTIC) {
+                    return -1;
+                } else {
+                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
+                }
+            });
+
 
             for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
@@ -1817,27 +1817,23 @@ public class AlgcomparisonEditor extends JPanel {
             char c = (char) b;
             buffer.append(c);
             if (c == '\n') {
-                processBuffer();
+                buffer.setLength(0); // Clear the buffer for next data
             }
         }
 
         @Override
         public void write(byte[] b, int off, int len) {
-            super.write(b, off, len);
+            ;
             // Convert bytes to string and add to buffer
             String s = new String(b, off, len, StandardCharsets.UTF_8);
             buffer.append(s);
             // Process buffer if newline character is found
             if (s.contains("\n")) {
-                processBuffer();
+                super.write(b, off, len);
+                buffer.setLength(0); // Clear the buffer for next data
             }
         }
 
-        private void processBuffer() {
-            // Process the buffered data (print it in this case)
-            System.out.print("Buffered data: " + buffer);
-            buffer.setLength(0); // Clear the buffer for next data
-        }
     }
 
     /**
@@ -1879,16 +1875,15 @@ public class AlgcomparisonEditor extends JPanel {
             }
 
             // Create the data for the table
-            this.data = new Object[allTableColumns.size()][4];
+            this.data = new Object[allTableColumns.size()][3];
             this.allTableColumns = allTableColumns;
             this.selectedTableColumns = new HashSet<>(selectedTableColumns);
 
             for (int i = 0; i < allTableColumns.size(); i++) {
                 AlgcomparisonModel.MyTableColumn tableColumn = allTableColumns.get(i);
-                this.data[i][0] = Integer.toUnsignedLong(i + 1); // 1-based index (not 0-based index)
+                this.data[i][0] = Integer.toString(i + 1); // 1-based index (not 0-based index)
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
-                this.data[i][3] = selectedTableColumns.contains(tableColumn) ? "Selected" : "";
             }
         }
 
@@ -1899,7 +1894,7 @@ public class AlgcomparisonEditor extends JPanel {
          */
         @Override
         public int getRowCount() {
-            return this.data.length;
+            return allTableColumns.size();
         }
 
         /**
@@ -1909,7 +1904,7 @@ public class AlgcomparisonEditor extends JPanel {
          */
         @Override
         public int getColumnCount() {
-            return data[0].length;
+            return 4;
         }
 
         /**
@@ -1932,24 +1927,25 @@ public class AlgcomparisonEditor extends JPanel {
          */
         @Override
         public Object getValueAt(int row, int col) {
-            if (tableRef == null) return "";
+            if (tableRef == null) return col == 3 ? "" : this.data[row][col];
             int index = tableRef.convertRowIndexToView(row);
-            boolean rowSelected = false;
 
-            if (index != -1) {
-                rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
+            if (index == -1) {
+                index = row;
+            }
+
+            if (col == 3) {
+                boolean rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
 
                 if (rowSelected) {
                     selectedTableColumns.add(allTableColumns.get(index));
                 } else {
                     selectedTableColumns.remove(allTableColumns.get(index));
                 }
-            }
 
-            if (col == 3) {
                 return rowSelected ? "Selected" : "";
             } else {
-                return this.data[row][col];
+                return this.data[index][col];
             }
         }
 

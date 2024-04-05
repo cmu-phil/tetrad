@@ -507,19 +507,6 @@ public class AlgcomparisonModel implements SessionModel {
     public List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
         List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
 
-        List<Class<? extends Statistic>> statisticClasses = getStatisticsClasses();
-
-        for (Class<? extends Statistic> statisticClass : statisticClasses) {
-            try {
-                Statistic statistic = statisticClass.getConstructor().newInstance();
-                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
-                allTableColumns.add(column);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException ex) {
-                System.out.println("Error creating statistic: " + ex.getMessage());
-            }
-        }
-
         List<Simulation> simulations = getSelectedSimulations().getSimulations();
         List<Algorithm> algorithms = getSelectedAlgorithms().getAlgorithms();
 
@@ -534,6 +521,20 @@ public class AlgcomparisonModel implements SessionModel {
             AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
             allTableColumns.add(column);
         }
+
+        List<Class<? extends Statistic>> statisticClasses = getStatisticsClasses();
+
+        for (Class<? extends Statistic> statisticClass : statisticClasses) {
+            try {
+                Statistic statistic = statisticClass.getConstructor().newInstance();
+                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                allTableColumns.add(column);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                System.out.println("Error creating statistic: " + ex.getMessage());
+            }
+        }
+
         return allTableColumns;
     }
 
