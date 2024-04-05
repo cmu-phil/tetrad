@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
@@ -680,32 +679,6 @@ public class AlgcomparisonModel implements SessionModel {
         }
 
         throw new IllegalArgumentException("Score by that name not found: " + name);
-    }
-
-    public IndependenceTestModel getIndependenceTestModelByName(String name) {
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        List<IndependenceTestModel> models = independenceTestModels.getModels();
-
-        for (IndependenceTestModel model : models) {
-            if (model.getName().equals(name)) {
-                return model;
-            }
-        }
-
-        return null;
-    }
-
-    public ScoreModel getScoreModelByName(String name) {
-        ScoreModels scoreModels = ScoreModels.getInstance();
-        List<ScoreModel> models = scoreModels.getModels();
-
-        for (ScoreModel model : models) {
-            if (model.getName().equals(name)) {
-                return model;
-            }
-        }
-
-        return null;
     }
 
     public String getLastGraphChoice() {
