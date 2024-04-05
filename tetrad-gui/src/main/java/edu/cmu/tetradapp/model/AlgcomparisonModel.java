@@ -143,6 +143,21 @@ public class AlgcomparisonModel implements SessionModel {
         return reflections.getSubTypesOf(interfaceClazz);
     }
 
+    public static void sortSelectedColumns(List<MyTableColumn> selectedTableColumns) {
+        selectedTableColumns.sort((o1, o2) -> {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
+                    && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
+                return -1;
+            } else {
+                return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
+            }
+        });
+    }
+
     /**
      * Runs the comparison of simulations, algorithms, and statistics.
      *
@@ -314,6 +329,7 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public List<MyTableColumn> getSelectedTableColumns() {
+        AlgcomparisonModel.sortSelectedColumns(selectedTableColumns);
         return new ArrayList<>(selectedTableColumns);
     }
 

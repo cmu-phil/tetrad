@@ -1546,21 +1546,9 @@ public class AlgcomparisonEditor extends JPanel {
 
         // Add action listeners for the buttons
         addButton.addActionListener(e1 -> {
-            List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
-
-            selectedTableColumns.sort((o1, o2) -> {
-                if (o1 == o2) {
-                    return 0;
-                }
-
-                if (o1.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.PARAMETER
-                        && o2.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.STATISTIC) {
-                    return -1;
-                } else {
-                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
-                }
-            });
-
+            List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
+                    columnSelectionTableModel.getSelectedTableColumns());
+            AlgcomparisonModel.sortSelectedColumns(selectedTableColumns);
 
             for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
