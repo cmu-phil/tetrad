@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
@@ -35,6 +36,10 @@ import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
+import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
+import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
+import edu.cmu.tetradapp.ui.model.ScoreModel;
+import edu.cmu.tetradapp.ui.model.ScoreModels;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -150,13 +155,13 @@ public class AlgcomparisonModel implements SessionModel {
                 return 0;
             } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
                        && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
-               if (o1.isSetByUser() && !o2.isSetByUser()) {
-                   return -1;
-               } else if (!o1.isSetByUser() && o2.isSetByUser()) {
-                   return 1;
-               } else {
-                   return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
-               }
+                if (o1.isSetByUser() && !o2.isSetByUser()) {
+                    return -1;
+                } else if (!o1.isSetByUser() && o2.isSetByUser()) {
+                    return 1;
+                } else {
+                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
+                }
             } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
                        && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 if (o1.isSetByUser() && !o2.isSetByUser()) {
@@ -622,7 +627,7 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public List<String> getLastStatisticsUsed() {
-        String[] lastStatisticsUsed = Preferences.userRoot().get("lastStatisticsUsed", "").split(";");
+        String[] lastStatisticsUsed = Preferences.userRoot().get("lastAlgcomparisonStatisticsUsed", "").split(";");
         List<String> list = Arrays.asList(lastStatisticsUsed);
         System.out.println("Getting last statistics used: " + list);
         return list;
@@ -636,7 +641,94 @@ public class AlgcomparisonModel implements SessionModel {
 
         System.out.println("Setting last statistics used: " + sb);
 
-        Preferences.userRoot().put("lastStatisticsUsed", sb.toString());
+        Preferences.userRoot().put("lastAlgcomparisonStatisticsUsed", sb.toString());
+    }
+
+    public String getLastIndependenceTest() {
+        return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", "");
+    }
+
+
+    public void setLastIndependenceTest(String name) {
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        List<IndependenceTestModel> models = independenceTestModels.getModels();
+
+        for (IndependenceTestModel model : models) {
+            if (model.getName().equals(name)) {
+                Preferences.userRoot().put("lastAlgcomparisonIndependenceTestUsed", name);
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("Independence test by that name not found: " + name);
+    }
+
+    public String getLastScore() {
+        return Preferences.userRoot().get("lastAlgcomparisonScoreUsed", "");
+    }
+
+    public void setLastScore(String name) {
+        ScoreModels scoreModels = ScoreModels.getInstance();
+        List<ScoreModel> models = scoreModels.getModels();
+
+        for (ScoreModel model : models) {
+            if (model.getName().equals(name)) {
+                Preferences.userRoot().put("lastAlgcomparisonScoreUsed", name);
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("Score by that name not found: " + name);
+    }
+
+    public IndependenceTestModel getIndependenceTestModelByName(String name) {
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        List<IndependenceTestModel> models = independenceTestModels.getModels();
+
+        for (IndependenceTestModel model : models) {
+            if (model.getName().equals(name)) {
+                return model;
+            }
+        }
+
+        return null;
+    }
+
+    public ScoreModel getScoreModelByName(String name) {
+        ScoreModels scoreModels = ScoreModels.getInstance();
+        List<ScoreModel> models = scoreModels.getModels();
+
+        for (ScoreModel model : models) {
+            if (model.getName().equals(name)) {
+                return model;
+            }
+        }
+
+        return null;
+    }
+
+    public String getLastGraphChoice() {
+        return Preferences.userRoot().get("lastAlgcomparisonGraphChoice", "");
+    }
+
+    public void setLastGraphChoice(String name) {
+        Preferences.userRoot().put("lastAlgcomparisonGraphChoice", name);
+    }
+
+    public String getLastAlgorithmChoice() {
+        return Preferences.userRoot().get("lastAlgcomparisonAlgorithmChoice", "");
+    }
+
+    public void setLastAlgorithmChoice(String name) {
+        Preferences.userRoot().put("lastAlgcomparisonAlgorithmChoice", name);
+    }
+
+    public Object getLastSimulationChoice() {
+        return Preferences.userRoot().get("lastAlgcomparisonSimulationChoice", "");
+    }
+
+    public void setLastSimulationChoice(String selectedItem) {
+        Preferences.userRoot().put("lastAlgcomparisonSimulationChoice", selectedItem);
     }
 
     public static class MyTableColumn {
@@ -697,11 +789,6 @@ public class AlgcomparisonModel implements SessionModel {
             this.setByUser = setByUser;
         }
 
-        public enum ColumnType {
-            STATISTIC,
-            PARAMETER
-        }
-
         public int hashCode() {
             return columnName.hashCode();
         }
@@ -711,6 +798,11 @@ public class AlgcomparisonModel implements SessionModel {
                 return columnName.equals(other.columnName);
             }
             return false;
+        }
+
+        public enum ColumnType {
+            STATISTIC,
+            PARAMETER
         }
     }
 

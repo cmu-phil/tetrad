@@ -124,4 +124,16 @@ public final class AlgorithmModels {
                 : Collections.EMPTY_LIST;
     }
 
+    public AlgorithmModel getAlgorithmModelByName(String lastAlgorithmChoice) {
+        AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
+        List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(DataType.Continuous, false);
+
+        for (AlgorithmModel algorithmModel : algorithmModels1) {
+            if (algorithmModel.getName().equals(lastAlgorithmChoice)) {
+                return algorithmModel;
+            }
+        }
+
+        return null;
+    }
 }

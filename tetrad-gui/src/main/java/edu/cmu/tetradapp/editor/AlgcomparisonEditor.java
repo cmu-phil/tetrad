@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
-import static edu.cmu.tetradapp.model.AlgcomparisonModel.sortTableColumns;
 
 /**
  * AlgcomparisonEditor is a JPanel that displays a JTabbedPane with tabs for simulation, algorithm, statistics,
@@ -561,43 +560,6 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Adds the dropdowns for selecting an independence test and a score to the given Box.
-     *
-     * @param vert1 the Box to which the dropdowns will be added
-     */
-    private static void addTestAndScoreDropdowns(Box vert1) {
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        List<IndependenceTestModel> models = independenceTestModels.getModels();
-
-        indTestComboBox = new JComboBox<>();
-
-        for (IndependenceTestModel model : models) {
-            indTestComboBox.addItem(model);
-        }
-
-        Box horiz4 = Box.createHorizontalBox();
-        horiz4.add(new JLabel("Choose an independence test:"));
-        horiz4.add(Box.createHorizontalGlue());
-        horiz4.add(indTestComboBox);
-        vert1.add(horiz4);
-
-        ScoreModels scoreModels = ScoreModels.getInstance();
-        List<ScoreModel> scoreModelsList = scoreModels.getModels();
-
-        scoreModelComboBox = new JComboBox<>();
-
-        for (ScoreModel model : scoreModelsList) {
-            scoreModelComboBox.addItem(model);
-        }
-
-        Box horiz5 = Box.createHorizontalBox();
-        horiz5.add(new JLabel("Choose a score:"));
-        horiz5.add(Box.createHorizontalGlue());
-        horiz5.add(scoreModelComboBox);
-        vert1.add(horiz5);
-    }
-
-    /**
      * Retrieves the parameter text for the given set of parameter names and parameters.
      *
      * @param paramNamesSet the set of parameter names
@@ -644,13 +606,13 @@ public class AlgcomparisonEditor extends JPanel {
         return paramText.toString();
     }
 
-
     public static void scrollToWord(JTextArea textArea, String word) throws BadLocationException {
         String text = textArea.getText();
         int pos = text.indexOf(word);
         if (pos >= 0) {
             Rectangle viewRect = textArea.modelToView2D(pos).getBounds();
             if (viewRect != null) {
+                viewRect = new Rectangle(viewRect.x, viewRect.y, textArea.getWidth(), textArea.getHeight());
                 textArea.scrollRectToVisible(viewRect);
             }
         }
@@ -676,6 +638,63 @@ public class AlgcomparisonEditor extends JPanel {
             default:
                 throw new IllegalArgumentException("Unexpected value: " + graphString);
         };
+    }
+
+    /**
+     * Adds the dropdowns for selecting an independence test and a score to the given Box.
+     *
+     * @param vert1 the Box to which the dropdowns will be added
+     */
+    private void addTestAndScoreDropdowns(Box vert1) {
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        List<IndependenceTestModel> models = independenceTestModels.getModels();
+
+        indTestComboBox = new JComboBox<>();
+
+        for (IndependenceTestModel model : models) {
+            indTestComboBox.addItem(model);
+        }
+
+        String lastIndependenceTest = model.getLastIndependenceTest();
+
+        for (int i = 0; i < indTestComboBox.getItemCount(); i++) {
+            IndependenceTestModel independenceTestModel = indTestComboBox.getItemAt(i);
+            if (independenceTestModel.getName().equals(lastIndependenceTest)) {
+                indTestComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        Box horiz4 = Box.createHorizontalBox();
+        horiz4.add(new JLabel("Choose an independence test:"));
+        horiz4.add(Box.createHorizontalGlue());
+        horiz4.add(indTestComboBox);
+        vert1.add(horiz4);
+
+        ScoreModels scoreModels = ScoreModels.getInstance();
+        List<ScoreModel> scoreModelsList = scoreModels.getModels();
+
+        scoreModelComboBox = new JComboBox<>();
+
+        for (ScoreModel model : scoreModelsList) {
+            scoreModelComboBox.addItem(model);
+        }
+
+        String lastScore = model.getLastScore();
+
+        for (int i = 0; i < scoreModelComboBox.getItemCount(); i++) {
+            ScoreModel scoreModel = scoreModelComboBox.getItemAt(i);
+            if (scoreModel.getName().equals(lastScore)) {
+                scoreModelComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        Box horiz5 = Box.createHorizontalBox();
+        horiz5.add(new JLabel("Choose a score:"));
+        horiz5.add(Box.createHorizontalGlue());
+        horiz5.add(scoreModelComboBox);
+        vert1.add(horiz5);
     }
 
     /**
@@ -757,6 +776,11 @@ public class AlgcomparisonEditor extends JPanel {
                 setSimulationText();
                 setComparisonText();
                 dialog.dispose();
+
+                SwingUtilities.invokeLater(() -> {
+                    revalidate();
+                    repaint();
+                });
             });
 
             buttonPanel.add(doneButton);
@@ -1009,7 +1033,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                     SwingUtilities.invokeLater(() -> {
                         try {
-                            scrollToWord(comparisonTextArea, "STANDARD DEVIATION");
+                            scrollToWord(comparisonTextArea, "AVERAGE VALUE");
                         } catch (BadLocationException ex) {
                             System.out.println("Scrolling operation failed.");
                         }
@@ -1066,9 +1090,23 @@ public class AlgcomparisonEditor extends JPanel {
             horiz2.add(Box.createHorizontalGlue());
             JComboBox<String> graphsDropdown = new JComboBox<>();
 
+            String lastGraphChoice = model.getLastGraphChoice();
+
+            if (lastGraphChoice != null) {
+                graphsDropdown.addItem(lastGraphChoice);
+            }
+
+            graphsDropdown.addActionListener(e1 -> {
+                String selectedItem = (String) graphsDropdown.getSelectedItem();
+
+                if (selectedItem != null) {
+                    model.setLastGraphChoice(selectedItem);
+                }
+            });
+
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
-            graphsDropdown.setSelectedItem(model.getParameters().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
+            graphsDropdown.setSelectedItem(model.getLastGraphChoice());
 
             horiz2.add(graphsDropdown);
             vert1.add(horiz2);
@@ -1080,6 +1118,16 @@ public class AlgcomparisonEditor extends JPanel {
 
             Arrays.stream(ParameterTab.MODEL_TYPE_ITEMS).forEach(simulationsDropdown::addItem);
             simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
+
+            simulationsDropdown.setSelectedItem(model.getLastSimulationChoice());
+
+            simulationsDropdown.addActionListener(e1 -> {
+                String selectedItem = (String) simulationsDropdown.getSelectedItem();
+
+                if (selectedItem != null) {
+                    model.setLastSimulationChoice(selectedItem);
+                }
+            });
 
             horiz3.add(simulationsDropdown);
             vert1.add(horiz3);
@@ -1179,6 +1227,23 @@ public class AlgcomparisonEditor extends JPanel {
                 algorithmDropdown.addItem(model);
             }
 
+            String lastAlgorithmChoice = model.getLastAlgorithmChoice();
+
+            for (int i = 0; i < algorithmDropdown.getItemCount(); i++) {
+                if (algorithmDropdown.getItemAt(i).getName().equals(lastAlgorithmChoice)) {
+                    algorithmDropdown.setSelectedIndex(i);
+                    break;
+                }
+            }
+
+            algorithmDropdown.addActionListener(e1 -> {
+                AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+
+                if (selectedItem != null) {
+                    model.setLastAlgorithmChoice(selectedItem.getName());
+                }
+            });
+
             Box vert1 = Box.createVerticalBox();
             Box horiz2 = Box.createHorizontalBox();
             horiz2.add(new JLabel("Choose an algorithm:"));
@@ -1235,6 +1300,14 @@ public class AlgcomparisonEditor extends JPanel {
 
                     if (score != null) {
                         scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
+                    }
+
+                    if (testModel != null) {
+                        model.setLastIndependenceTest(testModel.getName());
+                    }
+
+                    if (scoreModel != null) {
+                        model.setLastScore(scoreModel.getName());
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException ex) {
@@ -1836,26 +1909,27 @@ public class AlgcomparisonEditor extends JPanel {
 
         @Override
         public void write(int b) {
-            super.write(b);
-            // Convert single byte to character and add to buffer
-            char c = (char) b;
-            buffer.append(c);
-            if (c == '\n') {
+            // Convert byte to string and add to buffer
+            String s = new String(new byte[]{(byte) b}, StandardCharsets.UTF_8);
+            buffer.append(s);
+            // Process buffer if newline character is found
+            if (s.contains("\n")) {
+                super.write(buffer.toString().getBytes(StandardCharsets.UTF_8), 0, buffer.length());
                 buffer.setLength(0); // Clear the buffer for next data
             }
         }
 
         @Override
         public void write(byte[] b, int off, int len) {
-            ;
-            // Convert bytes to string and add to buffer
+            // Convert byte array to string and add to buffer
             String s = new String(b, off, len, StandardCharsets.UTF_8);
             buffer.append(s);
             // Process buffer if newline character is found
             if (s.contains("\n")) {
-                super.write(b, off, len);
+                super.write(buffer.toString().getBytes(StandardCharsets.UTF_8), 0, buffer.length());
                 buffer.setLength(0); // Clear the buffer for next data
             }
+
         }
 
     }
@@ -1909,11 +1983,6 @@ public class AlgcomparisonEditor extends JPanel {
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
             }
-
-
-
-
-
         }
 
         /**
