@@ -228,8 +228,8 @@ public class AlgcomparisonModel implements SessionModel {
         Comparison comparison = new Comparison();
         comparison.setSaveData(true);
         comparison.setSaveGraphs(true);
-        comparison.setSaveCPDAGs(true);
-        comparison.setSavePags(true);
+//        comparison.setSaveCPDAGs(true);
+//        comparison.setSavePags(true);
 
         String resultsPath;
 
