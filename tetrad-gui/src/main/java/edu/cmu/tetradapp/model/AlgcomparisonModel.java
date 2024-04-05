@@ -234,12 +234,13 @@ public class AlgcomparisonModel implements SessionModel {
         String resultsPath;
 
         for (int i = 1; ; i++) {
-            File resultsDir = new File(resultsRoot + "/comparison-results-" + i);
+            String pathname = resultsRoot + "/comparison-results/comparison-" + i;
+            File resultsDir = new File(pathname);
             if (!resultsDir.exists()) {
                 if (!resultsDir.mkdirs()) {
                     throw new IllegalStateException("Could not create directory: " + resultsDir);
                 }
-                resultsPath = resultsRoot + "/comparison-results-" + i;
+                resultsPath = pathname;
                 break;
             }
         }
