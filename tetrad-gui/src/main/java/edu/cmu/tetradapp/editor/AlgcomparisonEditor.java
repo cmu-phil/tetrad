@@ -109,6 +109,10 @@ public class AlgcomparisonEditor extends JPanel {
      * Button used to add table columns.
      */
     private JButton addTableColumns;
+    /**
+     * Represents a drop-down menu for selecting an algorithm.
+     */
+    private JComboBox<Object> algorithmDropdown;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -1219,7 +1223,7 @@ public class AlgcomparisonEditor extends JPanel {
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
 
-            JComboBox<AlgorithmModel> algorithmDropdown = new JComboBox<>();
+            algorithmDropdown = new JComboBox<>();
 
             for (AlgorithmModel model : algorithmModels1) {
                 algorithmDropdown.addItem(model);
@@ -1228,7 +1232,8 @@ public class AlgcomparisonEditor extends JPanel {
             String lastAlgorithmChoice = model.getLastAlgorithmChoice();
 
             for (int i = 0; i < algorithmDropdown.getItemCount(); i++) {
-                if (algorithmDropdown.getItemAt(i).getName().equals(lastAlgorithmChoice)) {
+                AlgorithmModel itemAt = (AlgorithmModel) algorithmDropdown.getItemAt(i);
+                if (itemAt.getName().equals(lastAlgorithmChoice)) {
                     algorithmDropdown.setSelectedIndex(i);
                     break;
                 }
@@ -1265,13 +1270,13 @@ public class AlgcomparisonEditor extends JPanel {
 
             // Add action listeners for the buttons
             addButton.addActionListener(e1 -> {
-                AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+                AlgorithmModel algorithmModel = (AlgorithmModel) algorithmDropdown.getSelectedItem();
 
-                if (selectedItem == null) {
+                if (algorithmModel == null) {
                     return;
                 }
 
-                Class<?> algorithm = selectedItem.getAlgorithm().clazz();
+                Class<?> algorithm = algorithmModel.getAlgorithm().clazz();
 
                 IndependenceTestModel testModel = (IndependenceTestModel) indTestComboBox.getSelectedItem();
 
@@ -1323,7 +1328,7 @@ public class AlgcomparisonEditor extends JPanel {
                         ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                     }
 
-                    model.addAlgorithm(algorithmImpl);
+                    model.addAlgorithm(algorithmImpl, algorithmModel);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException ex) {
                     throw new RuntimeException(ex);
@@ -1664,6 +1669,57 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         algorithmChoiceTextArea.append(getAlgorithmParameterText());
+
+        model.getSelectedAlgorithmModels();
+
+        algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
+
+        for (AlgorithmModel algorithmModel1 : model.getSelectedAlgorithmModels()) {
+            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getName());
+            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription());
+        }
+
+        List<IndependenceWrapper> independenceWrappers = new ArrayList<>();
+
+        for (Algorithm algorithm : algorithms) {
+            if (algorithm instanceof TakesIndependenceWrapper) {
+                independenceWrappers.add(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper());
+            }
+        }
+
+        List<ScoreWrapper> scoreWrappers = new ArrayList<>();
+
+        for (Algorithm algorithm : algorithms) {
+            if (algorithm instanceof UsesScoreWrapper) {
+                scoreWrappers.add(((UsesScoreWrapper) algorithm).getScoreWrapper());
+            }
+        }
+
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        List<IndependenceTestModel> independenceTestModels1 = independenceTestModels.getModels();
+
+        for (IndependenceTestModel independenceTestModel : independenceTestModels1) {
+            independenceWrappers.forEach(independenceWrapper -> {
+                if (independenceTestModel.getIndependenceTest().clazz().equals(independenceWrapper.getClass())) {
+                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getName());
+                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getDescription());
+                }
+            });
+        }
+
+        ScoreModels scoreModels = ScoreModels.getInstance();
+
+        List<ScoreModel> scoreModels1 = scoreModels.getModels();
+
+        for (ScoreModel scoreModel : scoreModels1) {
+            scoreWrappers.forEach(scoreWrapper -> {
+                if (scoreModel.getScore().clazz().equals(scoreWrapper.getClass())) {
+                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getName());
+                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getDescription());
+                }
+            });
+        }
+
         algorithmChoiceTextArea.setCaretPosition(0);
     }
 

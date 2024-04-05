@@ -36,10 +36,7 @@ import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
-import edu.cmu.tetradapp.ui.model.ScoreModel;
-import edu.cmu.tetradapp.ui.model.ScoreModels;
+import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -112,6 +109,7 @@ public class AlgcomparisonModel implements SessionModel {
      * The name of the AlgcomparisonModel.
      */
     private String name = "Algcomparison";
+    private LinkedList<AlgorithmModel> selectedAlgorithmModels;
 
     /**
      * Constructs a new AlgcomparisonModel with the specified parameters.
@@ -289,9 +287,10 @@ public class AlgcomparisonModel implements SessionModel {
      *
      * @param algorithm The algorithm to add.
      */
-    public void addAlgorithm(Algorithm algorithm) {
+    public void addAlgorithm(Algorithm algorithm, AlgorithmModel algorithmModel) {
         initializeIfNull();
         selectedAlgorithms.add(algorithm);
+        selectedAlgorithmModels.add(algorithmModel);
     }
 
     /**
@@ -301,6 +300,7 @@ public class AlgcomparisonModel implements SessionModel {
         initializeIfNull();
         if (!selectedAlgorithms.isEmpty()) {
             selectedAlgorithms.removeLast();
+            selectedAlgorithmModels.removeLast();
         }
     }
 
@@ -405,7 +405,7 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private void initializeIfNull() {
         if (selectedSimulations == null || selectedAlgorithms == null || selectedTableColumns == null
-            || selectedParameters == null) {
+            || selectedParameters == null || selectedAlgorithmModels == null) {
             initializeSimulationsEtc();
         }
 
@@ -431,6 +431,7 @@ public class AlgcomparisonModel implements SessionModel {
     private void initializeSimulationsEtc() {
         this.selectedSimulations = new LinkedList<>();
         this.selectedAlgorithms = new LinkedList<>();
+        this.selectedAlgorithmModels = new LinkedList<>();
         this.selectedTableColumns = new LinkedList<>();
         this.selectedParameters = new LinkedList<>();
     }
@@ -729,6 +730,10 @@ public class AlgcomparisonModel implements SessionModel {
 
     public void setLastSimulationChoice(String selectedItem) {
         Preferences.userRoot().put("lastAlgcomparisonSimulationChoice", selectedItem);
+    }
+
+    public List<AlgorithmModel> getSelectedAlgorithmModels() {
+        return new ArrayList<>(selectedAlgorithmModels);
     }
 
     public static class MyTableColumn {
