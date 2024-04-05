@@ -6,9 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;
@@ -212,6 +210,44 @@ public class MarkovCheck {
 
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
+
+    public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
+        Set<Node> parents = new HashSet<>(graph.getParents(x));
+
+        // Remove all parent nodes and x node itself from the graph
+        List<Node> graphNodes_others = graph.getNodes();
+        graphNodes_others.remove(x);
+        for (Node p : parents) graphNodes_others.remove(p);
+
+        List<IndependenceFact> factList = new ArrayList<>();
+        for (Node y : graphNodes_others) {
+            // Make a new MsepTest based on the true graph.
+            MsepTest msepTest = new MsepTest(graph);
+            IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
+            if (testRes.isValid()) factList.add(testRes.getFact());
+        }
+        return factList;
+    }
+
+    public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
+        // call pvalue function on each item, only include the non-null ones
+        List<Double> pVals = new ArrayList<>();
+        for (IndependenceFact f : facts) {
+            double pV;
+            // For now, check if the test is FisherZ test.
+            if (independenceTest instanceof IndTestFisherZ) {
+                pV = ((IndTestFisherZ)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                pVals.add(pV);
+            }
+        }
+        return pVals;
+    }
+
+    public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getP();
+    }
+
 
     /**
      * Returns the variables of the independence test.
@@ -793,7 +829,7 @@ public class MarkovCheck {
                     throw new RuntimeException(e);
                 }
                 boolean indep = result.isIndependent();
-                double pValue = result.getPValue(); // VBC TODO: is this the real pvalue for node x? or is it just storing d-speration fact? in IndTestFisherZ.java this is a real p value for x, given y, z.
+                double pValue = result.getPValue();
                 independenceTest.setVerbose(verbose);
 
                 if (!Double.isNaN(pValue)) {
@@ -856,7 +892,6 @@ public class MarkovCheck {
         for (IndependenceResult result : results) {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
-
 
         List<Double> pValues = getPValues(results);
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
