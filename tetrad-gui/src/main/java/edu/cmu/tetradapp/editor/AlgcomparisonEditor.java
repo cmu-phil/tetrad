@@ -51,9 +51,8 @@ import java.util.stream.Stream;
 import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
 
 /**
- * AlgcomparisonEditor is a JPanel that displays a JTabbedPane with tabs for simulation, algorithm, statistics,
- * comparison, XML, and help. It provides methods for adding tabs, listeners, and setting text based on the selected
- * simulations, algorithms, and statistics.
+ * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm,
+ * table columns, comparison, and help. It is used for editing an AlgcomparisonModel.
  *
  * @author josephramsey
  * @author kevinbui
@@ -89,7 +88,7 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private JTextArea algorithmChoiceTextArea;
     /**
-     * JTextArea used for displaying statistics choices.
+     * JTextArea used for displaying table column choices.
      */
     private JTextArea tableColumnsChoiceTextArea;
     /**
@@ -966,7 +965,7 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * Adds a table columns tab to the provided JTabbedPane.
      *
-     * @param tabbedPane the JTabbedPane to add the statistics tab to
+     * @param tabbedPane the JTabbedPane to add the table columns tab to
      */
     private void addTableColumnsTab(JTabbedPane tabbedPane) {
         tableColumnsChoiceTextArea = new JTextArea();
@@ -1544,7 +1543,7 @@ public class AlgcomparisonEditor extends JPanel {
             panel.setPreferredSize(new Dimension(500, 500));
 
             // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Table Column", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
 
@@ -1770,7 +1769,7 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Sets the text in the statisticsChoiceTextArea based on the selected statistics.
+     * Sets the text in the tableColummnsChoiceTextArea based on the selected table columns.
      */
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
@@ -1779,38 +1778,38 @@ public class AlgcomparisonEditor extends JPanel {
 
         if (selectedTableColumns.isEmpty()) {
             tableColumnsChoiceTextArea.append("""
-                     ** No statistics have been selected. Please select at least one statistic using the Add Statistic(s) button below. **
+                     ** No columns have been selected. Please select at least one column using the Add Table Column button below. **
                     """);
             return;
         } else if (selectedTableColumns.size() == 1) {
             tableColumnsChoiceTextArea.setText("""
-                    The following statistics has been selected. The comparison table will include these statistics as columns in the table.
+                    The following table column has been selected. The comparison table will include these columns in the table.
                     """);
         } else {
             tableColumnsChoiceTextArea.setText("""
-                    The comparison table will include these statistics as columns in the table.
+                    The comparison table will include these columns in the table.
                     """);
         }
 
         for (int i = 0; i < selectedTableColumns.size(); i++) {
-            AlgcomparisonModel.MyTableColumn statistic = selectedTableColumns.get(i);
-            tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + statistic.getColumnName() + " (" + statistic.getDescription() + ")");
+            AlgcomparisonModel.MyTableColumn tableColumn = selectedTableColumns.get(i);
+            tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + tableColumn.getColumnName() + " (" + tableColumn.getDescription() + ")");
         }
 
         tableColumnsChoiceTextArea.setCaretPosition(0);
     }
 
     /**
-     * Sets the text of the comparisonTextArea based on the selected simulations, algorithms, and statistics. If any of
-     * the simulations, algorithms, or statistics are empty, it sets a message indicating that the selection is empty.
-     * Otherwise, it sets a message indicating that a comparison has not been run for the selection.
+     * Sets the text of the comparisonTextArea based on the selected simulations, algorithms, and table columns. If any
+     * of the simulations, algorithms, or table columnss are empty, it sets a message indicating that the selection is
+     * empty. Otherwise, it sets a message indicating that a comparison has not been run for the selection.
      */
     private void setComparisonText() {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
             || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
-                            ** You have made an empty selection; look back at the Simulation, Algorithm, and TableColumns tabs **
+                            ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **
                             """);
         } else {
             comparisonTextArea.setText
@@ -1825,13 +1824,13 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private void setHelpText() {
         helpChoiceTextArea.setText("""
-                This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, statistics, and parameter settings.
+                This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, algorithms, table columns, and parameter settings.
 
-                To run a comparison, select one or more simulations, one or more algorithms, and one or more statistics. Then in the Comparison tab, click the "Run Comparison" button.
+                To run a comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
 
                 The comparison will be displayed in the "comparison" tab.
 
-                Not all combinations you can select in this tool may be stellar ideas; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
+                Some combinations you may select could take a very long time to run; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
 
                 If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
                                 
