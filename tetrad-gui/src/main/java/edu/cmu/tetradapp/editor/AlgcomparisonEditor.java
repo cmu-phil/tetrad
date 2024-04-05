@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
+import static edu.cmu.tetradapp.model.AlgcomparisonModel.sortTableColumns;
 
 /**
  * AlgcomparisonEditor is a JPanel that displays a JTabbedPane with tabs for simulation, algorithm, statistics,
@@ -1483,6 +1484,42 @@ public class AlgcomparisonEditor extends JPanel {
             vert1.add(new JScrollPane(table));
             vert1.add(Box.createVerticalStrut(10));
 
+            Box horiz3 = Box.createHorizontalBox();
+            horiz3.add(Box.createHorizontalGlue());
+
+            JButton selectUsedParameters = new JButton("Select Parameters Used");
+            horiz3.add(selectUsedParameters);
+
+            JButton selectLastStatisticsUsed = new JButton("Select Last Statistics Used");
+            horiz3.add(selectLastStatisticsUsed);
+
+            horiz3.add(Box.createHorizontalGlue());
+
+            vert1.add(horiz3);
+
+            selectUsedParameters.addActionListener(e1 -> {
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+
+                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.PARAMETER
+                        && myTableColumn.isSetByUser()) {
+                        columnSelectionTableModel.selectRow(i);
+                    }
+                }
+            });
+
+            selectLastStatisticsUsed.addActionListener(e1 -> {
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+                    List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
+
+                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.STATISTIC
+                        && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
+                        columnSelectionTableModel.selectRow(i);
+                    }
+                }
+            });
+
             panel.add(vert1, BorderLayout.CENTER);
             panel.setPreferredSize(new Dimension(500, 500));
 
@@ -1548,7 +1585,6 @@ public class AlgcomparisonEditor extends JPanel {
         addButton.addActionListener(e1 -> {
             List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
                     columnSelectionTableModel.getSelectedTableColumns());
-            AlgcomparisonModel.sortSelectedColumns(selectedTableColumns);
 
             for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
@@ -1704,7 +1740,7 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private void setComparisonText() {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
-            || model.getSelectedStatistics().getStatistics().isEmpty()) {
+            || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
                             ** You have made an empty selection; look back at the Simulation, Algorithm, and TableColumns tabs **
@@ -1873,6 +1909,11 @@ public class AlgcomparisonEditor extends JPanel {
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
             }
+
+
+
+
+
         }
 
         /**
@@ -1915,14 +1956,17 @@ public class AlgcomparisonEditor extends JPanel {
          */
         @Override
         public Object getValueAt(int row, int col) {
-            if (tableRef == null) return col == 3 ? "" : this.data[row][col];
-            int index = tableRef.convertRowIndexToView(row);
+            int index = tableRef == null ? row : tableRef.convertRowIndexToView(row);
 
             if (index == -1) {
                 index = row;
             }
 
             if (col == 3) {
+                if (tableRef == null || tableRef.getSelectionModel() == null) {
+                    return "";
+                }
+
                 boolean rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
 
                 if (rowSelected) {
@@ -1955,6 +1999,13 @@ public class AlgcomparisonEditor extends JPanel {
         public void setTableRef(JTable tableRef) {
             this.tableRef = tableRef;
         }
-    }
 
+        public AlgcomparisonModel.MyTableColumn getMyTableColumn(int row) {
+            return allTableColumns.get(row);
+        }
+
+        public void selectRow(int row) {
+            tableRef.getSelectionModel().addSelectionInterval(row, row);
+        }
+    }
 }

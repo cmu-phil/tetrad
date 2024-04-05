@@ -31,13 +31,14 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.util.ParamDescription;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
-import javax.swing.text.SimpleAttributeSet;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -143,19 +144,66 @@ public class AlgcomparisonModel implements SessionModel {
         return reflections.getSubTypesOf(interfaceClazz);
     }
 
-    public static void sortSelectedColumns(List<MyTableColumn> selectedTableColumns) {
+    public static void sortTableColumns(List<MyTableColumn> selectedTableColumns) {
         selectedTableColumns.sort((o1, o2) -> {
-            if (o1 == o2) {
+            if (o1.equals(o2)) {
                 return 0;
-            }
-
-            if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
-                    && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
-                return -1;
+            } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
+                       && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
+               if (o1.isSetByUser() && !o2.isSetByUser()) {
+                   return -1;
+               } else if (!o1.isSetByUser() && o2.isSetByUser()) {
+                   return 1;
+               } else {
+                   return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
+               }
+            } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
+                       && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
+                if (o1.isSetByUser() && !o2.isSetByUser()) {
+                    return -1;
+                } else if (!o1.isSetByUser() && o2.isSetByUser()) {
+                    return 1;
+                } else {
+                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
+                }
             } else {
                 return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
             }
         });
+    }
+
+    /**
+     * Retrieves all simulation parameters from a list of simulation objects.
+     *
+     * @param simulations the list of simulation objects
+     * @return a set of all simulation parameters
+     */
+    @NotNull
+    public static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Simulation simulation : simulations) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+    /**
+     * Retrieves all algorithm parameters from a list of Algorithm objects.
+     *
+     * @param algorithm the list of Algorithm objects
+     * @return a set of all algorithm parameters
+     */
+    @NotNull
+    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm simulation : algorithm) {
+            paramNamesSet.addAll(simulation.getParameters());
+        }
+
+        return paramNamesSet;
     }
 
     /**
@@ -257,8 +305,10 @@ public class AlgcomparisonModel implements SessionModel {
      * @param tableColumn The table column to add.
      */
     public void addTableColumn(MyTableColumn tableColumn) {
+        if (selectedTableColumns.contains(tableColumn)) return;
         initializeIfNull();
         selectedTableColumns.add(tableColumn);
+        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
     }
 
     /**
@@ -329,7 +379,7 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public List<MyTableColumn> getSelectedTableColumns() {
-        AlgcomparisonModel.sortSelectedColumns(selectedTableColumns);
+        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
         return new ArrayList<>(selectedTableColumns);
     }
 
@@ -500,22 +550,25 @@ public class AlgcomparisonModel implements SessionModel {
         List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
 
         Statistics selectedStatistics = new Statistics();
+        List<Statistic> lastStatisticsUsed = new ArrayList<>();
 
         for (MyTableColumn column : selectedTableColumns) {
             if (column.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 try {
                     Statistic statistic = column.getStatistic().getConstructor().newInstance();
                     selectedStatistics.add(statistic);
+                    lastStatisticsUsed.add(statistic);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException ex) {
                     System.out.println("Error creating statistic: " + ex.getMessage());
                 }
             } else if (column.getType() == MyTableColumn.ColumnType.PARAMETER) {
-                String parameter = column.getColumnName();
+                String parameter = column.getParameter();
                 selectedStatistics.add(new ParameterColumn(parameter));
             }
         }
 
+        setLastStatisticsUsed(lastStatisticsUsed);
         return selectedStatistics;
     }
 
@@ -526,15 +579,21 @@ public class AlgcomparisonModel implements SessionModel {
         List<Simulation> simulations = getSelectedSimulations().getSimulations();
         List<Algorithm> algorithms = getSelectedAlgorithms().getAlgorithms();
 
-        for (String columnName : getAllSimulationParameters(simulations)) {
-            String description = "Simulation Parameter";
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+        for (String name : getAllSimulationParameters(simulations)) {
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            String shortDescriptiom = paramDescription.getShortDescription();
+            String description = paramDescription.getLongDescription();
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
 
-        for (String columnName : getAllAlgorithmParameters(algorithms)) {
-            String description = "Algorithm Parameter";
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(columnName, description, columnName);
+        for (String name : getAllAlgorithmParameters(algorithms)) {
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            String shortDescriptiom = paramDescription.getShortDescription();
+            String description = paramDescription.getLongDescription();
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
 
@@ -554,49 +613,39 @@ public class AlgcomparisonModel implements SessionModel {
         return allTableColumns;
     }
 
-    /**
-     * Retrieves all simulation parameters from a list of simulation objects.
-     *
-     * @param simulations the list of simulation objects
-     * @return a set of all simulation parameters
-     */
-    @NotNull
-    public static Set<String> getAllSimulationParameters(List<Simulation> simulations) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Simulation simulation : simulations) {
-            paramNamesSet.addAll(simulation.getParameters());
-        }
-
-        return paramNamesSet;
+    private boolean paramSetByUser(String columnName) {
+        ParamDescription paramDescription = ParamDescriptions.getInstance().get(columnName);
+        Object defaultValue = paramDescription.getDefaultValue();
+        Object[] values = parameters.getValues(columnName);
+        boolean userDefault = values != null && values.length == 1 && values[0].equals(defaultValue);
+        return !userDefault;
     }
 
+    public List<String> getLastStatisticsUsed() {
+        String[] lastStatisticsUsed = Preferences.userRoot().get("lastStatisticsUsed", "").split(";");
+        List<String> list = Arrays.asList(lastStatisticsUsed);
+        System.out.println("Getting last statistics used: " + list);
+        return list;
+    }
 
-    /**
-     * Retrieves all algorithm parameters from a list of Algorithm objects.
-     *
-     * @param algorithm the list of Algorithm objects
-     * @return a set of all algorithm parameters
-     */
-    @NotNull
-    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
-        Set<String> paramNamesSet = new HashSet<>();
-
-        for (Algorithm simulation : algorithm) {
-            paramNamesSet.addAll(simulation.getParameters());
+    public void setLastStatisticsUsed(List<Statistic> lastStatisticsUsed) {
+        StringBuilder sb = new StringBuilder();
+        for (Statistic statistic : lastStatisticsUsed) {
+            sb.append(statistic.getAbbreviation()).append(";");
         }
 
-        return paramNamesSet;
+        System.out.println("Setting last statistics used: " + sb);
+
+        Preferences.userRoot().put("lastStatisticsUsed", sb.toString());
     }
 
     public static class MyTableColumn {
-
-
         private final String columnName;
         private final String description;
         private final Class<? extends Statistic> statistic;
         private final String parameter;
         private final ColumnType type;
+        private boolean setByUser = false;
 
         public MyTableColumn(String name, String description, Class<? extends Statistic> statistic) {
             this.columnName = name;
@@ -640,9 +689,28 @@ public class AlgcomparisonModel implements SessionModel {
             return parameter;
         }
 
+        public boolean isSetByUser() {
+            return setByUser;
+        }
+
+        public void setSetByUser(boolean setByUser) {
+            this.setByUser = setByUser;
+        }
+
         public enum ColumnType {
             STATISTIC,
             PARAMETER
+        }
+
+        public int hashCode() {
+            return columnName.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            if (obj instanceof MyTableColumn other) {
+                return columnName.equals(other.columnName);
+            }
+            return false;
         }
     }
 
