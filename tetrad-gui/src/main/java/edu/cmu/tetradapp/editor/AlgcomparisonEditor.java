@@ -594,8 +594,6 @@ public class AlgcomparisonEditor extends JPanel {
                     sb.append((long) values[i]);
                 else
                     sb.append(values[i]);
-
-//                sb.append(nf.format((double) values[i]));
             }
 
             paramText.append("\n\n- ").append(name).append(" = ").append(sb);
@@ -959,7 +957,7 @@ public class AlgcomparisonEditor extends JPanel {
         tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
         addTableColumns = new JButton("Add Table Column(s)");
-        addAddTableColumnsListener2();
+        addAddTableColumnsListener();
 
         JButton removeLastTableColumn = new JButton("Remove Last Column");
         removeLastTableColumn.addActionListener(e -> {
@@ -1356,86 +1354,12 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
-//    /**
-//     * Adds a listener to the "Add TableColumns" button. When the button is clicked, a dialog is displayed where the
-//     * user can select multiple statistics to add to the model.
-//     */
-//    private void addAddTableColumnsListener() {
-//        addTableColumns.addActionListener(e -> {
-//
-//            List<Class<? extends Statistic>> statisticClasses = model.getStatisticsClasses();
-//
-//            JPanel panel = new JPanel();
-//            panel.setLayout(new BorderLayout());
-//
-//            List<String> statisticsStrings = new ArrayList<>();
-//            Map<String, Statistic> statisticMap = new HashMap<>();
-//
-//            for (Class<? extends Statistic> statisticClass : statisticClasses) {
-//                try {
-//                    Statistic statistic = statisticClass.getConstructor().newInstance();
-//                    statisticsStrings.add(statistic.getAbbreviation());
-//                    statisticMap.put(statistic.getAbbreviation(), statistic);
-//                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-//                         NoSuchMethodException ex) {
-//                    System.out.println("Error creating statistic: " + ex.getMessage());
-//                }
-//            }
-//
-//            Collections.sort(statisticsStrings);
-//            String[] _statistics = statisticsStrings.toArray(new String[0]);
-//            JList<String> statisticsList = new JList<>(_statistics);
-//            statisticsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-//            JScrollPane scrollPane = new JScrollPane(statisticsList);
-//            scrollPane.setPreferredSize(new Dimension(100, 200));
-//
-//            System.out.println(statisticsStrings);
-//
-//            JButton selectDefault = new JButton("Select Defaults");
-//
-//            List<String> defaults = Arrays.asList("AP", "AR", "AHP", "AHR", "AHPC", "AHRC");
-//
-//            selectDefault.addActionListener(e13 -> {
-//                for (int i = 0; i < _statistics.length; i++) {
-//                    if (defaults.contains(_statistics[i])) {
-//                        statisticsList.addSelectionInterval(i, i);
-//                    }
-//                }
-//            });
-//
-//            Box vert1 = Box.createVerticalBox();
-//            vert1.add(new JLabel("Choose an statistic:"));
-//            vert1.add(Box.createVerticalStrut(5));
-//            vert1.add(scrollPane);
-//            vert1.add(Box.createVerticalStrut(10));
-//            vert1.add(selectDefault);
-//
-//            panel.add(vert1, BorderLayout.NORTH);
-//
-//            // Create the JDialog. Use the parent frame to make it modal.
-//            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Statistic", Dialog.ModalityType.APPLICATION_MODAL);
-//            dialog.setLayout(new BorderLayout());
-//            dialog.add(panel, BorderLayout.CENTER);
-//
-//            // Create a panel for the buttons
-//            JPanel buttonPanel = getButtonPanel2(model.getSelectedTableColumns(), dialog);
-//
-//            // Add the button panel to the bottom of the dialog
-//            dialog.add(buttonPanel, BorderLayout.SOUTH);
-//
-//            // Set the dialog size, position, and visibility
-//            dialog.pack(); // Adjust dialog size to fit its contents
-//            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
-//            dialog.setVisible(true);
-//        });
-//    }
-
     /**
      * Adds an action listener to the addTableColumns button. This action listener creates a table model, adds a JTable
      * to the panel, and sets a row sorter for the table based on user input. It also creates a text field with a
      * document listener to filter the table based on user input.
      */
-    private void addAddTableColumnsListener2() {
+    private void addAddTableColumnsListener() {
         addTableColumns.addActionListener(e -> {
             java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
             List<AlgcomparisonModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
@@ -1602,7 +1526,7 @@ public class AlgcomparisonEditor extends JPanel {
             dialog.add(panel, BorderLayout.CENTER);
 
             // Create a panel for the buttons
-            JPanel buttonPanel = getButtonPanel2(columnSelectionTableModel, dialog);
+            JPanel buttonPanel = getButtonPanel(columnSelectionTableModel, dialog);
 
             // Add the button panel to the bottom of the dialog
             dialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -1616,40 +1540,8 @@ public class AlgcomparisonEditor extends JPanel {
 
     }
 
-
-//    @NotNull
-//    private JPanel getButtonPanel(JList<String> statisticsList, Map<String, Statistic> statisticMap, JDialog dialog) {
-//        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-//        JButton addButton = new JButton("Add");
-//        JButton cancelButton = new JButton("Cancel");
-//
-//        // Add action listeners for the buttons
-//        addButton.addActionListener(e1 -> {
-//            List<String> valuesList = statisticsList.getSelectedValuesList();
-//
-//            for (String value : valuesList) {
-//                model.addStatistic(statisticMap.get(value));
-//            }
-//
-//            setTableColumnsText();
-//            setComparisonText();
-//            dialog.dispose();
-//        });
-//
-//        cancelButton.addActionListener(e12 -> {
-//            // Handle the Cancel button click event
-//            System.out.println("Cancel button clicked");
-//            dialog.dispose(); // Close the dialog
-//        });
-//
-//        // Add the buttons to the button panel
-//        buttonPanel.add(addButton);
-//        buttonPanel.add(cancelButton);
-//        return buttonPanel;
-//    }
-
     @NotNull
-    private JPanel getButtonPanel2(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog) {
+    private JPanel getButtonPanel(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton addButton = new JButton("Add");
         JButton cancelButton = new JButton("Cancel");
