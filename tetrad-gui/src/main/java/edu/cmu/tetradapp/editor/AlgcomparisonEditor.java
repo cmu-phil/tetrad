@@ -1670,19 +1670,23 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         algorithmChoiceTextArea.append(getAlgorithmParameterText());
+        List<AlgorithmModel> selectedAlgorithmModels = model.getSelectedAlgorithmModels();
+        Set<String> algorithmDescriptions = new HashSet<>();
 
-        model.getSelectedAlgorithmModels();
-
-        if (!model.getSelectedAlgorithmModels().isEmpty()) {
+        if (!selectedAlgorithmModels.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
         }
 
-        for (AlgorithmModel algorithmModel1 : model.getSelectedAlgorithmModels()) {
+        for (AlgorithmModel algorithmModel1 : selectedAlgorithmModels) {
+            if (algorithmDescriptions.contains(algorithmModel1.getName())) {
+                continue;
+            }
             algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getName());
             algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription().replace("\n", "\n\n"));
+            algorithmDescriptions.add(algorithmModel1.getName());
         }
 
-        List<IndependenceWrapper> independenceWrappers = new ArrayList<>();
+        Set<IndependenceWrapper> independenceWrappers = new HashSet<>();
 
         for (Algorithm algorithm : algorithms) {
             if (algorithm instanceof TakesIndependenceWrapper) {
@@ -1690,16 +1694,22 @@ public class AlgcomparisonEditor extends JPanel {
             }
         }
 
-        List<ScoreWrapper> scoreWrappers = new ArrayList<>();
+        Set<ScoreWrapper> scoreWrappers = new HashSet<>();
+        Set<String> scoreDescriptions = new HashSet<>();
 
         for (Algorithm algorithm : algorithms) {
             if (algorithm instanceof UsesScoreWrapper) {
+                if (scoreDescriptions.contains(algorithm.getDescription())) {
+                    continue;
+                }
                 scoreWrappers.add(((UsesScoreWrapper) algorithm).getScoreWrapper());
+                scoreDescriptions.add(algorithm.getDescription());
             }
         }
 
         IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        List<IndependenceTestModel> independenceTestModels1 = independenceTestModels.getModels();
+        Set<IndependenceTestModel> independenceTestModels1 = new HashSet<>(independenceTestModels.getModels());
+        Set<String> independenceDescriptions = new HashSet<>();
 
         if (!independenceWrappers.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nIndependence Test Descriptions:");
@@ -1708,14 +1718,19 @@ public class AlgcomparisonEditor extends JPanel {
         for (IndependenceTestModel independenceTestModel : independenceTestModels1) {
             independenceWrappers.forEach(independenceWrapper -> {
                 if (independenceTestModel.getIndependenceTest().clazz().equals(independenceWrapper.getClass())) {
+                    if (independenceDescriptions.contains(independenceTestModel.getName())) {
+                        return;
+                    }
                     algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getName());
                     algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getDescription().replace("\n", "\n\n"));
+                    independenceDescriptions.add(independenceTestModel.getName());
                 }
             });
         }
 
         ScoreModels scoreModels = ScoreModels.getInstance();
-        List<ScoreModel> scoreModels1 = scoreModels.getModels();
+        Set<ScoreModel> scoreModels1 = new HashSet<>(scoreModels.getModels());
+        Set<String> scoreDescriptions1 = new HashSet<>();
 
         if (!scoreWrappers.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nScore Descriptions:");
@@ -1724,8 +1739,12 @@ public class AlgcomparisonEditor extends JPanel {
         for (ScoreModel scoreModel : scoreModels1) {
             scoreWrappers.forEach(scoreWrapper -> {
                 if (scoreModel.getScore().clazz().equals(scoreWrapper.getClass())) {
+                    if (scoreDescriptions1.contains(scoreModel.getName())) {
+                        return;
+                    }
                     algorithmChoiceTextArea.append("\n\n" + scoreModel.getName());
                     algorithmChoiceTextArea.append("\n\n" + scoreModel.getDescription().replace("\n", "\n\n"));
+                    scoreDescriptions1.add(scoreModel.getName());
                 }
             });
         }
