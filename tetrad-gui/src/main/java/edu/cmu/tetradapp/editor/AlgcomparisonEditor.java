@@ -54,6 +54,7 @@ import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParamet
  * simulations, algorithms, and statistics.
  *
  * @author josephramsey
+ * @author kevinbui
  */
 public class AlgcomparisonEditor extends JPanel {
     /**

@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
  * methods for selecting algorithms, simulations, statistics, and parameters , and then running the comparison.
  *
  * @author josephramsey
+ * @author kevinbui
  */
 public class AlgcomparisonModel implements SessionModel {
     @Serial
