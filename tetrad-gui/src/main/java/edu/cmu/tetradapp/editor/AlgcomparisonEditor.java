@@ -1788,7 +1788,7 @@ public class AlgcomparisonEditor extends JPanel {
                     """);
         } else {
             tableColumnsChoiceTextArea.setText("""
-                    The following simulations have been selected. The comparison table will include these statistics as columns in the table.
+                    The comparison table will include these statistics as columns in the table.
                     """);
         }
 
