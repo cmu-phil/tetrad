@@ -6,10 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;
@@ -224,21 +221,22 @@ public class MarkovCheck {
 
         List<IndependenceFact> factList = new ArrayList<>();
         for (Node y : graphNodes_others) {
-            // TODO: shall i check if independenceTest is msepTest?
-            IndependenceResult testRes = independenceTest.checkIndependence(x, y, parents);
+            // Make a new MsepTest based on the true graph.
+            MsepTest msepTest = new MsepTest(graph);
+            IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
             if (testRes.isValid()) factList.add(testRes.getFact());
         }
         return factList;
     }
 
     public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
-        // Default the independenceTest that we pass in be FisherZ test
         // call pvalue function on each item, only include the non-null ones
         List<Double> pVals = new ArrayList<>();
         for (IndependenceFact f : facts) {
             double pV;
+            // For now, check if the test is FisherZ test.
             if (independenceTest instanceof IndTestFisherZ) {
-                pV = ((IndTestFisherZ) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                pV = ((IndTestFisherZ)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
                 pVals.add(pV);
             }
         }
@@ -672,7 +670,7 @@ public class MarkovCheck {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
-        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n"+
+        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
