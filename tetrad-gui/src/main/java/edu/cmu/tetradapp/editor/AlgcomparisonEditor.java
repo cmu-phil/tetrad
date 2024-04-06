@@ -34,8 +34,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -51,8 +49,8 @@ import java.util.stream.Stream;
 import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
 
 /**
- * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm,
- * table columns, comparison, and help. It is used for editing an AlgcomparisonModel.
+ * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm, table
+ * columns, comparison, and help. It is used for editing an AlgcomparisonModel.
  *
  * @author josephramsey
  * @author kevinbui
@@ -131,7 +129,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
-        setPreferredSize(new Dimension(800, 400));
+        tabbedPane.setPreferredSize(new Dimension(800, 400));
 
         addSimulationTab(tabbedPane);
         addAlgorithmTab(tabbedPane);
@@ -142,21 +140,6 @@ public class AlgcomparisonEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
-
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                super.focusGained(e);
-                setSimulationText();
-                setAlgorithmText();
-                setTableColumnsText();
-                setComparisonText();
-                setHelpText();
-
-                revalidate();
-                repaint();
-            }
-        });
     }
 
 
@@ -471,7 +454,7 @@ public class AlgcomparisonEditor extends JPanel {
      *
      * @param parameter         the name of the parameter
      * @param parameters        the Parameters object containing the parameter values
-     * @param bothOptionAllowed whether the option is allows to select both true and false
+     * @param bothOptionAllowed whether the option allows one to select both true and false
      * @return a Box component representing the boolean selection box
      */
     public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean bothOptionAllowed) {
@@ -788,27 +771,13 @@ public class AlgcomparisonEditor extends JPanel {
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Simulation Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-//            dialog.setResizable(false);
+            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(parameterBox, BorderLayout.CENTER);
 
             // Create a panel for the buttons
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JButton doneButton = new JButton("Done");
-
-            doneButton.addActionListener(e1 -> {
-                setSimulationText();
-                setComparisonText();
-                dialog.dispose();
-
-                SwingUtilities.invokeLater(() -> {
-                    revalidate();
-                    repaint();
-                });
-            });
-
-            buttonPanel.add(doneButton);
+            JPanel buttonPanel = betButtonPanel(dialog);
 
             // Add the button panel to the bottom of the dialog
             dialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -825,6 +794,26 @@ public class AlgcomparisonEditor extends JPanel {
         simulationChoice.add(simulationSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Simulations", simulationChoice);
+    }
+
+    @NotNull
+    private JPanel betButtonPanel(JDialog dialog) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton doneButton = new JButton("Done");
+
+        doneButton.addActionListener(e1 -> {
+            setSimulationText();
+            setComparisonText();
+            dialog.dispose();
+
+            SwingUtilities.invokeLater(() -> {
+                revalidate();
+                repaint();
+            });
+        });
+
+        buttonPanel.add(doneButton);
+        return buttonPanel;
     }
 
     /**
@@ -888,7 +877,7 @@ public class AlgcomparisonEditor extends JPanel {
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-//            dialog.setResizable(false);
+            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
@@ -985,7 +974,7 @@ public class AlgcomparisonEditor extends JPanel {
         tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
         addTableColumns = new JButton("Add Table Column(s)");
-        addAddTableColumnsListener();
+        addAddTableColumnsListener(tabbedPane);
 
         JButton removeLastTableColumn = new JButton("Remove Last Column");
         removeLastTableColumn.addActionListener(e -> {
@@ -1026,7 +1015,8 @@ public class AlgcomparisonEditor extends JPanel {
         // todo work on this later.
 //        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
 
-//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this, "This will allow you to set the parameters for " + "the comparison."));
+//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this,
+//        "This will allow you to set the parameters for the comparison."));
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
@@ -1060,7 +1050,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                     SwingUtilities.invokeLater(() -> {
                         try {
-                            scrollToWord(comparisonTextArea, comparisonScroll,  "AVERAGE VALUE");
+                            scrollToWord(comparisonTextArea, comparisonScroll, "AVERAGE VALUE");
                         } catch (BadLocationException ex) {
                             System.out.println("Scrolling operation failed.");
                         }
@@ -1115,21 +1105,7 @@ public class AlgcomparisonEditor extends JPanel {
             Box horiz2 = Box.createHorizontalBox();
             horiz2.add(new JLabel("Choose a graph type:"));
             horiz2.add(Box.createHorizontalGlue());
-            JComboBox<String> graphsDropdown = new JComboBox<>();
-
-            String lastGraphChoice = model.getLastGraphChoice();
-
-            if (lastGraphChoice != null) {
-                graphsDropdown.addItem(lastGraphChoice);
-            }
-
-            graphsDropdown.addActionListener(e1 -> {
-                String selectedItem = (String) graphsDropdown.getSelectedItem();
-
-                if (selectedItem != null) {
-                    model.setLastGraphChoice(selectedItem);
-                }
-            });
+            JComboBox<String> graphsDropdown = getGraphsDropdown();
 
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
@@ -1164,7 +1140,7 @@ public class AlgcomparisonEditor extends JPanel {
             // Create the JDialog. Use the parent frame to make it modal.
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-//            dialog.setResizable(false);
+            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(panel, BorderLayout.CENTER);
@@ -1180,6 +1156,26 @@ public class AlgcomparisonEditor extends JPanel {
             dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
             dialog.setVisible(true);
         });
+    }
+
+    @NotNull
+    private JComboBox<String> getGraphsDropdown() {
+        JComboBox<String> graphsDropdown = new JComboBox<>();
+
+        String lastGraphChoice = model.getLastGraphChoice();
+
+        if (lastGraphChoice != null) {
+            graphsDropdown.addItem(lastGraphChoice);
+        }
+
+        graphsDropdown.addActionListener(e1 -> {
+            String selectedItem = (String) graphsDropdown.getSelectedItem();
+
+            if (selectedItem != null) {
+                model.setLastGraphChoice(selectedItem);
+            }
+        });
+        return graphsDropdown;
     }
 
     @NotNull
@@ -1288,93 +1284,10 @@ public class AlgcomparisonEditor extends JPanel {
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
-//            dialog.setResizable(false);
+            dialog.setResizable(false);
 
             // Create a panel for the buttons
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton addButton = new JButton("Add");
-            JButton cancelButton = new JButton("Cancel");
-
-            // Add action listeners for the buttons
-            addButton.addActionListener(e1 -> {
-                AlgorithmModel algorithmModel = (AlgorithmModel) algorithmDropdown.getSelectedItem();
-
-                if (algorithmModel == null) {
-                    return;
-                }
-
-                Class<?> algorithm = algorithmModel.getAlgorithm().clazz();
-
-                IndependenceTestModel testModel = (IndependenceTestModel) indTestComboBox.getSelectedItem();
-
-                AnnotatedClass<TestOfIndependence> test = null;
-
-                if (testModel != null) {
-                    test = testModel.getIndependenceTest();
-                }
-
-                ScoreModel scoreModel = (ScoreModel) scoreModelComboBox.getSelectedItem();
-                AnnotatedClass<Score> score = null;
-
-                if (scoreModel != null) {
-                    score = scoreModel.getScore();
-                }
-
-                IndependenceWrapper independenceWrapper = null;
-                ScoreWrapper scoreWrapper = null;
-
-                try {
-                    if (test != null) {
-                        independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
-                    }
-
-                    if (score != null) {
-                        scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
-                    }
-
-                    if (testModel != null) {
-                        model.setLastIndependenceTest(testModel.getName());
-                    }
-
-                    if (scoreModel != null) {
-                        model.setLastScore(scoreModel.getName());
-                    }
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException ex) {
-                    throw new RuntimeException(ex);
-                }
-
-                try {
-                    Algorithm algorithmImpl = (Algorithm) algorithm.getConstructor().newInstance();
-
-                    if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
-                        ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
-                    }
-
-                    if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
-                        ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
-                    }
-
-                    model.addAlgorithm(algorithmImpl, algorithmModel);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException ex) {
-                    throw new RuntimeException(ex);
-                }
-
-                setAlgorithmText();
-                setComparisonText();
-                dialog.dispose();
-            });
-
-            cancelButton.addActionListener(e12 -> {
-                // Handle the Cancel button click event
-                System.out.println("Cancel button clicked");
-                dialog.dispose(); // Close the dialog
-            });
-
-            // Add the buttons to the button panel
-            buttonPanel.add(addButton);
-            buttonPanel.add(cancelButton);
+            JPanel buttonPanel = getAddButton(dialog);
 
             // Add the button panel to the bottom of the dialog
             dialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -1386,12 +1299,99 @@ public class AlgcomparisonEditor extends JPanel {
         });
     }
 
+    @NotNull
+    private JPanel getAddButton(JDialog dialog) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addButton = new JButton("Add");
+        JButton cancelButton = new JButton("Cancel");
+
+        // Add action listeners for the buttons
+        addButton.addActionListener(e1 -> {
+            AlgorithmModel algorithmModel = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+
+            if (algorithmModel == null) {
+                return;
+            }
+
+            Class<?> algorithm = algorithmModel.getAlgorithm().clazz();
+
+            IndependenceTestModel testModel = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+
+            AnnotatedClass<TestOfIndependence> test = null;
+
+            if (testModel != null) {
+                test = testModel.getIndependenceTest();
+            }
+
+            ScoreModel scoreModel = (ScoreModel) scoreModelComboBox.getSelectedItem();
+            AnnotatedClass<Score> score = null;
+
+            if (scoreModel != null) {
+                score = scoreModel.getScore();
+            }
+
+            IndependenceWrapper independenceWrapper = null;
+            ScoreWrapper scoreWrapper = null;
+
+            try {
+                if (test != null) {
+                    independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
+                }
+
+                if (score != null) {
+                    scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
+                }
+
+                if (testModel != null) {
+                    model.setLastIndependenceTest(testModel.getName());
+                }
+
+                if (scoreModel != null) {
+                    model.setLastScore(scoreModel.getName());
+                }
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            try {
+                Algorithm algorithmImpl = (Algorithm) algorithm.getConstructor().newInstance();
+
+                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
+                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
+                }
+
+                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
+                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                }
+
+                model.addAlgorithm(algorithmImpl, algorithmModel);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            setAlgorithmText();
+            setComparisonText();
+            dialog.dispose();
+        });
+
+        cancelButton.addActionListener(e12 -> {
+            dialog.dispose(); // Close the dialog
+        });
+
+        // Add the buttons to the button panel
+        buttonPanel.add(addButton);
+        buttonPanel.add(cancelButton);
+        return buttonPanel;
+    }
+
     /**
      * Adds an action listener to the addTableColumns button. This action listener creates a table model, adds a JTable
      * to the panel, and sets a row sorter for the table based on user input. It also creates a text field with a
      * document listener to filter the table based on user input.
      */
-    private void addAddTableColumnsListener() {
+    private void addAddTableColumnsListener(JTabbedPane tabbedPane) {
         addTableColumns.addActionListener(e -> {
             java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
             List<AlgcomparisonModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
@@ -1550,37 +1550,39 @@ public class AlgcomparisonEditor extends JPanel {
             });
 
             panel.add(vert1, BorderLayout.CENTER);
-            panel.setPreferredSize(new Dimension(500, 500));
+
 
             // Create the JDialog. Use the parent frame to make it modal.
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Table Column", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
-//            dialog.setResizable(false);
+            dialog.setPreferredSize(new Dimension(500, 500));
+            dialog.setResizable(false);
 
             // Create a panel for the buttons
-            JPanel buttonPanel = getButtonPanel(columnSelectionTableModel, dialog);
+            JPanel buttonPanel = getButtonPanel(columnSelectionTableModel, dialog, tabbedPane);
 
             // Add the button panel to the bottom of the dialog
             dialog.add(buttonPanel, BorderLayout.SOUTH);
 
             // Set the dialog size, position, and visibility
             dialog.pack(); // Adjust dialog size to fit its contents
-            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
         });
-
-
     }
 
     @NotNull
-    private JPanel getButtonPanel(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog) {
+    private JPanel getButtonPanel(TableColumnSelectionModel columnSelectionTableModel, JDialog dialog, JTabbedPane tabbedPane) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton addButton = new JButton("Add");
         JButton cancelButton = new JButton("Cancel");
 
         // Add action listeners for the buttons
         addButton.addActionListener(e1 -> {
+            columnSelectionTableModel.setTableRef(null);
+            SwingUtilities.invokeLater(dialog::dispose);
+
             List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
                     columnSelectionTableModel.getSelectedTableColumns());
 
@@ -1588,15 +1590,20 @@ public class AlgcomparisonEditor extends JPanel {
                 model.addTableColumn(column);
             }
 
+            setLayout(new BorderLayout());
+            add(tabbedPane, BorderLayout.CENTER);
+
             setTableColumnsText();
             setComparisonText();
-            dialog.dispose();
         });
 
         cancelButton.addActionListener(e12 -> {
-            // Handle the Cancel button click event
-            System.out.println("Cancel button clicked");
-            dialog.dispose(); // Close the dialog
+            columnSelectionTableModel.setTableRef(null);
+
+            setLayout(new BorderLayout());
+            add(tabbedPane, BorderLayout.CENTER);
+
+            dialog.dispose();
         });
 
         // Add the buttons to the button panel
@@ -1780,7 +1787,7 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Sets the text in the tableColummnsChoiceTextArea based on the selected table columns.
+     * Sets the text in the tableColumnsChoiceTextArea based on the selected table columns.
      */
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
@@ -1812,7 +1819,7 @@ public class AlgcomparisonEditor extends JPanel {
 
     /**
      * Sets the text of the comparisonTextArea based on the selected simulations, algorithms, and table columns. If any
-     * of the simulations, algorithms, or table columnss are empty, it sets a message indicating that the selection is
+     * of the simulations, algorithms, or table columns are empty, it sets a message indicating that the selection is
      * empty. Otherwise, it sets a message indicating that a comparison has not been run for the selection.
      */
     private void setComparisonText() {
@@ -1822,7 +1829,7 @@ public class AlgcomparisonEditor extends JPanel {
                     """
                             ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **
                             """);
-        } else {
+        } else if (comparisonTextArea.getText().isBlank()) {
             comparisonTextArea.setText
                     ("""
                             ** Your selection is non-empty, but you have not yet run a comparison for it **
@@ -1925,7 +1932,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         @Override
         public void write(byte[] b, int off, int len) {
-            // Convert byte array to string and add to buffer
+            // Convert the byte array to string and add to buffer
             String s = new String(b, off, len, StandardCharsets.UTF_8);
             buffer.append(s);
             // Process buffer if newline character is found
