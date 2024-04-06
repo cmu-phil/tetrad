@@ -156,23 +156,9 @@ public class AlgcomparisonModel implements SessionModel {
             } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
                        && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 return -1;
-//                if (o1.isSetByUser() && !o2.isSetByUser()) {
-//                    return -1;
-//                } else if (!o1.isSetByUser() && o2.isSetByUser()) {
-//                    return 1;
-//                } else {
-//                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
-//                }
             } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
                        && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 return 1;
-//                if (o1.isSetByUser() && !o2.isSetByUser()) {
-//                    return -1;
-//                } else if (!o1.isSetByUser() && o2.isSetByUser()) {
-//                    return 1;
-//                } else {
-//                    return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
-//                }
             } else {
                 return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
             }
