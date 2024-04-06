@@ -762,7 +762,7 @@ public class AlgcomparisonEditor extends JPanel {
                 this.parameterBox.add(horiz, BorderLayout.NORTH);
                 this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
                 this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-                this.parameterBox.setPreferredSize(new Dimension(700, 400));
+                this.parameterBox.setPreferredSize(new Dimension(800, 400));
 
             }
 
@@ -868,7 +868,7 @@ public class AlgcomparisonEditor extends JPanel {
                 this.parameterBox.add(horiz, BorderLayout.NORTH);
                 this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
                 this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-                this.parameterBox.setPreferredSize(new Dimension(700, 400));
+                this.parameterBox.setPreferredSize(new Dimension(800, 400));
             }
 
             this.parameterBox.validate();
