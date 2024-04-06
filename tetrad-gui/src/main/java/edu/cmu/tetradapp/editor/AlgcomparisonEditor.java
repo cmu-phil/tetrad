@@ -2045,9 +2045,9 @@ public class AlgcomparisonEditor extends JPanel {
                 boolean rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
 
                 if (rowSelected) {
-                    selectedTableColumns.add(allTableColumns.get(index));
+                    selectedTableColumns.add(allTableColumns.get(row));
                 } else {
-                    selectedTableColumns.remove(allTableColumns.get(index));
+                    selectedTableColumns.remove(allTableColumns.get(row));
                 }
 
                 return rowSelected ? "Selected" : "";
