@@ -115,6 +115,10 @@ public class AlgcomparisonEditor extends JPanel {
      * Represents a drop-down menu for selecting an algorithm.
      */
     private JComboBox<Object> algorithmDropdown;
+    /**
+     * Private variable representing a JScrollPane used for comparing variables.
+     */
+    private JScrollPane comparisonScroll;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -625,13 +629,14 @@ public class AlgcomparisonEditor extends JPanel {
         return paramText.toString();
     }
 
-    public static void scrollToWord(JTextArea textArea, String word) throws BadLocationException {
+    public static void scrollToWord(JTextArea textArea, JScrollPane scrollPane, String word) throws BadLocationException {
         String text = textArea.getText();
         int pos = text.indexOf(word);
         if (pos >= 0) {
             Rectangle viewRect = textArea.modelToView2D(pos).getBounds();
             if (viewRect != null) {
-                viewRect = new Rectangle(viewRect.x, viewRect.y, textArea.getWidth(), textArea.getHeight());
+                JViewport viewport = scrollPane.getViewport();
+                viewRect = new Rectangle(viewRect.x, viewRect.y, viewport.getWidth() - 10, viewport.getHeight() - 10);
                 textArea.scrollRectToVisible(viewRect);
             }
         }
@@ -1029,7 +1034,8 @@ public class AlgcomparisonEditor extends JPanel {
 
         JPanel comparisonPanel = new JPanel();
         comparisonPanel.setLayout(new BorderLayout());
-        comparisonPanel.add(new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        comparisonPanel.add(comparisonScroll, BorderLayout.CENTER);
         comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Comparison", comparisonPanel);
@@ -1052,7 +1058,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                     SwingUtilities.invokeLater(() -> {
                         try {
-                            scrollToWord(comparisonTextArea, "AVERAGE VALUE");
+                            scrollToWord(comparisonTextArea, comparisonScroll,  "AVERAGE VALUE");
                         } catch (BadLocationException ex) {
                             System.out.println("Scrolling operation failed.");
                         }
