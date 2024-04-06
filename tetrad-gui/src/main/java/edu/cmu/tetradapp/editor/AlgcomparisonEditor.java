@@ -1859,7 +1859,11 @@ public class AlgcomparisonEditor extends JPanel {
 
                 For the Algorithm tab, once one has selected all algorithms, one may edit the parameters for these algorithms.
 
+                For the TableColumns tab, one may select the columns to be included in the comparison table. These columns may be selected by clicking the Add Table Column button. The last column in the list may be removed by clicking the Remove Last Table Column button. For parameter columns, parameters that have been set by the user may be selected by clicking the Select Parameters Used button. For statistic columns, the last statistics used may be selected by clicking the Select Last Statistics Used button. This will select all statistics that were used in the last comparison.
+
                 In the Comparison tab, there is a button to run the comparison and display the results.
+                
+                Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
                 """);
     }
 
