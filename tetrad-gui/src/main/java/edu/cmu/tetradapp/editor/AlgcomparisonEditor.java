@@ -1985,7 +1985,7 @@ public class AlgcomparisonEditor extends JPanel {
 
             for (int i = 0; i < allTableColumns.size(); i++) {
                 AlgcomparisonModel.MyTableColumn tableColumn = allTableColumns.get(i);
-                this.data[i][0] = Integer.toString(i + 1); // 1-based index (not 0-based index)
+                this.data[i][0] = i + 1; // 1-based index (not 0-based index)
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
             }
@@ -2031,23 +2031,23 @@ public class AlgcomparisonEditor extends JPanel {
          */
         @Override
         public Object getValueAt(int row, int col) {
-            int index = tableRef == null ? row : tableRef.convertRowIndexToView(row);
-
-            if (index == -1) {
-                index = row;
-            }
-
             if (col == 3) {
                 if (tableRef == null || tableRef.getSelectionModel() == null) {
+                    return "";
+                }
+
+                int index = tableRef.convertRowIndexToView(row); // Convert the row index to the model index (in case the table is sorted
+
+                if (index < 0 || index >= allTableColumns.size()) {
                     return "";
                 }
 
                 boolean rowSelected = tableRef.getSelectionModel().isSelectedIndex(index);
 
                 if (rowSelected) {
-                    selectedTableColumns.add(allTableColumns.get(row));
+                    selectedTableColumns.add(allTableColumns.get(((Integer) data[row][0]) - 1));
                 } else {
-                    selectedTableColumns.remove(allTableColumns.get(row));
+                    selectedTableColumns.remove(allTableColumns.get(((Integer) data[row][0]) - 1));
                 }
 
                 return rowSelected ? "Selected" : "";
