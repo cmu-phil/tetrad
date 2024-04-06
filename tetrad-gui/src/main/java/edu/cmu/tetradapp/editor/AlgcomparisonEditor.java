@@ -2052,7 +2052,7 @@ public class AlgcomparisonEditor extends JPanel {
 
                 return rowSelected ? "Selected" : "";
             } else {
-                return this.data[index][col];
+                return this.data[row][col];
             }
         }
 
