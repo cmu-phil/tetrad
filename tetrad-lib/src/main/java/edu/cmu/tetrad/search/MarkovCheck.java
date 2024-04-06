@@ -233,11 +233,14 @@ public class MarkovCheck {
         // call pvalue function on each item, only include the non-null ones
         List<Double> pVals = new ArrayList<>();
         for (IndependenceFact f : facts) {
-            double pV;
+            Double pV;
             // For now, check if the test is FisherZ test.
             if (independenceTest instanceof IndTestFisherZ) {
                 pV = ((IndTestFisherZ)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
                 pVals.add(pV);
+            } else if (independenceTest instanceof IndTestChiSquare) {
+                pV = ((IndTestChiSquare)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                if (pV != null) pVals.add(pV);
             }
         }
         return pVals;
