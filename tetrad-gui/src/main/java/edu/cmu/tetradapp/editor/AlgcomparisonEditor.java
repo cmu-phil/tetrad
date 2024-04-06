@@ -1799,9 +1799,7 @@ public class AlgcomparisonEditor extends JPanel {
                     The following table column has been selected. The comparison table will include these columns in the table.
                     """);
         } else {
-            tableColumnsChoiceTextArea.setText("""
-                    The comparison table will include these columns in the table.
-                    """);
+            tableColumnsChoiceTextArea.setText("The comparison table will include these columns in the table.");
         }
 
         for (int i = 0; i < selectedTableColumns.size(); i++) {
@@ -2036,7 +2034,7 @@ public class AlgcomparisonEditor extends JPanel {
                     return "";
                 }
 
-                int index = tableRef.convertRowIndexToView(row); // Convert the row index to the model index (in case the table is sorted
+                int index = tableRef.convertRowIndexToView(row); // Convert the row index to the model index (in case the table is sorted)
 
                 if (index < 0 || index >= allTableColumns.size()) {
                     return "";
