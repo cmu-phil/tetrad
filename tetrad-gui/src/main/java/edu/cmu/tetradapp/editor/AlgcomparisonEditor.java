@@ -771,7 +771,6 @@ public class AlgcomparisonEditor extends JPanel {
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Simulation Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(parameterBox, BorderLayout.CENTER);
@@ -877,7 +876,6 @@ public class AlgcomparisonEditor extends JPanel {
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
@@ -1140,7 +1138,6 @@ public class AlgcomparisonEditor extends JPanel {
             // Create the JDialog. Use the parent frame to make it modal.
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
-            dialog.setResizable(false);
 
             // Add your panel to the center of the dialog
             dialog.add(panel, BorderLayout.CENTER);
@@ -1284,7 +1281,6 @@ public class AlgcomparisonEditor extends JPanel {
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
-            dialog.setResizable(false);
 
             // Create a panel for the buttons
             JPanel buttonPanel = getAddButton(dialog);
@@ -1557,7 +1553,6 @@ public class AlgcomparisonEditor extends JPanel {
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
             dialog.setPreferredSize(new Dimension(500, 500));
-            dialog.setResizable(false);
 
             // Create a panel for the buttons
             JPanel buttonPanel = getButtonPanel(columnSelectionTableModel, dialog, tabbedPane);
