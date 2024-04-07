@@ -1830,6 +1830,10 @@ public class Comparison implements TetradSerializable {
         this.tabDelimitedTables = tabDelimitedTables;
     }
 
+    public void setParallelism(int numThreads) {
+        this.numThreads = numThreads;
+    }
+
     /**
      * An enum of comparison graphs types.
      */

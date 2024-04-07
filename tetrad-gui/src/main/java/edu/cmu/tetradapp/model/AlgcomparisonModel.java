@@ -260,6 +260,7 @@ public class AlgcomparisonModel implements SessionModel {
         comparison.setSaveGraphs(true);
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
+        comparison.setParallelism(1);
 
         String resultsPath;
 
