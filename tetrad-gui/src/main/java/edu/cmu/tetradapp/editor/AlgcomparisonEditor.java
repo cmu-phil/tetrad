@@ -13,10 +13,7 @@ import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.AlgcomparisonModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -35,6 +32,9 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -81,6 +81,10 @@ public class AlgcomparisonEditor extends JPanel {
      * Represents a box for holding parameter components.
      */
     private final Box parameterBox = Box.createVerticalBox();
+    /**
+     * JTextArea used for displaying verbose output.
+     */
+    private JTextArea verboseOutputTextArea;
     /**
      * JTextArea used for displaying simulation choice information.
      */
@@ -1042,6 +1046,12 @@ public class AlgcomparisonEditor extends JPanel {
         comparisonTextArea.setEditable(false);
         comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
+        verboseOutputTextArea = new JTextArea();
+        verboseOutputTextArea.setLineWrap(true);
+        verboseOutputTextArea.setWrapStyleWord(true);
+        verboseOutputTextArea.setEditable(false);
+        verboseOutputTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
         setComparisonText();
 
         JButton runComparison = runComparisonButton();
@@ -1058,10 +1068,14 @@ public class AlgcomparisonEditor extends JPanel {
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
+        JTabbedPane comparisonTabbedPane = new JTabbedPane();
+        comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        comparisonTabbedPane.addTab("Comparison", comparisonScroll);
+        comparisonTabbedPane.addTab("Verbose Output", new JScrollPane(verboseOutputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+
         JPanel comparisonPanel = new JPanel();
         comparisonPanel.setLayout(new BorderLayout());
-        comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        comparisonPanel.add(comparisonScroll, BorderLayout.CENTER);
+        comparisonPanel.add(comparisonTabbedPane, BorderLayout.CENTER);
         comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Comparison", comparisonPanel);
@@ -1078,9 +1092,23 @@ public class AlgcomparisonEditor extends JPanel {
                 public void watch() {
                     ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
                     java.io.PrintStream ps = new java.io.PrintStream(baos);
+
+                    PrintStream storedOut = (PrintStream) model.getParameters().get("printStream", System.out);
+
+                    verboseOutputTextArea.setText("");
+
+                    TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
+                    PrintStream printStream = new PrintStream(baos2);
+
+                    model.getParameters().set("printStream", printStream);
+
+                    TetradLogger.getInstance().addOutputStream(baos2);
+
                     model.runComparison(ps);
                     ps.flush();
                     comparisonTextArea.setText(baos.toString());
+
+                    TetradLogger.getInstance().removeOutputStream(baos2);
 
                     SwingUtilities.invokeLater(() -> {
                         try {
@@ -1089,6 +1117,8 @@ public class AlgcomparisonEditor extends JPanel {
                             System.out.println("Scrolling operation failed.");
                         }
                     });
+
+                    model.getParameters().set("printStream", storedOut);
                 }
             }
 
@@ -2159,4 +2189,27 @@ public class AlgcomparisonEditor extends JPanel {
             tableRef.getSelectionModel().addSelectionInterval(row, row);
         }
     }
+
+    public class TextAreaOutputStream extends OutputStream {
+        private final JTextArea textArea;
+        private final StringBuilder sb = new StringBuilder();
+
+        public TextAreaOutputStream(JTextArea textArea) {
+            this.textArea = textArea;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            if (b == '\r') return; // Ignore carriage return on Windows
+
+            if (b == '\n') {
+                final String text = sb.toString() + "\n";
+                SwingUtilities.invokeLater(() -> textArea.append(text));
+                sb.setLength(0); // Reset StringBuilder
+            } else {
+                sb.append((char) b);
+            }
+        }
+    }
+
 }
