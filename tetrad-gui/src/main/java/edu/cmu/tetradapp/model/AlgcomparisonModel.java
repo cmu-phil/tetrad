@@ -31,9 +31,12 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
@@ -183,17 +186,53 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     /**
-     * Retrieves all algorithm parameters from a list of Algorithm objects.
+     * Retrieves all algorithms parameters from a list of Algorithm objects.
      *
-     * @param algorithm the list of Algorithm objects
-     * @return a set of all algorithm parameters
+     * @param algorithms the list of Algorithm objects
+     * @return a set of all algorithms parameters
      */
     @NotNull
-    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithm) {
+    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
-        for (Algorithm simulation : algorithm) {
-            paramNamesSet.addAll(simulation.getParameters());
+        for (Algorithm algorithm : algorithms) {
+            paramNamesSet.addAll(algorithm.getParameters());
+        }
+
+        return paramNamesSet;
+    }
+
+    @NotNull
+    public static Set<String> getAllTestParameters(List<Algorithm> algorithms) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm algorithm : algorithms) {
+            if (algorithm instanceof TakesIndependenceWrapper) {
+                paramNamesSet.addAll(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters());
+            }
+        }
+
+        return paramNamesSet;
+    }
+
+    public static Set<String> getAllScoreParameters(List<Algorithm> algorithms) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm algorithm : algorithms) {
+            if (algorithm instanceof UsesScoreWrapper) {
+                paramNamesSet.addAll(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters());
+            }
+        }
+
+        return paramNamesSet;
+    }
+
+    @NotNull
+    public static Set<String> getAllBootstrapParameters(List<Algorithm> algorithms) {
+        Set<String> paramNamesSet = new HashSet<>();
+
+        for (Algorithm algorithm : algorithms) {
+            paramNamesSet.addAll(Params.getBootstrappingParameters(algorithm));
         }
 
         return paramNamesSet;

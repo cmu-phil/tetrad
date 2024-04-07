@@ -843,42 +843,33 @@ public class AlgcomparisonEditor extends JPanel {
         JButton editAlgorithmParameters = new JButton("Edit Parameters");
 
         editAlgorithmParameters.addActionListener(e -> {
-            List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-            Set<String> params = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
+            List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
+//            Set<String> params = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
+//            params.addAll(AlgcomparisonModel.getAllTestParameters(algorithms));
+//            params.addAll(AlgcomparisonModel.getAllScoreParameters(algorithms));
+//            params.addAll(AlgcomparisonModel.getAllBootstrapParameters(algorithms));
+//
+            JTabbedPane tabbedPane1 = new JTabbedPane();
+            tabbedPane1.setTabPlacement(JTabbedPane.TOP);
 
-            this.parameterBox.removeAll();
+            //            parameterBox.validate();
+//            parameterBox.repaint();
 
-            if (params.isEmpty()) {
-                this.parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
-            } else {
-                Box parameters = Box.createVerticalBox();
-                Box[] paramBoxes = ParameterComponents.toArray(
-                        createParameterComponents(params, model.getParameters(), true));
-                int lastIndex = paramBoxes.length - 1;
-                for (int i = 0; i < lastIndex; i++) {
-                    parameters.add(paramBoxes[i]);
-                    parameters.add(Box.createVerticalStrut(10));
-                }
-                parameters.add(paramBoxes[lastIndex]);
+            Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
+            Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithms);
+            Set<String> allBootstrapParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithms);
+            Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithms);
 
-                Box horiz = Box.createHorizontalBox();
-                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
-                horiz.add(Box.createHorizontalGlue());
-                horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
-                this.parameterBox.add(horiz, BorderLayout.NORTH);
-                this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
-                this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-                this.parameterBox.setPreferredSize(new Dimension(800, 400));
-            }
-
-            this.parameterBox.validate();
-            this.parameterBox.repaint();
+            tabbedPane1.addTab("Algorithm", new PaddingPanel(getParameterBox(allAlgorithmParameters)));
+            tabbedPane1.addTab("Test", new PaddingPanel(getParameterBox(allTestParameters)));
+            tabbedPane1.addTab("Score", new PaddingPanel(getParameterBox(allScoreParameters)));
+            tabbedPane1.addTab("Bootstrapping", new PaddingPanel(getParameterBox(allBootstrapParameters)));
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
 
             // Add your panel to the center of the dialog
-            dialog.add(new PaddingPanel(this.parameterBox), BorderLayout.CENTER);
+            dialog.add(tabbedPane1, BorderLayout.CENTER);
 
             // Create a panel for the buttons
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -911,6 +902,36 @@ public class AlgcomparisonEditor extends JPanel {
         algorithmChoice.add(algorithSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Algorithms", algorithmChoice);
+    }
+
+    @NotNull
+    private Box getParameterBox(Set<String> params) {
+        Box parameterBox = Box.createVerticalBox();
+        parameterBox.removeAll();
+
+        if (params.isEmpty()) {
+            parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+        } else {
+            Box parameters = Box.createVerticalBox();
+            Box[] paramBoxes = ParameterComponents.toArray(
+                    createParameterComponents(params, model.getParameters(), true));
+            int lastIndex = paramBoxes.length - 1;
+            for (int i = 0; i < lastIndex; i++) {
+                parameters.add(paramBoxes[i]);
+                parameters.add(Box.createVerticalStrut(10));
+            }
+            parameters.add(paramBoxes[lastIndex]);
+
+            Box horiz = Box.createHorizontalBox();
+            horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+            horiz.add(Box.createHorizontalGlue());
+            horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
+            parameterBox.add(horiz, BorderLayout.NORTH);
+            parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+            parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+            parameterBox.setPreferredSize(new Dimension(800, 400));
+        }
+        return parameterBox;
     }
 
 //    /**
