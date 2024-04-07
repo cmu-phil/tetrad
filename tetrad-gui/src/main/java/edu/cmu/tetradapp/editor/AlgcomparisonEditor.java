@@ -529,7 +529,6 @@ public class AlgcomparisonEditor extends JPanel {
                     Object[] objects = new Object[2];
                     objects[0] = Boolean.TRUE;
                     objects[1] = Boolean.FALSE;
-
                     parameters.set(parameter, objects);
                 }
             });
