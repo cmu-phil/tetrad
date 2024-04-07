@@ -53,7 +53,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
@@ -1074,7 +1076,7 @@ public class Comparison implements TetradSerializable {
      */
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<SimulationWrapper> simulationWrappers, Statistics statistics,
-                                     int numRuns, PrintStream stdout) {
+                                     int numRuns, PrintStream stdout) throws ExecutionException, InterruptedException {
         final int numGraphTypes = 4;
 
         this.graphTypeUsed = new boolean[4];
@@ -1094,7 +1096,15 @@ public class Comparison implements TetradSerializable {
         ForkJoinPool pool = new ForkJoinPool(numThreads);
 
         try {
-            pool.invokeAll(tasks);
+            List<Future<Boolean>> futures = pool.invokeAll(tasks);
+
+            for (Future<Boolean> future : futures) {
+                boolean b = future.get();
+
+                if (!b) {
+                    return null;
+                }
+            }
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             throw e;
