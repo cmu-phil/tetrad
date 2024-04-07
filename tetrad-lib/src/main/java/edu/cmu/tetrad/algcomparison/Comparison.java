@@ -47,6 +47,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
@@ -161,15 +163,6 @@ public class Comparison implements TetradSerializable {
         this.showAlgorithmIndices = false;
         this.showUtilities = false;
         this.sortByUtility = false;
-    }
-
-    /**
-     * Sets the number of threads to be used for the concurrent execution.
-     *
-     * @param numThreads the number of threads to be set
-     */
-    public void setNumThreads(int numThreads) {
-        this.numThreads = numThreads;
     }
 
     /**
@@ -339,7 +332,7 @@ public class Comparison implements TetradSerializable {
             this.localOut = localOut;
         }
 
-        setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        setParallelism(parameters.getInt(Params.NUM_THREADS));
 
         PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
 
@@ -742,7 +735,7 @@ public class Comparison implements TetradSerializable {
     public void saveToFilesSingleSimulation(String dataPath, Simulation simulation, Parameters parameters) {
         File dir0 = new File(dataPath);
         File dir = new File(dir0, "save");
-        setNumThreads(1);
+        setParallelism(1);
 
         deleteFilesThenDirectory(dir);
         if (!dir.mkdirs()) {
@@ -2318,6 +2311,12 @@ public class Comparison implements TetradSerializable {
         private transient final PrintStream stdout;
 
         /**
+         * The thread MX bean.
+         */
+        private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+
+
+        /**
          * Constructs a new algorithm task.
          *
          * @param algorithmSimulationWrappers the algorithm simulation wrappers
@@ -2351,7 +2350,15 @@ public class Comparison implements TetradSerializable {
                 return false;
             }
 
+            long startTime = threadMXBean.getCurrentThreadCpuTime();
+
             doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
+
+            long endTime = threadMXBean.getCurrentThreadCpuTime();
+            long taskCpuTime = endTime - startTime;
+
+//            System.out.println("Task CPU time (nanoseconds): " + taskCpuTime);
+
             return true;
         }
     }
