@@ -2,10 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -270,6 +267,29 @@ public class MarkovCheck {
         accepts_rejects.add(accepts);
         accepts_rejects.add(rejects);
         return accepts_rejects;
+    }
+
+    public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
+        List<Node> singleNode = Arrays.asList(x);
+        String nodeName = x.getName();
+        Node originalNode = trueGraph.getNode(nodeName);
+        List<Node> singleOriginalNode = Arrays.asList(originalNode);
+
+        // Get Markov Blanket Subgraph for this node x.
+        Graph xMBGraphForEstimatedGraph = GraphUtils.trimGraph(singleNode, estimatedGraph, 3);
+
+        Graph xMBGraphForTrueGraph = GraphUtils.trimGraph(singleOriginalNode, trueGraph, 3); // TODO VBC, this is always 0 because singleNode is not in trueGraph!
+        // TODO VBC: is using name to find x's corresponding node in trueGraph the right way?
+        Set<Edge> xMBGraphForEstimatedGraphEdges = xMBGraphForEstimatedGraph.getEdges(); // TODO: this is often 435 for 30 nodes
+        Set<Edge> xMBGraphForTrueGraphEdges = xMBGraphForTrueGraph.getEdges(); // TODO: Here the output is often 0/1
+        System.out.println("xMBGraphForTrueGraphEdges size: " + xMBGraphForTrueGraphEdges.size()); // TODO VBC
+        System.out.println("xMBGraphTrue Nodes size: " + xMBGraphForTrueGraph.getNodes().size()); // TODO VBC this is always 0.
+
+        HashSet<Edge> truePositive = new HashSet<>(xMBGraphForEstimatedGraphEdges);
+        truePositive.retainAll(xMBGraphForTrueGraphEdges);
+        double precision = (double) truePositive.size() / xMBGraphForTrueGraphEdges.size();
+        double recall = (double) truePositive.size() / xMBGraphForEstimatedGraphEdges.size();
+        return getPrecision ? precision : recall;
     }
 
 

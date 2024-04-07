@@ -2253,7 +2253,7 @@ public final class GraphUtils {
                 graph = trimAdjacentToTarget(targets, graph);
                 break;
             case 3:
-                graph = trimMarkovBlanketGraph(targets, graph);
+                graph = trimMarkovBlanketGraph(targets, graph); // TODO VBC this is what i want to use
                 break;
             case 4:
                 graph = trimSemidirected(targets, graph);
@@ -2298,7 +2298,7 @@ public final class GraphUtils {
      * @param graph   the original graph from which the Markov blanket graph is derived
      * @return the trimmed Markov blanket graph
      */
-    private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
+    private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) { // TODO vbc this is
         Graph mbDag = new EdgeListGraph(graph);
 
         M:

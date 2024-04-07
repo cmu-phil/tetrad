@@ -16,6 +16,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -109,5 +110,43 @@ public class TestCheckMarkov {
         markovCheck.setPercentResample(0.7);
 
         System.out.println(markovCheck.getMarkovCheckRecordString());
+    }
+
+    @Test
+    public void testPrecissionRecallForLocal() {
+        Graph dag = RandomGraph.randomDag(30, 0, 10, 100, 100,
+                100, false); // truegraph
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(500, false);
+        SemBicScore score = new SemBicScore(data, true);
+        PermutationSearch search = new PermutationSearch(new Boss(score));
+        Graph cpdag = search.search(); // estimatedgraph
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(cpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
+
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, cpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+        System.out.println("Estimated Graph size: " + cpdag.getNodes().size());
+        System.out.println("True Graph size: " + dag.getNodes().size());
+
+
+
+
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
+        for(Node a: accepts) {
+            double precision = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, cpdag, dag, true);
+            double recall = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, cpdag, dag, false);
+            acceptsPrecision.add(precision);
+            acceptsRecall.add(recall);
+        }
+        System.out.println("Accepts Precissions: " + acceptsPrecision);
+        System.out.println("Accepts Recall: " + acceptsRecall);
+
+
     }
 }
