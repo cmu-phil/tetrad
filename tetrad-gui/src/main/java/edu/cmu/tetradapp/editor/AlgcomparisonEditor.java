@@ -477,8 +477,12 @@ public class AlgcomparisonEditor extends JPanel {
         Object[] values = parameters.getValues(parameter);
 
         Boolean[] booleans = new Boolean[values.length];
-        for (int i = 0; i < values.length; i++) {
-            booleans[i] = (Boolean) values[i];
+        try {
+            for (int i = 0; i < values.length; i++) {
+                booleans[i] = (Boolean) values[i];
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         // Set default selection
@@ -1920,16 +1924,54 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private String getAlgorithmParameterText() {
         List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-        Set<String> paramNamesSet = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
-        StringBuilder paramText;
+        Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
+        Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithm);
+        Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithm);
+        Set<String> allBootstrappingParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithm);
+        StringBuilder paramText = new StringBuilder();
 
         if (algorithm.size() == 1) {
-            paramText = new StringBuilder("\nParameter choices for this algorithm:");
+            if (!allAlgorithmParameters.isEmpty()) {
+                paramText.append("\nParameter choices for this algorithm:");
+                paramText.append(getParameterText(allAlgorithmParameters, model.getParameters()));
+            }
+
+            if (!allTestParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for this test:");
+                paramText.append(getParameterText(allTestParameters, model.getParameters()));
+            }
+
+            if (!allScoreParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for this score:");
+                paramText.append(getParameterText(allScoreParameters, model.getParameters()));
+            }
+
+            if (!allBootstrappingParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for bootstrapping:");
+                paramText.append(getParameterText(allBootstrappingParameters, model.getParameters()));
+            }
         } else {
-            paramText = new StringBuilder("\nParameter choices for all algorithms:");
+            if (!allAlgorithmParameters.isEmpty()) {
+                paramText.append("\nParameter choices for all algorithms:");
+                paramText.append(getParameterText(allAlgorithmParameters, model.getParameters()));
+            }
+
+            if (!allTestParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for all tests:");
+                paramText.append(getParameterText(allTestParameters, model.getParameters()));
+            }
+
+            if (!allScoreParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for all scores:");
+                paramText.append(getParameterText(allScoreParameters, model.getParameters()));
+            }
+
+            if (!allBootstrappingParameters.isEmpty()) {
+                paramText.append("\n\nParameter choices for bootstrapping:");
+                paramText.append(getParameterText(allBootstrappingParameters, model.getParameters()));
+            }
         }
 
-        paramText.append(getParameterText(paramNamesSet, model.getParameters()));
         return paramText.toString();
     }
 
