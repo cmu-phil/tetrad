@@ -475,8 +475,8 @@ public class AlgcomparisonEditor extends JPanel {
         selectionBtnGrp.add(bothButton);
 
         Object[] values = parameters.getValues(parameter);
-
         Boolean[] booleans = new Boolean[values.length];
+
         try {
             for (int i = 0; i < values.length; i++) {
                 booleans[i] = (Boolean) values[i];
