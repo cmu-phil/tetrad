@@ -121,6 +121,13 @@ public class AlgcomparisonEditor extends JPanel {
      * Private variable representing a JScrollPane used for comparing variables.
      */
     private JScrollPane comparisonScroll;
+    /**
+     * The comparisonTabbedPane represents a tabbed pane component in the user interface for displaying comparison
+     * related data and functionality.
+     * <p>
+     * It is a private instance variable of type JTabbedPane.
+     */
+    private JTabbedPane comparisonTabbedPane;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -268,11 +275,11 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * Returns a customized DoubleTextField with specified parameters.
      *
-     * @param parameter   the name of the parameter to be set in the Parameters object
-     * @param parameters  the Parameters object to store the parameter values
-     * @param defaultValue  the default value to set in the DoubleTextField
-     * @param lowerBound  the lowerbound limit for valid input values in the DoubleTextField
-     * @param upperBound  the upperbound limit for valid input values in the DoubleTextField
+     * @param parameter    the name of the parameter to be set in the Parameters object
+     * @param parameters   the Parameters object to store the parameter values
+     * @param defaultValue the default value to set in the DoubleTextField
+     * @param lowerBound   the lowerbound limit for valid input values in the DoubleTextField
+     * @param upperBound   the upperbound limit for valid input values in the DoubleTextField
      * @return a DoubleTextField with the specified parameters
      */
     public static DoubleTextField getDoubleTextField(String parameter, Parameters parameters,
@@ -364,11 +371,11 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * Returns an IntTextField with the specified parameters.
      *
-     * @param parameter the name of the parameter
-     * @param parameters the Parameters object to update with the new value
+     * @param parameter    the name of the parameter
+     * @param parameters   the Parameters object to update with the new value
      * @param defaultValue the default value for the IntTextField
-     * @param lowerBound the lower bound for valid values
-     * @param upperBound the upper bound for valid values
+     * @param lowerBound   the lower bound for valid values
+     * @param upperBound   the upper bound for valid values
      * @return an IntTextField with the specified parameters
      */
     public static IntTextField getIntTextField(String parameter, Parameters parameters,
@@ -451,11 +458,11 @@ public class AlgcomparisonEditor extends JPanel {
     /**
      * Returns a LongTextField object with the specified parameters.
      *
-     * @param parameter The name of the parameter to set in the Parameters object.
-     * @param parameters The Parameters object to set the parameter in.
+     * @param parameter    The name of the parameter to set in the Parameters object.
+     * @param parameters   The Parameters object to set the parameter in.
      * @param defaultValue The default value to use for the LongTextField.
-     * @param lowerBound The lower bound for the LongTextField value.
-     * @param upperBound The upper bound for the LongTextField value.
+     * @param lowerBound   The lower bound for the LongTextField value.
+     * @param upperBound   The upper bound for the LongTextField value.
      * @return A LongTextField object with the specified parameters.
      */
     public static LongTextField getLongTextField(String parameter, Parameters parameters,
@@ -1163,7 +1170,7 @@ public class AlgcomparisonEditor extends JPanel {
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
-        JTabbedPane comparisonTabbedPane = new JTabbedPane();
+        comparisonTabbedPane = new JTabbedPane();
         comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         comparisonTabbedPane.addTab("Comparison", comparisonScroll);
         comparisonTabbedPane.addTab("Verbose Output", new JScrollPane(verboseOutputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
@@ -1185,6 +1192,8 @@ public class AlgcomparisonEditor extends JPanel {
             class MyWatchedProcess extends WatchedProcess {
 
                 public void watch() {
+                    SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(1));
+
                     ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
                     java.io.PrintStream ps = new java.io.PrintStream(baos);
 
@@ -1213,6 +1222,8 @@ public class AlgcomparisonEditor extends JPanel {
 
                     // Remove the printStream parameter from the parameters object to avoid serialization issues.
                     model.getParameters().remove("printStream");
+
+                    SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
                 }
             }
 
@@ -2284,7 +2295,7 @@ public class AlgcomparisonEditor extends JPanel {
         }
     }
 
-    public class TextAreaOutputStream extends OutputStream {
+    public static class TextAreaOutputStream extends OutputStream {
         private final JTextArea textArea;
         private final StringBuilder sb = new StringBuilder();
 
@@ -2297,7 +2308,7 @@ public class AlgcomparisonEditor extends JPanel {
             if (b == '\r') return; // Ignore carriage return on Windows
 
             if (b == '\n') {
-                final String text = sb.toString() + "\n";
+                final String text = sb + "\n";
                 SwingUtilities.invokeLater(() -> textArea.append(text));
                 sb.setLength(0); // Reset StringBuilder
             } else {

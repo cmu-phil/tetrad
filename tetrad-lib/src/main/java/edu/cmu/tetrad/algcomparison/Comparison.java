@@ -1310,6 +1310,10 @@ public class Comparison implements TetradSerializable {
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers, Statistics statistics,
                        int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
+       if (Thread.currentThread().isInterrupted()) {
+           return;
+       }
+
         stdout.println();
         stdout.println("Run " + (run.runIndex() + 1));
         stdout.println();
