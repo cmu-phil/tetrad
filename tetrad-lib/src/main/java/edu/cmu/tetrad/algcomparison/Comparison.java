@@ -661,28 +661,37 @@ public class Comparison implements TetradSerializable {
                     index++;
 
                     subdir = new File(dir, "" + index);
-                    if (!subdir.mkdirs())
-                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + subdir);
+                    if (!subdir.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + subdir);
+                    }
                 }
 
                 File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
 
-                if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-                if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                if (!dir1.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+                }
+                if (!dir2.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                }
 
                 File dir3 = null;
 
                 if (isSaveCPDAGs()) {
                     dir3 = new File(subdir, "cpdags");
-                    if (!dir3.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                    if (!dir3.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                    }
                 }
 
                 File dir4 = null;
 
                 if (isSavePags()) {
                     dir4 = new File(subdir, "pags");
-                    if (!dir4.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                    if (!dir4.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                    }
                 }
 
                 for (int j = 0; j < simulationWrapper.getNumDataModels(); j++) {
@@ -734,7 +743,9 @@ public class Comparison implements TetradSerializable {
         setNumThreads(1);
 
         deleteFilesThenDirectory(dir);
-        if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+        if (!dir.mkdirs()){
+//            TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+        }
 
         try {
             PrintStream _out = new PrintStream(Files.newOutputStream(new File(dir, "parameters.txt").toPath()));
@@ -748,8 +759,12 @@ public class Comparison implements TetradSerializable {
                 File dir1 = new File(dir, "graph");
                 File dir2 = new File(dir, "data");
 
-                if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-                if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                if (!dir1.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+                }
+                if (!dir2.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                }
 
                 return;
             }
@@ -757,21 +772,29 @@ public class Comparison implements TetradSerializable {
             File dir1 = new File(dir, "graph");
             File dir2 = new File(dir, "data");
 
-            if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-            if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+            if (!dir1.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+            }
+            if (!dir2.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+            }
 
             File dir3 = null;
 
             if (isSaveCPDAGs()) {
                 dir3 = new File(dir, "cpdags");
-                if (!dir3.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                if (!dir3.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                }
             }
 
             File dir4 = null;
 
             if (isSavePags()) {
                 dir4 = new File(dir, "pags");
-                if (!dir4.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                if (!dir4.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                }
             }
 
             for (int j = 0; j < simulation.getNumDataModels(); j++) {
@@ -1440,11 +1463,14 @@ public class Comparison implements TetradSerializable {
             File fileElapsed;
 
             File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
-            if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            if (!dir.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            }
 
             File dirElapsed = new File(resultsPath, "elapsed/" + description + "/" + simIndex);
-            if (!dirElapsed.mkdirs())
-                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dirElapsed);
+            if (!dirElapsed.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dirElapsed);
+            }
 
             if (resultsPath != null) {
                 file = new File(dir, "graph." + (i + 1) + ".txt");

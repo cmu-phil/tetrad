@@ -333,4 +333,8 @@ public class Parameters implements TetradSerializable {
     public Set<String> getParametersNames() {
         return this.parameters.keySet();
     }
+
+    public void remove(String parameter) {
+        parameters.remove(parameter);
+    }
 }

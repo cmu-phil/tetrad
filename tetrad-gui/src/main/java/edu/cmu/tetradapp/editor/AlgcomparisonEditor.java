@@ -1086,8 +1086,6 @@ public class AlgcomparisonEditor extends JPanel {
                     ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
                     java.io.PrintStream ps = new java.io.PrintStream(baos);
 
-                    PrintStream storedOut = (PrintStream) model.getParameters().get("printStream", System.out);
-
                     verboseOutputTextArea.setText("");
 
                     TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
@@ -1111,7 +1109,8 @@ public class AlgcomparisonEditor extends JPanel {
                         }
                     });
 
-                    model.getParameters().set("printStream", storedOut);
+                    // Remove the printStream parameter from the parameters object to avoid serialization issues.
+                    model.getParameters().remove("printStream");
                 }
             }
 
