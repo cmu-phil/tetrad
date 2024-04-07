@@ -74,7 +74,7 @@ public class Comparison implements TetradSerializable {
     /**
      * The number of threads to use.
      */
-    private int numThreads = 1;
+    private int parallelism = 1;
 
     /**
      * The graph type used.
@@ -332,7 +332,7 @@ public class Comparison implements TetradSerializable {
             this.localOut = localOut;
         }
 
-        setParallelism(parameters.getInt(Params.NUM_THREADS));
+        setParallelism(parallelism);
 
         PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
 
@@ -1086,7 +1086,7 @@ public class Comparison implements TetradSerializable {
             }
         }
 
-        ForkJoinPool pool = new ForkJoinPool(numThreads);
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         try {
             List<Future<Boolean>> futures = pool.invokeAll(tasks);
@@ -1326,7 +1326,11 @@ public class Comparison implements TetradSerializable {
 
         stdout.println((run.algSimIndex() + 1) + ". " + algorithmWrapper.getDescription() + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start = MillisecondTimes.cpuTimeMillis();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadCpuTimeEnabled(true);
+
+        long startTime = threadMXBean.getCurrentThreadCpuTime();
+
         Graph graphOut;
 
         try {
@@ -1378,11 +1382,11 @@ public class Comparison implements TetradSerializable {
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
 
-        long stop = MillisecondTimes.cpuTimeMillis();
+        long endTime = threadMXBean.getCurrentThreadCpuTime();
 
-        long elapsed = (stop - start);
+        long taskCpuTime = (endTime - startTime) / 1000;
 
-        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algorithmWrapper, elapsed, stdout);
+        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algorithmWrapper, taskCpuTime, stdout);
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
@@ -1441,7 +1445,7 @@ public class Comparison implements TetradSerializable {
                     double stat;
 
                     if (_stat instanceof ElapsedCpuTime) {
-                        stat = elapsed / 1000.0;
+                        stat = taskCpuTime / 1000.0;
                     } else {
                         stat = _stat.getValue(truth[u], est[u], data);
                     }
@@ -1827,10 +1831,10 @@ public class Comparison implements TetradSerializable {
      * Sets the number of threads to be used for parallel processing. Note that this method does not enforce the actual
      * parallel execution of the code.
      *
-     * @param numThreads the number of threads to be used for parallel processing
+     * @param parallelism the number of threads to be used for parallel processing
      */
-    public void setParallelism(int numThreads) {
-        this.numThreads = numThreads;
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
     }
 
     /**
@@ -2310,11 +2314,6 @@ public class Comparison implements TetradSerializable {
          */
         private transient final PrintStream stdout;
 
-        /**
-         * The thread MX bean.
-         */
-        private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-
 
         /**
          * Constructs a new algorithm task.
@@ -2350,14 +2349,7 @@ public class Comparison implements TetradSerializable {
                 return false;
             }
 
-            long startTime = threadMXBean.getCurrentThreadCpuTime();
-
             doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
-
-            long endTime = threadMXBean.getCurrentThreadCpuTime();
-            long taskCpuTime = endTime - startTime;
-
-//            System.out.println("Task CPU time (nanoseconds): " + taskCpuTime);
 
             return true;
         }
