@@ -251,6 +251,27 @@ public class MarkovCheck {
         return generalAndersonDarlingTest.getP();
     }
 
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold) {
+        // when calling, default reject null as <=0.05
+        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<Node> accepts = new ArrayList<>();
+        List<Node> rejects = new ArrayList<>();
+        List<Node> allNodes = graph.getNodes();
+        for (Node x : allNodes) {
+            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<Double> localPValues = getLocalPValues(independenceTest, localIndependenceFacts);
+            Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
+            if (ADTest  <= threshold) {
+                rejects.add(x);
+            } else {
+                accepts.add(x);
+            }
+        }
+        accepts_rejects.add(accepts);
+        accepts_rejects.add(rejects);
+        return accepts_rejects;
+    }
+
 
     /**
      * Returns the variables of the independence test.
