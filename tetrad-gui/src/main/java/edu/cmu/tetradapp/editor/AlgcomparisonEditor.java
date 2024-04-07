@@ -506,7 +506,9 @@ public class AlgcomparisonEditor extends JPanel {
         yesButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
-                parameters.set(parameter, (Object) new Boolean[]{true});
+                Object[] objects = new Object[1];
+                objects[0] = Boolean.TRUE;
+                parameters.set(parameter, objects);
             }
         });
 
@@ -514,7 +516,9 @@ public class AlgcomparisonEditor extends JPanel {
         noButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
-                parameters.set(parameter, (Object[]) new Boolean[]{false});
+                Object[] objects = new Object[1];
+                objects[0] = Boolean.FALSE;
+                parameters.set(parameter, objects);
             }
         });
 
@@ -522,7 +526,11 @@ public class AlgcomparisonEditor extends JPanel {
             bothButton.addActionListener((e) -> {
                 JRadioButton button = (JRadioButton) e.getSource();
                 if (button.isSelected()) {
-                    parameters.set(parameter, (Object[]) new Boolean[]{true, false});
+                    Object[] objects = new Object[2];
+                    objects[0] = Boolean.TRUE;
+                    objects[1] = Boolean.FALSE;
+
+                    parameters.set(parameter, objects);
                 }
             });
         }
