@@ -58,7 +58,6 @@ import java.util.prefs.Preferences;
  * Ramsey, J. D., Malinsky, D., & Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure
  * learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
  *
- * @author josephramsey
  */
 public class AlgcomparisonModel implements SessionModel {
     @Serial
@@ -70,7 +69,6 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * The results path for the AlgcomparisonModel.
      */
-//    private final String resultsPath = Preferences.userRoot().get("edu.cmu.tetrad.resultsPath", System.getProperty("user.home") + "/comparison-results");
     private final String resultsRoot = System.getProperty("user.home");
     /**
      * The list of statistic names.
