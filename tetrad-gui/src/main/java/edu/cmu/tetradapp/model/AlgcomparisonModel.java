@@ -655,6 +655,33 @@ public class AlgcomparisonModel implements SessionModel {
             allTableColumns.add(column);
         }
 
+        for (String name : getAllTestParameters(algorithms)) {
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            String shortDescriptiom = paramDescription.getShortDescription();
+            String description = paramDescription.getLongDescription();
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            column.setSetByUser(paramSetByUser(name));
+            allTableColumns.add(column);
+        }
+
+        for (String name : getAllScoreParameters(algorithms)) {
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            String shortDescriptiom = paramDescription.getShortDescription();
+            String description = paramDescription.getLongDescription();
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            column.setSetByUser(paramSetByUser(name));
+            allTableColumns.add(column);
+        }
+
+        for (String name : getAllBootstrapParameters(algorithms)) {
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            String shortDescriptiom = paramDescription.getShortDescription();
+            String description = paramDescription.getLongDescription();
+            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            column.setSetByUser(paramSetByUser(name));
+            allTableColumns.add(column);
+        }
+
         List<Class<? extends Statistic>> statisticClasses = getStatisticsClasses();
 
         for (Class<? extends Statistic> statisticClass : statisticClasses) {

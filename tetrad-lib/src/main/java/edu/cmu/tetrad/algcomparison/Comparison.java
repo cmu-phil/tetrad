@@ -344,7 +344,9 @@ public class Comparison implements TetradSerializable {
         // Create output file.
         try {
             File dir = new File(resultsPath);
-            if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            if (!dir.mkdirs()) {
+                // Ignore
+            }
             File file = new File(dir, outputFileName);
             this.out = new PrintStream(Files.newOutputStream(file.toPath()));
         } catch (Exception e) {

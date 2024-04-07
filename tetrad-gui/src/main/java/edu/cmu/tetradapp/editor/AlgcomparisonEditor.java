@@ -863,16 +863,9 @@ public class AlgcomparisonEditor extends JPanel {
 
         editAlgorithmParameters.addActionListener(e -> {
             List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
-//            Set<String> params = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
-//            params.addAll(AlgcomparisonModel.getAllTestParameters(algorithms));
-//            params.addAll(AlgcomparisonModel.getAllScoreParameters(algorithms));
-//            params.addAll(AlgcomparisonModel.getAllBootstrapParameters(algorithms));
-//
+
             JTabbedPane tabbedPane1 = new JTabbedPane();
             tabbedPane1.setTabPlacement(JTabbedPane.TOP);
-
-            //            parameterBox.validate();
-//            parameterBox.repaint();
 
             Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
             Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithms);
