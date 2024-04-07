@@ -78,10 +78,6 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private final AlgcomparisonModel model;
     /**
-     * Represents a box for holding parameter components.
-     */
-    private final Box parameterBox = Box.createVerticalBox();
-    /**
      * JTextArea used for displaying verbose output.
      */
     private JTextArea verboseOutputTextArea;
@@ -158,12 +154,13 @@ public class AlgcomparisonEditor extends JPanel {
      * @param parameters the Parameters object containing the parameter values
      * @return a map of parameter names to corresponding Box components
      */
-    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters, boolean bothOptionAllowed) {
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
+                                                             boolean listOptionAllowed, boolean bothOptionAllowed) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), bothOptionAllowed),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -202,7 +199,7 @@ public class AlgcomparisonEditor extends JPanel {
      * @return a Box component representing the parameter
      */
     private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc,
-                                                boolean bothOptionAllowed) {
+                                                boolean listOptionAllowed, boolean bothOptionAllowed) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
 
@@ -215,7 +212,12 @@ public class AlgcomparisonEditor extends JPanel {
             for (int i = 0; i < defaultValues.length; i++) {
                 defValues[i] = (Double) defaultValues[i];
             }
-            component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
+
+            if (listOptionAllowed) {
+                component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
+            } else {
+                component = getDoubleTextField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+            }
         } else if (defaultValue instanceof Integer) {
             int lowerBoundInt = paramDesc.getLowerBoundInt();
             int upperBoundInt = paramDesc.getUpperBoundInt();
@@ -223,7 +225,12 @@ public class AlgcomparisonEditor extends JPanel {
             for (int i = 0; i < defaultValues.length; i++) {
                 defValues[i] = (Integer) defaultValues[i];
             }
-            component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
+
+            if (listOptionAllowed) {
+                component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
+            } else {
+                component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+            }
         } else if (defaultValue instanceof Long) {
             long lowerBoundLong = paramDesc.getLowerBoundLong();
             long upperBoundLong = paramDesc.getUpperBoundLong();
@@ -231,7 +238,11 @@ public class AlgcomparisonEditor extends JPanel {
             for (int i = 0; i < defaultValues.length; i++) {
                 defValues[i] = (Long) defaultValues[i];
             }
-            component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
+            if (listOptionAllowed) {
+                component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
+            } else {
+                component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
+            }
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
         } else if (defaultValue instanceof String) {
@@ -252,6 +263,46 @@ public class AlgcomparisonEditor extends JPanel {
         paramRow.add(component);
 
         return paramRow;
+    }
+
+    /**
+     * Returns a customized DoubleTextField with specified parameters.
+     *
+     * @param parameter   the name of the parameter to be set in the Parameters object
+     * @param parameters  the Parameters object to store the parameter values
+     * @param defaultValue  the default value to set in the DoubleTextField
+     * @param lowerBound  the lowerbound limit for valid input values in the DoubleTextField
+     * @param upperBound  the upperbound limit for valid input values in the DoubleTextField
+     * @return a DoubleTextField with the specified parameters
+     */
+    public static DoubleTextField getDoubleTextField(String parameter, Parameters parameters,
+                                                     double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(defaultValue,
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+        field.setFilter((value, oldValues) -> {
+            if (Double.isNaN(value)) {
+                return oldValues;
+            }
+
+            if (value < lowerBound) {
+                return oldValues;
+            }
+
+            if (value > upperBound) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
     }
 
     /**
@@ -311,6 +362,42 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
+     * Returns an IntTextField with the specified parameters.
+     *
+     * @param parameter the name of the parameter
+     * @param parameters the Parameters object to update with the new value
+     * @param defaultValue the default value for the IntTextField
+     * @param lowerBound the lower bound for valid values
+     * @param upperBound the upper bound for valid values
+     * @return an IntTextField with the specified parameters
+     */
+    public static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                               int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(defaultValue, 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+
+    /**
      * Returns a ListIntTextField component with the specified parameters.
      *
      * @param parameter     the name of the parameter
@@ -356,6 +443,41 @@ public class AlgcomparisonEditor extends JPanel {
             }
 
             return newValues;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a LongTextField object with the specified parameters.
+     *
+     * @param parameter The name of the parameter to set in the Parameters object.
+     * @param parameters The Parameters object to set the parameter in.
+     * @param defaultValue The default value to use for the LongTextField.
+     * @param lowerBound The lower bound for the LongTextField value.
+     * @param upperBound The upper bound for the LongTextField value.
+     * @return A LongTextField object with the specified parameters.
+     */
+    public static LongTextField getLongTextField(String parameter, Parameters parameters,
+                                                 long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(defaultValue, 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
         return field;
@@ -759,34 +881,8 @@ public class AlgcomparisonEditor extends JPanel {
             List<Simulation> simulations = model.getSelectedSimulations().getSimulations();
             Set<String> params = getAllSimulationParameters(simulations);
 
-            this.parameterBox.removeAll();
-
-            if (params.isEmpty()) {
-                this.parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
-            } else {
-                Box parameters = Box.createVerticalBox();
-                Box[] paramBoxes = toArray(
-                        createParameterComponents(params, model.getParameters(), false));
-                int lastIndex = paramBoxes.length - 1;
-                for (int i = 0; i < lastIndex; i++) {
-                    parameters.add(paramBoxes[i]);
-                    parameters.add(Box.createVerticalStrut(10));
-                }
-                parameters.add(paramBoxes[lastIndex]);
-
-                Box horiz = Box.createHorizontalBox();
-                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
-                horiz.add(Box.createHorizontalGlue());
-                horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
-                this.parameterBox.add(horiz, BorderLayout.NORTH);
-                this.parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
-                this.parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-                this.parameterBox.setPreferredSize(new Dimension(800, 400));
-
-            }
-
-            this.parameterBox.validate();
-            this.parameterBox.repaint();
+            Box parameterBox = getParameterBox(params, true, false);
+            new PaddingPanel(parameterBox);
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Simulation Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
@@ -872,10 +968,10 @@ public class AlgcomparisonEditor extends JPanel {
             Set<String> allBootstrapParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithms);
             Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithms);
 
-            tabbedPane1.addTab("Algorithm", new PaddingPanel(getParameterBox(allAlgorithmParameters)));
-            tabbedPane1.addTab("Test", new PaddingPanel(getParameterBox(allTestParameters)));
-            tabbedPane1.addTab("Score", new PaddingPanel(getParameterBox(allScoreParameters)));
-            tabbedPane1.addTab("Bootstrapping", new PaddingPanel(getParameterBox(allBootstrapParameters)));
+            tabbedPane1.addTab("Algorithm", new PaddingPanel(getParameterBox(allAlgorithmParameters, true, true)));
+            tabbedPane1.addTab("Test", new PaddingPanel(getParameterBox(allTestParameters, true, true)));
+            tabbedPane1.addTab("Score", new PaddingPanel(getParameterBox(allScoreParameters, true, true)));
+            tabbedPane1.addTab("Bootstrapping", new PaddingPanel(getParameterBox(allBootstrapParameters, false, false)));
 
             JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
@@ -917,7 +1013,7 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     @NotNull
-    private Box getParameterBox(Set<String> params) {
+    private Box getParameterBox(Set<String> params, boolean listOptionAllowed, boolean bothOptionAllowed) {
         Box parameterBox = Box.createVerticalBox();
         parameterBox.removeAll();
 
@@ -926,7 +1022,7 @@ public class AlgcomparisonEditor extends JPanel {
         } else {
             Box parameters = Box.createVerticalBox();
             Box[] paramBoxes = ParameterComponents.toArray(
-                    createParameterComponents(params, model.getParameters(), true));
+                    createParameterComponents(params, model.getParameters(), listOptionAllowed, bothOptionAllowed));
             int lastIndex = paramBoxes.length - 1;
             for (int i = 0; i < lastIndex; i++) {
                 parameters.add(paramBoxes[i]);
@@ -935,7 +1031,13 @@ public class AlgcomparisonEditor extends JPanel {
             parameters.add(paramBoxes[lastIndex]);
 
             Box horiz = Box.createHorizontalBox();
-            horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+
+            if (listOptionAllowed) {
+                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+            } else {
+                horiz.add(new JLabel("Please type a single value."));
+            }
+
             horiz.add(Box.createHorizontalGlue());
             horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
             parameterBox.add(horiz, BorderLayout.NORTH);
