@@ -1310,10 +1310,6 @@ public class Comparison implements TetradSerializable {
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers, Statistics statistics,
                        int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
-       if (Thread.currentThread().isInterrupted()) {
-           return;
-       }
-
         stdout.println();
         stdout.println("Run " + (run.runIndex() + 1));
         stdout.println();
@@ -1345,6 +1341,10 @@ public class Comparison implements TetradSerializable {
             }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
                 for (int i = 0; i < numDataModels; i++) {
@@ -1361,6 +1361,10 @@ public class Comparison implements TetradSerializable {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = algorithm.search(data, _params);
             }
@@ -1379,7 +1383,6 @@ public class Comparison implements TetradSerializable {
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
-
 
             Graph[] est = new Graph[numGraphTypes];
 
@@ -2324,6 +2327,10 @@ public class Comparison implements TetradSerializable {
          */
         @Override
         public Boolean call() {
+            if (Thread.currentThread().isInterrupted()) {
+                return false;
+            }
+
             doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
             return true;
         }
