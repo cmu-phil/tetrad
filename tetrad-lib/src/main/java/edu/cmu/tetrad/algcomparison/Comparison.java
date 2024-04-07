@@ -745,7 +745,7 @@ public class Comparison implements TetradSerializable {
         setNumThreads(1);
 
         deleteFilesThenDirectory(dir);
-        if (!dir.mkdirs()){
+        if (!dir.mkdirs()) {
 //            TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
         }
 
@@ -1830,6 +1830,12 @@ public class Comparison implements TetradSerializable {
         this.tabDelimitedTables = tabDelimitedTables;
     }
 
+    /**
+     * Sets the number of threads to be used for parallel processing. Note that this method does not enforce the actual
+     * parallel execution of the code.
+     *
+     * @param numThreads the number of threads to be used for parallel processing
+     */
     public void setParallelism(int numThreads) {
         this.numThreads = numThreads;
     }
