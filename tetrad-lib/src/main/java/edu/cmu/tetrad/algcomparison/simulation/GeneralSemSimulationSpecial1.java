@@ -140,6 +140,14 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "General SEM Special 1";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
@@ -148,6 +156,16 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SEED);
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     private GeneralizedSemPm getPm(Graph graph) {

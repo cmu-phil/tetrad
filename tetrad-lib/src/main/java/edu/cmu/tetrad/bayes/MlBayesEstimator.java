@@ -38,19 +38,21 @@ public final class MlBayesEstimator {
     private final double prior;
 
     /**
-     * <p>Constructor for MlBayesEstimator.</p>
+     * Create an instance of MlBayesEstimator with the given prior.
+     *
+     * @param prior the prior value used in the ML estimation
      */
     public MlBayesEstimator(double prior) {
         this.prior = prior;
     }
 
     /**
-     * 33 Estimates a Bayes IM using the variables, graph, and parameters in the given Bayes PM and the data columns in
-     * the given data set. Each variable in the given Bayes PM must be equal to a variable in the given data set.
+     * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
      *
-     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesPm The BayesPm object representing the Bayes net.
+     * @param dataSet The DataSet object containing the data.
+     * @return A BayesIm object representing the estimated Bayes Information Matrix (Bayes IM).
+     * @throws NullPointerException if either bayesPm or dataSet is null.
      */
     public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {

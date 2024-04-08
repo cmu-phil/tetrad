@@ -219,6 +219,14 @@ public class NLSemSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Non-Linear SEM Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
@@ -240,6 +248,16 @@ public class NLSemSimulation implements Simulation {
         parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

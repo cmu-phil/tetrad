@@ -86,7 +86,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 tasks.add(() -> runSearch(dataSet, parameters));
             }
 
-            TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+            TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
             List<Graph> graphs = taskRunner.run(tasks);
 
             if (graphs.isEmpty()) {

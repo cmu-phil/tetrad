@@ -147,6 +147,14 @@ public class StandardizedSemSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Standardized SEM Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
@@ -160,6 +168,16 @@ public class StandardizedSemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SEED);
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

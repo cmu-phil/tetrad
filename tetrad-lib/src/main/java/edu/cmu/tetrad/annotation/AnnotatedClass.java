@@ -24,7 +24,9 @@ import java.lang.annotation.Annotation;
 import java.util.Objects;
 
 /**
- * AnnotatedClass represents a class along with its associated annotation.
+ * Represents a class that encapsulates a class along with its associated annotation.
+ *
+ * @param <T> the type of the annotation
  */
 public final class AnnotatedClass<T extends Annotation> implements Serializable {
 

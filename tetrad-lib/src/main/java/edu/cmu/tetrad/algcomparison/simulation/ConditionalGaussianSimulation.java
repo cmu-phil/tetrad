@@ -217,6 +217,14 @@ public class ConditionalGaussianSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Conditional Gaussian Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
@@ -238,6 +246,16 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

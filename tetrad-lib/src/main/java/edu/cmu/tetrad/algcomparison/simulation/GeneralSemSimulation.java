@@ -246,6 +246,16 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     /**
+     * Returns the short name of the simulation.
+     *
+     * @return The short name of the simulation.
+     */
+    @Override
+    public String getShortName() {
+        return "General SEM Simulation";
+    }
+
+    /**
      * Retrieves the parameters required for the simulation.
      *
      * @return A list of String names representing the parameters.
@@ -273,6 +283,16 @@ public class GeneralSemSimulation implements Simulation {
         parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

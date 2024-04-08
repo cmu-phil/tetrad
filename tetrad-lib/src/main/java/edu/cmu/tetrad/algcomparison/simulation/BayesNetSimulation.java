@@ -169,6 +169,16 @@ public class BayesNetSimulation implements Simulation {
     /**
      * {@inheritDoc}
      * <p>
+     * Returns the short name.
+     */
+    @Override
+    public String getShortName() {
+        return "Bayes Net Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters.
      */
     @Override
@@ -196,6 +206,16 @@ public class BayesNetSimulation implements Simulation {
         parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

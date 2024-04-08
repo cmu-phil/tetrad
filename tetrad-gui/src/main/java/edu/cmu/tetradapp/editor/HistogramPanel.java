@@ -123,9 +123,9 @@ public class HistogramPanel extends JPanel {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Paints the histogram and related items.
+     * This method is responsible for painting the histogram display on a graphical component.
+     *
+     * @param graphics the Graphics object to be used for drawing
      */
     public void paintComponent(Graphics graphics) {
         int paddingY = drawAxes ? 15 : 5;

@@ -594,6 +594,65 @@
         box, it takes the search box directly as a parent, without needing to
         isolate and parameterize the graph output by the search.</p>
 
+    <h2>Markov Check</h2>
+
+    <p>
+        The Markov Checker checks to see whether the Markov Condition is satisfied
+        for a given graph. A simple version of the Markov Condition states that
+        for any variable X, X is independent of all non-descendants of X given
+        X’s parents. The Markov Checker will output all such implied independences
+        and their p-values; these p-values should be distributed as U(0, 1) if the
+        Markov Condition is satisfied, so violations can often be detected by
+        plotting a histogram of these p-values or doing an Anderson-Darling test
+        or a Kolmogorov-Smirnov test to see if the hypothesis that they are drawn
+        from a U(0, 1) distribution can be rejected. This sort of check is actually
+        more general, since graphical implicaitons of separation are not limited to
+        directect acyclic graphs (DAGs) but can be inferred from many types of
+        graphs, including CPDAGs, MAGs, ADMGs, and PAGs.
+    </p>
+
+    <p>
+        Instructions for using the Markov Checker are included in the box itself,
+        in the "Help" tab.
+    </p>
+
+    <h2>IDA Check</h2>
+
+    <p>
+        The IDA Checker check loops through all pairs of variable (X, Y) and
+        calculates the IDA minimum effect for each X on Y, for a linear CPDAG
+        model. The IDA minimum effect is the minimum effect of X on Y, regressing
+        Y on S U {X} for all possible parent sets of X in the CPDAG. This gives
+        a range of effects, and one then see whether the true effect of X on Y
+        (as calculated from the true SEM IM) falls within this range. If it does
+        not, then the IDA minimum effect is not consistent with the true effect.
+    </p>
+
+    <p>
+        The IDA check table gives information to help the user assess these results
+        along with several summary statistics. Further instructions for using the
+        IDA Checker are included in the box itself, in the "Help" tab.
+    </p>
+
+    <h2>Algcomparison</h2>
+
+    <p>
+        The Algcomparison (Algorithm comparison) tool allows the user to compare the
+        results of multiple searches. The user can select one or more simulations,
+        one or more algorithm (with selected test and/or score), and one or more
+        table columns representing columns of parameter values or else statistics
+        that are calculated based on the comparisons done. For most of these values,
+        the use can specify multiple options for values, and the tool will iterate
+        over all sensible combinations of these values and output a table of results.
+        Full results, including all simulated dataset, all true graphs, all estimated
+        graphs, and all timing results, are saved to the hard drive.
+    </p>
+
+    <p>
+        Further instructions for using the Algcomparison tool are included in the
+        box itself, in the "Help" tab.
+    </p>
+
 
     <h1 id="parametric_model_box"><span
             class="section_heading">Parametric Model Box</span></h1>
@@ -7302,7 +7361,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Default Value: <span
                     id="probRemoveColumn_default_value">0.0</span></li>
             <li>Lower Bound: <span
-                    id="probRemoveColumn_lower_bound">0.00</span></li>
+                    id="probRemoveColumn_lower_bound">0.0</span></li>
             <li>Upper Bound: <span
                     id="probRemoveColumn_upper_bound">1.0</span></li>
             <li>Value Type: <span

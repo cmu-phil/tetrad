@@ -22,6 +22,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -1944,6 +1945,16 @@ public class TimeoutComparison {
         @Override
         public List<String> getParameters() {
             return this.simulation.getParameters();
+        }
+
+        @Override
+        public Class<? extends RandomGraph> getRandomGraphClass() {
+            return simulation.getRandomGraphClass();
+        }
+
+        @Override
+        public Class<? extends Simulation> getSimulationClass() {
+            return simulation.getSimulationClass();
         }
 
         public void setParameters(Parameters parameters) {

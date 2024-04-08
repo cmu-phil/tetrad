@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.ui;
 
 import javax.swing.*;
+import java.io.Serial;
 
 /**
  * This a wrapper panel that puts gaps around the wrapped panel.
@@ -30,6 +31,7 @@ import javax.swing.*;
  */
 public class PaddingPanel extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 6075091842307611079L;
 
     /**

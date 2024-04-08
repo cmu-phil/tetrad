@@ -141,6 +141,14 @@ public class SemThenDiscretize implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "SEM then discretize";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_CATEGORIES);
@@ -151,6 +159,16 @@ public class SemThenDiscretize implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SEED);
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

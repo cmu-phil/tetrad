@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -46,13 +47,17 @@ import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
@@ -62,12 +67,14 @@ import java.util.concurrent.ForkJoinPool;
  * @author danielmalinsky
  * @version $Id: $Id
  */
-public class Comparison {
+public class Comparison implements TetradSerializable {
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * The number of threads to use.
      */
-    private int numThreads = 1;
+    private int parallelism = 1;
 
     /**
      * The graph type used.
@@ -77,7 +84,7 @@ public class Comparison {
     /**
      * The output stream.
      */
-    private PrintStream out;
+    private transient PrintStream out;
 
     /**
      * Whether to save the graphs.
@@ -137,6 +144,10 @@ public class Comparison {
      * Indicates whether the tables are tab-delimited.
      */
     private boolean tabDelimitedTables = false;
+    /**
+     * The output stream for local output. Could be null.
+     */
+    private transient PrintStream localOut = null;
 
     /**
      * Initializes a new instance of the Comparison class.
@@ -152,15 +163,6 @@ public class Comparison {
         this.showAlgorithmIndices = false;
         this.showUtilities = false;
         this.sortByUtility = false;
-    }
-
-    /**
-     * Sets the number of threads to be used for the concurrent execution.
-     *
-     * @param numThreads the number of threads to be set
-     */
-    public void setNumThreads(int numThreads) {
-        this.numThreads = numThreads;
     }
 
     /**
@@ -297,32 +299,57 @@ public class Comparison {
     }
 
     /**
-     * Compares the results from simulations using various algorithms and statistics.
+     * Compares the results obtained from simulations.
      *
-     * @param resultsPath    The path to the result directory.
-     * @param simulations    The Simulations object containing the simulations to compare.
+     * @param resultsPath    The path to the directory containing the simulation results.
+     * @param simulations    The simulations to compare the results from.
      * @param outputFileName The name of the output file.
-     * @param algorithms     The Algorithms object containing the algorithms to compare.
-     * @param statistics     The Statistics object containing the statistics to use for comparison.
-     * @param parameters     The Parameters object containing the necessary parameters for the comparison.
+     * @param algorithms     The algorithms used in the simulations.
+     * @param statistics     The statistics used in the simulations.
+     * @param parameters     The parameters used in the simulations.
      */
-    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms, Statistics statistics, Parameters parameters) {
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
+        compareFromSimulations(resultsPath, simulations, outputFileName, System.out, algorithms, statistics, parameters);
+    }
+
+    /**
+     * Compares the results of different simulations and algorithms.
+     *
+     * @param resultsPath    the path to the results directory
+     * @param simulations    the simulations object containing the simulation data
+     * @param outputFileName the name of the output file
+     * @param localOut       the local output stream
+     * @param algorithms     the algorithms object containing the algorithm data
+     * @param statistics     the statistics object containing the statistics data
+     * @param parameters     the parameters object containing the parameter data
+     */
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
-        setNumThreads(parameters.getInt(Params.NUM_THREADS));
+
+        if (localOut != null) {
+            this.localOut = localOut;
+        }
+
+        setParallelism(parallelism);
 
         PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
 
         // Create output file.
         try {
             File dir = new File(resultsPath);
-            if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            if (!dir.mkdirs()) {
+                // Ignore
+            }
             File file = new File(dir, outputFileName);
             this.out = new PrintStream(Files.newOutputStream(file.toPath()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        this.out.println(new Date());
+        println(new Date().toString());
+        println("Results are being saved to " + resultsPath);
 
         // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameter object.
@@ -438,76 +465,76 @@ public class Comparison {
                 }
             }
 
-            this.out.println();
-            this.out.println("Simulations:");
-            this.out.println();
+            println();
+            println("Simulations:");
+            println();
 
             int i = 0;
 
             for (SimulationWrapper simulation : simulationWrappers) {
-                this.out.print("Simulation " + (++i) + ": ");
-                this.out.println(simulation.getDescription());
-                this.out.println();
+                println("Simulation " + (++i) + ": ");
+                println(simulation.getDescription());
+                println();
 
-                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), this.out);
+                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters());
 
-                this.out.println();
+                println();
             }
 
-            this.out.println("Algorithms:");
-            this.out.println();
+            println("Algorithms:");
+            println();
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 AlgorithmSimulationWrapper wrapper = algorithmSimulationWrappers.get(t);
 
                 if (wrapper.getSimulationWrapper() == simulationWrappers.get(0)) {
-                    this.out.println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
+                    println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
                 }
             }
 
 
             // Print out the preliminary information for statistics types, etc.
-            this.out.println();
-            this.out.println("Statistics:");
-            this.out.println();
+            println();
+            println("Statistics:");
+            println();
 
             for (Statistic stat : statistics.getStatistics()) {
-                this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
+                println(stat.getAbbreviation() + " = " + stat.getDescription());
             }
 
-            this.out.println();
+            println();
 
             if (isSortByUtility()) {
-                this.out.println();
-                this.out.println("Sorting by utility, high to low.");
+                println();
+                println("Sorting by utility, high to low.");
             }
 
             if (isShowUtilities()) {
-                this.out.println();
-                this.out.println("Weighting of statistics:");
-                this.out.println();
-                this.out.println("U = ");
+                println();
+                println("Weighting of statistics:");
+                println();
+                println("U = ");
 
                 for (Statistic stat : statistics.getStatistics()) {
                     String statName = stat.getAbbreviation();
                     double weight = statistics.getWeight(stat);
                     if (weight != 0.0) {
-                        this.out.println("    " + weight + " * f(" + statName + ")");
+                        println("    " + weight + " * f(" + statName + ")");
                     }
                 }
 
-                this.out.println();
-                this.out.println("...normed to range between 0 and 1.");
+                println();
+                println("...normed to range between 0 and 1.");
 
-                this.out.println();
-                this.out.println("Note that f for each statistic is a function that maps the statistic to the ");
-                this.out.println("interval [0, 1], with higher being better.");
+                println();
+                println("Note that f for each statistic is a function that maps the statistic to the ");
+                println("interval [0, 1], with higher being better.");
             }
 
-            this.out.println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
-            this.out.println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
+            println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
+            println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
 
-            this.out.println();
+            println();
 
             statTables = calcStatTables(allStats, Mode.Average, numTables, algorithmSimulationWrappers, numStats, statistics);
 
@@ -567,7 +594,31 @@ public class Comparison {
             saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
         }
 
+        close();
+    }
+
+    private void println(String s) {
+        this.out.println(s);
+
+        if (localOut != null) {
+            localOut.println(s);
+        }
+    }
+
+    private void println() {
+        this.out.println();
+
+        if (localOut != null) {
+            localOut.println();
+        }
+    }
+
+    private void close() {
         this.out.close();
+
+        if (localOut != null) {
+            localOut.close();
+        }
     }
 
     /**
@@ -605,28 +656,37 @@ public class Comparison {
                     index++;
 
                     subdir = new File(dir, "" + index);
-                    if (!subdir.mkdirs())
-                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + subdir);
+                    if (!subdir.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + subdir);
+                    }
                 }
 
                 File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
 
-                if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-                if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                if (!dir1.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+                }
+                if (!dir2.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                }
 
                 File dir3 = null;
 
                 if (isSaveCPDAGs()) {
                     dir3 = new File(subdir, "cpdags");
-                    if (!dir3.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                    if (!dir3.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                    }
                 }
 
                 File dir4 = null;
 
                 if (isSavePags()) {
                     dir4 = new File(subdir, "pags");
-                    if (!dir4.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                    if (!dir4.mkdirs()) {
+//                        TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                    }
                 }
 
                 for (int j = 0; j < simulationWrapper.getNumDataModels(); j++) {
@@ -675,10 +735,12 @@ public class Comparison {
     public void saveToFilesSingleSimulation(String dataPath, Simulation simulation, Parameters parameters) {
         File dir0 = new File(dataPath);
         File dir = new File(dir0, "save");
-        setNumThreads(1);
+        setParallelism(1);
 
         deleteFilesThenDirectory(dir);
-        if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+        if (!dir.mkdirs()) {
+//            TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+        }
 
         try {
             PrintStream _out = new PrintStream(Files.newOutputStream(new File(dir, "parameters.txt").toPath()));
@@ -692,8 +754,12 @@ public class Comparison {
                 File dir1 = new File(dir, "graph");
                 File dir2 = new File(dir, "data");
 
-                if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-                if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                if (!dir1.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+                }
+                if (!dir2.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+                }
 
                 return;
             }
@@ -701,21 +767,29 @@ public class Comparison {
             File dir1 = new File(dir, "graph");
             File dir2 = new File(dir, "data");
 
-            if (!dir1.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
-            if (!dir2.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+            if (!dir1.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir1);
+            }
+            if (!dir2.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir2);
+            }
 
             File dir3 = null;
 
             if (isSaveCPDAGs()) {
                 dir3 = new File(dir, "cpdags");
-                if (!dir3.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                if (!dir3.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir3);
+                }
             }
 
             File dir4 = null;
 
             if (isSavePags()) {
                 dir4 = new File(dir, "pags");
-                if (!dir4.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                if (!dir4.mkdirs()) {
+//                    TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir4);
+                }
             }
 
             for (int j = 0; j < simulation.getNumDataModels(); j++) {
@@ -783,7 +857,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(FisherZ.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                         if (TakesExternalGraph.class.isAssignableFrom(clazz)) {
                             out.println("\t" + clazz.getSimpleName() + " can take an external graph from some other algorithm as input");
@@ -808,7 +882,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(BdeuScore.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                     }
 
@@ -831,7 +905,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm.getParameters(), allParams, out);
+                            printParameters(algorithm.getParameters(), allParams);
                         }
                     }
                 }
@@ -872,7 +946,7 @@ public class Comparison {
                         IndependenceWrapper independence = (IndependenceWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + independence.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(independence.getParameters(), allParams, out);
+                            printParameters(independence.getParameters(), allParams);
                         }
                     }
                 }
@@ -894,7 +968,7 @@ public class Comparison {
                         ScoreWrapper score = (ScoreWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + score.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(score.getParameters(), allParams, out);
+                            printParameters(score.getParameters(), allParams);
                         }
                     }
                 }
@@ -916,7 +990,7 @@ public class Comparison {
                         Simulation simulation = (Simulation) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(simulation.getParameters(), allParams, out);
+                            printParameters(simulation.getParameters(), allParams);
                         }
                     }
                 }
@@ -995,7 +1069,7 @@ public class Comparison {
      */
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<SimulationWrapper> simulationWrappers, Statistics statistics,
-                                     int numRuns, PrintStream stdout) {
+                                     int numRuns, PrintStream stdout) throws ExecutionException, InterruptedException {
         final int numGraphTypes = 4;
 
         this.graphTypeUsed = new boolean[4];
@@ -1012,10 +1086,18 @@ public class Comparison {
             }
         }
 
-        ForkJoinPool pool = new ForkJoinPool(numThreads);
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         try {
-            pool.invokeAll(tasks);
+            List<Future<Boolean>> futures = pool.invokeAll(tasks);
+
+            for (Future<Boolean> future : futures) {
+                boolean b = future.get();
+
+                if (!b) {
+                    return null;
+                }
+            }
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             throw e;
@@ -1134,9 +1216,9 @@ public class Comparison {
     }
 
     /**
-     * <p>isSaveData.</p>
+     * Returns the status of whether data is being saved or not.
      *
-     * @return True if CPDAGs should be saved out.
+     * @return {@code true} if data is being saved, {@code false} otherwise.
      */
     public boolean isSaveData() {
         return saveData;
@@ -1182,8 +1264,8 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
-    private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-        out.println("Comparison.printParameters");
+    private void printParameters(List<String> names, Parameters parameters) {
+        println("Parameters:");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
@@ -1192,14 +1274,14 @@ public class Comparison {
             Object value = parameters.get(name);
 
             if (defaultValue instanceof Double) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Integer) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Boolean) {
                 boolean b = (Boolean) value;
-                out.println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
+                println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
             } else if (defaultValue instanceof String) {
-                out.println(description.getShortDescription() + " = " + value);
+                println(description.getShortDescription() + " = " + value);
             }
         }
     }
@@ -1244,7 +1326,11 @@ public class Comparison {
 
         stdout.println((run.algSimIndex() + 1) + ". " + algorithmWrapper.getDescription() + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start = MillisecondTimes.cpuTimeMillis();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadCpuTimeEnabled(true);
+
+        long startTime = threadMXBean.getCurrentThreadCpuTime();
+
         Graph graphOut;
 
         try {
@@ -1262,6 +1348,10 @@ public class Comparison {
             }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
                 for (int i = 0; i < numDataModels; i++) {
@@ -1278,6 +1368,10 @@ public class Comparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = algorithm.search(data, _params);
             }
@@ -1288,15 +1382,14 @@ public class Comparison {
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
 
-        long stop = MillisecondTimes.cpuTimeMillis();
+        long endTime = threadMXBean.getCurrentThreadCpuTime();
 
-        long elapsed = (stop - start);
+        long taskCpuTime = (endTime - startTime) / 1000;
 
-        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algorithmWrapper, elapsed, stdout);
+        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algorithmWrapper, taskCpuTime, stdout);
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
-
 
             Graph[] est = new Graph[numGraphTypes];
 
@@ -1352,7 +1445,7 @@ public class Comparison {
                     double stat;
 
                     if (_stat instanceof ElapsedCpuTime) {
-                        stat = elapsed / 1000.0;
+                        stat = taskCpuTime / 1000.0;
                     } else {
                         stat = _stat.getValue(truth[u], est[u], data);
                     }
@@ -1384,11 +1477,14 @@ public class Comparison {
             File fileElapsed;
 
             File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
-            if (!dir.mkdirs()) TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            if (!dir.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
+            }
 
             File dirElapsed = new File(resultsPath, "elapsed/" + description + "/" + simIndex);
-            if (!dirElapsed.mkdirs())
-                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dirElapsed);
+            if (!dirElapsed.mkdirs()) {
+//                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dirElapsed);
+            }
 
             if (resultsPath != null) {
                 file = new File(dir, "graph." + (i + 1) + ".txt");
@@ -1494,15 +1590,15 @@ public class Comparison {
     private void printStats(double[][][] statTables, Statistics statistics, Mode mode, int[] newOrder, List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers, double[] utilities, Parameters parameters) {
 
         if (mode == Mode.Average) {
-            this.out.println("AVERAGE VALUE");
+            println("AVERAGE VALUE");
         } else if (mode == Mode.StandardDeviation) {
-            this.out.println("STANDARD DEVIATION");
+            println("STANDARD DEVIATION");
         } else if (mode == Mode.MinValue) {
-            this.out.println("MIN VALUE");
+            println("MIN VALUE");
         } else if (mode == Mode.MaxValue) {
-            this.out.println("MAX VALUE");
+            println("MAX VALUE");
         } else if (mode == Mode.MedianValue) {
-            this.out.println("MEDIAN VALUE");
+            println("MEDIAN VALUE");
         } else {
             throw new IllegalStateException();
         }
@@ -1513,7 +1609,7 @@ public class Comparison {
         NumberFormat nf = new DecimalFormat("0.00");
         NumberFormat smallNf = new DecimalFormat("0.00E0");
 
-        this.out.println();
+        println();
 
         for (int u = 0; u < numTables; u++) {
             if (!this.graphTypeUsed[u]) {
@@ -1603,9 +1699,9 @@ public class Comparison {
                 }
             }
 
-            this.out.println(getHeader(u));
-            this.out.println();
-            this.out.println(table);
+            println(getHeader(u));
+            println();
+            println(table.toString());
         }
     }
 
@@ -1729,6 +1825,16 @@ public class Comparison {
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;
+    }
+
+    /**
+     * Sets the number of threads to be used for parallel processing. Note that this method does not enforce the actual
+     * parallel execution of the code.
+     *
+     * @param parallelism the number of threads to be used for parallel processing
+     */
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
     }
 
     /**
@@ -1958,6 +2064,9 @@ public class Comparison {
         }
     }
 
+    /**
+     * A simulation wrapper.
+     */
     private static class SimulationWrapper implements Simulation {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1983,11 +2092,22 @@ public class Comparison {
          * {@inheritDoc}
          */
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
+            if (simulation == null) {
+                throw new NullPointerException("Simulation cannot be null.");
+            }
+
             this.simulation = simulation;
 
             // There is no harm in allowing the simulation code to add parameters here; they can
             // be displayed in the output table if desired. Jdramsey 20170118
             this.parameters = new Parameters(parameters);
+
+            this.graphs = new ArrayList<>();
+            this.dataModels = new ArrayList<>();
+            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                this.graphs.add(this.simulation.getTrueGraph(i));
+                this.dataModels.add(this.simulation.getDataModel(i));
+            }
         }
 
         /**
@@ -1997,12 +2117,13 @@ public class Comparison {
         public void createData(Parameters parameters, boolean newModel) {
             if (newModel) {
                 this.simulation.createData(parameters, newModel);
-                this.graphs = new ArrayList<>();
-                this.dataModels = new ArrayList<>();
-                for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-                    this.graphs.add(this.simulation.getTrueGraph(i));
-                    this.dataModels.add(this.simulation.getDataModel(i));
-                }
+            }
+
+            this.graphs = new ArrayList<>();
+            this.dataModels = new ArrayList<>();
+            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                this.graphs.add(this.simulation.getTrueGraph(i));
+                this.dataModels.add(this.simulation.getDataModel(i));
             }
         }
 
@@ -2059,6 +2180,16 @@ public class Comparison {
         @Override
         public List<String> getParameters() {
             return this.simulation.getParameters();
+        }
+
+        @Override
+        public Class<? extends RandomGraph> getRandomGraphClass() {
+            return simulation.getRandomGraphClass();
+        }
+
+        @Override
+        public Class<? extends Simulation> getSimulationClass() {
+            return getSimulationClass();
         }
 
         /**
@@ -2181,7 +2312,8 @@ public class Comparison {
         /**
          * The standard output.
          */
-        private final PrintStream stdout;
+        private transient final PrintStream stdout;
+
 
         /**
          * Constructs a new algorithm task.
@@ -2213,7 +2345,12 @@ public class Comparison {
          */
         @Override
         public Boolean call() {
+            if (Thread.currentThread().isInterrupted()) {
+                return false;
+            }
+
             doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
+
             return true;
         }
     }

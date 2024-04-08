@@ -125,6 +125,14 @@ public class CptMapCounts implements CptMap {
         return cellCount / rowCount;
     }
 
+    /**
+     * Adds the specified count to the cell count at the given row and column.
+     *
+     * @param row    the row index of the cell count
+     * @param column the column index of the cell count
+     * @param count  the count to be added to the cell count
+     * @throws IllegalArgumentException if the row or column is out of bounds
+     */
     public void addCounts(int row, int column, int count) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
             throw new IllegalArgumentException("Row and column must be within bounds.");
@@ -166,14 +174,19 @@ public class CptMapCounts implements CptMap {
     }
 
     /**
-     * The prior count for all cells.
+     * Retrieves the prior count for all cells in the CptMapCounts.
+     *
+     * @return the prior count for all cells in the CptMapCounts.
      */
     public double getPriorCount() {
         return priorCount;
     }
 
     /**
-     * The prior count for all cells.
+     * Sets the prior count for all cells in the CptMapCounts.
+     * The prior count is used in parameter estimation for Bayesian networks.
+     *
+     * @param priorCount the value to set as the prior count.
      */
     public void setPriorCount(double priorCount) {
         this.priorCount = priorCount;

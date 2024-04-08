@@ -67,6 +67,11 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @version $Id: $Id
  */
 public final class MlBayesIm implements BayesIm {
+
+    /**
+     * Represents a constant value for a random number.
+     * The value of this constant is 1.
+     */
     public static final int RANDOM = 1;
     @Serial
     private static final long serialVersionUID = 23L;
@@ -86,6 +91,9 @@ public final class MlBayesIm implements BayesIm {
      * The array of nodes from the graph. Order is important.
      */
     private final Node[] nodes;
+    /**
+     * The type of CPT map used to store the probabilities.
+     */
     private CptMapType cptMapType = null;
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
@@ -157,7 +165,6 @@ public final class MlBayesIm implements BayesIm {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
-
 
 
         this.bayesPm = new BayesPm(bayesPm);
@@ -645,6 +652,13 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
+    /**
+     * Sets the count map for a specific node index in the Bayesian network.
+     *
+     * @param nodeIndex the index of the node in the Bayesian network
+     * @param countMap  the count map to be set
+     * @throws IllegalArgumentException if the Bayesian network is not of type CptMapType.COUNT_MAP
+     */
     public void setCountMap(int nodeIndex, CptMapCounts countMap) {
         if (cptMapType == CptMapType.COUNT_MAP) {
             probMatrices[nodeIndex] = countMap;
@@ -1446,11 +1460,36 @@ public final class MlBayesIm implements BayesIm {
         return cptMapType;
     }
 
+    /**
+     * An enumeration representing the different types of CptMap.
+     */
     public enum CptMapType {
-        PROB_MAP, COUNT_MAP
+
+        /**
+         * Represents a probabilistic CptMap type.
+         */
+        PROB_MAP,
+
+        /**
+         * Represents a count-based CptMap type.
+         */
+        COUNT_MAP
     }
 
+    /**
+     * The InitializationMethod enum represents different methods of initializing a class object. It can be used to
+     * determine the way an object is initialized.
+     */
     public enum InitializationMethod {
-        MANUAL, RANDOM
+
+        /**
+         * Represents a manual initialization method.
+         */
+        MANUAL,
+
+        /**
+         * Represents a random initialization method.
+         */
+        RANDOM
     }
 }

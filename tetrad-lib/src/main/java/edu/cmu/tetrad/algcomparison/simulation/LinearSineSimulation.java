@@ -211,6 +211,14 @@ public class LinearSineSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Linear Sine Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
@@ -229,6 +237,16 @@ public class LinearSineSimulation implements Simulation {
         parameters.add("gammaHigh");
         parameters.add(Params.SEED);
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

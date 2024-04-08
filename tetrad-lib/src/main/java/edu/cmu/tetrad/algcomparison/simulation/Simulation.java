@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -67,9 +68,33 @@ public interface Simulation extends HasParameters, TetradSerializable {
     String getDescription();
 
     /**
+     * Returns the short name of the simulation.
+     *
+     * @return The short name of the simulation.
+     */
+    default String getShortName() {
+        return getClass().getSimpleName();
+    }
+
+    /**
      * Returns the list of parameters used in the simulation.
      *
      * @return Returns the parameters used in the simulation. These are the parameters whose values can be varied.
      */
     List<String> getParameters();
+
+    /**
+     * Retrieves the class of a random graph for the simulation.
+     *
+     * @return The class of a random graph for the simulation.
+     */
+    Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> getRandomGraphClass();
+
+    /**
+     * Returns the class of the simulation. This method is used to retrieve the class
+     * of a simulation based on the selected simulations in the model.
+     *
+     * @return The class of the simulation.
+     */
+    Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> getSimulationClass();
 }

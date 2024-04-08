@@ -149,6 +149,14 @@ public class LeeHastieSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Lee & Hastie Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
@@ -160,11 +168,20 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.RANDOMIZE_COLUMNS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
-
         parameters.add(Params.VERBOSE);
 //        parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

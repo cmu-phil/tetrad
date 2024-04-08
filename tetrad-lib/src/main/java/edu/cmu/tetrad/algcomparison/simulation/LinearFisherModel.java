@@ -221,6 +221,14 @@ public class LinearFisherModel implements Simulation, TakesData {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Linear Fisher Model";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>(this.randomGraph.getParameters());
 
@@ -253,6 +261,16 @@ public class LinearFisherModel implements Simulation, TakesData {
 //        parameters.add(Params.SEED);
 
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

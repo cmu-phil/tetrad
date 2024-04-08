@@ -177,6 +177,14 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
+    public String getShortName() {
+        return "Time Series SEM Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
@@ -199,6 +207,16 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         return parameters;
 
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     /**

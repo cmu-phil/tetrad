@@ -112,6 +112,8 @@ public final class ParamDescriptions {
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValue);
+                    } else {
+                        throw new IllegalArgumentException("Unsupported value type: " + valueType);
                     }
 
                     this.map.put(paramName, paramDescription);
