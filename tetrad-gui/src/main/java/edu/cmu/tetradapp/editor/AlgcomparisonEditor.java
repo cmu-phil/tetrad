@@ -183,6 +183,15 @@ public class AlgcomparisonEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+
+        model.getParameters().set("algcomparisonSaveData", saveData);
+        model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
+        model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
+        model.getParameters().set("algcomparisonSavePAGs", savePags);
+        model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
+        model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
+        model.getParameters().set("algcomparisonParallelism", parallelism);
+        model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
     }
 
     /**
