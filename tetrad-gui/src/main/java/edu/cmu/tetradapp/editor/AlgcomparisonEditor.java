@@ -1022,6 +1022,13 @@ public class AlgcomparisonEditor extends JPanel {
             Set<String> allBootstrapParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithms);
             Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithms);
 
+            if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
+                    && allScoreParameters.isEmpty()) {
+                JLabel noParamLbl = NO_PARAM_LBL;
+                noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
+                tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
+            }
+
             tabbedPane1.addTab("Algorithm", new PaddingPanel(getParameterBox(allAlgorithmParameters, true, true)));
             tabbedPane1.addTab("Test", new PaddingPanel(getParameterBox(allTestParameters, true, true)));
             tabbedPane1.addTab("Score", new PaddingPanel(getParameterBox(allScoreParameters, true, true)));
@@ -1072,7 +1079,9 @@ public class AlgcomparisonEditor extends JPanel {
         parameterBox.removeAll();
 
         if (params.isEmpty()) {
-            parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+            JLabel noParamLbl = NO_PARAM_LBL;
+            noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
+            parameterBox.add(noParamLbl, BorderLayout.NORTH);
         } else {
             Box parameters = Box.createVerticalBox();
             Box[] paramBoxes = ParameterComponents.toArray(

@@ -20,7 +20,6 @@ package edu.cmu.tetradapp.editor.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.data.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
@@ -44,9 +43,6 @@ import java.util.Set;
  */
 public class ParameterTab extends JPanel {
 
-    @Serial
-    private static final long serialVersionUID = 7074205549192562786L;
-
     public static final String[] GRAPH_TYPE_ITEMS = {
             GraphTypes.RANDOM_FOWARD_DAG,
             GraphTypes.ERDOS_RENYI_DAG,
@@ -55,7 +51,6 @@ public class ParameterTab extends JPanel {
             GraphTypes.RANDOM_ONE_FACTOR_MIM,
             GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
-
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
@@ -65,7 +60,8 @@ public class ParameterTab extends JPanel {
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
     };
-
+    @Serial
+    private static final long serialVersionUID = 7074205549192562786L;
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
 
     /**
@@ -120,6 +116,10 @@ public class ParameterTab extends JPanel {
         }
     }
 
+    public static String[] getSimulationItems() {
+        return ParameterTab.MODEL_TYPE_ITEMS;
+    }
+
     private Component getPanel() {
         return null;
     }
@@ -150,28 +150,15 @@ public class ParameterTab extends JPanel {
             String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
             this.simulation.getParams().set("graphsDropdownPreference", graphItem);
 
-            switch (graphItem) {
-                case GraphTypes.RANDOM_FOWARD_DAG:
-                    randomGraph = new RandomForward();
-                    break;
-                case GraphTypes.ERDOS_RENYI_DAG:
-                    randomGraph = new ErdosRenyi();
-                    break;
-                case GraphTypes.SCALE_FREE_DAG:
-                    randomGraph = new ScaleFree();
-                    break;
-                case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS:
-                    randomGraph = new Cyclic();
-                    break;
-                case GraphTypes.RANDOM_ONE_FACTOR_MIM:
-                    randomGraph = new RandomSingleFactorMim();
-                    break;
-                case GraphTypes.RANDOM_TWO_FACTOR_MIM:
-                    randomGraph = new RandomTwoFactorMim();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
-            }
+            randomGraph = switch (graphItem) {
+                case GraphTypes.RANDOM_FOWARD_DAG -> new RandomForward();
+                case GraphTypes.ERDOS_RENYI_DAG -> new ErdosRenyi();
+                case GraphTypes.SCALE_FREE_DAG -> new ScaleFree();
+                case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS -> new Cyclic();
+                case GraphTypes.RANDOM_ONE_FACTOR_MIM -> new RandomSingleFactorMim();
+                case GraphTypes.RANDOM_TWO_FACTOR_MIM -> new RandomTwoFactorMim();
+                default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
+            };
         }
         return randomGraph;
     }
@@ -252,7 +239,9 @@ public class ParameterTab extends JPanel {
             Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
 
             if (params.isEmpty()) {
-                this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
+                JLabel noParamLbl = ParameterTab.NO_PARAM_LBL;
+                noParamLbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                this.parameterBox.add(noParamLbl, BorderLayout.NORTH);
             } else {
                 Box parameters = Box.createVerticalBox();
                 Box[] paramBoxes = ParameterComponents.toArray(
@@ -374,10 +363,6 @@ public class ParameterTab extends JPanel {
         }
 
         return box;
-    }
-
-    public static String[] getSimulationItems() {
-        return ParameterTab.MODEL_TYPE_ITEMS;
     }
 
     /**
