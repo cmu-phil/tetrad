@@ -2190,6 +2190,10 @@ public class AlgcomparisonEditor extends JPanel {
                 In the Comparison tab, there is a button to run the comparison and display the results.
                                 
                 Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
+                
+                The reference is here:
+                
+                Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
                 """);
     }
 
