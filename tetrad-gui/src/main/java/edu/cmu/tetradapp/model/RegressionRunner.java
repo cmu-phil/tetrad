@@ -309,13 +309,17 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param graph a {@link Graph} object representing the external graph
      */
     public void setExternalGraph(Graph graph) {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the name of the algorithm.
+     *
+     * @return the name of the algorithm as a string
      */
     @Override
     public String getAlgorithmName() {
@@ -341,7 +345,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of variable names used in the algorithm.
+     *
+     * @return a List of String representing the variable names
      */
     @Override
     public List<String> getVariableNames() {
@@ -349,7 +355,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of regressor names used in the algorithm.
+     *
+     * @return a list of String representing the regressor names
      */
     @Override
     public List<String> getRegressorNames() {
@@ -357,7 +365,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the names of the regressors used in the algorithm.
+     *
+     * @param predictors the names of the regressors
      */
     @Override
     public void setRegressorName(List<String> predictors) {
@@ -374,7 +384,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the target name for the regression model.
+     *
+     * @param target the name of the target variable as a String
      */
     @Override
     public void setTargetName(String target) {
@@ -413,39 +425,46 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the name of the session model.
+     *
+     * @param name the name of the session model
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * <p>getGraph.</p>
+     * Returns the graph associated with the current RegressionRunner instance.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return the graph associated with the current RegressionRunner instance
      */
     public Graph getGraph() {
         return this.outGraph;
     }
 
     /**
-     * <p>getTriplesClassificationTypes.</p>
+     * Returns the list of classification types for triples.
      *
-     * @return the names of the triple classifications. Coordinates with
+     * @return a list of strings representing the classification types for triples
      */
     public List<String> getTriplesClassificationTypes() {
         return new LinkedList<>();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of triple lists associated with a given node.
+     *
+     * @param node The node for which to retrieve the triple lists.
+     * @return The list of triple lists associated with the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the parameter settings for the algorithm.
+     *
+     * @return a map of parameter names to their corresponding values as strings
      */
     @Override
     public Map<String, String> getParamSettings() {
@@ -455,7 +474,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves all parameter settings for the algorithm.
+     *
+     * @return a map of parameter names to their corresponding values as strings
      */
     @Override
     public Map<String, String> getAllParamSettings() {
@@ -463,7 +484,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets all parameter settings for the algorithm.
+     *
+     * @param paramSettings a map of parameter names to their corresponding values as strings.
      */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
@@ -471,43 +494,45 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * <p>Getter for the field <code>numModels</code>.</p>
+     * Retrieves the number of models in the RegressionRunner instance.
      *
-     * @return a int
+     * @return the number of models as an integer
      */
     public int getNumModels() {
         return this.numModels;
     }
 
     /**
-     * <p>Getter for the field <code>modelIndex</code>.</p>
+     * Get the index of the current model.
      *
-     * @return a int
+     * @return the index of the current model as an integer
      */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
     /**
-     * <p>Setter for the field <code>modelIndex</code>.</p>
+     * Sets the index of the current model.
      *
-     * @param modelIndex a int
+     * @param modelIndex the index of the current model
      */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
     /**
-     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     * Returns the source name of the model.
      *
-     * @return a {@link java.lang.String} object
+     * @return the source name of the model as a string
      */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of Graph objects associated with the current RegressionRunner instance.
+     *
+     * @return a List of Graph objects
      */
     @Override
     public List<Graph> getGraphs() {

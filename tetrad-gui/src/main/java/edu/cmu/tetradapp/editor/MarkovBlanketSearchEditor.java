@@ -402,7 +402,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the type of independence test to be used.
+     *
+     * @param testType the type of independence test. Valid values are defined in the {@link IndTestType} enum.
      */
     public void setTestType(IndTestType testType) {
         getParams().set("indTestType", testType);

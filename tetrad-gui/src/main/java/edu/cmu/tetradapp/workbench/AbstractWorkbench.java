@@ -805,9 +805,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Paints the background of the workbench.
+     * Paints the component with the specified graphics context.
+     *
+     * @param g the Graphics context in which to paint
      */
     public final void paint(Graphics g) {
         g.setColor(getBackground());
@@ -845,7 +845,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the background color of this component.
+     *
+     * @param color the desired background color
      */
     public void setBackground(Color color) {
         super.setBackground(color);
@@ -853,7 +855,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * {@inheritDoc}
+     * Layouts the graph nodes using the given layout graph.
+     *
+     * @param layoutGraph the graph used for layouting the nodes. Must not be null.
      */
     public void layoutByGraph(Graph layoutGraph) {
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
@@ -990,24 +994,38 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     public abstract Node getNewModelNode();
 
     /**
-     * {@inheritDoc}
+     * Returns a new DisplayNode object for the given modelNode.
+     *
+     * @param modelNode a Node object representing the model node
+     * @return a DisplayNode object for the given modelNode
      */
     public abstract DisplayNode getNewDisplayNode(Node modelNode);
 
     /**
-     * {@inheritDoc}
+     * Retrieves a new display edge based on the given model edge.
+     *
+     * @param modelEdge the model edge to create a new display edge from
+     * @return a new {@link IDisplayEdge} object
      */
     public abstract IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
     /**
-     * {@inheritDoc}
+     * Retrieves a new model edge between two nodes.
+     *
+     * @param node1 The first {@link Node} object in the edge.
+     * @param node2 The second {@link Node} object in the edge.
+     * @return A new model edge between the two nodes.
      */
     public abstract Edge getNewModelEdge(Node node1, Node node2);
 
     // ============================PRIVATE METHODS=========================//
 
     /**
-     * {@inheritDoc}
+     * Returns a new tracking edge for the given display node and mouse location.
+     *
+     * @param displayNode The display node to create the tracking edge for. Must not be null.
+     * @param mouseLoc The location of the mouse pointer. Must not be null.
+     * @return The new tracking edge for the given display node and mouse location.
      */
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 

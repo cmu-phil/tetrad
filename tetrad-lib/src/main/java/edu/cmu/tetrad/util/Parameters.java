@@ -334,6 +334,11 @@ public class Parameters implements TetradSerializable {
         return this.parameters.keySet();
     }
 
+    /**
+     * Removes the specified parameter from the list of parameters.
+     *
+     * @param parameter The parameter to remove.
+     */
     public void remove(String parameter) {
         parameters.remove(parameter);
     }
