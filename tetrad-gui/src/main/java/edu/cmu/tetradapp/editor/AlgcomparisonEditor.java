@@ -54,7 +54,7 @@ import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParamet
  * <p>
  * The reference is here:
  * <p>
- * Ramsey, J. D., Malinsky, D., & Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure
+ * Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure
  * learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
  *
  * @author josephramsey
