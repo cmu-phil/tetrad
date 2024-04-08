@@ -121,7 +121,7 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
             }
 
             this.bayesImWrapper.setBayesIm(bayesIm);
-            this.bayesImEditor.getBayesIm();
+            this.bayesImEditor.retrieveBayesIm();
         } catch (ParsingException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble parsing that...");

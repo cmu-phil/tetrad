@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Memorable;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.function.IntBinaryOperator;
 
 /**
- * Wraps a Bayes Pm for use in the Tetrad application.
+ * Wraps a Bayes IM for use in the Tetrad application.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -71,6 +72,14 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //===========================CONSTRUCTORS===========================//
 
+    public BayesImWrapper(Parameters parameters) {
+        parameters.set("initializationMode", "trinary");
+        Graph graph = new EdgeListGraph();
+        BayesPmWrapper bayesPmWrapper = new BayesPmWrapper(graph, parameters);
+        BayesImWrapper oldBayesImwrapper = new BayesImWrapper(bayesPmWrapper, parameters);
+        setup(bayesPmWrapper, oldBayesImwrapper, parameters);
+    }
+
     /**
      * Constructs a new BayesImWrapper.
      *
@@ -79,6 +88,10 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @param params            the parameters
      */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
+        setup(bayesPmWrapper, oldBayesImwrapper, params);
+    }
+
+    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -88,6 +101,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+
+        if (bayesIms == null) {
+            setBayesIm(new MlBayesIm(bayesPm));
+            return;
+        }
+
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
