@@ -258,7 +258,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
 //        parameters.add(Params.SEED);
 
         return parameters;

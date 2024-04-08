@@ -128,6 +128,38 @@ public class AlgcomparisonEditor extends JPanel {
      * It is a private instance variable of type JTabbedPane.
      */
     private JTabbedPane comparisonTabbedPane;
+    /**
+     * A boolean variable indicating whether or not data should be saved.
+     */
+    private boolean saveData = true;
+    /**
+     * A boolean variable indicating whether graphs should be saved or not.
+     */
+    private boolean saveGraphs = true;
+    /**
+     * A boolean variable indicating whether or not CPDAGs should be saved.
+     */
+    private boolean saveCpdags = false;
+    /**
+     * A boolean variable indicating whether or not PAGs should be saved.
+     */
+    private boolean savePags = false;
+    /**
+     * This is a private boolean variable named showAlgorithmIndices.
+     */
+    private boolean showAlgorithmIndices = true;
+    /**
+     * Determines whether to show simulation indices.
+     */
+    private boolean showSimulationIndices = true;
+    /**
+     * The parallelism variable represents the number of concurrent tasks or threads that can be executed in parallel.
+     */
+    private int parallelism = Runtime.getRuntime().availableProcessors();
+    /**
+     * The type of graph to compare results to.
+     */
+    private ComparisonGraphType comparisonGraphType = ComparisonGraphType.DAG;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -152,7 +184,6 @@ public class AlgcomparisonEditor extends JPanel {
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
     }
-
 
     /**
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
@@ -403,7 +434,6 @@ public class AlgcomparisonEditor extends JPanel {
         return field;
     }
 
-
     /**
      * Returns a ListIntTextField component with the specified parameters.
      *
@@ -531,61 +561,6 @@ public class AlgcomparisonEditor extends JPanel {
         return field;
     }
 
-//    /**
-//     * Returns the XML text used for the XML tab in the AlgcomparisonEditor.
-//     *
-//     * @return the XML text
-//     */
-//    @NotNull
-//    private static String getXmlText() {
-//        return """
-//                ** This is placeholder text **
-//
-//                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-//                <comparison>
-//                    <compareBy>
-//                        <search>
-//                            <simulations>
-//                                <simulation source="directory">
-//                                    <path>src/test/resources/data/simulation</path>
-//                                </simulation>
-//                                <simulation source="generate">
-//                                    <graphtype>RandomForward</graphtype>
-//                                    <modeltype>SemSimulation</modeltype>
-//                                </simulation>
-//                            </simulations>
-//                            <algorithms>
-//                                <algorithm name="gfci">
-//                                    <test>fisher-z-test</test>
-//                                    <score>sem-bic-score</score>
-//                                </algorithm>
-//                                <algorithm name="fges">
-//                                    <score>sem-bic-score</score>
-//                                </algorithm>
-//                            </algorithms>
-//                            <parameters>
-//                                <parameter name="numRuns">1</parameter>
-//                                <parameter name="numMeasures">4,6</parameter>
-//                                <parameter name="avgDegree">4</parameter>
-//                            </parameters>
-//                        </search>
-//                    </compareBy>
-//                    <statistics>
-//                        <statistic>adjacencyPrecision</statistic>
-//                        <statistic>arrowheadRecall</statistic>
-//                        <statistic>adjacencyRecall</statistic>
-//                    </statistics>
-//                    <properties>
-//                        <property name="showAlgorithmIndices">true</property>
-//                        <property name="showSimulationIndices">true</property>
-//                        <property name="sortByUtility">true</property>
-//                        <property name="showUtilities">true</property>
-//                        <property name="saveSearchGraphs">true</property>
-//                        <property name="tabDelimitedTables">true</property>
-//                    </properties>
-//                </comparison>""";
-//    }
-
     /**
      * Returns a Box component representing a boolean selection box.
      *
@@ -599,13 +574,21 @@ public class AlgcomparisonEditor extends JPanel {
 
         JRadioButton yesButton = new JRadioButton("Yes");
         JRadioButton noButton = new JRadioButton("No");
-        JRadioButton bothButton = new JRadioButton("Both");
+
+        JRadioButton bothButton = null;
+
+        if (bothOptionAllowed) {
+            bothButton = new JRadioButton("Both");
+        }
 
         // Button group to ensure only one option can be selected
         ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
-        selectionBtnGrp.add(bothButton);
+
+        if (bothOptionAllowed) {
+            selectionBtnGrp.add(bothButton);
+        }
 
         Object[] values = parameters.getValues(parameter);
         Boolean[] booleans = new Boolean[values.length];
@@ -669,6 +652,61 @@ public class AlgcomparisonEditor extends JPanel {
 
         return selectionBox;
     }
+
+//    /**
+//     * Returns the XML text used for the XML tab in the AlgcomparisonEditor.
+//     *
+//     * @return the XML text
+//     */
+//    @NotNull
+//    private static String getXmlText() {
+//        return """
+//                ** This is placeholder text **
+//
+//                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+//                <comparison>
+//                    <compareBy>
+//                        <search>
+//                            <simulations>
+//                                <simulation source="directory">
+//                                    <path>src/test/resources/data/simulation</path>
+//                                </simulation>
+//                                <simulation source="generate">
+//                                    <graphtype>RandomForward</graphtype>
+//                                    <modeltype>SemSimulation</modeltype>
+//                                </simulation>
+//                            </simulations>
+//                            <algorithms>
+//                                <algorithm name="gfci">
+//                                    <test>fisher-z-test</test>
+//                                    <score>sem-bic-score</score>
+//                                </algorithm>
+//                                <algorithm name="fges">
+//                                    <score>sem-bic-score</score>
+//                                </algorithm>
+//                            </algorithms>
+//                            <parameters>
+//                                <parameter name="numRuns">1</parameter>
+//                                <parameter name="numMeasures">4,6</parameter>
+//                                <parameter name="avgDegree">4</parameter>
+//                            </parameters>
+//                        </search>
+//                    </compareBy>
+//                    <statistics>
+//                        <statistic>adjacencyPrecision</statistic>
+//                        <statistic>arrowheadRecall</statistic>
+//                        <statistic>adjacencyRecall</statistic>
+//                    </statistics>
+//                    <properties>
+//                        <property name="showAlgorithmIndices">true</property>
+//                        <property name="showSimulationIndices">true</property>
+//                        <property name="sortByUtility">true</property>
+//                        <property name="showUtilities">true</property>
+//                        <property name="saveSearchGraphs">true</property>
+//                        <property name="tabDelimitedTables">true</property>
+//                    </properties>
+//                </comparison>""";
+//    }
 
     /**
      * Creates a StringTextField component with the specified parameters.
@@ -1055,6 +1093,44 @@ public class AlgcomparisonEditor extends JPanel {
         return parameterBox;
     }
 
+    /**
+     * Adds a table columns tab to the provided JTabbedPane.
+     *
+     * @param tabbedPane the JTabbedPane to add the table columns tab to
+     */
+    private void addTableColumnsTab(JTabbedPane tabbedPane) {
+        tableColumnsChoiceTextArea = new JTextArea();
+        tableColumnsChoiceTextArea.setLineWrap(true);
+        tableColumnsChoiceTextArea.setWrapStyleWord(true);
+        tableColumnsChoiceTextArea.setEditable(false);
+        setTableColumnsText();
+
+        Box tableColumnsSelectionBox = Box.createHorizontalBox();
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
+
+        addTableColumns = new JButton("Add Table Column(s)");
+        addAddTableColumnsListener(tabbedPane);
+
+        JButton removeLastTableColumn = new JButton("Remove Last Column");
+        removeLastTableColumn.addActionListener(e -> {
+            model.removeLastTableColumn();
+            setTableColumnsText();
+            setComparisonText();
+        });
+
+        tableColumnsSelectionBox.add(addTableColumns);
+        tableColumnsSelectionBox.add(removeLastTableColumn);
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
+
+        JPanel tableColumnsChoice = new JPanel();
+        tableColumnsChoice.setLayout(new BorderLayout());
+        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
+
+        tabbedPane.addTab("Table Columns", tableColumnsChoice);
+    }
+
 //    /**
 //     * Adds an XML tab to the provided JTabbedPane.
 //     *
@@ -1099,44 +1175,6 @@ public class AlgcomparisonEditor extends JPanel {
 //    }
 
     /**
-     * Adds a table columns tab to the provided JTabbedPane.
-     *
-     * @param tabbedPane the JTabbedPane to add the table columns tab to
-     */
-    private void addTableColumnsTab(JTabbedPane tabbedPane) {
-        tableColumnsChoiceTextArea = new JTextArea();
-        tableColumnsChoiceTextArea.setLineWrap(true);
-        tableColumnsChoiceTextArea.setWrapStyleWord(true);
-        tableColumnsChoiceTextArea.setEditable(false);
-        setTableColumnsText();
-
-        Box tableColumnsSelectionBox = Box.createHorizontalBox();
-        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
-
-        addTableColumns = new JButton("Add Table Column(s)");
-        addAddTableColumnsListener(tabbedPane);
-
-        JButton removeLastTableColumn = new JButton("Remove Last Column");
-        removeLastTableColumn.addActionListener(e -> {
-            model.removeLastTableColumn();
-            setTableColumnsText();
-            setComparisonText();
-        });
-
-        tableColumnsSelectionBox.add(addTableColumns);
-        tableColumnsSelectionBox.add(removeLastTableColumn);
-        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
-
-        JPanel tableColumnsChoice = new JPanel();
-        tableColumnsChoice.setLayout(new BorderLayout());
-        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
-
-        tabbedPane.addTab("Table Columns", tableColumnsChoice);
-    }
-
-    /**
      * Adds a comparison tab to the given JTabbedPane.
      *
      * @param tabbedPane the JTabbedPane to add the comparison tab to
@@ -1159,15 +1197,123 @@ public class AlgcomparisonEditor extends JPanel {
         JButton runComparison = runComparisonButton();
 
         // todo work on this later.
-//        JButton setComparisonParameters = new JButton("Edit Comparison Parameters");
+        JButton setComparisonParameters = new JButton("Edit Parameters");
+//
+        setComparisonParameters.addActionListener(e -> {
+            model.getParameters().set("algcomparisonSaveData", saveData);
+            model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
+            model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
+            model.getParameters().set("algcomparisonSavePAGs", savePags);
+            model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
+            model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
+            model.getParameters().set("algcomparisonParallelism", parallelism);
+            model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
 
-//        setComparisonParameters.addActionListener(e -> JOptionPane.showMessageDialog(this,
-//        "This will allow you to set the parameters for the comparison."));
+            Box parameterBox = Box.createVerticalBox();
+
+            Box horiz1 = Box.createHorizontalBox();
+            horiz1.add(new JLabel("Save Data:"));
+            horiz1.add(Box.createHorizontalGlue());
+            horiz1.add(getBooleanSelectionBox("algcomparisonSaveData", model.getParameters(), false));
+
+            Box horiz2 = Box.createHorizontalBox();
+            horiz2.add(new JLabel("Save Graphs:"));
+            horiz2.add(Box.createHorizontalGlue());
+            horiz2.add(getBooleanSelectionBox("algcomparisonSaveGraphs", model.getParameters(), false));
+
+            Box horiz2b = Box.createHorizontalBox();
+            horiz2b.add(new JLabel("Save CPDAGs:"));
+            horiz2b.add(Box.createHorizontalGlue());
+            horiz2b.add(getBooleanSelectionBox("algcomparisonSaveCPDAGs", model.getParameters(), false));
+
+            Box horiz2c = Box.createHorizontalBox();
+            horiz2c.add(new JLabel("Save PAGs:"));
+            horiz2c.add(Box.createHorizontalGlue());
+            horiz2c.add(getBooleanSelectionBox("algcomparisonSavePAGs", model.getParameters(), false));
+
+            Box horiz3 = Box.createHorizontalBox();
+            horiz3.add(new JLabel("Show Algorithm Indices:"));
+            horiz3.add(Box.createHorizontalGlue());
+            horiz3.add(getBooleanSelectionBox("algcomparisonShowAlgorithmIndices", model.getParameters(), false));
+
+            Box horiz4 = Box.createHorizontalBox();
+            horiz4.add(new JLabel("Show Simulation Indices:"));
+            horiz4.add(Box.createHorizontalGlue());
+            horiz4.add(getBooleanSelectionBox("algcomparisonShowSimulationIndices", model.getParameters(), false));
+
+            Box horiz5 = Box.createHorizontalBox();
+            horiz5.add(new JLabel("Parallelism:"));
+            horiz5.add(Box.createHorizontalGlue());
+            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), 10, 1, 100));
+
+            Box horiz6 = Box.createHorizontalBox();
+            horiz6.add(new JLabel("Comparison Graph Type:"));
+            horiz6.add(Box.createHorizontalGlue());
+            JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
+
+            for (ComparisonGraphType comparisonGraphType : ComparisonGraphType.values()) {
+                comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
+            }
+
+            comparisonGraphTypeComboBox.setSelectedItem(comparisonGraphType.toString());
+
+            comparisonGraphTypeComboBox.addActionListener(e1 -> {
+                String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
+                ComparisonGraphType comparisonGraphType1 = ComparisonGraphType.valueOf(selectedItem);
+                model.getParameters().set("algcomparisonGraphType", comparisonGraphType1);
+            });
+
+            horiz6.add(comparisonGraphTypeComboBox);
+
+            parameterBox.add(horiz1);
+            parameterBox.add(horiz2);
+            parameterBox.add(horiz2b);
+            parameterBox.add(horiz2c);
+            parameterBox.add(horiz3);
+            parameterBox.add(horiz4);
+            parameterBox.add(horiz5);
+            parameterBox.add(horiz6);
+
+            parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Comparison Parameters", Dialog.ModalityType.APPLICATION_MODAL);
+
+            dialog.setLayout(new BorderLayout());
+
+            // Add your panel to the center of the dialog
+            dialog.add(parameterBox, BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton doneButton = new JButton("Done");
+
+            doneButton.addActionListener(e1 -> {
+                SwingUtilities.invokeLater(dialog::dispose);
+                saveData = model.getParameters().getBoolean("algcomparisonSaveData");
+                saveGraphs = model.getParameters().getBoolean("algcomparisonSaveGraphs");
+                saveCpdags = model.getParameters().getBoolean("algcomparisonSaveCPDAGs");
+                savePags = model.getParameters().getBoolean("algcomparisonSavePAGs");
+                showAlgorithmIndices = model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices");
+                showSimulationIndices = model.getParameters().getBoolean("algcomparisonShowSimulationIndices");
+                parallelism = model.getParameters().getInt("algcomparisonParallelism");
+                comparisonGraphType = (AlgcomparisonEditor.ComparisonGraphType) model.getParameters().get("algcomparisonGraphType");
+                setComparisonText();
+            });
+
+            buttonPanel.add(doneButton);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
 
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
-//        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(runComparison);
+        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
         comparisonTabbedPane = new JTabbedPane();
@@ -2115,6 +2261,29 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         return paramText.toString();
+    }
+
+    /**
+     * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
+     * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
+     * Acyclic Graph), CPDAG (Completed Partially Directed Acyclic Graph), and PAG (Partially Directed Acyclic Graph).
+     */
+    public enum ComparisonGraphType {
+
+        /**
+         * Directed Acyclic Graph (DAG).
+         */
+        DAG,
+
+        /**
+         * Completed Partially Directed Acyclic Graph (CPDAG).
+         */
+        CPDAG,
+
+        /**
+         * Partially Directed Acyclic Graph (PAG).
+         */
+        PAG
     }
 
     /**

@@ -204,7 +204,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
 //        parameters.add(Params.SEED);
-        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
 
         return parameters;
 
