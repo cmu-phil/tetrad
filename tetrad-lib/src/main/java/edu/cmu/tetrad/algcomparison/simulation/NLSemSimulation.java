@@ -245,6 +245,7 @@ public class NLSemSimulation implements Simulation {
         parameters.add(Params.VAR_HIGH);
         parameters.add(Params.SIMULATION_PARAM1);
         parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
         parameters.add(Params.SEED);
 
         return parameters;

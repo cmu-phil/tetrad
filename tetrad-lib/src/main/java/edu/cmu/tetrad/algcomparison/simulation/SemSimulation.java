@@ -273,6 +273,7 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SIMULATION_ERROR_TYPE);
         parameters.add(Params.SIMULATION_PARAM1);
         parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
         parameters.add(Params.SEED);
 
         return parameters;

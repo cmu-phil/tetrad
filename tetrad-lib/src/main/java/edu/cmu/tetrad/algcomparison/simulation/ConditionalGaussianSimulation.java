@@ -244,6 +244,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.RANDOMIZE_COLUMNS);
         parameters.add(Params.SEED);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
 
         return parameters;
     }

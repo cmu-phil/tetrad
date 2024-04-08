@@ -262,6 +262,15 @@ public class AlgcomparisonModel implements SessionModel {
         comparison.setShowSimulationIndices(true);
         comparison.setParallelism(Runtime.getRuntime().availableProcessors());
 
+        int anInt = parameters.getInt(Params.COMPARE_GRAPH_ALGCOMP);
+        switch (anInt) {
+            case 1 -> comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+            case 2 -> comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+            case 3 -> comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+            default ->
+                    throw new IllegalArgumentException("Invalid value for comparison graph: " + anInt);
+        }
+
         String resultsPath;
 
         for (int i = 1; ; i++) {

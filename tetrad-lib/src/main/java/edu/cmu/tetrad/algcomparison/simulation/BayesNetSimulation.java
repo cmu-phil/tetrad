@@ -203,6 +203,7 @@ public class BayesNetSimulation implements Simulation {
         parameters.add(Params.RANDOMIZE_COLUMNS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
         parameters.add(Params.SEED);
 
         return parameters;
