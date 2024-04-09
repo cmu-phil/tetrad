@@ -47,7 +47,7 @@ public class GraphNode implements Node {
     /**
      * The name of the node.
      */
-    private String name = "??"; // TODO VBC: can we change this into a seriel number
+    private String name = "??";
     /**
      * The type of the node.
      *
