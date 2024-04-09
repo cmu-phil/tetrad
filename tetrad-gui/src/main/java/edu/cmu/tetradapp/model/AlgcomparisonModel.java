@@ -37,6 +37,7 @@ import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetradapp.editor.AlgcomparisonEditor;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
@@ -256,11 +257,22 @@ public class AlgcomparisonModel implements SessionModel {
         for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
 
         Comparison comparison = new Comparison();
-        comparison.setSaveData(true);
-        comparison.setSaveGraphs(true);
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
-        comparison.setParallelism(Runtime.getRuntime().availableProcessors());
+        comparison.setSaveData(parameters.getBoolean("algcomparisonSaveData"));
+        comparison.setSaveGraphs(parameters.getBoolean("algcomparisonSaveGraphs"));
+        comparison.setSaveCPDAGs(parameters.getBoolean("algcomparisonSaveCPDAGs"));
+        comparison.setSavePags(parameters.getBoolean("algcomparisonSavePAGs"));
+        comparison.setShowAlgorithmIndices(parameters.getBoolean("algcomparisonShowAlgorithmIndices"));
+        comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
+        comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
+
+        AlgcomparisonEditor.ComparisonGraphType type = (AlgcomparisonEditor.ComparisonGraphType) parameters.get("algcomparisonGraphType");
+        switch (type) {
+            case DAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+            case CPDAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+            case PAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+            default ->
+                    throw new IllegalArgumentException("Invalid value for comparison graph: " + type);
+        }
 
         String resultsPath;
 

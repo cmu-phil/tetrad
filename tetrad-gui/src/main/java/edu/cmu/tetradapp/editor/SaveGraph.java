@@ -94,9 +94,8 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, true);
+            GraphSaveLoadUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
-            out.close();
         } else if (this.type == Type.text) {
             File file = EditorUtils.getSaveFile("graph", "txt", parent, false, this.title);
 
@@ -105,9 +104,8 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, false);
+            GraphSaveLoadUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
-            out.close();
         } else if (this.type == Type.r) {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, this.title);
 

@@ -57,6 +57,7 @@ public class ErdosRenyi implements RandomGraph {
         parameters.add(Params.NUM_MEASURES);
         parameters.add(Params.NUM_LATENTS);
         parameters.add(Params.PROBABILITY_OF_EDGE);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
         return parameters;
     }
 }

@@ -882,6 +882,10 @@ public final class Params {
      * Constant <code>USE_PSEUDOINVERSE="usePseudoinverse"</code>
      */
     public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
+    /**
+     * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
+     */
+    public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
