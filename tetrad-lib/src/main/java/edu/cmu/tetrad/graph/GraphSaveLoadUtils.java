@@ -402,9 +402,8 @@ public class GraphSaveLoadUtils {
      * @param graph The graph to be saved.
      * @param file  The file to save it in.
      * @param xml   True if to be saved in XML, false if in text.
-     * @return I have no idea whey I'm returning this; it's already closed...
      */
-    public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
+    public static void saveGraph(Graph graph, File file, boolean xml) {
         PrintWriter out;
 
         try {
@@ -418,9 +417,8 @@ public class GraphSaveLoadUtils {
             out.flush();
             out.close();
         } catch (IOException e1) {
-            throw new IllegalArgumentException("Output file could not " + "be opened: " + file);
+            throw new IllegalArgumentException("Output file could not be opened: " + file);
         }
-        return out;
     }
 
     /**
