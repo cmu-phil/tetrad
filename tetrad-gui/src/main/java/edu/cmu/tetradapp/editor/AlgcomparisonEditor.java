@@ -1262,7 +1262,7 @@ public class AlgcomparisonEditor extends JPanel {
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
             horiz5.add(Box.createHorizontalGlue());
-            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), 10, 1, 100));
+            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), model.getParameters().getInt("algcomparisonParallelism"), 1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
             horiz6.add(new JLabel("Comparison Graph Type:"));
