@@ -103,7 +103,7 @@ public final class GraphUtils {
      * @param graph  a DAG, CPDAG, MAG, or PAG.
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static Graph markovBlanketSubgraph(Node target, Graph graph) {
+    public static Graph markovBlanketSubgraph(Node target, Graph graph) { // TODO VBC: @Joe is this the more general method you recommended?
         Set<Node> mb = markovBlanket(target, graph);
 
         Graph mbGraph = new EdgeListGraph();
@@ -2253,7 +2253,7 @@ public final class GraphUtils {
                 graph = trimAdjacentToTarget(targets, graph);
                 break;
             case 3:
-                graph = trimMarkovBlanketGraph(targets, graph); // TODO VBC this is what i want to use
+                graph = trimMarkovBlanketGraph(targets, graph); // TODO VBC currently using this
                 break;
             case 4:
                 graph = trimSemidirected(targets, graph);

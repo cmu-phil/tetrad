@@ -271,24 +271,36 @@ public class MarkovCheck {
 
     public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
         List<Node> singleNode = Arrays.asList(x);
-        String nodeName = x.getName();
-        Node originalNode = trueGraph.getNode(nodeName);
-        List<Node> singleOriginalNode = Arrays.asList(originalNode);
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+
+        // TODO VBC use the recurssion method
+        Graph xMBLookupGraph = GraphUtils.trimGraph(singleNode, lookupGraph, 3);
+        Set<Edge> xMBLookupGraphEdges = xMBLookupGraph.getEdges();
+        System.out.println("@@@@@@@@@@@@@@@@");
+        System.out.println("True Graph:" + trueGraph);
+        System.out.println("LookupGraph:" + lookupGraph); // this print should be the same as the true graph
+
+        System.out.println("xMBLookupGraphEdges size: " + xMBLookupGraphEdges.size());
+        System.out.println("xMBLookupGraph Nodes size: " + xMBLookupGraph.getNodes().size());
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph); // The MB trim of the lookup graph, so it should be a subset of the lookup graph print
 
         // Get Markov Blanket Subgraph for this node x.
-        Graph xMBGraphForEstimatedGraph = GraphUtils.trimGraph(singleNode, estimatedGraph, 3);
+        Graph xMBEstimatedGraph = GraphUtils.trimGraph(singleNode, estimatedGraph, 3);
+        Set<Edge> xMBEstimatedGraphEdges = xMBEstimatedGraph.getEdges();
+        System.out.println("xMBEstimatedGraphEdges size: " + xMBEstimatedGraphEdges.size());
+        System.out.println("xMBEstimatedGraph Nodes size: " + xMBEstimatedGraph.getNodes().size());
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph); // This should be compared with the xMBLookupGraph
+        System.out.println("@@@@@@@@@@@@@@@@");
 
-        Graph xMBGraphForTrueGraph = GraphUtils.trimGraph(singleOriginalNode, trueGraph, 3); // TODO VBC, this is always 0 because singleNode is not in trueGraph!
-        // TODO VBC: is using name to find x's corresponding node in trueGraph the right way?
-        Set<Edge> xMBGraphForEstimatedGraphEdges = xMBGraphForEstimatedGraph.getEdges(); // TODO: this is often 435 for 30 nodes
-        Set<Edge> xMBGraphForTrueGraphEdges = xMBGraphForTrueGraph.getEdges(); // TODO: Here the output is often 0/1
-        System.out.println("xMBGraphForTrueGraphEdges size: " + xMBGraphForTrueGraphEdges.size()); // TODO VBC
-        System.out.println("xMBGraphTrue Nodes size: " + xMBGraphForTrueGraph.getNodes().size()); // TODO VBC this is always 0.
+        HashSet<Edge> truePositive = new HashSet<>(xMBEstimatedGraphEdges);
+        // TODO VBC: QUESTION FOr DISCUSSION
+        //  Here it would only be retained if the points and direction of an edge is exactly the same.
+        // Do we want to only check for points? If not, a lot wrong/no direction edges would be filtered out at this step.
+        truePositive.retainAll(xMBLookupGraphEdges);
 
-        HashSet<Edge> truePositive = new HashSet<>(xMBGraphForEstimatedGraphEdges);
-        truePositive.retainAll(xMBGraphForTrueGraphEdges);
-        double precision = (double) truePositive.size() / xMBGraphForTrueGraphEdges.size();
-        double recall = (double) truePositive.size() / xMBGraphForEstimatedGraphEdges.size();
+        double precision = (double) truePositive.size() / xMBLookupGraphEdges.size();
+        double recall = (double) truePositive.size() / xMBEstimatedGraphEdges.size();
         return getPrecision ? precision : recall;
     }
 

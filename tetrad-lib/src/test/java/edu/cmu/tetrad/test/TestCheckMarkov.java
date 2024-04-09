@@ -14,6 +14,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -114,38 +115,39 @@ public class TestCheckMarkov {
 
     @Test
     public void testPrecissionRecallForLocal() {
-        Graph dag = RandomGraph.randomDag(30, 0, 10, 100, 100,
-                100, false); // truegraph
-        SemPm pm = new SemPm(dag);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
-        SemBicScore score = new SemBicScore(data, true);
-        PermutationSearch search = new PermutationSearch(new Boss(score));
-        Graph cpdag = search.search(); // estimatedgraph
-        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        MarkovCheck markovCheck = new MarkovCheck(cpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, cpdag, 0.05);
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search(); // Estimated graph
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("Test Estimated Graph size: " + estimatedCpdag.getNodes().size());
+        System.out.println("=====================================");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV); // TODO Also try MB for settype
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
-        System.out.println("Estimated Graph size: " + cpdag.getNodes().size());
-        System.out.println("True Graph size: " + dag.getNodes().size());
-
-
-
 
         List<Double> acceptsPrecision = new ArrayList<>();
         List<Double> acceptsRecall = new ArrayList<>();
         for(Node a: accepts) {
-            double precision = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, cpdag, dag, true);
-            double recall = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, cpdag, dag, false);
+            double precision = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph, true);
+            double recall = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph, false);
             acceptsPrecision.add(precision);
             acceptsRecall.add(recall);
         }
-        System.out.println("Accepts Precissions: " + acceptsPrecision);
+        System.out.println("Accepts Precisions: " + acceptsPrecision);
         System.out.println("Accepts Recall: " + acceptsRecall);
+        System.out.println("****************************************************");
 
 
     }
