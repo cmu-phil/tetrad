@@ -106,9 +106,7 @@ class LoadBayesImBifAction extends AbstractAction {
 
         File file = chooser.getSelectedFile();
 
-        if (file != null) {
-            Preferences.userRoot().put("fileSaveLocation", file.getParent());
-        } else {
+        if (file == null) {
             throw new NullPointerException("No file selected.");
         }
 

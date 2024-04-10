@@ -127,6 +127,7 @@ public class BayesImEditor extends JPanel {
         JMenu file = new JMenu("File");
         menuBar.add(file);
         file.add(new SaveBayesImXmlAction(this));
+        file.add(new SaveBayesImBifAction(this));
         file.add(new LoadBayesImXmlAction(this.wrapper, this));
         file.add(new LoadBayesImBifAction(this.wrapper, this));
         file.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));

@@ -312,6 +312,7 @@ public final class BayesBifParser {
             i++;
         }
 
+
         return new Texts(text.substring(1, i - 1), text.substring(i));
     }
 
