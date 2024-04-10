@@ -128,6 +128,7 @@ public class BayesImEditor extends JPanel {
         menuBar.add(file);
         file.add(new SaveBayesImXmlAction(this));
         file.add(new LoadBayesImXmlAction(this.wrapper, this));
+        file.add(new LoadBayesImBifAction(this.wrapper, this));
         file.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
