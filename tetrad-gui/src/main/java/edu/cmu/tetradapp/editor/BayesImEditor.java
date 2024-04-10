@@ -126,11 +126,18 @@ public class BayesImEditor extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveBayesImXmlAction(this));
-        file.add(new SaveBayesImBifAction(this));
-        file.add(new LoadBayesImXmlAction(this.wrapper, this));
-        file.add(new LoadBayesImBifAction(this.wrapper, this));
-        file.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
+
+        JMenu load = new JMenu("Load");
+        JMenu save = new JMenu("Save");
+
+        file.add(load);
+        file.add(save);
+
+        save.add(new SaveBayesImXmlAction(this));
+        save.add(new SaveBayesImBifAction(this));
+        load.add(new LoadBayesImXmlAction(this.wrapper, this));
+        load.add(new LoadBayesImBifAction(this.wrapper, this));
+        load.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
