@@ -254,11 +254,66 @@ public class GraphSaveLoadUtils {
     }
 
     /**
-     * <p>loadGraphPcalg.</p>
+     * Loads a CPDAG in the "amat.cpdag" format of PCALG. We will assume here that the graph in R has been saved to disk
+     * using the write.table(mat, path) method. For the amat.cpdag format, for a matrix m, there are two cases where
+     * edges occur in the graph: (1) m[i][j] = 0 and m[j][i] = 1, in which case an edge i->j exists; or, (2) m[i][j] = 1
+     * and m[j][i] = 1, in which case an undirected edge i--j exists. In all other cases, there is no edge between i and
+     * j.
      *
-     * @param file a {@link java.io.File} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param file a file in the "amat.cpdag" format of PCALG.
+     * @return a graph.
      */
+    public static Graph loadGraphAmatCpdag(File file) {
+        try {
+            String fileName = "example.txt";
+
+            // Use try-with-resources to ensure that the file is closed after reading
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String varNames = reader.readLine();
+                String[] tokens = varNames.split("[ \t\"]+");
+
+                List<Node> nodes = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!token.isBlank()) {
+                        nodes.add(new GraphNode(token));
+                    }
+                }
+
+                Graph graph = new EdgeListGraph(nodes);
+                int[][] m = new int[nodes.size()][nodes.size()];
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    String line = reader.readLine();
+                    tokens = line.split("[ \t]+");
+
+                    for (int j = 1; j <= nodes.size(); j++) {
+                        m[i][j - 1] = Integer.parseInt(tokens[j]);
+                    }
+                }
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    for (int j = 0; j < nodes.size(); j++) {
+                        Node n1 = nodes.get(i);
+                        Node n2 = nodes.get(j);
+
+                        int e1 = m[i][j];
+                        int e2 = m[j][i];
+
+                        if (e1 == 0 && e2 == 1) {
+                            graph.addDirectedEdge(n1, n2);
+                        } else if (e1 == 1 && e2 == 1) {
+                            graph.addUndirectedEdge(n1, n2);
+                        }
+                    }
+                }
+
+                return graph;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from file.", e);
+        }
+    }
+
     public static Graph loadGraphPcalg(File file) {
         try {
             DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
