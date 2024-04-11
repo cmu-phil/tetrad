@@ -228,7 +228,7 @@ public class GraphSaveLoadUtils {
             Data data = reader.readInData();
             eg = (DataSet) DataConvertUtils.toDataModel(data);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            throw new RuntimeException("Error reading from file.", ioException);
         }
 
         if (eg == null) throw new NullPointerException();
@@ -265,9 +265,6 @@ public class GraphSaveLoadUtils {
      */
     public static Graph loadGraphAmatCpdag(File file) {
         try {
-            String fileName = "example.txt";
-
-            // Use try-with-resources to ensure that the file is closed after reading
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String varNames = reader.readLine();
                 String[] tokens = varNames.split("[ \t\"]+");
@@ -314,73 +311,150 @@ public class GraphSaveLoadUtils {
         }
     }
 
-    public static Graph loadGraphPcalg(File file) {
+    /**
+     * Loads a PAG in the "amat.pag" format of PCALG. We will assume here that the graph in R has been saved to disk
+     * using the write.table(mat, path) method. For the amat.pag format, for a matrix m, endpoints are explicitly
+     * represented, as follows. 1 is a circle endpoint, 2 is an arrow endpoint, 3 is a tail endpoint, and 0 is a null
+     * endpoint (i.e., no edge). For an edge i->j, m[i][j] = 2 and m[j][i] = 3.
+     *
+     * @param file a file in the "amat.cpdag" format of PCALG.
+     * @return a graph.
+     */
+    public static Graph loadGraphAmatPag(File file) {
         try {
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.COMMA, false);
+            String fileName = "example.txt";
 
-            List<Node> nodes = dataSet.getVariables();
-            Graph graph = new EdgeListGraph(nodes);
+            // Use try-with-resources to ensure that the file is closed after reading
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String varNames = reader.readLine();
+                String[] tokens = varNames.split("[ \t\"]+");
 
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
-                    Node n1 = nodes.get(i);
-                    Node n2 = nodes.get(j);
-
-                    int e1 = dataSet.getInt(j, i);
-                    int e2 = dataSet.getInt(i, j);
-
-                    Endpoint e1a;
-
-                    switch (e1) {
-                        case 0:
-                            e1a = Endpoint.NULL;
-                            break;
-                        case 1:
-                            e1a = Endpoint.CIRCLE;
-                            break;
-                        case 2:
-                            e1a = Endpoint.ARROW;
-                            break;
-                        case 3:
-                            e1a = Endpoint.TAIL;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                    }
-
-                    Endpoint e2a;
-
-                    switch (e2) {
-                        case 0:
-                            e2a = Endpoint.NULL;
-                            break;
-                        case 1:
-                            e2a = Endpoint.CIRCLE;
-                            break;
-                        case 2:
-                            e2a = Endpoint.ARROW;
-                            break;
-                        case 3:
-                            e2a = Endpoint.TAIL;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                    }
-
-                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
-                        Edge edge = new Edge(n1, n2, e1a, e2a);
-                        graph.addEdge(edge);
+                List<Node> nodes = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!token.isBlank()) {
+                        nodes.add(new GraphNode(token));
                     }
                 }
-            }
 
-            return graph;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
+                Graph graph = new EdgeListGraph(nodes);
+                int[][] m = new int[nodes.size()][nodes.size()];
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    String line = reader.readLine();
+                    tokens = line.split("[ \t]+");
+
+                    for (int j = 1; j <= nodes.size(); j++) {
+                        m[i][j - 1] = Integer.parseInt(tokens[j]);
+                    }
+                }
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    for (int j = i + 1; j < nodes.size(); j++) {
+                        Node n1 = nodes.get(i);
+                        Node n2 = nodes.get(j);
+
+                        int e1 = m[i][j];
+                        int e2 = m[j][i];
+
+                        Endpoint e1a = switch (e1) {
+                            case 0 -> Endpoint.NULL;
+                            case 1 -> Endpoint.CIRCLE;
+                            case 2 -> Endpoint.ARROW;
+                            case 3 -> Endpoint.TAIL;
+                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                        };
+
+                        Endpoint e2a = switch (e2) {
+                            case 0 -> Endpoint.NULL;
+                            case 1 -> Endpoint.CIRCLE;
+                            case 2 -> Endpoint.ARROW;
+                            case 3 -> Endpoint.TAIL;
+                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                        };
+
+                        if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+                            Edge edge = new Edge(n1, n2, e1a, e2a);
+                            graph.addEdge(edge);
+                        } else if (e1a != Endpoint.NULL || e2a != Endpoint.NULL) {
+                            throw new IllegalArgumentException("Invalid endpoint combination: " + e1a + " " + e2a);
+                        }
+                    }
+                }
+
+                return graph;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from file.", e);
         }
     }
+
+//    public static Graph loadGraphPcalg(File file) {
+//        try {
+//            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
+//                    "*", true, Delimiter.COMMA, false);
+//
+//            List<Node> nodes = dataSet.getVariables();
+//            Graph graph = new EdgeListGraph(nodes);
+//
+//            for (int i = 0; i < nodes.size(); i++) {
+//                for (int j = i + 1; j < nodes.size(); j++) {
+//                    Node n1 = nodes.get(i);
+//                    Node n2 = nodes.get(j);
+//
+//                    int e1 = dataSet.getInt(j, i);
+//                    int e2 = dataSet.getInt(i, j);
+//
+//                    Endpoint e1a;
+//
+//                    switch (e1) {
+//                        case 0:
+//                            e1a = Endpoint.NULL;
+//                            break;
+//                        case 1:
+//                            e1a = Endpoint.CIRCLE;
+//                            break;
+//                        case 2:
+//                            e1a = Endpoint.ARROW;
+//                            break;
+//                        case 3:
+//                            e1a = Endpoint.TAIL;
+//                            break;
+//                        default:
+//                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+//                    }
+//
+//                    Endpoint e2a;
+//
+//                    switch (e2) {
+//                        case 0:
+//                            e2a = Endpoint.NULL;
+//                            break;
+//                        case 1:
+//                            e2a = Endpoint.CIRCLE;
+//                            break;
+//                        case 2:
+//                            e2a = Endpoint.ARROW;
+//                            break;
+//                        case 3:
+//                            e2a = Endpoint.TAIL;
+//                            break;
+//                        default:
+//                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+//                    }
+//
+//                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+//                        Edge edge = new Edge(n1, n2, e1a, e2a);
+//                        graph.addEdge(edge);
+//                    }
+//                }
+//            }
+//
+//            return graph;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new IllegalStateException();
+//        }
+//    }
 
     /**
      * <p>loadGraphRMatrix.</p>
@@ -978,6 +1052,134 @@ public class GraphSaveLoadUtils {
         }
 
         return table.toString();
+    }
+
+    public static String graphToAmatCpag(Graph g) {
+        if (!(g.paths().isLegalCpdag() || g.paths().isLegalDag())) {
+            throw new IllegalArgumentException("Graph is not a DAG or CPDAG.");
+        }
+
+        List<Node> vars = g.getNodes();
+
+        int[][] m = new int[vars.size()][vars.size()];
+
+        for (int i = 0; i < vars.size(); i++) {
+            for (int j = 0; j < vars.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                Node node1 = vars.get(i);
+                Node node2 = vars.get(j);
+
+                if (g.isAdjacentTo(node1, node2)) {
+                    Edge edge = g.getEdge(node1, node2);
+
+                    if (Edges.isDirectedEdge(edge)) {
+                        if (edge.pointsTowards(node2)) {
+                            m[j][i] = 1;
+                        }
+                    } else if (Edges.isUndirectedEdge(edge)) {
+                        m[i][j] = 1;
+                        m[j][i] = 1;
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Node node : vars) {
+            sb.append("\"").append(node.getName()).append("\" ");
+        }
+
+        sb.append("\n");
+
+        for (int i = 0; i < vars.size(); i++) {
+            sb.append("\"").append(vars.get(i).getName()).append("\" ");
+
+            for (int j = 0; j < vars.size(); j++) {
+                sb.append(m[i][j]).append(" ");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Saves a PAG in the "amat.pag" format of PCALG. We will save it in the form that R would print the matrix to file
+     * using write.matrix(mat, path). For the amat.pag format, for a matrix m, endpoints are explicitly represented, as
+     * follows. 1 is a circle endpoint, 2 is an arrow endpoint, 3 is a tail endpoint, and 0 is a null endpoint (i.e., no
+     * edge)
+     */
+    public static String graphToAmatPag(Graph g) {
+        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
+            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
+        }
+
+        List<Node> vars = g.getNodes();
+
+        int[][] m = new int[vars.size()][vars.size()];
+
+        for (int i = 0; i < vars.size(); i++) {
+
+            for (int j = 0; j < vars.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                Node node1 = vars.get(i);
+                Node node2 = vars.get(j);
+
+                if (g.isAdjacentTo(node1, node2)) {
+                    Edge edge = g.getEdge(node1, node2);
+
+                    Endpoint endpoint1 = edge.getEndpoint1();
+
+                    if (endpoint1 == Endpoint.CIRCLE) {
+                        m[j][i] = 1;
+                    } else if (endpoint1 == Endpoint.ARROW) {
+                        m[j][i] = 2;
+                    } else if (endpoint1 == Endpoint.TAIL) {
+                        m[j][i] = 3;
+                    } else {
+                        m[j][i] = 0;
+                    }
+
+                    Endpoint endpoint2 = edge.getEndpoint2();
+
+                    if (endpoint2 == Endpoint.CIRCLE) {
+                        m[i][j] = 1;
+                    } else if (endpoint2 == Endpoint.ARROW) {
+                        m[i][j] = 2;
+                    } else if (endpoint2 == Endpoint.TAIL) {
+                        m[i][j] = 3;
+                    } else {
+                        m[i][j] = 0;
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Node node : vars) {
+            sb.append("\"").append(node.getName()).append("\" ");
+        }
+
+        sb.append("\n");
+
+        for (int i = 0; i < vars.size(); i++) {
+            sb.append("\"").append(vars.get(i).getName()).append("\" ");
+
+            for (int j = 0; j < vars.size(); j++) {
+                sb.append(m[i][j]).append(" ");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
     /**
