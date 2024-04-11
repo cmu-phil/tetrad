@@ -1055,8 +1055,8 @@ public class GraphSaveLoadUtils {
     }
 
     public static String graphToAmatCpag(Graph g) {
-        if (!(g.paths().isLegalCpdag() || g.paths().isLegalDag())) {
-            throw new IllegalArgumentException("Graph is not a DAG or CPDAG.");
+        if (!(g.paths().isLegalMpdag())) {
+            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
         }
 
         List<Node> vars = g.getNodes();
