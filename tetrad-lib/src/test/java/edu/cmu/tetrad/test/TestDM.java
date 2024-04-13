@@ -743,8 +743,8 @@ public class TestDM {
         graph.addDirectedEdge(X3, X0);
 
 
-        System.out.print(graph.paths().existsDirectedPathFromTo(X0, X3));
-        System.out.print(graph.paths().existsDirectedPathFromTo(X3, X0));
+        System.out.print(graph.paths().existsDirectedPath(X0, X3));
+        System.out.print(graph.paths().existsDirectedPath(X3, X0));
 
         for (Node node : graph.getNodes()) {
             System.out.println("Nodes adjacent to " + node + ": " + graph.getAdjacentNodes(node) + "\n");

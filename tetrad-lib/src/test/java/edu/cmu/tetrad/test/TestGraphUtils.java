@@ -67,7 +67,7 @@ public final class TestGraphUtils {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> directedPaths = graph.paths().directedPathsFromTo(node1, node2, -1);
+                List<List<Node>> directedPaths = graph.paths().directedPaths(node1, node2, -1);
 
                 for (List<Node> path : directedPaths) {
                     assertTrue(graph.paths().isAncestorOf(path.get(0), path.get(path.size() - 1)));
@@ -275,40 +275,91 @@ public final class TestGraphUtils {
     @Test
     public void test9() {
 
-        // Make a random graph.
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(20, 0, 50,
                 10, 10, 10, false);
         graph = GraphTransforms.cpdagForDag(graph);
 
+        int numSmnallestSizes = 2;
+
+        if (!graph.paths().isLegalCpdag()) {
+            throw new IllegalArgumentException("Not legal CPDAG.");
+        }
+
         System.out.println(graph);
 
-        // List the nodes in graph.
+        System.out.println("Number of smallest sizes printed = " + numSmnallestSizes);
+
         List<Node> nodes = graph.getNodes();
 
-        // For each pair x, y of nodes in the graph, list the sets of nodes that are returned by graph.paths().adjustmentSetsMbMpdag(x, y).
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
+        for (Node x : nodes) {
+            for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (graph.isAdjacentTo(x, y) && graph.getEdge(x, y).pointsTowards(y)) {
-                    System.out.println("Edge: " + graph.getEdge(x, y));
-                } else if (graph.isAdjacentTo(x, y) && Edges.isUndirectedEdge(graph.getEdge(x, y))) {
-                    System.out.println("Undirected edge: " + graph.getEdge(x, y));
+                if (!graph.isAdjacentTo(x, y)) continue;
+
+                if (graph.getEdge(x, y).pointsTowards(y)) {
+                    System.out.println("\nDirected Edge: " + graph.getEdge(x, y));
+                } else if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    System.out.println("\nUndirected edge: " + graph.getEdge(x, y));
+                } else if (graph.getEdge(x, y).pointsTowards(x)) {
+                    continue;
                 } else {
-                    System.out.println("Wrong: " + graph.getEdge(x, y));
+                    throw new IllegalStateException("No edge between " + x + " and " + y);
                 }
 
-                Set<Set<Node>> sets = graph.paths().adjustmentSets2(x, y, -1);
+                Set<Set<Node>> sets = graph.paths().adjustmentSets2(x, y, numSmnallestSizes);
+
+                if (sets.isEmpty()) {
+                    System.out.println("For " + x + " and " + y + ", no sets.");
+                }
 
                 for (Set<Node> set : sets) {
                     System.out.println("For " + x + " and " + y + ", set = " + set);
-//                    assertTrue(graph.paths().isMSeparatedFrom(x, y, set));
                 }
             }
         }
     }
+
+    @Test
+    public void test10() {
+        RandomUtil.getInstance().setSeed(1040404L);
+
+        // 10 times over, make a random DAG
+        for (int i = 0; i < 10; i++) {
+            Graph graph = RandomGraph.randomGraphRandomForwardEdges(10, 10, 5,
+                    10, 10, 10, false);
+
+            // Construct its CPDAG
+            Graph cpdag = GraphTransforms.cpdagForDag(graph);
+            assertTrue(cpdag.paths().isLegalCpdag());
+            assertTrue(cpdag.paths().isLegalMpdag());
+
+//            // Test whether the CPDAG is a legal DAG; if not, print it.
+//            if (!cpdag.paths().isLegalCpdag()) {
+//
+//                System.out.println("Not legal CPDAG:");
+//
+//                System.out.println(cpdag);
+//
+//                List<Node> pi = new ArrayList<>(cpdag.getNodes());
+//                cpdag.paths().makeValidOrder(pi);
+//
+//                System.out.println("Valid order: " + pi);
+//
+//                Graph dag = Paths.getDag(pi, cpdag, true);
+//
+//                System.out.println("DAG: " + dag);
+//
+//                Graph cpdag2 = GraphTransforms.cpdagForDag(dag);
+//
+//                System.out.println("CPDAG for DAG: " + cpdag2);
+//
+//                break;
+//            }
+        }
+
+    }
+
 
     private Set<Node> set(Node... z) {
         Set<Node> list = new HashSet<>();

@@ -1813,8 +1813,8 @@ public class PerformanceTests {
             boolean existsCommonCause = false;
 
             for (Node latent : missingNodes) {
-                if (dag.paths().existsDirectedPathFromTo(latent, edge.getNode1())
-                    && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
+                if (dag.paths().existsDirectedPath(latent, edge.getNode1())
+                    && dag.paths().existsDirectedPath(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }

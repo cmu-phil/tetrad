@@ -2364,7 +2364,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPaths(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -3298,7 +3298,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPaths(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

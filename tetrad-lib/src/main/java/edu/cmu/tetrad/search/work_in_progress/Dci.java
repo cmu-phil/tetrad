@@ -710,7 +710,7 @@ public class Dci {
         if ((graph.isAdjacentTo(a, c)) &&
             (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
             (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }

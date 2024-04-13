@@ -48,7 +48,7 @@ public class NoCyclicPathsInMagCondition implements Statistic {
         Graph mag = GraphTransforms.pagToMag(estGraph);
 
         for (Node n : mag.getNodes()) {
-            if (mag.paths().existsDirectedPathFromTo(n, n)) {
+            if (mag.paths().existsDirectedPath(n, n)) {
                 return 0;
             }
         }

@@ -399,7 +399,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.TAIL) {
-                    if (dag.paths().existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                    if (dag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -409,7 +409,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.TAIL) {
-                    if (dag.paths().existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                    if (dag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
                         tailsTp++;
                     } else {
                         tailsFp++;

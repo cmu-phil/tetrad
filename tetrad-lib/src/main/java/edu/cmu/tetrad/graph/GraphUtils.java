@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TextTable;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -41,9 +42,7 @@ import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Utility class for manipulating graphs.
- *
- * @author josephramsey
+ * Utility class for working with graphs.
  */
 public final class GraphUtils {
 
@@ -1840,8 +1839,7 @@ public final class GraphUtils {
      * @param nodes          The nodes in the graph.
      * @param sepsets        A SepsetProducer that will do the sepset search operation described.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes,
-                                                SepsetProducer sepsets) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -2048,10 +2046,10 @@ public final class GraphUtils {
 
     /**
      * Returns adjustment sets of X-&amp;Y in MPDAG G2 that are subsets of the Markov blanket for X in G2 or the Markov
-     * blanket of Y in G2, once the edge X-&amp;Y is removed from the graph. If X and Y are not adjacent in G2, the method
-     * returns an empty set. If X and Y are connected by an undirected edge, first the edge is oriented as X-&gt;Y, and
-     * then the Meek rules are applied to find an MPDAG G2' that is consistent with G2 and the orientation of X-&gt;Y. The
-     * adjustment sets are then calculated in G2' as above.
+     * blanket of Y in G2, once the edge X-&amp;Y is removed from the graph. If X and Y are not adjacent in G2, the
+     * method returns an empty set. If X and Y are connected by an undirected edge, first the edge is oriented as
+     * X-&gt;Y, and then the Meek rules are applied to find an MPDAG G2' that is consistent with G2 and the orientation
+     * of X-&gt;Y. The adjustment sets are then calculated in G2' as above.
      */
     public static Set<Set<Node>> adjustmentSets1(Graph G, Node X, Node Y) {
         if (!G.paths().isLegalMpdag()) {
@@ -2119,75 +2117,116 @@ public final class GraphUtils {
         return adjustmentSets;
     }
 
-    public static Set<Set<Node>> adjustmentSets2(Graph G, Node X, Node Y, int maxSize) {
-        if (!G.paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
+    /**
+     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
+     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes. This is currently for an
+     * MPDAG only.
+     *
+     * Precision: G is a legal MPDAG.
+     *
+     * @param x                the starting node
+     * @param y                the ending node
+     * @param numSmallestSizes the number of the smallest sizes for the subsets to return
+     * @return a set of sets of nodes representing adjustment sets
+     */
+    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes) {
+        if (!G.isAdjacentTo(x, y)) {
+            throw new IllegalArgumentException("Nodes must be adjacent in the graph.");
         }
 
+        if (G.getEdge(x, y).pointsTowards(x)) {
+            throw new IllegalArgumentException("Edge must not point toward x.");
+        }
+
+        Set<Node> anteriority = G.paths().anteriority(x, y);
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), anteriority, x, y, numSmallestSizes);
+    }
+
+    private static @NotNull Graph getGraphWithoutXToY(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
-        Set<Set<Node>> adjustmentSets = new HashSet<>();
 
-        if (G2.isAdjacentTo(X, Y)) {
-            if (Edges.isUndirectedEdge(G2.getEdge(X, Y))) {
-                Knowledge knowledge = new Knowledge();
-                knowledge.setRequired(X.getName(), Y.getName());
-                MeekRules meekRules = new MeekRules();
-                meekRules.setKnowledge(knowledge);
-                G2.removeEdge(X, Y);
-                G2.addDirectedEdge(X, Y);
-                meekRules.orientImplied(G2);
-            }
-
-            if (!G2.getEdge(X, Y).pointsTowards(Y)) {
-                return adjustmentSets;
-            }
-
-            G2.removeEdge(X, Y);
-
-            Set<Node> anteriority = G2.paths().anteriority(X, Y);
-            System.out.println("Anteriority of " + X + " and " + Y + ": " + anteriority);
-            Set<Node> descendants = new HashSet<>(G2.paths().getDescendants(X));
-            descendants.addAll(G2.paths().getDescendants(Y));
-            descendants.remove(X);
-            descendants.remove(Y);
-            anteriority.removeAll(descendants);
-            System.out.println("After removing descendants of " + X + " and " + Y + ": " + anteriority);
-
-            List<Node> _anteriority = new ArrayList<>(anteriority);
-            maxSize = maxSize < 0 ? _anteriority.size() : maxSize;
-            var sublists = new SublistGenerator(_anteriority.size(), maxSize);
-            int[] choice;
-
-            while ((choice = sublists.next()) != null) {
-                List<Node> subset = GraphUtils.asList(choice, _anteriority);
-                HashSet<Node> s = new HashSet<>(subset);
-                if (G2.paths().isMSeparatedFrom(X, Y, s)) {
-                    adjustmentSets.add(s);
-                }
-            }
+        if (Edges.isUndirectedEdge(G2.getEdge(x, y))) {
+            Knowledge knowledge = new Knowledge();
+            knowledge.setRequired(x.getName(), y.getName());
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(knowledge);
+            G2.removeEdge(x, y);
+            G2.addDirectedEdge(x, y);
+            meekRules.orientImplied(G2);
         }
 
-        return adjustmentSets;
+        G2.removeEdge(x, y);
+        return G2;
     }
 
     /**
-     * Computes the anteriority of a set of nodes in a graph.
+     * Returns the subsets T of S such that X _||_ Y | T in G and T is a subset of up to the numSmallestSizes smallest
+     * minimal sizes of subsets for S.
      *
-     * The anteriority of a set of nodes is the set of nodes that are ancestors of all the given nodes.
-     * Ancestors of a node are the nodes that can be reached by following directed edges starting from the node.
+     * @param G                the graph in which to compute the subsets
+     * @param S                the set of nodes for which to compute the subsets
+     * @param X                the first node in the separation
+     * @param Y                the second node in the separation
+     * @param numSmallestSizes the number of the smallest sizes for the subsets to return
+     * @return the subsets T of S such that X _||_ Y | T in G and T is a subset of up to the numSmallestSizes minimal
+     * sizes of subsets for S
+     */
+    private static Set<Set<Node>> getNMinimalSubsets(Graph G, Set<Node> S, Node X, Node Y, int numSmallestSizes) {
+        if (numSmallestSizes < 0) {
+            throw new IllegalArgumentException("numSmallestSizes must be greater than or equal to 0.");
+        }
+
+        List<Node> _S = new ArrayList<>(S);
+        Set<Set<Node>> nMinimal = new HashSet<>();
+        var sublists = new SublistGenerator(_S.size(), _S.size());
+        int[] choice;
+        int _n = 0;
+        int size = -1;
+
+        while ((choice = sublists.next()) != null) {
+            List<Node> subset = GraphUtils.asList(choice, _S);
+            HashSet<Node> s = new HashSet<>(subset);
+            if (G.paths().isMSeparatedFrom(X, Y, s)) {
+
+                if (choice.length > size) {
+                    size = choice.length;
+                    _n++;
+
+                    if (_n > numSmallestSizes) {
+                        break;
+                    }
+                }
+
+                nMinimal.add(s);
+            }
+        }
+
+        return nMinimal;
+    }
+
+    /**
+     * Computes the set of nodes z that have semidirected paths to all the nodes in the given set x.
      *
      * @param G the graph in which to compute the anteriority
      * @param x the nodes for which to compute the anteriority
      * @return the anteriority set, which contains all the nodes that are ancestors of all the given nodes
      */
-    public static Set<Node> anteriority(Graph G, Node...x) {
-        HashSet<Node> anteriority = new HashSet<>(G.paths().getAncestors(x[0]));
-        for (int i = 1; i < x.length; i++) {
-            anteriority.retainAll(G.paths().getAncestors(x[i]));
+    public static Set<Node> anteriority(Graph G, Node... x) {
+        Set<Node> anteriority = new HashSet<>();
+
+        Z:
+        for (Node z : G.getNodes()) {
+            for (Node _x : x) {
+                if (G.paths().existsDirectedPath(z, _x)) {
+                    anteriority.add(z);
+                }
+            }
         }
-        for (Node node : x) {
-            anteriority.remove(node);
+
+        for (Node _x : x) {
+            anteriority.remove(_x);
         }
+
         return anteriority;
     }
 
@@ -2231,8 +2270,7 @@ public final class GraphUtils {
             String var1 = st2.nextToken();
 
             if (var1.startsWith("Latent(")) {
-                String latentName =
-                        (String) var1.subSequence(7, var1.length() - 1);
+                String latentName = (String) var1.subSequence(7, var1.length() - 1);
                 GraphNode node = new GraphNode(latentName);
                 node.setNodeType(NodeType.LATENT);
                 graph.addNode(node);
@@ -2259,9 +2297,7 @@ public final class GraphUtils {
             Edge edge = graph.getEdge(nodeA, nodeB);
 
             if (edge != null) {
-                throw new IllegalArgumentException(
-                        "Multiple edges connecting " +
-                        "nodes is not supported.");
+                throw new IllegalArgumentException("Multiple edges connecting " + "nodes is not supported.");
             }
 
             if (edgeSpec.lastIndexOf("-->") != -1) {
@@ -2316,17 +2352,13 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (referenceCpdag.isDefCollider(a, b, c)
-                    && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                    && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                if (referenceCpdag.isDefCollider(a, b, c) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null && !sepset.contains(b)
-                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
@@ -2654,11 +2686,7 @@ public final class GraphUtils {
          * @param edgesRemoved a {@link java.util.List} object
          * @param counts       a int[][]
          */
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp,
-                               int ahdCorrect, double adjPrec, double adjRec, double ahdPrec,
-                               double ahdRec, int shd,
-                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                               int[][] counts) {
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp, int ahdCorrect, double adjPrec, double adjRec, double ahdPrec, double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved, int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;

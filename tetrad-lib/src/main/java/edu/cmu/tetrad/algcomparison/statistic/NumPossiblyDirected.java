@@ -53,7 +53,7 @@ public class NumPossiblyDirected implements Statistic {
                 Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (new Paths(cpdag).existsSemiDirectedPath(x, y)) {
-                    if (!new Paths(cpdag).existsDirectedPathFromTo(x, y)) {
+                    if (!new Paths(cpdag).existsDirectedPath(x, y)) {
                         count++;
                     }
                 }

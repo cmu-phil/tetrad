@@ -59,7 +59,7 @@ public class DefiniteDirectedPathPrecision implements Statistic {
                 if (e != null && e.pointsTowards(y) && e.getProperties().contains(Edge.Property.dd)) {
 
 //                if (estGraph.existsDirectedPathFromTo(x, y)) {
-                    if (cpdag.paths().existsDirectedPathFromTo(x, y)) {
+                    if (cpdag.paths().existsDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fp++;

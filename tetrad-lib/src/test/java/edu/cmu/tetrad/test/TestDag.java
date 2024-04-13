@@ -76,8 +76,8 @@ public final class TestDag {
 
         assertTrue(graph.paths().isMConnectedTo(x1, x3, Collections.EMPTY_SET));
 
-        assertTrue(graph.paths().existsDirectedPathFromTo(x1, x4));
-        assertFalse(graph.paths().existsDirectedPathFromTo(x1, x5));
+        assertTrue(graph.paths().existsDirectedPath(x1, x4));
+        assertFalse(graph.paths().existsDirectedPath(x1, x5));
 
         assertTrue(graph.paths().isAncestorOf(x2, x4));
         assertFalse(graph.paths().isAncestorOf(x4, x2));
