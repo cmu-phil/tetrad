@@ -272,6 +272,44 @@ public final class TestGraphUtils {
         }
     }
 
+    @Test
+    public void test9() {
+
+        // Make a random graph.
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(20, 0, 50,
+                10, 10, 10, false);
+        graph = GraphTransforms.cpdagForDag(graph);
+
+        System.out.println(graph);
+
+        // List the nodes in graph.
+        List<Node> nodes = graph.getNodes();
+
+        // For each pair x, y of nodes in the graph, list the sets of nodes that are returned by graph.paths().adjustmentSetsMbMpdag(x, y).
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+                if (x == y) continue;
+
+                if (graph.isAdjacentTo(x, y) && graph.getEdge(x, y).pointsTowards(y)) {
+                    System.out.println("Edge: " + graph.getEdge(x, y));
+                } else if (graph.isAdjacentTo(x, y) && Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    System.out.println("Undirected edge: " + graph.getEdge(x, y));
+                } else {
+                    System.out.println("Wrong: " + graph.getEdge(x, y));
+                }
+
+                Set<Set<Node>> sets = graph.paths().adjustmentSets2(x, y, -1);
+
+                for (Set<Node> set : sets) {
+                    System.out.println("For " + x + " and " + y + ", set = " + set);
+//                    assertTrue(graph.paths().isMSeparatedFrom(x, y, set));
+                }
+            }
+        }
+    }
+
     private Set<Node> set(Node... z) {
         Set<Node> list = new HashSet<>();
         Collections.addAll(list, z);

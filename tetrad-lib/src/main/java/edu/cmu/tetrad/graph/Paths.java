@@ -1992,10 +1992,28 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>getDescendants.</p>
+     * Returns a list of all descendants of the given node.
      *
-     * @param nodes a {@link java.util.List} object
-     * @return a {@link java.util.List} object
+     * @param node The node for which to find descendants.
+     * @return A list of all descendant nodes.
+     */
+    public List<Node> getDescendants(Node node) {
+        Set<Node> descendants = new HashSet<>();
+
+        for (Node n : graph.getNodes()) {
+            if (isDescendentOf(n, node)) {
+                descendants.add(n);
+            }
+        }
+
+        return new ArrayList<>(descendants);
+    }
+
+    /**
+     * Retrieves the descendants of the given list of nodes.
+     *
+     * @param nodes The list of nodes to find descendants for.
+     * @return A list of nodes that are descendants of the given nodes.
      */
     public List<Node> getDescendants(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
@@ -2023,10 +2041,28 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>getAncestors.</p>
+     * Retrieves the ancestors of a specified `Node` in the graph.
      *
-     * @param nodes a {@link java.util.List} object
-     * @return a {@link java.util.List} object
+     * @param node The node whose ancestors are to be retrieved.
+     * @return A list of ancestors for the specified `Node`.
+     */
+    public List<Node> getAncestors(Node node) {
+        Set<Node> ancestors = new HashSet<>();
+
+        for (Node n : graph.getNodes()) {
+            if (isAncestorOf(n, node)) {
+                ancestors.add(n);
+            }
+        }
+
+        return new ArrayList<>(ancestors);
+    }
+
+    /**
+     * Returns a list of all ancestors of the given nodes.
+     *
+     * @param nodes the list of nodes for which to find ancestors
+     * @return a list containing all the ancestors of the given nodes
      */
     public List<Node> getAncestors(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
@@ -2161,6 +2197,40 @@ public class Paths implements TetradSerializable {
      */
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPath(node1, Collections.singleton(node2));
+    }
+
+    /**
+     * Returns a set of adjustment sets in the modified path-specific directed acyclic graph (mpDAG) between two nodes
+     * that are subsets of MB(x) or MB(y).
+     *
+     * @param x the source node in the mpDAG
+     * @param y the target node in the mpDAG
+     * @return a set of adjustment sets in the mpDAG between the source and target nodes
+     */
+    public Set<Set<Node>> adjustmentSets1(Node x, Node y) {
+        return GraphUtils.adjustmentSets1(graph, x, y);
+    }
+
+    /**
+     * Returns the adjustment sets, calculated based on anteriority minus descendants subsets, between two nodes in a graph.
+     *
+     * @param x the starting node
+     * @param y the ending node
+     * @return a set of sets of nodes representing the adjustment sets
+     */
+    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int maxSize) {
+        return GraphUtils.adjustmentSets2(graph, x, y, maxSize);
+    }
+
+    /**
+     * Returns the set of nodes preceding node y in the graph, based on the given node x.
+     *
+     * @param x the starting node
+     * @param y the target node
+     * @return a set of nodes preceding node y
+     */
+    public Set<Node> anteriority(Node x, Node y) {
+        return GraphUtils.anteriority(graph, x, y);
     }
 
     /**

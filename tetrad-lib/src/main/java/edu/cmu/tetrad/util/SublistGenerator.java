@@ -211,7 +211,7 @@ public final class SublistGenerator {
      * @return a {@link java.lang.String} object
      */
     public String toString() {
-        return "Depth choice generator: a = " + this.a + " depth = " + this.depth;
+        return "Sublist generator: a = " + this.a + " depth = " + this.depth;
     }
 
     /**

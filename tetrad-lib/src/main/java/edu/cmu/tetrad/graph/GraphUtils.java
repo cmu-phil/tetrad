@@ -23,11 +23,14 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
@@ -2041,6 +2044,151 @@ public final class GraphUtils {
         district.remove(x);
 
         return district;
+    }
+
+    /**
+     * Returns adjustment sets of X-&amp;Y in MPDAG G2 that are subsets of the Markov blanket for X in G2 or the Markov
+     * blanket of Y in G2, once the edge X-&amp;Y is removed from the graph. If X and Y are not adjacent in G2, the method
+     * returns an empty set. If X and Y are connected by an undirected edge, first the edge is oriented as X-&gt;Y, and
+     * then the Meek rules are applied to find an MPDAG G2' that is consistent with G2 and the orientation of X-&gt;Y. The
+     * adjustment sets are then calculated in G2' as above.
+     */
+    public static Set<Set<Node>> adjustmentSets1(Graph G, Node X, Node Y) {
+        if (!G.paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
+        }
+
+        Graph G2 = new EdgeListGraph(G);
+
+        Set<Set<Node>> adjustmentSets = new HashSet<>();
+
+        if (G2.isAdjacentTo(X, Y)) {
+            if (Edges.isUndirectedEdge(G2.getEdge(X, Y))) {
+                Knowledge knowledge = new Knowledge();
+                knowledge.setRequired(X.getName(), Y.getName());
+                MeekRules meekRules = new MeekRules();
+                meekRules.setKnowledge(knowledge);
+                G2.removeEdge(X, Y);
+                G2.addDirectedEdge(X, Y);
+                meekRules.orientImplied(G2);
+            }
+
+            if (!G2.getEdge(X, Y).pointsTowards(Y)) {
+                return adjustmentSets;
+            }
+
+            G2.removeEdge(X, Y);
+            MsepTest msep = new MsepTest(G2);
+
+            Set<Node> mbX = GraphUtils.markovBlanket(X, G2);
+
+            List<Node> _mbX = new ArrayList<>(mbX);
+            SublistGenerator mbXGenerator = new SublistGenerator(_mbX.size(), _mbX.size());
+            int[] choice;
+
+            while ((choice = mbXGenerator.next()) != null) {
+                List<Node> sx = GraphUtils.asList(choice, _mbX);
+                if (sx.contains(Y)) {
+                    continue;
+                }
+
+                if (msep.isMSeparated(X, Y, new HashSet<>(sx))) {
+                    adjustmentSets.add(new HashSet<>(sx));
+                }
+
+                adjustmentSets.add(new HashSet<>(sx));
+            }
+
+            Set<Node> mbY = GraphUtils.markovBlanket(Y, G2);
+
+            List<Node> _mbY = new ArrayList<>(mbY);
+            SublistGenerator mbYGenerator = new SublistGenerator(_mbY.size(), _mbY.size());
+
+            while ((choice = mbYGenerator.next()) != null) {
+                List<Node> sy = GraphUtils.asList(choice, _mbY);
+                if (sy.contains(X)) {
+                    continue;
+                }
+
+                if (msep.isMSeparated(X, Y, new HashSet<>(sy))) {
+                    adjustmentSets.add(new HashSet<>(sy));
+                }
+            }
+        }
+
+        return adjustmentSets;
+    }
+
+    public static Set<Set<Node>> adjustmentSets2(Graph G, Node X, Node Y, int maxSize) {
+        if (!G.paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
+        }
+
+        Graph G2 = new EdgeListGraph(G);
+        Set<Set<Node>> adjustmentSets = new HashSet<>();
+
+        if (G2.isAdjacentTo(X, Y)) {
+            if (Edges.isUndirectedEdge(G2.getEdge(X, Y))) {
+                Knowledge knowledge = new Knowledge();
+                knowledge.setRequired(X.getName(), Y.getName());
+                MeekRules meekRules = new MeekRules();
+                meekRules.setKnowledge(knowledge);
+                G2.removeEdge(X, Y);
+                G2.addDirectedEdge(X, Y);
+                meekRules.orientImplied(G2);
+            }
+
+            if (!G2.getEdge(X, Y).pointsTowards(Y)) {
+                return adjustmentSets;
+            }
+
+            G2.removeEdge(X, Y);
+
+            Set<Node> anteriority = G2.paths().anteriority(X, Y);
+            System.out.println("Anteriority of " + X + " and " + Y + ": " + anteriority);
+            Set<Node> descendants = new HashSet<>(G2.paths().getDescendants(X));
+            descendants.addAll(G2.paths().getDescendants(Y));
+            descendants.remove(X);
+            descendants.remove(Y);
+            anteriority.removeAll(descendants);
+            System.out.println("After removing descendants of " + X + " and " + Y + ": " + anteriority);
+
+            List<Node> _anteriority = new ArrayList<>(anteriority);
+            maxSize = maxSize < 0 ? _anteriority.size() : maxSize;
+            var sublists = new SublistGenerator(_anteriority.size(), maxSize);
+            int[] choice;
+
+            while ((choice = sublists.next()) != null) {
+                List<Node> subset = GraphUtils.asList(choice, _anteriority);
+                HashSet<Node> s = new HashSet<>(subset);
+                if (G2.paths().isMSeparatedFrom(X, Y, s)) {
+                    adjustmentSets.add(s);
+                }
+            }
+        }
+
+        return adjustmentSets;
+    }
+
+    /**
+     * Computes the anteriority of a set of nodes in a graph.
+     *
+     * The anteriority of a set of nodes is the set of nodes that are ancestors of all the given nodes.
+     * Ancestors of a node are the nodes that can be reached by following directed edges starting from the node.
+     *
+     * @param G the graph in which to compute the anteriority
+     * @param x the nodes for which to compute the anteriority
+     * @return the anteriority set, which contains all the nodes that are ancestors of all the given nodes
+     */
+    public static Set<Node> anteriority(Graph G, Node...x) {
+        HashSet<Node> anteriority = new HashSet<>(G.paths().getAncestors(x[0]));
+        for (int i = 1; i < x.length; i++) {
+            anteriority.retainAll(G.paths().getAncestors(x[i]));
+        }
+        for (Node node : x) {
+            anteriority.remove(node);
+        }
+        return anteriority;
     }
 
     /**
