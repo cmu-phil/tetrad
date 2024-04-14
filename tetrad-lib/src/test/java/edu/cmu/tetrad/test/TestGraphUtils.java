@@ -210,18 +210,18 @@ public final class TestGraphUtils {
         assertFalse(graph.paths().isAncestorOf(y, a));
         assertFalse(graph.paths().isAncestorOf(x, b));
 
-        assertTrue(graph.paths().isMConnectedTo(a, y, new HashSet<>()));
-        assertTrue(graph.paths().isMConnectedTo(b, x, new HashSet<>()));
+        assertTrue(graph.paths().isMConnectedTo(a, y, new HashSet<>(), false));
+        assertTrue(graph.paths().isMConnectedTo(b, x, new HashSet<>(), false));
 
         // MSEP problem now with 2-cycles. TODO
-        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(x)));
-        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(y)));
+        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(x), false));
+        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(y), false));
 
-        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(b)));
-        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(a)));
+        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(b), false));
+        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(a), false));
 
-        assertTrue(graph.paths().isMConnectedTo(y, a, Collections.singleton(b)));
-        assertTrue(graph.paths().isMConnectedTo(x, b, Collections.singleton(a)));
+        assertTrue(graph.paths().isMConnectedTo(y, a, Collections.singleton(b), false));
+        assertTrue(graph.paths().isMConnectedTo(x, b, Collections.singleton(a), false));
     }
 
     @Test
@@ -246,11 +246,11 @@ public final class TestGraphUtils {
         assertTrue(graph.paths().isAncestorOf(a, c));
 
         // MSEP problem now with 2-cycles. TODO
-        assertTrue(graph.paths().isMConnectedTo(a, b, Collections.EMPTY_SET));
-        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.EMPTY_SET));
+        assertTrue(graph.paths().isMConnectedTo(a, b, Collections.EMPTY_SET, false));
+        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.EMPTY_SET, false));
 //
-        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.singleton(b)));
-        assertTrue(graph.paths().isMConnectedTo(c, a, Collections.singleton(b)));
+        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.singleton(b), false));
+        assertTrue(graph.paths().isMConnectedTo(c, a, Collections.singleton(b), false));
     }
 
 
@@ -266,8 +266,8 @@ public final class TestGraphUtils {
             Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
             Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
 
-            if (graph.paths().isMSeparatedFrom(x, y, set(z1)) && graph.paths().isMSeparatedFrom(x, y, set(z2)) &&
-                !graph.paths().isMSeparatedFrom(x, y, set(z1, z2))) {
+            if (graph.paths().isMSeparatedFrom(x, y, set(z1), false) && graph.paths().isMSeparatedFrom(x, y, set(z2), false) &&
+                !graph.paths().isMSeparatedFrom(x, y, set(z1, z2), false)) {
                 System.out.println("x = " + x);
                 System.out.println("y = " + y);
                 System.out.println("z1 = " + z1);

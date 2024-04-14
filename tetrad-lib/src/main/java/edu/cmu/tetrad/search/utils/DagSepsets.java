@@ -88,7 +88,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        return this.dag.paths().isMSeparatedFrom(a, b, c);
+        return this.dag.paths().isMSeparatedFrom(a, b, c, false);
     }
 
     /**

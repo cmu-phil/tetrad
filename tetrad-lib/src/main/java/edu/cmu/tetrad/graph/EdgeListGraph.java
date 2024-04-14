@@ -496,32 +496,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
      */
     public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
-        return !new Paths(this).isMConnectedTo(x, y, z);
-    }
-
-    /**
-     * Determines whether two nodes are d-separated given z.
-     *
-     * @param x a {@link java.util.Set} object
-     * @param y a {@link java.util.Set} object
-     * @param z a {@link java.util.Set} object
-     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
-     */
-    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
-        return !new Paths(this).isMConnectedTo(x, y, z);
-    }
-
-    /**
-     * Determines whether two nodes are d-separated given z.
-     *
-     * @param ancestors A map of ancestors for each node.
-     * @param x         a {@link java.util.Set} object
-     * @param y         a {@link java.util.Set} object
-     * @param z         a {@link java.util.Set} object
-     * @return True if the nodes are d-separated given z, false if not.
-     */
-    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        return !new Paths(this).isMConnectedTo(x, y, z, ancestors);
+        return !new Paths(this).isMConnectedTo(x, y, z, false);
     }
 
     /**

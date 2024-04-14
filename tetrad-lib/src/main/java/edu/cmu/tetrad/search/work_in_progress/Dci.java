@@ -1744,7 +1744,7 @@ public class Dci {
                         continue;
                     }
                     for (Set<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.paths().isMSeparatedFrom(x, y, condSet)) {
+                        if (!graph.paths().isMSeparatedFrom(x, y, condSet, false)) {
                             return true;
                         }
                     }
@@ -1864,7 +1864,7 @@ public class Dci {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
                 Set<Node> z = new HashSet<>(set);
-                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z, false)) {
                     continue;
                 }
                 combinedSepset.set(pair.getFirst(), pair.getSecond(), new HashSet<>(set));
@@ -1937,7 +1937,7 @@ public class Dci {
                     for (Set<Node> inpset : pset) {
                         Set<Node> cond = new HashSet<>(inpset);
                         cond.add(node);
-                        if (fciResult.paths().isMSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isMSeparatedFrom(x, y, cond, false)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -1969,7 +1969,7 @@ public class Dci {
             int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet))) {
+                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet), false)) {
                     sepset.set(x, y, new HashSet<>(condSet));
                 }
                 c++;

@@ -2773,7 +2773,7 @@ public final class TestGrasp {
 
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.paths().isMSeparatedFrom(x, y, parents)) {
+                    if (!graph.paths().isMSeparatedFrom(x, y, parents, false)) {
                         System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }

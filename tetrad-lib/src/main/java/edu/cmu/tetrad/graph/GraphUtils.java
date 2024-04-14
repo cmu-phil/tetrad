@@ -2171,7 +2171,8 @@ public final class GraphUtils {
      * @return the subsets T of S such that X _||_ Y | T in G and T is a subset of up to the numSmallestSizes minimal
      * sizes of subsets for S
      */
-    private static Set<Set<Node>> getNMinimalSubsets(Graph G, Set<Node> S, Node X, Node Y, int numSmallestSizes) {
+    private static Set<Set<Node>> getNMinimalSubsets(Graph G, Set<Node> S, Node X, Node Y,
+                                                     int numSmallestSizes) {
         if (numSmallestSizes < 0) {
             throw new IllegalArgumentException("numSmallestSizes must be greater than or equal to 0.");
         }
@@ -2186,7 +2187,7 @@ public final class GraphUtils {
         while ((choice = sublists.next()) != null) {
             List<Node> subset = GraphUtils.asList(choice, _S);
             HashSet<Node> s = new HashSet<>(subset);
-            if (G.paths().isMSeparatedFrom(X, Y, s)) {
+            if (G.paths().isMSeparatedFrom(X, Y, s, false)) {
 
                 if (choice.length > size) {
                     size = choice.length;
