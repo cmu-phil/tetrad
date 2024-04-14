@@ -241,7 +241,7 @@ public final class TestSearchGraph {
                     }
 
                     if (graph.isMSeparatedFrom(x, y, z) != graph.isMSeparatedFrom(y, x, z)) {
-
+                        System.out.println(graph);
 
                         fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same m-sep result as " +
                              LogUtilsSearch.independenceFact(y, x, z));

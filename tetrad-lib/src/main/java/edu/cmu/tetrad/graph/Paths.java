@@ -106,7 +106,7 @@ public class Paths implements TetradSerializable {
             minus.remove(x);
             Set<Node> z = new HashSet<>(minus);
 
-            if (!g.paths().isMSeparatedFrom(y, x, z)) {
+            if (!g.paths().isMSeparatedFrom(x, y, z)) {
                 if (verbose) {
                     System.out.println("Adding " + y + " as a parent of " + x + " with z = " + z);
                 }
@@ -950,12 +950,10 @@ public class Paths implements TetradSerializable {
 
             private final Edge edge;
             private final Node node;
-            private boolean sawInArrow = false;
 
-            public EdgeNode(Edge edge, Node node, boolean sawInArrow) {
+            public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
                 this.node = node;
-                this.sawInArrow = sawInArrow;
             }
 
             public int hashCode() {
@@ -966,7 +964,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node && _o.sawInArrow == this.sawInArrow;
+                return _o.edge == this.edge && _o.node == this.node;
             }
         }
 
@@ -974,7 +972,7 @@ public class Paths implements TetradSerializable {
         Set<EdgeNode> V = new HashSet<>();
 
         for (Edge edge : graph.getEdges(y)) {
-            EdgeNode edgeNode = new EdgeNode(edge, y, false);
+            EdgeNode edgeNode = new EdgeNode(edge, y);
             Q.offer(edgeNode);
             V.add(edgeNode);
             Y.add(edge.getDistalNode(y));
@@ -993,10 +991,8 @@ public class Paths implements TetradSerializable {
                     continue;
                 }
 
-                boolean sawInArrow = t.sawInArrow || edge1.getProximalEndpoint(b) == Endpoint.ARROW;
-
-                if (reachable(edge1, edge2, a, z, sawInArrow)) {
-                    EdgeNode u = new EdgeNode(edge2, b, sawInArrow);
+                if (reachable(edge1, edge2, a, z)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
                         V.add(u);
@@ -1025,12 +1021,10 @@ public class Paths implements TetradSerializable {
 
             private final Edge edge;
             private final Node node;
-            private final boolean sawInArrow;
 
-            public EdgeNode(Edge edge, Node node, boolean sawInArrow) {
+            public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
                 this.node = node;
-                this.sawInArrow = sawInArrow;
             }
 
             public int hashCode() {
@@ -1041,7 +1035,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node && _o.sawInArrow == this.sawInArrow;
+                return _o.edge == this.edge && _o.node == this.node;
             }
         }
 
@@ -1049,7 +1043,7 @@ public class Paths implements TetradSerializable {
         Set<EdgeNode> V = new HashSet<>();
 
         for (Edge edge : graph.getEdges(y)) {
-            EdgeNode edgeNode = new EdgeNode(edge, y, false);
+            EdgeNode edgeNode = new EdgeNode(edge, y);
             Q.offer(edgeNode);
             V.add(edgeNode);
             Y.add(edge.getDistalNode(y));
@@ -1068,10 +1062,8 @@ public class Paths implements TetradSerializable {
                     continue;
                 }
 
-                boolean sawInArrow = edge1.getProximalEndpoint(b) == Endpoint.ARROW;
-
-                if (reachable(edge1, edge2, a, z, ancestors, sawInArrow)) {
-                    EdgeNode u = new EdgeNode(edge2, b, sawInArrow);
+                if (reachable(edge1, edge2, a, z, ancestors)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
                         V.add(u);
@@ -1085,19 +1077,14 @@ public class Paths implements TetradSerializable {
         return Y;
     }
 
-    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z, boolean sawInaArrow) {
+    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z) {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = (e1.getProximalEndpoint(b) == Endpoint.ARROW)
-                           && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
-        }
-
-        if (sawInaArrow && e2.getProximalEndpoint(b) == Endpoint.ARROW) {
-            return false;
         }
 
         boolean ancestor = isAncestor(b, z);
@@ -1105,11 +1092,11 @@ public class Paths implements TetradSerializable {
     }
 
     // Return true if b is an ancestor of any node in z
-    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean sawInArrow) {
+    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = (e1.getProximalEndpoint(b) == Endpoint.ARROW || sawInArrow) && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         boolean ancestor = false;
 
@@ -1124,7 +1111,11 @@ public class Paths implements TetradSerializable {
             return true;
         }
 
-        return collider && ancestor;
+        if (collider && ancestor) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1676,12 +1667,10 @@ public class Paths implements TetradSerializable {
 
             private final Edge edge;
             private final Node node;
-            private boolean sawInArrow = false;
 
-            public EdgeNode(Edge edge, Node node, boolean sawInArrow) {
+            public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
                 this.node = node;
-                this.sawInArrow = sawInArrow;
             }
 
             public int hashCode() {
@@ -1692,7 +1681,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node && _o.sawInArrow == this.sawInArrow;
+                return _o.edge == this.edge && _o.node == this.node;
             }
         }
 
@@ -1707,7 +1696,7 @@ public class Paths implements TetradSerializable {
             if (edge.getDistalNode(x) == y) {
                 return true;
             }
-            EdgeNode edgeNode = new EdgeNode(edge, x, false);
+            EdgeNode edgeNode = new EdgeNode(edge, x);
             Q.offer(edgeNode);
             V.add(edgeNode);
         }
@@ -1725,14 +1714,16 @@ public class Paths implements TetradSerializable {
                     continue;
                 }
 
-                boolean sawInArrow = t.sawInArrow || edge1.getProximalEndpoint(b) == Endpoint.ARROW;
-
-                if (reachable(edge1, edge2, a, z, sawInArrow)) {
+                if (reachable(edge1, edge2, a, z)) {
                     if (c == y) {
                         return true;
                     }
 
-                    EdgeNode u = new EdgeNode(edge2, b, sawInArrow);
+                    if (Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
+                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                    }
+
+                    EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
                         V.add(u);
@@ -1759,12 +1750,10 @@ public class Paths implements TetradSerializable {
 
             private final Edge edge;
             private final Node node;
-            private final boolean sawInArrow;
 
-            public EdgeNode(Edge edge, Node node, boolean sawInArrow) {
+            public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
                 this.node = node;
-                this.sawInArrow = sawInArrow;
             }
 
             public int hashCode() {
@@ -1790,7 +1779,7 @@ public class Paths implements TetradSerializable {
             if (edge.getDistalNode(x) == y) {
                 return true;
             }
-            EdgeNode edgeNode = new EdgeNode(edge, x, false);
+            EdgeNode edgeNode = new EdgeNode(edge, x);
             Q.offer(edgeNode);
             V.add(edgeNode);
         }
@@ -1808,14 +1797,12 @@ public class Paths implements TetradSerializable {
                     continue;
                 }
 
-                boolean sawInArrow = t.sawInArrow || edge1.getProximalEndpoint(b) == Endpoint.ARROW;
-
-                if (reachable(edge1, edge2, a, z, ancestors, sawInArrow)) {
+                if (reachable(edge1, edge2, a, z, ancestors)) {
                     if (c == y) {
                         return true;
                     }
 
-                    EdgeNode u = new EdgeNode(edge2, b, sawInArrow);
+                    EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
                         V.add(u);
@@ -2146,9 +2133,9 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if two nodes are M-separated.
      *
-     * @param node1 The first node.
-     * @param node2 The second node.
-     * @param z The set of nodes to be excluded from the path.
+     * @param node1     The first node.
+     * @param node2     The second node.
+     * @param z         The set of nodes to be excluded from the path.
      * @param ancestors A map containing the ancestors of each node.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
@@ -2159,9 +2146,9 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if a semi-directed path exists between the given node and any of the nodes in the provided set.
      *
-     * @param node1 The starting node for the path.
+     * @param node1  The starting node for the path.
      * @param nodes2 The set of nodes to check for a path.
-     * @param path The current path (used for cycle detection).
+     * @param path   The current path (used for cycle detection).
      * @return {@code true} if a semi-directed path exists, {@code false} otherwise.
      */
     private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2, LinkedList<Node> path) {

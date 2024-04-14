@@ -152,6 +152,8 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
+        System.out.println(g1);
+
         GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = gfci.search();
@@ -167,7 +169,7 @@ public class TestGFci {
         truePag.addBidirectedEdge(x2, x3);
         truePag.addPartiallyOrientedEdge(x4, x3);
 
-        assertEquals(pag, truePag);
+        assertEquals(truePag, pag);
     }
 
     //    @Test

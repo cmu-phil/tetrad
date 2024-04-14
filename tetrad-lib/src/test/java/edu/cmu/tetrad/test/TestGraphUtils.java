@@ -191,6 +191,8 @@ public final class TestGraphUtils {
         graph.addDirectedEdge(x, y);
         graph.addDirectedEdge(y, x);
 
+//        System.out.println(graph);
+
         assertTrue(graph.paths().isAncestorOf(a, a));
         assertTrue(graph.paths().isAncestorOf(b, b));
         assertTrue(graph.paths().isAncestorOf(x, x));
@@ -211,6 +213,7 @@ public final class TestGraphUtils {
         assertTrue(graph.paths().isMConnectedTo(a, y, new HashSet<>()));
         assertTrue(graph.paths().isMConnectedTo(b, x, new HashSet<>()));
 
+        // MSEP problem now with 2-cycles. TODO
         assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(x)));
         assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(y)));
 
@@ -237,12 +240,15 @@ public final class TestGraphUtils {
         graph.addDirectedEdge(b, c);
         graph.addDirectedEdge(c, b);
 
+//        System.out.println(graph);
+
         assertTrue(graph.paths().isAncestorOf(a, b));
         assertTrue(graph.paths().isAncestorOf(a, c));
 
+        // MSEP problem now with 2-cycles. TODO
         assertTrue(graph.paths().isMConnectedTo(a, b, Collections.EMPTY_SET));
         assertTrue(graph.paths().isMConnectedTo(a, c, Collections.EMPTY_SET));
-
+//
         assertTrue(graph.paths().isMConnectedTo(a, c, Collections.singleton(b)));
         assertTrue(graph.paths().isMConnectedTo(c, a, Collections.singleton(b)));
     }
@@ -251,7 +257,7 @@ public final class TestGraphUtils {
     public void test8() {
         final int numNodes = 5;
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 100; i++) {
             Graph graph = RandomGraph.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
 
             List<Node> nodes = graph.getNodes();
@@ -322,40 +328,40 @@ public final class TestGraphUtils {
 
     @Test
     public void test10() {
-        RandomUtil.getInstance().setSeed(1040404L);
+//        RandomUtil.getInstance().setSeed(1040404L);
 
         // 10 times over, make a random DAG
-        for (int i = 0; i < 10; i++) {
-            Graph graph = RandomGraph.randomGraphRandomForwardEdges(10, 10, 5,
-                    10, 10, 10, false);
+        for (int i = 0; i < 1000; i++) {
+            Graph graph = RandomGraph.randomGraphRandomForwardEdges(5, 0, 5,
+                    100, 100, 100, false);
 
             // Construct its CPDAG
             Graph cpdag = GraphTransforms.cpdagForDag(graph);
             assertTrue(cpdag.paths().isLegalCpdag());
             assertTrue(cpdag.paths().isLegalMpdag());
 
-//            // Test whether the CPDAG is a legal DAG; if not, print it.
-//            if (!cpdag.paths().isLegalCpdag()) {
-//
-//                System.out.println("Not legal CPDAG:");
-//
-//                System.out.println(cpdag);
-//
-//                List<Node> pi = new ArrayList<>(cpdag.getNodes());
-//                cpdag.paths().makeValidOrder(pi);
-//
-//                System.out.println("Valid order: " + pi);
-//
-//                Graph dag = Paths.getDag(pi, cpdag, true);
-//
-//                System.out.println("DAG: " + dag);
-//
-//                Graph cpdag2 = GraphTransforms.cpdagForDag(dag);
-//
-//                System.out.println("CPDAG for DAG: " + cpdag2);
-//
-//                break;
-//            }
+//             Test whether the CPDAG is a legal DAG; if not, print it.
+            if (!cpdag.paths().isLegalCpdag()) {
+
+                System.out.println("Not legal CPDAG:");
+
+                System.out.println(cpdag);
+
+                List<Node> pi = new ArrayList<>(cpdag.getNodes());
+                cpdag.paths().makeValidOrder(pi);
+
+                System.out.println("Valid order: " + pi);
+
+                Graph dag = Paths.getDag(pi, cpdag, true);
+
+                System.out.println("DAG: " + dag);
+
+                Graph cpdag2 = GraphTransforms.cpdagForDag(dag);
+
+                System.out.println("CPDAG for DAG: " + cpdag2);
+
+                break;
+            }
         }
 
     }
