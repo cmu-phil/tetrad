@@ -66,7 +66,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         JRadioButton randomly = new JRadioButton();
 
         manually.setText("Manually: Probability tables initially blank");
-        randomly.setText("Randomly: Random probabilties are assigned, which can then be edited");
+        randomly.setText("Randomly: Random probabilities are assigned, which can then be edited");
 
         ButtonGroup group = new ButtonGroup();
         group.add(manually);

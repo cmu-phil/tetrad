@@ -53,10 +53,11 @@ public class SimpleDataLoader {
                                              boolean excludeFirstColumn)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        columnReader.setCommentMarker(commentMarker);
+        columnReader.setQuoteCharacter(quoteCharacter);
+
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
                 new int[]{1} : new int[]{}, false);
-
-        columnReader.setCommentMarker(commentMarker);
 
         TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 

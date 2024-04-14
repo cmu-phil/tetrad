@@ -176,8 +176,33 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        } else if (this.type == Type.pcalg) {
-            File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
+        }
+//        else if (this.type == Type.pcalg) {
+//            File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
+//
+//            if (file == null) {
+//                System.out.println("File was null.");
+//                return;
+//            }
+//
+//            try {
+//                String text = GraphSaveLoadUtils.graphToPcalg(graph);
+//
+//                PrintWriter out = new PrintWriter(file);
+//                out.println(text);
+//                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+//                out.close();
+//            } catch (FileNotFoundException e1) {
+//                e1.printStackTrace();
+//                throw new RuntimeException("Not a directed graph.", e1);
+//            } catch (IllegalArgumentException e1) {
+//
+//                // Probably not a directed graph.
+//                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+//            }
+//        }
+        else if (this.type == Type.amatCpdag) {
+            File file = EditorUtils.getSaveFile("graph", "amagpag.txt", parent, false, this.title);
 
             if (file == null) {
                 System.out.println("File was null.");
@@ -185,14 +210,33 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphSaveLoadUtils.graphToPcalg(graph);
+                String text = GraphSaveLoadUtils.graphToAmatCpag(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
                 out.close();
             } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
+        } else if (this.type == Type.amatPag) {
+            File file = EditorUtils.getSaveFile("graph", "amat.pag.txt", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
+            try {
+                String text = GraphSaveLoadUtils.graphToAmatPag(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
                 throw new RuntimeException("Not a directed graph.", e1);
             } catch (IllegalArgumentException e1) {
 
@@ -263,6 +307,16 @@ public class SaveGraph extends AbstractAction {
          * Save as a pcalg file.
          */
         pcalg,
+
+        /**
+         * Save as a amat.cpdag file.
+         */
+        amatCpdag,
+
+        /**
+         * Save as a amat.pag file.
+         */
+        amatPag,
 
         /**
          * Save as a lavaan file.

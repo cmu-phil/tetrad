@@ -32,9 +32,11 @@ import java.io.File;
 import java.util.prefs.Preferences;
 
 /**
+ * Loads a graph in the "amat.pag" format used by PCALG.
+ *
  * @author josephramsey
  */
-class LoadGraphPcalg extends AbstractAction {
+class LoadGraphAmatPag extends AbstractAction {
 
     /**
      * The component whose image is to be saved.
@@ -44,10 +46,10 @@ class LoadGraphPcalg extends AbstractAction {
     /**
      * <p>Constructor for LoadGraphPcalg.</p>
      *
-     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
-     * @param title         a {@link java.lang.String} object
+     * @param graphEditable a {@link GraphEditable} object
+     * @param title         a {@link String} object
      */
-    public LoadGraphPcalg(GraphEditable graphEditable, String title) {
+    public LoadGraphAmatPag(GraphEditable graphEditable, String title) {
         super(title);
 
         if (graphEditable == null) {
@@ -73,7 +75,7 @@ class LoadGraphPcalg extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
-        JFileChooser chooser = LoadGraphPcalg.getJFileChooser();
+        JFileChooser chooser = LoadGraphAmatPag.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog((Component) this.graphEditable);
 
@@ -86,7 +88,7 @@ class LoadGraphPcalg extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphSaveLoadUtils.loadGraphPcalg(file);
+        Graph graph = GraphSaveLoadUtils.loadGraphAmatPag(file);
         LayoutUtil.defaultLayout(graph);
         this.graphEditable.setGraph(graph);
     }

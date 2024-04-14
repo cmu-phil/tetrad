@@ -21,34 +21,34 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.bayes.BayesBifParser;
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesXmlParser;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetradapp.model.BayesImWrapper;
-import nu.xom.Builder;
 import nu.xom.Document;
-import nu.xom.ParsingException;
 import nu.xom.Serializer;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
 
-class LoadBayesImXmlAction extends AbstractAction {
+class LoadBayesImBifAction extends AbstractAction {
     private final BayesImWrapper bayesImWrapper;
     private final BayesImEditor bayesImEditor;
 
     /**
      * <p>Constructor for LoadBayesImXmlAction.</p>
      *
-     * @param wrapper       a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param bayesImEditor a {@link edu.cmu.tetradapp.editor.BayesImEditor} object
+     * @param wrapper       a {@link BayesImWrapper} object
+     * @param bayesImEditor a {@link BayesImEditor} object
      */
-    public LoadBayesImXmlAction(BayesImWrapper wrapper, BayesImEditor bayesImEditor) {
-        super("Load Bayes IM as XML");
+    public LoadBayesImBifAction(BayesImWrapper wrapper, BayesImEditor bayesImEditor) {
+        super("Load Bayes IM as BIF");
         if (bayesImEditor == null) {
             throw new NullPointerException(
                     "BayesImEditorWizard must not be null.");
@@ -64,6 +64,17 @@ class LoadBayesImXmlAction extends AbstractAction {
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".bif");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Bayes IM BIF Files";
+            }
+        });
         return chooser;
     }
 
@@ -88,47 +99,44 @@ class LoadBayesImXmlAction extends AbstractAction {
             throw new RuntimeException("Not a Bayes IM.");
         }
 
-        JFileChooser chooser = LoadBayesImXmlAction.getJFileChooser();
+        JFileChooser chooser = LoadBayesImBifAction.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
         chooser.showOpenDialog(null);
 
         File file = chooser.getSelectedFile();
 
-        if (file != null) {
-            Preferences.userRoot().put("fileSaveLocation", file.getParent());
+        if (file == null) {
+            throw new NullPointerException("No file selected.");
         }
 
+        String text;
+
+        // Open the file, read in all text, and put it in a String variable.
         try {
-            Builder builder = new Builder();
-            Document document = builder.build(file);
-            LoadBayesImXmlAction.printDocument(document);
-
-            BayesXmlParser parser = new BayesXmlParser();
-            BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
-            System.out.println(bayesIm);
-
-            boolean allSpecified = true;
-
-            for (edu.cmu.tetrad.graph.Node node : bayesIm.getBayesPm().getDag().getNodes()) {
-                if (node.getCenterX() == -1 || node.getCenterY() == -1) {
-                    allSpecified = false;
-                }
-            }
-
-            if (!allSpecified) {
-                LayoutUtil.defaultLayout(bayesIm.getBayesPm().getDag());
-            }
-
-            this.bayesImWrapper.setBayesIm(bayesIm);
-            this.bayesImEditor.retrieveBayesIm();
-        } catch (ParsingException e2) {
-            e2.printStackTrace();
-            throw new RuntimeException("Had trouble parsing that...");
-        } catch (IOException e2) {
-            e2.printStackTrace();
-            throw new RuntimeException("Had trouble reading the file...");
+            text = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
+
+        BayesIm bayesIm = BayesBifParser.makeBayesIm(text);
+
+        System.out.println(bayesIm);
+
+        boolean allSpecified = true;
+
+        for (edu.cmu.tetrad.graph.Node node : bayesIm.getBayesPm().getDag().getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                allSpecified = false;
+            }
+        }
+
+        if (!allSpecified) {
+            LayoutUtil.defaultLayout(bayesIm.getBayesPm().getDag());
+        }
+
+        this.bayesImWrapper.setBayesIm(bayesIm);
+        this.bayesImEditor.retrieveBayesIm();
     }
 }
 
