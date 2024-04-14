@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -483,6 +484,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
 //        graph.addSeparator();
         graph.add(new PagColorer(getWorkbench()));
 
@@ -588,6 +590,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectTrianglesAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         graph.add(new PagColorer(getWorkbench()));
 
         // Only show these menu options for graph that has interventional nodes - Zhou

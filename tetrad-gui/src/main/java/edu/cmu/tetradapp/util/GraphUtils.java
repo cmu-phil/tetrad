@@ -4,7 +4,11 @@ import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
+import edu.cmu.tetradapp.editor.*;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -182,4 +186,19 @@ public class GraphUtils {
                 alpha, beta, deltaIn, deltaOut);
     }
 
+    public static @NotNull JMenu getCheckGraphMenu(GraphWorkbench workbench) {
+        JMenu checkGraph = new JMenu("Check Graph Type");
+        JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphForDagAction(workbench));
+        JMenuItem checkGraphForCpdag = new JMenuItem(new CheckGraphForCpdagAction(workbench));
+        JMenuItem checkGraphForMpdag = new JMenuItem(new CheckGraphForMpdagAction(workbench));
+        JMenuItem checkGraphForMag = new JMenuItem(new CheckGraphForMagAction(workbench));
+        JMenuItem checkGraphForPag = new JMenuItem(new CheckGraphForPagAction(workbench));
+
+        checkGraph.add(checkGraphForDag);
+        checkGraph.add(checkGraphForCpdag);
+        checkGraph.add(checkGraphForMpdag);
+        checkGraph.add(checkGraphForMag);
+        checkGraph.add(checkGraphForPag);
+        return checkGraph;
+    }
 }

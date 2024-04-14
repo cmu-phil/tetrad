@@ -24,6 +24,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -131,6 +132,7 @@ public class GraphCard extends JPanel {
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         graph.add(new PagColorer(this.workbench));
 
         menuBar.add(graph);

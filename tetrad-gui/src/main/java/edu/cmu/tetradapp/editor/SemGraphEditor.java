@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -565,6 +566,7 @@ public final class SemGraphEditor extends JPanel
         graph.add(new JMenuItem(new SelectTrianglesAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         graph.add(new PagColorer(getWorkbench()));
 
         return graph;
