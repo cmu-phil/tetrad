@@ -80,7 +80,7 @@ public class Paths implements TetradSerializable {
         Graph graph = new EdgeListGraph(pi);
 
         for (int a = 0; a < pi.size(); a++) {
-            for (Node b : getParents(pi, a, g, verbose)) {
+            for (Node b : getParents(pi, a, g, verbose, false)) {
                 graph.addDirectedEdge(b, pi.get(a));
             }
         }
@@ -91,11 +91,13 @@ public class Paths implements TetradSerializable {
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
      *
-     * @param p       The index.
-     * @param verbose
+     * @param p                  The index.
+     * @param verbose            Whether to print verbose output.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X->L<-Y.
      * @return The parents, as a Pair object (parents + score).
      */
-    public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose) {
+    public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean allowSelectionBias) {
         Node x = pi.get(p);
         Set<Node> parents = new HashSet<>();
         Set<Node> prefix = getPrefix(pi, p);
@@ -106,7 +108,7 @@ public class Paths implements TetradSerializable {
             minus.remove(x);
             Set<Node> z = new HashSet<>(minus);
 
-            if (!g.paths().isMSeparatedFrom(x, y, z)) {
+            if (!g.paths().isMSeparatedFrom(x, y, z, allowSelectionBias)) {
                 if (verbose) {
                     System.out.println("Adding " + y + " as a parent of " + x + " with z = " + z);
                 }
@@ -810,138 +812,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>isMConnectedTo.</p>
+     * Retrieves the set of nodes that are connected to the given node {@code y} and are also present in the set of
+     * nodes {@code z}.
      *
-     * @param x a {@link java.util.Set} object
-     * @param y a {@link java.util.Set} object
-     * @param z a {@link java.util.Set} object
-     * @return a boolean
-     */
-    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
-        Set<Node> ancestors = ancestorsOf(z);
-
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-        Set<OrderedPair<Node>> V = new HashSet<>();
-
-        for (Node _x : x) {
-            for (Node node : graph.getAdjacentNodes(_x)) {
-                if (y.contains(node)) {
-                    return true;
-                }
-                OrderedPair<Node> edge = new OrderedPair<>(_x, node);
-                Q.offer(edge);
-                V.add(edge);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            OrderedPair<Node> t = Q.poll();
-
-            Node b = t.getFirst();
-            Node a = t.getSecond();
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == a) {
-                    continue;
-                }
-
-                boolean collider = graph.isDefCollider(a, b, c);
-                if (!((collider && ancestors.contains(b)) || (!collider && !z.contains(b)))) {
-                    continue;
-                }
-
-                if (y.contains(c)) {
-                    return true;
-                }
-
-                OrderedPair<Node> u = new OrderedPair<>(b, c);
-                if (V.contains(u)) {
-                    continue;
-                }
-
-                V.add(u);
-                Q.offer(u);
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks to see if x and y are d-connected given z.
-     *
-     * @param ancestorMap A map of nodes to their ancestors.
-     * @param x           a {@link java.util.Set} object
-     * @param y           a {@link java.util.Set} object
-     * @param z           a {@link java.util.Set} object
-     * @return True if x and y are d-connected given z.
-     */
-    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
-        if (ancestorMap == null) throw new NullPointerException("Ancestor map cannot be null.");
-
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-        Set<OrderedPair<Node>> V = new HashSet<>();
-
-        for (Node _x : x) {
-            for (Node node : graph.getAdjacentNodes(_x)) {
-                if (y.contains(node)) {
-                    return true;
-                }
-                OrderedPair<Node> edge = new OrderedPair<>(_x, node);
-                Q.offer(edge);
-                V.add(edge);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            OrderedPair<Node> t = Q.poll();
-
-            Node b = t.getFirst();
-            Node a = t.getSecond();
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == a) {
-                    continue;
-                }
-
-                boolean collider = graph.isDefCollider(a, b, c);
-
-                boolean ancestor = false;
-
-                for (Node _z : z) {
-                    if (ancestorMap.get(_z).contains(b)) {
-                        ancestor = true;
-                        break;
-                    }
-                }
-
-                if (!((collider && ancestor) || (!collider && !z.contains(b)))) {
-                    continue;
-                }
-
-                if (y.contains(c)) {
-                    return true;
-                }
-
-                OrderedPair<Node> u = new OrderedPair<>(b, c);
-                if (V.contains(u)) {
-                    continue;
-                }
-
-                V.add(u);
-                Q.offer(u);
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * <p>getMConnectedVars.</p>
-     *
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link java.util.Set} object
+     * @param y The node for which to find the connected nodes.
+     * @param z The set of nodes to be considered for connecting nodes.
+     * @return The set of nodes that are connected to {@code y} and present in {@code z}.
      */
     public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
         Set<Node> Y = new HashSet<>();
@@ -1541,7 +1417,7 @@ public class Paths implements TetradSerializable {
             });
         });
 
-        return dag.paths().isMSeparatedFrom(x, y, z);
+        return dag.paths().isMSeparatedFrom(x, y, z, false);
     }
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
@@ -1657,12 +1533,14 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
+     * @param x                  a {@link Node} object
+     * @param y                  a {@link Node} object
+     * @param z                  a {@link Set} object
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X->L<-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean allowSelectionBias) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1719,7 +1597,15 @@ public class Paths implements TetradSerializable {
                         return true;
                     }
 
-                    if (Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
+                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+                    // jdramsey 2024-04-14
+                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
                         edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                     }
 
@@ -1739,13 +1625,15 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z         a {@link java.util.Set} object
-     * @param ancestors a {@link java.util.Map} object
+     * @param x                  a {@link Node} object
+     * @param y                  a {@link Node} object
+     * @param z                  a {@link Set} object
+     * @param ancestors          a {@link Map} object
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X->L<-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1800,6 +1688,18 @@ public class Paths implements TetradSerializable {
                 if (reachable(edge1, edge2, a, z, ancestors)) {
                     if (c == y) {
                         return true;
+                    }
+
+                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+                    // jdramsey 2024-04-14
+                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
+                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                     }
 
                     EdgeNode u = new EdgeNode(edge2, b);
@@ -2120,27 +2020,30 @@ public class Paths implements TetradSerializable {
      * <p>
      * Precondition: This graph is a DAG. Please don't violate this constraint; weird things can happen!
      *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @param z     the conditioning set.
+     * @param node1              the first node.
+     * @param node2              the second node.
+     * @param z                  the conditioning set.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X->L<-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
-     * @see #isMConnectedTo
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z) {
-        return !isMConnectedTo(node1, node2, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
+        return !isMConnectedTo(node1, node2, z, allowSelectionBias);
     }
 
     /**
      * Checks if two nodes are M-separated.
      *
-     * @param node1     The first node.
-     * @param node2     The second node.
-     * @param z         The set of nodes to be excluded from the path.
-     * @param ancestors A map containing the ancestors of each node.
+     * @param node1              The first node.
+     * @param node2              The second node.
+     * @param z                  The set of nodes to be excluded from the path.
+     * @param ancestors          A map containing the ancestors of each node.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X->L<-Y.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        return !isMConnectedTo(node1, node2, z, ancestors);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        return !isMConnectedTo(node1, node2, z, ancestors, allowSelectionBias);
     }
 
     /**
