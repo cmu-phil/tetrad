@@ -757,8 +757,19 @@ public class AlgcomparisonEditor extends JPanel {
      * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
      */
     @NotNull
-    private static edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        RandomGraph randomGraph = graphClazz.getConstructor().newInstance();
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        RandomGraph randomGraph;
+
+        if (graphClazz == SingleGraph.class) {
+            if (model.getSuppliedGraph() == null) {
+                throw new IllegalArgumentException("No graph supplied.");
+            }
+
+            randomGraph = new SingleGraph(model.getSuppliedGraph());
+        } else {
+            randomGraph = graphClazz.getConstructor().newInstance();
+        }
+
         return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
     }
 
@@ -821,8 +832,12 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     @NotNull
-    private static Class<? extends RandomGraph> getGraphClazz(String graphString) {
-        List<String> graphTypeStrings = Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS);
+    private Class<? extends RandomGraph> getGraphClazz(String graphString) {
+        List<String> graphTypeStrings = new ArrayList<>(Arrays.asList(ParameterTab.GRAPH_TYPE_ITEMS));
+
+        if (model.getSuppliedGraph() != null) {
+            graphTypeStrings.add("User Supplied Graph");
+        }
 
         return switch (graphTypeStrings.indexOf(graphString)) {
             case 0:
@@ -831,12 +846,14 @@ public class AlgcomparisonEditor extends JPanel {
                 yield ErdosRenyi.class;
             case 2:
                 yield ScaleFree.class;
-            case 4:
+            case 3:
                 yield Cyclic.class;
-            case 5:
+            case 4:
                 yield RandomSingleFactorMim.class;
-            case 6:
+            case 5:
                 yield RandomTwoFactorMim.class;
+            case 6:
+                yield SingleGraph.class;
             default:
                 throw new IllegalArgumentException("Unexpected value: " + graphString);
         };
@@ -1441,6 +1458,11 @@ public class AlgcomparisonEditor extends JPanel {
             JComboBox<String> graphsDropdown = getGraphsDropdown();
 
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(graphsDropdown::addItem);
+
+            if (model.getSuppliedGraph() != null) {
+                graphsDropdown.addItem("User Supplied Graph");
+            }
+
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
             graphsDropdown.setSelectedItem(model.getLastGraphChoice());
 
@@ -1507,6 +1529,7 @@ public class AlgcomparisonEditor extends JPanel {
                 model.setLastGraphChoice(selectedItem);
             }
         });
+
         return graphsDropdown;
     }
 
