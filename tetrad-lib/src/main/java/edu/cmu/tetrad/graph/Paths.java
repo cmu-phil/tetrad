@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -261,13 +262,21 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph dag = getDag(pi, g/*GraphTransforms.dagFromCpdag(g)*/, false);
+            Graph dag = getDag(pi, g, false);
             Graph cpdag = GraphTransforms.cpdagForDag(dag);
-
             Graph _g = new EdgeListGraph(g);
             _g = GraphTransforms.cpdagForDag(_g);
 
-            return _g.equals(cpdag);
+            boolean equals = _g.equals(cpdag);
+
+            // Check maximality...
+            if (equals) {
+                Graph __g = new EdgeListGraph(g);
+                new MeekRules().orientImplied(__g);
+                return g.equals(__g);
+            }
+
+            return false;
         } catch (Exception e) {
             // There was no valid sink.
             System.out.println(e.getMessage());
