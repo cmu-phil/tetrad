@@ -23,7 +23,6 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -2045,83 +2044,56 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns adjustment sets of X-&amp;Y in MPDAG G2 that are subsets of the Markov blanket for X in G2 or the Markov
-     * blanket of Y in G2, once the edge X-&amp;Y is removed from the graph. If X and Y are not adjacent in G2, the
-     * method returns an empty set. If X and Y are connected by an undirected edge, first the edge is oriented as
-     * X-&gt;Y, and then the Meek rules are applied to find an MPDAG G2' that is consistent with G2 and the orientation
-     * of X-&gt;Y. The adjustment sets are then calculated in G2' as above.
+     * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(X).
+     *
+     * @param G               the input graph
+     * @param x               the source node
+     * @param y               the target node
+     * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @return the adjustment sets as a set of sets of nodes
+     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
-    public static Set<Set<Node>> adjustmentSets1(Graph G, Node X, Node Y) {
+    public static Set<Set<Node>> adjustmentSets1(Graph G, Node x, Node y, int numSmallestSizes) {
         if (!G.paths().isLegalMpdag()) {
             throw new IllegalArgumentException("Graph must be a legal MPDAG.");
         }
 
-        Graph G2 = new EdgeListGraph(G);
+        Graph G2 = getGraphWithoutXToY(G, x, y);
 
-        Set<Set<Node>> adjustmentSets = new HashSet<>();
+        // Get the Markov blanket for x in G2.
+        Set<Node> mbX = markovBlanket(x, G2);
 
-        if (G2.isAdjacentTo(X, Y)) {
-            if (Edges.isUndirectedEdge(G2.getEdge(X, Y))) {
-                Knowledge knowledge = new Knowledge();
-                knowledge.setRequired(X.getName(), Y.getName());
-                MeekRules meekRules = new MeekRules();
-                meekRules.setKnowledge(knowledge);
-                G2.removeEdge(X, Y);
-                G2.addDirectedEdge(X, Y);
-                meekRules.orientImplied(G2);
-            }
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), mbX, x, y, numSmallestSizes);
+    }
 
-            if (!G2.getEdge(X, Y).pointsTowards(Y)) {
-                return adjustmentSets;
-            }
-
-            G2.removeEdge(X, Y);
-            MsepTest msep = new MsepTest(G2);
-
-            Set<Node> mbX = GraphUtils.markovBlanket(X, G2);
-
-            List<Node> _mbX = new ArrayList<>(mbX);
-            SublistGenerator mbXGenerator = new SublistGenerator(_mbX.size(), _mbX.size());
-            int[] choice;
-
-            while ((choice = mbXGenerator.next()) != null) {
-                List<Node> sx = GraphUtils.asList(choice, _mbX);
-                if (sx.contains(Y)) {
-                    continue;
-                }
-
-                if (msep.isMSeparated(X, Y, new HashSet<>(sx))) {
-                    adjustmentSets.add(new HashSet<>(sx));
-                }
-
-                adjustmentSets.add(new HashSet<>(sx));
-            }
-
-            Set<Node> mbY = GraphUtils.markovBlanket(Y, G2);
-
-            List<Node> _mbY = new ArrayList<>(mbY);
-            SublistGenerator mbYGenerator = new SublistGenerator(_mbY.size(), _mbY.size());
-
-            while ((choice = mbYGenerator.next()) != null) {
-                List<Node> sy = GraphUtils.asList(choice, _mbY);
-                if (sy.contains(X)) {
-                    continue;
-                }
-
-                if (msep.isMSeparated(X, Y, new HashSet<>(sy))) {
-                    adjustmentSets.add(new HashSet<>(sy));
-                }
-            }
+    /**
+     * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(Y).
+     *
+     * @param G               the input graph
+     * @param x               the source node
+     * @param y               the target node
+     * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @return the adjustment sets as a set of sets of nodes
+     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
+     */
+    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes) {
+        if (!G.paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
         }
 
-        return adjustmentSets;
+        Graph G2 = getGraphWithoutXToY(G, x, y);
+
+        // Get the Markov blanket for x in G2.
+        Set<Node> mbX = markovBlanket(y, G2);
+
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), mbX, x, y, numSmallestSizes);
     }
 
     /**
      * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes. This is currently for an
-     * MPDAG only.
-     *
+     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes. This is currently for
+     * an MPDAG only.
+     * <p>
      * Precision: G is a legal MPDAG.
      *
      * @param x                the starting node
@@ -2129,7 +2101,7 @@ public final class GraphUtils {
      * @param numSmallestSizes the number of the smallest sizes for the subsets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes) {
+    public static Set<Set<Node>> adjustmentSets3(Graph G, Node x, Node y, int numSmallestSizes) {
         if (!G.isAdjacentTo(x, y)) {
             throw new IllegalArgumentException("Nodes must be adjacent in the graph.");
         }

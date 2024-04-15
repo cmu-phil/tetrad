@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -475,13 +476,17 @@ public final class DagEditor extends JPanel
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
-
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-//        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
+        graph.add(runMeekRules);
+        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
+        graph.add(revertToCpdag);
+        graph.add(new PagColorer(this.workbench));
+        runMeekRules.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
+        revertToCpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
 
         randomGraph.addActionListener(e -> {

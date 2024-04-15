@@ -272,7 +272,9 @@ public class Paths implements TetradSerializable {
             // Check maximality...
             if (equals) {
                 Graph __g = new EdgeListGraph(g);
-                new MeekRules().orientImplied(__g);
+                MeekRules meekRules = new MeekRules();
+                meekRules.setRevertToUnshieldedColliders(false);
+                meekRules.orientImplied(__g);
                 return g.equals(__g);
             }
 
@@ -2130,28 +2132,42 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Returns a set of adjustment sets in the modified path-specific directed acyclic graph (mpDAG) between two nodes
-     * that are subsets of MB(x) or MB(y).
+     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
+     * that are subsets of MB(x) with the numSmallestSizes smallest sizes.
      *
-     * @param x the source node in the mpDAG
-     * @param y the target node in the mpDAG
-     * @return a set of adjustment sets in the mpDAG between the source and target nodes
+     * @param x                the starting node
+     * @param y                the ending node
+     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
+     * @return a set of sets of nodes representing adjustment sets
      */
-    public Set<Set<Node>> adjustmentSets1(Node x, Node y) {
-        return GraphUtils.adjustmentSets1(graph, x, y);
+    public Set<Set<Node>> adjustmentSets1(Node x, Node y, int numSmallestSizes) {
+        return GraphUtils.adjustmentSets1(graph, x, y, numSmallestSizes);
     }
 
     /**
      * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of the anteriority of x and y with the n smallest sizes.
+     * that are subsets of MB(y) x and y with the numSmallestSizes smallest sizes.
      *
-     * @param x the starting node
-     * @param y the ending node
-     * @param n the number of smallest sizes for adjustment sets to return
+     * @param x                the starting node
+     * @param y                the ending node
+     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int n) {
-        return GraphUtils.adjustmentSets2(graph, x, y, n);
+    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int numSmallestSizes) {
+        return GraphUtils.adjustmentSets2(graph, x, y, numSmallestSizes);
+    }
+
+    /**
+     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
+     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes.
+     *
+     * @param x                the starting node
+     * @param y                the ending node
+     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
+     * @return a set of sets of nodes representing adjustment sets
+     */
+    public Set<Set<Node>> adjustmentSets3(Node x, Node y, int numSmallestSizes) {
+        return GraphUtils.adjustmentSets3(graph, x, y, numSmallestSizes);
     }
 
     /**

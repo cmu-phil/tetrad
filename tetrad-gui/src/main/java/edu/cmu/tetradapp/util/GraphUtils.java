@@ -201,4 +201,14 @@ public class GraphUtils {
         checkGraph.add(checkGraphForPag);
         return checkGraph;
     }
+
+    public static @NotNull JMenu getHighlightMenu(GraphWorkbench workbench) {
+        JMenu highlightMenu = new JMenu("Highlight");
+        highlightMenu.add(new SelectDirectedAction(workbench));
+        highlightMenu.add(new SelectBidirectedAction(workbench));
+        highlightMenu.add(new SelectUndirectedAction(workbench));
+        highlightMenu.add(new SelectTrianglesAction(workbench));
+        highlightMenu.add(new SelectLatentsAction(workbench));
+        return highlightMenu;
+    }
 }
