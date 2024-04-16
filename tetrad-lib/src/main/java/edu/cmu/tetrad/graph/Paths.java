@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphInPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -2172,10 +2171,10 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Returns the set of nodes preceding node y in the graph, based on the given node X.
+     * Returns the set of nodes that are in the anteriority of the given nodes in the graph.
      *
-     * @param X a list of nodes
-     * @return a set of nodes preceding all the nodes in X
+     * @param X the nodes for which the anteriority needs to be determined
+     * @return the set of nodes in the anteriority of the given nodes
      */
     public Set<Node> anteriority(Node... X) {
         return GraphUtils.anteriority(graph, X);

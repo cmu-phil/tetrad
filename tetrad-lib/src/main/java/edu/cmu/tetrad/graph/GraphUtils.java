@@ -2111,6 +2111,17 @@ public final class GraphUtils {
         return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), anteriority, x, y, numSmallestSizes);
     }
 
+    /**
+     * Returns a graph that is obtained by removing the edge from node x to node y from the input graph. The type of the
+     * output graph is determined by the provided graph type.
+     *
+     * @param G         the input graph
+     * @param x         the starting node of the edge to be removed
+     * @param y         the ending node of the edge to be removed
+     * @param graphType the type of the output graph (CPDAG, PAG, or MAG)
+     * @return the resulting graph after removing the edge from node x to node y
+     * @throws IllegalArgumentException if the input graph type is not legal (must be CPDAG, PAG, or MAG)
+     */
     public static Graph getGraphWithoutXToY(Graph G, Node x, Node y, GraphType graphType) {
         if (graphType == GraphType.CPDAG) {
             return getGraphWithoutXToYMpdag(G, x, y);
@@ -2121,6 +2132,15 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * This method returns a graph G2 without the edge between Node x and Node y, creating a Maximum Partially Directed
+     * Acyclic Graph (MPDAG) representation.
+     *
+     * @param G the original graph
+     * @param x the starting node of the edge
+     * @param y the ending node of the edge
+     * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
+     */
     private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
 
@@ -2223,11 +2243,12 @@ public final class GraphUtils {
     }
 
     /**
-     * Computes the set of nodes z that have semidirected paths to all the nodes in the given set x.
+     * Computes the anteriority of the given nodes in a graph. An anterior node is a node that has a directed path to
+     * any of the given nodes. This method returns a set of anterior nodes.
      *
-     * @param G the graph in which to compute the anteriority
-     * @param x the nodes for which to compute the anteriority
-     * @return the anteriority set, which contains all the nodes that are ancestors of all the given nodes
+     * @param G the graph to compute anteriority on
+     * @param x the nodes to compute anteriority for
+     * @return a set of anterior nodes
      */
     public static Set<Node> anteriority(Graph G, Node... x) {
         Set<Node> anteriority = new HashSet<>();
