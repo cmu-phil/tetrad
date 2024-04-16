@@ -883,8 +883,8 @@ public final class GraphSearchUtils {
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = GraphTransforms.cpdagForDag(trueGraph);
-            estGraph = GraphTransforms.cpdagForDag(estGraph);
+            trueGraph = GraphTransforms.dagToCpdag(trueGraph);
+            estGraph = GraphTransforms.dagToCpdag(estGraph);
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {

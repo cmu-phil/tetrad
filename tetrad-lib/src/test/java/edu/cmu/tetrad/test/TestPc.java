@@ -217,7 +217,7 @@ public class TestPc {
             MsepTest test = new MsepTest(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphTransforms.cpdagForDag(graph);
+            Graph CPDAG2 = GraphTransforms.dagToCpdag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }

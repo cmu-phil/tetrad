@@ -23,15 +23,11 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TextTable;
-import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -632,15 +628,6 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>getUnderlinedTriplesFromGraph.</p>
-     *
-     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
-     */
-
-    /**
      * Retrieves the underlined triples from the given graph that involve the specified node. These are triples that
      * represent definite noncolliders in the given graph.
      *
@@ -673,7 +660,7 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>getDottedUnderlinedTriplesFromGraph.</p>
+     * <p>getUnderlinedTriplesFromGraph.</p>
      *
      * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
@@ -714,6 +701,15 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>getDottedUnderlinedTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
+     * given graph.
+     */
+
+    /**
      * Checks if a given graph contains a bidirected edge.
      *
      * @param graph the graph to check for bidirected edges
@@ -730,7 +726,6 @@ public final class GraphUtils {
         }
         return containsBidirected;
     }
-
 
     /**
      * Generates a list of triples where a node acts as a collider in a given graph.
@@ -1782,8 +1777,6 @@ public final class GraphUtils {
         return max;
     }
 
-    // Used to find semidirected paths for cycle checking.
-
     /**
      * Traverses a semi-directed edge to identify the next node in the traversal.
      *
@@ -1804,6 +1797,8 @@ public final class GraphUtils {
         return null;
     }
 
+    // Used to find semidirected paths for cycle checking.
+
     /**
      * Returns a comparison graph based on the specified parameters.
      *
@@ -1819,7 +1814,7 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.cpdagForDag(graph);
+            return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return GraphTransforms.dagToPag(graph);
@@ -2046,47 +2041,49 @@ public final class GraphUtils {
     /**
      * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(X).
      *
-     * @param G               the input graph
-     * @param x               the source node
-     * @param y               the target node
+     * @param G                the input graph
+     * @param x                the source node
+     * @param y                the target node
      * @param numSmallestSizes the number of smallest adjustment sets to return
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
-    public static Set<Set<Node>> adjustmentSets1(Graph G, Node x, Node y, int numSmallestSizes) {
-        if (!G.paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
-        }
+    public static Set<Set<Node>> adjustmentSets1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
 
-        Graph G2 = getGraphWithoutXToY(G, x, y);
+        if (G2 == null) {
+            return new HashSet<>();
+        }
 
         // Get the Markov blanket for x in G2.
         Set<Node> mbX = markovBlanket(x, G2);
-
-        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), mbX, x, y, numSmallestSizes);
+        mbX.remove(x);
+        mbX.remove(y);
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
     }
 
     /**
      * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(Y).
      *
-     * @param G               the input graph
-     * @param x               the source node
-     * @param y               the target node
+     * @param G                the input graph
+     * @param x                the source node
+     * @param y                the target node
      * @param numSmallestSizes the number of smallest adjustment sets to return
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
-    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes) {
-        if (!G.paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG.");
-        }
+    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
 
-        Graph G2 = getGraphWithoutXToY(G, x, y);
+        if (G2 == null) {
+            return new HashSet<>();
+        }
 
         // Get the Markov blanket for x in G2.
         Set<Node> mbX = markovBlanket(y, G2);
-
-        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), mbX, x, y, numSmallestSizes);
+        mbX.remove(x);
+        mbX.remove(y);
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
     }
 
     /**
@@ -2101,21 +2098,35 @@ public final class GraphUtils {
      * @param numSmallestSizes the number of the smallest sizes for the subsets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public static Set<Set<Node>> adjustmentSets3(Graph G, Node x, Node y, int numSmallestSizes) {
-        if (!G.isAdjacentTo(x, y)) {
-            throw new IllegalArgumentException("Nodes must be adjacent in the graph.");
-        }
+    public static Set<Set<Node>> adjustmentSets3(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
 
-        if (G.getEdge(x, y).pointsTowards(x)) {
-            throw new IllegalArgumentException("Edge must not point toward x.");
+        if (G2 == null) {
+            return new HashSet<>();
         }
 
         Set<Node> anteriority = G.paths().anteriority(x, y);
-        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y), anteriority, x, y, numSmallestSizes);
+        anteriority.remove(x);
+        anteriority.remove(y);
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), anteriority, x, y, numSmallestSizes);
     }
 
-    private static @NotNull Graph getGraphWithoutXToY(Graph G, Node x, Node y) {
+    public static Graph getGraphWithoutXToY(Graph G, Node x, Node y, GraphType graphType) {
+        if (graphType == GraphType.CPDAG) {
+            return getGraphWithoutXToYMpdag(G, x, y);
+        } else if (graphType == GraphType.PAG) {
+            return getGraphWithoutXToYPag(G, x, y);
+        } else {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG, PAG, or MAG.");
+        }
+    }
+
+    private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
+
+        if (!G2.isAdjacentTo(x, y)) {
+            return null;
+        }
 
         if (Edges.isUndirectedEdge(G2.getEdge(x, y))) {
             Knowledge knowledge = new Knowledge();
@@ -2129,6 +2140,40 @@ public final class GraphUtils {
 
         G2.removeEdge(x, y);
         return G2;
+    }
+
+    /**
+     * Returns a graph without the edge from x to y in the given graph. If the edge is undirected, bidirected, or
+     * partially oriented, the method returns null. If the edge is directed, the method orients the edge from x to y and
+     * returns the resulting graph.
+     *
+     * @param G the graph in which to remove the edge
+     * @param x the first node in the edge
+     * @param y the second node in the edge
+     * @return a graph without the edge from x to y
+     */
+    private static Graph getGraphWithoutXToYPag(Graph G, Node x, Node y) {
+        if (!G.isAdjacentTo(x, y)) return null;
+
+        Edge edge = G.getEdge(x, y);
+
+        if (edge == null) {
+            return null;
+        } else if (Edges.isBidirectedEdge(edge)) {
+            return null;
+        } else if (Edges.isUndirectedEdge(edge)) {
+            return null;
+        } else if (Edges.isPartiallyOrientedEdge(edge) && edge.pointsTowards(x)) {
+            return null;
+        } else {
+            Graph G2 = new EdgeListGraph(G);
+            G2.removeEdge(x, y);
+            G2.addDirectedEdge(x, y);
+            FciOrient fciOrient = new FciOrient(new DagSepsets(G2));
+            fciOrient.orient(G2);
+            G2.removeEdge(x, y);
+            return G2;
+        }
     }
 
     /**
@@ -2503,6 +2548,10 @@ public final class GraphUtils {
         }
 
         return _graph;
+    }
+
+    public enum GraphType {
+        CPDAG, PAG
     }
 
     /**

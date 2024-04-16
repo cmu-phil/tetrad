@@ -46,7 +46,7 @@ public class DefiniteDirectedPathPrecision implements Statistic {
         int tp = 0, fp = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         GraphUtils.addPagColoring(estGraph);
 

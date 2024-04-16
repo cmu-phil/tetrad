@@ -54,7 +54,7 @@ public class TestDagInPatternIterator {
         Dag dag = new Dag(graph);
 
 
-        Graph CPDAG = GraphTransforms.cpdagForDag(graph);
+        Graph CPDAG = GraphTransforms.dagToCpdag(graph);
 
         System.out.println(CPDAG);
 
@@ -175,7 +175,7 @@ public class TestDagInPatternIterator {
         Dag dag1 = new Dag(RandomGraph.randomGraph(nodes1, 0, 3,
                 30, 15, 15, false));
 
-        Graph CPDAG = GraphTransforms.cpdagForDag(dag1);
+        Graph CPDAG = GraphTransforms.dagToCpdag(dag1);
         List<Node> nodes = CPDAG.getNodes();
 
         // Make random knowedge.

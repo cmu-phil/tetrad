@@ -608,7 +608,7 @@ public class TimeoutComparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(GraphTransforms.cpdagForDag(graph), file3, false);
+                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToCpdag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -1277,7 +1277,7 @@ public class TimeoutComparison {
             comparisonGraph = new EdgeListGraph(trueGraph);
         } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
             Graph dag = new EdgeListGraph(trueGraph);
-            comparisonGraph = GraphTransforms.cpdagForDag(dag);
+            comparisonGraph = GraphTransforms.dagToCpdag(dag);
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             Graph trueGraph1 = new EdgeListGraph(trueGraph);
             comparisonGraph = GraphTransforms.dagToPag(trueGraph1);

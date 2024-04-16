@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphInPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -233,7 +234,7 @@ public class Paths implements TetradSerializable {
         try {
             g.paths().makeValidOrder(pi);
             Graph dag = getDag(pi, g/*GraphTransforms.dagFromCpdag(g)*/, false);
-            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
@@ -263,9 +264,9 @@ public class Paths implements TetradSerializable {
         try {
             g.paths().makeValidOrder(pi);
             Graph dag = getDag(pi, g, false);
-            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             Graph _g = new EdgeListGraph(g);
-            _g = GraphTransforms.cpdagForDag(_g);
+            _g = GraphTransforms.dagToCpdag(_g);
 
             boolean equals = _g.equals(cpdag);
 
@@ -2140,8 +2141,8 @@ public class Paths implements TetradSerializable {
      * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public Set<Set<Node>> adjustmentSets1(Node x, Node y, int numSmallestSizes) {
-        return GraphUtils.adjustmentSets1(graph, x, y, numSmallestSizes);
+    public Set<Set<Node>> adjustmentSets1(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
+        return GraphUtils.adjustmentSets1(graph, x, y, numSmallestSizes, graphType);
     }
 
     /**
@@ -2153,8 +2154,8 @@ public class Paths implements TetradSerializable {
      * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int numSmallestSizes) {
-        return GraphUtils.adjustmentSets2(graph, x, y, numSmallestSizes);
+    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
+        return GraphUtils.adjustmentSets2(graph, x, y, numSmallestSizes, graphType);
     }
 
     /**
@@ -2166,8 +2167,8 @@ public class Paths implements TetradSerializable {
      * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
      * @return a set of sets of nodes representing adjustment sets
      */
-    public Set<Set<Node>> adjustmentSets3(Node x, Node y, int numSmallestSizes) {
-        return GraphUtils.adjustmentSets3(graph, x, y, numSmallestSizes);
+    public Set<Set<Node>> adjustmentSets3(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
+        return GraphUtils.adjustmentSets3(graph, x, y, numSmallestSizes, graphType);
     }
 
     /**

@@ -49,7 +49,7 @@ public class DefiniteDirectedPathRecall implements Statistic {
         int tp = 0, fn = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         for (Node x : nodes) {
             for (Node y : nodes) {

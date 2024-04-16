@@ -151,7 +151,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             return new EdgeListGraph(graph);
         } else {
             Graph dag = new EdgeListGraph(graph);
-            return GraphTransforms.cpdagForDag(dag);
+            return GraphTransforms.dagToCpdag(dag);
         }
     }
 

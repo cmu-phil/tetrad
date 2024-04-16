@@ -213,7 +213,7 @@ public final class TestGraph {
         assertFalse(g1.paths().isLegalCpdag());
 
         Graph g2 = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
-        g2 = GraphTransforms.cpdagForDag(g2);
+        g2 = GraphTransforms.dagToCpdag(g2);
 
         assertTrue(g2.paths().isLegalCpdag());
 

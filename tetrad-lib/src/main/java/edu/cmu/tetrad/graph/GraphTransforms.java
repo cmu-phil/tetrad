@@ -245,7 +245,7 @@ public class GraphTransforms {
      * @param dag The input DAG.
      * @return The CPDAG resulting from applying Meek Rules to the input DAG.
      */
-    public static Graph cpdagForDag(Graph dag) {
+    public static Graph dagToCpdag(Graph dag) {
         Graph cpdag = new EdgeListGraph(dag);
         MeekRules rules = new MeekRules();
         rules.setRevertToUnshieldedColliders(true);

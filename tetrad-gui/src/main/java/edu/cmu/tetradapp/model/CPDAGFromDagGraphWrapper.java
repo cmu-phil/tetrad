@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
@@ -85,7 +84,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
 
 
     private static Graph getCpdag(Graph graph) {
-        return GraphTransforms.cpdagForDag(graph);
+        return GraphTransforms.dagToCpdag(graph);
     }
 
     /**

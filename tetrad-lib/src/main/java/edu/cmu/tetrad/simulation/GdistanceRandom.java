@@ -67,8 +67,8 @@ public class GdistanceRandom {
 
         //convert those dags to CPDAGs
         if (this.verbose) System.out.println("converting dags to CPDAGs");
-        Graph graph1 = GraphTransforms.cpdagForDag(dag1);
-        Graph graph2 = GraphTransforms.cpdagForDag(dag2);
+        Graph graph1 = GraphTransforms.dagToCpdag(dag1);
+        Graph graph2 = GraphTransforms.dagToCpdag(dag2);
 
         //run Gdistance on these two graphs
         if (this.verbose) System.out.println("running Gdistance on the CPDAGs");
