@@ -39,7 +39,7 @@ public class OrientationConfusion {
      * @param truth a {@link edu.cmu.tetrad.graph.Graph} object
      * @param est   a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public OrientationConfusion(Graph truth, Graph est) {
+    public OrientationConfusion(Graph truth, Graph est) { // TODO VBC: is this one we want to use?
         this.tp = 0;
         this.fp = 0;
         this.fn = 0;

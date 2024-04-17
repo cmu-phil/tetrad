@@ -115,6 +115,7 @@ public class TestCheckMarkov {
 
     @Test
     public void testPrecissionRecallForLocal() {
+        // TODO also use randome graph then convert to cpday learn from Test Graph Utils. write a diff test case for this.
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
@@ -130,7 +131,7 @@ public class TestCheckMarkov {
         System.out.println("=====================================");
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV); // TODO Also try MB for settype
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
         List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);

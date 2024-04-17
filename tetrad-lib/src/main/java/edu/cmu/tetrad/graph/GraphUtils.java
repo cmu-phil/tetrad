@@ -117,6 +117,8 @@ public final class GraphUtils {
 
         for (int i = 0; i < mbList.size(); i++) {
             for (int j = i + 1; j < mbList.size(); j++) {
+                List<Edge> edges = graph.getEdges(mbList.get(i), mbList.get(j));
+                // System.out.println("Add edges between!!!! " + mbList.get(i) + " " + mbList.get(j));
                 for (Edge e : graph.getEdges(mbList.get(i), mbList.get(j))) {
                     mbGraph.addEdge(e);
                 }

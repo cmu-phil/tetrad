@@ -342,7 +342,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type = new StringBuilder("no edge");
                             break;
                         case ta:
-                            _type = new StringBuilder("-->");
+                            _type = new StringBuilder("-->"); // TODO VBC: or shall we just compare edge by strings
                             break;
                         case at:
                             _type = new StringBuilder("<--");
@@ -439,7 +439,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @param _edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return a int
      */
-    public int compareTo(Edge _edge) {
+    public int compareTo(Edge _edge) { // TODO VBC: seems only comparing the edpoint not the direction?
         int comp1 = getNode1().compareTo(_edge.getNode1());
 
         if (comp1 != 0) {
