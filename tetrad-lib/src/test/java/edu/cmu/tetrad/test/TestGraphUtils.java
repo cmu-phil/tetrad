@@ -32,7 +32,6 @@
 
     import java.util.*;
 
-    import static edu.cmu.tetrad.graph.GraphUtils.getGraphWithoutXToY;
     import static junit.framework.TestCase.assertEquals;
     import static org.junit.Assert.*;
 
@@ -302,7 +301,7 @@
             for (Node x : nodes) {
                 for (Node y : nodes) {
                     if (x == y) continue;
-                    Set<Set<Node>> sets = graph.paths().adjustmentSets1(x, y, numSmnallestSizes, GraphUtils.GraphType.CPDAG);
+                    Set<Set<Node>> sets = GraphUtils.visibleEdgeAdjustments3(graph, x, y, numSmnallestSizes, GraphUtils.GraphType.CPDAG);
 
                     if (sets.isEmpty()) {
                         continue;
@@ -362,7 +361,7 @@
             for (Node x : nodes) {
                 for (Node y : nodes) {
                     if (x == y) continue;
-                    Set<Set<Node>> sets = graph.paths().adjustmentSets1(x, y, numSmnallestSizes, GraphUtils.GraphType.PAG);
+                    Set<Set<Node>> sets = GraphUtils.visibleEdgeAdjustments1(graph, x, y, numSmnallestSizes, GraphUtils.GraphType.PAG);
 
                     if (sets.isEmpty()) {
                         continue;

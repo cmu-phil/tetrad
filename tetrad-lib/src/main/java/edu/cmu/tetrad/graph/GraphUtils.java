@@ -23,7 +23,9 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -2039,7 +2041,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(X).
+     * Calculates visual-edge adjustments given graph G between two nodes x and y that are subsets of MB(X).
      *
      * @param G                the input graph
      * @param x                the source node
@@ -2048,10 +2050,18 @@ public final class GraphUtils {
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
-    public static Set<Set<Node>> adjustmentSets1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+    public static Set<Set<Node>> visibleEdgeAdjustments1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
         Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
 
         if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
             return new HashSet<>();
         }
 
@@ -2059,11 +2069,12 @@ public final class GraphUtils {
         Set<Node> mbX = markovBlanket(x, G2);
         mbX.remove(x);
         mbX.remove(y);
+        mbX.removeAll(G.paths().getDescendants(x));
         return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
     }
 
     /**
-     * Calculates the adjustment sets of a given graph G between two nodes x and y that are subsets of MB(Y).
+     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Y).
      *
      * @param G                the input graph
      * @param x                the source node
@@ -2072,10 +2083,18 @@ public final class GraphUtils {
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
-    public static Set<Set<Node>> adjustmentSets2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+    public static Set<Set<Node>> visualEdgeAdjustments2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
         Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
 
         if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
             return new HashSet<>();
         }
 
@@ -2083,31 +2102,50 @@ public final class GraphUtils {
         Set<Node> mbX = markovBlanket(y, G2);
         mbX.remove(x);
         mbX.remove(y);
+        mbX.removeAll(G.paths().getDescendants(x));
         return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
     }
 
     /**
-     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes. This is currently for
-     * an MPDAG only.
-     * <p>
-     * Precision: G is a legal MPDAG.
+     * This method calculates visible-edge adjustments for a given graph, two nodes, a number of smallest sizes, and a
+     * graph type.
      *
-     * @param x                the starting node
-     * @param y                the ending node
-     * @param numSmallestSizes the number of the smallest sizes for the subsets to return
-     * @return a set of sets of nodes representing adjustment sets
+     * @param G                the input graph
+     * @param x                the first node
+     * @param y                the second node
+     * @param numSmallestSizes the number of smallest sizes to consider
+     * @param graphType        the type of the graph
+     * @return a set of subsets of nodes representing visible-edge adjustments
      */
-    public static Set<Set<Node>> adjustmentSets3(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
-        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
+    public static Set<Set<Node>> visibleEdgeAdjustments3(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2;
+
+        try {
+            G2 = getGraphWithoutXToY(G, x, y, graphType);
+        } catch (Exception e) {
+            return new HashSet<>();
+        }
 
         if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (!G.isAdjacentTo(x, y)) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
             return new HashSet<>();
         }
 
         Set<Node> anteriority = G.paths().anteriority(x, y);
         anteriority.remove(x);
         anteriority.remove(y);
+        anteriority.removeAll(G.paths().getDescendants(x));
         return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), anteriority, x, y, numSmallestSizes);
     }
 
@@ -2140,22 +2178,18 @@ public final class GraphUtils {
      * @param x the starting node of the edge
      * @param y the ending node of the edge
      * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
+     * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
+     *                                 towards y
      */
     private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
 
         if (!G2.isAdjacentTo(x, y)) {
-            return null;
-        }
-
-        if (Edges.isUndirectedEdge(G2.getEdge(x, y))) {
-            Knowledge knowledge = new Knowledge();
-            knowledge.setRequired(x.getName(), y.getName());
-            MeekRules meekRules = new MeekRules();
-            meekRules.setKnowledge(knowledge);
-            G2.removeEdge(x, y);
-            G2.addDirectedEdge(x, y);
-            meekRules.orientImplied(G2);
+            throw new IllegalArgumentException("Edge from x to y must exist.");
+        } else if (Edges.isUndirectedEdge(G2.getEdge(x, y))) {
+            throw new IllegalArgumentException("Edge from x to y must be directed.");
+        } else if (G2.getEdge(x, y).pointsTowards(x)) {
+            throw new IllegalArgumentException("Edge from x to y must point towards y.");
         }
 
         G2.removeEdge(x, y);
@@ -2171,29 +2205,27 @@ public final class GraphUtils {
      * @param x the first node in the edge
      * @param y the second node in the edge
      * @return a graph without the edge from x to y
+     * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
+     *                                  towards
      */
-    private static Graph getGraphWithoutXToYPag(Graph G, Node x, Node y) {
+    private static Graph getGraphWithoutXToYPag(Graph G, Node x, Node y) throws IllegalArgumentException {
         if (!G.isAdjacentTo(x, y)) return null;
 
         Edge edge = G.getEdge(x, y);
 
         if (edge == null) {
-            return null;
-        } else if (Edges.isBidirectedEdge(edge)) {
-            return null;
-        } else if (Edges.isUndirectedEdge(edge)) {
-            return null;
-        } else if (Edges.isPartiallyOrientedEdge(edge) && edge.pointsTowards(x)) {
-            return null;
-        } else {
-            Graph G2 = new EdgeListGraph(G);
-            G2.removeEdge(x, y);
-            G2.addDirectedEdge(x, y);
-            FciOrient fciOrient = new FciOrient(new DagSepsets(G2));
-            fciOrient.orient(G2);
-            G2.removeEdge(x, y);
-            return G2;
+            throw new IllegalArgumentException("Edge from x to y must exist.");
+        } else if (!Edges.isDirectedEdge(edge)) {
+            throw new IllegalArgumentException("Edge from x to y must be directed.");
+        } else if (edge.pointsTowards(x)) {
+            throw new IllegalArgumentException("Edge from x to y must point towards y.");
+        } else if (!G.paths().defVisible(edge)) {
+            throw new IllegalArgumentException("Edge from x to y must be visible.");
         }
+
+        Graph G2 = new EdgeListGraph(G);
+        G2.removeEdge(x, y);
+        return G2;
     }
 
     /**

@@ -2132,45 +2132,6 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of MB(x) with the numSmallestSizes smallest sizes.
-     *
-     * @param x                the starting node
-     * @param y                the ending node
-     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
-     * @return a set of sets of nodes representing adjustment sets
-     */
-    public Set<Set<Node>> adjustmentSets1(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
-        return GraphUtils.adjustmentSets1(graph, x, y, numSmallestSizes, graphType);
-    }
-
-    /**
-     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of MB(y) x and y with the numSmallestSizes smallest sizes.
-     *
-     * @param x                the starting node
-     * @param y                the ending node
-     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
-     * @return a set of sets of nodes representing adjustment sets
-     */
-    public Set<Set<Node>> adjustmentSets2(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
-        return GraphUtils.adjustmentSets2(graph, x, y, numSmallestSizes, graphType);
-    }
-
-    /**
-     * Returns a set of sets of nodes representing adjustment sets between nodes {@code x} and {@code y} in the graph
-     * that are subsets of the anteriority for x and y with the numSmallestSizes smallest sizes.
-     *
-     * @param x                the starting node
-     * @param y                the ending node
-     * @param numSmallestSizes the number of smallest sizes for adjustment sets to return
-     * @return a set of sets of nodes representing adjustment sets
-     */
-    public Set<Set<Node>> adjustmentSets3(Node x, Node y, int numSmallestSizes, GraphUtils.GraphType graphType) {
-        return GraphUtils.adjustmentSets3(graph, x, y, numSmallestSizes, graphType);
-    }
-
-    /**
      * Returns the set of nodes that are in the anteriority of the given nodes in the graph.
      *
      * @param X the nodes for which the anteriority needs to be determined
