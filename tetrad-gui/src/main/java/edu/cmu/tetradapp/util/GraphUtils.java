@@ -211,4 +211,35 @@ public class GraphUtils {
         highlightMenu.add(new SelectLatentsAction(workbench));
         return highlightMenu;
     }
+
+    /**
+     * Breaks down a given reason into multiple lines with a maximum number of columns.
+     *
+     * @param reason      the reason to be broken down
+     * @param maxColumns  the maximum number of columns in a line
+     * @return a string with the reason broken down into multiple lines
+     */
+    public static String breakDown(String reason, int maxColumns) {
+        StringBuilder buf1 = new StringBuilder();
+        StringBuilder buf2 = new StringBuilder();
+
+        String[] tokens = reason.split(" ");
+
+        for (String token : tokens) {
+            if (buf1.length() + token.length() > maxColumns) {
+                buf2.append(buf1);
+                buf2.append("\n");
+                buf1 = new StringBuilder();
+                buf1.append(token);
+            } else {
+                buf1.append(" ").append(token);
+            }
+        }
+
+        if (!buf1.isEmpty()) {
+            buf2.append(buf1);
+        }
+
+        return buf2.toString().trim();
+    }
 }

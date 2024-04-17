@@ -21,7 +21,11 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetradapp.util.GraphUtils;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -67,12 +71,35 @@ public class CheckGraphForPagAction extends AbstractAction {
             return;
         }
 
-        if (graph.paths().isLegalPag()) {
-            JOptionPane.showMessageDialog(workbench, "Graph is a legal PAG.");
-        } else {
-            JOptionPane.showMessageDialog(workbench, "Graph is not a legal PAG.");
+        class MyWatchedProcess extends WatchedProcess {
+            @Override
+            public void watch() {
+                Graph graph = new EdgeListGraph(workbench.getGraph());
+
+                GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
+                String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
+
+                if (!legalPag.isLegalPag()) {
+                    JOptionPane.showMessageDialog(workbench,
+                            "This is not a legal PAG--one reason is as follows:" +
+                            "\n\n" + reason + ".",
+                            "Legal PAG check",
+                            JOptionPane.WARNING_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(workbench, reason);
+                }
+            }
         }
+
+        new MyWatchedProcess();
+
+//        if (graph.paths().isLegalPag()) {
+//            JOptionPane.showMessageDialog(workbench, "Graph is a legal PAG.");
+//        } else {
+//            JOptionPane.showMessageDialog(workbench, "Graph is not a legal PAG.");
+//        }
     }
+
 }
 
 
