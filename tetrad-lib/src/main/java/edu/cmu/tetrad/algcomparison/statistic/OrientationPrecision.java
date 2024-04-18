@@ -12,7 +12,7 @@ import java.io.Serial;
  * @author bryanandrews, osephramsey
  * @version $Id: $Id
  */
-public class OrientationPrecision implements Statistic {
+public class OrientationPrecision implements Statistic { // TODO VBC: is this one we want to use?
     @Serial
     private static final long serialVersionUID = 23L;
 

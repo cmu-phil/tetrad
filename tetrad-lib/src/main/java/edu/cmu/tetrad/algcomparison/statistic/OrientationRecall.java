@@ -13,7 +13,7 @@ import java.io.Serial;
  * compared to the true graph. It calculates the ratio of true positive orientations to the sum of true positive and
  * false negative orientations.
  */
-public class OrientationRecall implements Statistic {
+public class OrientationRecall implements Statistic { // TODO VBC: use this?
     @Serial
     private static final long serialVersionUID = 23L;
 

@@ -103,7 +103,7 @@ public final class GraphUtils {
      * @param graph  a DAG, CPDAG, MAG, or PAG.
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static Graph markovBlanketSubgraph(Node target, Graph graph) {
+    public static Graph markovBlanketSubgraph(Node target, Graph graph) { // TODO VBC: @Joe is this the more general method you recommended?
         Set<Node> mb = markovBlanket(target, graph);
 
         Graph mbGraph = new EdgeListGraph();
@@ -117,6 +117,8 @@ public final class GraphUtils {
 
         for (int i = 0; i < mbList.size(); i++) {
             for (int j = i + 1; j < mbList.size(); j++) {
+                List<Edge> edges = graph.getEdges(mbList.get(i), mbList.get(j));
+                // System.out.println("Add edges between!!!! " + mbList.get(i) + " " + mbList.get(j));
                 for (Edge e : graph.getEdges(mbList.get(i), mbList.get(j))) {
                     mbGraph.addEdge(e);
                 }
@@ -2253,7 +2255,7 @@ public final class GraphUtils {
                 graph = trimAdjacentToTarget(targets, graph);
                 break;
             case 3:
-                graph = trimMarkovBlanketGraph(targets, graph);
+                graph = trimMarkovBlanketGraph(targets, graph); // TODO VBC currently using this
                 break;
             case 4:
                 graph = trimSemidirected(targets, graph);
@@ -2298,7 +2300,7 @@ public final class GraphUtils {
      * @param graph   the original graph from which the Markov blanket graph is derived
      * @return the trimmed Markov blanket graph
      */
-    private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
+    private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) { // TODO vbc this is
         Graph mbDag = new EdgeListGraph(graph);
 
         M:
