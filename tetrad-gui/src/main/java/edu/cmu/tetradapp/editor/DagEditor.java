@@ -478,10 +478,12 @@ public final class DagEditor extends JPanel
         graph.add(new UnderliningsAction(this.workbench));
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        JMenu meekRules = new JMenu("Meek Rules");
+        graph.add(meekRules);
         JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        graph.add(runMeekRules);
+        meekRules.add(runMeekRules);
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        graph.add(revertToCpdag);
+        meekRules.add(revertToCpdag);
         graph.add(new PagColorer(this.workbench));
         runMeekRules.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));

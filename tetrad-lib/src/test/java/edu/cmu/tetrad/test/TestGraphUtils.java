@@ -361,7 +361,12 @@
             for (Node x : nodes) {
                 for (Node y : nodes) {
                     if (x == y) continue;
-                    Set<Set<Node>> sets = GraphUtils.visibleEdgeAdjustments1(graph, x, y, numSmnallestSizes, GraphUtils.GraphType.PAG);
+                    Set<Set<Node>> sets = null;
+                    try {
+                        sets = GraphUtils.visibleEdgeAdjustments1(graph, x, y, numSmnallestSizes, GraphUtils.GraphType.PAG);
+                    } catch (Exception e) {
+                        continue;
+                    }
 
                     if (sets.isEmpty()) {
                         continue;
