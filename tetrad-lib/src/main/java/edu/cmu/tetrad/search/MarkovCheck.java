@@ -2,10 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -249,6 +246,108 @@ public class MarkovCheck {
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
+    }
+
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold) {
+        // when calling, default reject null as <=0.05
+        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<Node> accepts = new ArrayList<>();
+        List<Node> rejects = new ArrayList<>();
+        List<Node> allNodes = graph.getNodes();
+        for (Node x : allNodes) {
+            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<Double> localPValues = getLocalPValues(independenceTest, localIndependenceFacts);
+            Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
+            if (ADTest  <= threshold) {
+                rejects.add(x);
+            } else {
+                accepts.add(x);
+            }
+        }
+        accepts_rejects.add(accepts);
+        accepts_rejects.add(rejects);
+        return accepts_rejects;
+    }
+
+    public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
+        List<Node> singleNode = Arrays.asList(x);
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        System.out.println("@@@@@@@@@@@@@@@@");
+        System.out.println("Focus Node: " + x);
+        System.out.println("True Graph:" + trueGraph);
+        System.out.println("LookupGraph:" + lookupGraph); // print should look the same as the true graph
+
+        Graph RecommendedxMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x); // Recommended, not working
+        Graph xMBLookupGraph = GraphUtils.markovBlanketSubgraph(x, lookupGraph); // TODO VBC: this one should include the target node
+         Graph TrimxMBLookupGraph = GraphUtils.trimGraph(singleNode, lookupGraph, 3); // Best
+//        Set<Edge> xMBLookupGraphEdges = xMBLookupGraph.getEdges();
+
+//        System.out.println("xMBLookupGraphEdges size: " + xMBLookupGraphEdges.size());
+        System.out.println("xMBLookupGraph Nodes size: " + xMBLookupGraph.getNodes().size());
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph); // The MB trim of the lookup graph, so it should be a subset of the lookup graph print
+        System.out.println("RecommendedxMBLookupGraph:" + RecommendedxMBLookupGraph); // The MB trim of the lookup graph, so it should be a subset of the lookup graph print
+        System.out.println("TrimxMBLookupGraph:" + TrimxMBLookupGraph); // The MB trim of the lookup graph, so it should be a subset of the lookup graph print
+
+        // Get Markov Blanket Subgraph for this node x.
+        // Graph xMBEstimatedGraph = getMarkovBlanketSubgraph(estimatedGraph, x);
+        Graph xMBEstimatedGraph = GraphUtils.markovBlanketSubgraph(x, estimatedGraph);
+        // Graph xMBEstimatedGraph = GraphUtils.trimGraph(singleNode, estimatedGraph, 3);
+        Set<Edge> xMBEstimatedGraphEdges = xMBEstimatedGraph.getEdges();
+        System.out.println("xMBEstimatedGraphEdges size: " + xMBEstimatedGraphEdges.size());
+        System.out.println("xMBEstimatedGraph Nodes size: " + xMBEstimatedGraph.getNodes().size());
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph); // This should be compared with the xMBLookupGraph
+        System.out.println("@@@@@@@@@@@@@@@@");
+
+        HashSet<Edge> truePositive = new HashSet<>();
+        HashSet<Edge> falsePositive = new HashSet<>();
+        HashSet<Edge> falseNegative = new HashSet<>();
+        Set<Edge> trueGraphEdgesEdges = trueGraph.getEdges();
+        Set<Edge> estimatedGraphEdgesEdges = estimatedGraph.getEdges();
+        if (trueGraphEdgesEdges != null && estimatedGraphEdgesEdges != null) {
+            for (Edge te : trueGraphEdgesEdges) {
+                for (Edge ee : estimatedGraphEdgesEdges) {
+                    // True Graph's Edge info
+                    Node teNode1 = te.getNode1();
+                    Node teNode2 = te.getNode1();
+                    Endpoint teEndpoint1 = te.getEndpoint1();
+                    Endpoint teEndpoint2 = te.getEndpoint2();
+                    // Estimated Graph's Edge info
+                    Node eeNode1 = te.getNode1();
+                    Node eeNode2 = te.getNode1();
+                    Endpoint eeEndpoint1 = ee.getEndpoint1();
+                    Endpoint eeEndpoint2 = ee.getEndpoint2();
+                    boolean isSameNode1 = areSame(teNode1, eeNode1);
+                    boolean isSameNode2 = areSame(teNode2, eeNode2);
+
+                    // EdgeTypeProbability.EdgeType teType = te.getEdgeTypeProbabilities().getFirst().getEdgeType();
+
+                    // If both n1 n2 are the same, compare the endpoint1 endpoint2
+                    if (isSameNode1 && isSameNode2) {
+                        // if (teEndpoint1.compareTo(eeEndpoint1))
+                        // QUESTION: // TODO VBC: seems Edge#compareTo() only comparing the node itself not the endpoint?
+                        // QUESTION: do we only care about edge type here?
+
+                    }
+
+
+                }
+            }
+        }
+        // TODO VBC:
+        //  Logic of comparing true graph with estimated graph
+
+        double precision = (double) truePositive.size() / (truePositive.size() + falsePositive.size());
+        double recall = (double) truePositive.size() / (truePositive.size() + falseNegative.size());
+        return getPrecision ? precision : recall;
+    }
+
+    private boolean areSame(Node n1, Node n2) {
+        // TODO VBC: Compare the Nodes are of the same.
+        // QUESTION: the compareTo() method in Node class is very complicated, involves Lag etc. is that what we want to use?
+        //           or shall we just compare by names of these nodes
+
+        return n1.getName().equals(n2.getName());
     }
 
 
