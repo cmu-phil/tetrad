@@ -587,12 +587,14 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = this.edgeLists.get(node);
         Set<Node> adj = new HashSet<>();
 
-        for (Edge edge : edges) {
-            if (edge == null) {
-                continue;
-            }
+        if (edges != null) {
+            for (Edge edge : edges) {
+                if (edge == null) {
+                    continue;
+                }
 
-            adj.add(edge.getDistalNode(node));
+                adj.add(edge.getDistalNode(node));
+            }
         }
 
         return new ArrayList<>(adj);
@@ -712,20 +714,30 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Map<Node, Set<Edge>> edgeListMap = this.edgeLists;
 
         synchronized (edgeListMap) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
             // Someoone may have changed the name of one of these variables, in which
             // case we need to reconstitute the edgeLists map, since the name of a
             // node is used part of the definition of node equality.
-            if (!edgeLists.containsKey(edge.getNode1()) || !edgeLists.containsKey(edge.getNode2())) {
+            if (!edgeLists.containsKey(node1) || !edgeLists.containsKey(node2)) {
                 this.edgeLists = new HashMap<>(this.edgeLists);
             }
 
-            this.edgeLists.get(edge.getNode1()).add(edge);
-            this.edgeLists.get(edge.getNode2()).add(edge);
+            if (edgeLists.get(node1) == null) {
+                // System.out.println("Missing node1 is not in edgeLists: " + node1);
+                edgeLists.put(node1, new HashSet<>());
+            }
+            if (edgeLists.get(node2) == null) {
+                // System.out.println("Missing node2 is not in edgeLists: " + node2);
+                edgeLists.put(node2, new HashSet<>());
+            }
+            this.edgeLists.get(node1).add(edge);
+            this.edgeLists.get(node2).add(edge);
             this.edgesSet.add(edge);
 
-            this.parentsHash.remove(edge.getNode1());
-            this.parentsHash.remove(edge.getNode2());
+            this.parentsHash.remove(node1);
+            this.parentsHash.remove(node2);
         }
 
         if (Edges.isDirectedEdge(edge)) {
