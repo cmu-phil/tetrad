@@ -41,6 +41,8 @@ import java.awt.event.KeyEvent;
 import java.io.Serial;
 import java.net.URL;
 
+import static edu.cmu.tetradapp.editor.GraphEditor.addGraphManipItems;
+
 /**
  * Apr 15, 2019 4:49:15 PM
  *
@@ -128,19 +130,14 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
+
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-        JMenu meekRules = new JMenu("Meek Rules");
-        graph.add(meekRules);
-        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        meekRules.add(runMeekRules);
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        meekRules.add(revertToCpdag);
+        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
         graph.add(new PagColorer(this.workbench));
-        runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
-        revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
         menuBar.add(graph);
 

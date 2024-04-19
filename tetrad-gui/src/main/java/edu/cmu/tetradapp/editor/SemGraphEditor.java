@@ -51,6 +51,8 @@ import java.io.Serial;
 import java.util.List;
 import java.util.*;
 
+import static edu.cmu.tetradapp.editor.GraphEditor.addGraphManipItems;
+
 /**
  * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
  *
@@ -479,6 +481,7 @@ public final class SemGraphEditor extends JPanel
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
+        graph.add(new UnderliningsAction(this.workbench));
         graph.addSeparator();
 
         JMenuItem errorTerms = new JMenuItem();
@@ -510,6 +513,13 @@ public final class SemGraphEditor extends JPanel
         graph.add(correlateExogenous);
         graph.add(uncorrelateExogenous);
         graph.addSeparator();
+
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
+        graph.add(new PagColorer(workbench));
 
         correlateExogenous.addActionListener(e -> {
             correlationExogenousVariables();
@@ -559,24 +569,6 @@ public final class SemGraphEditor extends JPanel
                 }
             });
         });
-
-        graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
-        graph.add(new UnderliningsAction(this.workbench));
-        graph.add(GraphUtils.getHighlightMenu(this.workbench));
-        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-        JMenu meekRules = new JMenu("Meek Rules");
-        graph.add(meekRules);
-        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        meekRules.add(runMeekRules);
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        meekRules.add(revertToCpdag);
-        graph.add(new PagColorer(this.workbench));
-        runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
-        revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
-
 
         return graph;
     }

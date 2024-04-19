@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -243,9 +243,11 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given Multi-Parent Directed Acyclic Graph (MPDAG) is legal. A MPDAG is considered legal if it is
-     * equivalent to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for maximum
-     * orientation.
+     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (MPDAG). A MPDAG is considered legal
+     * if it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
+     * maximum orientation. The test is performed by attemping to convert the graph to a CPDAG using the DAG to CPDAG
+     * transformation and testing whether that graph is a legal CPDAG. Finally, we test to see whether the obtained
+     * graph is equal to the original graph.
      *
      * @return true if the MPDAG is legal, false otherwise.
      */
@@ -276,6 +278,42 @@ public class Paths implements TetradSerializable {
                 meekRules.setRevertToUnshieldedColliders(false);
                 meekRules.orientImplied(__g);
                 return g.equals(__g);
+            }
+
+            return false;
+        } catch (Exception e) {
+            // There was no valid sink.
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the given Maximal Ancestral Graph (MPAG) is legal. A MPAG is considered legal if it is equal to a PAG
+     * where additional edges have been oriented by Knowledge, with final FCI rules applied for maximum orientation. The
+     * test is performed by attemping to convert the graph to a PAG using the DAG to CPDAG transformation and testing
+     * whether that graph is a legal PAG. Finally, we test to see whether the obtained graph is equal to the original
+     * graph.
+     * <p>
+     * The user may choose to use the rules from Zhang (2008) or the rules from Spirtes et al. (2000).
+     *
+     * @return true if the MPDAG is legal, false otherwise.
+     */
+    public boolean isLegalMpag() {
+        Graph g = this.graph;
+
+        try {
+            Graph pag = GraphTransforms.dagToPag(g);
+
+            if (pag.paths().isLegalPag()) {
+                Graph __g = new DagToPag(graph).convert();
+
+                if (__g.paths().isLegalPag()) {
+                    Graph _g = new EdgeListGraph(g);
+                    FciOrient fciOrient = new FciOrient(new DagSepsets(_g));
+                    fciOrient.zhangFinalOrientation(_g);
+                    return g.equals(_g);
+                }
             }
 
             return false;

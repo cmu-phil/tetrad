@@ -193,22 +193,25 @@ public class GraphUtils {
         JMenuItem checkGraphForMpdag = new JMenuItem(new CheckGraphForMpdagAction(workbench));
         JMenuItem checkGraphForMag = new JMenuItem(new CheckGraphForMagAction(workbench));
         JMenuItem checkGraphForPag = new JMenuItem(new CheckGraphForPagAction(workbench));
+        JMenuItem checkGraphForMpag = new JMenuItem(new CheckGraphForMpagAction(workbench));
 
         checkGraph.add(checkGraphForDag);
         checkGraph.add(checkGraphForCpdag);
         checkGraph.add(checkGraphForMpdag);
         checkGraph.add(checkGraphForMag);
         checkGraph.add(checkGraphForPag);
+        checkGraph.add(checkGraphForMpag);
         return checkGraph;
     }
 
     public static @NotNull JMenu getHighlightMenu(GraphWorkbench workbench) {
-        JMenu highlightMenu = new JMenu("Highlight");
+        JMenu highlightMenu = new JMenu("Highlight Edges");
         highlightMenu.add(new SelectDirectedAction(workbench));
         highlightMenu.add(new SelectBidirectedAction(workbench));
         highlightMenu.add(new SelectUndirectedAction(workbench));
         highlightMenu.add(new SelectTrianglesAction(workbench));
         highlightMenu.add(new SelectLatentsAction(workbench));
+        highlightMenu.add(new SelectEdgesInCycles(workbench));
         return highlightMenu;
     }
 

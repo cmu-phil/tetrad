@@ -466,35 +466,42 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         return menuBar;
     }
 
-    JMenuBar createGraphMenuBarNoEditing() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
-        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
+    /**
+     * Adds graph manipulation items to the given graph menu.
+     *
+     * @param graph the graph menu to add the items to.
+     */
+    public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
+        JMenu applyFinalRules = new JMenu("Apply final rules");
+        JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
+        JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
+        applyFinalRules.add(runMeekRules);
+        applyFinalRules.add(runFinalFciRules);
+        graph.add(applyFinalRules);
 
-        menuBar.add(file);
+        JMenu revertGraph = new JMenu("Revert Graph");
+        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
+        JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(workbench));
+        revertGraph.add(undoLast);
+        revertGraph.add(setToOriginal);
+        revertGraph.add(revertToCpdag);
+        revertGraph.add(revertToPag);
+        graph.add(revertGraph);
 
-        JMenu graph = new JMenu("Graph");
-
-        graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
-        graph.add(new UnderliningsAction(this.workbench));
-        graph.add(GraphUtils.getHighlightMenu(this.workbench));
-        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-        JMenu meekRules = new JMenu("Meek Rules");
-        graph.add(meekRules);
-        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        meekRules.add(runMeekRules);
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        meekRules.add(revertToCpdag);
-        graph.add(new PagColorer(this.workbench));
         runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.META_DOWN_MASK));
         revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
-
-        menuBar.add(graph);
-
-        return menuBar;
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.META_DOWN_MASK));
+        runFinalFciRules.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_DOWN_MASK));
+        revertToPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.META_DOWN_MASK));
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.META_DOWN_MASK));
     }
 
 
@@ -531,7 +538,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
         graph.add(new UnderliningsAction(getWorkbench()));
-
         graph.addSeparator();
 
         JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
@@ -589,22 +595,12 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             });
         });
 
-        graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
-        graph.add(new UnderliningsAction(this.workbench));
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-        JMenu meekRules = new JMenu("Meek Rules");
-        graph.add(meekRules);
-        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        meekRules.add(runMeekRules);
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        meekRules.add(revertToCpdag);
-        graph.add(new PagColorer(this.workbench));
-        runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
-        revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
+        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
+        graph.add(new PagColorer(workbench));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {
@@ -612,8 +608,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
         }
 
-        graph.addSeparator();
-        graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
+         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
 
         return graph;
     }

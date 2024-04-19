@@ -476,20 +476,19 @@ public final class DagEditor extends JPanel
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
+
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-        JMenu meekRules = new JMenu("Meek Rules");
-        graph.add(meekRules);
-        JMenuItem runMeekRules = new JMenuItem(new RunMeekRules(this.workbench));
-        meekRules.add(runMeekRules);
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(this.workbench));
-        meekRules.add(revertToCpdag);
-        graph.add(new PagColorer(this.workbench));
-        runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
-        revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(this.workbench));
+        JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(this.workbench));
+        graph.add(undoLast);
+        graph.add(setToOriginal);
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();

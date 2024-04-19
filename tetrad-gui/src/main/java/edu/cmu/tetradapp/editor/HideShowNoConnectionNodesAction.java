@@ -35,7 +35,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
-        super("Hide/Show No Connections Node");
+        super("Hide/Show nodes with no connections");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");

@@ -21,30 +21,21 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 /**
- * Selects all directed edges in the given display graph.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * This class represents an action to reset a graph to its original state in a GraphWorkbench. It implements the
+ * ActionListener interface to respond to events triggered by clicking a button or selecting a menu option. It also
+ * implements the ClipboardOwner interface to handle clipboard ownership changes.
  */
-public class RunMeekRules extends AbstractAction implements ClipboardOwner {
+public class SetToOriginalAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.
@@ -52,12 +43,12 @@ public class RunMeekRules extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given desktop and clipboard.
-     *
-     * @param workbench the given workbench.
+     * This class represents an action to reset a graph to its original state in a GraphWorkbench. It implements the
+     * ActionListener interface to respond to events triggered by clicking a button or selecting a menu option. It also
+     * implements the ClipboardOwner interface to handle clipboard ownership changes.
      */
-    public RunMeekRules(GraphWorkbench workbench) {
-        super("Run Meek Rules");
+    public SetToOriginalAction(GraphWorkbench workbench) {
+        super("Reset to the Original Graph");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -67,39 +58,20 @@ public class RunMeekRules extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Selects all directed edges in the given display graph.
+     * Performs an action when an event occurs.
+     *
+     * @param e the event that triggered the action.
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
-        Graph graph = this.workbench.getGraph();
-
-        if (graph == null) {
-            JOptionPane.showMessageDialog(this.workbench, "No graph to run Meek rules on.");
-            return;
-        }
-
-        // check to make sure the edges in the graph are all directed or undirected
-        for (Edge edge : graph.getEdges()) {
-            if (!Edges.isDirectedEdge(edge) && !Edges.isUndirectedEdge(edge)) {
-                JOptionPane.showMessageDialog(this.workbench,
-                        "To run Meek rules, the graph must contain only directed or undirected edges.");
-                return;
-            }
-        }
-
-        graph = new EdgeListGraph(graph);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(graph);
-        workbench.setGraph(graph);
+        this.workbench.setToOriginal();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Required by the AbstractAction interface; does nothing.
+     * Called when ownership of the clipboard contents is lost.
+     *
+     * @param clipboard the clipboard that lost ownership
+     * @param contents  the contents that were lost
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
