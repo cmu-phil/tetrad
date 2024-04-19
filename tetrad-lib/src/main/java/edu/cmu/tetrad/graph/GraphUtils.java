@@ -143,8 +143,8 @@ public final class GraphUtils {
         Set<Node> mbNodes = GraphUtils.markovBlanket(target, g);
         mbNodes.add(target);
         Graph res = g.subgraph(new ArrayList<>(mbNodes));
-        System.out.println( target + "~~~~~Node's MB Nodes list: " + res.getNodes());
-        System.out.println("~~~~~~~Graph result: " + res);
+//        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
+//        System.out.println("Graph result: " + res);
         return  res;
     }
 

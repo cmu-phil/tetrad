@@ -269,37 +269,25 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
+    // TODO VBC: this method is in progress.
     public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
-//        System.out.println("True Graph:" + trueGraph);
-//        System.out.println("LookupGraph:" + lookupGraph);
+        // TODO VBC: a different naming once this method is completed.
         Graph RecommendedxMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-//        Graph xMBLookupGraph = GraphUtils.markovBlanketSubgraph(x, lookupGraph);
-//        Graph TrimxMBLookupGraph = GraphUtils.trimGraph(singleNode, lookupGraph, 3);
-//        Set<Edge> xMBLookupGraphEdges = xMBLookupGraph.getEdges();
-
-//        System.out.println("xMBLookupGraphEdges size: " + xMBLookupGraphEdges.size());
-//        System.out.println("xMBLookupGraph Nodes size: " + xMBLookupGraph.getNodes().size());
-//        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
-        System.out.println("RecommendedxMBLookupGraph:" + RecommendedxMBLookupGraph);
-//        System.out.println("TrimxMBLookupGraph:" + TrimxMBLookupGraph);
-        // Get Markov Blanket Subgraph for this node x.
-        // Graph xMBEstimatedGraph = getMarkovBlanketSubgraph(estimatedGraph, x);
+//        System.out.println("RecommendedxMBLookupGraph:" + RecommendedxMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        // Graph xMBEstimatedGraph = GraphUtils.trimGraph(singleNode, estimatedGraph, 3);
-        Set<Edge> xMBEstimatedGraphEdges = xMBEstimatedGraph.getEdges();
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+//        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         HashSet<Edge> TP = new HashSet<>();
         HashSet<Edge> TN = new HashSet<>();
         HashSet<Edge> FP = new HashSet<>();
         HashSet<Edge> FN = new HashSet<>();
-        Set<Edge> trueGraphEdgesEdges = trueGraph.getEdges();
-        Set<Edge> estimatedGraphEdgesEdges = estimatedGraph.getEdges();
-        if (trueGraphEdgesEdges != null && estimatedGraphEdgesEdges != null) {
-            for (Edge te : trueGraphEdgesEdges) {
-                for (Edge ee : estimatedGraphEdgesEdges) {
+        Set<Edge> trueMBEdges = RecommendedxMBLookupGraph.getEdges();
+        Set<Edge> estMBEdges = xMBEstimatedGraph.getEdges();
+        if (trueMBEdges != null && estMBEdges != null) {
+            for (Edge te : trueMBEdges) {
+                for (Edge ee : estMBEdges) {
                     // True Graph's Edge info
                     Node teNode1 = te.getNode1();
                     Node teNode2 = te.getNode1();
@@ -314,6 +302,7 @@ public class MarkovCheck {
                 }
             }
         }
+        // TODO VBC: need both for AH and Adj, so this getPrecision way need further fix to fit UI later.
         double precision = (double) TP.size() / (TP.size() + FP.size());
         double recall = (double) TP.size() / (TP.size() + FN.size());
         return getPrecision ? precision : recall;
