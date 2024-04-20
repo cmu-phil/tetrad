@@ -565,8 +565,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         GraphUtils.addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
-
-        graph.add(new PagColorer(workbench));
+        graph.add(GraphUtils.addPagColoringItems(this.workbench));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {
@@ -574,7 +573,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
         }
 
-         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
+//         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
 
         return graph;
     }

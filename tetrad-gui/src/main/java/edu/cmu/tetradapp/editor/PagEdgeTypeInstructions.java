@@ -21,85 +21,66 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.EditorUtils;
-import edu.cmu.tetradapp.util.InternalClipboard;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.List;
+import java.awt.event.ActionListener;
+import java.net.URL;
 
 /**
- * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
- *
- * @author josephramsey
+ * Represents an action to display PAG Edge Type Instructions in a GraphWorkbench. This class extends AbstractAction and
+ * implements ClipboardOwner.
  */
-class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
-    /**
-     * The desktop containing the target session editor.
-     */
-    private final GraphEditable graphEditor;
+public class PagEdgeTypeInstructions extends AbstractAction implements ClipboardOwner {
 
     /**
-     * Constucts an action for loading the session in the given '.tet' file into the desktop.
-     *
-     * @param graphEditor a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * Represents an action to display PAG Edge Type Instructions in a GraphWorkbench.
      */
-    public PasteSubgraphAction(GraphEditable graphEditor) {
-        super("Paste Selected Items");
-
-        if (graphEditor == null) {
-            throw new NullPointerException("Desktop must not be null.");
-        }
-
-        this.graphEditor = graphEditor;
+    public PagEdgeTypeInstructions() {
+        super("PAG Edge Type Instructions");
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Performs an action when an event occurs.
+     *
+     * @param e the event that triggered the action.
      */
     public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
-                .getContents(null);
-
-        if (!(transferable instanceof SubgraphSelection selection)) {
-            return;
-        }
-
-        DataFlavor flavor =
-                new DataFlavor(SubgraphSelection.class, "Subgraph Selection");
+        // Initialize helpSet
+        final String helpHS = "/docs/javahelp/TetradHelp.hs";
 
         try {
-            List modelList = (List) selection.getTransferData(flavor);
-            Point point = EditorUtils.getTopLeftPoint(modelList);
-            point.translate(50, 50);
-            graphEditor().pasteSubsession(modelList, point);
-        } catch (Exception e1) {
-            throw new RuntimeException(e1);
+            URL url = this.getClass().getResource(helpHS);
+            HelpSet helpSet = new HelpSet(null, url);
+
+            helpSet.setHomeID("graph_edge_types");
+            HelpBroker broker = helpSet.createHelpBroker();
+            ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+            listener.actionPerformed(e);
+        } catch (Exception ee) {
+            System.out.println("HelpSet " + ee.getMessage());
+            System.out.println("HelpSet " + helpHS + " not found");
+            throw new IllegalArgumentException();
         }
+
     }
 
-
     /**
-     * {@inheritDoc}
-     * <p>
-     * Notifies this object that it is no longer the owner of the contents of the clipboard.
+     * Called when ownership of the clipboard contents is lost.
+     *
+     * @param clipboard the clipboard that lost ownership
+     * @param contents  the contents that were lost
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
-
-    private GraphEditable graphEditor() {
-        return this.graphEditor;
-    }
 }
-
-
 
 
 

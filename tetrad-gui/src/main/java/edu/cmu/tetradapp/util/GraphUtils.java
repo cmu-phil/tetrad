@@ -289,4 +289,11 @@ public class GraphUtils {
         setToOriginal.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
     }
+
+    public static @NotNull JMenu addPagColoringItems(GraphWorkbench workbench) {
+        JMenu pagColoring = new JMenu("PAG Coloring");
+        pagColoring.add(new PagColorer(workbench));
+        pagColoring.add(new PagEdgeTypeInstructions());
+        return pagColoring;
+    }
 }

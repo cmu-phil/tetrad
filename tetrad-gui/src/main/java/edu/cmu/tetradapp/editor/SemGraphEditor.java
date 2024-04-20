@@ -528,7 +528,7 @@ public final class SemGraphEditor extends JPanel
         addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
-        graph.add(new PagColorer(workbench));
+        graph.add(GraphUtils.addPagColoringItems(this.workbench));
 
         correlateExogenous.addActionListener(e -> {
             correlationExogenousVariables();

@@ -135,7 +135,7 @@ public class GraphCard extends JPanel {
 //        addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
-        graph.add(new PagColorer(this.workbench));
+        graph.add(GraphUtils.addPagColoringItems(this.workbench));
 
         menuBar.add(graph);
 
