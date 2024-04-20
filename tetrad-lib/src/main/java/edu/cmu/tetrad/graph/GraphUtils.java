@@ -98,6 +98,8 @@ public final class GraphUtils {
 
     /**
      * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG.
+     * Target Node is not included in the result graph's nodes list.
+     * Edges including the target node is included in the result graph's edges list.
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
@@ -124,6 +126,26 @@ public final class GraphUtils {
         }
 
         return mbGraph;
+    }
+
+    /**
+     * Calculates the subgraph over the Markov blanket of a target node for a DAG, CPDAG, MAG, or PAG.
+     * This is not necessarily minimal (i.e. not necessarily a Markov Boundary).
+     * Target Node is included in the result graph's nodes list.
+     * Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getMarkovBlanketSubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        Set<Node> mbNodes = GraphUtils.markovBlanket(target, g);
+        mbNodes.add(target);
+        Graph res = g.subgraph(new ArrayList<>(mbNodes));
+//        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
+//        System.out.println("Graph result: " + res);
+        return  res;
     }
 
     /**
