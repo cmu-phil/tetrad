@@ -409,7 +409,14 @@ public class SemGraphWrapper implements GraphSource,
      */
     public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
-        this.graphs.add(new SemGraph(graph));
+
+        if (graph instanceof SemGraph) {
+            this.graphs.add(graph);
+        } else {
+            this.graphs.add(new SemGraph(graph));
+        }
+
+//        this.graphs.add(new SemGraph(graph));
         log();
     }
 

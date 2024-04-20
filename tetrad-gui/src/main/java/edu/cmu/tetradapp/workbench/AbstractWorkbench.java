@@ -198,7 +198,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private LinkedList<Graph> graphStack = new LinkedList<>();
+    private final LinkedList<Graph> graphStack = new LinkedList<>();
 
     // ==============================CONSTRUCTOR============================//
 
@@ -282,12 +282,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         for (DisplayNode graphNode : graphNodes) {
             removeNode(graphNode);
+            modelNodesToDisplay.remove(graphNode.getModelNode());
         }
 
         for (IDisplayEdge displayEdge : graphEdges) {
             try {
                 removeEdge(displayEdge);
                 resetEdgeOffsets(displayEdge);
+                modelEdgesToDisplay.remove(displayEdge.getModelEdge());
             } catch (Exception e) {
                 if (isNodeEdgeErrorsReported()) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
@@ -383,9 +385,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
         Graph oldGraph = new EdgeListGraph(graph);
 
         do {
+            if (graphStack.isEmpty()) {
+                break;
+            }
+
             Graph graph = graphStack.removeLast();
             setGraph(graph);
         } while (graph.equals(oldGraph));
@@ -2469,6 +2479,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         try {
             boolean added = getGraph().addEdge(newEdge);
             if (!added) {
+                getGraph().addEdge(edge);
+
                 if (doPagColoring) {
                     GraphUtils.addPagColoring(new EdgeListGraph(graph));
                 }

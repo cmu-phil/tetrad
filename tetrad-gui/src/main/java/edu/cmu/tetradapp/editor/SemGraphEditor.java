@@ -279,6 +279,11 @@ public final class SemGraphEditor extends JPanel
 
                     // Update the semGraphWrapper
                     semGraphWrapper.setGraph(targetGraph);
+
+                    if (getWorkbench().getGraph() != targetGraph) {
+                        getWorkbench().setGraph(targetGraph);
+                    }
+
                     // Also need to update the UI
 //                    updateBootstrapTable(targetGraph);
                 }
