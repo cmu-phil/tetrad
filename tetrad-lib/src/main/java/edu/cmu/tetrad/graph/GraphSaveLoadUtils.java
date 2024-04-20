@@ -1062,9 +1062,9 @@ public class GraphSaveLoadUtils {
      * @throws IllegalArgumentException if the graph is not a MPDAG (including CPDAG or DAG)
      */
     public static String graphToAmatCpag(Graph g) {
-        if (!(g.paths().isLegalMpdag())) {
-            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
-        }
+//        if (!(g.paths().isLegalMpdag())) {
+//            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
+//        }
 
         List<Node> vars = g.getNodes();
 
@@ -1124,9 +1124,9 @@ public class GraphSaveLoadUtils {
      * @return a {@link java.lang.String} object
      */
     public static String graphToAmatPag(Graph g) {
-        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
-        }
+//        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
+//        }
 
         List<Node> vars = g.getNodes();
 
