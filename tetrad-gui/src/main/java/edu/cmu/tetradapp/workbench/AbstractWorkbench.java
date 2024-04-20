@@ -385,14 +385,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         Graph oldGraph = new EdgeListGraph(graph);
 
-        while (graph.equals(oldGraph)) {
-            if (graphStack.isEmpty()) {
-                break;
-            }
-
+        do{
             Graph graph = graphStack.removeLast();
             setGraph(graph);
-        }
+        } while (graph.equals(oldGraph));
     }
 
     public void setToOriginal() {
@@ -1069,7 +1065,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
 
-        if (!graph.equals(getGraph()) && graph.getNumNodes() > 0) {
+        if (!graph.equals(getGraph())) {
             this.graphStack.addLast(new EdgeListGraph(graph));
         }
 
@@ -2941,6 +2937,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             } else if ("edgeLaunch".equals(propName)) {
                 System.out.println("Attempt to launch edge.");
             } else if ("deleteNode".equals(propName)) {
+                addLast(workbench.getGraph());
+
                 Object node = e.getSource();
 
                 if (node instanceof DisplayNode) {

@@ -65,17 +65,17 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * The underline triples.
      */
-    private Set<Triple> underLineTriples;
+    private Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * The dotted underline triples.
      */
-    private Set<Triple> dottedUnderLineTriples;
+    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * The ambiguous triples.
      */
-    private Set<Triple> ambiguousTriples;
+    private Set<Triple> ambiguousTriples = new HashSet<>();
 
     //============================CONSTRUCTORS=============================//
 
