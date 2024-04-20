@@ -202,7 +202,7 @@ public class SaveGraph extends AbstractAction {
 //            }
 //        }
         else if (this.type == Type.amatCpdag) {
-            File file = EditorUtils.getSaveFile("graph", "amagpag.txt", parent, false, this.title);
+            File file = EditorUtils.getSaveFile("graph", "amat.cpag.txt", parent, false, this.title);
 
             if (file == null) {
                 System.out.println("File was null.");

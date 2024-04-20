@@ -51,7 +51,7 @@ import java.io.Serial;
 import java.util.List;
 import java.util.*;
 
-import static edu.cmu.tetradapp.editor.GraphEditor.addGraphManipItems;
+import static edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.

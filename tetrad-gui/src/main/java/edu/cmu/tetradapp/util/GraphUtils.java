@@ -9,6 +9,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -244,5 +246,43 @@ public class GraphUtils {
         }
 
         return buf2.toString().trim();
+    }
+
+    /**
+     * Adds graph manipulation items to the given graph menu.
+     *
+     * @param graph the graph menu to add the items to.
+     */
+    public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
+        JMenu applyFinalRules = new JMenu("Apply final rules");
+        JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
+        JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
+        applyFinalRules.add(runMeekRules);
+        applyFinalRules.add(runFinalFciRules);
+        graph.add(applyFinalRules);
+
+        JMenu revertGraph = new JMenu("Revert Graph");
+        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
+        JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(workbench));
+        revertGraph.add(undoLast);
+        revertGraph.add(setToOriginal);
+        revertGraph.add(revertToCpdag);
+        revertGraph.add(revertToPag);
+        graph.add(revertGraph);
+
+        runMeekRules.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
+        revertToCpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
+        runFinalFciRules.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+        revertToPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
     }
 }
