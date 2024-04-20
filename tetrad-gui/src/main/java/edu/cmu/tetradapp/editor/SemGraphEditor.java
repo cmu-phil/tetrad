@@ -463,14 +463,18 @@ public final class SemGraphEditor extends JPanel
     private JMenu createEditMenu() {
         JMenu edit = new JMenu("Edit");
 
+        JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
+        cut.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
+        edit.add(cut);
         edit.add(copy);
         edit.add(paste);
 

@@ -452,14 +452,18 @@ public final class DagEditor extends JPanel
 
         JMenu edit = new JMenu("Edit");
 
+        JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
+        cut.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
+        edit.add(cut);
         edit.add(copy);
         edit.add(paste);
 
@@ -481,12 +485,15 @@ public final class DagEditor extends JPanel
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
 
+        JMenu revert = new JMenu("Revert Graph");
+        graph.add(revert);
         JMenuItem undoLast = new JMenuItem(new UndoLastAction(this.workbench));
         JMenuItem redoLast = new JMenuItem(new RedoLastAction(this.workbench));
         JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(this.workbench));
-        graph.add(undoLast);
-        graph.add(redoLast);
-        graph.add(setToOriginal);
+        revert.add(undoLast);
+        revert.add(redoLast);
+        revert.add(setToOriginal);
+
         undoLast.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
         redoLast.setAccelerator(

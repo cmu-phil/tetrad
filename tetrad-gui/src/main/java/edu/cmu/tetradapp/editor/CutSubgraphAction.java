@@ -36,7 +36,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class CopySubgraphAction extends AbstractAction implements ClipboardOwner {
+public class CutSubgraphAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.
@@ -46,10 +46,10 @@ public class CopySubgraphAction extends AbstractAction implements ClipboardOwner
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
      *
-     * @param graphEditor a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param graphEditor a {@link GraphEditable} object
      */
-    public CopySubgraphAction(GraphEditable graphEditor) {
-        super("Copy Selected Items");
+    public CutSubgraphAction(GraphEditable graphEditor) {
+        super("Cut Selected Items");
 
         if (graphEditor == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -64,9 +64,10 @@ public class CopySubgraphAction extends AbstractAction implements ClipboardOwner
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
-        List modelComponents = this.graphEditor.getSelectedModelComponents();
+        List<?> modelComponents = this.graphEditor.getSelectedModelComponents();
         SubgraphSelection selection = new SubgraphSelection(modelComponents);
         InternalClipboard.getInstance().setContents(selection, this);
+        graphEditor.getWorkbench().deleteSelectedObjects();
     }
 
     /**
