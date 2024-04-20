@@ -379,7 +379,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     public void undo() {
-        if (graphStack.isEmpty()) {
+        if (graph == null) {
             return;
         }
 
