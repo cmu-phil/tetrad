@@ -220,8 +220,8 @@ public class GraphUtils {
     /**
      * Breaks down a given reason into multiple lines with a maximum number of columns.
      *
-     * @param reason      the reason to be broken down
-     * @param maxColumns  the maximum number of columns in a line
+     * @param reason     the reason to be broken down
+     * @param maxColumns the maximum number of columns in a line
      * @return a string with the reason broken down into multiple lines
      */
     public static String breakDown(String reason, int maxColumns) {
@@ -265,8 +265,10 @@ public class GraphUtils {
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
         JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
         JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
         JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(workbench));
         revertGraph.add(undoLast);
+        revertGraph.add(redoLast);
         revertGraph.add(setToOriginal);
         revertGraph.add(revertToCpdag);
         revertGraph.add(revertToPag);
@@ -282,6 +284,8 @@ public class GraphUtils {
                 KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
         undoLast.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        redoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
         setToOriginal.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
     }

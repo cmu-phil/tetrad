@@ -482,11 +482,15 @@ public final class DagEditor extends JPanel
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
 
         JMenuItem undoLast = new JMenuItem(new UndoLastAction(this.workbench));
+        JMenuItem redoLast = new JMenuItem(new RedoLastAction(this.workbench));
         JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(this.workbench));
         graph.add(undoLast);
+        graph.add(redoLast);
         graph.add(setToOriginal);
         undoLast.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        redoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
         setToOriginal.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 

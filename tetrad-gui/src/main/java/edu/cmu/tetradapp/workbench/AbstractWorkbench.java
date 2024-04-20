@@ -199,6 +199,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private Knowledge knowledge = new Knowledge();
     private final LinkedList<Graph> graphStack = new LinkedList<>();
+    private final LinkedList<Graph> redoStack = new LinkedList<>();
 
     // ==============================CONSTRUCTOR============================//
 
@@ -397,6 +398,28 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             Graph graph = graphStack.removeLast();
+            setGraph(graph);
+            redoStack.add(graph);
+        } while (graph.equals(oldGraph));
+    }
+
+    public void redo() {
+        if (graph == null) {
+            return;
+        }
+
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
+        Graph oldGraph = new EdgeListGraph(graph);
+
+        do {
+            if (redoStack.isEmpty()) {
+                break;
+            }
+
+            Graph graph = redoStack.removeLast();
             setGraph(graph);
         } while (graph.equals(oldGraph));
     }
@@ -2937,15 +2960,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if ("nodeAdded".equals(propName)) {
                 this.workbench.addNode((Node) newValue);
                 addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("nodeRemoved".equals(propName)) {
                 this.workbench.removeNode((Node) oldValue);
                 addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeAdded".equals(propName)) {
                 this.workbench.addEdge((Edge) newValue);
                 addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeRemoved".equals(propName)) {
                 this.workbench.removeEdge((Edge) oldValue);
                 addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeLaunch".equals(propName)) {
                 System.out.println("Attempt to launch edge.");
             } else if ("deleteNode".equals(propName)) {
@@ -2964,6 +2991,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
 
                 addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("cloneMe".equals(propName)) {
                 AbstractWorkbench.this.firePropertyChange("cloneMe", e.getOldValue(), e.getNewValue());
             }
