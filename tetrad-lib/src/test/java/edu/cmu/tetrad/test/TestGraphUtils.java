@@ -433,6 +433,8 @@
          */
         @Test
         public void test12() {
+            RandomUtil.getInstance().setSeed(1040404L);
+
             for (int i = 0; i < 10; i++) {
                 Graph graph = RandomGraph.randomGraph(10, 3, 10,
                         10, 10, 10, false);

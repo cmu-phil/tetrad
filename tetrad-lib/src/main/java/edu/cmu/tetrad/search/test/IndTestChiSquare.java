@@ -247,9 +247,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the pvalue if the fact of X _||_ Y | Z is within the cache of results for independence fact.
-     * @param x
-     * @param y
-     * @param z
+     *
+     * @param x the first node
+     * @param y the second node
+     * @param z the set of conditioning nodes
      * @return the pValue result or null if not within the cache
      */
     public Double getPValue(Node x, Node y, Set<Node> z) {

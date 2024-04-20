@@ -43,7 +43,14 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * Represents a graph data structure.
+     * <p>
+     * The graph can be of any type, allowing different implementations of the graph interface. In this case, the
+     * {@link EdgeListGraph} implementation is used.
+     * <p>
+     * The graph variable is marked as private and final to restrict external modifications.
+     *
+     * @see EdgeListGraph
      */
     private final Graph graph = new EdgeListGraph();
 
@@ -65,17 +72,17 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * The underline triples.
      */
-    private Set<Triple> underLineTriples = new HashSet<>();
+    private final Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * The dotted underline triples.
      */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * The ambiguous triples.
      */
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     //============================CONSTRUCTORS=============================//
 
@@ -106,7 +113,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     //=============================PUBLIC METHODS==========================//
 
     /**
-     * {@inheritDoc}
+     * Transfer nodes and edges from the given graph to the current graph.
+     *
+     * @param graph the graph from which to transfer nodes and edges
+     * @throws IllegalArgumentException if the provided graph is null
      */
     public final void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
@@ -117,7 +127,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Transfers the attributes from the given graph to this graph.
+     *
+     * @param graph The graph from which the attribute values should be transferred.
+     * @throws IllegalArgumentException If the given graph is null.
      */
     public final void transferAttributes(Graph graph)
             throws IllegalArgumentException {
@@ -125,7 +138,9 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the Paths object associated with this instance.
+     *
+     * @return the Paths object.
      */
     @Override
     public Paths paths() {
@@ -133,32 +148,39 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Checks whether the given Node is parameterizable.
+     *
+     * @param node The Node to check.
+     * @return true if the Node is parameterizable, false otherwise.
      */
     public boolean isParameterizable(Node node) {
         return false;
     }
 
     /**
-     * <p>isTimeLagModel.</p>
+     * Checks if the model is a time lag model.
      *
-     * @return a boolean
+     * @return true if the model is a time lag model, false otherwise.
      */
     public boolean isTimeLagModel() {
         return false;
     }
 
     /**
-     * <p>getTimeLagGraph.</p>
+     * Retrieves the TimeLagGraph object.
      *
-     * @return a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     * @return The TimeLagGraph object.
      */
     public TimeLagGraph getTimeLagGraph() {
         return null;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the set of nodes that form the separator set for the given two nodes in the graph.
+     *
+     * @param n1 the first node
+     * @param n2 the second node
+     * @return the set of nodes that form the separator set
      */
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
@@ -166,60 +188,79 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * <p>getNodeNames.</p>
+     * Retrieves the names of all the nodes in the graph
      *
-     * @return a {@link java.util.List} object
+     * @return The list of node names
      */
     public List<String> getNodeNames() {
         return getGraph().getNodeNames();
     }
 
     /**
-     * {@inheritDoc}
+     * Connects the specified endpoint to all other endpoints in the graph.
+     *
+     * @param endpoint the endpoint to be fully connected
      */
     public void fullyConnect(Endpoint endpoint) {
         getGraph().fullyConnect(endpoint);
     }
 
     /**
-     * {@inheritDoc}
+     * Reorients all endpoints in the graph with the specified endpoint.
+     *
+     * @param endpoint the endpoint to reorient all endpoints in the graph with
      */
     public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of adjacent nodes to the given node in the graph.
+     *
+     * @param node the node for which to find adjacent nodes
+     * @return a list of adjacent nodes
      */
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Get the list of nodes in the graph that have an edge pointing into the given node and connected to the given
+     * endpoint.
+     *
+     * @param node     The node for which to get the incoming nodes.
+     * @param endpoint The endpoint that connects the nodes.
+     * @return The list of nodes in the graph that have an edge pointing into the given node and connected to the given
+     * endpoint.
      */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesInTo(node, endpoint);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of nodes that have outgoing edges to the specified destination node.
+     *
+     * @param node the source node from which the edges originate
+     * @param n    the destination endpoint node
+     * @return the list of nodes that have outgoing edges to the specified destination node
      */
     public List<Node> getNodesOutTo(Node node, Endpoint n) {
         return getGraph().getNodesOutTo(node, n);
     }
 
     /**
-     * <p>getNodes.</p>
+     * Retrieves the list of nodes in the graph.
      *
-     * @return a {@link java.util.List} object
+     * @return the list of nodes in the graph
      */
     public List<Node> getNodes() {
         return getGraph().getNodes();
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the list of nodes in the graph.
+     *
+     * @param nodes the list of nodes to be set
      */
     @Override
     public void setNodes(List<Node> nodes) {
@@ -227,42 +268,66 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the edge between two nodes.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return true if the edge is successfully removed, false if the edge does not exist
      */
     public boolean removeEdge(Node node1, Node node2) {
         return removeEdge(getEdge(node1, node2));
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the edges between two nodes in the graph.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return true if the edges are successfully removed, false otherwise
      */
     public boolean removeEdges(Node node1, Node node2) {
         return getGraph().removeEdges(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if two nodes are adjacent in the graph.
+     *
+     * @param nodeX the first node to check adjacency
+     * @param nodeY the second node to check adjacency
+     * @return true if nodeX is adjacent to nodeY, otherwise false
      */
     public boolean isAdjacentTo(Node nodeX, Node nodeY) {
         return getGraph().isAdjacentTo(nodeX, nodeY);
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the endpoint of a given graph's edge between the specified nodes.
+     *
+     * @param node1    The starting node of the edge.
+     * @param node2    The ending node of the edge.
+     * @param endpoint The desired endpoint for the edge.
+     * @return true if the endpoint was successfully set, false otherwise.
      */
     public boolean setEndpoint(Node node1, Node node2, Endpoint endpoint) {
         return getGraph().setEndpoint(node1, node2, endpoint);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the endpoint of a given pair of nodes in the graph.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return the endpoint of the nodes in the graph
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this KnowledgeGraph with the specified Object for equality.
+     *
+     * @param o the Object to be compared for equality
+     * @return true if the specified Object is equal to this KnowledgeGraph, false otherwise
      */
     public boolean equals(Object o) {
         if (!(o instanceof KnowledgeGraph)) return false;
@@ -270,49 +335,76 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a subgraph of the graph, containing only the nodes specified in the input list.
+     *
+     * @param nodes the list of nodes to include in the subgraph
+     * @return a subgraph containing only the specified nodes
      */
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a directed edge from the source node to the destination node.
+     *
+     * @param nodeA the source node
+     * @param nodeB the destination node
+     * @return true if the directed edge is successfully added, false otherwise
      */
     public boolean addDirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Adds an undirected edge between two nodes.
+     *
+     * @param nodeA the first node to connect
+     * @param nodeB the second node to connect
+     * @return {@code true} if the edge between the two nodes is successfully added, {@code false} otherwise
+     * @throws UnsupportedOperationException if the method is called on an unsupported operation
      */
     public boolean addUndirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a nondirected edge between two nodes.
+     *
+     * @param nodeA the first node
+     * @param nodeB the second node
+     * @return true if the edge was successfully added, false otherwise
      */
     public boolean addNondirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a partially oriented edge between {@code nodeA} and {@code nodeB}.
+     *
+     * @param nodeA the origin node of the partially oriented edge
+     * @param nodeB the destination node of the partially oriented edge
+     * @return {@code true} if the partially oriented edge was added successfully, otherwise {@code false}
      */
     public boolean addPartiallyOrientedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a bidirectional edge between two nodes.
+     *
+     * @param nodeA the first node
+     * @param nodeB the second node
+     * @return true if the bidirectional edge is added successfully, false otherwise
      */
     public boolean addBidirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * {@inheritDoc}
+     * Adds the specified edge to the graph.
+     *
+     * @param edge the edge to be added to the graph
+     * @return true if the edge is successfully added, false otherwise
      */
     public boolean addEdge(Edge edge) {
         if (!(edge instanceof KnowledgeModelEdge _edge)) {
@@ -352,90 +444,119 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a node to the graph.
+     *
+     * @param node the node to be added
+     * @return true if the node was added successfully, false otherwise
      */
     public boolean addNode(Node node) {
         return getGraph().addNode(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a PropertyChangeListener to the Graph. The PropertyChangeListener will be notified of any changes to the
+     * properties of the Graph.
+     *
+     * @param l the PropertyChangeListener to be added
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getGraph().addPropertyChangeListener(l);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the graph contains the specified edge.
+     *
+     * @param edge the edge to check for
+     * @return {@code true} if the graph contains the edge, otherwise {@code false}
      */
     public boolean containsEdge(Edge edge) {
         return getGraph().containsEdge(edge);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if a specific node is present in the graph.
+     *
+     * @param node The node to check for presence in the graph.
+     * @return {@code true} if the node is present in the graph, otherwise {@code false}.
      */
     public boolean containsNode(Node node) {
         return getGraph().containsNode(node);
     }
 
     /**
-     * <p>getEdges.</p>
+     * Returns the set of edges in the graph.
      *
-     * @return a {@link java.util.Set} object
+     * @return a Set of Edge objects representing the edges in the graph
      */
     public Set<Edge> getEdges() {
         return getGraph().getEdges();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of edges connected to the given node in the graph.
+     *
+     * @param node the node for which to retrieve the edges
+     * @return the list of edges connected to the given node
      */
     public List<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of edges between two nodes in the graph.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return a list of edges between node1 and node2
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a node from the graph with the specified name.
+     *
+     * @param name the name of the node to retrieve
+     * @return the node with the specified name, or null if not found
      */
     public Node getNode(String name) {
         return getGraph().getNode(name);
     }
 
     /**
-     * <p>getNumEdges.</p>
+     * Returns the number of edges in the graph.
      *
-     * @return a int
+     * @return the number of edges in the graph.
      */
     public int getNumEdges() {
         return getGraph().getNumEdges();
     }
 
     /**
-     * <p>getNumNodes.</p>
+     * Retrieves the number of nodes in the graph.
      *
-     * @return a int
+     * @return the number of nodes in the graph.
      */
     public int getNumNodes() {
         return getGraph().getNumNodes();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the number of edges for a given node in the graph. This method uses the getGraph() method to access the
+     * graph and uses the getNumEdges() method of the graph to retrieve the number of edges for the given node.
+     *
+     * @param node the node for which to retrieve the number of edges
+     * @return the number of edges for the given node in the graph
      */
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Removes an edge from the knowledge graph.
+     *
+     * @param edge the edge to be removed
+     * @return true if the edge was successfully removed, false otherwise
      */
     public boolean removeEdge(Edge edge) {
         KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
@@ -464,7 +585,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes a collection of edges from the graph.
+     *
+     * @param edges the collection of edges to be removed
+     * @return {@code true} if any edge is successfully removed, {@code false} otherwise
      */
     public boolean removeEdges(Collection<Edge> edges) {
         boolean removed = false;
@@ -477,86 +601,122 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes a given node from the graph.
+     *
+     * @param node the node to be removed
+     * @return true if the node was successfully removed, false otherwise
      */
     public boolean removeNode(Node node) {
         return getGraph().removeNode(node);
     }
 
     /**
-     * <p>clear.</p>
+     * Clears the graph by removing all its elements.
      */
     public void clear() {
         getGraph().clear();
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the given nodes from the graph.
+     *
+     * @param nodes The list of nodes to be removed.
+     * @return True if the nodes were successfully removed, false otherwise.
      */
     public boolean removeNodes(List<Node> nodes) {
         return getGraph().removeNodes(nodes);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if the given nodes form a default noncollider in the graph.
+     *
+     * @param node1 the first node in the potential noncollider
+     * @param node2 the second node in the potential noncollider
+     * @param node3 the third node in the potential noncollider
+     * @return true if the nodes form a default noncollider, false otherwise
      */
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if there is a default collider between three nodes.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @param node3 the third node
+     * @return true if there is a default collider, false otherwise
      */
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of child nodes for the given node.
+     *
+     * @param node the node for which to retrieve the child nodes.
+     * @return a list of child nodes for the given node.
      */
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
     /**
-     * <p>getDegree.</p>
+     * Returns the degree of the graph.
      *
-     * @return a int
+     * @return the degree of the graph
      */
     public int getDegree() {
         return getGraph().getDegree();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the edge between two nodes in the graph.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return the edge between node1 and node2
      */
     public Edge getEdge(Node node1, Node node2) {
         return getGraph().getEdge(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the directed edge between two nodes.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return the directed edge between the two nodes
      */
     public Edge getDirectedEdge(Node node1, Node node2) {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the list of parent nodes for the given node.
+     *
+     * @param node The node for which parents need to be retrieved.
+     * @return The list of parent nodes for the given node.
      */
     public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the indegree of the specified node in the graph.
+     *
+     * @param node the node to get the indegree for
+     * @return the indegree of the specified node
      */
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the degree of the given node in the graph.
+     *
+     * @param node the node for which to retrieve the degree
+     * @return the degree of the specified node in the graph
      */
     @Override
     public int getDegree(Node node) {
@@ -564,57 +724,79 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the outdegree of a given node in the graph.
+     *
+     * @param node The node for which to determine the outdegree.
+     * @return The outdegree of the given node.
      */
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if a given Node is a child of another Node.
+     *
+     * @param node1 the Node to be checked
+     * @param node2 the potential parent Node
+     * @return true if node1 is a child of node2, false otherwise
      */
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns true if the first node is a parent of the second node in the graph.
+     *
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return True if the first node is a parent of the second node, otherwise false.
      */
     public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if a given node is exogenous.
+     *
+     * @param node the node to check
+     * @return <code>true</code> if the node is exogenous, <code>false</code> otherwise
      */
     public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }
 
     /**
-     * <p>toString.</p>
+     * Returns a string representation of the object. The returned string is obtained by calling the toString method of
+     * the underlying graph object.
      *
-     * @return a {@link java.lang.String} object
+     * @return a string representation of the object.
      */
     public String toString() {
         return getGraph().toString();
     }
 
     /**
-     * <p>Getter for the field <code>knowledge</code>.</p>
+     * Retrieves the knowledge object.
      *
-     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return The knowledge object.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Retrieves the graph object.
+     *
+     * @return The graph object.
+     */
     private Graph getGraph() {
         return this.graph;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves all attributes stored in the object.
+     *
+     * @return A Map representing the attributes stored in the object.
      */
     @Override
     public Map<String, Object> getAllAttributes() {
@@ -622,7 +804,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the value associated with the specified key from this object's attributes.
+     *
+     * @param key the key whose associated value is to be retrieved
+     * @return the value to which the specified key is mapped, or null if this object contains no mapping for the key
      */
     @Override
     public Object getAttribute(String key) {
@@ -630,7 +815,9 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the attribute with the specified key from the object.
+     *
+     * @param key the key associated with the attribute to be removed
      */
     @Override
     public void removeAttribute(String key) {
@@ -638,7 +825,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Adds an attribute to the internal attribute map.
+     *
+     * @param key   the key of the attribute
+     * @param value the value of the attribute
      */
     @Override
     public void addAttribute(String key, Object value) {
@@ -646,16 +836,18 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     * Retrieves a set of ambiguous triples.
      *
-     * @return a {@link java.util.Set} object
+     * @return the set of ambiguous triples
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the ambiguous triples.
+     *
+     * @param triples - the set of triples to be set as ambiguous
      */
     public void setAmbiguousTriples(Set<Triple> triples) {
         this.ambiguousTriples.clear();
@@ -666,50 +858,64 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * <p>getUnderLines.</p>
+     * Retrieves the set of underlines.
      *
-     * @return a {@link java.util.Set} object
+     * @return the set of underlines as a new HashSet.
      */
     public Set<Triple> getUnderLines() {
         return new HashSet<>(this.underLineTriples);
     }
 
     /**
-     * <p>getDottedUnderlines.</p>
+     * Returns a set of Triple objects representing the dotted underlines.
      *
-     * @return a {@link java.util.Set} object
+     * @return a set of Triple objects representing the dotted underlines
      */
     public Set<Triple> getDottedUnderlines() {
         return new HashSet<>(this.dottedUnderLineTriples);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * States whether r-s-r is an underline triple or not.
+     * Determines if a triple of nodes is ambiguous.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @param z the third node
+     * @return true if the triple is ambiguous, false otherwise
      */
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
         return this.ambiguousTriples.contains(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * States whether r-s-r is an underline triple or not.
+     * Checks if a given triple of nodes is an underline triple.
+     *
+     * @param x the first node in the triple
+     * @param y the second node in the triple
+     * @param z the third node in the triple
+     * @return true if the triple is an underline triple, false otherwise
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
+     * Adds an ambiguous triple to the collection.
+     *
+     * @param x - the first node of the triple
+     * @param y - the second node of the triple
+     * @param z - the third node of the triple
      */
     public void addAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
+     * Adds the given triple to the collection of underline triples if it exists along a path in the current node.
+     *
+     * @param x The first node of the triple.
+     * @param y The second node of the triple.
+     * @param z The third node of the triple.
      */
     public void addUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
@@ -722,7 +928,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Adds a triple with dotted underline to the collection of dotted underline triples.
+     *
+     * @param x The first node of the triple.
+     * @param y The second node of the triple.
+     * @param z The third node of the triple.
      */
     public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
@@ -735,28 +945,42 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the specified triple from the list of ambiguous triples.
+     *
+     * @param x the first node of the triple to be removed
+     * @param y the second node of the triple to be removed
+     * @param z the third node of the triple to be removed
      */
     public void removeAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
+     * Removes an underline triple from the collection.
+     *
+     * @param x the first node of the triple to be removed
+     * @param y the second node of the triple to be removed
+     * @param z the third node of the triple to be removed
      */
     public void removeUnderlineTriple(Node x, Node y, Node z) {
         this.underLineTriples.remove(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the specified triple (x, y, z) from the list of dotted underline triples.
+     *
+     * @param x The first node of the triple to be removed.
+     * @param y The second node of the triple to be removed.
+     * @param z The third node of the triple to be removed.
      */
     public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the underline triples.
+     *
+     * @param triples the set of triples to be set as underline triples
      */
     public void setUnderLineTriples(Set<Triple> triples) {
         this.underLineTriples.clear();
@@ -767,7 +991,9 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * {@inheritDoc}
+     * Clears the existing collection of dotted underlined triples and adds new triples to it.
+     *
+     * @param triples The collection of triples to add.
      */
     public void setDottedUnderLineTriples(Set<Triple> triples) {
         this.dottedUnderLineTriples.clear();
@@ -778,7 +1004,8 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     /**
-     * <p>removeTriplesNotInGraph.</p>
+     * Removes triples from the lists ("ambiguousTriples", "underLineTriples", and "dottedUnderLineTriples") that do not
+     * have all three nodes present in the graph or are not adjacent to each other.
      */
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {

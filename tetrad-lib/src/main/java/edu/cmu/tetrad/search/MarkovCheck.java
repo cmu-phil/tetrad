@@ -211,6 +211,12 @@ public class MarkovCheck {
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
 
+    /**
+     * Retrieves the list of local independence facts for a given node.
+     *
+     * @param x The node for which to retrieve the local independence facts.
+     * @return The list of local independence facts for the given node.
+     */
     public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
         Set<Node> parents = new HashSet<>(graph.getParents(x));
 
@@ -229,6 +235,13 @@ public class MarkovCheck {
         return factList;
     }
 
+    /**
+     * Calculates the local p-values for a given independence test and a list of independence facts.
+     *
+     * @param independenceTest The independence test used for calculating the p-values.
+     * @param facts The list of independence facts.
+     * @return The list of local p-values.
+     */
     public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
         // call pvalue function on each item, only include the non-null ones
         List<Double> pVals = new ArrayList<>();
@@ -246,6 +259,12 @@ public class MarkovCheck {
         return pVals;
     }
 
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();

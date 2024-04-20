@@ -22,12 +22,7 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import nu.xom.Attribute;
-import nu.xom.Element;
-import nu.xom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +41,13 @@ public final class BayesBifRenderer {
     private BayesBifRenderer() {
     }
 
+    /**
+     * Renders the given BayesIm object as a Bayesian network in the BIF (Bayesian Interchange Format) format.
+     *
+     * @param bayesIm the BayesIm object representing the Bayesian network
+     * @return the Bayesian network in BIF format as a string
+     */
     public static String render(BayesIm bayesIm) {
-
-
-
-
         StringBuilder builder = new StringBuilder();
 
         // Write the name
@@ -122,7 +119,7 @@ public final class BayesBifRenderer {
                     builder.append("  ( ");
 
                     for (int i = 0; i < parentValues.length; i++) {
-                        builder.append(_parents.get(i).getCategory(parentValues[i]))    ;
+                        builder.append(_parents.get(i).getCategory(parentValues[i]));
                         if (i < parentValues.length - 1) {
                             builder.append(", ");
                         }

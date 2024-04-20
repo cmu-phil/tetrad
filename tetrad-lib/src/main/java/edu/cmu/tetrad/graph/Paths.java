@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -74,7 +72,7 @@ public class Paths implements TetradSerializable {
      *
      * @param pi      a list of nodes representing the set of vertices in the graph
      * @param g       the graph
-     * @param verbose
+     * @param verbose whether to print verbose output
      * @return a Graph object representing the generated DAG.
      */
     public static Graph getDag(List<Node> pi, Graph g, boolean verbose) {
@@ -92,10 +90,12 @@ public class Paths implements TetradSerializable {
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
      *
+     * @param pi                 The list of nodes.
      * @param p                  The index.
+     * @param g                  The graph.
      * @param verbose            Whether to print verbose output.
      * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X->L<-Y.
+     *                           treated as X-&gt;L&lt;-Y.
      * @return The parents, as a Pair object (parents + score).
      */
     public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean allowSelectionBias) {
@@ -170,8 +170,8 @@ public class Paths implements TetradSerializable {
             Node x;
             do {
                 if (itr.hasNext()) x = itr.next();
-                else throw new IllegalArgumentException("The remaining graph does not have valid sink; there " +
-                                                        "could be a directed cycle or a non-chordal undirected cycle.");
+                else
+                    throw new IllegalArgumentException("The remaining graph does not have valid sink; there " + "could be a directed cycle or a non-chordal undirected cycle.");
             } while (invalidSink(x, _graph));
             order.add(x);
             _graph.removeNode(x);
@@ -1586,7 +1586,7 @@ public class Paths implements TetradSerializable {
      * @param y                  a {@link Node} object
      * @param z                  a {@link Set} object
      * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X->L<-Y.
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean allowSelectionBias) {
@@ -1679,7 +1679,7 @@ public class Paths implements TetradSerializable {
      * @param z                  a {@link Set} object
      * @param ancestors          a {@link Map} object
      * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X->L<-Y.
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
@@ -1810,8 +1810,7 @@ public class Paths implements TetradSerializable {
 
             return visibleEdgeHelper(A, B);
         } else {
-            throw new IllegalArgumentException(
-                    "Given edge is not in the graph.");
+            throw new IllegalArgumentException("Given edge is not in the graph.");
         }
     }
 
@@ -2073,7 +2072,7 @@ public class Paths implements TetradSerializable {
      * @param node2              the second node.
      * @param z                  the conditioning set.
      * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X->L<-Y.
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
@@ -2088,7 +2087,7 @@ public class Paths implements TetradSerializable {
      * @param z                  The set of nodes to be excluded from the path.
      * @param ancestors          A map containing the ancestors of each node.
      * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X->L<-Y.
+     *                           treated as X-&gt;L&lt;-Y.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
@@ -2197,13 +2196,7 @@ public class Paths implements TetradSerializable {
          * @param args the command-line arguments
          */
         public static void main(String[] args) {
-            int[][] graph = {
-                    {0, 1, 1, 0, 0},
-                    {1, 0, 1, 1, 0},
-                    {1, 1, 0, 1, 1},
-                    {0, 1, 1, 0, 1},
-                    {0, 0, 1, 1, 0}
-            };
+            int[][] graph = {{0, 1, 1, 0, 0}, {1, 0, 1, 1, 0}, {1, 1, 0, 1, 1}, {0, 1, 1, 0, 1}, {0, 0, 1, 1, 0}};
             int n = graph.length;
 
             List<List<Integer>> cliques = findCliques(graph, n);
@@ -2235,9 +2228,7 @@ public class Paths implements TetradSerializable {
             return cliques;
         }
 
-        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
-                                         Set<Integer> excluded, Set<Integer> included,
-                                         List<List<Integer>> cliques) {
+        private static void bronKerbosch(int[][] graph, Set<Integer> candidates, Set<Integer> excluded, Set<Integer> included, List<List<Integer>> cliques) {
             if (candidates.isEmpty() && excluded.isEmpty()) {
                 cliques.add(new ArrayList<>(included));
                 return;
@@ -2252,10 +2243,7 @@ public class Paths implements TetradSerializable {
                     }
                 }
 
-                bronKerbosch(graph, intersect(candidates, neighbors),
-                        intersect(excluded, neighbors),
-                        union(included, vertex),
-                        cliques);
+                bronKerbosch(graph, intersect(candidates, neighbors), intersect(excluded, neighbors), union(included, vertex), cliques);
 
                 candidates.remove(vertex);
                 excluded.add(vertex);

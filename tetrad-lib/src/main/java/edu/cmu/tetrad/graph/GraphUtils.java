@@ -2047,6 +2047,7 @@ public final class GraphUtils {
      * @param x                the source node
      * @param y                the target node
      * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @param graphType        the type of the graph
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
@@ -2080,6 +2081,7 @@ public final class GraphUtils {
      * @param x                the source node
      * @param y                the target node
      * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @param graphType        the type of the graph
      * @return the adjustment sets as a set of sets of nodes
      * @throws IllegalArgumentException if the input graph is not a legal MPDAG
      */
@@ -2179,7 +2181,7 @@ public final class GraphUtils {
      * @param y the ending node of the edge
      * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
      * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
-     *                                 towards y
+     *                                  towards y
      */
     private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
@@ -2603,8 +2605,20 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * The GraphType enum represents the types of graphs that can be used in the application.
+     */
     public enum GraphType {
-        CPDAG, PAG
+
+        /**
+         * The CPDAG graph type.
+         */
+        CPDAG,
+
+        /**
+         * The PAG graph type.
+         */
+        PAG
     }
 
     /**
