@@ -14,8 +14,10 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -109,5 +111,42 @@ public class TestCheckMarkov {
         markovCheck.setPercentResample(0.7);
 
         System.out.println(markovCheck.getMarkovCheckRecordString());
+    }
+
+    @Test
+    public void testPrecissionRecallForLocal() {
+        // TODO VBC: next I also use randome graph that is converted to CPDag then have a diff test case for that.
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+//        System.out.println("Test True Graph: " + trueGraph);
+//        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+//        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
+        for(Node a: accepts) {
+            // TODO VBC: these two are current placeholders. Will provide Precision and Recall for both Adj and AH in following Pull Request.
+            double precision = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph, true);
+            double recall = markovCheck.getPrecisionOrRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph, false);
+            acceptsPrecision.add(precision);
+            acceptsRecall.add(recall);
+        }
+        // TODO VBC: for rejects.
+        System.out.println("Accepts Precisions: " + acceptsPrecision);
+        System.out.println("Accepts Recall: " + acceptsRecall);
     }
 }

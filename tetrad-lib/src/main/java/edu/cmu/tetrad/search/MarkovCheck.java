@@ -2,10 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -270,6 +267,65 @@ public class MarkovCheck {
         return generalAndersonDarlingTest.getP();
     }
 
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold) {
+        // When calling, default reject null as <=0.05
+        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<Node> accepts = new ArrayList<>();
+        List<Node> rejects = new ArrayList<>();
+        List<Node> allNodes = graph.getNodes();
+        for (Node x : allNodes) {
+            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<Double> localPValues = getLocalPValues(independenceTest, localIndependenceFacts);
+            Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
+            if (ADTest  <= threshold) {
+                rejects.add(x);
+            } else {
+                accepts.add(x);
+            }
+        }
+        accepts_rejects.add(accepts);
+        accepts_rejects.add(rejects);
+        return accepts_rejects;
+    }
+
+    // TODO VBC: this method is in progress.
+    public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        // TODO VBC: a different naming once this method is completed.
+        Graph RecommendedxMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+//        System.out.println("RecommendedxMBLookupGraph:" + RecommendedxMBLookupGraph);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+//        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+
+        HashSet<Edge> TP = new HashSet<>();
+        HashSet<Edge> TN = new HashSet<>();
+        HashSet<Edge> FP = new HashSet<>();
+        HashSet<Edge> FN = new HashSet<>();
+        Set<Edge> trueMBEdges = RecommendedxMBLookupGraph.getEdges();
+        Set<Edge> estMBEdges = xMBEstimatedGraph.getEdges();
+        if (trueMBEdges != null && estMBEdges != null) {
+            for (Edge te : trueMBEdges) {
+                for (Edge ee : estMBEdges) {
+                    // True Graph's Edge info
+                    Node teNode1 = te.getNode1();
+                    Node teNode2 = te.getNode1();
+                    Endpoint teEndpoint1 = te.getEndpoint1();
+                    Endpoint teEndpoint2 = te.getEndpoint2();
+                    // Estimated Graph's Edge info
+                    Node eeNode1 = te.getNode1();
+                    Node eeNode2 = te.getNode1();
+                    Endpoint eeEndpoint1 = ee.getEndpoint1();
+                    Endpoint eeEndpoint2 = ee.getEndpoint2();
+                    // TODO VBC: calculate precision and recall for AH and Adj.
+                }
+            }
+        }
+        // TODO VBC: need both for AH and Adj, so this getPrecision way need further fix to fit UI later.
+        double precision = (double) TP.size() / (TP.size() + FP.size());
+        double recall = (double) TP.size() / (TP.size() + FN.size());
+        return getPrecision ? precision : recall;
+    }
 
     /**
      * Returns the variables of the independence test.
