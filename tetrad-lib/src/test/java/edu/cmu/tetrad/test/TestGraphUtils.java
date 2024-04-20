@@ -425,6 +425,23 @@
             Collections.addAll(list, z);
             return list;
         }
+
+        /**
+         * A test of m-connection. We generate 10 random graphs with latents and check that dagToPag
+         * produces a legal PAG. We then call dagToPag again on the PAG and check that the result is
+         * also a legal PAG.
+         */
+        @Test
+        public void test12() {
+            for (int i = 0; i < 10; i++) {
+                Graph graph = RandomGraph.randomGraph(10, 3, 10,
+                        10, 10, 10, false);
+                Graph pag = GraphTransforms.dagToPag(graph);
+                assertTrue(pag.paths().isLegalPag());
+                Graph pag2 = GraphTransforms.dagToPag(pag);
+                assertTrue(pag2.paths().isLegalPag());
+            }
+        }
     }
 
 
