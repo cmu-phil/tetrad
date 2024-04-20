@@ -195,14 +195,14 @@ public class GraphUtils {
         JMenuItem checkGraphForMpdag = new JMenuItem(new CheckGraphForMpdagAction(workbench));
         JMenuItem checkGraphForMag = new JMenuItem(new CheckGraphForMagAction(workbench));
         JMenuItem checkGraphForPag = new JMenuItem(new CheckGraphForPagAction(workbench));
-        JMenuItem checkGraphForMpag = new JMenuItem(new CheckGraphForMpagAction(workbench));
+//        JMenuItem checkGraphForMpag = new JMenuItem(new CheckGraphForMpagAction(workbench));
 
         checkGraph.add(checkGraphForDag);
         checkGraph.add(checkGraphForCpdag);
         checkGraph.add(checkGraphForMpdag);
         checkGraph.add(checkGraphForMag);
         checkGraph.add(checkGraphForPag);
-        checkGraph.add(checkGraphForMpag);
+//        checkGraph.add(checkGraphForMpag);
         return checkGraph;
     }
 
