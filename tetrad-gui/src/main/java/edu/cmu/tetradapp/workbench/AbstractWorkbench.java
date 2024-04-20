@@ -385,7 +385,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         Graph oldGraph = new EdgeListGraph(graph);
 
-        do{
+        do {
             Graph graph = graphStack.removeLast();
             setGraph(graph);
         } while (graph.equals(oldGraph));
@@ -2439,11 +2439,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), nextEndpoint, edge.getEndpoint2());
@@ -2452,11 +2452,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint1(), nextEndpoint);
