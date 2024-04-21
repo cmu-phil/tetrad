@@ -212,6 +212,8 @@ public class GraphUtils {
         highlightMenu.add(new SelectDirectedAction(workbench));
         highlightMenu.add(new SelectBidirectedAction(workbench));
         highlightMenu.add(new SelectUndirectedAction(workbench));
+        highlightMenu.add(new SelectPartiallyOrientedAction(workbench));
+        highlightMenu.add(new SelectNondirectedAction(workbench));
         highlightMenu.add(new SelectTrianglesAction(workbench));
         highlightMenu.add(new SelectLatentsAction(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
