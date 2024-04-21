@@ -321,47 +321,14 @@ public final class SemGraphEditor extends JPanel
 
         JLabel label = new JLabel("Double click variable/node to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-        // Info button added by Zhou to show edge types
-//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-//        infoBtn.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // Initialize helpSet
-//                final String helpHS = "/docs/javahelp/TetradHelp.hs";
-//
-//                try {
-//                    URL url = this.getClass().getResource(helpHS);
-//                    HelpSet helpSet = new HelpSet(null, url);
-//
-//                    helpSet.setHomeID("graph_edge_types");
-//                    HelpBroker broker = helpSet.createHelpBroker();
-//                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                    listener.actionPerformed(e);
-//                } catch (Exception ee) {
-//                    System.out.println("HelpSet " + ee.getMessage());
-//                    System.out.println("HelpSet " + helpHS + " not found");
-//                    throw new IllegalArgumentException();
-//                }
-//            }
-//        });
-
         instructionBox.add(label);
         instructionBox.add(Box.createHorizontalStrut(2));
-//        instructionBox.add(infoBtn);
 
         // Add to topBox
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
         this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
-
-//        //Use JSplitPane to allow resize the bottom box - Zhou
-//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-//        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
@@ -515,33 +482,12 @@ public final class SemGraphEditor extends JPanel
         graph.add(errorTerms);
         graph.addSeparator();
 
-        JMenuItem correlateExogenous
-                = new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous
-                = new JMenuItem("Uncorrelate Exogenous Variables");
-        graph.add(correlateExogenous);
-        graph.add(uncorrelateExogenous);
-        graph.addSeparator();
-
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
         graph.add(GraphUtils.addPagColoringItems(this.workbench));
-
-        correlateExogenous.addActionListener(e -> {
-            correlationExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
-        uncorrelateExogenous.addActionListener(e -> {
-            uncorrelateExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
 
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();
@@ -584,59 +530,6 @@ public final class SemGraphEditor extends JPanel
 
     private SemGraph getSemGraph() {
         return (SemGraph) this.semGraphWrapper.getGraph();
-    }
-
-    private void correlationExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        if (graph instanceof Dag) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "Cannot add bidirected edges to DAG's.");
-            return;
-        }
-
-        List<Node> nodes = graph.getNodes();
-
-        List<Node> exoNodes = new LinkedList<>();
-
-        for (Node node : nodes) {
-            if (graph.isExogenous(node)) {
-                exoNodes.add(node);
-            }
-        }
-
-        for (int i = 0; i < exoNodes.size(); i++) {
-
-            loop:
-            for (int j = i + 1; j < exoNodes.size(); j++) {
-                Node node1 = exoNodes.get(i);
-                Node node2 = exoNodes.get(j);
-                List<Edge> edges = graph.getEdges(node1, node2);
-
-                for (Edge edge : edges) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        continue loop;
-                    }
-                }
-
-                graph.addBidirectedEdge(node1, node2);
-            }
-        }
-    }
-
-    private void uncorrelateExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        Set<Edge> edges = graph.getEdges();
-
-        for (Edge edge : edges) {
-            if (Edges.isBidirectedEdge(edge)) {
-                try {
-                    graph.removeEdge(edge);
-                } catch (Exception ignored) {
-                }
-            }
-        }
     }
 
     /**

@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetradapp.editor.*;
@@ -12,8 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -191,7 +191,7 @@ public class GraphUtils {
 
     public static @NotNull JMenu getCheckGraphMenu(GraphWorkbench workbench) {
         JMenu checkGraph = new JMenu("Check Graph Type");
-        JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphForDagAction(workbench));
+        JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphFoDagAction(workbench));
         JMenuItem checkGraphForCpdag = new JMenuItem(new CheckGraphForCpdagAction(workbench));
         JMenuItem checkGraphForMpdag = new JMenuItem(new CheckGraphForMpdagAction(workbench));
         JMenuItem checkGraphForMag = new JMenuItem(new CheckGraphForMagAction(workbench));
@@ -255,40 +255,116 @@ public class GraphUtils {
      * @param graph the graph menu to add the items to.
      */
     public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
-        JMenu applyFinalRules = new JMenu("Apply final rules");
-        JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
-        JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
-        applyFinalRules.add(runMeekRules);
-        applyFinalRules.add(runFinalFciRules);
-        graph.add(applyFinalRules);
 
-        JMenu revertGraph = new JMenu("Revert Graph");
-        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
-        JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
+        JMenu transformGraph = new JMenu("Manipulate Graph");
         JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
         JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
         JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(workbench));
-        revertGraph.add(undoLast);
-        revertGraph.add(redoLast);
-        revertGraph.add(setToOriginal);
-        revertGraph.add(revertToCpdag);
-        revertGraph.add(revertToPag);
-        graph.add(revertGraph);
+        JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
+        JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
+        JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
+        JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
+        JMenuItem randomDagInCpdag = new JMenuItem(new PickRandomDagInCpdagAction(workbench));
+        JMenuItem zhangMagInPag = new JMenuItem(new PickZhangMagInPagAction(workbench));
+        JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
+        JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
+
+        correlateExogenous.addActionListener(e -> {
+            correlateExogenousVariables(workbench);
+            workbench.invalidate();
+            workbench.repaint();
+        });
+
+        uncorrelateExogenous.addActionListener(e -> {
+            uncorrelateExogenousVariables(workbench);
+            workbench.invalidate();
+            workbench.repaint();
+        });
+        transformGraph.add(undoLast);
+        transformGraph.add(redoLast);
+        transformGraph.add(setToOriginal);
+        transformGraph.add(runMeekRules);
+        transformGraph.add(runFinalFciRules);
+        transformGraph.add(revertToCpdag);
+        transformGraph.add(revertToPag);
+        transformGraph.add(randomDagInCpdag);
+        transformGraph.add(zhangMagInPag);
+        transformGraph.add(correlateExogenous);
+        transformGraph.add(uncorrelateExogenous);
+        graph.add(transformGraph);
 
         runMeekRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_DOWN_MASK));
         revertToCpdag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));
         runFinalFciRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK));
         revertToPag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
         undoLast.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
         redoLast.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
         setToOriginal.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK));
+        randomDagInCpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_DOWN_MASK));
+        zhangMagInPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK));
+    }
+
+    private static void correlateExogenousVariables(GraphWorkbench workbench) {
+        Graph graph = workbench.getGraph();
+
+        if (graph instanceof Dag) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Cannot add bidirected edges to DAG's.");
+            return;
+        }
+
+        List<Node> nodes = graph.getNodes();
+
+        List<Node> exoNodes = new LinkedList<>();
+
+        for (Node node : nodes) {
+            if (graph.isExogenous(node)) {
+                exoNodes.add(node);
+            }
+        }
+
+        for (int i = 0; i < exoNodes.size(); i++) {
+
+            loop:
+            for (int j = i + 1; j < exoNodes.size(); j++) {
+                Node node1 = exoNodes.get(i);
+                Node node2 = exoNodes.get(j);
+                List<Edge> edges = graph.getEdges(node1, node2);
+
+                for (Edge edge : edges) {
+                    if (Edges.isBidirectedEdge(edge)) {
+                        continue loop;
+                    }
+                }
+
+                graph.addBidirectedEdge(node1, node2);
+            }
+        }
+    }
+
+    private static void uncorrelateExogenousVariables(GraphWorkbench workbench) {
+        Graph graph = workbench.getGraph();
+
+        Set<Edge> edges = graph.getEdges();
+
+        for (Edge edge : edges) {
+            if (Edges.isBidirectedEdge(edge)) {
+                try {
+                    graph.removeEdge(edge);
+                } catch (Exception e) {
+                    // Ignore.
+                }
+            }
+        }
     }
 
     public static @NotNull JMenu addPagColoringItems(GraphWorkbench workbench) {

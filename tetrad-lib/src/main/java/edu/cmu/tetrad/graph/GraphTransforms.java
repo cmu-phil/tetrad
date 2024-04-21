@@ -5,9 +5,12 @@ import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,14 +38,38 @@ public class GraphTransforms {
     }
 
     /**
-     * Returns a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
+     * Returns a random DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      *
-     * @param graph     the CPDAG
+     * @param cpdag     the CPDAG
      * @param knowledge the knowledge
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
-    public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
-        Graph dag = new EdgeListGraph(graph);
+    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge) {
+        Graph dag = new EdgeListGraph(cpdag);
+        transformCpdagIntoRandomDag(dag, knowledge);
+        return dag;
+    }
+
+    /**
+     * Transforms a completed partially directed acyclic graph (CPDAG) into a random directed acyclic graph (DAG)
+     * by randomly orienting the undirected edges in the CPDAG in shuffled order.
+     *
+     * @param graph     The original graph from which the CPDAG was derived.
+     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     * @return A random DAG obtained from the given CPDAG.
+     */
+    public static @NotNull void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge) {
+        List<Edge> undirectedEdges = new ArrayList<>();
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) {
+                undirectedEdges.add(edge);
+            }
+        }
+
+        Collections.shuffle(undirectedEdges);
+
+        System.out.println(undirectedEdges);
 
         MeekRules rules = new MeekRules();
 
@@ -54,21 +81,30 @@ public class GraphTransforms {
 
         NEXT:
         while (true) {
-            for (Edge edge : dag.getEdges()) {
+            for (Edge edge : undirectedEdges) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                if (!Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    continue;
+                }
+
                 if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    direct(x, y, dag);
-                    rules.orientImplied(dag);
+                    double d = RandomUtil.getInstance().nextDouble();
+
+                    if (d < 0.5) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
+                    rules.orientImplied(graph);
                     continue NEXT;
                 }
             }
 
             break;
         }
-
-        return dag;
     }
 
     /**

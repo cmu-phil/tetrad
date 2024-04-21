@@ -506,25 +506,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new UnderliningsAction(getWorkbench()));
         graph.addSeparator();
 
-        JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
-        graph.add(correlateExogenous);
-        graph.add(uncorrelateExogenous);
-        graph.addSeparator();
-
-        correlateExogenous.addActionListener(e -> {
-            correlateExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
-        uncorrelateExogenous.addActionListener(e -> {
-            uncorrelationExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
-
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();
             editor.setParams(this.parameters);
@@ -576,60 +557,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 //         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
 
         return graph;
-    }
-
-    private void correlateExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        if (graph instanceof Dag) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "Cannot add bidirected edges to DAG's.");
-            return;
-        }
-
-        List<Node> nodes = graph.getNodes();
-
-        List<Node> exoNodes = new LinkedList<>();
-
-        for (Node node : nodes) {
-            if (graph.isExogenous(node)) {
-                exoNodes.add(node);
-            }
-        }
-
-        for (int i = 0; i < exoNodes.size(); i++) {
-
-            loop:
-            for (int j = i + 1; j < exoNodes.size(); j++) {
-                Node node1 = exoNodes.get(i);
-                Node node2 = exoNodes.get(j);
-                List<Edge> edges = graph.getEdges(node1, node2);
-
-                for (Edge edge : edges) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        continue loop;
-                    }
-                }
-
-                graph.addBidirectedEdge(node1, node2);
-            }
-        }
-    }
-
-    private void uncorrelationExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        Set<Edge> edges = graph.getEdges();
-
-        for (Edge edge : edges) {
-            if (Edges.isBidirectedEdge(edge)) {
-                try {
-                    graph.removeEdge(edge);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-        }
     }
 
     /**
