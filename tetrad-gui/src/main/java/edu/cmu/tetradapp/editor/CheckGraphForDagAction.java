@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -71,14 +72,14 @@ public class CheckGraphForDagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(workbench, "No graph to check for DAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for DAGness.");
             return;
         }
 
         if (graph.paths().isLegalDag()) {
-            JOptionPane.showMessageDialog(workbench, "Graph is a legal DAG.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal DAG.");
         } else {
-            JOptionPane.showMessageDialog(workbench, "Graph is not a legal DAG.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal DAG.");
         }
     }
 }

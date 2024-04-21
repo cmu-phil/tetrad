@@ -67,7 +67,7 @@ public class CheckGraphForPagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(workbench, "No graph to check for PAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for PAGness.");
             return;
         }
 
@@ -80,13 +80,13 @@ public class CheckGraphForPagAction extends AbstractAction {
                 String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
 
                 if (!legalPag.isLegalPag()) {
-                    JOptionPane.showMessageDialog(workbench,
+                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
                             "This is not a legal PAG--one reason is as follows:" +
                             "\n\n" + reason + ".",
                             "Legal PAG check",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(workbench, reason);
+                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
                 }
             }
         }
@@ -94,9 +94,9 @@ public class CheckGraphForPagAction extends AbstractAction {
         new MyWatchedProcess();
 
 //        if (graph.paths().isLegalPag()) {
-//            JOptionPane.showMessageDialog(workbench, "Graph is a legal PAG.");
+//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal PAG.");
 //        } else {
-//            JOptionPane.showMessageDialog(workbench, "Graph is not a legal PAG.");
+//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal PAG.");
 //        }
     }
 

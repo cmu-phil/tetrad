@@ -71,13 +71,13 @@ public class PagColorer extends JCheckBoxMenuItem {
 //                            String reason = breakDown(legalPag.getReason(), 60);
 //
 //                            if (!legalPag.isLegalPag()) {
-//                                JOptionPane.showMessageDialog(workbench,
+//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
 //                                        "This is not a legal PAG--one reason is as follows:" +
 //                                        "\n\n" + reason + ".",
 //                                        "Legal PAG check",
 //                                        JOptionPane.WARNING_MESSAGE);
 //                            } else {
-//                                JOptionPane.showMessageDialog(workbench, reason);
+//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
 //                            }
 //                        }
 //                    }

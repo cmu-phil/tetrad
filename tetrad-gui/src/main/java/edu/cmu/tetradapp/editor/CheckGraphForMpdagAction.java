@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -64,14 +65,14 @@ public class CheckGraphForMpdagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(workbench, "No graph to check for MPDAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for MPDAGness.");
             return;
         }
 
         if (graph.paths().isLegalMpdag()) {
-            JOptionPane.showMessageDialog(workbench, "Graph is a legal MPDAG.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal MPDAG.");
         } else {
-            JOptionPane.showMessageDialog(workbench, "Graph is not a legal MPDAG.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal MPDAG.");
         }
     }
 }

@@ -9,6 +9,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -295,5 +296,18 @@ public class GraphUtils {
         pagColoring.add(new PagColorer(workbench));
         pagColoring.add(new PagEdgeTypeInstructions());
         return pagColoring;
+    }
+
+    /**
+     * Returns the JScrollPane containing the given component, or null if no such JScrollPane exists.
+     *
+     * @param component the component to search for a containing JScrollPane
+     * @return the JScrollPane containing the given component, or null if no such JScrollPane exists
+     */
+    public static JScrollPane getContainingScrollPane(Component component) {
+        while (component != null && !(component instanceof JScrollPane)) {
+            component = component.getParent();
+        }
+        return (JScrollPane) component;
     }
 }
