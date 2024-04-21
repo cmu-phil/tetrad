@@ -28,7 +28,7 @@ public class NoCyclicPathsCondition implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "NoCyclic";
+        return "NoCyclicPaths";
     }
 
     /**

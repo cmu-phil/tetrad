@@ -2519,8 +2519,8 @@ public final class TestGrasp {
         statistics.add(new LegalPag());
 //        statistics.add(new NoAlmostCyclicPathsCondition());
 //        statistics.add(new NoCyclicPathsCondition());
-        statistics.add(new NoAlmostCyclicPathsInMagCondition());
-        statistics.add(new NoCyclicPathsInMagCondition());
+        statistics.add(new NoAlmostCyclicPathsCondition());
+        statistics.add(new NoCyclicPathsCondition());
         statistics.add(new MaximalityCondition());
 
         statistics.add(new ParameterColumn(Params.ALPHA));
