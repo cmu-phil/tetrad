@@ -208,7 +208,7 @@ public class GraphUtils {
     }
 
     public static @NotNull JMenu getHighlightMenu(GraphWorkbench workbench) {
-        JMenu highlightMenu = new JMenu("Highlight Edges");
+        JMenu highlightMenu = new JMenu("Highlight");
         highlightMenu.add(new SelectDirectedAction(workbench));
         highlightMenu.add(new SelectBidirectedAction(workbench));
         highlightMenu.add(new SelectUndirectedAction(workbench));
