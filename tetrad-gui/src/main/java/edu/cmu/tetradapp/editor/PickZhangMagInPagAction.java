@@ -42,7 +42,7 @@ public class PickZhangMagInPagAction extends AbstractAction {
 
     /***/
     public PickZhangMagInPagAction(GraphWorkbench workbench) {
-        super("Pick Zhang MAG in DAG");
+        super("Pick Zhang MAG in PAG");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
