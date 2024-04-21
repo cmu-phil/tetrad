@@ -57,6 +57,8 @@ public class CheckGraphForPagAction extends AbstractAction {
         this.workbench = workbench;
     }
 
+    private volatile GraphSearchUtils.LegalPagRet legalPag = null;
+
     /**
      * This method is used to perform an action when an event is triggered, specifically when the user clicks on a
      * button or menu item associated with it. It checks if a graph is a legal DAG (Partial Ancestral Graph).
@@ -74,30 +76,32 @@ public class CheckGraphForPagAction extends AbstractAction {
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                Graph graph = new EdgeListGraph(workbench.getGraph());
-
-                GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
-                String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
-
-                if (!legalPag.isLegalPag()) {
-                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                            "This is not a legal PAG--one reason is as follows:" +
-                            "\n\n" + reason + ".",
-                            "Legal PAG check",
-                            JOptionPane.WARNING_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-                }
+                Graph _graph = new EdgeListGraph(workbench.getGraph());
+                legalPag = GraphSearchUtils.isLegalPag(_graph);
             }
         }
 
         new MyWatchedProcess();
 
-//        if (graph.paths().isLegalPag()) {
-//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal PAG.");
-//        } else {
-//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal PAG.");
-//        }
+        while (legalPag == null) {
+            try {
+                Thread.sleep(100); // Sleep a bit to prevent tight loop
+            } catch (InterruptedException e2) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
+
+        if (!legalPag.isLegalPag()) {
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+                    "This is not a legal PAG--one reason is as follows:" +
+                    "\n\n" + reason + ".",
+                    "Legal PAG check",
+                    JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
+        }
     }
 
 }

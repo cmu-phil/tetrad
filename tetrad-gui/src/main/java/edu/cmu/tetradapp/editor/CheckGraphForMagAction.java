@@ -42,6 +42,8 @@ public class CheckGraphForMagAction extends AbstractAction {
      */
     private final GraphWorkbench workbench;
 
+    private volatile GraphSearchUtils.LegalMagRet legalMag = null;
+
     /**
      * Highlights all latent variables in the given display graph.
      *
@@ -74,30 +76,32 @@ public class CheckGraphForMagAction extends AbstractAction {
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                Graph graph = new EdgeListGraph(workbench.getGraph());
-
-                GraphSearchUtils.LegalMagRet legalMag = GraphSearchUtils.isLegalMag(graph);
-                String reason = GraphUtils.breakDown(legalMag.getReason(), 60);
-
-                if (!legalMag.isLegalMag()) {
-                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                            "This is not a legal MAG--one reason is as follows:" +
-                            "\n\n" + reason + ".",
-                            "Legal MAG check",
-                            JOptionPane.WARNING_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-                }
+                Graph _graph = new EdgeListGraph(workbench.getGraph());
+                legalMag = GraphSearchUtils.isLegalMag(_graph);
             }
         }
 
         new MyWatchedProcess();
 
-//        if (graph.paths().isLegalPag()) {
-//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal PAG.");
-//        } else {
-//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal PAG.");
-//        }
+        while (legalMag == null) {
+            try {
+                Thread.sleep(100); // Sleep a bit to prevent tight loop
+            } catch (InterruptedException e2) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        String reason = GraphUtils.breakDown(legalMag.getReason(), 60);
+
+        if (!legalMag.isLegalMag()) {
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+                    "This is not a legal MAG--one reason is as follows:" +
+                    "\n\n" + reason + ".",
+                    "Legal MAG check",
+                    JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
+        }
     }
 }
 
