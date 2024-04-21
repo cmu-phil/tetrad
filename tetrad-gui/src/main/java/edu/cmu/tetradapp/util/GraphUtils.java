@@ -214,7 +214,7 @@ public class GraphUtils {
         highlightMenu.add(new SelectUndirectedAction(workbench));
         highlightMenu.add(new SelectTrianglesAction(workbench));
         highlightMenu.add(new SelectLatentsAction(workbench));
-        highlightMenu.add(new SelectEdgesInCycles(workbench));
+        highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
         return highlightMenu;
     }
 

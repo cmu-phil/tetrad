@@ -34,6 +34,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Selects all directed edges in the given display graph.
@@ -41,7 +43,7 @@ import java.awt.event.ActionEvent;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class SelectEdgesInCycles extends AbstractAction implements ClipboardOwner {
+public class SelectEdgesInAlmostCyclicPaths extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.
@@ -53,8 +55,8 @@ public class SelectEdgesInCycles extends AbstractAction implements ClipboardOwne
      *
      * @param workbench the given workbench.
      */
-    public SelectEdgesInCycles(GraphWorkbench workbench) {
-        super("Highlight Edges In Cycles");
+    public SelectEdgesInAlmostCyclicPaths(GraphWorkbench workbench) {
+        super("Highlight Edges In Almost Cyclic Paths");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -73,23 +75,58 @@ public class SelectEdgesInCycles extends AbstractAction implements ClipboardOwne
         Graph graph = this.workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(this.workbench, "No graph to check for cycles.");
+            JOptionPane.showMessageDialog(this.workbench, "No graph to check for almost cyclic paths.");
             return;
         }
 
-        for (Component comp : this.workbench.getComponents()) {
-            if (comp instanceof DisplayEdge) {
-                Edge edge = ((DisplayEdge) comp).getModelEdge();
+        // Make a list of the bidirected edges in the graph.
+        java.util.List<Edge> bidirectedEdges = new ArrayList<>();
 
-                if (Edges.isDirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                bidirectedEdges.add(edge);
+            }
+        }
 
-                    if (graph.paths().existsDirectedPath(y, x)) {
-                        this.workbench.selectEdge(edge);
+        java.util.Set<Edge> almostCyclicEdges = new HashSet<>();
+
+        for (Edge edge : bidirectedEdges) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            {
+                java.util.List<java.util.List<Node>> directedPaths = graph.paths().directedPaths(x, y, 1000);
+
+                for (java.util.List<Node> path : directedPaths) {
+                    for (int i = 0; i < path.size() - 1; i++) {
+                        Node node1 = path.get(i);
+                        Node node2 = path.get(i + 1);
+
+                        Edge _edge = graph.getEdge(node1, node2);
+                        almostCyclicEdges.add(_edge);
+                        almostCyclicEdges.add(edge);
                     }
                 }
             }
+
+            {
+                java.util.List<java.util.List<Node>> directedPaths = graph.paths().directedPaths(y, x, 1000);
+
+                for (java.util.List<Node> path : directedPaths) {
+                    for (int i = 0; i < path.size() - 1; i++) {
+                        Node node1 = path.get(i);
+                        Node node2 = path.get(i + 1);
+
+                        Edge _edge = graph.getEdge(node1, node2);
+                        almostCyclicEdges.add(_edge);
+                        almostCyclicEdges.add(edge);
+                    }
+                }
+            }
+        }
+
+        for (Edge edge : almostCyclicEdges) {
+            this.workbench.selectEdge(edge);
         }
     }
 

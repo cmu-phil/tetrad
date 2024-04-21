@@ -361,7 +361,7 @@ class RandomGraphEditor extends JPanel {
         b1.add(b10);
 
         Box b11 = Box.createHorizontalBox();
-        b11.add(new JLabel("Max # latent confounders:"));
+        b11.add(new JLabel("Number of additional latent confounders:"));
         b11.add(Box.createHorizontalStrut(25));
         b11.add(Box.createHorizontalGlue());
         b11.add(this.numLatentsField);
@@ -369,7 +369,7 @@ class RandomGraphEditor extends JPanel {
         b1.add(Box.createVerticalStrut(5));
 
         Box b12 = Box.createHorizontalBox();
-        b12.add(new JLabel("Maximum number of edges:"));
+        b12.add(new JLabel("Number of edges:"));
         b12.add(Box.createHorizontalGlue());
         b12.add(this.maxEdgesField);
         b1.add(b12);
@@ -551,7 +551,7 @@ class RandomGraphEditor extends JPanel {
     private void setNumLatents(int numLatentNodes) {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
-                    "Max # latent confounders must be" + " >= 0: " +
+                    "Number of additional latent confounders must be" + " >= 0: " +
                     numLatentNodes);
         }
 
