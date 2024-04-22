@@ -94,6 +94,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
             }
         }
 
+        I:
         for (Node node : graph.getNodes()) {
             Set<Node> intersection = new HashSet<>(graph.getAdjacentNodes(node));
             intersection.add(node);
@@ -108,12 +109,8 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
                 intersection.retainAll(adjacentNodes);
 
                 if (intersection.size() < minSize) {
-                    break;
+                    continue I;
                 }
-            }
-
-            if (intersection.size() < minSize) {
-                continue;
             }
 
             for (Node n1 : intersection) {
