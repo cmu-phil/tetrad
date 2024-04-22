@@ -409,7 +409,7 @@ public final class GraphSearchUtils {
             }
         }
 
-        Graph mag = GraphTransforms.pagToMag(pag);
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
         LegalMagRet legalMag = isLegalMag(mag);
 

@@ -60,7 +60,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     }
 
     private static Graph getGraph(Graph graph) {
-        return GraphTransforms.pagToMag(graph);
+        return GraphTransforms.zhangMagFromPag(graph);
     }
 
 

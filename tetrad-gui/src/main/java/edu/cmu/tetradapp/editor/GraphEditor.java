@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -478,6 +477,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
+        JMenuItem setToOriginal = new JMenuItem(new ResetGraph(workbench));
 
         cut.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
@@ -485,10 +487,21 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        redoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
         edit.add(cut);
         edit.add(copy);
         edit.add(paste);
+        edit.addSeparator();
+
+        edit.add(undoLast);
+        edit.add(redoLast);
+        edit.add(setToOriginal);
 
         return edit;
     }

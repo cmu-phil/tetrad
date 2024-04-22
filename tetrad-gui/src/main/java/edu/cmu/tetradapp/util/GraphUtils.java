@@ -214,10 +214,15 @@ public class GraphUtils {
         highlightMenu.add(new SelectUndirectedAction(workbench));
         highlightMenu.add(new SelectPartiallyOrientedAction(workbench));
         highlightMenu.add(new SelectNondirectedAction(workbench));
+        highlightMenu.addSeparator();
+
         highlightMenu.add(new SelectTrianglesAction(workbench));
-        highlightMenu.add(new SelectLatentsAction(workbench));
         highlightMenu.add(new SelectEdgesInCyclicPaths(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
+        highlightMenu.addSeparator();;
+
+        highlightMenu.add(new SelectLatentsAction(workbench));
+        highlightMenu.add(new SelectMeasuredNodesAction(workbench));
         return highlightMenu;
     }
 
@@ -260,14 +265,12 @@ public class GraphUtils {
     public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
 
         JMenu transformGraph = new JMenu("Manipulate Graph");
-        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
-        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
-        JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(workbench));
         JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
         JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
         JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
         JMenuItem randomDagInCpdag = new JMenuItem(new PickRandomDagInCpdagAction(workbench));
+        JMenuItem randomMagInPag = new JMenuItem(new PickRandomMagInPagAction(workbench));
         JMenuItem zhangMagInPag = new JMenuItem(new PickZhangMagInPagAction(workbench));
         JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
         JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
@@ -283,17 +286,21 @@ public class GraphUtils {
             workbench.invalidate();
             workbench.repaint();
         });
-        transformGraph.add(undoLast);
-        transformGraph.add(redoLast);
-        transformGraph.add(setToOriginal);
+
         transformGraph.add(runMeekRules);
-        transformGraph.add(runFinalFciRules);
         transformGraph.add(revertToCpdag);
-        transformGraph.add(revertToPag);
         transformGraph.add(randomDagInCpdag);
+        transformGraph.addSeparator();
+
+        transformGraph.add(runFinalFciRules);
+        transformGraph.add(revertToPag);
+        transformGraph.add(randomMagInPag);
         transformGraph.add(zhangMagInPag);
+        transformGraph.addSeparator();
+
         transformGraph.add(correlateExogenous);
         transformGraph.add(uncorrelateExogenous);
+
         graph.add(transformGraph);
 
         runMeekRules.setAccelerator(
@@ -304,14 +311,10 @@ public class GraphUtils {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK));
         revertToPag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
-        undoLast.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-        redoLast.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
-        setToOriginal.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK));
         randomDagInCpdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_DOWN_MASK));
+        randomMagInPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
         zhangMagInPag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK));
     }

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -35,7 +34,7 @@ import java.awt.event.ActionEvent;
  * ActionListener interface to respond to events triggered by clicking a button or selecting a menu option. It also
  * implements the ClipboardOwner interface to handle clipboard ownership changes.
  */
-public class SetToOriginalAction extends AbstractAction implements ClipboardOwner {
+public class ResetGraph extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.
@@ -47,8 +46,8 @@ public class SetToOriginalAction extends AbstractAction implements ClipboardOwne
      * ActionListener interface to respond to events triggered by clicking a button or selecting a menu option. It also
      * implements the ClipboardOwner interface to handle clipboard ownership changes.
      */
-    public SetToOriginalAction(GraphWorkbench workbench) {
-        super("Reset to the Original Graph");
+    public ResetGraph(GraphWorkbench workbench) {
+        super("Reset Graph");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
