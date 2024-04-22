@@ -68,20 +68,20 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="3">If the graph is a PAG and PAG coloring is turned on then the
-            following are also true. (1) If an edge is solid, that means there is no latent
-            confounder (i.e., the edge is visible, which means that for linear models its
-            coefficient can be estimated); (2) If dashed, there is possibly a latent
-            confounder (so that its coefficient may not be estimable). Also,
-            (3) If an edge is thickened, that means the edge is definitely direct
-            (which means that the directed edge appears in the true DAG).
-            (4) Otherwise, if not thickened, the edge is possibly direct
-            (which means the directed edge may or may not appear in the true DAG).
+        <td colspan="3"><b>PAG Coloring:</b> If the graph is a PAG and PAG coloring
+            is turned on then the following are also true. (1) If an edge is solid, that
+            means there is no latent confounder (i.e., the edge is visible, which means
+            that for linear models its coefficient can be estimated); (2) If dashed, there
+            is possibly a latent confounder (so that its coefficient may not be estimable).
+            Also, (3) If an edge is thickened, that means the edge is definitely direct
+            (which means that the directed edge appears in the true DAG). (4) Otherwise, if
+            not thickened, the edge is possibly direct (which means the directed edge may or
+            may not appear in the true DAG).
         </td>
     </tr>
     <tr>
         <td colspan="3">Also, the above breakdown of types assume there is no
-            <emph>selection bias</emph>. Selection bias occurs when there is
+            <b>selection bias</b>. Selection bias occurs when there is
             a common latent child of two measured nodes, thus: X&rarr;Y&larr;Z and
             is indicated in an FCI-like graph as X&mdash;Y.
         </td>

@@ -217,6 +217,7 @@ public class GraphUtils {
         highlightMenu.addSeparator();
 
         highlightMenu.add(new SelectTrianglesAction(workbench));
+        highlightMenu.add(new SelectCliquesAction(workbench));
         highlightMenu.add(new SelectEdgesInCyclicPaths(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
         highlightMenu.addSeparator();;
