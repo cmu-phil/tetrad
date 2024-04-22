@@ -68,15 +68,27 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="3">If an edge is solid, that means there is no latent
-            confounder (i.e., is visible). If dashed, there is possibly latent confounder.
+        <td colspan="3">If the graph is a PAG and PAG coloring is turned on then the
+            following are also true. (1) If an edge is solid, that means there is no latent
+            confounder (i.e., the edge is visible, which means that for linear models its
+            coefficient can be estimated); (2) If dashed, there is possibly a latent
+            confounder (so that its coefficient cannot be estimated). Also,
+            (3) If an edge is thickened, that means the edge is definitely direct
+            (which means that the directed edge appears in the true DAG).
+            (4) Otherwise, if not thickened, the edge is possibly direct
+            (which means the directed edge may or may not appear in the true DAG)
         </td>
     </tr>
-    <tr>
-        <td colspan="3">If an edge is thickened that means it is
-            definitely direct. Otherwise, it is possibly direct.
-        </td>
-    </tr>
+<!--    <tr>-->
+<!--        <td colspan="3">If an edge is solid, that means there is no latent-->
+<!--            confounder (i.e., is visible). If dashed, there is possibly latent confounder.-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td colspan="3">If an edge is thickened, that means it is-->
+<!--            definitely direct. Otherwise, it is possibly direct.-->
+<!--        </td>-->
+<!--    </tr>-->
     </tfoot>
 </table>
 
