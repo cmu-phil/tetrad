@@ -59,9 +59,9 @@ public class PagEdgeTypeInstructions extends AbstractAction implements Clipboard
         try {
             URL url = this.getClass().getResource(helpHS);
             HelpSet helpSet = new HelpSet(null, url);
-
             helpSet.setHomeID("graph_edge_types");
             HelpBroker broker = helpSet.createHelpBroker();
+            broker.setCurrentView("Index");
             ActionListener listener = new CSH.DisplayHelpFromSource(broker);
             listener.actionPerformed(e);
         } catch (Exception ee) {
