@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * An action to highlight cliques in the GraphWorkbench.
+ * An action to highlight edges in node cliques in the GraphWorkbench of a certain minimum size (input by the user).
  */
 public class SelectCliquesAction extends AbstractAction implements ClipboardOwner {
 
@@ -62,7 +62,8 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
-     * Performs the action of highlighting all edges in cliques in the given display graph.
+     * Performs the action of highlighting all edges in cliques in the given display graph. Inputs the minimum size of the
+     * cliques to highlight by popping up a dialog box.
      *
      * @param e the {@link ActionEvent} object
      */
@@ -83,12 +84,12 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
                 minSize = Integer.parseInt(s);
 
                 if (minSize < 2) {
-                    JOptionPane.showMessageDialog(this.workbench, "Invalid input. Cliques must have at least 2 nodes");
+                    JOptionPane.showMessageDialog(this.workbench, "Cliques must have at least 2 nodes");
                 } else {
                     break;
                 }
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this.workbench, "Invalid input. Please enter a valid integer.");
+                JOptionPane.showMessageDialog(this.workbench, "Please enter a valid integer.");
                 s = JOptionPane.showInputDialog("Enter the minimum size of the clique: ");
             }
         }
