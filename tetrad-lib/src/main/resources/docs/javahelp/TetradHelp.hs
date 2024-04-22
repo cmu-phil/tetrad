@@ -64,7 +64,7 @@
    -->
    <presentation default=true>
        <name>main window</name>
-       <size width="800" height="700" />
+       <size width="900" height="750" />
        <location x="100" y="100" />
        <title>Project Tetrad Help</title>
        <toolbar>
