@@ -399,6 +399,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             Graph graph = graphStack.removeLast();
+
+            if (doPagColoring) {
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            }
+
             setGraph(graph);
             redoStack.add(graph);
         } while (graph.equals(oldGraph));
@@ -421,6 +426,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             Graph graph = redoStack.removeLast();
+
+            if (doPagColoring) {
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            }
+
             setGraph(graph);
         } while (graph.equals(oldGraph));
     }
