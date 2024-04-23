@@ -1,5 +1,9 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
+import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
+import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
+import edu.cmu.tetrad.algcomparison.statistic.ArrowheadRecall;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
@@ -269,43 +273,24 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
-    // TODO VBC: this method is in progress.
-    public Double getPrecisionOrRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph, boolean getPrecision) {
+    public void getPrecisionAndRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
-        // TODO VBC: a different naming once this method is completed.
-        Graph RecommendedxMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-//        System.out.println("RecommendedxMBLookupGraph:" + RecommendedxMBLookupGraph);
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-//        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
-        HashSet<Edge> TP = new HashSet<>();
-        HashSet<Edge> TN = new HashSet<>();
-        HashSet<Edge> FP = new HashSet<>();
-        HashSet<Edge> FN = new HashSet<>();
-        Set<Edge> trueMBEdges = RecommendedxMBLookupGraph.getEdges();
-        Set<Edge> estMBEdges = xMBEstimatedGraph.getEdges();
-        if (trueMBEdges != null && estMBEdges != null) {
-            for (Edge te : trueMBEdges) {
-                for (Edge ee : estMBEdges) {
-                    // True Graph's Edge info
-                    Node teNode1 = te.getNode1();
-                    Node teNode2 = te.getNode1();
-                    Endpoint teEndpoint1 = te.getEndpoint1();
-                    Endpoint teEndpoint2 = te.getEndpoint2();
-                    // Estimated Graph's Edge info
-                    Node eeNode1 = te.getNode1();
-                    Node eeNode2 = te.getNode1();
-                    Endpoint eeEndpoint1 = ee.getEndpoint1();
-                    Endpoint eeEndpoint2 = ee.getEndpoint2();
-                    // TODO VBC: calculate precision and recall for AH and Adj.
-                }
-            }
-        }
-        // TODO VBC: need both for AH and Adj, so this getPrecision way need further fix to fit UI later.
-        double precision = (double) TP.size() / (TP.size() + FP.size());
-        double recall = (double) TP.size() / (TP.size() + FN.size());
-        return getPrecision ? precision : recall;
+        // TODO VBC: validate
+        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println( "Node " + x + "'s statistics: " + " \n" +
+                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
 
     /**
