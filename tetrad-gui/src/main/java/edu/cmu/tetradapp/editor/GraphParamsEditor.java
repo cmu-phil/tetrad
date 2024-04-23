@@ -91,10 +91,10 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        String type = this.params.getString("randomGraphType", "Uniform");
+        String type = this.params.getString("randomGraphType", "Dag");
 
         switch (type) {
-            case "Uniform":
+            case "Dag":
                 tabs.setSelectedIndex(0);
                 break;
             case "Mim":
@@ -111,7 +111,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
             if (pane.getSelectedIndex() == 0) {
-                GraphParamsEditor.this.params.set("randomGraphType", "Uniform");
+                GraphParamsEditor.this.params.set("randomGraphType", "Dag");
             } else if (pane.getSelectedIndex() == 1) {
                 GraphParamsEditor.this.params.set("randomGraphType", "Mim");
             } else if (pane.getSelectedIndex() == 2) {

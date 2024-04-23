@@ -55,32 +55,26 @@ public class GraphUtils {
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        String type = parameters.getString("randomGraphType", "ScaleFree");
+        String type = parameters.getString("randomGraphType", "Dag");
 
-        switch (type) {
-            case "Uniform":
-                return GraphUtils.makeRandomDag(graph,
-                        newGraphNumMeasuredNodes,
-                        newGraphNumLatents,
-                        newGraphNumEdges,
-                        randomGraphMaxDegree,
-                        randomGraphMaxIndegree,
-                        randomGraphMaxOutdegree,
-                        graphRandomFoward,
-                        graphUniformlySelected,
-                        randomGraphConnected,
-                        graphChooseFixed,
-                        addCycles, parameters);
-            case "Mim":
-                return GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
-                        numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
-                        numMeasuredMeasuredImpureAssociations);
-            case "ScaleFree":
-                return GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
-                        newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
-        }
+        return switch (type) {
+            case "Dag" -> RandomGraph.randomGraph(
+                    newGraphNumMeasuredNodes,
+                    newGraphNumLatents,
+                    newGraphNumEdges,
+                    randomGraphMaxDegree,
+                    randomGraphMaxIndegree,
+                    randomGraphMaxOutdegree,
+                    false);
+            case "Mim" ->
+                    GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
+                            numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
+                            numMeasuredMeasuredImpureAssociations);
+            case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
+                    newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
+            default -> throw new IllegalStateException("Unrecognized graph type: " + type);
+        };
 
-        throw new IllegalStateException("Unrecognized graph type: " + type);
     }
 
     private static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
@@ -88,10 +82,10 @@ public class GraphUtils {
                                        int newGraphNumEdges, int randomGraphMaxDegree,
                                        int randomGraphMaxIndegree,
                                        int randomGraphMaxOutdegree,
-                                       boolean graphRandomFoward,
-                                       boolean graphUniformlySelected,
+//                                       boolean graphRandomFoward,
+//                                       boolean graphUniformlySelected,
                                        boolean randomGraphConnected,
-                                       boolean graphChooseFixed,
+//                                       boolean graphChooseFixed,
                                        boolean addCycles, Parameters parameters) {
         Graph graph = null;
 
@@ -106,43 +100,43 @@ public class GraphUtils {
                 nodes.add(new GraphNode("X" + (i + 1)));
             }
 
-            if (graphRandomFoward) {
-                graph = RandomGraph.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
+//            if (true) {
+                graph = RandomGraph.randomGraph(nodes, newGraphNumLatents,
                         newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        randomGraphConnected, true);
+                        randomGraphConnected);
                 LayoutUtil.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
                 LayoutUtil.arrangeByLayout(graph, layout);
-            } else {
-                if (graphUniformlySelected) {
-
-                    graph = RandomGraph.randomGraphUniform(nodes,
-                            newGraphNumLatents,
-                            newGraphNumEdges,
-                            randomGraphMaxDegree,
-                            randomGraphMaxIndegree,
-                            randomGraphMaxOutdegree,
-                            randomGraphConnected, 50000);
-                    LayoutUtil.arrangeBySourceGraph(graph, _graph);
-                    HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-                    LayoutUtil.arrangeByLayout(graph, layout);
-                } else {
-                    if (graphChooseFixed) {
-                        do {
-                            graph = RandomGraph.randomGraph(nodes,
-                                    newGraphNumLatents,
-                                    newGraphNumEdges,
-                                    randomGraphMaxDegree,
-                                    randomGraphMaxIndegree,
-                                    randomGraphMaxOutdegree,
-                                    randomGraphConnected);
-                            LayoutUtil.arrangeBySourceGraph(graph, _graph);
-                            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-                            LayoutUtil.arrangeByLayout(graph, layout);
-                        } while (graph.getNumEdges() < newGraphNumEdges);
-                    }
-                }
-            }
+//            } else {
+//                if (graphUniformlySelected) {
+//
+//                    graph = RandomGraph.randomGraphUniform(nodes,
+//                            newGraphNumLatents,
+//                            newGraphNumEdges,
+//                            randomGraphMaxDegree,
+//                            randomGraphMaxIndegree,
+//                            randomGraphMaxOutdegree,
+//                            randomGraphConnected, 50000);
+//                    LayoutUtil.arrangeBySourceGraph(graph, _graph);
+//                    HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
+//                    LayoutUtil.arrangeByLayout(graph, layout);
+//                } else {
+//                    if (graphChooseFixed) {
+//                        do {
+//                            graph = RandomGraph.randomGraph(nodes,
+//                                    newGraphNumLatents,
+//                                    newGraphNumEdges,
+//                                    randomGraphMaxDegree,
+//                                    randomGraphMaxIndegree,
+//                                    randomGraphMaxOutdegree,
+//                                    randomGraphConnected);
+//                            LayoutUtil.arrangeBySourceGraph(graph, _graph);
+//                            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
+//                            LayoutUtil.arrangeByLayout(graph, layout);
+//                        } while (graph.getNumEdges() < newGraphNumEdges);
+//                    }
+//                }
+//            }
 
             if (addCycles) {
                 graph = RandomGraph.randomCyclicGraph2(numNodes, newGraphNumEdges, 8);
