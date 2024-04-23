@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -114,9 +111,47 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testPrecisionRecallForLocalOnMarkovBlanket() {
+    public void testDAGPrecisionRecallForLocalOnMarkovBlanket() {
         // TODO VBC: next I also use randome graph that is converted to CPDag then have a diff test case for that.
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
+    @Test
+    public void testCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        // The completed partially directed acyclic graph (CPDAG) for the given DAG.
+        trueGraph = GraphTransforms.cpdagForDag(trueGraph);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
