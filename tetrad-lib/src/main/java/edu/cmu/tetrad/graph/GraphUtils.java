@@ -148,6 +148,25 @@ public final class GraphUtils {
     }
 
     /**
+     * Calculates the subgraph over the parents of a target node.
+     * Target Node is included in the result graph's nodes list.
+     * Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getParentsSubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        List<Node> parents = g.getParents(target);
+        parents.add(target);
+        Graph res = g.subgraph(new ArrayList<>(parents));
+//        System.out.println( target + " Node's Parents list: " + res.getNodes());
+//        System.out.println("Graph result: " + res);
+        return  res;
+    }
+
+    /**
      * <p>removeBidirectedOrientations.</p>
      *
      * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object
