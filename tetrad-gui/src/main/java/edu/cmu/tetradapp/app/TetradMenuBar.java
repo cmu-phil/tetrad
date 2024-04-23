@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
-import edu.cmu.tetradapp.editor.UndoLastAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -241,13 +240,13 @@ final class TetradMenuBar extends JMenuBar {
 
             // Create a clickable link
             JLabel label = new JLabel("<html>" +
-                                      "<p>Please submit any issues you may have,</p>" +
-                                      "<p>whether bug reports, general encouragement,</p>" +
-                                      "<p>or feature requests, to our issues list. We'd</p>" +
-                                      "<p>love to hear from you as we continue to</p>" +
-                                      "<p>improve the Tetrad tools!</p>" +
-                                      "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
-                                      "</html>");
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
             label.addMouseListener(new MouseAdapter() {
