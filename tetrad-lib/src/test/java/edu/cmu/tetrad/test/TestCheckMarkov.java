@@ -114,7 +114,7 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testPrecissionRecallForLocal() {
+    public void testPrecisionRecallForLocalOnMarkovBlanket() {
         // TODO VBC: next I also use randome graph that is converted to CPDag then have a diff test case for that.
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
@@ -137,8 +137,6 @@ public class TestCheckMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        List<Double> acceptsPrecision = new ArrayList<>();
-        List<Double> acceptsRecall = new ArrayList<>();
         for(Node a: accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
@@ -148,6 +146,44 @@ public class TestCheckMarkov {
         for (Node a: rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
+    @Test
+    public void testPrecisionRecallForLocalOnParents() {
+        // TODO VBC: next I also use randome graph that is converted to CPDag then have a diff test case for that.
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        // TODO VBC: confirm on the choice of ConditioningSetType.
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
         }
     }
