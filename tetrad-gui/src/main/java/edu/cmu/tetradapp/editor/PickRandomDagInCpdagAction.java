@@ -68,10 +68,10 @@ public class PickRandomDagInCpdagAction extends AbstractAction {
             return;
         }
 
-        if (!graph.paths().isLegalMpdag()) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "I can only convert CPDAGs, or CPDAG with additional oriented edges, with Meek rules applied.");
-            return;
-        }
+//        if (!graph.paths().isLegalMpdag()) {
+//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "I can only convert CPDAGs, or CPDAG with additional oriented edges, with Meek rules applied.");
+//            return;
+//        }
 
         graph = GraphTransforms.dagFromCpdag(graph);
         workbench.setGraph(graph);

@@ -42,9 +42,9 @@ public class GraphTransforms {
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
     public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge) {
-        Graph mag = new EdgeListGraph(cpdag);
-        transormPagIntoRandomMag(mag);
-        return mag;
+        Graph dag = new EdgeListGraph(cpdag);
+        transformCpdagIntoRandomDag(dag, knowledge);
+        return dag;
     }
 
     /**
