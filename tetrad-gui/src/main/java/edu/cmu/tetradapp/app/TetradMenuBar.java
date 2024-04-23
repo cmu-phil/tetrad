@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
+import edu.cmu.tetradapp.editor.UndoLastAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -186,7 +187,6 @@ final class TetradMenuBar extends JMenuBar {
         editMenu.add(cut);
         editMenu.add(copy);
         editMenu.add(paste);
-        editMenu.addSeparator();
     }
 
     /**
