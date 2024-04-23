@@ -273,22 +273,19 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
-    // TODO VBC: this method is in progress.
     public void getPrecisionAndRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
-        // TODO VBC: a different naming once this method is completed.
-        Graph truexMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("truexMBLookupGraph:" + truexMBLookupGraph);
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
         System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
-
         // TODO VBC: validate
-        double ap = new AdjacencyPrecision().getValue(truexMBLookupGraph, xMBEstimatedGraph, null);
-        double ar = new AdjacencyRecall().getValue(truexMBLookupGraph, xMBEstimatedGraph, null);
-        double ahp = new ArrowheadPrecision().getValue(truexMBLookupGraph, xMBEstimatedGraph, null);
-        double ahr = new ArrowheadRecall().getValue(truexMBLookupGraph, xMBEstimatedGraph, null);
+        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println( "Node " + x + "'s statistics: " + " \n" +

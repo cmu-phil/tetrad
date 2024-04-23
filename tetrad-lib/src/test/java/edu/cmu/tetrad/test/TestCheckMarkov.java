@@ -145,6 +145,10 @@ public class TestCheckMarkov {
             System.out.println("=====================");
 
         }
-        // TODO VBC: for rejects.
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
     }
 }
