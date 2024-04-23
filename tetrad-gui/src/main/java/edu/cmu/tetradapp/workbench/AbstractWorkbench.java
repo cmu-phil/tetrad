@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.editor.PagColorer;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -1103,6 +1104,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         this.graph = graph;
+
+        if (doPagColoring) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
 
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
