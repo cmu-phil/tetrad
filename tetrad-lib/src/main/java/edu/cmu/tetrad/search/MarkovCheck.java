@@ -293,6 +293,26 @@ public class MarkovCheck {
                 " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
 
+    public void getPrecisionAndRecallOnParentsSubGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xParentsLookupGraph:" + xParentsLookupGraph);
+        Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+        System.out.println("xParentsEstimatedGraph:" + xParentsEstimatedGraph);
+
+        // TODO VBC: validate
+        double ap = new AdjacencyPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
+        double ar = new AdjacencyRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
+        double ahp = new ArrowheadPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
+        double ahr = new ArrowheadRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println( "Node " + x + "'s statistics: " + " \n" +
+                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
+    }
+
     /**
      * Returns the variables of the independence test.
      *
