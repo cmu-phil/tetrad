@@ -55,7 +55,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
      * @throws NullPointerException if the workbench is null
      */
     public SelectCliquesAction(GraphWorkbench workbench) {
-        super("Highlight Cliques");
+        super("Highlight Maximal Cliques");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -75,7 +75,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
 
         final Graph graph = this.workbench.getGraph();
 
-        String s = JOptionPane.showInputDialog("Enter the minimum size of the clique: ");
+        String s = JOptionPane.showInputDialog("Enter the minimum size of the (maximal) clique: ");
 
         int minSize ;
 
@@ -94,7 +94,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this.workbench, "Please enter a valid integer.");
-                s = JOptionPane.showInputDialog("Enter the minimum size of the clique: ");
+                s = JOptionPane.showInputDialog("Enter the minimum size of the (maximal) clique: ");
             }
         }
 
