@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -34,6 +35,8 @@ import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static edu.cmu.tetrad.graph.GraphUtils.maximalCliques;
 
 /**
  * An action to highlight edges in node cliques in the GraphWorkbench of a certain minimum size (input by the user).
@@ -80,6 +83,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
             if (s == null) {
                 return;
             }
+
             try {
                 minSize = Integer.parseInt(s);
 
@@ -94,27 +98,15 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
             }
         }
 
-        I:
-        for (Node node : graph.getNodes()) {
-            Set<Node> intersection = new HashSet<>(graph.getAdjacentNodes(node));
-            intersection.add(node);
+        Set<Set<Node>> cliques = GraphUtils.maximalCliques(graph, graph.getNodes());
 
-            if (intersection.size() < minSize) {
+        for (Set<Node> clique : cliques) {
+            if (clique.size() < minSize) {
                 continue;
             }
 
-            for (Node neighbor : graph.getAdjacentNodes(node)) {
-                Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(neighbor));
-                adjacentNodes.add(neighbor);
-                intersection.retainAll(adjacentNodes);
-
-                if (intersection.size() < minSize) {
-                    continue I;
-                }
-            }
-
-            for (Node n1 : intersection) {
-                for (Node n2 : intersection) {
+            for (Node n1 : clique) {
+                for (Node n2 : clique) {
                     if (n1 == n2) {
                         continue;
                     }
