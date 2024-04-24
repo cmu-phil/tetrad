@@ -125,9 +125,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));

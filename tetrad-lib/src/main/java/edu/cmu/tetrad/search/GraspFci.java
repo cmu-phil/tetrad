@@ -26,9 +26,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -83,10 +82,6 @@ public final class GraspFci implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
@@ -106,10 +101,6 @@ public final class GraspFci implements IGraphSearch {
      * Whether to use score.
      */
     private boolean useScore = true;
-    /**
-     * Whether to use the discriminating path rule.
-     */
-    private boolean doDiscriminatingPathRule = true;
     /**
      * Whether to use the ordered version of GRaSP.
      */
@@ -189,15 +180,16 @@ public final class GraspFci implements IGraphSearch {
 
         Graph referenceDag = new EdgeListGraph(graph);
 
+        // GFCI extra edge removal step...
         SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        Graph referencePag = independenceTest instanceof MsepTest ? ((MsepTest) independenceTest).getGraph() : graph;
+        FciOrient fciOrient = new FciOrient(new DagSepsets(referencePag));
+
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
@@ -225,19 +217,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path searched.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
     }
 
     /**
@@ -292,15 +271,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
-    }
-
-    /**
-     * Sets whether to use the discriminating path rule for GRaSP.
-     *
-     * @param doDiscriminatingPathRule True, if so.
-     */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     /**
