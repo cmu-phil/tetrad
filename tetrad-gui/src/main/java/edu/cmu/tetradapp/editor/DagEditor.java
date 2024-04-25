@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -451,16 +452,34 @@ public final class DagEditor extends JPanel
 
         JMenu edit = new JMenu("Edit");
 
+        JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
+        JMenuItem setToOriginal = new JMenuItem(new ResetGraph(workbench));
 
+        cut.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        redoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
+        edit.add(cut);
         edit.add(copy);
         edit.add(paste);
+        edit.addSeparator();
+
+        edit.add(undoLast);
+        edit.add(redoLast);
+        edit.add(setToOriginal);
 
         return edit;
     }
@@ -475,14 +494,26 @@ public final class DagEditor extends JPanel
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
 
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-//        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
 
+//        JMenu revert = new JMenu("Revert Graph");
+//        graph.add(revert);
+//        JMenuItem undoLast = new JMenuItem(new UndoLastAction(this.workbench));
+//        JMenuItem redoLast = new JMenuItem(new RedoLastAction(this.workbench));
+//        JMenuItem setToOriginal = new JMenuItem(new SetToOriginalAction(this.workbench));
+//        revert.add(undoLast);
+//        revert.add(redoLast);
+//        revert.add(setToOriginal);
+
+//        undoLast.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+//        redoLast.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+//        setToOriginal.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();

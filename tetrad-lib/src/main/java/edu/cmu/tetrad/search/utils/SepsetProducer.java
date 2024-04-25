@@ -79,9 +79,19 @@ public interface SepsetProducer {
      *
      * @param d    a {@link edu.cmu.tetrad.graph.Node} object
      * @param c    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param path a {@link java.util.Set} object
+     * @param sepset a {@link java.util.Set} object
      * @return a boolean
      */
-    boolean isIndependent(Node d, Node c, Set<Node> path);
+    boolean isIndependent(Node d, Node c, Set<Node> sepset);
+
+    /**
+     * Calculates the p-value for a statistical test a _||_ b | sepset.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @param sepset the set of nodes
+     * @return the p-value for the statistical test
+     */
+    double getPValue(Node a, Node b, Set<Node> sepset);
 }
 

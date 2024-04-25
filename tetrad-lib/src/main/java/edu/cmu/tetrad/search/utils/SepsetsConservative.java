@@ -225,13 +225,32 @@ public class SepsetsConservative implements SepsetProducer {
 
 
     /**
-     * {@inheritDoc}
+     * Determines if two nodes are independent given a set of separator nodes.
+     *
+     * @param a      A {@link Node} object representing the first node.
+     * @param b      A {@link Node} object representing the second node.
+     * @param sepset A {@link Set} object representing the set of separator nodes.
+     * @return True if the nodes are independent, false otherwise.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.lastResult = result;
         return result.isIndependent();
+    }
+
+    /**
+     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     *
+     * @param a      the first node
+     * @param b      the second node
+     * @param sepset the set of separator nodes
+     * @return the p-value for the independence test
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
+        return result.getPValue();
     }
 
     /**

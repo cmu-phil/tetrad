@@ -42,6 +42,12 @@ public final class BayesBifParser {
     private BayesBifParser() {
     }
 
+    /**
+     * Parses a string in BayesBif format and converts it into a BayesIm object.
+     *
+     * @param text the string in BayesBif format
+     * @return the BayesIm object created from the parsed string
+     */
     public static BayesIm makeBayesIm(String text) {
         text = text.replace("\n", "");
         text = text.replace("\r", "");

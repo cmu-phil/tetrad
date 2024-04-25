@@ -45,7 +45,7 @@ public class NumDefinitelyNotDirectedPaths implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
 
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {

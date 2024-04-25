@@ -48,7 +48,7 @@ public class MaximalityCondition implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
 
-        Graph mag = GraphTransforms.pagToMag(estGraph);
+        Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
 
         List<Node> nodes = pag.getNodes();
 

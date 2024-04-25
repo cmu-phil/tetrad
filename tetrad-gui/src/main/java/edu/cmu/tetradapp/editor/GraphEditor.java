@@ -24,13 +24,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -465,32 +465,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         return menuBar;
     }
 
-    JMenuBar createGraphMenuBarNoEditing() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
-        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
-
-        menuBar.add(file);
-
-        JMenu graph = new JMenu("Graph");
-
-        graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
-        graph.add(new UnderliningsAction(this.workbench));
-
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-//        graph.addSeparator();
-        graph.add(new PagColorer(getWorkbench()));
-
-        menuBar.add(graph);
-
-        return menuBar;
-    }
-
 
     /**
      * Creates the "file" menu, which allows the user to load, save, and post workbench models.
@@ -500,16 +474,34 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private JMenu createEditMenu() {
         JMenu edit = new JMenu("Edit");
 
+        JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
+        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
+        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
+        JMenuItem setToOriginal = new JMenuItem(new ResetGraph(workbench));
 
+        cut.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+        undoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        redoLast.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        setToOriginal.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
+        edit.add(cut);
         edit.add(copy);
         edit.add(paste);
+        edit.addSeparator();
+
+        edit.add(undoLast);
+        edit.add(redoLast);
+        edit.add(setToOriginal);
 
         return edit;
     }
@@ -525,27 +517,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
         graph.add(new UnderliningsAction(getWorkbench()));
-
         graph.addSeparator();
-
-        JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
-        graph.add(correlateExogenous);
-        graph.add(uncorrelateExogenous);
-        graph.addSeparator();
-
-        correlateExogenous.addActionListener(e -> {
-            correlateExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
-        uncorrelateExogenous.addActionListener(e -> {
-            uncorrelationExogenousVariables();
-            getWorkbench().invalidate();
-            getWorkbench().repaint();
-        });
-
 
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();
@@ -583,12 +555,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             });
         });
 
-        graph.add(new JMenuItem(new SelectDirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectTrianglesAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
-        graph.add(new PagColorer(getWorkbench()));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        GraphUtils.addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+        graph.add(GraphUtils.addPagColoringItems(this.workbench));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {
@@ -596,64 +567,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
         }
 
-        graph.addSeparator();
-        graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
+//         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
 
         return graph;
-    }
-
-    private void correlateExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        if (graph instanceof Dag) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "Cannot add bidirected edges to DAG's.");
-            return;
-        }
-
-        List<Node> nodes = graph.getNodes();
-
-        List<Node> exoNodes = new LinkedList<>();
-
-        for (Node node : nodes) {
-            if (graph.isExogenous(node)) {
-                exoNodes.add(node);
-            }
-        }
-
-        for (int i = 0; i < exoNodes.size(); i++) {
-
-            loop:
-            for (int j = i + 1; j < exoNodes.size(); j++) {
-                Node node1 = exoNodes.get(i);
-                Node node2 = exoNodes.get(j);
-                List<Edge> edges = graph.getEdges(node1, node2);
-
-                for (Edge edge : edges) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        continue loop;
-                    }
-                }
-
-                graph.addBidirectedEdge(node1, node2);
-            }
-        }
-    }
-
-    private void uncorrelationExogenousVariables() {
-        Graph graph = getWorkbench().getGraph();
-
-        Set<Edge> edges = graph.getEdges();
-
-        for (Edge edge : edges) {
-            if (Edges.isBidirectedEdge(edge)) {
-                try {
-                    graph.removeEdge(edge);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-        }
     }
 
     /**

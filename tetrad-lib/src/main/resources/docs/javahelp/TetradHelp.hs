@@ -64,14 +64,14 @@
    -->
    <presentation default=true>
        <name>main window</name>
-       <size width="800" height="600" />
+       <size width="900" height="750" />
        <location x="100" y="100" />
        <title>Project Tetrad Help</title>
-       <toolbar>
-           <helpaction>javax.help.BackAction</helpaction>
-           <helpaction>javax.help.ForwardAction</helpaction>
-           <helpaction image="homeicon">javax.help.HomeAction</helpaction>
-       </toolbar>
+--       <toolbar>
+--           <helpaction>javax.help.BackAction</helpaction>
+--           <helpaction>javax.help.ForwardAction</helpaction>
+--           <helpaction image="homeicon">javax.help.HomeAction</helpaction>
+--       </toolbar>
    </presentation>
 
    <!-- This window is simpler than the main window.

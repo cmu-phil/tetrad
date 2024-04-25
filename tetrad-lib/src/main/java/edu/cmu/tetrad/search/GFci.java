@@ -26,9 +26,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -167,18 +166,33 @@ public final class GFci implements IGraphSearch {
         Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
-        // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//        // GFCI extra edge removal step...
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+//        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
+//        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//
+//        FciOrient fciOrient = new FciOrient(sepsets);
+//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+//        fciOrient.setMaxPathLength(this.maxPathLength);
+//        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+//        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(knowledge);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        // GFCI extra edge removal step...
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+
+        Graph referencePag = independenceTest instanceof MsepTest ? ((MsepTest) independenceTest).getGraph() : graph;
+        FciOrient fciOrient = new FciOrient(new DagSepsets(referencePag));
+
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
         return graph;

@@ -212,6 +212,12 @@ public class MarkovCheck {
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
 
+    /**
+     * Retrieves the list of local independence facts for a given node.
+     *
+     * @param x The node for which to retrieve the local independence facts.
+     * @return The list of local independence facts for the given node.
+     */
     public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
         Set<Node> parents = new HashSet<>(graph.getParents(x));
 
@@ -230,6 +236,13 @@ public class MarkovCheck {
         return factList;
     }
 
+    /**
+     * Calculates the local p-values for a given independence test and a list of independence facts.
+     *
+     * @param independenceTest The independence test used for calculating the p-values.
+     * @param facts The list of independence facts.
+     * @return The list of local p-values.
+     */
     public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
         // call pvalue function on each item, only include the non-null ones
         List<Double> pVals = new ArrayList<>();
@@ -247,6 +260,12 @@ public class MarkovCheck {
         return pVals;
     }
 
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
@@ -286,26 +305,6 @@ public class MarkovCheck {
         double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
         double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-
-        NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println( "Node " + x + "'s statistics: " + " \n" +
-                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
-    }
-
-    public void getPrecisionAndRecallOnParentsSubGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
-        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
-        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
-        Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xParentsLookupGraph:" + xParentsLookupGraph);
-        Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xParentsEstimatedGraph:" + xParentsEstimatedGraph);
-
-        // TODO VBC: validate
-        double ap = new AdjacencyPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ar = new AdjacencyRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ahp = new ArrowheadPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ahr = new ArrowheadRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println( "Node " + x + "'s statistics: " + " \n" +

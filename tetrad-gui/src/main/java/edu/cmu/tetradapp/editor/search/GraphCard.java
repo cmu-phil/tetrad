@@ -24,6 +24,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -37,6 +38,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serial;
 import java.net.URL;
+
+import static edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems;
 
 /**
  * Apr 15, 2019 4:49:15 PM
@@ -125,13 +128,14 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
 
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagColorer(this.workbench));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+//        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
+        graph.add(GraphUtils.addPagColoringItems(this.workbench));
 
         menuBar.add(graph);
 

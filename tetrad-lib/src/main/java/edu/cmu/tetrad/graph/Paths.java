@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -70,6 +68,59 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
+     *
+     * @param pi      a list of nodes representing the set of vertices in the graph
+     * @param g       the graph
+     * @param verbose whether to print verbose output
+     * @return a Graph object representing the generated DAG.
+     */
+    public static Graph getDag(List<Node> pi, Graph g, boolean verbose) {
+        Graph graph = new EdgeListGraph(pi);
+
+        for (int a = 0; a < pi.size(); a++) {
+            for (Node b : getParents(pi, a, g, verbose, false)) {
+                graph.addDirectedEdge(b, pi.get(a));
+            }
+        }
+
+        return graph;
+    }
+
+    /**
+     * Returns the parents of the node at index p, calculated using Pearl's method.
+     *
+     * @param pi                 The list of nodes.
+     * @param p                  The index.
+     * @param g                  The graph.
+     * @param verbose            Whether to print verbose output.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X-&gt;L&lt;-Y.
+     * @return The parents, as a Pair object (parents + score).
+     */
+    public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean allowSelectionBias) {
+        Node x = pi.get(p);
+        Set<Node> parents = new HashSet<>();
+        Set<Node> prefix = getPrefix(pi, p);
+
+        for (Node y : prefix) {
+            Set<Node> minus = new HashSet<>(prefix);
+            minus.remove(y);
+            minus.remove(x);
+            Set<Node> z = new HashSet<>(minus);
+
+            if (!g.paths().isMSeparatedFrom(x, y, z, allowSelectionBias)) {
+                if (verbose) {
+                    System.out.println("Adding " + y + " as a parent of " + x + " with z = " + z);
+                }
+                parents.add(y);
+            }
+        }
+
+        return parents;
+    }
+
+    /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
      * @param initialOrder Variables in the order will be kept as close to this initial order as possible, either the
@@ -119,8 +170,8 @@ public class Paths implements TetradSerializable {
             Node x;
             do {
                 if (itr.hasNext()) x = itr.next();
-                else throw new IllegalArgumentException("The remaining graph does not have valid sink; there " +
-                                                        "could be a directed cycle or a non-chordal undirected cycle.");
+                else
+                    throw new IllegalArgumentException("The remaining graph does not have valid sink; there " + "could be a directed cycle or a non-chordal undirected cycle.");
             } while (invalidSink(x, _graph));
             order.add(x);
             _graph.removeNode(x);
@@ -168,7 +219,7 @@ public class Paths implements TetradSerializable {
      *
      * @return true if the graph is a legal CPDAG, false otherwise.
      */
-    public boolean isLegalCpdag() {
+    public synchronized boolean isLegalCpdag() {
         Graph g = this.graph;
 
         for (Edge e : g.getEdges()) {
@@ -181,9 +232,8 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            MsepTest msepTest = new MsepTest(g);
-            Graph dag = getDag(pi, msepTest);
-            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+            Graph dag = getDag(pi, g/*GraphTransforms.dagFromCpdag(g)*/, false);
+            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
@@ -193,9 +243,11 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given Multi-Parent Directed Acyclic Graph (MPDAG) is legal. A MPDAG is considered legal if it is
-     * equivalent to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for maximum
-     * orientation.
+     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (MPDAG). A MPDAG is considered legal
+     * if it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
+     * maximum orientation. The test is performed by attemping to convert the graph to a CPDAG using the DAG to CPDAG
+     * transformation and testing whether that graph is a legal CPDAG. Finally, we test to see whether the obtained
+     * graph is equal to the original graph.
      *
      * @return true if the MPDAG is legal, false otherwise.
      */
@@ -212,14 +264,59 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            MsepTest msepTest = new MsepTest(g);
-            Graph dag = getDag(pi, msepTest);
-            Graph cpdag = GraphTransforms.cpdagForDag(dag);
-
+            Graph dag = getDag(pi, g, false);
+            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             Graph _g = new EdgeListGraph(g);
-            _g = GraphTransforms.cpdagForDag(_g);
+            _g = GraphTransforms.dagToCpdag(_g);
 
-            return _g.equals(cpdag);
+            boolean equals = _g.equals(cpdag);
+
+            // Check maximality...
+            if (equals) {
+                Graph __g = new EdgeListGraph(g);
+                MeekRules meekRules = new MeekRules();
+                meekRules.setRevertToUnshieldedColliders(false);
+                meekRules.orientImplied(__g);
+                return g.equals(__g);
+            }
+
+            return false;
+        } catch (Exception e) {
+            // There was no valid sink.
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the given Maximal Ancestral Graph (MPAG) is legal. A MPAG is considered legal if it is equal to a PAG
+     * where additional edges have been oriented by Knowledge, with final FCI rules applied for maximum orientation. The
+     * test is performed by attemping to convert the graph to a PAG using the DAG to CPDAG transformation and testing
+     * whether that graph is a legal PAG. Finally, we test to see whether the obtained graph is equal to the original
+     * graph.
+     * <p>
+     * The user may choose to use the rules from Zhang (2008) or the rules from Spirtes et al. (2000).
+     *
+     * @return true if the MPDAG is legal, false otherwise.
+     */
+    public boolean isLegalMpag() {
+        Graph g = this.graph;
+
+        try {
+            Graph pag = GraphTransforms.dagToPag(g);
+
+            if (pag.paths().isLegalPag()) {
+                Graph __g = new DagToPag(graph).convert();
+
+                if (__g.paths().isLegalPag()) {
+                    Graph _g = new EdgeListGraph(g);
+                    FciOrient fciOrient = new FciOrient(new DagSepsets(_g));
+                    fciOrient.zhangFinalOrientation(_g);
+                    return g.equals(_g);
+                }
+            }
+
+            return false;
         } catch (Exception e) {
             // There was no valid sink.
             System.out.println(e.getMessage());
@@ -243,49 +340,6 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() {
         return GraphSearchUtils.isLegalPag(graph).isLegalPag();
-    }
-
-    /**
-     * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
-     *
-     * @param pi   a list of nodes representing the set of vertices in the graph
-     * @param msep the MsepTest instance for determining d-separation relationships
-     * @return a Graph object representing the generated DAG.
-     */
-    private Graph getDag(List<Node> pi, MsepTest msep) {
-        Graph graph = new EdgeListGraph(pi);
-
-        for (int a = 0; a < pi.size(); a++) {
-            for (Node b : getParents(pi, a, msep)) {
-                graph.addDirectedEdge(b, pi.get(a));
-            }
-        }
-
-        return graph;
-    }
-
-    /**
-     * Returns the parents of the node at index p, calculated using Pearl's method.
-     *
-     * @param p The index.
-     * @return The parents, as a Pair object (parents + score).
-     */
-    private Set<Node> getParents(List<Node> pi, int p, MsepTest msep) {
-        Node x = pi.get(p);
-        Set<Node> parents = new HashSet<>();
-        Set<Node> prefix = getPrefix(pi, p);
-
-        for (Node y : prefix) {
-            Set<Node> minus = new HashSet<>(prefix);
-            minus.remove(y);
-            Set<Node> z = new HashSet<>(minus);
-
-            if (msep.checkIndependence(x, y, z).isDependent()) {
-                parents.add(y);
-            }
-        }
-
-        return parents;
     }
 
     /**
@@ -365,13 +419,13 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum length of the paths
      * @return a list of lists containing the directed paths from node1 to node2
      */
-    public List<List<Node>> directedPathsFromTo(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> directedPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        directedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        directedPaths(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void directedPathsFromToVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void directedPaths(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -408,27 +462,27 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            directedPathsFromToVisit(child, node2, path, paths, maxLength);
+            directedPaths(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
     }
 
     /**
-     * <p>semidirectedPathsFromTo.</p>
+     * Finds all semi-directed paths between two nodes up to a maximum length.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxLength a int
-     * @return a {@link java.util.List} object
+     * @param node1     the starting node
+     * @param node2     the ending node
+     * @param maxLength the maximum path length
+     * @return a list of all semi-directed paths between the two nodes
      */
-    public List<List<Node>> semidirectedPathsFromTo(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        semidirectedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        semidirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void semidirectedPathsFromToVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -465,27 +519,27 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            semidirectedPathsFromToVisit(child, node2, path, paths, maxLength);
+            semidirectedPathsVisit(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
     }
 
     /**
-     * <p>allPathsFromTo.</p>
+     * Finds all paths from node1 to node2 within a specified maximum length.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxLength a int
-     * @return a {@link java.util.List} object
+     * @param node1     The starting node.
+     * @param node2     The target node.
+     * @param maxLength The maximum length of the paths.
+     * @return A list of paths, where each path is a list of nodes.
      */
-    public List<List<Node>> allPathsFromTo(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void allPathsFromToVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
@@ -510,27 +564,27 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsFromToVisit(child, node2, path, paths, maxLength);
+            allPathsVisit(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
     }
 
     /**
-     * <p>allDirectedPathsFromTo.</p>
+     * Finds all directed paths from node1 to node2 with a maximum length.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxLength a int
-     * @return a {@link java.util.List} object
+     * @param node1     The starting node.
+     * @param node2     The target node.
+     * @param maxLength The maximum length of the paths.
+     * @return A list of lists of nodes representing the directed paths from node1 to node2.
      */
-    public List<List<Node>> allDirectedPathsFromTo(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> allDirectedPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allDirectedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        allDirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void allDirectedPathsFromToVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void allDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
@@ -556,7 +610,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allDirectedPathsFromToVisit(child, node2, path, paths, maxLength);
+            allDirectedPathsVisit(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
@@ -704,14 +758,14 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>existsDirectedPathFromTo.</p>
+     * Checks if a directed path exists between two nodes within a certain depth.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param depth a int
-     * @return a boolean
+     * @param node1 the first node in the path
+     * @param node2 the second node in the path
+     * @param depth the maximum depth to search for the path
+     * @return true if a directed path exists between the two nodes within the given depth, false otherwise
      */
-    public boolean existsDirectedPathFromTo(Node node1, Node node2, int depth) {
+    public boolean existsDirectedPath(Node node1, Node node2, int depth) {
         return node1 == node2 || existsDirectedPathVisit(node1, node2, new LinkedList<>(), depth);
     }
 
@@ -807,138 +861,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>isMConnectedTo.</p>
+     * Retrieves the set of nodes that are connected to the given node {@code y} and are also present in the set of
+     * nodes {@code z}.
      *
-     * @param x a {@link java.util.Set} object
-     * @param y a {@link java.util.Set} object
-     * @param z a {@link java.util.Set} object
-     * @return a boolean
-     */
-    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
-        Set<Node> ancestors = ancestorsOf(z);
-
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-        Set<OrderedPair<Node>> V = new HashSet<>();
-
-        for (Node _x : x) {
-            for (Node node : graph.getAdjacentNodes(_x)) {
-                if (y.contains(node)) {
-                    return true;
-                }
-                OrderedPair<Node> edge = new OrderedPair<>(_x, node);
-                Q.offer(edge);
-                V.add(edge);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            OrderedPair<Node> t = Q.poll();
-
-            Node b = t.getFirst();
-            Node a = t.getSecond();
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == a) {
-                    continue;
-                }
-
-                boolean collider = graph.isDefCollider(a, b, c);
-                if (!((collider && ancestors.contains(b)) || (!collider && !z.contains(b)))) {
-                    continue;
-                }
-
-                if (y.contains(c)) {
-                    return true;
-                }
-
-                OrderedPair<Node> u = new OrderedPair<>(b, c);
-                if (V.contains(u)) {
-                    continue;
-                }
-
-                V.add(u);
-                Q.offer(u);
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks to see if x and y are d-connected given z.
-     *
-     * @param ancestorMap A map of nodes to their ancestors.
-     * @param x           a {@link java.util.Set} object
-     * @param y           a {@link java.util.Set} object
-     * @param z           a {@link java.util.Set} object
-     * @return True if x and y are d-connected given z.
-     */
-    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
-        if (ancestorMap == null) throw new NullPointerException("Ancestor map cannot be null.");
-
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-        Set<OrderedPair<Node>> V = new HashSet<>();
-
-        for (Node _x : x) {
-            for (Node node : graph.getAdjacentNodes(_x)) {
-                if (y.contains(node)) {
-                    return true;
-                }
-                OrderedPair<Node> edge = new OrderedPair<>(_x, node);
-                Q.offer(edge);
-                V.add(edge);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            OrderedPair<Node> t = Q.poll();
-
-            Node b = t.getFirst();
-            Node a = t.getSecond();
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == a) {
-                    continue;
-                }
-
-                boolean collider = graph.isDefCollider(a, b, c);
-
-                boolean ancestor = false;
-
-                for (Node _z : z) {
-                    if (ancestorMap.get(_z).contains(b)) {
-                        ancestor = true;
-                        break;
-                    }
-                }
-
-                if (!((collider && ancestor) || (!collider && !z.contains(b)))) {
-                    continue;
-                }
-
-                if (y.contains(c)) {
-                    return true;
-                }
-
-                OrderedPair<Node> u = new OrderedPair<>(b, c);
-                if (V.contains(u)) {
-                    continue;
-                }
-
-                V.add(u);
-                Q.offer(u);
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * <p>getMConnectedVars.</p>
-     *
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link java.util.Set} object
+     * @param y The node for which to find the connected nodes.
+     * @param z The set of nodes to be considered for connecting nodes.
+     * @return The set of nodes that are connected to {@code y} and present in {@code z}.
      */
     public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
         Set<Node> Y = new HashSet<>();
@@ -1108,7 +1036,11 @@ public class Paths implements TetradSerializable {
             return true;
         }
 
-        return collider && ancestor;
+        if (collider && ancestor) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1505,8 +1437,8 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
-     * (author Kevin V. Bui (March 2020).
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (author
+     * Kevin V. Bui (March 2020).
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object
@@ -1524,7 +1456,7 @@ public class Paths implements TetradSerializable {
 
 
         // make sure zNodes bock every path between node x and node y that contains an arrow into node x
-        List<List<Node>> directedPaths = allDirectedPathsFromTo(x, y, -1);
+        List<List<Node>> directedPaths = allDirectedPaths(x, y, -1);
         directedPaths.forEach(nodes -> {
             // remove all variables that are not on the back-door path
             nodes.forEach(node -> {
@@ -1534,7 +1466,7 @@ public class Paths implements TetradSerializable {
             });
         });
 
-        return dag.paths().isMSeparatedFrom(x, y, z);
+        return dag.paths().isMSeparatedFrom(x, y, z, false);
     }
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
@@ -1650,12 +1582,14 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
+     * @param x                  a {@link Node} object
+     * @param y                  a {@link Node} object
+     * @param z                  a {@link Set} object
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean allowSelectionBias) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1712,6 +1646,18 @@ public class Paths implements TetradSerializable {
                         return true;
                     }
 
+                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+                    // jdramsey 2024-04-14
+                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
+                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                    }
+
                     EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
@@ -1728,13 +1674,15 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z         a {@link java.util.Set} object
-     * @param ancestors a {@link java.util.Map} object
+     * @param x                  a {@link Node} object
+     * @param y                  a {@link Node} object
+     * @param z                  a {@link Set} object
+     * @param ancestors          a {@link Map} object
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1789,6 +1737,18 @@ public class Paths implements TetradSerializable {
                 if (reachable(edge1, edge2, a, z, ancestors)) {
                     if (c == y) {
                         return true;
+                    }
+
+                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+                    // jdramsey 2024-04-14
+                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
+                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                     }
 
                     EdgeNode u = new EdgeNode(edge2, b);
@@ -1850,8 +1810,7 @@ public class Paths implements TetradSerializable {
 
             return visibleEdgeHelper(A, B);
         } else {
-            throw new IllegalArgumentException(
-                    "Given edge is not in the graph.");
+            throw new IllegalArgumentException("Given edge is not in the graph.");
         }
     }
 
@@ -1923,7 +1882,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
-            if (existsDirectedPathFromTo(node, node)) {
+            if (existsDirectedPath(node, node)) {
                 TetradLogger.getInstance().forceLogMessage("Cycle found at node " + node.getName() + ".");
                 return true;
             }
@@ -1932,13 +1891,13 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>existsDirectedPathFromTo.</p>
+     * Checks if a directed path exists between two nodes in a graph.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return true iff there is a (nonempty) directed path from node1 to node2. a
+     * @param node1 the starting node of the path
+     * @param node2 the target node of the path
+     * @return true if a directed path exists from node1 to node2, false otherwise
      */
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
+    public boolean existsDirectedPath(Node node1, Node node2) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
@@ -1992,10 +1951,28 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>getDescendants.</p>
+     * Returns a list of all descendants of the given node.
      *
-     * @param nodes a {@link java.util.List} object
-     * @return a {@link java.util.List} object
+     * @param node The node for which to find descendants.
+     * @return A list of all descendant nodes.
+     */
+    public Set<Node> getDescendants(Node node) {
+        Set<Node> descendants = new HashSet<>();
+
+        for (Node n : graph.getNodes()) {
+            if (isDescendentOf(n, node)) {
+                descendants.add(n);
+            }
+        }
+
+        return descendants;
+    }
+
+    /**
+     * Retrieves the descendants of the given list of nodes.
+     *
+     * @param nodes The list of nodes to find descendants for.
+     * @return A list of nodes that are descendants of the given nodes.
      */
     public List<Node> getDescendants(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
@@ -2019,14 +1996,32 @@ public class Paths implements TetradSerializable {
      * @return a boolean
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || existsDirectedPathFromTo(node1, node2);
+        return node1 == node2 || existsDirectedPath(node1, node2);
     }
 
     /**
-     * <p>getAncestors.</p>
+     * Retrieves the ancestors of a specified `Node` in the graph.
      *
-     * @param nodes a {@link java.util.List} object
-     * @return a {@link java.util.List} object
+     * @param node The node whose ancestors are to be retrieved.
+     * @return A list of ancestors for the specified `Node`.
+     */
+    public List<Node> getAncestors(Node node) {
+        Set<Node> ancestors = new HashSet<>();
+
+        for (Node n : graph.getNodes()) {
+            if (isAncestorOf(n, node)) {
+                ancestors.add(n);
+            }
+        }
+
+        return new ArrayList<>(ancestors);
+    }
+
+    /**
+     * Returns a list of all ancestors of the given nodes.
+     *
+     * @param nodes the list of nodes for which to find ancestors
+     * @return a list containing all the ancestors of the given nodes
      */
     public List<Node> getAncestors(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
@@ -2050,7 +2045,7 @@ public class Paths implements TetradSerializable {
      * @return a boolean
      */
     public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || existsDirectedPathFromTo(node2, node1);
+        return node1 == node2 || existsDirectedPath(node2, node1);
     }
 
     /**
@@ -2070,32 +2065,42 @@ public class Paths implements TetradSerializable {
      * every collider on U is an ancestor of some element in Z and every non-collider on U is not in Z. Two elements are
      * d-separated just in case they are not d-connected. A collider is a node which two edges hold in common for which
      * the endpoints leading into the node are both arrow endpoints.
+     * <p>
+     * Precondition: This graph is a DAG. Please don't violate this constraint; weird things can happen!
      *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @param z     the conditioning set.
+     * @param node1              the first node.
+     * @param node2              the second node.
+     * @param z                  the conditioning set.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X-&gt;L&lt;-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
-     * @see #isMConnectedTo
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z) {
-        return !isMConnectedTo(node1, node2, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
+        return !isMConnectedTo(node1, node2, z, allowSelectionBias);
     }
 
     /**
-     * <p>isMSeparatedFrom.</p>
+     * Checks if two nodes are M-separated.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z         a {@link java.util.Set} object
-     * @param ancestors a {@link java.util.Map} object
-     * @return a boolean
+     * @param node1              The first node.
+     * @param node2              The second node.
+     * @param z                  The set of nodes to be excluded from the path.
+     * @param ancestors          A map containing the ancestors of each node.
+     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     *                           treated as X-&gt;L&lt;-Y.
+     * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        return !isMConnectedTo(node1, node2, z, ancestors);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        return !isMConnectedTo(node1, node2, z, ancestors, allowSelectionBias);
     }
 
     /**
-     * @return true iff there is a semi-directed path from node1 to node2
+     * Checks if a semi-directed path exists between the given node and any of the nodes in the provided set.
+     *
+     * @param node1  The starting node for the path.
+     * @param nodes2 The set of nodes to check for a path.
+     * @param path   The current path (used for cycle detection).
+     * @return {@code true} if a semi-directed path exists, {@code false} otherwise.
      */
     private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2, LinkedList<Node> path) {
         path.addLast(node1);
@@ -2125,13 +2130,13 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>isDirectedFromTo.</p>
+     * Checks if there is a directed edge from node1 to node2 in the graph.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
+     * @param node1 the source node
+     * @param node2 the destination node
+     * @return true if there is a directed edge from node1 to node2, false otherwise
      */
-    public boolean isDirectedFromTo(Node node1, Node node2) {
+    public boolean isDirected(Node node1, Node node2) {
         List<Edge> edges = graph.getEdges(node1, node2);
         if (edges.size() != 1) {
             return false;
@@ -2141,13 +2146,13 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>isUndirectedFromTo.</p>
+     * Checks if the edge between two nodes in the graph is undirected.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return true if the edge is undirected, false otherwise
      */
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
+    public boolean isUndirected(Node node1, Node node2) {
         Edge edge = graph.getEdge(node1, node2);
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
@@ -2161,6 +2166,16 @@ public class Paths implements TetradSerializable {
      */
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPath(node1, Collections.singleton(node2));
+    }
+
+    /**
+     * Returns the set of nodes that are in the anteriority of the given nodes in the graph.
+     *
+     * @param X the nodes for which the anteriority needs to be determined
+     * @return the set of nodes in the anteriority of the given nodes
+     */
+    public Set<Node> anteriority(Node... X) {
+        return GraphUtils.anteriority(graph, X);
     }
 
     /**
@@ -2181,13 +2196,7 @@ public class Paths implements TetradSerializable {
          * @param args the command-line arguments
          */
         public static void main(String[] args) {
-            int[][] graph = {
-                    {0, 1, 1, 0, 0},
-                    {1, 0, 1, 1, 0},
-                    {1, 1, 0, 1, 1},
-                    {0, 1, 1, 0, 1},
-                    {0, 0, 1, 1, 0}
-            };
+            int[][] graph = {{0, 1, 1, 0, 0}, {1, 0, 1, 1, 0}, {1, 1, 0, 1, 1}, {0, 1, 1, 0, 1}, {0, 0, 1, 1, 0}};
             int n = graph.length;
 
             List<List<Integer>> cliques = findCliques(graph, n);
@@ -2219,9 +2228,7 @@ public class Paths implements TetradSerializable {
             return cliques;
         }
 
-        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
-                                         Set<Integer> excluded, Set<Integer> included,
-                                         List<List<Integer>> cliques) {
+        private static void bronKerbosch(int[][] graph, Set<Integer> candidates, Set<Integer> excluded, Set<Integer> included, List<List<Integer>> cliques) {
             if (candidates.isEmpty() && excluded.isEmpty()) {
                 cliques.add(new ArrayList<>(included));
                 return;
@@ -2236,10 +2243,7 @@ public class Paths implements TetradSerializable {
                     }
                 }
 
-                bronKerbosch(graph, intersect(candidates, neighbors),
-                        intersect(excluded, neighbors),
-                        union(included, vertex),
-                        cliques);
+                bronKerbosch(graph, intersect(candidates, neighbors), intersect(excluded, neighbors), union(included, vertex), cliques);
 
                 candidates.remove(vertex);
                 excluded.add(vertex);

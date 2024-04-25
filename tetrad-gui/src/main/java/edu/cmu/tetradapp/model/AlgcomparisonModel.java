@@ -33,6 +33,7 @@ import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -72,6 +73,11 @@ public class AlgcomparisonModel implements SessionModel {
      * The results path for the AlgcomparisonModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
+    /**
+     * The suppliedGraph variable represents a graph that can be supplied by the user.
+     * This graph will be given as an option in the user interface.
+     */
+    private Graph suppliedGraph  = null;
     /**
      * The list of statistic names.
      */
@@ -127,6 +133,12 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public AlgcomparisonModel(Parameters parameters) {
         this.parameters = parameters;
+        initializeIfNull();
+    }
+
+    public AlgcomparisonModel(GraphSource graphSource, Parameters parameters) {
+        this.parameters = new Parameters();
+        this.suppliedGraph = graphSource.getGraph();
         initializeIfNull();
     }
 
@@ -798,6 +810,13 @@ public class AlgcomparisonModel implements SessionModel {
 
     public List<AlgorithmModel> getSelectedAlgorithmModels() {
         return new ArrayList<>(selectedAlgorithmModels);
+    }
+
+    /**
+     * The user may supply a graph, which will be given as an option in the UI.
+     */
+    public Graph getSuppliedGraph() {
+        return suppliedGraph;
     }
 
     public static class MyTableColumn {

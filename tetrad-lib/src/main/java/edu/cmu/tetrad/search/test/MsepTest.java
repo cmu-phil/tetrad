@@ -77,6 +77,10 @@ public class MsepTest implements IndependenceTest {
      * The "p-value" of the last test (this is 0 or 1).
      */
     private double pvalue = 0;
+    /**
+     * Whether there are any latents.
+     */
+    private boolean hasLatents = false;
 
     /**
      * Constructor.
@@ -128,6 +132,13 @@ public class MsepTest implements IndependenceTest {
         this.ancestorMap = graph.paths().getAncestorMap();
         this._observedVars = calcVars(graph.getNodes(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
+        this.hasLatents = false;
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                this.hasLatents = true;
+                break;
+            }
+        }
     }
 
     /**
@@ -147,6 +158,13 @@ public class MsepTest implements IndependenceTest {
 
         this._observedVars = calcVars(facts.getVariables(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
+        this.hasLatents = false;
+        for (Node node : facts.getVariables()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                this.hasLatents = true;
+                break;
+            }
+        }
     }
 
     /**
@@ -238,7 +256,7 @@ public class MsepTest implements IndependenceTest {
         boolean mSeparated;
 
         if (graph != null) {
-            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap);
+            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, false);
         } else {
             mSeparated = independenceFacts.isIndependent(x, y, z);
         }
@@ -289,7 +307,7 @@ public class MsepTest implements IndependenceTest {
             }
         }
 
-        return getGraph().paths().isMSeparatedFrom(x, y, z, ancestorMap);
+        return getGraph().paths().isMSeparatedFrom(x, y, z, ancestorMap, hasLatents);
     }
 
     /**

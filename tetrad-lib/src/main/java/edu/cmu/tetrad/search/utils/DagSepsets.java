@@ -87,8 +87,16 @@ public class DagSepsets implements SepsetProducer {
      * check.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        return this.dag.paths().isMSeparatedFrom(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        return this.dag.paths().isMSeparatedFrom(a, b, sepset, false);
+    }
+
+    /**
+     * @throws UnsupportedOperationException if this method is called.
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        throw new UnsupportedOperationException("This makes not sense for this subclass.");
     }
 
     /**

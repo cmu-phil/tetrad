@@ -57,34 +57,34 @@ public class PagColorer extends JCheckBoxMenuItem {
         addItemListener(e -> {
             _workbench.setDoPagColoring(isSelected());
 
-            if (isSelected()) {
-                int ret = JOptionPane.showConfirmDialog(workbench,
-                        breakDown("Would you like to verify that this is a legal PAG?", 60),
-                        "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (ret == JOptionPane.YES_OPTION) {
-                    class MyWatchedProcess extends WatchedProcess {
-                        @Override
-                        public void watch() {
-                            Graph graph = new EdgeListGraph(workbench.getGraph());
-
-                            GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
-                            String reason = breakDown(legalPag.getReason(), 60);
-
-                            if (!legalPag.isLegalPag()) {
-                                JOptionPane.showMessageDialog(workbench,
-                                        "This is not a legal PAG--one reason is as follows:" +
-                                        "\n\n" + reason + ".",
-                                        "Legal PAG check",
-                                        JOptionPane.WARNING_MESSAGE);
-                            } else {
-                                JOptionPane.showMessageDialog(workbench, reason);
-                            }
-                        }
-                    }
-
-                    new MyWatchedProcess();
-                }
-            }
+//            if (isSelected()) {
+//                int ret = JOptionPane.showConfirmDialog(workbench,
+//                        breakDown("Would you like to verify that this is a legal PAG?", 60),
+//                        "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+//                if (ret == JOptionPane.YES_OPTION) {
+//                    class MyWatchedProcess extends WatchedProcess {
+//                        @Override
+//                        public void watch() {
+//                            Graph graph = new EdgeListGraph(workbench.getGraph());
+//
+//                            GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
+//                            String reason = breakDown(legalPag.getReason(), 60);
+//
+//                            if (!legalPag.isLegalPag()) {
+//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+//                                        "This is not a legal PAG--one reason is as follows:" +
+//                                        "\n\n" + reason + ".",
+//                                        "Legal PAG check",
+//                                        JOptionPane.WARNING_MESSAGE);
+//                            } else {
+//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
+//                            }
+//                        }
+//                    }
+//
+//                    new MyWatchedProcess();
+//                }
+//            }
         });
     }
 

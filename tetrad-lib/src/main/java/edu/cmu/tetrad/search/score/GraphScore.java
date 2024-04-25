@@ -199,7 +199,7 @@ public class GraphScore implements Score {
         boolean dSeparatedFrom;
 
         if (dag != null) {
-            dSeparatedFrom = dag.paths().isMSeparatedFrom(_x, _y, _z);
+            dSeparatedFrom = dag.paths().isMSeparatedFrom(_x, _y, _z, false);
         } else if (facts != null) {
             dSeparatedFrom = facts.isIndependent(_x, _y, _z);
         } else {
@@ -211,7 +211,7 @@ public class GraphScore implements Score {
 
     private boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
         if (dag != null) {
-            return dag.paths().isMSeparatedFrom(x, y, z);
+            return dag.paths().isMSeparatedFrom(x, y, z, false);
         } else if (facts != null) {
             return facts.isIndependent(x, y, z);
         }

@@ -124,7 +124,7 @@ public class RandomGraph {
         }
 
         if (numLatentConfounders < 0 || numLatentConfounders > numNodes) {
-            throw new IllegalArgumentException("Max # latent confounders must be " + "at least 0 and at most the number of nodes: " + numLatentConfounders);
+            throw new IllegalArgumentException("Number of additional latent confounders must be " + "at least 0 and at most the number of nodes: " + numLatentConfounders);
         }
 
         for (Node node : nodes) {

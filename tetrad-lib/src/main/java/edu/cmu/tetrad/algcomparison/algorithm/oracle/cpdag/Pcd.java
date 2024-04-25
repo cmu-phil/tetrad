@@ -76,7 +76,7 @@ public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.cpdagForDag(graph);
+        return GraphTransforms.dagToCpdag(graph);
     }
 
     /**

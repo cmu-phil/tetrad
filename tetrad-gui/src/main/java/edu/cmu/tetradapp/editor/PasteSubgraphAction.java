@@ -50,7 +50,7 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
      * @param graphEditor a {@link edu.cmu.tetradapp.editor.GraphEditable} object
      */
     public PasteSubgraphAction(GraphEditable graphEditor) {
-        super("Paste Selected Graph");
+        super("Paste Selected Items");
 
         if (graphEditor == null) {
             throw new NullPointerException("Desktop must not be null.");

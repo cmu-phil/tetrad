@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 import org.apache.commons.math3.util.FastMath;
@@ -197,6 +198,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private final LinkedList<Graph> graphStack = new LinkedList<>();
+    private final LinkedList<Graph> redoStack = new LinkedList<>();
 
     // ==============================CONSTRUCTOR============================//
 
@@ -280,12 +283,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         for (DisplayNode graphNode : graphNodes) {
             removeNode(graphNode);
+            modelNodesToDisplay.remove(graphNode.getModelNode());
         }
 
         for (IDisplayEdge displayEdge : graphEdges) {
             try {
                 removeEdge(displayEdge);
                 resetEdgeOffsets(displayEdge);
+                modelEdgesToDisplay.remove(displayEdge.getModelEdge());
             } catch (Exception e) {
                 if (isNodeEdgeErrorsReported()) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
@@ -374,6 +379,61 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         registerKeys();
         firePropertyChange("graph", null, graph);
         firePropertyChange("modelChanged", null, null);
+    }
+
+    public void undo() {
+        if (graph == null) {
+            return;
+        }
+
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
+        Graph oldGraph = new EdgeListGraph(graph);
+
+        do {
+            if (graphStack.isEmpty()) {
+                break;
+            }
+
+            Graph graph = graphStack.removeLast();
+            setGraph(graph);
+            redoStack.add(graph);
+        } while (graph.equals(oldGraph));
+    }
+
+    public void redo() {
+        if (graph == null) {
+            return;
+        }
+
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
+        Graph oldGraph = new EdgeListGraph(graph);
+
+        do {
+            if (redoStack.isEmpty()) {
+                break;
+            }
+
+            Graph graph = redoStack.removeLast();
+            setGraph(graph);
+        } while (graph.equals(oldGraph));
+    }
+
+    public void setToOriginal() {
+        if (graphStack.size() == 1) {
+            return;
+        }
+
+        Graph graph = graphStack.get(0);
+        for (int i = 1; i < new LinkedList<>(graphStack).size(); i++) {
+            graphStack.remove(graphStack.get(i));
+        }
+        setGraph(graph);
     }
 
     /**
@@ -1024,7 +1084,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Returns a new tracking edge for the given display node and mouse location.
      *
      * @param displayNode The display node to create the tracking edge for. Must not be null.
-     * @param mouseLoc The location of the mouse pointer. Must not be null.
+     * @param mouseLoc    The location of the mouse pointer. Must not be null.
      * @return The new tracking edge for the given display node and mouse location.
      */
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
@@ -1036,6 +1096,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private void setGraphWithoutNotify(Graph graph) {
         if (graph == null) {
             throw new IllegalArgumentException("Graph model cannot be null.");
+        }
+
+        if (!graph.equals(getGraph())) {
+            this.graphStack.addLast(new EdgeListGraph(graph));
         }
 
         this.graph = graph;
@@ -1088,6 +1152,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         revalidate();
         repaint();
+    }
+
+    private void addLast(Graph graph) {
+        if (graph instanceof SessionWrapper) {
+            return;
+        }
+
+        this.graphStack.addLast(new EdgeListGraph(graph));
     }
 
     /**
@@ -2400,11 +2472,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), nextEndpoint, edge.getEndpoint2());
@@ -2413,11 +2485,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint1(), nextEndpoint);
@@ -2887,15 +2959,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             if ("nodeAdded".equals(propName)) {
                 this.workbench.addNode((Node) newValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("nodeRemoved".equals(propName)) {
                 this.workbench.removeNode((Node) oldValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeAdded".equals(propName)) {
                 this.workbench.addEdge((Edge) newValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeRemoved".equals(propName)) {
                 this.workbench.removeEdge((Edge) oldValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeLaunch".equals(propName)) {
                 System.out.println("Attempt to launch edge.");
             } else if ("deleteNode".equals(propName)) {
+                addLast(workbench.getGraph());
+
                 Object node = e.getSource();
 
                 if (node instanceof DisplayNode) {
@@ -2907,6 +2989,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     this.workbench.selectNode((GraphNode) node);
                     this.workbench.deleteSelectedObjects();
                 }
+
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("cloneMe".equals(propName)) {
                 AbstractWorkbench.this.firePropertyChange("cloneMe", e.getOldValue(), e.getNewValue());
             }

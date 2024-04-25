@@ -705,7 +705,7 @@ public class Comparison implements TetradSerializable {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(GraphTransforms.cpdagForDag(graph), file3, false);
+                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToCpdag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -806,7 +806,7 @@ public class Comparison implements TetradSerializable {
 
                 if (isSaveCPDAGs()) {
                     File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                    GraphSaveLoadUtils.saveGraph(GraphTransforms.cpdagForDag(graph), file3, false);
+                    GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToCpdag(graph), file3, false);
                 }
 
                 if (isSavePags()) {
@@ -1398,7 +1398,7 @@ public class Comparison implements TetradSerializable {
             if (this.comparisonGraph == ComparisonGraph.true_DAG) {
                 comparisonGraph = new EdgeListGraph(trueGraph);
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
-                comparisonGraph = GraphTransforms.cpdagForDag(trueGraph);
+                comparisonGraph = GraphTransforms.dagToCpdag(trueGraph);
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
                 comparisonGraph = GraphTransforms.dagToPag(trueGraph);
             } else {

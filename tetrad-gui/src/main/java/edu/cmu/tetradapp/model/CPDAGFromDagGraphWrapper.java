@@ -21,13 +21,14 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
+
+import javax.swing.*;
 
 /**
  * <p>CpdagFromDagGraphWrapper class.</p>
@@ -58,11 +59,9 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     public CPDAGFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
-        // make sure the given graph is a dag.
-        try {
-            new Dag(graph);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("The source graph is not a DAG.");
+        if (!graph.paths().isLegalDag()) {
+            JOptionPane.showMessageDialog(null, "The source graph is not a DAG.",
+                    null, JOptionPane.WARNING_MESSAGE);
         }
 
         Graph cpdag = CPDAGFromDagGraphWrapper.getCpdag(new EdgeListGraph(graph));
@@ -85,7 +84,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
 
 
     private static Graph getCpdag(Graph graph) {
-        return GraphTransforms.cpdagForDag(graph);
+        return GraphTransforms.dagToCpdag(graph);
     }
 
     /**

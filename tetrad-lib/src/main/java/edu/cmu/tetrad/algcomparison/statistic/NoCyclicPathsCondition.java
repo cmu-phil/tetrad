@@ -28,7 +28,7 @@ public class NoCyclicPathsCondition implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "NoCyclic";
+        return "NoCyclicPaths";
     }
 
     /**
@@ -47,7 +47,7 @@ public class NoCyclicPathsCondition implements Statistic {
         Graph pag = estGraph;
 
         for (Node n : pag.getNodes()) {
-            if (pag.paths().existsDirectedPathFromTo(n, n)) {
+            if (pag.paths().existsDirectedPath(n, n)) {
                 return 0;
             }
         }

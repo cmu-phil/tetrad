@@ -161,7 +161,7 @@ public final class HbsmsBeam implements Hbsms {
 
         if (this.trueModel != null) {
             this.trueModel = GraphUtils.replaceNodes(this.trueModel, bestGraph.getNodes());
-            this.trueModel = GraphTransforms.cpdagForDag(this.trueModel);
+            this.trueModel = GraphTransforms.dagToCpdag(this.trueModel);
         }
 
         System.out.println("Initial Score = " + this.nf.format(bestScore));

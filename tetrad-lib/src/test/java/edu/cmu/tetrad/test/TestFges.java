@@ -197,7 +197,7 @@ public class TestFges {
         alg.setFaithfulnessAssumed(true);
         Graph estCPDAG = alg.search();
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphTransforms.dagToCpdag(dag);
 
         estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
@@ -242,7 +242,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
     @Test
@@ -250,7 +250,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
     @Test
@@ -259,7 +259,7 @@ public class TestFges {
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
     @Test
@@ -599,7 +599,7 @@ public class TestFges {
             fges.setVerbose(true);
             fges.setNumThreads(1);
             Graph CPDAG1 = fges.search();
-            Graph CPDAG2 = GraphTransforms.cpdagForDag(dag);
+            Graph CPDAG2 = GraphTransforms.dagToCpdag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
     }

@@ -307,7 +307,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
-        this.graphs.add(new EdgeListGraph(graph));
+        this.graphs.add(graph);
         //       log();
     }
 

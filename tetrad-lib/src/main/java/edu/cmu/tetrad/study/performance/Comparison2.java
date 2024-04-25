@@ -152,18 +152,18 @@ public class Comparison2 {
                 Pc search = new Pc(test);
                 result.setResultGraph(search.search());
                 Graph dag = new EdgeListGraph(trueDag);
-                result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+                result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
                 Cpc search = new Cpc(test);
                 result.setResultGraph(search.search());
                 Graph dag = new EdgeListGraph(trueDag);
-                result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+                result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
                 Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
                 Graph dag = new EdgeListGraph(trueDag);
-                result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+                result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
@@ -390,7 +390,7 @@ public class Comparison2 {
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
@@ -398,7 +398,7 @@ public class Comparison2 {
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) {
                 throw new IllegalArgumentException("Score not set.");
@@ -407,7 +407,7 @@ public class Comparison2 {
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");

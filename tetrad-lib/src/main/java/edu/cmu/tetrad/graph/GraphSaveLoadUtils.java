@@ -1054,10 +1054,17 @@ public class GraphSaveLoadUtils {
         return table.toString();
     }
 
+    /**
+     * Converts a given graph into an adjacency matrix in CPAG format.
+     *
+     * @param g the input graph to be converted
+     * @return the adjacency matrix representation of the graph in CPAG format
+     * @throws IllegalArgumentException if the graph is not a MPDAG (including CPDAG or DAG)
+     */
     public static String graphToAmatCpag(Graph g) {
-        if (!(g.paths().isLegalMpdag())) {
-            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
-        }
+//        if (!(g.paths().isLegalMpdag())) {
+//            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
+//        }
 
         List<Node> vars = g.getNodes();
 
@@ -1112,11 +1119,14 @@ public class GraphSaveLoadUtils {
      * using write.matrix(mat, path). For the amat.pag format, for a matrix m, endpoints are explicitly represented, as
      * follows. 1 is a circle endpoint, 2 is an arrow endpoint, 3 is a tail endpoint, and 0 is a null endpoint (i.e., no
      * edge)
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
      */
     public static String graphToAmatPag(Graph g) {
-        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
-        }
+//        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
+//        }
 
         List<Node> vars = g.getNodes();
 

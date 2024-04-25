@@ -217,7 +217,7 @@ public class TestPc {
             MsepTest test = new MsepTest(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphTransforms.cpdagForDag(graph);
+            Graph CPDAG2 = GraphTransforms.dagToCpdag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }
@@ -399,7 +399,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.TAIL) {
-                    if (dag.paths().existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                    if (dag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -409,7 +409,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.TAIL) {
-                    if (dag.paths().existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                    if (dag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
                         tailsTp++;
                     } else {
                         tailsFp++;

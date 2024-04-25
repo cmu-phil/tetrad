@@ -39,15 +39,17 @@ import java.util.prefs.Preferences;
 class LoadGraphAmatPag extends AbstractAction {
 
     /**
-     * The component whose image is to be saved.
+     * The {@code GraphEditable} variable represents an interface for graph editors. It is used to load a graph into a
+     * {@code GraphEditable} object. The variable is of type {@code GraphEditable} and is final, meaning it cannot be
+     * reassigned once initialized.
      */
     private final GraphEditable graphEditable;
 
     /**
-     * <p>Constructor for LoadGraphPcalg.</p>
+     * Loads a graph in the "amat.pag" format used by PCALG.
      *
-     * @param graphEditable a {@link GraphEditable} object
-     * @param title         a {@link String} object
+     * @param graphEditable The GraphEditable object to load the graph into.
+     * @param title         The title of the action.
      */
     public LoadGraphAmatPag(GraphEditable graphEditable, String title) {
         super(title);
@@ -59,6 +61,11 @@ class LoadGraphAmatPag extends AbstractAction {
         this.graphEditable = graphEditable;
     }
 
+    /**
+     * Returns a JFileChooser object with specific configurations.
+     *
+     * @return a JFileChooser object
+     */
     private static JFileChooser getJFileChooser() {
         JFileChooser chooser = new JFileChooser();
         String sessionSaveLocation =
@@ -70,9 +77,9 @@ class LoadGraphAmatPag extends AbstractAction {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the action of loading a session from a file.
+     * Performs an action in response to an event.
+     *
+     * @param e the ActionEvent that triggered the action
      */
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraphAmatPag.getJFileChooser();

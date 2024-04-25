@@ -64,6 +64,14 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     /**
+     * @throws UnsupportedOperationException if this method is called
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        throw new UnsupportedOperationException("This makes not sense for this subclass.");
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -77,8 +85,8 @@ public class SepsetsSet implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.test.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
     }
