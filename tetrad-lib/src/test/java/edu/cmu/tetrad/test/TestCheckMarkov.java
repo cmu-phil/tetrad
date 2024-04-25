@@ -186,7 +186,7 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testPrecisionRecallForLocalOnParents() {
+    public void testDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
