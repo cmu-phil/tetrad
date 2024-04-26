@@ -26,10 +26,7 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -96,9 +93,9 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG.
-     * Target Node is not included in the result graph's nodes list.
-     * Edges including the target node is included in the result graph's edges list.
+     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG. Target Node
+     * is not included in the result graph's nodes list. Edges including the target node is included in the result
+     * graph's edges list.
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
@@ -128,10 +125,9 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the subgraph over the Markov blanket of a target node for a DAG, CPDAG, MAG, or PAG.
-     * This is not necessarily minimal (i.e. not necessarily a Markov Boundary).
-     * Target Node is included in the result graph's nodes list.
-     * Edges including the target node is included in the result graph's edges list.
+     * Calculates the subgraph over the Markov blanket of a target node for a DAG, CPDAG, MAG, or PAG. This is not
+     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
+     * list. Edges including the target node is included in the result graph's edges list.
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
@@ -144,26 +140,7 @@ public final class GraphUtils {
         Graph res = g.subgraph(new ArrayList<>(mbNodes));
 //        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
 //        System.out.println("Graph result: " + res);
-        return  res;
-    }
-
-    /**
-     * Calculates the subgraph over the parents of a target node.
-     * Target Node is included in the result graph's nodes list.
-     * Edges including the target node is included in the result graph's edges list.
-     *
-     * @param target a node in the given graph.
-     * @param graph
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public static Graph getParentsSubgraphWithTargetNode(Graph graph, Node target) {
-        EdgeListGraph g = new EdgeListGraph(graph);
-        List<Node> parents = g.getParents(target);
-        parents.add(target);
-        Graph res = g.subgraph(new ArrayList<>(parents));
-//        System.out.println( target + " Node's Parents list: " + res.getNodes());
-//        System.out.println("Graph result: " + res);
-        return  res;
+        return res;
     }
 
     /**
@@ -1875,8 +1852,9 @@ public final class GraphUtils {
      * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
      * @param nodes          The nodes in the graph.
      * @param sepsets        A SepsetProducer that will do the sepset search operation described.
+     * @param verbose
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1903,6 +1881,12 @@ public final class GraphUtils {
                     Set<Node> sepset = sepsets.getSepset(a, c);
                     if (sepset != null) {
                         graph.removeEdge(a, c);
+
+                        if (verbose) {
+                            double pValue = sepsets.getPValue(a, c, sepset);
+                            TetradLogger.getInstance().forceLogMessage("Removed edge " + a + " -- " + c
+                                                                       + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                        }
                     }
                 }
             }
@@ -2444,8 +2428,10 @@ public final class GraphUtils {
      * @param referenceCpdag The reference CPDAG to guide the orientation of edges.
      * @param sepsets        The sepsets used to determine the orientation of edges.
      * @param knowledge      The knowledge used to determine the orientation of edges.
+     * @param verbose
      */
-    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
+    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge,
+                              boolean verbose) {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         fciOrientbk(knowledge, graph, graph.getNodes());
@@ -2466,15 +2452,26 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (referenceCpdag.isDefCollider(a, b, c) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                if (referenceCpdag.isDefCollider(a, b, c)
+                    && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                    && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
+                    && !graph.isAdjacentTo(a, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Oriented edge " + a + " *-> " + b + " <-* " + c + " (from score search)).");
+                    }
                 } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().forceLogMessage("Oriented edge " + a + " *-> " + b + " <-* " + c + " (from from test, sepset = " + sepset + ").");
+                        }
                     }
                 }
             }

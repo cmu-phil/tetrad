@@ -129,9 +129,23 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node d, Node c, Set<Node> path) {
-        IndependenceResult result = this.test.checkIndependence(d, c, path);
+    public boolean isIndependent(Node d, Node c, Set<Node> sepset) {
+        IndependenceResult result = this.test.checkIndependence(d, c, sepset);
         return result.isIndependent();
+    }
+
+    /**
+     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     *
+     * @param a      the first node
+     * @param b      the second node
+     * @param sepset the set of separator nodes
+     * @return the p-value for the independence test
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.test.checkIndependence(a, b, sepset);
+        return result.getPValue();
     }
 
     private Set<Node> getCondSet(Node node1, Node node2, int maxPathLength) {

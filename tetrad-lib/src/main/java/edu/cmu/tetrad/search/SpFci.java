@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -167,19 +168,33 @@ public final class SpFci implements IGraphSearch {
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
+//        // GFCI extra edge removal step...
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+//        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
+//        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//
+//        FciOrient fciOrient = new FciOrient(sepsets);
+//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+//        fciOrient.setMaxPathLength(this.maxPathLength);
+//        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+//        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(knowledge);
 
         // GFCI extra edge removal step...
-        gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
-        modifiedR0(referenceDag, sepsets);
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        Graph referencePag = independenceTest instanceof MsepTest ? ((MsepTest) independenceTest).getGraph() : graph;
+        FciOrient fciOrient = new FciOrient(new DagSepsets(referencePag));
+
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
 

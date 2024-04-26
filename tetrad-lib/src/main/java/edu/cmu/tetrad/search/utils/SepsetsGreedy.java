@@ -95,10 +95,24 @@ public class SepsetsGreedy implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
+    }
+
+    /**
+     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     *
+     * @param a      the first node
+     * @param b      the second node
+     * @param sepset the set of separator nodes
+     * @return the p-value for the independence test
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
+        return result.getPValue();
     }
 
     /**

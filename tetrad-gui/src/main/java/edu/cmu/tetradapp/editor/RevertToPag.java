@@ -21,13 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.statistic.LegalPag;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -78,15 +73,17 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
             return;
         }
 
-        if (graph.paths().isLegalDag() || graph.paths().isLegalCpdag() || graph.paths().isLegalMpdag()) {
-            workbench.setGraph(new DagToPag(graph).convert());
-        } else if (graph.paths().isLegalMpag()) {
-            workbench.setGraph(new MagToPag(graph).convert());
-        } else if (graph.paths().isLegalPag()) {
-            JOptionPane.showMessageDialog(this.workbench, "Graph is already a PAG.");
-        } else {
-            JOptionPane.showMessageDialog(this.workbench, "Graph is not a legal DAG, CPDAG, MPDAG, MAG or PAG.");
-        }
+        workbench.setGraph(new DagToPag(graph).convert());
+
+//        if (graph.paths().isLegalDag() || graph.paths().isLegalCpdag() || graph.paths().isLegalMpdag()) {
+//            workbench.setGraph(new DagToPag(graph).convert());
+//        } else if (graph.paths().isLegalMpag()) {
+//            workbench.setGraph(new DagToPag(graph).convert());
+//        } else if (graph.paths().isLegalPag()) {
+//            JOptionPane.showMessageDialog(this.workbench, "Graph is already a PAG.");
+//        } else {
+//            JOptionPane.showMessageDialog(this.workbench, "Graph is not a legal DAG, CPDAG, MPDAG, MAG or PAG.");
+//        }
     }
 
     /**
