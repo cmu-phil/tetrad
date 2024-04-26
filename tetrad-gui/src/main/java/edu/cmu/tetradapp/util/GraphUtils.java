@@ -265,7 +265,7 @@ public class GraphUtils {
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
         JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
         JMenuItem randomDagInCpdag = new JMenuItem(new PickRandomDagInCpdagAction(workbench));
-        JMenuItem randomMagInPag = new JMenuItem(new PickRandomMagInPagAction(workbench));
+//        JMenuItem randomMagInPag = new JMenuItem(new PickRandomMagInPagAction(workbench));
         JMenuItem zhangMagInPag = new JMenuItem(new PickZhangMagInPagAction(workbench));
         JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
         JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
@@ -289,7 +289,7 @@ public class GraphUtils {
 
         transformGraph.add(runFinalFciRules);
         transformGraph.add(revertToPag);
-        transformGraph.add(randomMagInPag);
+//        transformGraph.add(randomMagInPag);
         transformGraph.add(zhangMagInPag);
         transformGraph.addSeparator();
 
@@ -308,8 +308,8 @@ public class GraphUtils {
                 KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
         randomDagInCpdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_DOWN_MASK));
-        randomMagInPag.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+//        randomMagInPag.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
         zhangMagInPag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK));
     }

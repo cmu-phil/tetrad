@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -343,6 +345,16 @@ public class GraphTransforms {
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
         return new DagToPag(trueGraph).convert();
+    }
+
+    /**
+     * Transforms a Maximally Ancestral Graph (MAG) into a Partial Ancestral Graph (PAG) using the FCI algorithm.
+     *
+     * @param mag The Maximally Ancestral Graph to transform.
+     * @return The Partial Ancestral Graph obtained from the MAG.
+     */
+    public static Graph magToPag(Graph mag) {
+        return new MagToPag(mag).convert();
     }
 
     /**
