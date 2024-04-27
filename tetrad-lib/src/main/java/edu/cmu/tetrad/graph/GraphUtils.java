@@ -1462,12 +1462,12 @@ public final class GraphUtils {
     /**
      * Converts a given graph to human-readable text format.
      *
-     * @param graph                          the graph to be converted
-     * @param doPagEdgeSpecializationMarkups whether to add edge specialization markups to the graph before conversion
+     * @param graph                       the graph to be converted
+     * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
      * @return the human-readable representation of the graph
      */
-    public static String graphToText(Graph graph, boolean doPagEdgeSpecializationMarkups) {
-        if (doPagEdgeSpecializationMarkups) {
+    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
+        if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(graph);
         }
 

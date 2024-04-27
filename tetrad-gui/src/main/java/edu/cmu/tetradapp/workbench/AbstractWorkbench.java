@@ -182,7 +182,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Whether to do pag edge specialization markup.
      */
-    private boolean pagEdgeSpecializationsMarked = false;
+    private boolean pagEdgeSpecializationMarked = false;
     /**
      * The graph to be used for sampling.
      */
@@ -390,7 +390,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Graph graph = graphStack.removeLast();
 
-            if (pagEdgeSpecializationsMarked) {
+            if (pagEdgeSpecializationMarked) {
                 GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
@@ -417,7 +417,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Graph graph = redoStack.removeLast();
 
-            if (pagEdgeSpecializationsMarked) {
+            if (pagEdgeSpecializationMarked) {
                 GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
@@ -1105,7 +1105,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.graph = graph;
 
-        if (pagEdgeSpecializationsMarked) {
+        if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
 
@@ -1399,7 +1399,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (pagEdgeSpecializationsMarked) {
+        if (pagEdgeSpecializationMarked) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
@@ -2432,7 +2432,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
 
-            if (pagEdgeSpecializationsMarked) {
+            if (pagEdgeSpecializationMarked) {
                 GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
@@ -2485,7 +2485,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (!added) {
                 getGraph().addEdge(edge);
 
-                if (pagEdgeSpecializationsMarked) {
+                if (pagEdgeSpecializationMarked) {
                     GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
                 }
 
@@ -2496,7 +2496,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (pagEdgeSpecializationsMarked) {
+        if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
 
@@ -2570,20 +2570,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      *
      * @return True if pagEdgeSpecializationsMarked is true, false otherwise.
      */
-    public boolean isPagEdgeSpecializationsMarked() {
-        return this.pagEdgeSpecializationsMarked;
+    public boolean isPagEdgeSpecializationMarked() {
+        return this.pagEdgeSpecializationMarked;
     }
 
     /**
      * Marks the pag edge specializations based on the given flag. If the flag is set to true, the method applies
      * special coloring to the page edges. If the flag is set to false, all special markings on page edges are removed.
      *
-     * @param doPagEdgeSpecializationMarkups a boolean value indicating whether to mark the page edge specializations or
+     * @param pagEdgeSpecializationsMarked a boolean value indicating whether to mark the page edge specializations or
      *                                       not
      */
-    public void markPagEdgeSpecializations(boolean doPagEdgeSpecializationMarkups) {
-        this.pagEdgeSpecializationsMarked = doPagEdgeSpecializationMarkups;
-        if (doPagEdgeSpecializationMarkups) {
+    public void markPagEdgeSpecializations(boolean pagEdgeSpecializationsMarked) {
+        this.pagEdgeSpecializationMarked = pagEdgeSpecializationsMarked;
+        if (pagEdgeSpecializationsMarked) {
             GraphUtils.addEdgeSpecializationMarkup(graph);
         } else {
             for (Edge edge : graph.getEdges()) {

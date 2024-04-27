@@ -47,8 +47,8 @@ public class PagEdgeSpecialization extends JCheckBoxMenuItem {
 
         final GraphWorkbench _workbench = workbench;
 
-        _workbench.markPagEdgeSpecializations(workbench.isPagEdgeSpecializationsMarked());
-        setSelected(workbench.isPagEdgeSpecializationsMarked());
+        _workbench.markPagEdgeSpecializations(workbench.isPagEdgeSpecializationMarked());
+        setSelected(workbench.isPagEdgeSpecializationMarked());
 
         addItemListener(e -> {
             _workbench.markPagEdgeSpecializations(isSelected());
