@@ -43,7 +43,7 @@ public class NumCorrectVisibleAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.addPagColoring(estGraph);
+        GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         int tp = 0;
         int fp = 0;

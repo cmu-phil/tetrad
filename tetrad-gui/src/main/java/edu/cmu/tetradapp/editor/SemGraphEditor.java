@@ -500,7 +500,7 @@ public final class SemGraphEditor extends JPanel
         addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
-        graph.add(GraphUtils.addPagColoringItems(this.workbench));
+        graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         randomGraph.addActionListener(e -> {
             GraphParamsEditor editor = new GraphParamsEditor();

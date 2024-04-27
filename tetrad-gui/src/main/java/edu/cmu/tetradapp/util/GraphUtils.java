@@ -368,11 +368,11 @@ public class GraphUtils {
         }
     }
 
-    public static @NotNull JMenu addPagColoringItems(GraphWorkbench workbench) {
-        JMenu pagColoring = new JMenu("PAG Coloring");
-        pagColoring.add(new PagColorer(workbench));
-        pagColoring.add(new PagEdgeTypeInstructions());
-        return pagColoring;
+    public static @NotNull JMenu addPagEdgeSpecializationsItems(GraphWorkbench workbench) {
+        JMenu pagEdgeSpecializations = new JMenu("PAG Edge Specialization Markups");
+        pagEdgeSpecializations.add(new PagEdgeSpecialization(workbench));
+        pagEdgeSpecializations.add(new PagEdgeTypeInstructions());
+        return pagEdgeSpecializations;
     }
 
     /**

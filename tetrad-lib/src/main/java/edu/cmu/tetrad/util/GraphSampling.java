@@ -93,10 +93,10 @@ public final class GraphSampling {
      * @return graph containing edges with edge type of the highest probability
      */
     public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs) {
-        // filter out null graphs and add PAG coloring
+        // filter out null graphs and add PAG edge specializstion markup
         graphs = graphs.stream()
                 .filter(Objects::nonNull)
-                .map(GraphSampling::addPagColorings)
+                .map(GraphSampling::addEdgeSpecializationMarkups)
                 .collect(Collectors.toList());
 
         if (graphs.isEmpty()) {
@@ -332,8 +332,8 @@ public final class GraphSampling {
         return new EdgeListGraph(Arrays.asList(nodes));
     }
 
-    private static Graph addPagColorings(Graph graph) {
-        GraphUtils.addPagColoring(graph);
+    private static Graph addEdgeSpecializationMarkups(Graph graph) {
+        GraphUtils.addEdgeSpecializationMarkup(graph);
 
         return graph;
     }

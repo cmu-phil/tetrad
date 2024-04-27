@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.editor.PagColorer;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -91,6 +90,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Handler for PropertyChangeEvents.
      */
     private final PropertyChangeHandler propChangeHandler = new PropertyChangeHandler(this);
+    private final LinkedList<Graph> graphStack = new LinkedList<>();
+    private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
      * The workbench which this workbench displays.
      */
@@ -153,54 +154,43 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Maximum x value (for dragging).
      */
     private int maxX = 10000;
-
     /**
      * Maximum y value (for dragging).
      */
     private int maxY = 10000;
-
     /**
      * True iff node/edge adding/removing errors should be reported to the user.
      */
     private boolean nodeEdgeErrorsReported;
-
     /**
      * True iff layout is permitted using a right click popup.
      */
     private boolean rightClickPopupAllowed;
-
     /**
      * A key dispatcher to allow pressing the control key to control whether edges will be drawn in the workbench.
      */
     private KeyEventDispatcher controlDispatcher;
-
     /**
      * The current displayed mouseover equation label. Null if none is displayed. Used for removing the label.
      */
     private Point currentMouseLocation;
-
     /**
      * Returns the current displayed mouseover equation label. Returns null if none is displayed. Used for removing the
      * label.
      */
     private boolean enableEditing = true;
-
     /**
-     * Whether to do pag coloring.
+     * Whether to do pag edge specialization markup.
      */
-    private boolean doPagColoring = false;
-
+    private boolean pagEdgeSpecializationsMarked = false;
     /**
      * The graph to be used for sampling.
      */
     private Graph samplingGraph;
-
     /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private final LinkedList<Graph> graphStack = new LinkedList<>();
-    private final LinkedList<Graph> redoStack = new LinkedList<>();
 
     // ==============================CONSTRUCTOR============================//
 
@@ -400,8 +390,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Graph graph = graphStack.removeLast();
 
-            if (doPagColoring) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            if (pagEdgeSpecializationsMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
             setGraph(graph);
@@ -427,8 +417,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Graph graph = redoStack.removeLast();
 
-            if (doPagColoring) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            if (pagEdgeSpecializationsMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
             setGraph(graph);
@@ -1115,8 +1105,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.graph = graph;
 
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        if (pagEdgeSpecializationsMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
 
         this.modelEdgesToDisplay = new HashMap<>();
@@ -1409,7 +1399,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (doPagColoring) {
+        if (pagEdgeSpecializationsMarked) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
@@ -1974,10 +1964,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 graphEdge.setSelected(true);
             }
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void nodeClicked(Object source, MouseEvent e) {
@@ -2000,10 +1986,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             selectConnectingEdges();
             fireNodeSelection();
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void reorientEdge(Object source, MouseEvent e) {
@@ -2032,10 +2014,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 firePropertyChange("modelChanged", null, null);
             }
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void fireModelChanged() {
@@ -2092,10 +2070,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//           GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void launchPopup(MouseEvent e) {
@@ -2140,10 +2114,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 finishEdge();
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void handleMouseDragged(MouseEvent e) {
@@ -2169,10 +2139,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 dragNewEdge(source, newPoint);
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void handleMouseEntered(MouseEvent e) {
@@ -2466,8 +2432,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
 
-            if (doPagColoring) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            if (pagEdgeSpecializationsMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -2519,8 +2485,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (!added) {
                 getGraph().addEdge(edge);
 
-                if (doPagColoring) {
-                    GraphUtils.addPagColoring(new EdgeListGraph(graph));
+                if (pagEdgeSpecializationsMarked) {
+                    GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
                 }
 
                 return;
@@ -2530,8 +2496,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        if (pagEdgeSpecializationsMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
 
         revalidate();
@@ -2554,45 +2520,45 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * True if the user is allowed to add measured variables.
+     * Checks whether adding measured variables is allowed.
+     *
+     * @return true if adding measured variables is allowed, false otherwise.
      */
     private boolean isAddMeasuredVarsAllowed() {
-        /**
-         * True iff the user is allowed to add measured variables.
-         */
         return true;
     }
 
     /**
-     * @return true if the user is allowed to edit existing meausred variables.
+     * Returns a boolean value indicating whether editing existing measured variables is allowed.
+     *
+     * @return <code>true</code> if editing existing measured variables is allowed, <code>false</code> otherwise.
      */
     boolean isEditExistingMeasuredVarsAllowed() {
         return true;
     }
 
     /**
-     * @return true iff the user is allowed to delete variables.
+     * Checks if deleting variables is allowed.
+     *
+     * @return {@code true} if deleting variables is allowed, {@code false} otherwise
      */
     private boolean isDeleteVariablesAllowed() {
-        /**
-         * True iff the user is allowed to delete variables.
-         */
         return true;
     }
 
     /**
-     * <p>isEnableEditing.</p>
+     * Checks if editing is enabled.
      *
-     * @return a boolean
+     * @return true if editing is enabled, false otherwise.
      */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
     /**
-     * <p>enableEditing.</p>
+     * Enables or disables editing for the software.
      *
-     * @param enableEditing a boolean
+     * @param enableEditing true to enable editing, false to disable editing
      */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
@@ -2600,23 +2566,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * <p>isDoPagColoring.</p>
+     * Checks if pagEdgeSpecializationMarked is true or false.
      *
-     * @return a boolean
+     * @return True if pagEdgeSpecializationsMarked is true, false otherwise.
      */
-    public boolean isDoPagColoring() {
-        return this.doPagColoring;
+    public boolean isPagEdgeSpecializationsMarked() {
+        return this.pagEdgeSpecializationsMarked;
     }
 
     /**
-     * <p>Setter for the field <code>doPagColoring</code>.</p>
+     * Marks the pag edge specializations based on the given flag. If the flag is set to true, the method applies
+     * special coloring to the page edges. If the flag is set to false, all special markings on page edges are removed.
      *
-     * @param doPagColoring a boolean
+     * @param doPagEdgeSpecializationMarkups a boolean value indicating whether to mark the page edge specializations or
+     *                                       not
      */
-    public void setDoPagColoring(boolean doPagColoring) {
-        this.doPagColoring = doPagColoring;
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(graph);
+    public void markPagEdgeSpecializations(boolean doPagEdgeSpecializationMarkups) {
+        this.pagEdgeSpecializationsMarked = doPagEdgeSpecializationMarkups;
+        if (doPagEdgeSpecializationMarkups) {
+            GraphUtils.addEdgeSpecializationMarkup(graph);
         } else {
             for (Edge edge : graph.getEdges()) {
                 edge.getProperties().clear();

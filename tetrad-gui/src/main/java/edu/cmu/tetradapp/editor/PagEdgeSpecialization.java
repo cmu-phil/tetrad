@@ -21,29 +21,25 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 
 /**
- * Colors a graph using the PAG coloring. Optionally checks to make sure it's  legal PAG.
+ * Markos up a graph using the PAG edge specialization algorithm.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class PagColorer extends JCheckBoxMenuItem {
+public class PagEdgeSpecialization extends JCheckBoxMenuItem {
 
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
      *
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
-    public PagColorer(GraphWorkbench workbench) {
-        super("Add/Remove PAG Coloring");
+    public PagEdgeSpecialization(GraphWorkbench workbench) {
+        super("Add/Remove PAG Specialization Markups");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -51,40 +47,11 @@ public class PagColorer extends JCheckBoxMenuItem {
 
         final GraphWorkbench _workbench = workbench;
 
-        _workbench.setDoPagColoring(workbench.isDoPagColoring());
-        setSelected(workbench.isDoPagColoring());
+        _workbench.markPagEdgeSpecializations(workbench.isPagEdgeSpecializationsMarked());
+        setSelected(workbench.isPagEdgeSpecializationsMarked());
 
         addItemListener(e -> {
-            _workbench.setDoPagColoring(isSelected());
-
-//            if (isSelected()) {
-//                int ret = JOptionPane.showConfirmDialog(workbench,
-//                        breakDown("Would you like to verify that this is a legal PAG?", 60),
-//                        "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-//                if (ret == JOptionPane.YES_OPTION) {
-//                    class MyWatchedProcess extends WatchedProcess {
-//                        @Override
-//                        public void watch() {
-//                            Graph graph = new EdgeListGraph(workbench.getGraph());
-//
-//                            GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
-//                            String reason = breakDown(legalPag.getReason(), 60);
-//
-//                            if (!legalPag.isLegalPag()) {
-//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-//                                        "This is not a legal PAG--one reason is as follows:" +
-//                                        "\n\n" + reason + ".",
-//                                        "Legal PAG check",
-//                                        JOptionPane.WARNING_MESSAGE);
-//                            } else {
-//                                JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-//                            }
-//                        }
-//                    }
-//
-//                    new MyWatchedProcess();
-//                }
-//            }
+            _workbench.markPagEdgeSpecializations(isSelected());
         });
     }
 

@@ -39,8 +39,6 @@ import java.awt.event.ActionListener;
 import java.io.Serial;
 import java.net.URL;
 
-import static edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems;
-
 /**
  * Apr 15, 2019 4:49:15 PM
  *
@@ -135,7 +133,7 @@ public class GraphCard extends JPanel {
 //        addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
-        graph.add(GraphUtils.addPagColoringItems(this.workbench));
+        graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
 
@@ -155,9 +153,9 @@ public class GraphCard extends JPanel {
         graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
-        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG coloring.
+        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG edge specialization markups.
         // This is to show the edge types in the graph. - jdramsey 2024/03/13
-        graphWorkbench.setDoPagColoring(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
+        graphWorkbench.markPagEdgeSpecializations(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
 
         this.workbench = graphWorkbench;
 

@@ -48,7 +48,7 @@ public class NumColoredNL implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
 
-        GraphUtils.addPagColoring(estGraph);
+        GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {

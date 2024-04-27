@@ -1189,11 +1189,11 @@ public final class GraphUtils {
     }
 
     /**
-     * Adds PAG coloring to the edges in the given graph.
+     * Adds markups for edge specilizations for the edges in the given graph.
      *
-     * @param graph The graph to which PAG coloring will be added.
+     * @param graph The graph to which PAG edge specialization markups will be added.
      */
-    public static void addPagColoring(Graph graph) {
+    public static void addEdgeSpecializationMarkup(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             edge.getProperties().clear();
 
@@ -1460,15 +1460,15 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts a graph to a textual representation.
+     * Converts a given graph to human-readable text format.
      *
-     * @param graph         the input graph to be converted
-     * @param doPagColoring boolean flag indicating whether to add PAG coloring to the graph
-     * @return the textual representation of the graph
+     * @param graph                          the graph to be converted
+     * @param doPagEdgeSpecializationMarkups whether to add edge specialization markups to the graph before conversion
+     * @return the human-readable representation of the graph
      */
-    public static String graphToText(Graph graph, boolean doPagColoring) {
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(graph);
+    public static String graphToText(Graph graph, boolean doPagEdgeSpecializationMarkups) {
+        if (doPagEdgeSpecializationMarkups) {
+            GraphUtils.addEdgeSpecializationMarkup(graph);
         }
 
         Formatter fmt = new Formatter();
@@ -2456,21 +2456,57 @@ public final class GraphUtils {
                     && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
                     && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
                     && !graph.isAdjacentTo(a, c)) {
+
+//                    if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+//                        continue;
+//                    }
+//
+//                    if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+//                        continue;
+//                    }
+
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Oriented edge " + a + " *-> " + b + " <-* " + c + " (from score search)).");
+                        TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from score search)).");
+
+                        if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
+                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                        }
+
+                        if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
+                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                        }
                     }
-                } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                } else if (referenceCpdag.isAdjacentTo(a, c) && graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+//                        if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+//                            continue;
+//                        }
+//
+//                        if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+//                            continue;
+//                        }
+
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Oriented edge " + a + " *-> " + b + " <-* " + c + " (from from test, sepset = " + sepset + ").");
+                            double p = sepsets.getPValue(a, c, sepset);
+                            String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
+
+                            TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from test)), p = " + _p + ".");
+
+                            if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
+                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                            }
+
+                            if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
+                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                            }
                         }
                     }
                 }
