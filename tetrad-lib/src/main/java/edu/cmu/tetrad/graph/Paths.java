@@ -1503,7 +1503,7 @@ public class Paths implements TetradSerializable {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(x, b, y, path, z, colliders, -1)) {
+                if (sepsetPathFound(x, b, y, path, z, colliders, 8)) {
                     return null;
                 }
             }
