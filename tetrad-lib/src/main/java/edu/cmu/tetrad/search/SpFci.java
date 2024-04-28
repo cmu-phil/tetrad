@@ -168,34 +168,25 @@ public final class SpFci implements IGraphSearch {
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-//        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-//        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
-//
-//        FciOrient fciOrient = new FciOrient(sepsets);
-//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-//        fciOrient.setMaxPathLength(this.maxPathLength);
-//        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-//        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-//        fciOrient.setVerbose(verbose);
-//        fciOrient.setKnowledge(knowledge);
-
         // GFCI extra edge removal step...
 //        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        }
+
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        Graph referencePag = independenceTest instanceof MsepTest ? ((MsepTest) independenceTest).getGraph() : graph;
-        FciOrient fciOrient = new FciOrient(new DagSepsets(referencePag));
-
+        FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(true);
         fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());

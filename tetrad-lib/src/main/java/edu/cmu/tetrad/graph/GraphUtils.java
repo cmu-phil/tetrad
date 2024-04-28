@@ -1877,7 +1877,7 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c)) {// && referenceCpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2455,15 +2455,15 @@ public final class GraphUtils {
                 if (referenceCpdag.isDefCollider(a, b, c)
                     && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
                     && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
-                    && !graph.isAdjacentTo(a, c)) {
+                    && !referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
 
-//                    if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
-//                        continue;
-//                    }
-//
-//                    if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
-//                        continue;
-//                    }
+                    if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+                        continue;
+                    }
+
+                    if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+                        continue;
+                    }
 
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
@@ -2479,17 +2479,21 @@ public final class GraphUtils {
                             TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
                         }
                     }
-                } else if (referenceCpdag.isAdjacentTo(a, c) && graph.isAdjacentTo(a, c)) {
+                } else if (referenceCpdag.isAdjacentTo(a, c)) {// && !graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
+                    if (graph.isAdjacentTo(a, c)) {
+                        graph.removeEdge(a, c);
+                    }
+
                     if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-//                        if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
-//                            continue;
-//                        }
-//
-//                        if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
-//                            continue;
-//                        }
+                        if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+                            continue;
+                        }
+
+                        if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+                            continue;
+                        }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);

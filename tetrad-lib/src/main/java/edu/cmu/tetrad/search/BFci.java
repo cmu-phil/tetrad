@@ -194,22 +194,16 @@ public final class BFci implements IGraphSearch {
 
         Graph referenceDag = new EdgeListGraph(graph);
 
-//        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-//        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
-//
-//        FciOrient fciOrient = new FciOrient(sepsets);
-//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-//        fciOrient.setMaxPathLength(this.maxPathLength);
-//        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-//        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-//        fciOrient.setVerbose(verbose);
-//        fciOrient.setKnowledge(knowledge);
-
         // GFCI extra edge removal step...
 //        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        }
+
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
@@ -219,17 +213,6 @@ public final class BFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-
-        fciOrient.doFinalOrientation(graph);
-
-        Graph referencePag = independenceTest instanceof MsepTest ? ((MsepTest) independenceTest).getGraph() : graph;
-        fciOrient = new FciOrient(new DagSepsets(referencePag));
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
