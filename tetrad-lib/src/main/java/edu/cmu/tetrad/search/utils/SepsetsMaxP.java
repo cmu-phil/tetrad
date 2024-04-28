@@ -45,7 +45,7 @@ import java.util.Set;
  * @see SepsetMap
  * @see Cpc
  */
-public class SepsetsConservative implements SepsetProducer {
+public class SepsetsMaxP implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
@@ -60,7 +60,7 @@ public class SepsetsConservative implements SepsetProducer {
      * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      * @param depth            a int
      */
-    public SepsetsConservative(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMaxP(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -73,7 +73,7 @@ public class SepsetsConservative implements SepsetProducer {
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public Set<Node> getSepset(Node i, Node k) {
-        double _p = 0.0;
+        double _p = -1;
         Set<Node> _v = null;
 
         if (this.extraSepsets != null) {

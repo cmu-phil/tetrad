@@ -2495,8 +2495,8 @@ public final class GraphUtils {
                             continue;
                         }
 
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+//                        graph.setEndpoint(a, b, Endpoint.ARROW);
+//                        graph.setEndpoint(c, b, Endpoint.ARROW);
 
                         if (verbose) {
                             double p = sepsets.getPValue(a, c, sepset);

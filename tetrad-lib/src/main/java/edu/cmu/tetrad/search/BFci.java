@@ -201,7 +201,7 @@ public final class BFci implements IGraphSearch {
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
