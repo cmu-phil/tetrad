@@ -66,7 +66,6 @@ public final class ChoiceGenerator {
      */
     public ChoiceGenerator(int a, int b) {
         if (a < 0 || b < 0) throw new IllegalArgumentException("ERROR: a and b must be non-negative");
-        if (b > a) b = a;
 
         this.a = a;
         this.b = b;
@@ -148,6 +147,10 @@ public final class ChoiceGenerator {
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
+        if (a < b) {
+            return null;
+        }
+
         int i = getB();
 
         // Scan from the right for the first index whose value is less than
