@@ -34,6 +34,7 @@ public class PermutationSearch {
     private final List<Node> order;
     private final Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
+    private boolean cpdag = true;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -136,7 +137,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag);
     }
 
     public List<Node> getOrder() {
@@ -181,5 +182,13 @@ public class PermutationSearch {
             if (required.isEmpty() && forbidden.isEmpty()) continue;
             this.gsts.get(node).setKnowledge(required, forbidden);
         }
+    }
+
+    public boolean getCpdag() {
+        return cpdag;
+    }
+
+    public void setCpdag(boolean cpdag) {
+        this.cpdag = cpdag;
     }
 }

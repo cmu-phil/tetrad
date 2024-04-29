@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.DirectLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BSSPC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PI;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -35,6 +36,14 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.search.BssPc;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.CholeskyDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+
+import static org.apache.commons.lang3.RandomUtils.nextDouble;
+import static org.apache.commons.lang3.RandomUtils.nextFloat;
 
 /**
  * Test the degenerate Gaussian score.
@@ -65,7 +74,7 @@ public class TestBoss {
         parameters.set(Params.NUM_THREADS, 0);
         parameters.set(Params.USE_DATA_ORDER, false);
 
-
+        parameters.set(Params.DEPTH, 3);
 
         parameters.set(Params.VERBOSE, true);
 
@@ -79,8 +88,9 @@ public class TestBoss {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new DirectLingam(new SemBicScore()));
 //        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Boss(new SemBicScore()));
-        algorithms.add(new BSSPC());
+        algorithms.add((new PI(new SemBicScore())));
+//        algorithms.add(new Boss(new SemBicScore()));
+//        algorithms.add(new BSSPC());
 //        algorithms.add(new Dagma());
 
         Simulations simulations = new Simulations();
@@ -100,7 +110,3 @@ public class TestBoss {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 }
-
-
-
-
