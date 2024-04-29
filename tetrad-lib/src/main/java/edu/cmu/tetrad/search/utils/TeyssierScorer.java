@@ -156,11 +156,12 @@ public class TeyssierScorer {
     }
 
     /**
-     * <p>tuck.</p>
+     * Tucks a node into a specific position in a list, moving all nodes between the current position of the node and
+     * the target position one step to the right.
      *
-     * @param k a {@link edu.cmu.tetrad.graph.Node} object
-     * @param j a int
-     * @return a boolean
+     * @param k The node to tuck.
+     * @param j The position to tuck the node into.
+     * @return true if the tuck is successful, false otherwise.
      */
     public boolean tuck(Node k, int j) {
         if (adjacent(k, get(j))) return false;

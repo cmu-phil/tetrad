@@ -56,7 +56,7 @@ import java.util.List;
  * @see FciOrient
  * @see Knowledge
  */
-public final class GraspLvLite implements IGraphSearch {
+public final class LvLite implements IGraphSearch {
 
     /**
      * The conditional independence test.
@@ -126,9 +126,14 @@ public final class GraspLvLite implements IGraphSearch {
      * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
      * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
      *
-     * @see GraspLvLite#setSeed(long)
+     * @see LvLite#setSeed(long)
      */
     private long seed = -1;
+
+    /**
+     * The threshold for tucking.
+     */
+    private double threshold;
 
     /**
      * Constructs a new GraspFci object.
@@ -136,7 +141,7 @@ public final class GraspLvLite implements IGraphSearch {
      * @param test  The independence test.
      * @param score a {@link Score} object
      */
-    public GraspLvLite(IndependenceTest test, Score score) {
+    public LvLite(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -176,6 +181,7 @@ public final class GraspLvLite implements IGraphSearch {
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
         alg.setVerbose(verbose);
+        alg.setNumStarts(numStarts);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
@@ -187,7 +193,7 @@ public final class GraspLvLite implements IGraphSearch {
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
-        Graph graph = teyssierScorer.getGraph(false);
+        Graph graph = teyssierScorer.getGraph(true);
         Graph _graph = new EdgeListGraph(graph);
         _graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -198,7 +204,8 @@ public final class GraspLvLite implements IGraphSearch {
                     Node b = best.get(j);
                     Node c = best.get(k);
 
-                    if (graph.isAdjacentTo(a, c) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, b)) {
+                    if (graph.isAdjacentTo(a, c) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, b)
+                        && graph.getEdge(a, c).pointsTowards(c) && graph.getEdge(b, c).pointsTowards(c)) {
                         _graph.setEndpoint(a, c, Endpoint.ARROW);
                         _graph.setEndpoint(b, c, Endpoint.ARROW);
                     }
@@ -207,7 +214,6 @@ public final class GraspLvLite implements IGraphSearch {
         }
 
         teyssierScorer.score(best);
-        Graph __graph = teyssierScorer.getGraph(true);
 
         // Look for every triangle in graph A->C, B->C, A->B
         for (int i = 0; i < best.size(); i++) {
@@ -219,11 +225,14 @@ public final class GraspLvLite implements IGraphSearch {
 
                     double score = teyssierScorer.score(best);
 
-                    if (__graph.isAdjacentTo(a, c) && __graph.isAdjacentTo(b, c) && __graph.isAdjacentTo(a, b)) {
-                        if (__graph.getEdge(a, b).isDirected() && __graph.getEdge(b, c).isDirected()
-                            && __graph.getEdge(a, c).isDirected()) {
+                    if (graph.isAdjacentTo(a, c) && graph.isAdjacentTo(b, c) && graph.isAdjacentTo(a, b)) {
+                        if (graph.getEdge(a, b).isDirected() && graph.getEdge(b, c).isDirected()
+                            /*&& graph.getEdge(a, c).isDirected()*/
+                            && graph.getEdge(a, b).pointsTowards(b) && graph.getEdge(b, c).pointsTowards(c)
+                            /*&& graph.getEdge(a, c).pointsTowards(c)*/) {
                             teyssierScorer.tuck(a, best.indexOf(b));
-                            if (teyssierScorer.score() > score - 0.01) {
+
+                            if (teyssierScorer.score() > score - threshold /* !teyssierScorer.adjacent(a, c)*/) {
                                 _graph.removeEdge(a, c);
                                 _graph.setEndpoint(c, b, Endpoint.ARROW);
                             }
@@ -409,5 +418,16 @@ public final class GraspLvLite implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets the threshold used in the LV-Lite search algorithm.
+     *
+     * @param threshold The threshold value to be set.
+     */
+    public void setThreshold(double threshold) {
+        if (threshold < 0) throw new IllegalArgumentException("Threshold should be >= 0.");
+
+        this.threshold = threshold;
     }
 }

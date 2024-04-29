@@ -40,12 +40,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Graph LV Lite",
-        command = "graph-lv-lite",
+        name = "LV Lite",
+        command = "lv-lite",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -69,7 +69,7 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
     /**
      * <p>Constructor for GraspFci.</p>
      */
-    public GraspLvLite() {
+    public LvLite() {
         // Used for reflection; do not delete.
     }
 
@@ -79,7 +79,7 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
      * @param test  a {@link IndependenceWrapper} object
      * @param score a {@link ScoreWrapper} object
      */
-    public GraspLvLite(IndependenceWrapper test, ScoreWrapper score) {
+    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -110,7 +110,7 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
         Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.GraspLvLite search = new edu.cmu.tetrad.search.GraspLvLite(test, score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));
@@ -128,6 +128,9 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+
+        // LV-Lite
+        search.setThreshold(parameters.getDouble(Params.THRESHOLD_LV_LITE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -155,7 +158,7 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
      */
     @Override
     public String getDescription() {
-        return "GRaSP LV Lite using " + this.test.getDescription()
+        return "LV-Lite using " + this.test.getDescription()
                + " and " + this.score.getDescription();
     }
 
@@ -193,6 +196,9 @@ public class GraspLvLite extends AbstractBootstrapAlgorithm implements Algorithm
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.POSSIBLE_MSEP_DONE);
+
+        // LV-Lite
+        params.add(Params.THRESHOLD_LV_LITE);
 
         // General
         params.add(Params.TIME_LAG);
