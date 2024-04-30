@@ -167,26 +167,43 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
-        // The PAG being constructed.
-        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
-        Grasp alg = new Grasp(independenceTest, score);
-        alg.setSeed(seed);
-        alg.setOrdered(ordered);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        int graspDepth = 3;
-        alg.setDepth(graspDepth);
-        alg.setUncoveredDepth(uncoveredDepth);
-        alg.setNonSingularDepth(nonSingularDepth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-        alg.setNumStarts(numStarts);
+        List<Node> best;
 
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
+        if (false) {
+            // The PAG being constructed.
+            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+            Grasp alg = new Grasp(independenceTest, score);
+            alg.setSeed(seed);
+            alg.setOrdered(ordered);
+            alg.setUseScore(useScore);
+            alg.setUseRaskuttiUhler(useRaskuttiUhler);
+            alg.setUseDataOrder(useDataOrder);
+            int graspDepth = 3;
+            alg.setDepth(graspDepth);
+            alg.setUncoveredDepth(uncoveredDepth);
+            alg.setNonSingularDepth(nonSingularDepth);
+            alg.setNumStarts(numStarts);
+            alg.setVerbose(verbose);
+            alg.setNumStarts(numStarts);
 
-        List<Node> best = alg.bestOrder(variables);
+            List<Node> variables = this.score.getVariables();
+            assert variables != null;
+
+            best = alg.bestOrder(variables);
+        } else {
+            Boss suborderSearch = new Boss(score);
+            suborderSearch.setKnowledge(knowledge);
+            suborderSearch.setResetAfterBM(true);
+            suborderSearch.setResetAfterRS(true);
+            suborderSearch.setVerbose(verbose);
+            suborderSearch.setUseBes(true);
+            suborderSearch.setUseDataOrder(true);
+            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+            permutationSearch.setKnowledge(knowledge);
+            permutationSearch.setSeed(seed);
+            permutationSearch.search();
+            best = permutationSearch.getOrder();
+        }
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
@@ -210,7 +227,8 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        teyssierScorer.score(best);
+        double s1 = teyssierScorer.score(best);
+        teyssierScorer.bookmark();
 
         // Look for every triangle in cpdag A->C, B->C, A->B
         for (int i = 0; i < best.size(); i++) {
@@ -220,16 +238,17 @@ public final class LvLite implements IGraphSearch {
                     Node b = best.get(j);
                     Node c = best.get(k);
 
-                    double score = teyssierScorer.score(best);
+                    Edge ab = cpdag.getEdge(a, b);
+                    Edge bc = cpdag.getEdge(b, c);
+                    Edge ac = cpdag.getEdge(a, c);
 
-                    if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && cpdag.isAdjacentTo(a, b)) {
-                        if (cpdag.getEdge(a, b).isDirected() && cpdag.getEdge(b, c).isDirected()
-                            /*&& cpdag.getEdge(a, c).isDirected()*/
-                            && cpdag.getEdge(a, b).pointsTowards(b) && cpdag.getEdge(b, c).pointsTowards(c)
-                            /*&& cpdag.getEdge(a, c).pointsTowards(c)*/) {
+                    if (ab != null && bc != null && ac != null) {
+                        if (ab.pointsTowards(b) && bc.pointsTowards(c)) {
+                            teyssierScorer.goToBookmark();
                             teyssierScorer.tuck(a, best.indexOf(b));
+                            double s2 = teyssierScorer.score();
 
-                            if (teyssierScorer.score() > score - threshold /* !teyssierScorer.adjacent(a, c)*/) {
+                            if (s2 > s1 - threshold) {
                                 pag.removeEdge(a, c);
                                 pag.setEndpoint(c, b, Endpoint.ARROW);
                             }
