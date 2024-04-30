@@ -184,18 +184,13 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI
         params.add(Params.DEPTH);
-        params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.POSSIBLE_MSEP_DONE);
 
         // LV-Lite
         params.add(Params.THRESHOLD_LV_LITE);
 
         // General
         params.add(Params.TIME_LAG);
-
-        params.add(Params.SEED);
-
         params.add(Params.VERBOSE);
 
         return params;
