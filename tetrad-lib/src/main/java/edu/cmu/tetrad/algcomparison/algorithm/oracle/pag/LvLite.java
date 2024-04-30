@@ -112,25 +112,19 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
-        // GRaSP
+        // BOSS
         search.setSeed(parameters.getLong(Params.SEED));
         search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-        search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
-        search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
-        search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
-        search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-        search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
 
         // LV-Lite
-        search.setThreshold(parameters.getDouble(Params.THRESHOLD_LV_LITE));
+        search.setEqualityThreshold(parameters.getDouble(Params.THRESHOLD_LV_LITE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -181,12 +175,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        // GRaSP
-        params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_SINGULAR_DEPTH);
-        params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_ORDERED_ALG);
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
+        // BOSS
+        params.add(Params.SEED);
+        params.add(Params.DEPTH);
+        params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
@@ -194,7 +186,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DEPTH);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.POSSIBLE_MSEP_DONE);
 
         // LV-Lite

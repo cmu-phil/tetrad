@@ -63,10 +63,6 @@ public final class LvLite implements IGraphSearch {
      */
     private final IndependenceTest independenceTest;
     /**
-     * The logger to use.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
      * The score.
      */
     private final Score score;
@@ -79,10 +75,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
@@ -91,37 +83,13 @@ public final class LvLite implements IGraphSearch {
      */
     private int numStarts = 1;
     /**
-     * Whether to use Raskutti and Uhler's modification of GRaSP.
-     */
-    private boolean useRaskuttiUhler = false;
-    /**
      * Whether to use data order.
      */
     private boolean useDataOrder = true;
     /**
-     * Whether to use score.
-     */
-    private boolean useScore = true;
-    /**
-     * Whether to use the discriminating path rule.
-     */
-    private boolean doDiscriminatingPathRule = true;
-    /**
-     * Whether to use the ordered version of GRaSP.
-     */
-    private boolean ordered = false;
-    /**
      * The depth for GRaSP.
      */
     private int depth = -1;
-    /**
-     * The depth for singular variables.
-     */
-    private int uncoveredDepth = 1;
-    /**
-     * The depth for non-singular variables.
-     */
-    private int nonSingularDepth = 1;
     /**
      * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
      * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
@@ -133,7 +101,9 @@ public final class LvLite implements IGraphSearch {
     /**
      * The threshold for tucking.
      */
-    private double threshold;
+    private double equalityThreshold;
+
+    private boolean useBes;
 
     /**
      * Constructs a new GraspFci object.
@@ -167,43 +137,19 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
-        List<Node> best;
-
-        if (false) {
-            // The PAG being constructed.
-            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
-            Grasp alg = new Grasp(independenceTest, score);
-            alg.setSeed(seed);
-            alg.setOrdered(ordered);
-            alg.setUseScore(useScore);
-            alg.setUseRaskuttiUhler(useRaskuttiUhler);
-            alg.setUseDataOrder(useDataOrder);
-            int graspDepth = 3;
-            alg.setDepth(graspDepth);
-            alg.setUncoveredDepth(uncoveredDepth);
-            alg.setNonSingularDepth(nonSingularDepth);
-            alg.setNumStarts(numStarts);
-            alg.setVerbose(verbose);
-            alg.setNumStarts(numStarts);
-
-            List<Node> variables = this.score.getVariables();
-            assert variables != null;
-
-            best = alg.bestOrder(variables);
-        } else {
-            Boss suborderSearch = new Boss(score);
-            suborderSearch.setKnowledge(knowledge);
-            suborderSearch.setResetAfterBM(true);
-            suborderSearch.setResetAfterRS(true);
-            suborderSearch.setVerbose(verbose);
-            suborderSearch.setUseBes(true);
-            suborderSearch.setUseDataOrder(true);
-            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-            permutationSearch.setKnowledge(knowledge);
-            permutationSearch.setSeed(seed);
-            permutationSearch.search();
-            best = permutationSearch.getOrder();
-        }
+        Boss suborderSearch = new Boss(score);
+        suborderSearch.setKnowledge(knowledge);
+        suborderSearch.setResetAfterBM(true);
+        suborderSearch.setResetAfterRS(true);
+        suborderSearch.setVerbose(verbose);
+        suborderSearch.setUseBes(useBes);
+        suborderSearch.setUseDataOrder(useDataOrder);
+        suborderSearch.setNumStarts(numStarts);
+        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        permutationSearch.setSeed(seed);
+        permutationSearch.search();
+        List<Node> best = permutationSearch.getOrder();
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
@@ -248,7 +194,7 @@ public final class LvLite implements IGraphSearch {
                             teyssierScorer.tuck(a, best.indexOf(b));
                             double s2 = teyssierScorer.score();
 
-                            if (s2 > s1 - threshold) {
+                            if (s2 > s1 - equalityThreshold) {
                                 pag.removeEdge(a, c);
                                 pag.setEndpoint(c, b, Endpoint.ARROW);
                             }
@@ -296,19 +242,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path searched.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
      * Sets whether verbose output should be printed.
      *
      * @param verbose True, if so.
@@ -336,68 +269,12 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether to use Raskutti and Uhler's modification of GRaSP.
-     *
-     * @param useRaskuttiUhler True, if so.
-     */
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    /**
      * Sets whether to use data order for GRaSP (as opposed to random order) for the first step of GRaSP
      *
      * @param useDataOrder True, if so.
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    /**
-     * Sets whether to use score for GRaSP (as opposed to independence test) for GRaSP.
-     *
-     * @param useScore True, if so.
-     */
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
-    /**
-     * Sets whether to use the discriminating path rule for GRaSP.
-     *
-     * @param doDiscriminatingPathRule True, if so.
-     */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
-     * Sets depth for singular tucks.
-     *
-     * @param uncoveredDepth The depth for singular tucks.
-     */
-    public void setSingularDepth(int uncoveredDepth) {
-        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
-        this.uncoveredDepth = uncoveredDepth;
-    }
-
-    /**
-     * Sets depth for non-singular tucks.
-     *
-     * @param nonSingularDepth The depth for non-singular tucks.
-     */
-    public void setNonSingularDepth(int nonSingularDepth) {
-        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
-        this.nonSingularDepth = nonSingularDepth;
-    }
-
-    /**
-     * Sets whether to use the ordered version of GRaSP.
-     *
-     * @param ordered True, if so.
-     */
-    public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
     }
 
     /**
@@ -412,11 +289,14 @@ public final class LvLite implements IGraphSearch {
     /**
      * Sets the threshold used in the LV-Lite search algorithm.
      *
-     * @param threshold The threshold value to be set.
+     * @param equalityThreshold The threshold value to be set.
      */
-    public void setThreshold(double threshold) {
-        if (threshold < 0) throw new IllegalArgumentException("Threshold should be >= 0.");
+    public void setEqualityThreshold(double equalityThreshold) {
+        if (equalityThreshold < 0) throw new IllegalArgumentException("Threshold should be >= 0.");
+        this.equalityThreshold = equalityThreshold;
+    }
 
-        this.threshold = threshold;
+    public void setUseBes(boolean useBes) {
+        this.useBes = useBes;
     }
 }
