@@ -190,9 +190,9 @@ public final class LvLite implements IGraphSearch {
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
-        Graph graph = teyssierScorer.getGraph(true);
-        Graph _graph = new EdgeListGraph(graph);
-        _graph.reorientAllWith(Endpoint.CIRCLE);
+        Graph cpdag = teyssierScorer.getGraph(true);
+        Graph pag = new EdgeListGraph(cpdag);
+        pag.reorientAllWith(Endpoint.CIRCLE);
 
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
@@ -201,10 +201,10 @@ public final class LvLite implements IGraphSearch {
                     Node b = best.get(j);
                     Node c = best.get(k);
 
-                    if (graph.isAdjacentTo(a, c) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, b)
-                        && graph.getEdge(a, c).pointsTowards(c) && graph.getEdge(b, c).pointsTowards(c)) {
-                        _graph.setEndpoint(a, c, Endpoint.ARROW);
-                        _graph.setEndpoint(b, c, Endpoint.ARROW);
+                    if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && !cpdag.isAdjacentTo(a, b)
+                        && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
+                        pag.setEndpoint(a, c, Endpoint.ARROW);
+                        pag.setEndpoint(b, c, Endpoint.ARROW);
                     }
                 }
             }
@@ -212,7 +212,7 @@ public final class LvLite implements IGraphSearch {
 
         teyssierScorer.score(best);
 
-        // Look for every triangle in graph A->C, B->C, A->B
+        // Look for every triangle in cpdag A->C, B->C, A->B
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
                 for (int k = j + 1; k < best.size(); k++) {
@@ -222,16 +222,16 @@ public final class LvLite implements IGraphSearch {
 
                     double score = teyssierScorer.score(best);
 
-                    if (graph.isAdjacentTo(a, c) && graph.isAdjacentTo(b, c) && graph.isAdjacentTo(a, b)) {
-                        if (graph.getEdge(a, b).isDirected() && graph.getEdge(b, c).isDirected()
-                            /*&& graph.getEdge(a, c).isDirected()*/
-                            && graph.getEdge(a, b).pointsTowards(b) && graph.getEdge(b, c).pointsTowards(c)
-                            /*&& graph.getEdge(a, c).pointsTowards(c)*/) {
+                    if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && cpdag.isAdjacentTo(a, b)) {
+                        if (cpdag.getEdge(a, b).isDirected() && cpdag.getEdge(b, c).isDirected()
+                            /*&& cpdag.getEdge(a, c).isDirected()*/
+                            && cpdag.getEdge(a, b).pointsTowards(b) && cpdag.getEdge(b, c).pointsTowards(c)
+                            /*&& cpdag.getEdge(a, c).pointsTowards(c)*/) {
                             teyssierScorer.tuck(a, best.indexOf(b));
 
                             if (teyssierScorer.score() > score - threshold /* !teyssierScorer.adjacent(a, c)*/) {
-                                _graph.removeEdge(a, c);
-                                _graph.setEndpoint(c, b, Endpoint.ARROW);
+                                pag.removeEdge(a, c);
+                                pag.setEndpoint(c, b, Endpoint.ARROW);
                             }
                         }
                     }
@@ -239,7 +239,7 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        SepsetProducer sepsets = new SepsetsGreedy(_graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -247,14 +247,14 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(_graph);
+        fciOrient.doFinalOrientation(pag);
 
-        GraphUtils.replaceNodes(_graph, this.independenceTest.getVariables());
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
 
-        _graph = GraphTransforms.zhangMagFromPag(_graph);
-        _graph = GraphTransforms.dagToPag(_graph);
+        pag = GraphTransforms.zhangMagFromPag(pag);
+        pag = GraphTransforms.dagToPag(pag);
 
-        return _graph;
+        return pag;
     }
 
     /**
