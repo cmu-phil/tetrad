@@ -40,7 +40,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV Lite",
+        name = "LV-Lite",
         command = "lv-lite",
         algoType = AlgType.allow_latent_common_causes
 )

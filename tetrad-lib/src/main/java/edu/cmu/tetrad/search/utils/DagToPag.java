@@ -41,7 +41,7 @@ import java.util.WeakHashMap;
  */
 public final class DagToPag {
 
-    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
+//    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
     private final Graph dag;
     /**
      * The logger to use.
@@ -107,7 +107,7 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-        if (history.get(dag) != null) return history.get(dag);
+//        if (history.get(dag) != null) return history.get(dag);
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
@@ -139,7 +139,7 @@ public final class DagToPag {
             System.out.println("Finishing final orientation");
         }
 
-        history.put(dag, graph);
+//        history.put(dag, graph);
 
         return graph;
     }

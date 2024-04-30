@@ -30,7 +30,7 @@ public class BidirectedEst implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "#X<->Y";
+        return "#X<->Y (E)";
     }
 
     /**
@@ -38,7 +38,7 @@ public class BidirectedEst implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number of True Bidirected Edges";
+        return "Number of bidirected edges in estimated PAG";
     }
 
     /**

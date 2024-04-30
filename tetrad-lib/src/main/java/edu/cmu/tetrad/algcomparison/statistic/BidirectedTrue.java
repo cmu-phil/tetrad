@@ -29,7 +29,7 @@ public class BidirectedTrue implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "BT";
+        return "#X<->Y (T)";
     }
 
     /**
@@ -37,7 +37,7 @@ public class BidirectedTrue implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number of estimated bidirected edges";
+        return "Number of bidirected edges in true PAG";
     }
 
     /**
@@ -52,8 +52,6 @@ public class BidirectedTrue implements Statistic {
         for (Edge edge : pag.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) t++;
         }
-
-        System.out.println("True # bidirected edges = " + t);
 
         return t;
     }

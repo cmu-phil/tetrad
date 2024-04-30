@@ -123,7 +123,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + this.test.getDescription();
+        return "CFCI (Conservative Fast Causal Inference) using " + this.test.getDescription();
     }
 
     /**

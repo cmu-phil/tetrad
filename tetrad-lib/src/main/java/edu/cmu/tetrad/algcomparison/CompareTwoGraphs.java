@@ -263,7 +263,7 @@ public class CompareTwoGraphs {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new NumberOfEdgesTrue());
-        statistics.add(new NumCorrectVisibleAncestors());
+        statistics.add(new NumCorrectVisibleEdges());
         statistics.add(new PercentBidirectedEdges());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
