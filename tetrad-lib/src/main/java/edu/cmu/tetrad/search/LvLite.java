@@ -187,9 +187,6 @@ public final class LvLite implements IGraphSearch {
         assert variables != null;
 
         List<Node> best = alg.bestOrder(variables);
-//        Graph graph = alg.getGraph(true);
-//        Graph _graph = new EdgeListGraph(graph);
-//        _graph.reorientAllWith(Endpoint.CIRCLE);
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
@@ -237,39 +234,12 @@ public final class LvLite implements IGraphSearch {
                                 _graph.setEndpoint(c, b, Endpoint.ARROW);
                             }
                         }
-
-
-//                        teyssierScorer.tuck(c, best.indexOf(a));
-//                        if (teyssierScorer.score() > score - 0.01) {
-////                            graph.removeEdge(a, c);
-//                            graph.removeEdge(b, c);
-//                            graph.addBidirectedEdge(b, c);
-//                        }
                     }
                 }
             }
         }
 
-        graph = _graph;
-
-//        if (true) {
-//            return graph;
-//        }
-
-//        Graph referenceDag = new EdgeListGraph(graph);
-//
-//        // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        SepsetProducer sepsets;
-//
-//        if (independenceTest instanceof MsepTest) {
-//            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-//        } else {
-//            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        }
-//
-//        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-//        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        SepsetProducer sepsets = new SepsetsGreedy(_graph, this.independenceTest, null, this.depth, knowledge);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -277,14 +247,14 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.doFinalOrientation(_graph);
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+        GraphUtils.replaceNodes(_graph, this.independenceTest.getVariables());
 
-        graph = GraphTransforms.zhangMagFromPag(graph);
-        graph = GraphTransforms.dagToPag(graph);
+        _graph = GraphTransforms.zhangMagFromPag(_graph);
+        _graph = GraphTransforms.dagToPag(_graph);
 
-        return graph;
+        return _graph;
     }
 
     /**
