@@ -137,25 +137,59 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
-        Boss suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
-        suborderSearch.setResetAfterBM(true);
-        suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(verbose);
-        suborderSearch.setUseBes(useBes);
-        suborderSearch.setUseDataOrder(useDataOrder);
-        suborderSearch.setNumStarts(numStarts);
-        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.setSeed(seed);
-        permutationSearch.search();
-        List<Node> best = permutationSearch.getOrder();
+        List<Node> best;
+
+        if (false) {
+            // The PAG being constructed.
+            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+            Grasp alg = new Grasp(independenceTest, score);
+            alg.setSeed(seed);
+            alg.setUseDataOrder(false);
+            int graspDepth = 3;
+            alg.setDepth(graspDepth);
+            alg.setUncoveredDepth(1);
+            alg.setNonSingularDepth(1);
+            alg.setNumStarts(numStarts);
+            alg.setVerbose(verbose);
+            alg.setNumStarts(numStarts);
+
+            List<Node> variables = this.score.getVariables();
+            assert variables != null;
+
+            best = alg.bestOrder(variables);
+        } else {
+            Boss suborderSearch = new Boss(score);
+            suborderSearch.setKnowledge(knowledge);
+            suborderSearch.setResetAfterBM(true);
+            suborderSearch.setResetAfterRS(true);
+            suborderSearch.setVerbose(verbose);
+            suborderSearch.setUseBes(false);
+            suborderSearch.setUseDataOrder(true);
+            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+            permutationSearch.setKnowledge(knowledge);
+//            permutationSearch.setSeed(seed);
+            permutationSearch.search();
+            best = permutationSearch.getOrder();
+        }
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
         Graph cpdag = teyssierScorer.getGraph(true);
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
+
+        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
+
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
+
+//        if (true) return pag;
 
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
@@ -166,8 +200,14 @@ public final class LvLite implements IGraphSearch {
 
                     if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && !cpdag.isAdjacentTo(a, b)
                         && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
-                        pag.setEndpoint(a, c, Endpoint.ARROW);
-                        pag.setEndpoint(b, c, Endpoint.ARROW);
+                        if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
+                            pag.setEndpoint(a, c, Endpoint.ARROW);
+                            pag.setEndpoint(b, c, Endpoint.ARROW);
+                        }
+
+//                        pag.setEndpoint(a, c, Endpoint.ARROW);
+//                        pag.setEndpoint(b, c, Endpoint.ARROW);
+//                    }
                     }
                 }
             }
@@ -189,14 +229,22 @@ public final class LvLite implements IGraphSearch {
                     Edge ac = cpdag.getEdge(a, c);
 
                     if (ab != null && bc != null && ac != null) {
-                        if (ab.pointsTowards(b) && bc.pointsTowards(c)) {
+                        if (bc.pointsTowards(c) && (ab.pointsTowards(b) || ac.pointsTowards(c))) {
                             teyssierScorer.goToBookmark();
                             teyssierScorer.tuck(a, best.indexOf(b));
                             double s2 = teyssierScorer.score();
 
                             if (s2 > s1 - equalityThreshold) {
-                                pag.removeEdge(a, c);
-                                pag.setEndpoint(c, b, Endpoint.ARROW);
+//                                if (!teyssierScorer.adjacent(a, c)) {
+                                    if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)
+                                        && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+                                        pag.removeEdge(a, c);
+                                        pag.setEndpoint(a, b, Endpoint.ARROW);
+                                        pag.setEndpoint(c, b, Endpoint.ARROW);
+//                                    }
+                                }
+//                                        pag.removeEdge(a, c);
+//                                        pag.setEndpoint(c, b, Endpoint.ARROW);
                             }
                         }
                     }
@@ -204,20 +252,23 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
+//        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
+//
+//        FciOrient fciOrient = new FciOrient(sepsets);
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        fciOrient.setDoDiscriminatingPathColliderRule(true);
+//        fciOrient.setDoDiscriminatingPathTailRule(true);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(knowledge);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(pag);
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
 
         pag = GraphTransforms.zhangMagFromPag(pag);
         pag = GraphTransforms.dagToPag(pag);
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
 
         return pag;
     }
