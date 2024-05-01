@@ -50,9 +50,9 @@ public class NumCorrectVisibleEdges implements Statistic {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                List<List<Node>> treks = estGraph.paths().treks(x, y, -1);
+                boolean existsLatentConfounder = false;
 
-                boolean found = false;
+                List<List<Node>> treks = estGraph.paths().treks(x, y, -1);
 
                 // If there is a trek, x<~~z~~>y, where z is latent, then the edge is not semantically visible.
                 for (List<Node> trek : treks) {
@@ -60,13 +60,29 @@ public class NumCorrectVisibleEdges implements Statistic {
                         Node source = getSource(estGraph, trek);
 
                         if (source.getNodeType() == NodeType.LATENT) {
-                            found = true;
-                            break;
+                            if (source != x && source != y) {
+                                boolean allLatent = true;
+
+                                for (int i = 1; i < trek.size() - 1; i++) {
+                                    Node z = trek.get(i);
+
+                                    if (z.getNodeType() != NodeType.LATENT) {
+                                        allLatent = false;
+                                        break;
+                                    }
+                                }
+
+                                if (allLatent) {
+                                    existsLatentConfounder = true;
+                                    break;
+                                }
+                            }
+
                         }
                     }
                 }
 
-                if (!found) {
+                if (!existsLatentConfounder) {
                     tp++;
                 }
             }

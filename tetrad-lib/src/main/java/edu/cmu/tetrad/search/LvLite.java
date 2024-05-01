@@ -164,7 +164,7 @@ public final class LvLite implements IGraphSearch {
             suborderSearch.setResetAfterRS(true);
             suborderSearch.setVerbose(verbose);
             suborderSearch.setUseBes(false);
-            suborderSearch.setUseDataOrder(true);
+            suborderSearch.setUseDataOrder(false);
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             permutationSearch.setKnowledge(knowledge);
 //            permutationSearch.setSeed(seed);
@@ -182,14 +182,12 @@ public final class LvLite implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setDoDiscriminatingPathColliderRule(false);
+        fciOrient.setDoDiscriminatingPathTailRule(false);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
         fciOrient.fciOrientbk(knowledge, pag, best);
-
-//        if (true) return pag;
 
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
@@ -199,15 +197,11 @@ public final class LvLite implements IGraphSearch {
                     Node c = best.get(k);
 
                     if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && !cpdag.isAdjacentTo(a, b)
-                        && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
+                            && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
                         if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
                             pag.setEndpoint(a, c, Endpoint.ARROW);
                             pag.setEndpoint(b, c, Endpoint.ARROW);
                         }
-
-//                        pag.setEndpoint(a, c, Endpoint.ARROW);
-//                        pag.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
                     }
                 }
             }
@@ -236,15 +230,25 @@ public final class LvLite implements IGraphSearch {
 
                             if (s2 > s1 - equalityThreshold) {
 //                                if (!teyssierScorer.adjacent(a, c)) {
-                                    if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)
-                                        && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                                        pag.removeEdge(a, c);
-                                        pag.setEndpoint(a, b, Endpoint.ARROW);
-                                        pag.setEndpoint(c, b, Endpoint.ARROW);
-//                                    }
+                                pag.removeEdge(ab);
+
+                                if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge)
+                                        && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+                                    pag.setEndpoint(c, b, Endpoint.ARROW);
+                                } else {
+                                    pag.addEdge(ac);
                                 }
-//                                        pag.removeEdge(a, c);
-//                                        pag.setEndpoint(c, b, Endpoint.ARROW);
+//                                }
+//                                pag.removeEdge(ac);
+//
+//                                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)
+//                                        && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+//                                    pag.setEndpoint(c, b, Endpoint.ARROW);
+//                                } else {
+//                                    pag.addEdge(ac);
+//                                }
                             }
                         }
                     }
