@@ -1,14 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 
 import java.io.Serial;
-
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import java.util.List;
 
 /**
  * The bidirected true positives.
@@ -54,7 +50,20 @@ public class BidirectedLatentPrecision implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (existsLatentCommonAncestor(trueGraph, edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+                boolean existsLatentConfounder = false;
+
+                for (List<Node> trek : treks) {
+                    if (GraphUtils.isConfoundingTrek(trueGraph, trek, x, y)) {
+                        existsLatentConfounder = true;
+                        System.out.println(GraphUtils.pathString(trueGraph, trek));
+                    }
+                }
+
+                if (existsLatentConfounder) {
                     tp++;
                 } else {
                     fp++;

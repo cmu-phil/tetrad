@@ -2683,6 +2683,54 @@ public final class GraphUtils {
         return _graph;
     }
 
+    public static boolean isConfoundingTrek(Graph trueGraph, List<Node> trek, Node x, Node y) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            return false;
+        }
+
+        Node source = getTrekSource(trueGraph, trek);
+
+        if (source == x || source == y) {
+            return false;
+        }
+
+        if (trek.size() < 3) {
+            return false;
+        }
+
+        boolean allLatent = true;
+
+        for (int i = 1; i < trek.size() - 1; i++) {
+            Node z = trek.get(i);
+
+            if (z.getNodeType() != NodeType.LATENT) {
+                allLatent = false;
+                break;
+            }
+        }
+
+        return allLatent;
+    }
+
+    public static Node getTrekSource(Graph graph, List<Node> trek) {
+        Node y = trek.get(trek.size() - 1);
+
+        Node source = y;
+
+        // Find the first node where the direction is left to right.
+        for (int i = 0; i < trek.size() - 1; i++) {
+            Node n1 = trek.get(i);
+            Node n2 = trek.get(i + 1);
+
+            if (graph.getEdge(n1, n2).pointsTowards(n2)) {
+                source = n1;
+                break;
+            }
+        }
+
+        return source;
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

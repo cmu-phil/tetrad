@@ -52,33 +52,13 @@ public class NumCorrectVisibleEdges implements Statistic {
 
                 boolean existsLatentConfounder = false;
 
-                List<List<Node>> treks = estGraph.paths().treks(x, y, -1);
+                List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
 
                 // If there is a trek, x<~~z~~>y, where z is latent, then the edge is not semantically visible.
                 for (List<Node> trek : treks) {
-                    if (trek.size() > 2) {
-                        Node source = getSource(estGraph, trek);
-
-                        if (source.getNodeType() == NodeType.LATENT) {
-                            if (source != x && source != y) {
-                                boolean allLatent = true;
-
-                                for (int i = 1; i < trek.size() - 1; i++) {
-                                    Node z = trek.get(i);
-
-                                    if (z.getNodeType() != NodeType.LATENT) {
-                                        allLatent = false;
-                                        break;
-                                    }
-                                }
-
-                                if (allLatent) {
-                                    existsLatentConfounder = true;
-                                    break;
-                                }
-                            }
-
-                        }
+                    if (GraphUtils.isConfoundingTrek(trueGraph, trek, x, y)) {
+                        existsLatentConfounder = true;
+                        break;
                     }
                 }
 
@@ -88,27 +68,7 @@ public class NumCorrectVisibleEdges implements Statistic {
             }
         }
 
-        return  tp;
-    }
-
-    private Node getSource(Graph graph, List<Node> trek) {
-        Node x = trek.get(0);
-        Node y = trek.get(trek.size() - 1);
-
-        Node source = y;
-
-        // Find the first node where the direction is left to right.
-        for (int i = 0; i < trek.size() - 1; i++) {
-            Node n1 = trek.get(i);
-            Node n2 = trek.get(i + 1);
-
-            if (graph.getEdge(n1, n2).pointsTowards(n2)) {
-                source = n1;
-                break;
-            }
-        }
-
-        return source;
+        return tp;
     }
 
     /**

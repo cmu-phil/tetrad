@@ -223,32 +223,26 @@ public final class LvLite implements IGraphSearch {
                     Edge ac = cpdag.getEdge(a, c);
 
                     if (ab != null && bc != null && ac != null) {
-                        if (bc.pointsTowards(c) && (ab.pointsTowards(b) || ac.pointsTowards(c))) {
+                        if (bc.pointsTowards(c) && (ab.pointsTowards(b))) {// ac.pointsTowards(c))) {
                             teyssierScorer.goToBookmark();
                             teyssierScorer.tuck(a, best.indexOf(b));
                             double s2 = teyssierScorer.score();
 
                             if (s2 > s1 - equalityThreshold) {
 //                                if (!teyssierScorer.adjacent(a, c)) {
-                                pag.removeEdge(ab);
+                                pag.removeEdge(ac);
 
                                 if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge)
                                         && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+                                    pag.setEndpoint(a, b, Endpoint.ARROW);
                                     pag.setEndpoint(c, b, Endpoint.ARROW);
+
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + c + " -> " + b + " and removing " + a + " -> " + c);
+                                    }
                                 } else {
                                     pag.addEdge(ac);
                                 }
-//                                }
-//                                pag.removeEdge(ac);
-//
-//                                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)
-//                                        && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-//                                    pag.setEndpoint(c, b, Endpoint.ARROW);
-//                                } else {
-//                                    pag.addEdge(ac);
-//                                }
                             }
                         }
                     }
