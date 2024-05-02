@@ -198,10 +198,16 @@ public final class LvLite implements IGraphSearch {
                     Node c = best.get(k);
 
                     if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && !cpdag.isAdjacentTo(a, b)
-                            && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
+                        && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
                         if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
                             pag.setEndpoint(a, c, Endpoint.ARROW);
                             pag.setEndpoint(b, c, Endpoint.ARROW);
+
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + c + " <- " + b
+                                                                           + " from CPDAG to PAG");
+
+                            }
                         }
                     }
                 }
@@ -234,12 +240,15 @@ public final class LvLite implements IGraphSearch {
                                 pag.removeEdge(ac);
 
                                 if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge)
-                                        && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                                    && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                                    Edge _bc = pag.getEdge(b, c);
+
 //                                    pag.setEndpoint(a, b, Endpoint.ARROW);
                                     pag.setEndpoint(c, b, Endpoint.ARROW);
 
                                     if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + c + " -> " + b + " and removing " + a + " -> " + c);
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + _bc + " to " + pag.getEdge(b, c)
+                                                                                   + " and removing " + pag.getEdge(a, c));
                                     }
                                 } else {
                                     pag.addEdge(ac);

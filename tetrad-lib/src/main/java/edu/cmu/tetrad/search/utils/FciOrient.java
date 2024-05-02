@@ -1135,7 +1135,10 @@ public final class FciOrient {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             this.changeFlag = true;
-            this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
+            }
         }
 
         for (Iterator<KnowledgeEdge> it
@@ -1165,7 +1168,10 @@ public final class FciOrient {
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
             this.changeFlag = true;
-            this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            }
         }
 
         if (verbose) {
