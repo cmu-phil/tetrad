@@ -9,19 +9,6 @@ import java.util.List;
 /**
  * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
  * the percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
- *
- * This statistic is computed using the following formula:
- * tp / pos
- * where tp represents the number of correctly identified bidirected edges and pos represents the total number of
- * bidirected edges in the estimated graph.
- *
- * The abbreviation for this statistic is "<->-Lat-Prec" and the description is "Percent of bidirected edges for which
- * a latent confounder exists".
- *
- * This class provides methods to get the abbreviation, the description, the value of the statistic given the true and
- * estimated graphs, and the normalized value of the statistic.
- *
- * @see Statistic
  */
 public class BidirectedLatentPrecision implements Statistic {
     @Serial
@@ -30,23 +17,13 @@ public class BidirectedLatentPrecision implements Statistic {
     /**
      * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
      * the percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
-     *
-     * This statistic is computed using the following formula:
-     * tp / pos
-     * where tp represents the number of correctly identified bidirected edges and pos represents the total number of
-     * bidirected edges in the estimated graph.
-     *
-     * The abbreviation for this statistic is "<->-Lat-Prec" and the description is "Percent of bidirected edges for which
-     * a latent confounder exists".
-     *
-     * @see Statistic
      */
     public BidirectedLatentPrecision() {
     }
 
     /**
      * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic.
-     * For this statistic, the abbreviation is "<->-Lat-Prec".
+     * For this statistic, the abbreviation is "&lt;-&gt;-Lat-Prec".
      *
      * @return The abbreviation for the statistic.
      */

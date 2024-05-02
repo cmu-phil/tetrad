@@ -238,14 +238,29 @@ public class PermutationSearch {
         }
     }
 
+    /**
+     * Retrieves the value of cpdag.
+     *
+     * @return The value of the cpdag flag.
+     */
     public boolean getCpdag() {
         return cpdag;
     }
 
+    /**
+     * Sets the flag indicating whether a CPDAG (partially directed acyclic graph) is wanted or not.
+     *
+     * @param cpdag The value indicating whether a CPDAG is wanted or not.
+     */
     public void setCpdag(boolean cpdag) {
         this.cpdag = cpdag;
     }
 
+    /**
+     * Sets the seed value used for generating random numbers.
+     *
+     * @param seed The seed value to set.
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

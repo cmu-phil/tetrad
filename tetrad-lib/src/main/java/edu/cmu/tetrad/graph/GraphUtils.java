@@ -1852,7 +1852,7 @@ public final class GraphUtils {
      * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
      * @param nodes          The nodes in the graph.
      * @param sepsets        A SepsetProducer that will do the sepset search operation described.
-     * @param verbose
+     * @param verbose        Whether to print verbose output.
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
         for (Node b : nodes) {
@@ -2428,7 +2428,7 @@ public final class GraphUtils {
      * @param referenceCpdag The reference CPDAG to guide the orientation of edges.
      * @param sepsets        The sepsets used to determine the orientation of edges.
      * @param knowledge      The knowledge used to determine the orientation of edges.
-     * @param verbose
+     * @param verbose        Whether to print verbose output.
      */
     public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose) {
@@ -2683,6 +2683,16 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * Checks if the given trek in a graph is a confounding trek. This is a trek from measured node x to measured node y
+     * that has only latent nodes in between.
+     *
+     * @param trueGraph the true graph representing the causal relationships between nodes
+     * @param trek      the trek to be checked
+     * @param x         the first node in the trek
+     * @param y         the last node in the trek
+     * @return true if the trek is a confounding trek, false otherwise
+     */
     public static boolean isConfoundingTrek(Graph trueGraph, List<Node> trek, Node x, Node y) {
         if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             return false;
@@ -2712,6 +2722,13 @@ public final class GraphUtils {
         return allLatent;
     }
 
+    /**
+     * This method returns the source node of a given trek in a graph.
+     *
+     * @param graph The graph containing the nodes and edges.
+     * @param trek  The list of nodes representing the trek.
+     * @return The source node of the trek.
+     */
     public static Node getTrekSource(Graph graph, List<Node> trek) {
         Node y = trek.get(trek.size() - 1);
 
@@ -2734,7 +2751,6 @@ public final class GraphUtils {
     /**
      * Determines if the given bidirected edge has a latent confounder in the true graph.
      *
-     * @param tp        The time point.
      * @param edge      The edge to check.
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
@@ -2742,7 +2758,7 @@ public final class GraphUtils {
      */
     public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
         if (!Edges.isBidirectedEdge(edge)) {
-            throw new IllegalArgumentException("The edge is not bidirected: " + edge );
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
         }
 
         Node x = edge.getNode1();
@@ -2757,7 +2773,7 @@ public final class GraphUtils {
             }
         }
 
-        return  existsLatentConfounder;
+        return existsLatentConfounder;
     }
 
     /**

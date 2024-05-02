@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import java.io.Serial;
 
 /**
- * Counts the number of X<->Y edges for which a latent confounder of X and Y exists.
+ * Counts the number of X&lt;-&gt;Y edges for which a latent confounder of X and Y exists.
  *
  * @author josephramsey
  * @version $Id: $Id

@@ -355,6 +355,11 @@ public final class LvLite implements IGraphSearch {
         this.equalityThreshold = equalityThreshold;
     }
 
+    /**
+     * Sets whether to use Bes algorithm for search.
+     *
+     * @param useBes True, if using Bes algorithm. False, otherwise.
+     */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
     }
