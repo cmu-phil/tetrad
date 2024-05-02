@@ -163,8 +163,9 @@ public final class LvLite implements IGraphSearch {
             suborderSearch.setResetAfterBM(true);
             suborderSearch.setResetAfterRS(true);
             suborderSearch.setVerbose(verbose);
-            suborderSearch.setUseBes(false);
+            suborderSearch.setUseBes(true);
             suborderSearch.setUseDataOrder(false);
+//            suborderSearch.setNumStarts(2);
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             permutationSearch.setKnowledge(knowledge);
 //            permutationSearch.setSeed(seed);
@@ -182,8 +183,8 @@ public final class LvLite implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(false);
-        fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
@@ -223,7 +224,7 @@ public final class LvLite implements IGraphSearch {
                     Edge ac = cpdag.getEdge(a, c);
 
                     if (ab != null && bc != null && ac != null) {
-                        if (bc.pointsTowards(c) && (ab.pointsTowards(b))) {// ac.pointsTowards(c))) {
+                        if (bc.pointsTowards(c) && ab.pointsTowards(b) && ac.pointsTowards(c)) {
                             teyssierScorer.goToBookmark();
                             teyssierScorer.tuck(a, best.indexOf(b));
                             double s2 = teyssierScorer.score();
@@ -234,7 +235,7 @@ public final class LvLite implements IGraphSearch {
 
                                 if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge)
                                         && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
                                     pag.setEndpoint(c, b, Endpoint.ARROW);
 
                                     if (verbose) {
@@ -263,8 +264,8 @@ public final class LvLite implements IGraphSearch {
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
 
-        pag = GraphTransforms.zhangMagFromPag(pag);
-        pag = GraphTransforms.dagToPag(pag);
+//        pag = GraphTransforms.zhangMagFromPag(pag);
+//        pag = GraphTransforms.dagToPag(pag);
 
         fciOrient.fciOrientbk(knowledge, pag, best);
 

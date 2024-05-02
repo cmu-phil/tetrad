@@ -7,23 +7,48 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * The bidirected true positives.
+ * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
+ * the percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
  *
- * @author josephramsey
- * @version $Id: $Id
+ * This statistic is computed using the following formula:
+ * tp / pos
+ * where tp represents the number of correctly identified bidirected edges and pos represents the total number of
+ * bidirected edges in the estimated graph.
+ *
+ * The abbreviation for this statistic is "<->-Lat-Prec" and the description is "Percent of bidirected edges for which
+ * a latent confounder exists".
+ *
+ * This class provides methods to get the abbreviation, the description, the value of the statistic given the true and
+ * estimated graphs, and the normalized value of the statistic.
+ *
+ * @see Statistic
  */
 public class BidirectedLatentPrecision implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs a new instance of the statistic.
+     * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
+     * the percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
+     *
+     * This statistic is computed using the following formula:
+     * tp / pos
+     * where tp represents the number of correctly identified bidirected edges and pos represents the total number of
+     * bidirected edges in the estimated graph.
+     *
+     * The abbreviation for this statistic is "<->-Lat-Prec" and the description is "Percent of bidirected edges for which
+     * a latent confounder exists".
+     *
+     * @see Statistic
      */
     public BidirectedLatentPrecision() {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic.
+     * For this statistic, the abbreviation is "<->-Lat-Prec".
+     *
+     * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -31,7 +56,9 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a short description of the statistic, which is the percentage of bidirected edges for which a latent confounder exists.
+     *
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -39,44 +66,39 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the percentage of correctly identified bidirected edges in an estimated graph
+     * for which a latent confounder exists in the true graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The percentage of correctly identified bidirected edges.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
-        int fp = 0;
+        int pos = 0;
 
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
-                boolean existsLatentConfounder = false;
-
-                for (List<Node> trek : treks) {
-                    if (GraphUtils.isConfoundingTrek(trueGraph, trek, x, y)) {
-                        existsLatentConfounder = true;
-                        System.out.println(GraphUtils.pathString(trueGraph, trek));
-                    }
-                }
-
-                if (existsLatentConfounder) {
+                if (GraphUtils.isCorrectBidirectedEdge(edge, trueGraph)) {
                     tp++;
-                } else {
-                    fp++;
                 }
+
+                pos++;
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp / (double) pos;
     }
 
-
     /**
-     * {@inheritDoc}
+     * Calculates the normalized value of a given statistic value.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

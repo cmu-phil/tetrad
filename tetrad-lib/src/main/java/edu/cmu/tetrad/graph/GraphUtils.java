@@ -2732,6 +2732,35 @@ public final class GraphUtils {
     }
 
     /**
+     * Determines if the given bidirected edge has a latent confounder in the true graph.
+     *
+     * @param tp        The time point.
+     * @param edge      The edge to check.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
+     * @throws IllegalArgumentException if the edge is not bidirected.
+     */
+    public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge );
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        boolean existsLatentConfounder = false;
+
+        for (List<Node> trek : treks) {
+            if (isConfoundingTrek(trueGraph, trek, x, y)) {
+                existsLatentConfounder = true;
+            }
+        }
+
+        return  existsLatentConfounder;
+    }
+
+    /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */
     public enum GraphType {
