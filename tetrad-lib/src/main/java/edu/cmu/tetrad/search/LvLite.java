@@ -103,10 +103,12 @@ public final class LvLite implements IGraphSearch {
     private boolean doDiscriminatingPathRule = false;
 
     /**
-     * Constructs a new GraspFci object.
+     * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest
+     * and Score object.
      *
-     * @param test  The independence test.
-     * @param score a {@link Score} object
+     * @param test  The IndependenceTest object to be used for conditional independence testing.
+     * @param score The Score object to be used for scoring DAGs.
+     * @throws NullPointerException if score is null.
      */
     public LvLite(IndependenceTest test, Score score) {
         if (score == null) {
@@ -134,41 +136,18 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
-        List<Node> best;
-
-        if (false) {
-            // The PAG being constructed.
-            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
-            Grasp alg = new Grasp(independenceTest, score);
-            alg.setSeed(seed);
-            alg.setUseDataOrder(false);
-            int graspDepth = 3;
-            alg.setDepth(graspDepth);
-            alg.setUncoveredDepth(1);
-            alg.setNonSingularDepth(1);
-            alg.setNumStarts(numStarts);
-            alg.setVerbose(verbose);
-            alg.setNumStarts(numStarts);
-
-            List<Node> variables = this.score.getVariables();
-            assert variables != null;
-
-            best = alg.bestOrder(variables);
-        } else {
-            Boss suborderSearch = new Boss(score);
-            suborderSearch.setKnowledge(knowledge);
-            suborderSearch.setResetAfterBM(true);
-            suborderSearch.setResetAfterRS(true);
-            suborderSearch.setVerbose(verbose);
-            suborderSearch.setUseBes(useBes);
-            suborderSearch.setUseDataOrder(useDataOrder);
-            suborderSearch.setNumStarts(numStarts);
-            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-            permutationSearch.setKnowledge(knowledge);
-//            permutationSearch.setSeed(seed);
-            permutationSearch.search();
-            best = permutationSearch.getOrder();
-        }
+        Boss suborderSearch = new Boss(score);
+        suborderSearch.setKnowledge(knowledge);
+        suborderSearch.setResetAfterBM(true);
+        suborderSearch.setResetAfterRS(true);
+        suborderSearch.setVerbose(verbose);
+        suborderSearch.setUseBes(useBes);
+        suborderSearch.setUseDataOrder(useDataOrder);
+        suborderSearch.setNumStarts(numStarts);
+        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        permutationSearch.search();
+        List<Node> best = permutationSearch.getOrder();
 
         TetradLogger.getInstance().forceLogMessage("Best order: " + best);
 
@@ -214,7 +193,6 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        double s1 = teyssierScorer.score(best);
         teyssierScorer.bookmark();
 
         Set<Edge> toRemove = new HashSet<>();
