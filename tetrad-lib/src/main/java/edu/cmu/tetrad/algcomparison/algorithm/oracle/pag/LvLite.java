@@ -29,15 +29,11 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
- * unshielded colliders.
- * <p>
- * GFCI reference is this:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
+ * This class represents the LV-Lite algorithm, which is an implementation of the LV algorithm for learning causal structures
+ * from observational data. It uses a combination of independence tests and scores to search for the best graph structure given
+ * a data set and parameters.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "LV-Lite",
