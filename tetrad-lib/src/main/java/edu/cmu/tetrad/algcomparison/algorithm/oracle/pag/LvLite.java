@@ -193,7 +193,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         return params;
     }
 
-
     /**
      * Retrieves the knowledge object associated with this method.
      *
