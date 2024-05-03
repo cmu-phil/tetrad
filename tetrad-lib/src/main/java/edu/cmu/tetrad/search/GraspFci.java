@@ -21,10 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -210,6 +207,8 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         return graph;
     }

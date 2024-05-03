@@ -28,33 +28,20 @@ import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Uses GRaSP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than
- * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here: J.M.
- * Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016. Here,
- * BOSS has been substituted for FGES.
+ * The LvLite class implements the IGraphSearch interface and represents a search algorithm for learning the structure
+ * of a graphical model from observational data.
  * <p>
- * For the first step, the GRaSP algorithm is used, with the same modifications as in the GFCI algorithm.
- * <p>
- * For the second step, the FCI final orientation algorithm is used, with the same modifications as in the GFCI
- * algorithm.
- * <p>
- * For GRaSP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test
- * and a score need to be given.
- * <p>
- * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.
+ * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
+ * Annotated Graph).
  *
  * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- * @see Grasp
- * @see GFci
- * @see FciOrient
- * @see Knowledge
  */
 public final class LvLite implements IGraphSearch {
 
@@ -93,17 +80,27 @@ public final class LvLite implements IGraphSearch {
     /**
      * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
      * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
-     *
-     * @see LvLite#setSeed(long)
      */
     private long seed = -1;
-
     /**
-     * The threshold for tucking.
+     * This flag represents whether the Bes algorithm should be used in the search.
+     * <p>
+     * If set to true, the Bes algorithm will be used. If set to false, the Bes algorithm will not be used.
+     * <p>
+     * By default, the value of this flag is false.
      */
-    private double equalityThreshold;
-
     private boolean useBes;
+    /**
+     * This variable represents whether the discriminating path rule is used in the LvLite class.
+     * <p>
+     * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
+     * considers discriminating paths when searching for patterns in the data.
+     * <p>
+     * By default, the value of this variable is set to false, indicating that the discriminating path rule is not used.
+     * To enable the use of the discriminating path rule, set the value of this variable to true using the
+     * {@link #setDoDiscriminatingPathRule(boolean)} method.
+     */
+    private boolean doDiscriminatingPathRule = false;
 
     /**
      * Constructs a new GraspFci object.
@@ -163,9 +160,9 @@ public final class LvLite implements IGraphSearch {
             suborderSearch.setResetAfterBM(true);
             suborderSearch.setResetAfterRS(true);
             suborderSearch.setVerbose(verbose);
-            suborderSearch.setUseBes(true);
-            suborderSearch.setUseDataOrder(false);
-//            suborderSearch.setNumStarts(2);
+            suborderSearch.setUseBes(useBes);
+            suborderSearch.setUseDataOrder(useDataOrder);
+            suborderSearch.setNumStarts(numStarts);
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             permutationSearch.setKnowledge(knowledge);
 //            permutationSearch.setSeed(seed);
@@ -173,8 +170,11 @@ public final class LvLite implements IGraphSearch {
             best = permutationSearch.getOrder();
         }
 
+        TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+
         TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
         teyssierScorer.score(best);
+        Graph dag = teyssierScorer.getGraph(false);
         Graph cpdag = teyssierScorer.getGraph(true);
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -183,13 +183,14 @@ public final class LvLite implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
         fciOrient.fciOrientbk(knowledge, pag, best);
 
+        // Copy unshielded colliders from DAG to PAG
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
                 for (int k = j + 1; k < best.size(); k++) {
@@ -197,8 +198,8 @@ public final class LvLite implements IGraphSearch {
                     Node b = best.get(j);
                     Node c = best.get(k);
 
-                    if (cpdag.isAdjacentTo(a, c) && cpdag.isAdjacentTo(b, c) && !cpdag.isAdjacentTo(a, b)
-                        && cpdag.getEdge(a, c).pointsTowards(c) && cpdag.getEdge(b, c).pointsTowards(c)) {
+                    if (dag.isAdjacentTo(a, c) && dag.isAdjacentTo(b, c) && !dag.isAdjacentTo(a, b)
+                        && dag.getEdge(a, c).pointsTowards(c) && dag.getEdge(b, c).pointsTowards(c)) {
                         if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
                             pag.setEndpoint(a, c, Endpoint.ARROW);
                             pag.setEndpoint(b, c, Endpoint.ARROW);
@@ -206,7 +207,6 @@ public final class LvLite implements IGraphSearch {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + c + " <- " + b
                                                                            + " from CPDAG to PAG");
-
                             }
                         }
                     }
@@ -217,10 +217,19 @@ public final class LvLite implements IGraphSearch {
         double s1 = teyssierScorer.score(best);
         teyssierScorer.bookmark();
 
-        // Look for every triangle in cpdag A->C, B->C, A->B
+        Set<Edge> toRemove = new HashSet<>();
+
+        Set<Pair<Node, Node>> arrows = new HashSet<>();
+
+        // Our extra collider orientation step to orient <-> edges:
+        // For every <a, b, c>, with a, b, c adjacent in the PAG
         for (int i = 0; i < best.size(); i++) {
-            for (int j = i + 1; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
+            for (int j = 0; j < best.size(); j++) {
+                for (int k = 0; k < best.size(); k++) {
+                    if (i == j || i == k || j == k) {
+                        continue;
+                    }
+
                     Node a = best.get(i);
                     Node b = best.get(j);
                     Node c = best.get(k);
@@ -229,29 +238,27 @@ public final class LvLite implements IGraphSearch {
                     Edge bc = cpdag.getEdge(b, c);
                     Edge ac = cpdag.getEdge(a, c);
 
-                    if (ab != null && bc != null && ac != null) {
-                        if (bc.pointsTowards(c) && ab.pointsTowards(b) && ac.pointsTowards(c)) {
+                    Edge _ab = pag.getEdge(a, b);
+                    Edge _bc = pag.getEdge(b, c);
+                    Edge _ac = pag.getEdge(a, c);
+
+                    if (ab != null && (bc != null && bc.pointsTowards(c)) && (ac != null && ac.pointsTowards(c))) {
+                        if (_ab != null && (_bc != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ac != null) {
                             teyssierScorer.goToBookmark();
-                            teyssierScorer.tuck(a, best.indexOf(b));
-                            double s2 = teyssierScorer.score();
 
-                            if (s2 > s1 - equalityThreshold) {
-//                                if (!teyssierScorer.adjacent(a, c)) {
-                                pag.removeEdge(ac);
+                            // Tuck the edge b -> c
+                            teyssierScorer.tuck(c, b);
 
-                                if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge)
-                                    && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                                    Edge _bc = pag.getEdge(b, c);
+                            // If the score is the same (drops less than a threshold amount)), and the collider is allowed,
+                            // remove the a *-* c edge from the pag and orient a *-> b <-* c.
+                            if (!teyssierScorer.adjacent(a, c)) {
+                                if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
+                                    toRemove.add(pag.getEdge(a, c));
+                                    arrows.add(Pair.of(a, b));
+                                    arrows.add(Pair.of(c, b));
 
-//                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-                                    pag.setEndpoint(c, b, Endpoint.ARROW);
-
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + _bc + " to " + pag.getEdge(b, c)
-                                                                                   + " and removing " + pag.getEdge(a, c));
-                                    }
-                                } else {
-                                    pag.addEdge(ac);
+                                    TetradLogger.getInstance().forceLogMessage("Scheduling removal of " + pag.getEdge(a, c));
+                                    TetradLogger.getInstance().forceLogMessage("Scheduling " + a + " -> " + b + " <- " + c + " for orientation.");
                                 }
                             }
                         }
@@ -260,23 +267,53 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-//        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
-//
-//        FciOrient fciOrient = new FciOrient(sepsets);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setDoDiscriminatingPathColliderRule(true);
-//        fciOrient.setDoDiscriminatingPathTailRule(true);
-//        fciOrient.setVerbose(verbose);
-//        fciOrient.setKnowledge(knowledge);
+        for (Edge edge : toRemove) {
+            Edge n12 = pag.getEdge(edge.getNode1(), edge.getNode2());
+            pag.removeEdge(n12);
+
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage("Removing edge " + n12);
+            }
+        }
+
+        for (Pair<Node, Node> arrow : arrows) {
+            if (!pag.isAdjacentTo(arrow.getLeft(), arrow.getRight())) {
+                continue;
+            }
+
+            if (pag.paths().isAncestorOf(arrow.getRight(), arrow.getLeft())) {
+                continue;
+            }
+
+            Edge edge = pag.getEdge(arrow.getLeft(), arrow.getRight());
+
+            pag.setEndpoint(arrow.getLeft(), arrow.getRight(), Endpoint.ARROW);
+
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage("Orienting " + edge + " to " + pag.getEdge(arrow.getLeft(), arrow.getRight()));
+            }
+        }
 
         fciOrient.doFinalOrientation(pag);
 
-        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        for (Edge edge : pag.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
+                if (pag.paths().existsDirectedPath(x, y)) {
+                    pag.setEndpoint(y, x, Endpoint.TAIL);
+                } else if (pag.paths().existsDirectedPath(y, x)) {
+                    pag.setEndpoint(x, y, Endpoint.TAIL);
+                }
+            }
+        }
+
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
 //        pag = GraphTransforms.zhangMagFromPag(pag);
 //        pag = GraphTransforms.dagToPag(pag);
 
-        fciOrient.fciOrientbk(knowledge, pag, best);
+//        fciOrient.fciOrientbk(knowledge, pag, best);
 
         return pag;
     }
@@ -337,22 +374,12 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * <p>Setter for the field <code>seed</code>.</p>
+     * Sets the seed for the random number generator used by the search algorithm.
      *
-     * @param seed a long
+     * @param seed The seed to set for the random number generator.
      */
     public void setSeed(long seed) {
         this.seed = seed;
-    }
-
-    /**
-     * Sets the threshold used in the LV-Lite search algorithm.
-     *
-     * @param equalityThreshold The threshold value to be set.
-     */
-    public void setEqualityThreshold(double equalityThreshold) {
-        if (equalityThreshold < 0) throw new IllegalArgumentException("Threshold should be >= 0.");
-        this.equalityThreshold = equalityThreshold;
     }
 
     /**
@@ -362,5 +389,14 @@ public final class LvLite implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
+    }
+
+    /**
+     * Sets whether to use the discriminating path rule during the search algorithm.
+     *
+     * @param doDiscriminatingPathRule true if the discriminating path rule should be used, false otherwise.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }

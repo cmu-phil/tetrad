@@ -68,11 +68,28 @@ public class SepsetsMaxP implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
+     * Returns the set of nodes in the sepset between two given nodes, or null if no sepset is found.
+     *
+     * @param i the first node
+     * @param k the second node
+     * @return a Set of Node objects representing the sepset between the two nodes, or null if no sepset is found.
      */
     public Set<Node> getSepset(Node i, Node k) {
+        return getSepsetContaining(i, k, null);
+    }
+
+    /**
+     * Returns the set of nodes in the sepset between two given nodes containing a given set of separator nodes, or null
+     * if no sepset is found. If there is no required set of nodes, pass null for the set.
+     *
+     * @param i the first node
+     * @param k the second node
+     * @param s A set of nodes that must be in the sepset, or null if no such set is required.
+     * @return a Set of Node objects representing the sepset between the two nodes containing the given set, or null if
+     * no sepset is found
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
         double _p = -1;
         Set<Node> _v = null;
 
@@ -98,6 +115,10 @@ public class SepsetsMaxP implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    if (s == null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {
@@ -116,6 +137,11 @@ public class SepsetsMaxP implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    if (s == null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {

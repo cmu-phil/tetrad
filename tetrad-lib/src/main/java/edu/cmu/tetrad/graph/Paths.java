@@ -1230,11 +1230,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>getInducingPath.</p>
+     * This method calculates the inducing path between two measured nodes in a graph.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.List} object
+     * @param x the first measured node in the graph
+     * @param y the second measured node in the graph
+     * @return the inducing path between node x and node y, or null if no inducing path exists
+     * @throws IllegalArgumentException if either x or y is not of NodeType.MEASURED
      */
     public List<Node> getInducingPath(Node x, Node y) {
         if (x.getNodeType() != NodeType.MEASURED) {

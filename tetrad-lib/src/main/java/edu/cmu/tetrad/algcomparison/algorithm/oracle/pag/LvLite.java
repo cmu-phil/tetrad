@@ -119,12 +119,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI
+        // FCI-ORIENT
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-        // LV-Lite
-        search.setEqualityThreshold(parameters.getDouble(Params.THRESHOLD_LV_LITE));
+        boolean aBoolean = parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE);
+        search.setDoDiscriminatingPathRule(aBoolean);
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -182,12 +181,14 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
-        // FCI
+        // FCI-ORIENT
         params.add(Params.DEPTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
 
         // LV-Lite
         params.add(Params.THRESHOLD_LV_LITE);
+
 
         // General
         params.add(Params.TIME_LAG);

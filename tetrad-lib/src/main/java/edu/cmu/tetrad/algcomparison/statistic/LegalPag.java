@@ -35,7 +35,7 @@ public class LegalPag implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "1 if the estimated graph passes the Legal PAG check, 0 if not";
+        return "1 if the estimated graph is Legal PAG, 0 if not";
     }
 
     /**

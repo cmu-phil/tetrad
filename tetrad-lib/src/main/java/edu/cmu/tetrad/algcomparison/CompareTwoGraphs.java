@@ -278,8 +278,7 @@ public class CompareTwoGraphs {
         statistics.add(new DensityTrue());
         statistics.add(new StructuralHammingDistance());
 
-
-        // Joe table.
+        // Stats for PAGs.
         statistics.add(new NumDirectedEdges());
         statistics.add(new NumUndirectedEdges());
         statistics.add(new NumPartiallyOrientedEdges());
@@ -288,17 +287,8 @@ public class CompareTwoGraphs {
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
-
-        // Greg table
-//        statistics.add(new AncestorPrecision());
-//        statistics.add(new AncestorRecall());
-//        statistics.add(new AncestorF1());
-//        statistics.add(new SemidirectedPrecision());
-//        statistics.add(new SemidirectedRecall());
-//        statistics.add(new SemidirectedPathF1());
-//        statistics.add(new NoSemidirectedPrecision());
-//        statistics.add(new NoSemidirectedRecall());
-//        statistics.add(new NoSemidirectedF1());
+        statistics.add(new LegalPag());
+        statistics.add(new Maximal());
 
         return statistics;
     }

@@ -613,13 +613,13 @@ public final class FciOrient {
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
+     * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
      *        /  \
      *       v    v
-     * L....A --> C
+     * E....A --> C
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating paths.
@@ -669,7 +669,7 @@ public final class FciOrient {
     }
 
     /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
+     * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
@@ -678,7 +678,7 @@ public final class FciOrient {
      * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ddpOrient(Node a, Node b, Node c, Graph graph) {
+    private void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
@@ -686,6 +686,8 @@ public final class FciOrient {
         int distance = 0;
 
         Map<Node, Node> previous = new HashMap<>();
+        Set<Node> colliderPath = new HashSet<>();
+        colliderPath.add(a);
 
         List<Node> cParents = graph.getParents(c);
 
@@ -728,9 +730,10 @@ public final class FciOrient {
                 }
 
                 previous.put(d, t);
+                colliderPath.add(t);
 
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, graph)) {
+                    if (doDdpOrientation(d, a, b, c, graph, colliderPath)) {
                         return;
                     }
                 }
@@ -915,22 +918,41 @@ public final class FciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
+     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
+     * <p>
+     * Reminder:
+     * <pre>
+     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     *      the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     *      <pre>
+     *               B
+     *              xo           x is either an arrowhead or a circle
+     *             /  \
+     *            v    v
+     *      E....A --> C
      *
-     * @param d     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a boolean
+     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
+     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
+     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
+     *      at B; otherwise, there should be a noncollider at B.
+     * </pre>
+     *
+     * @param d            the 'd' node
+     * @param a            the 'a' node
+     * @param b            the 'b' node
+     * @param c            the 'c' node
+     * @param graph        the graph representation
+     * @param colliderPath the list of nodes in the collider path
+     * @return true if the orientation is determined, false otherwise
+     * @throws IllegalArgumentException if 'd' is adjacent to 'c'
      */
-    public boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
+    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph, Set<Node> colliderPath) {
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }
 
-        Set<Node> sepset = getSepsets().getSepset(d, c);
+        Set<Node> sepset = getSepsets().getSepsetContaining(d, c, colliderPath);
 
         if (this.verbose) {
             logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);

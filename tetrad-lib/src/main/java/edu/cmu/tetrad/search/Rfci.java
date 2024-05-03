@@ -23,9 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -188,7 +186,8 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+//        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+        FciOrient orient = new FciOrient(new SepsetsMaxP(graph, this.independenceTest, null, this.maxPathLength));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);

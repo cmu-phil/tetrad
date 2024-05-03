@@ -55,11 +55,33 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the sepset between two nodes.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @return the set of nodes in the sepset between a and b
      */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
-        //isIndependent(a, b, sepsets.get(a, b));
+        return this.sepsets.get(a, b);
+    }
+
+    /**
+     * Retrieves the sepset for a and b, where we are expecting this sepset to contain all the nodes in s.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @param s the set of nodes to check in the sepset of a and b
+     * @return the set of nodes that the sepset of a and b is expected to contain.
+     * @throws IllegalArgumentException if the sepset of a and b does not contain all the nodes in s
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+        if (!this.sepsets.get(a, b).containsAll(s)) {
+            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + this.sepsets.get(a, b)
+                                               + ") to contain all the nodes in " + s + ".");
+        }
+
         return this.sepsets.get(a, b);
     }
 
@@ -68,7 +90,7 @@ public class SepsetsSet implements SepsetProducer {
      */
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
-        throw new UnsupportedOperationException("This makes not sense for this subclass.");
+        throw new UnsupportedOperationException("This makes no sense for this subclass.");
     }
 
     /**

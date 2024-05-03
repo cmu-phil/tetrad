@@ -68,11 +68,27 @@ public class SepsetsMinP implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
+     * Returns the set of nodes that form the sepset (separating set) between two given nodes.
+     *
+     * @param i a {@link Node} object representing the first node.
+     * @param k a {@link Node} object representing the second node.
+     * @return a {@link Set} of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepset(Node i, Node k) {
+        return getSepsetContaining(i, k, null);
+    }
+
+    /**
+     * Returns the set of nodes that form the sepset (separating set) between two given nodes containing all the
+     * nodes in the given set. If there is no required set of nodes to include, pass null for s.
+     *
+     * @param i a {@link Node} object representing the first node.
+     * @param k a {@link Node} object representing the second node.
+     * @param s a {@link Set} of nodes to that must be included in the sepset, or null if there is no such requirement.
+     * @return a {@link Set} of nodes that form the sepset between the two given nodes.
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
         double _p = 2;
         Set<Node> _v = null;
 
@@ -98,6 +114,10 @@ public class SepsetsMinP implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    if (s != null && v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {
@@ -116,6 +136,11 @@ public class SepsetsMinP implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    if (s != null && v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {
@@ -130,6 +155,7 @@ public class SepsetsMinP implements SepsetProducer {
         }
 
         return _v;
+
     }
 
     /**

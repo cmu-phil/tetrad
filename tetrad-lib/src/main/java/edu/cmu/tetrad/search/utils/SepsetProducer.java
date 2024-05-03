@@ -44,6 +44,20 @@ public interface SepsetProducer {
     Set<Node> getSepset(Node a, Node b);
 
     /**
+     * Returns the subset for a and b, where this sepset is expected to contain all the nodes in s. The behavior is
+     * morphed depending on whether sepsets are calculated using an independence test or not. If sepsets are calculated
+     * using an independence test, and a sepset is not found containing all the nodes in s, then the method will return
+     * null. Otherwise, if the discovered sepset does not contain all the nodes in s, the method will throw an
+     * exception.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @param s the set of nodes
+     * @return the set of nodes that sepsets for a and b are expected to contain.
+     */
+    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s);
+
+    /**
      * <p>isUnshieldedCollider.</p>
      *
      * @param i a {@link edu.cmu.tetrad.graph.Node} object
@@ -77,8 +91,8 @@ public interface SepsetProducer {
     /**
      * <p>isIndependent.</p>
      *
-     * @param d    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param d      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c      a {@link edu.cmu.tetrad.graph.Node} object
      * @param sepset a {@link java.util.Set} object
      * @return a boolean
      */
@@ -87,8 +101,8 @@ public interface SepsetProducer {
     /**
      * Calculates the p-value for a statistical test a _||_ b | sepset.
      *
-     * @param a the first node
-     * @param b the second node
+     * @param a      the first node
+     * @param b      the second node
      * @param sepset the set of nodes
      * @return the p-value for the statistical test
      */

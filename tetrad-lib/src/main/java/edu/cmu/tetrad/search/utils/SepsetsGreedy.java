@@ -75,19 +75,35 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
+     * Retrieves the sepset (separating set) between two nodes, or null if no such sepset is found.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return getSepsetGreedy(i, k);
+        return getSepsetGreedyContaining(i, k, null);
+    }
+
+    /**
+     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, or null if no such sepset is
+     * found. If there is no required set of nodes, pass null for the set.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @param s The set of nodes that must be contained in the sepset, or null if no such set is required.
+     * @return The sepset between the two nodes
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
+        return getSepsetGreedyContaining(i, k, s);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = getSepsetGreedy(i, k);
+        Set<Node> set = getSepsetGreedyContaining(i, k, null);
         return set != null && !set.contains(j);
     }
 
@@ -171,7 +187,7 @@ public class SepsetsGreedy implements SepsetProducer {
         this.depth = depth;
     }
 
-    private Set<Node> getSepsetGreedy(Node i, Node k) {
+    private Set<Node> getSepsetGreedyContaining(Node i, Node k, Set<Node> s) {
         if (this.extraSepsets != null) {
             Set<Node> v = this.extraSepsets.get(i, k);
 
@@ -193,6 +209,10 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     v = possibleParents(i, v, this.knowledge, k);
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
@@ -207,6 +227,10 @@ public class SepsetsGreedy implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
 
                     v = possibleParents(k, v, this.knowledge, i);
 

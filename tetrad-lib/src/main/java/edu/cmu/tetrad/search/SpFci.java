@@ -191,6 +191,8 @@ public final class SpFci implements IGraphSearch {
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
+//        graph = GraphTransforms.dagToPag(graph);
+
         return this.graph;
     }
 

@@ -156,21 +156,31 @@ public class TeyssierScorer {
     }
 
     /**
-     * Tucks a node into a specific position in a list, moving all nodes between the current position of the node and
-     * the target position one step to the right.
+     * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param k The node to tuck.
-     * @param j The position to tuck the node into.
-     * @return true if the tuck is successful, false otherwise.
+     * @param j The node to tuck.
+     * @param k The node to tuck j before.
+     * @return true if the tuck made a change.
      */
-    public boolean tuck(Node k, int j) {
-        if (adjacent(k, get(j))) return false;
-        if (j >= index(k)) return false;
+    public boolean tuck(Node j, Node k) {
+        if (j.getName().equals("X10") && k.getName().equals("X1")) {
+            System.out.println("Tuck X10 before X1");
+        }
 
-        Set<Node> ancestors = getAncestors(k);
-        for (int i = j + 1; i <= index(k); i++) {
+        int jIndex = index(j);
+        int kIndex = index(k);
+
+        if (jIndex < kIndex) {
+            return false;
+        }
+
+        Set<Node> ancestors = getAncestors(j);
+        int _kIndex = kIndex;
+
+        // Moving j to before k, ancestors of j between k and j to before k also.
+        for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
-                moveTo(get(i), j++);
+                moveTo(get(i), _kIndex++);
             }
         }
 

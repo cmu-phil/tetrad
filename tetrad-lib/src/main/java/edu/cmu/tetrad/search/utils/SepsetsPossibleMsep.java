@@ -71,15 +71,38 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
+     * Retrieves the separation set (sepset) between two nodes.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
     public Set<Node> getSepset(Node i, Node k) {
-        Set<Node> condSet = getCondSet(i, k, this.maxPathLength);
+        Set<Node> condSet = getCondSetContaining(i, k, null, this.maxPathLength);
 
         if (condSet == null) {
-            condSet = getCondSet(k, i, this.maxPathLength);
+            condSet = getCondSetContaining(k, i, null, this.maxPathLength);
+        }
+
+        return condSet;
+    }
+
+    /**
+     * Retrieves the separation set (sepset) between two nodes i and k that contains a given set of nodes s. If there
+     * is no required set of nodes, pass null for the set.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @param s The set of nodes to be contained in the sepset
+     * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s,
+     *         or null if no sepset exists
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
+        Set<Node> condSet = getCondSetContaining(i, k, s, this.maxPathLength);
+
+        if (condSet == null) {
+            condSet = getCondSetContaining(k, i, s, this.maxPathLength);
         }
 
         return condSet;
@@ -148,7 +171,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         return result.getPValue();
     }
 
-    private Set<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
+    private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) {
         List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
         List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
@@ -167,6 +190,10 @@ public class SepsetsPossibleMsep implements SepsetProducer {
             if (choice.length < 1) continue;
 
             Set<Node> condSet = GraphUtils.asSet(choice, possibleMsep);
+
+            if (s != null && !condSet.containsAll(s)) {
+                continue;
+            }
 
             // check against bk knowledge added by DMalinsky 07/24/17 **/
             //  if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;

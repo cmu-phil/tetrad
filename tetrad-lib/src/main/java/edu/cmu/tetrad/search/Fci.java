@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PcCommon;
@@ -229,6 +230,8 @@ public final class Fci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         long stop = MillisecondTimes.timeMillis();
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         this.elapsedTime = stop - start;
 
