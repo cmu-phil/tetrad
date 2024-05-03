@@ -387,6 +387,8 @@ public final class LvLite implements IGraphSearch {
     /**
      * Sets whether the search algorithm should resolve almost cyclic paths. If set to true, the search algorithm will
      * resolve almost cyclic paths by orienting the bidirected edge in the direction of the cycle.
+     *
+     * @param resolveAlmostCyclicPaths true if the search algorithm should resolve almost cyclic paths, false otherwise.
      */
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
