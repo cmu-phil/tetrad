@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The LvLite class implements the IGraphSearch interface and represents a search algorithm for learning the structure
- * of a graphical model from observational data.
+ * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
+ * structure of a graphical model from observational data.
  * <p>
  * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
  * Annotated Graph).
@@ -101,10 +101,14 @@ public final class LvLite implements IGraphSearch {
      * {@link #setDoDiscriminatingPathRule(boolean)} method.
      */
     private boolean doDiscriminatingPathRule = false;
+    /**
+     * Determines whether the search algorithm should resolve almost cyclic paths.
+     */
+    private boolean resolveAlmostCyclicPaths = true;
 
     /**
-     * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest
-     * and Score object.
+     * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
+     * object.
      *
      * @param test  The IndependenceTest object to be used for conditional independence testing.
      * @param score The Score object to be used for scoring DAGs.
@@ -274,15 +278,17 @@ public final class LvLite implements IGraphSearch {
 
         fciOrient.doFinalOrientation(pag);
 
-        for (Edge edge : pag.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : pag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
 
-                if (pag.paths().existsDirectedPath(x, y)) {
-                    pag.setEndpoint(y, x, Endpoint.TAIL);
-                } else if (pag.paths().existsDirectedPath(y, x)) {
-                    pag.setEndpoint(x, y, Endpoint.TAIL);
+                    if (pag.paths().existsDirectedPath(x, y)) {
+                        pag.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (pag.paths().existsDirectedPath(y, x)) {
+                        pag.setEndpoint(x, y, Endpoint.TAIL);
+                    }
                 }
             }
         }
@@ -376,5 +382,13 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Sets whether the search algorithm should resolve almost cyclic paths. If set to true, the search algorithm will
+     * resolve almost cyclic paths by orienting the bidirected edge in the direction of the cycle.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

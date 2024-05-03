@@ -88,6 +88,12 @@ public final class Rfci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Flag to indicate whether to resolve almost cyclic paths during the search.
+     * If true, the search algorithm will attempt to resolve paths that are almost cyclic, meaning that they have a single
+     * bidirected edge that is causing the cycle. If false, these paths will not be resolved.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -196,6 +202,21 @@ public final class Rfci implements IGraphSearch {
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
         orient.doFinalOrientation(this.graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -532,6 +553,15 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the flag to resolve almost cyclic paths in the RFCI search.
+     *
+     * @param resolveAlmostCyclicPaths the flag to resolve almost cyclic paths
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

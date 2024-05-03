@@ -129,6 +129,10 @@ public final class GraspFci implements IGraphSearch {
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
+    /**
+     * Indicates whether almost cyclic paths should be resolved during the search.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new GraspFci object.
@@ -205,6 +209,21 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
@@ -344,5 +363,14 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets whether to resolve almost cyclic paths in the search.
+     *
+     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

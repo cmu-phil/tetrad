@@ -122,6 +122,10 @@ public final class FciMax implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Determines whether the algorithm should resolve almost cyclic paths during the search.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor.
@@ -181,6 +185,21 @@ public final class FciMax implements IGraphSearch {
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
         fciOrient.doFinalOrientation(graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -472,6 +491,15 @@ public final class FciMax implements IGraphSearch {
                 scores.put(new Triple(a, b, c), score);
             }
         }
+    }
+
+    /**
+     * Sets whether to resolve almost cyclic paths during the search.
+     *
+     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

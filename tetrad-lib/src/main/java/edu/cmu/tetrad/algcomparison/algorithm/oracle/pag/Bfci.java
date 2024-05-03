@@ -114,6 +114,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
@@ -178,6 +179,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
         params.add(Params.VERBOSE);
+        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
 
         // Parameters
         params.add(Params.NUM_STARTS);

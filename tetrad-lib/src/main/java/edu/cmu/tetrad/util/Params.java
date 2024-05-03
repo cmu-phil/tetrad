@@ -947,6 +947,10 @@ public final class Params {
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";
+    /**
+     * Constant <code>RESOLVE_ALMOST_CYCLIC_PATHS="resolveAlmostCyclicPaths"</code>
+     */
+    public static String RESOLVE_ALMOST_CYCLIC_PATHS = "resolveAlmostCyclicPaths";
 
     private Params() {
     }

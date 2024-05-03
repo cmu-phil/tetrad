@@ -121,6 +121,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         boolean aBoolean = parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE);
         search.setDoDiscriminatingPathRule(aBoolean);
 
+        // LV-Lite
+        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
+
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
@@ -183,7 +186,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
 
         // LV-Lite
-        params.add(Params.THRESHOLD_LV_LITE);
+        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
 
 
         // General
