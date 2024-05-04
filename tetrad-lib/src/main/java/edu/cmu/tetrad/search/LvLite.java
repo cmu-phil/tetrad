@@ -240,7 +240,7 @@ public final class LvLite implements IGraphSearch {
             Edge e = pag.getEdge(a, c);
             pag.removeEdge(e);
 
-            if (pag.isAdjacentTo(a, b) && pag.isAdjacentTo(c, b)) {
+            if (/*pag.isAdjacentTo(a, b) &&*/ pag.isAdjacentTo(c, b)) {
                 if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
                     pag.setEndpoint(c, b, Endpoint.ARROW);
 
