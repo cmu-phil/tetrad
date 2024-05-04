@@ -26,7 +26,7 @@ public class NumCorrectVisibleEdges implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "#CorrectVE";
+        return "#CorrectVis";
     }
 
     /**

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.util.AlgorithmDescriptions;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -34,6 +35,7 @@ import java.io.Serializable;
  */
 public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> {
 
+    @Serial
     private static final long serialVersionUID = 8599854464475682558L;
 
     /**

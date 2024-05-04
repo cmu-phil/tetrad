@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashSet;
 import java.util.List;
@@ -77,11 +76,6 @@ public final class LvLite implements IGraphSearch {
      * The depth for GRaSP.
      */
     private int depth = -1;
-    /**
-     * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
-     * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
-     */
-    private long seed = -1;
     /**
      * This flag represents whether the Bes algorithm should be used in the search.
      * <p>
@@ -175,8 +169,12 @@ public final class LvLite implements IGraphSearch {
 
         // Copy unshielded colliders from DAG to PAG
         for (int i = 0; i < best.size(); i++) {
-            for (int j = i + 1; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
+            for (int j = 0; j < best.size(); j++) {
+                for (int k = 0; k < best.size(); k++) {
+                    if (i == j || i == k || j == k) {
+                        continue;
+                    }
+
                     Node a = best.get(i);
                     Node b = best.get(j);
                     Node c = best.get(k);
@@ -199,12 +197,9 @@ public final class LvLite implements IGraphSearch {
 
         teyssierScorer.bookmark();
 
-        Set<Edge> toRemove = new HashSet<>();
-
-        Set<Pair<Node, Node>> arrows = new HashSet<>();
+        Set<Triple> toRemove = new HashSet<>();
 
         // Our extra collider orientation step to orient <-> edges:
-        // For every <a, b, c>, with a, b, c adjacent in the PAG
         for (int i = 0; i < best.size(); i++) {
             for (int j = 0; j < best.size(); j++) {
                 for (int k = 0; k < best.size(); k++) {
@@ -224,60 +219,57 @@ public final class LvLite implements IGraphSearch {
                     Edge _bc = pag.getEdge(b, c);
                     Edge _ac = pag.getEdge(a, c);
 
-                    if (ab != null && (bc != null && bc.pointsTowards(c)) && (ac != null && ac.pointsTowards(c))) {
-                        if (_ab != null && (_bc != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ac != null) {
-                            teyssierScorer.goToBookmark();
+                    if ((bc != null && bc.pointsTowards(c)) && ab != null && ac != null
+                        && (_bc != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ab != null && _ac != null) {
+                        teyssierScorer.goToBookmark();
+                        teyssierScorer.tuck(c, b);
 
-                            // Tuck the edge b -> c
-                            teyssierScorer.tuck(c, b);
-
-                            // If the score is the same (drops less than a threshold amount)), and the collider is allowed,
-                            // remove the a *-* c edge from the pag and orient a *-> b <-* c.
-                            if (!teyssierScorer.adjacent(a, c)) {
-                                if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
-                                    toRemove.add(pag.getEdge(a, c));
-                                    arrows.add(Pair.of(a, b));
-                                    arrows.add(Pair.of(c, b));
-
-                                    TetradLogger.getInstance().forceLogMessage("Scheduling removal of " + pag.getEdge(a, c));
-                                    TetradLogger.getInstance().forceLogMessage("Scheduling " + a + " -> " + b + " <- " + c + " for orientation.");
-                                }
-                            }
+                        if (!teyssierScorer.adjacent(a, c)) {
+                            toRemove.add(new Triple(a, b, c));
                         }
                     }
                 }
             }
         }
 
-        for (Edge edge : toRemove) {
-            Edge n12 = pag.getEdge(edge.getNode1(), edge.getNode2());
-            pag.removeEdge(n12);
+        for (Triple triple : toRemove) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
 
-            if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("Removing edge " + n12);
+            Edge e = pag.getEdge(a, c);
+            pag.removeEdge(e);
+
+            if (pag.isAdjacentTo(a, b) && pag.isAdjacentTo(c, b)) {
+                if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                    pag.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
+                    }
+                } else {
+                    pag.addEdge(e);
+                }
+            } else {
+                pag.addEdge(e);
             }
         }
 
-        for (Pair<Node, Node> arrow : arrows) {
-            if (!pag.isAdjacentTo(arrow.getLeft(), arrow.getRight())) {
-                continue;
-            }
+        for (Triple triple : toRemove) {
+            Node b = triple.getY();
 
-            if (pag.paths().isAncestorOf(arrow.getRight(), arrow.getLeft())) {
-                continue;
-            }
+            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
 
-            Edge edge = pag.getEdge(arrow.getLeft(), arrow.getRight());
-
-            pag.setEndpoint(arrow.getLeft(), arrow.getRight(), Endpoint.ARROW);
-
-            if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("Orienting " + edge + " to " + pag.getEdge(arrow.getLeft(), arrow.getRight()));
+            if (nodesInTo.size() == 1) {
+                for (Node node : nodesInTo) {
+                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
+                }
             }
         }
 
-        fciOrient.doFinalOrientation(pag);
+        fciOrient.zhangFinalOrientation(pag);
 
+        // Optional.
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : pag.getEdges()) {
                 if (Edges.isBidirectedEdge(edge)) {
@@ -294,11 +286,6 @@ public final class LvLite implements IGraphSearch {
         }
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
-//        pag = GraphTransforms.zhangMagFromPag(pag);
-//        pag = GraphTransforms.dagToPag(pag);
-
-//        fciOrient.fciOrientbk(knowledge, pag, best);
-
         return pag;
     }
 
@@ -358,15 +345,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets the seed for the random number generator used by the search algorithm.
-     *
-     * @param seed The seed to set for the random number generator.
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
-    }
-
-    /**
      * Sets whether to use Bes algorithm for search.
      *
      * @param useBes True, if using Bes algorithm. False, otherwise.
@@ -388,7 +366,8 @@ public final class LvLite implements IGraphSearch {
      * Sets whether the search algorithm should resolve almost cyclic paths. If set to true, the search algorithm will
      * resolve almost cyclic paths by orienting the bidirected edge in the direction of the cycle.
      *
-     * @param resolveAlmostCyclicPaths true if the search algorithm should resolve almost cyclic paths, false otherwise.
+     * @param resolveAlmostCyclicPaths true if the search algorithm should resolve almost cyclic paths, false
+     *                                 otherwise.
      */
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
