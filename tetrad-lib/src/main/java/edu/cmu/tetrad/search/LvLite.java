@@ -237,21 +237,15 @@ public final class LvLite implements IGraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            Edge e = pag.getEdge(a, c);
-            pag.removeEdge(e);
-
-            if (/*pag.isAdjacentTo(a, b) &&*/ pag.isAdjacentTo(c, b)) {
-                if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+            if (pag.isAdjacentTo(a, c) && pag.isAdjacentTo(c, b)) {
+                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                    pag.removeEdge(a, c);
                     pag.setEndpoint(c, b, Endpoint.ARROW);
 
                     if (verbose) {
                         TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
                     }
-                } else {
-                    pag.addEdge(e);
                 }
-            } else {
-                pag.addEdge(e);
             }
         }
 

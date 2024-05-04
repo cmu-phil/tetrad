@@ -185,8 +185,8 @@ public final class GFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
