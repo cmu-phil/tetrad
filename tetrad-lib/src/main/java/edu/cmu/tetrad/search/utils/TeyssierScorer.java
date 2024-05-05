@@ -163,10 +163,6 @@ public class TeyssierScorer {
      * @return true if the tuck made a change.
      */
     public boolean tuck(Node j, Node k) {
-        if (j.getName().equals("X10") && k.getName().equals("X1")) {
-            System.out.println("Tuck X10 before X1");
-        }
-
         int jIndex = index(j);
         int kIndex = index(k);
 
@@ -177,7 +173,6 @@ public class TeyssierScorer {
         Set<Node> ancestors = getAncestors(j);
         int _kIndex = kIndex;
 
-        // Moving j to before k, ancestors of j between k and j to before k also.
         for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
                 moveTo(get(i), _kIndex++);

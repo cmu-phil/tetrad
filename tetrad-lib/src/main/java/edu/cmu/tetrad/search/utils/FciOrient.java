@@ -627,8 +627,12 @@ public final class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4B(Graph graph) {
-
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
+            if (sepsets == null) {
+                throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
+                                               "in FciOrient, you must provide a SepsetProducer.");
+            }
+
             List<Node> nodes = graph.getNodes();
 
             for (Node b : nodes) {

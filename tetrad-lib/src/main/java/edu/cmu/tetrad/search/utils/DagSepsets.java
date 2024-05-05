@@ -73,7 +73,7 @@ public class DagSepsets implements SepsetProducer {
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
         Set<Node> sepset = this.dag.getSepset(a, b);
 
-        if (!sepset.containsAll(s)) {
+        if (sepset != null && !sepset.containsAll(s)) {
             throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
                                                + ") to contain all the nodes in " + s + ".");
         }

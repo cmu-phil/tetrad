@@ -732,7 +732,7 @@ public class AlgcomparisonModel implements SessionModel {
     public List<String> getLastStatisticsUsed() {
         String[] lastStatisticsUsed = Preferences.userRoot().get("lastAlgcomparisonStatisticsUsed", "").split(";");
         List<String> list = Arrays.asList(lastStatisticsUsed);
-        System.out.println("Getting last statistics used: " + list);
+//        System.out.println("Getting last statistics used: " + list);
         return list;
     }
 
@@ -742,7 +742,7 @@ public class AlgcomparisonModel implements SessionModel {
             sb.append(statistic.getAbbreviation()).append(";");
         }
 
-        System.out.println("Setting last statistics used: " + sb);
+//        System.out.println("Setting last statistics used: " + sb);
 
         Preferences.userRoot().put("lastAlgcomparisonStatisticsUsed", sb.toString());
     }

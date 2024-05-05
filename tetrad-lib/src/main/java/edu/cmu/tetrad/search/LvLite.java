@@ -20,18 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
@@ -43,11 +44,6 @@ import java.util.Set;
  * @author josephramsey
  */
 public final class LvLite implements IGraphSearch {
-
-    /**
-     * The conditional independence test.
-     */
-    private final IndependenceTest independenceTest;
     /**
      * The score.
      */
@@ -104,17 +100,15 @@ public final class LvLite implements IGraphSearch {
      * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
      * object.
      *
-     * @param test  The IndependenceTest object to be used for conditional independence testing.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvLite(IndependenceTest test, Score score) {
+    public LvLite(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
 
         this.score = score;
-        this.independenceTest = test;
     }
 
     /**
@@ -123,15 +117,10 @@ public final class LvLite implements IGraphSearch {
      * @return The PAG.
      */
     public Graph search() {
-        List<Node> nodes = this.independenceTest.getVariables();
+        List<Node> nodes = this.score.getVariables();
 
         if (nodes == null) {
             throw new NullPointerException("Nodes from test were null.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting Grasp-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
         Boss suborderSearch = new Boss(score);
@@ -149,19 +138,17 @@ public final class LvLite implements IGraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("Best order: " + best);
 
-        TeyssierScorer teyssierScorer = new TeyssierScorer(independenceTest, score);
+        TeyssierScorer teyssierScorer = new TeyssierScorer(null, score);
         teyssierScorer.score(best);
         Graph dag = teyssierScorer.getGraph(false);
         Graph cpdag = teyssierScorer.getGraph(true);
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets = new SepsetsGreedy(pag, this.independenceTest, null, this.depth, knowledge);
-
-        FciOrient fciOrient = new FciOrient(sepsets);
+        FciOrient fciOrient = new FciOrient(null);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(false);
+        fciOrient.setDoDiscriminatingPathTailRule(false);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
@@ -169,12 +156,8 @@ public final class LvLite implements IGraphSearch {
 
         // Copy unshielded colliders from DAG to PAG
         for (int i = 0; i < best.size(); i++) {
-            for (int j = 0; j < best.size(); j++) {
-                for (int k = 0; k < best.size(); k++) {
-                    if (i == j || i == k || j == k) {
-                        continue;
-                    }
-
+            for (int j = i + 1; j < best.size(); j++) {
+                for (int k = j + 1; k < best.size(); k++) {
                     Node a = best.get(i);
                     Node b = best.get(j);
                     Node c = best.get(k);
@@ -202,11 +185,7 @@ public final class LvLite implements IGraphSearch {
         // Our extra collider orientation step to orient <-> edges:
         for (int i = 0; i < best.size(); i++) {
             for (int j = 0; j < best.size(); j++) {
-                for (int k = 0; k < best.size(); k++) {
-                    if (i == j || i == k || j == k) {
-                        continue;
-                    }
-
+                for (int k = j + 1; k < best.size(); k++) {
                     Node a = best.get(i);
                     Node b = best.get(j);
                     Node c = best.get(k);
@@ -243,7 +222,7 @@ public final class LvLite implements IGraphSearch {
                     pag.setEndpoint(c, b, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
                     }
                 }
             }
@@ -261,7 +240,15 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        fciOrient.zhangFinalOrientation(pag);
+        do {
+            if (completeRuleSetUsed) {
+                fciOrient.zhangFinalOrientation(pag);
+            } else {
+                fciOrient.spirtesFinalOrientation(pag);
+            }
+
+            fciOrient.zhangFinalOrientation(pag);
+        } while (discriminatingPathRule(pag, teyssierScorer));
 
         // Optional.
         if (resolveAlmostCyclicPaths) {
@@ -277,9 +264,17 @@ public final class LvLite implements IGraphSearch {
                     }
                 }
             }
+
+            do {
+                if (completeRuleSetUsed) {
+                    fciOrient.zhangFinalOrientation(pag);
+                } else {
+                    fciOrient.spirtesFinalOrientation(pag);
+                }
+            } while (discriminatingPathRule(pag, teyssierScorer));
         }
 
-        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        GraphUtils.replaceNodes(pag, this.score.getVariables());
         return pag;
     }
 
@@ -366,4 +361,227 @@ public final class LvLite implements IGraphSearch {
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
+
+    /**
+     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     * <pre>
+     *          B
+     *         xo           x is either an arrowhead or a circle
+     *        /  \
+     *       v    v
+     * E....A --> C
+     * </pre>
+     * <p>
+     * This is Zhang's rule R4, discriminating paths.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer) {
+        if (!doDiscriminatingPathRule) return false;
+
+        List<Node> nodes = graph.getNodes();
+        boolean oriented = false;
+
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            // potential A and C candidate pairs are only those
+            // that look like this:   A<-*Bo-*C
+            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+
+            for (Node a : possA) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                for (Node c : possC) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
+                    if (a == c) continue;
+
+                    if (!graph.isParentOf(a, c)) {
+                        continue;
+                    }
+
+                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+                        continue;
+                    }
+
+                    boolean _oriented = ddpOrient(a, b, c, graph, scorer);
+
+                    if (_oriented) oriented = true;
+                }
+            }
+        }
+
+        return oriented;
+    }
+
+    /**
+     * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
+     *
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer) {
+        Queue<Node> Q = new ArrayDeque<>(20);
+        Set<Node> V = new HashSet<>();
+
+        Node e = null;
+        int distance = 0;
+
+        Map<Node, Node> previous = new HashMap<>();
+        Set<Node> colliderPath = new HashSet<>();
+        colliderPath.add(a);
+
+        List<Node> cParents = graph.getParents(c);
+
+        Q.offer(a);
+        V.add(a);
+        V.add(b);
+        previous.put(a, b);
+
+        while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node t = Q.poll();
+
+            if (e == null || e == t) {
+                e = t;
+                distance++;
+//                if (distance > 0 && distance > (this.maxPathLength == -1 ? 1000 : this.maxPathLength)) {
+//                    return;
+//                }
+            }
+
+            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+
+            for (Node d : nodesInTo) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (V.contains(d)) {
+                    continue;
+                }
+
+                previous.put(d, t);
+                Node p = previous.get(t);
+
+                if (!graph.isDefCollider(d, t, p)) {
+                    continue;
+                }
+
+                previous.put(d, t);
+                colliderPath.add(t);
+
+                if (!graph.isAdjacentTo(d, c)) {
+                    if (doDdpOrientation(d, a, b, c, graph, colliderPath, scorer)) {
+                        return true;
+                    }
+                }
+
+                if (cParents.contains(d)) {
+                    Q.offer(d);
+                    V.add(d);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
+     * <p>
+     * Reminder:
+     * <pre>
+     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     *      the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     *      <pre>
+     *               B
+     *              xo           x is either an arrowhead or a circle
+     *             /  \
+     *            v    v
+     *      E....A --> C
+     *
+     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
+     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
+     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
+     *      at B; otherwise, there should be a noncollider at B.
+     * </pre>
+     *
+     * @param e            the 'e' node
+     * @param a            the 'a' node
+     * @param b            the 'b' node
+     * @param c            the 'c' node
+     * @param graph        the graph representation
+     * @param colliderPath the list of nodes in the collider path
+     * @return true if the orientation is determined, false otherwise
+     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     */
+    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph graph, Set<Node> colliderPath, TeyssierScorer scorer) {
+        if (graph.isAdjacentTo(e, c)) {
+            throw new IllegalArgumentException();
+        }
+
+        scorer.goToBookmark();
+
+        scorer.tuck(e, b);
+
+        for (Node node : colliderPath) {
+            scorer.tuck(node, e);
+        }
+
+        boolean collider;
+
+        if (scorer.index(b) < scorer.index(e)) {
+            collider = false;
+        } else {
+            collider = !scorer.adjacent(e, c);
+        }
+
+        if (collider) {
+            if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                return false;
+            }
+
+            if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                return false;
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            if (this.verbose) {
+                TetradLogger.getInstance().forceLogMessage(
+                        "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            return true;
+        } else {
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
+            if (this.verbose) {
+                TetradLogger.getInstance().forceLogMessage(
+                        "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            return true;
+        }
+    }
+
 }

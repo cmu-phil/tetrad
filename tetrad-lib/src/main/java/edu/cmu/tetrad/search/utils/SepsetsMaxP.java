@@ -115,7 +115,7 @@ public class SepsetsMaxP implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
-                    if (s == null && !v.containsAll(s)) {
+                    if (s != null && !v.containsAll(s)) {
                         continue;
                     }
 
@@ -138,7 +138,7 @@ public class SepsetsMaxP implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
 
-                    if (s == null && !v.containsAll(s)) {
+                    if (s != null && !v.containsAll(s)) {
                         continue;
                     }
 

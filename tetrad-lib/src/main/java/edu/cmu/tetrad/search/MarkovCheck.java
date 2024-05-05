@@ -885,6 +885,7 @@ public class MarkovCheck {
             public Pair<Set<IndependenceResult>, Set<IndependenceResult>> call() {
                 Set<IndependenceResult> resultsIndep = new HashSet<>();
                 Set<IndependenceResult> resultsDep = new HashSet<>();
+                independenceTest.setVerbose(false);
 
                 IndependenceFact fact = facts.get(index);
 

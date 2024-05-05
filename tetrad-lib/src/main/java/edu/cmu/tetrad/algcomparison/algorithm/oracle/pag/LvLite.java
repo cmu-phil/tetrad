@@ -43,16 +43,11 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
-
-    /**
-     * The independence test to use.
-     */
-    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -74,11 +69,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     /**
      * <p>Constructor for GraspFci.</p>
      *
-     * @param test  a {@link IndependenceWrapper} object
      * @param score a {@link ScoreWrapper} object
      */
-    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
-        this.test = test;
+    public LvLite(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -104,11 +97,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             knowledge = timeSeries.getKnowledge();
         }
 
-        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
-
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
         // BOSS
         search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
@@ -151,8 +141,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "LV-Lite using " + this.test.getDescription()
-               + " and " + this.score.getDescription();
+        return "LV-Lite using " + this.score.getDescription();
     }
 
     /**
@@ -162,7 +151,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return this.score.getDataType();
     }
 
     /**
@@ -214,28 +203,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Retrieves the IndependenceWrapper object associated with this method. The IndependenceWrapper object contains an
-     * IndependenceTest that checks the independence of two variables conditional on a set of variables using a given
-     * dataset and parameters .
-     *
-     * @return The IndependenceWrapper object associated with this method.
-     */
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
-
-    /**
-     * Sets the independence wrapper.
-     *
-     * @param test the independence wrapper.
-     */
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
     }
 
     /**

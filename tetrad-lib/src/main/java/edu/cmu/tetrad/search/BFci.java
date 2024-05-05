@@ -183,6 +183,8 @@ public final class BFci implements IGraphSearch {
             RandomUtil.getInstance().setSeed(seed);
         }
 
+        this.independenceTest.setVerbose(verbose);
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {

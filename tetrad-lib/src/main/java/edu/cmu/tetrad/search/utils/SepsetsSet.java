@@ -77,12 +77,14 @@ public class SepsetsSet implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
-        if (!this.sepsets.get(a, b).containsAll(s)) {
-            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + this.sepsets.get(a, b)
-                                               + ") to contain all the nodes in " + s + ".");
+        Set<Node> sepset = this.sepsets.get(a, b);
+
+        if (sepset != null && !sepset.containsAll(s)) {
+            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
+                                               + ") to contain all the sepset in " + s + ".");
         }
 
-        return this.sepsets.get(a, b);
+        return sepset;
     }
 
     /**
