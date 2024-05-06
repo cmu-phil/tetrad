@@ -418,7 +418,6 @@ public final class LvLite implements IGraphSearch {
         Set<Node> V = new HashSet<>();
 
         Node e = null;
-        int distance = 0;
 
         Map<Node, Node> previous = new HashMap<>();
         Set<Node> colliderPath = new HashSet<>();
@@ -440,10 +439,6 @@ public final class LvLite implements IGraphSearch {
 
             if (e == null || e == t) {
                 e = t;
-                distance++;
-//                if (distance > 0 && distance > (this.maxPathLength == -1 ? 1000 : this.maxPathLength)) {
-//                    return;
-//                }
             }
 
             List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
