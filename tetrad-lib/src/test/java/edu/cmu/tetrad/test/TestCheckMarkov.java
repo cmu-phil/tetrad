@@ -152,7 +152,7 @@ public class TestCheckMarkov {
     public void testCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
-        Graph trueGraphCPDAG = GraphTransforms.cpdagForDag(trueGraph);
+        Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
 
@@ -213,13 +213,13 @@ public class TestCheckMarkov {
 
         for(Node a: accepts) {
             System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraph);
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
 
         }
         for (Node a: rejects) {
             System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraph);
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
         }
     }
@@ -228,7 +228,7 @@ public class TestCheckMarkov {
     public void testCPDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
-        Graph trueGraphCPDAG = GraphTransforms.cpdagForDag(trueGraph);
+        Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
 
@@ -252,13 +252,13 @@ public class TestCheckMarkov {
         // Compare the Est CPDAG with True graph's CPDAG.
         for(Node a: accepts) {
             System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraphCPDAG);
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
 
         }
         for (Node a: rejects) {
             System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnParentsSubGraph(a, estimatedCpdag, trueGraphCPDAG);
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
         }
     }
