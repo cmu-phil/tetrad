@@ -227,6 +227,10 @@ public final class LvLite implements IGraphSearch {
             if (nodesInTo.size() == 1) {
                 for (Node node : nodesInTo) {
                     pag.setEndpoint(node, b, Endpoint.CIRCLE);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG.");
+                    }
                 }
             }
         }
