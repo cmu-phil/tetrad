@@ -101,13 +101,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
         // BOSS
-        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
         // FCI-ORIENT
-        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         boolean aBoolean = parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE);
         search.setDoDiscriminatingPathRule(aBoolean);
