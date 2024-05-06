@@ -383,10 +383,10 @@
 
         @Test
         public void test11() {
-            RandomUtil.getInstance().setSeed(1040404L);
+//            RandomUtil.getInstance().setSeed(1040404L);
 
             // 10 times over, make a random DAG
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 1000; i++) {
                 Graph graph = RandomGraph.randomGraphRandomForwardEdges(5, 0, 5,
                         100, 100, 100, false);
 
