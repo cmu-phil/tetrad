@@ -20,15 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -284,8 +279,8 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set is
-     * not used.
+     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
+     * is not used.
      *
      * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
      */
