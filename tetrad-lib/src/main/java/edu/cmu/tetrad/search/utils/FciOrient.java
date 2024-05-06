@@ -75,7 +75,8 @@ public final class FciOrient {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
+     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object representing the independence test,
+     *                which must be given only if the discriminating path rule is used. Otherwise, it can be null.
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
