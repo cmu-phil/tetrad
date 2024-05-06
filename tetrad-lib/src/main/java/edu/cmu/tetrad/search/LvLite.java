@@ -347,6 +347,8 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
+     * This is a score-based discriminating path rule.
+     * <p>
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
      * <pre>
