@@ -69,10 +69,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean useDataOrder = true;
     /**
-     * The depth for GRaSP.
-     */
-    private int depth = -1;
-    /**
      * This flag represents whether the Bes algorithm should be used in the search.
      * <p>
      * If set to true, the Bes algorithm will be used. If set to false, the Bes algorithm will not be used.
@@ -288,26 +284,26 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete rules set is used.
+     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set is
+     * not used.
      *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
+     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * Sets the verbosity level of the search algorithm.
      *
-     * @param verbose True, if so.
+     * @param verbose true to enable verbose mode, false to disable it
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the number of starts for GRaSP.
+     * Sets the number of starts for BOSS.
      *
      * @param numStarts The number of starts.
      */
@@ -316,47 +312,36 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets the depth for GRaSP.
+     * Sets whether the search algorithm should use the order of the data set during the search.
      *
-     * @param depth The depth.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets whether to use data order for GRaSP (as opposed to random order) for the first step of GRaSP
-     *
-     * @param useDataOrder True, if so.
+     * @param useDataOrder true if the algorithm should use the data order, false otherwise
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
     /**
-     * Sets whether to use Bes algorithm for search.
+     * Sets whether to use the BES (Backward Elimination Search) algorithm during the search.
      *
-     * @param useBes True, if using Bes algorithm. False, otherwise.
+     * @param useBes true to use the BES algorithm, false otherwise
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
     }
 
     /**
-     * Sets whether to use the discriminating path rule during the search algorithm.
+     * Sets whether the search algorithm should use the Discriminating Path Rule.
      *
-     * @param doDiscriminatingPathRule true if the discriminating path rule should be used, false otherwise.
+     * @param doDiscriminatingPathRule true if the Discriminating Path Rule should be used, false otherwise
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     /**
-     * Sets whether the search algorithm should resolve almost cyclic paths. If set to true, the search algorithm will
-     * resolve almost cyclic paths by orienting the bidirected edge in the direction of the cycle.
+     * Sets whether the search algorithm should resolve almost cyclic paths.
      *
-     * @param resolveAlmostCyclicPaths true if the search algorithm should resolve almost cyclic paths, false
-     *                                 otherwise.
+     * @param resolveAlmostCyclicPaths true to resolve almost cyclic paths, false otherwise
      */
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
@@ -377,7 +362,7 @@ public final class LvLite implements IGraphSearch {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer) {
+    private boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer) {
         if (!doDiscriminatingPathRule) return false;
 
         List<Node> nodes = graph.getNodes();
@@ -583,5 +568,4 @@ public final class LvLite implements IGraphSearch {
             return true;
         }
     }
-
 }
