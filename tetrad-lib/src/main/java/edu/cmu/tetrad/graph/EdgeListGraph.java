@@ -724,14 +724,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 this.edgeLists = new HashMap<>(this.edgeLists);
             }
 
-            if (edgeLists.get(node1) == null) {
-                // System.out.println("Missing node1 is not in edgeLists: " + node1);
-                edgeLists.put(node1, new HashSet<>());
-            }
-            if (edgeLists.get(node2) == null) {
-                // System.out.println("Missing node2 is not in edgeLists: " + node2);
-                edgeLists.put(node2, new HashSet<>());
-            }
+            // System.out.println("Missing node1 is not in edgeLists: " + node1);
+            edgeLists.computeIfAbsent(node1, k -> new HashSet<>());
+            // System.out.println("Missing node2 is not in edgeLists: " + node2);
+            edgeLists.computeIfAbsent(node2, k -> new HashSet<>());
             this.edgeLists.get(node1).add(edge);
             this.edgeLists.get(node2).add(edge);
             this.edgesSet.add(edge);

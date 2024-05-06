@@ -168,8 +168,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         getWorkbench().deselectAll();
 
         sessionElements.forEach(o -> {
-            if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
+            if (o instanceof GraphNode modelNode) {
                 getWorkbench().selectNode(modelNode);
             }
         });

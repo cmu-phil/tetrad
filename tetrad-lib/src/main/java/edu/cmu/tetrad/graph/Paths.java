@@ -1036,11 +1036,7 @@ public class Paths implements TetradSerializable {
             return true;
         }
 
-        if (collider && ancestor) {
-            return true;
-        }
-
-        return false;
+        return collider && ancestor;
     }
 
     /**
@@ -1647,18 +1643,6 @@ public class Paths implements TetradSerializable {
                         return true;
                     }
 
-                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
-                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
-                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
-                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
-                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
-                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
-                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
-                    // jdramsey 2024-04-14
-                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
-                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                    }
-
                     EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
@@ -1740,18 +1724,6 @@ public class Paths implements TetradSerializable {
                         return true;
                     }
 
-                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
-                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
-                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
-                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
-                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
-                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
-                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
-                    // jdramsey 2024-04-14
-                    if (!allowSelectionBias && Edges.isDirectedEdge(edge1) && edge1.pointsTowards(b) && Edges.isUndirectedEdge(edge2)) {
-                        edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                    }
-
                     EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
@@ -1766,7 +1738,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Assumes node should be in component.
+     * Assumes node should be in the component.
      */
     private void collectComponentVisit(Node node, Set<Node> component, List<Node> unsortedNodes) {
         if (TaskManager.getInstance().isCanceled()) {
