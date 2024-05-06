@@ -67,7 +67,6 @@ public final class FciOrient {
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private boolean verbose;
-    private Graph truePag;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
@@ -352,8 +351,6 @@ public final class FciOrient {
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     if (this.verbose) {
                         this.logger.forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c));
-
-                        printWrongColliderMessage(a, b, c, graph);
                     }
                 }
             }
@@ -1238,33 +1235,6 @@ public final class FciOrient {
     }
 
     /**
-     * The true PAG if available. Can be null.
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    /**
-     * Sets the true PAG for comparison.
-     *
-     * @param truePag This PAG.
-     */
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
-    /**
-     * Change flag for repeat rules
-     *
-     * @return True if a change has occurred.
-     */
-    public boolean isChangeFlag() {
-        return this.changeFlag;
-    }
-
-    /**
      * Sets the change flag--marks externally that a change has been made.
      *
      * @param changeFlag This flag.
@@ -1370,11 +1340,5 @@ public final class FciOrient {
             }
         }
 
-    }
-
-    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
-        if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            logger.forceLogMessage("R0" + ": Orienting collider by mistake: " + a + "*->;" + b + "<-*" + c);
-        }
     }
 }
