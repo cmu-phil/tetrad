@@ -133,6 +133,8 @@ public class TestCheckMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
         for(Node a: accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);

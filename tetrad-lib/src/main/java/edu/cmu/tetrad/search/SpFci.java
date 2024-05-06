@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -119,6 +120,10 @@ public final class SpFci implements IGraphSearch {
      * Setting this variable to false disables the application of the discriminating path rule.
      */
     private boolean doDiscriminatingPathRule = true;
+    /**
+     * Whether to resolve almost cyclic paths.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -162,28 +167,50 @@ public final class SpFci implements IGraphSearch {
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.dagToCpdag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
-
         // GFCI extra edge removal step...
-        gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
-        modifiedR0(referenceDag, sepsets);
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        }
+
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
-
+        fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         return this.graph;
     }
@@ -315,49 +342,6 @@ public final class SpFci implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-
-    /**
-     * Modifies the graph using the Modified R0 algorithm. (Due to Spirtes.)
-     *
-     * @param fgesGraph The original graph obtained from FGES algorithm.
-     * @param sepsets   The SepsetProducer for computing the separating sets.
-     */
-    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
-        this.graph = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c);
-
-                    if (sepset != null && !sepset.contains(b)) {
-                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Orients edges in the graph based on the knowledge.
      *
@@ -415,5 +399,16 @@ public final class SpFci implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
+    }
+
+    /**
+     * Sets whether almost cyclic paths should be resolved during the search.
+     * If resolveAlmostCyclicPaths is set to true, the search algorithm will perform additional steps
+     * to resolve almost cyclic paths in the graph.
+     *
+     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

@@ -375,6 +375,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Returns the p-value for x _||_ y | z.
      *
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of conditioning variables.
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */

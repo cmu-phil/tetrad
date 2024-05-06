@@ -55,12 +55,44 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the sepset between two nodes.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @return the set of nodes in the sepset between a and b
      */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
-        //isIndependent(a, b, sepsets.get(a, b));
         return this.sepsets.get(a, b);
+    }
+
+    /**
+     * Retrieves the sepset for a and b, where we are expecting this sepset to contain all the nodes in s.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @param s the set of nodes to check in the sepset of a and b
+     * @return the set of nodes that the sepset of a and b is expected to contain.
+     * @throws IllegalArgumentException if the sepset of a and b does not contain all the nodes in s
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+        Set<Node> sepset = this.sepsets.get(a, b);
+
+        if (sepset != null && !sepset.containsAll(s)) {
+            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
+                                               + ") to contain all the sepset in " + s + ".");
+        }
+
+        return sepset;
+    }
+
+    /**
+     * @throws UnsupportedOperationException if this method is called
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        throw new UnsupportedOperationException("This makes no sense for this subclass.");
     }
 
     /**
@@ -77,8 +109,8 @@ public class SepsetsSet implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.test.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
     }

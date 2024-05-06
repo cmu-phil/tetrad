@@ -45,7 +45,7 @@ public class NumPossiblyDirected implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
 
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {
@@ -53,7 +53,7 @@ public class NumPossiblyDirected implements Statistic {
                 Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (new Paths(cpdag).existsSemiDirectedPath(x, y)) {
-                    if (!new Paths(cpdag).existsDirectedPathFromTo(x, y)) {
+                    if (!new Paths(cpdag).existsDirectedPath(x, y)) {
                         count++;
                     }
                 }

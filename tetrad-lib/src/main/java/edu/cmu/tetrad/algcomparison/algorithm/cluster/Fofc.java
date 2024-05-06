@@ -150,7 +150,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.cpdagForDag(graph);
+        return GraphTransforms.dagToCpdag(graph);
     }
 
     /**

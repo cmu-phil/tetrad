@@ -12,19 +12,18 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.*;
 
 /**
- * Implements common elements of a permutation search. The specific parts for each permutation search are implemented as
- * a SuborderSearch.
- * <p>
- * This class specifically handles an optimization for tiered knowledge, whereby tiers in the knowledge can be searched
- * one at a time in order from the lowest to highest, taking all variables from previous tiers as a fixed for a later
- * tier. This allows these permutation searches to search over many more variables than otherwise, so long as tiered
- * knowledge is available to organize the search.
- * <p>
- * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.
+ * <p>Implements common elements of a permutation search. The specific parts
+ * for each permutation search are implemented as a SuborderSearch.</p>
+ *
+ * <p>This class specifically handles an optimization for tiered knowledge, whereby
+ * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
+ * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
+ * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
+ *
+ * <p>This class is configured to respect the knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
  *
  * @author bryanandrews
- * @version $Id: $Id
  * @see SuborderSearch
  * @see Boss
  * @see Sp
@@ -70,11 +69,8 @@ public class PermutationSearch {
      */
     private Knowledge knowledge = new Knowledge();
 
-    /**
-     * The seed variable holds a long value that can be used to initialize the random number generator. It is used for
-     * generating pseudorandom numbers in various algorithms and simulations . The initial value of the seed is -1,
-     * indicating that no seed has been set yet.
-     */
+    private boolean cpdag = true;
+
     private long seed = -1;
 
     /**
@@ -243,7 +239,25 @@ public class PermutationSearch {
     }
 
     /**
-     * Sets the seed for the random number generator.
+     * Retrieves the value of cpdag.
+     *
+     * @return The value of the cpdag flag.
+     */
+    public boolean getCpdag() {
+        return cpdag;
+    }
+
+    /**
+     * Sets the flag indicating whether a CPDAG (partially directed acyclic graph) is wanted or not.
+     *
+     * @param cpdag The value indicating whether a CPDAG is wanted or not.
+     */
+    public void setCpdag(boolean cpdag) {
+        this.cpdag = cpdag;
+    }
+
+    /**
+     * Sets the seed value used for generating random numbers.
      *
      * @param seed The seed value to set.
      */

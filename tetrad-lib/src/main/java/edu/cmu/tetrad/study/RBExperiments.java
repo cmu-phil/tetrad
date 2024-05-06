@@ -511,7 +511,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p;
 
-            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ(), false)) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -542,7 +542,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ(), false)) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -599,7 +599,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ(), false)) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

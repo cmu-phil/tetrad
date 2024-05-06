@@ -6,7 +6,10 @@ import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
 import edu.cmu.tetrad.algcomparison.statistic.ArrowheadRecall;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -212,6 +215,12 @@ public class MarkovCheck {
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
 
+    /**
+     * Retrieves the list of local independence facts for a given node.
+     *
+     * @param x The node for which to retrieve the local independence facts.
+     * @return The list of local independence facts for the given node.
+     */
     public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
         Set<Node> parents = new HashSet<>(graph.getParents(x));
 
@@ -230,6 +239,13 @@ public class MarkovCheck {
         return factList;
     }
 
+    /**
+     * Calculates the local p-values for a given independence test and a list of independence facts.
+     *
+     * @param independenceTest The independence test used for calculating the p-values.
+     * @param facts            The list of independence facts.
+     * @return The list of local p-values.
+     */
     public List<Double> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts) {
         // call pvalue function on each item, only include the non-null ones
         List<Double> pVals = new ArrayList<>();
@@ -237,21 +253,36 @@ public class MarkovCheck {
             Double pV;
             // For now, check if the test is FisherZ test.
             if (independenceTest instanceof IndTestFisherZ) {
-                pV = ((IndTestFisherZ)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                pV = ((IndTestFisherZ) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
                 pVals.add(pV);
             } else if (independenceTest instanceof IndTestChiSquare) {
-                pV = ((IndTestChiSquare)independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                pV = ((IndTestChiSquare) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
                 if (pV != null) pVals.add(pV);
             }
         }
         return pVals;
     }
 
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
     }
 
+    /**
+     * Calculates the Anderson-Darling test and classifies nodes as accepted or rejected based on the given threshold.
+     *
+     * @param independenceTest The independence test to be used for calculating p-values.
+     * @param graph            The graph containing the nodes for testing.
+     * @param threshold        The threshold value for classifying nodes.
+     * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
+     * rejected nodes.
+     */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold) {
         // When calling, default reject null as <=0.05
         List<List<Node>> accepts_rejects = new ArrayList<>();
@@ -262,7 +293,7 @@ public class MarkovCheck {
             List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
             List<Double> localPValues = getLocalPValues(independenceTest, localIndependenceFacts);
             Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
-            if (ADTest  <= threshold) {
+            if (ADTest <= threshold) {
                 rejects.add(x);
             } else {
                 accepts.add(x);
@@ -273,6 +304,14 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
+    /**
+     * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
+     * console.
+     *
+     * @param x              The target node.
+     * @param estimatedGraph The estimated graph.
+     * @param trueGraph      The true graph.
+     */
     public void getPrecisionAndRecallOnMarkovBlanketGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
@@ -288,29 +327,9 @@ public class MarkovCheck {
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println( "Node " + x + "'s statistics: " + " \n" +
-                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
-    }
-
-    public void getPrecisionAndRecallOnParentsSubGraph(Node x, Graph estimatedGraph, Graph trueGraph) {
-        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
-        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
-        Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xParentsLookupGraph:" + xParentsLookupGraph);
-        Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xParentsEstimatedGraph:" + xParentsEstimatedGraph);
-
-        // TODO VBC: validate
-        double ap = new AdjacencyPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ar = new AdjacencyRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ahp = new ArrowheadPrecision().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-        double ahr = new ArrowheadRecall().getValue(xParentsLookupGraph, xParentsEstimatedGraph, null);
-
-        NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println( "Node " + x + "'s statistics: " + " \n" +
-                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
+        System.out.println("Node " + x + "'s statistics: " + " \n" +
+                           " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                           " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
 
     /**
@@ -866,6 +885,7 @@ public class MarkovCheck {
             public Pair<Set<IndependenceResult>, Set<IndependenceResult>> call() {
                 Set<IndependenceResult> resultsIndep = new HashSet<>();
                 Set<IndependenceResult> resultsDep = new HashSet<>();
+                independenceTest.setVerbose(false);
 
                 IndependenceFact fact = facts.get(index);
 
@@ -1069,7 +1089,8 @@ public class MarkovCheck {
      * @param x Node to check for independence along with y.
      * @param y Node to check for independence along with x.
      * @param z Set of nodes to check if all are contained within the conditioning nodes.
-     * @return true if x and y are in the independence nodes and all elements of z are in the conditioning nodes; false otherwise.
+     * @return true if x and y are in the independence nodes and all elements of z are in the conditioning nodes; false
+     * otherwise.
      */
     private boolean checkNodeIndependenceAndConditioning(Node x, Node y, Set<Node> z) {
         List<Node> independenceNodes = getIndependenceNodes();

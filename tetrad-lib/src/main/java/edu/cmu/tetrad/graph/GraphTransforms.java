@@ -1,13 +1,13 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
-import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,14 +35,37 @@ public class GraphTransforms {
     }
 
     /**
-     * Returns a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
+     * Returns a random DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      *
-     * @param graph     the CPDAG
+     * @param cpdag     the CPDAG
      * @param knowledge the knowledge
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
-    public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
-        Graph dag = new EdgeListGraph(graph);
+    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge) {
+        Graph dag = new EdgeListGraph(cpdag);
+        transformCpdagIntoRandomDag(dag, knowledge);
+        return dag;
+    }
+
+    /**
+     * Transforms a completed partially directed acyclic graph (CPDAG) into a random directed acyclic graph (DAG) by
+     * randomly orienting the undirected edges in the CPDAG in shuffled order.
+     *
+     * @param graph     The original graph from which the CPDAG was derived.
+     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     */
+    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge) {
+        List<Edge> undirectedEdges = new ArrayList<>();
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) {
+                undirectedEdges.add(edge);
+            }
+        }
+
+        Collections.shuffle(undirectedEdges);
+
+        System.out.println(undirectedEdges);
 
         MeekRules rules = new MeekRules();
 
@@ -54,21 +77,79 @@ public class GraphTransforms {
 
         NEXT:
         while (true) {
-            for (Edge edge : dag.getEdges()) {
+            for (Edge edge : undirectedEdges) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                if (!Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    continue;
+                }
+
                 if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    direct(x, y, dag);
-                    rules.orientImplied(dag);
+                    double d = RandomUtil.getInstance().nextDouble();
+
+                    if (d < 0.5) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
+                    rules.orientImplied(graph);
                     continue NEXT;
                 }
             }
 
             break;
         }
+    }
 
-        return dag;
+    /**
+     * Picks a random Maximal Ancestral Graph (MAG) from the given Partial Ancestral Graph (PAG) by randomly orienting
+     * the circle endpoints as either tail or arrow and then applying the final FCI orient algorithm after each change.
+     * The PAG graph type is not checked.
+     *
+     * @param pag The partially ancestral pag to transform.
+     * @return The maximally ancestral pag obtained from the PAG.
+     */
+    public static Graph magFromPag(Graph pag) {
+        Graph mag = new EdgeListGraph(pag);
+        transormPagIntoRandomMag(mag);
+        return mag;
+    }
+
+    /**
+     * Transforms a partially ancestral graph (PAG) into a maximally ancestral graph (MAG) by randomly orienting the
+     * circle endpoints as either tail or arrow and then applying the final FCI orient algorithm after each change.
+     *
+     * @param pag The partially ancestral graph to transform.
+     */
+    public static void transormPagIntoRandomMag(Graph pag) {
+        for (Edge e : pag.getEdges()) pag.addEdge(new Edge(e));
+
+        List<NodePair> nodePairs = new ArrayList<>();
+
+        for (Edge edge : pag.getEdges()) {
+            if (!pag.isAdjacentTo(edge.getNode1(), edge.getNode2())) continue;
+            nodePairs.add(new NodePair(edge.getNode1(), edge.getNode2()));
+            nodePairs.add(new NodePair(edge.getNode2(), edge.getNode1()));
+        }
+
+        Collections.shuffle(nodePairs);
+
+        for (NodePair edge : new ArrayList<>(nodePairs)) {
+            if (pag.getEndpoint(edge.getFirst(), edge.getSecond()).equals(Endpoint.CIRCLE)) {
+                double d = RandomUtil.getInstance().nextDouble();
+
+                if (d < 0.5) {
+                    pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.TAIL);
+                } else {
+                    pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
+                }
+
+                FciOrient orient = new FciOrient(new DagSepsets(pag));
+                orient.zhangFinalOrientation(pag);
+            }
+        }
     }
 
     /**
@@ -78,7 +159,7 @@ public class GraphTransforms {
      * @param pag The partially ancestral graph to transform.
      * @return The maximally ancestral graph obtained from the PAG.
      */
-    public static Graph pagToMag(Graph pag) {
+    public static Graph zhangMagFromPag(Graph pag) {
         Graph mag = new EdgeListGraph(pag.getNodes());
         for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
 
@@ -245,7 +326,7 @@ public class GraphTransforms {
      * @param dag The input DAG.
      * @return The CPDAG resulting from applying Meek Rules to the input DAG.
      */
-    public static Graph cpdagForDag(Graph dag) {
+    public static Graph dagToCpdag(Graph dag) {
         Graph cpdag = new EdgeListGraph(dag);
         MeekRules rules = new MeekRules();
         rules.setRevertToUnshieldedColliders(true);

@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -95,6 +92,10 @@ public final class SvarFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Represents whether to resolve almost cyclic paths during the search.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -208,6 +209,21 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         return this.graph;
     }
@@ -480,10 +496,16 @@ public final class SvarFci implements IGraphSearch {
      * @return The name of the object without any lagging characters.
      */
     public String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
-            return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        return TsUtils.getNameNoLag(obj);
+    }
+
+    /**
+     * Sets whether almost cyclic paths should be resolved during the search.
+     *
+     * @param resolveAlmostCyclicPaths true if almost cyclic paths should be resolved, false otherwise
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

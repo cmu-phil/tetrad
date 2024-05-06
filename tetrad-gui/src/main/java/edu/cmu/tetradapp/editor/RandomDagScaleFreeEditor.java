@@ -132,7 +132,7 @@ class RandomDagScaleFreeEditor extends JPanel {
         b1.add(b10);
 
         Box b11 = Box.createHorizontalBox();
-        b11.add(new JLabel("Max # latent confounders:"));
+        b11.add(new JLabel("Number of additional latent confounders:"));
         b11.add(Box.createHorizontalGlue());
         b11.add(this.numLatentsField);
         b1.add(b11);
@@ -217,7 +217,7 @@ class RandomDagScaleFreeEditor extends JPanel {
     private void setNumLatents(int numLatentNodes) {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
-                    "Max # latent confounders must be" + " >= 0: " +
+                    "Number of additional latent confounders must be" + " >= 0: " +
                     numLatentNodes);
         }
 

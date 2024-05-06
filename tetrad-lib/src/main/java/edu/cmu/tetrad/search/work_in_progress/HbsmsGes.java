@@ -93,7 +93,7 @@ public final class HbsmsGes implements Hbsms {
         DagInCpcagIterator iterator = new DagInCpcagIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
-        graph = GraphTransforms.cpdagForDag(graph);
+        graph = GraphTransforms.dagToCpdag(graph);
 
         if (GraphUtils.containsBidirectedEdge(graph)) {
             throw new IllegalArgumentException("Contains bidirected edge.");

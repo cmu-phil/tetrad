@@ -106,6 +106,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setPcHeuristicType(pcHeuristicType);
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
@@ -159,6 +160,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
 

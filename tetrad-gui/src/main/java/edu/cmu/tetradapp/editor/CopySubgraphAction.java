@@ -49,7 +49,7 @@ public class CopySubgraphAction extends AbstractAction implements ClipboardOwner
      * @param graphEditor a {@link edu.cmu.tetradapp.editor.GraphEditable} object
      */
     public CopySubgraphAction(GraphEditable graphEditor) {
-        super("Copy Selected Graph");
+        super("Copy Selected Items");
 
         if (graphEditor == null) {
             throw new NullPointerException("Desktop must not be null.");

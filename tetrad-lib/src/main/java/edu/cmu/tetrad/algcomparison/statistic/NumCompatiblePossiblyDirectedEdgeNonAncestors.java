@@ -45,7 +45,7 @@ public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic 
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.addPagColoring(estGraph);
+        GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 

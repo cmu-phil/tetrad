@@ -75,6 +75,8 @@ public final class Cfci implements IGraphSearch {
     private boolean verbose;
     // Whether to do the discriminating path rule.
     private boolean doDiscriminatingPathRule;
+    // Whether to resolve almost cyclic paths.
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -166,7 +168,7 @@ public final class Cfci implements IGraphSearch {
 
         // Step CI D. (Zhang's step F4.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsConservative(this.graph, this.independenceTest,
+        FciOrient fciOrient = new FciOrient(new SepsetsMaxP(this.graph, this.independenceTest,
                 new SepsetMap(), this.depth));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
@@ -176,6 +178,21 @@ public final class Cfci implements IGraphSearch {
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -539,6 +556,16 @@ public final class Cfci implements IGraphSearch {
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
+    }
+
+    /**
+     * Sets the flag indicating whether to resolve almost cyclic paths.
+     *
+     * @param resolveAlmostCyclicPaths If true, almost cyclic paths will be resolved. If false, they will not be
+     *                                 resolved.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 
     private enum TripleType {

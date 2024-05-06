@@ -871,7 +871,7 @@ public class Ion {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset))) {
+                        if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset), false)) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
                                 indep.addMoreZ(new HashSet<>(subset));
@@ -918,7 +918,7 @@ public class Ion {
         for (IonIndependenceFacts assocFact : associations)
             for (Set<Node> conditioningSet : assocFact.getZ())
                 if (pag.paths().isMSeparatedFrom(
-                        assocFact.getX(), assocFact.getY(), conditioningSet))
+                        assocFact.getX(), assocFact.getY(), conditioningSet, false))
                     return true;
         return false;
     }
@@ -1355,7 +1355,7 @@ public class Ion {
         if ((graph.isAdjacentTo(a, c)) &&
             (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
             (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }

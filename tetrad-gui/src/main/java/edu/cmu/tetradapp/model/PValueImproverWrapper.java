@@ -379,7 +379,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             LayoutUtil.defaultLayout(this.graph);
         }
 
-        setResultGraph(GraphTransforms.cpdagForDag(this.graph));
+        setResultGraph(GraphTransforms.dagToCpdag(this.graph));
     }
 
     /**

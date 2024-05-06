@@ -409,7 +409,7 @@ public final class GraphSearchUtils {
             }
         }
 
-        Graph mag = GraphTransforms.pagToMag(pag);
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
         LegalMagRet legalMag = isLegalMag(mag);
 
@@ -491,7 +491,7 @@ public final class GraphSearchUtils {
         }
 
         for (Node n : mag.getNodes()) {
-            if (mag.paths().existsDirectedPathFromTo(n, n))
+            if (mag.paths().existsDirectedPath(n, n))
                 return new LegalMagRet(false,
                         "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
         }
@@ -501,14 +501,14 @@ public final class GraphSearchUtils {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (mag.paths().existsDirectedPathFromTo(x, y)) {
-                    List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
+                if (mag.paths().existsDirectedPath(x, y)) {
+                    List<Node> path = mag.paths().directedPaths(x, y, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
                             + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                             + "An example path is " + GraphUtils.pathString(mag, path));
-                } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
-                    List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
+                } else if (mag.paths().existsDirectedPath(y, x)) {
+                    List<Node> path = mag.paths().directedPaths(y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
                             ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
@@ -883,8 +883,8 @@ public final class GraphSearchUtils {
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = GraphTransforms.cpdagForDag(trueGraph);
-            estGraph = GraphTransforms.cpdagForDag(estGraph);
+            trueGraph = GraphTransforms.dagToCpdag(trueGraph);
+            estGraph = GraphTransforms.dagToCpdag(estGraph);
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {

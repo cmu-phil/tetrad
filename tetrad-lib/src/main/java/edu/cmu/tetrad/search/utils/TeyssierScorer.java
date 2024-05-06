@@ -156,20 +156,26 @@ public class TeyssierScorer {
     }
 
     /**
-     * <p>tuck.</p>
+     * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param k a {@link edu.cmu.tetrad.graph.Node} object
-     * @param j a int
-     * @return a boolean
+     * @param j The node to tuck.
+     * @param k The node to tuck j before.
+     * @return true if the tuck made a change.
      */
-    public boolean tuck(Node k, int j) {
-        if (adjacent(k, get(j))) return false;
-        if (j >= index(k)) return false;
+    public boolean tuck(Node j, Node k) {
+        int jIndex = index(j);
+        int kIndex = index(k);
 
-        Set<Node> ancestors = getAncestors(k);
-        for (int i = j + 1; i <= index(k); i++) {
+        if (jIndex < kIndex) {
+            return false;
+        }
+
+        Set<Node> ancestors = getAncestors(j);
+        int _kIndex = kIndex;
+
+        for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
-                moveTo(get(i), j++);
+                moveTo(get(i), _kIndex++);
             }
         }
 

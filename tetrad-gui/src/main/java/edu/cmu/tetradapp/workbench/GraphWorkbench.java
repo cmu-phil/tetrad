@@ -319,7 +319,6 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             String name = base + (++i);
 
             for (Node node1 : getGraph().getNodes()) {
-
                 if (node1.getName().equals(name)) {
                     continue loop;
                 }

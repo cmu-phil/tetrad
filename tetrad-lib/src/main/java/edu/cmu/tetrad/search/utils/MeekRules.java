@@ -176,16 +176,8 @@ public class MeekRules {
      * @param visited The set of nodes visited.
      */
     private void revertToUnshieldedColliders(List<Node> nodes, Graph graph, Set<Node> visited) {
-        boolean reverted = true;
-
-        while (reverted) {
-            reverted = false;
-
-            for (Node node : nodes) {
-                if (revertToUnshieldedColliders(node, graph, visited)) {
-                    reverted = true;
-                }
-            }
+        for (Node node : nodes) {
+            revertToUnshieldedColliders(node, graph, visited);
         }
     }
 
@@ -213,29 +205,32 @@ public class MeekRules {
         adjacentNodes.remove(a);
 
         Set<Node> common = getCommonAdjacents(a, c, graph);
+        boolean oriented = false;
 
         for (Node b : common) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
                 if (r2Helper(a, b, c, graph, visited)) {
-                    return true;
+                    oriented = true;
                 }
             }
 
-            if (graph.paths().isDirectedFromTo(c, b) && graph.paths().isDirectedFromTo(b, a)) {
+            if (graph.paths().isDirected(c, b) && graph.paths().isDirected(b, a)) {
                 if (r2Helper(c, b, a, graph, visited)) {
-                    return true;
+                    oriented = true;
                 }
             }
         }
 
-        return false;
+        return oriented;
     }
 
     private boolean r2Helper(Node a, Node b, Node c, Graph graph, Set<Node> visited) {
-        boolean directed = direct(a, c, graph, visited);
-        log(LogUtilsSearch.edgeOrientedMsg(
-                "Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "---" + c + ")", graph.getEdge(a, c)));
-        return directed;
+        if (direct(a, c, graph, visited)) {
+            log(LogUtilsSearch.edgeOrientedMsg(
+                    "Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "--" + c + ")", graph.getEdge(a, c)));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -248,6 +243,8 @@ public class MeekRules {
             return false;
         }
 
+        boolean oriented = false;
+
         for (int i = 0; i < adjacentNodes.size(); i++) {
             for (int j = i + 1; j < adjacentNodes.size(); j++) {
                 Node b = adjacentNodes.get(i);
@@ -255,37 +252,39 @@ public class MeekRules {
 
                 if (!graph.isAdjacentTo(b, c)) {
                     if (r3Helper(a, d, b, c, graph, visited)) {
-                        return true;
+                        oriented = true;
                     }
                 }
+            }
+        }
+
+        return oriented;
+    }
+
+    private boolean r3Helper(Node a, Node d, Node b, Node c, Graph graph, Set<Node> visited) {
+        boolean b4 = graph.paths().isUndirected(d, a);
+        boolean b5 = graph.paths().isUndirected(d, b);
+        boolean b6 = graph.paths().isUndirected(d, c);
+        boolean b7 = graph.paths().isDirected(b, a);
+        boolean b8 = graph.paths().isDirected(c, a);
+
+        if (b4 && b5 && b6 && b7 && b8) {
+            if (direct(d, a, graph, visited)) {
+                log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
+                                                   + c, graph.getEdge(d, a)));
+                return true;
             }
         }
 
         return false;
     }
 
-    private boolean r3Helper(Node a, Node d, Node b, Node c, Graph graph, Set<Node> visited) {
-        boolean oriented = false;
-
-        boolean b4 = graph.paths().isUndirectedFromTo(d, a);
-        boolean b5 = graph.paths().isUndirectedFromTo(d, b);
-        boolean b6 = graph.paths().isUndirectedFromTo(d, c);
-        boolean b7 = graph.paths().isDirectedFromTo(b, a);
-        boolean b8 = graph.paths().isDirectedFromTo(c, a);
-
-        if (b4 && b5 && b6 && b7 && b8) {
-            oriented = direct(d, a, graph, visited);
-            log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
-                                               + c, graph.getEdge(d, a)));
-        }
-
-        return oriented;
-    }
-
     private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
         if (!this.useRule4) {
             return false;
         }
+
+        boolean oriented = false;
 
         for (Node c : graph.getParents(b)) {
             Set<Node> adj = getCommonAdjacents(a, c, graph);
@@ -298,12 +297,12 @@ public class MeekRules {
                 if (graph.getEdge(a, d).isDirected()) continue;
                 if (direct(a, b, graph, visited)) {
                     log(LogUtilsSearch.edgeOrientedMsg("Meek R4 using " + c + ", " + d, graph.getEdge(a, b)));
-                    return true;
+                    oriented = true;
                 }
             }
         }
 
-        return false;
+        return oriented;
     }
 
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
@@ -313,7 +312,7 @@ public class MeekRules {
         Edge before = graph.getEdge(a, c);
         graph.removeEdge(before);
 
-        if (meekPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
+        if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
             graph.addEdge(before);
             return false;
         }
@@ -329,9 +328,7 @@ public class MeekRules {
         return true;
     }
 
-    private boolean revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
-        boolean did = false;
-
+    private void revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
         List<Node> parents = graph.getParents(y);
 
         P:
@@ -350,11 +347,7 @@ public class MeekRules {
 
             visited.add(p);
             visited.add(y);
-
-            did = true;
         }
-
-        return did;
     }
 
     private void log(String message) {

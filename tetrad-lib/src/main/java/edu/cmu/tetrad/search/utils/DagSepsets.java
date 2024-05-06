@@ -59,6 +59,29 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
+     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note
+     * that for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
+     * otherwise, an exception is thrown.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param s The set of nodes that must be contained in the sepset.
+     * @return The sepset containing 'a' and 'b' that also contains all the nodes in 's'.
+     * @throws IllegalArgumentException If the sepset of 'a' and 'b' does not contain all the nodes in 's'.
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+        Set<Node> sepset = this.dag.getSepset(a, b);
+
+        if (sepset != null && !sepset.containsAll(s)) {
+            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
+                                               + ") to contain all the nodes in " + s + ".");
+        }
+
+        return sepset;
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * True iff i*-*j*-*k is an unshielded collider.
@@ -87,8 +110,16 @@ public class DagSepsets implements SepsetProducer {
      * check.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        return this.dag.paths().isMSeparatedFrom(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        return this.dag.paths().isMSeparatedFrom(a, b, sepset, false);
+    }
+
+    /**
+     * @throws UnsupportedOperationException if this method is called.
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        throw new UnsupportedOperationException("This makes no sense for this subclass.");
     }
 
     /**

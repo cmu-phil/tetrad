@@ -126,7 +126,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.cpdagForDag(graph);
+            return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return GraphTransforms.dagToPag(graph);

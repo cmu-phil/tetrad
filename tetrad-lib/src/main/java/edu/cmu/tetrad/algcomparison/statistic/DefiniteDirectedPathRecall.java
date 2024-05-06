@@ -49,14 +49,14 @@ public class DefiniteDirectedPathRecall implements Statistic {
         int tp = 0, fn = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (cpdag.paths().existsDirectedPathFromTo(x, y)) {
-                    if (estGraph.paths().existsDirectedPathFromTo(x, y)) {
+                if (cpdag.paths().existsDirectedPath(x, y)) {
+                    if (estGraph.paths().existsDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fn++;

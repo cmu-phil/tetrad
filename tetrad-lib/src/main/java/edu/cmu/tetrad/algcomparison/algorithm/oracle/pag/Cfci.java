@@ -99,6 +99,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -123,7 +124,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + this.test.getDescription();
+        return "CFCI (Conservative Fast Causal Inference) using " + this.test.getDescription();
     }
 
     /**
@@ -147,6 +148,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.DEPTH);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
 

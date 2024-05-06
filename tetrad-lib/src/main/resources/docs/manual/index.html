@@ -299,17 +299,18 @@
         </li>
     </ul>
 
-    <h3>Choose DAG in CPDAG</h3>
+    <h3>Choose Random DAG in CPDAG</h3>
 
     <p>If given a CPDAG as input, this chooses a random DAG from the
         Markov equivalence class of the CPDAG to display. The resulting DAG
         functions as a normal graph box.</p>
 
-    <h3>Choose MAG in PAG</h3>
+    <h3>Choose Zhang MAG in PAG</h3>
 
     <p>If given a partial ancestral graph (PAG) as input, this chooses a
-        random mixed ancestral graph (MAG) from the equivalence class of the PAG
-        to display. The resulting MAG functions as a normal graph box.</p>
+        mixed ancestral graph (MAG) from the equivalence class of the PAG
+        to display using Zhang's method. The resulting MAG functions as a
+        normal graph box.</p>
 
     <h3>Show DAGs in CPDAG</h3>
 
@@ -4864,6 +4865,25 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="thresholdLvLite">thresholdLvLite</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="thresholdLvLite_short_desc">Score threshold for judging model score equality</span></li>
+            <li>Long Description: <span
+                    id="thresholdLvLite_long_desc">Score threshold for judging model score equality</span>
+            </li>
+            <li>Default Value: <span
+                    id="thresholdLvLite_default_value">0.01</span></li>
+            <li>Lower
+                Bound: <span id="thresholdLvLite_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="thresholdLvLite_upper_bound">Infinity</span></li>
+            <li>Value Type:
+                <span id="thresholdLvLite_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="addOriginalDataset">addOriginalDataset</h3>
         <ul
                 class="parameter_description_list">
@@ -5161,6 +5181,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="doDiscriminatingPathRule_upper_bound"></span></li>
             <li>Value Type:
                 <span id="doDiscriminatingPathRule_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="resolveAlmostCyclicPaths">resolveAlmostCyclicPaths</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="resolveAlmostCyclicPaths_short_desc">
+                    True just in case almost cyclic paths should be resolved in the
+                    direction of the cycle.
+                </span></li>
+            <li>Long Description: <span
+                    id="resolveAlmostCyclicPaths_long_desc">
+                    If true we resolved <-> edges as --> if there is a directed path x~~>y.
+                    </span>
+            </li>
+            <li>Default Value: <span
+                    id="resolveAlmostCyclicPaths_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="resolveAlmostCyclicPaths_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="resolveAlmostCyclicPaths_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="resolveAlmostCyclicPaths_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"

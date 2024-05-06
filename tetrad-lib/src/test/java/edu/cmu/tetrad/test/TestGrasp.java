@@ -2364,7 +2364,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPaths(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -2519,8 +2519,8 @@ public final class TestGrasp {
         statistics.add(new LegalPag());
 //        statistics.add(new NoAlmostCyclicPathsCondition());
 //        statistics.add(new NoCyclicPathsCondition());
-        statistics.add(new NoAlmostCyclicPathsInMagCondition());
-        statistics.add(new NoCyclicPathsInMagCondition());
+        statistics.add(new NoAlmostCyclicPathsCondition());
+        statistics.add(new NoCyclicPathsCondition());
         statistics.add(new MaximalityCondition());
 
         statistics.add(new ParameterColumn(Params.ALPHA));
@@ -2773,7 +2773,7 @@ public final class TestGrasp {
 
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.paths().isMSeparatedFrom(x, y, parents)) {
+                    if (!graph.paths().isMSeparatedFrom(x, y, parents, false)) {
                         System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
@@ -3149,7 +3149,7 @@ public final class TestGrasp {
 
                         if (g1.equals(g2)) gsCount++;
                         gsShd += GraphSearchUtils.structuralHammingDistance(
-                                GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g2));
+                                GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3164,7 +3164,7 @@ public final class TestGrasp {
 
                             if (g1.equals(g3)) pearlCounts[i]++;
                             pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
-                                    GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g3));
+                                    GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g3));
                         }
                     }
 
@@ -3298,7 +3298,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPaths(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

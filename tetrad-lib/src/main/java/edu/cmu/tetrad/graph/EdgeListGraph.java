@@ -496,32 +496,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
      */
     public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
-        return !new Paths(this).isMConnectedTo(x, y, z);
-    }
-
-    /**
-     * Determines whether two nodes are d-separated given z.
-     *
-     * @param x a {@link java.util.Set} object
-     * @param y a {@link java.util.Set} object
-     * @param z a {@link java.util.Set} object
-     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
-     */
-    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
-        return !new Paths(this).isMConnectedTo(x, y, z);
-    }
-
-    /**
-     * Determines whether two nodes are d-separated given z.
-     *
-     * @param ancestors A map of ancestors for each node.
-     * @param x         a {@link java.util.Set} object
-     * @param y         a {@link java.util.Set} object
-     * @param z         a {@link java.util.Set} object
-     * @return True if the nodes are d-separated given z, false if not.
-     */
-    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        return !new Paths(this).isMConnectedTo(x, y, z, ancestors);
+        return !new Paths(this).isMConnectedTo(x, y, z, false);
     }
 
     /**
@@ -749,14 +724,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 this.edgeLists = new HashMap<>(this.edgeLists);
             }
 
-            if (edgeLists.get(node1) == null) {
-                // System.out.println("Missing node1 is not in edgeLists: " + node1);
-                edgeLists.put(node1, new HashSet<>());
-            }
-            if (edgeLists.get(node2) == null) {
-                // System.out.println("Missing node2 is not in edgeLists: " + node2);
-                edgeLists.put(node2, new HashSet<>());
-            }
+            // System.out.println("Missing node1 is not in edgeLists: " + node1);
+            edgeLists.computeIfAbsent(node1, k -> new HashSet<>());
+            // System.out.println("Missing node2 is not in edgeLists: " + node2);
+            edgeLists.computeIfAbsent(node2, k -> new HashSet<>());
             this.edgeLists.get(node1).add(edge);
             this.edgeLists.get(node2).add(edge);
             this.edgesSet.add(edge);

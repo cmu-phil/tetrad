@@ -79,6 +79,10 @@ public final class SvarGfci implements IGraphSearch {
      * The sepsets.
      */
     private SepsetProducer sepsets;
+    /**
+     * Indicates whether the search algorithm should resolve almost cyclic paths.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
 
     /**
@@ -163,6 +167,21 @@ public final class SvarGfci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(this.graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
@@ -538,6 +557,15 @@ public final class SvarGfci implements IGraphSearch {
         pairList.add(simListX);
         pairList.add(simListY);
         return (pairList);
+    }
+
+    /**
+     * Sets whether to resolve almost cyclic paths during the search.
+     *
+     * @param resolveAlmostCyclicPaths True if almost cyclic paths should be resolved, false otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

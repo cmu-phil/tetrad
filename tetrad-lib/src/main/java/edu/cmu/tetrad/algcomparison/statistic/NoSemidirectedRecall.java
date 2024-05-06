@@ -48,7 +48,7 @@ public class NoSemidirectedRecall implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fn = 0;
 
-        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         List<Node> nodes = trueGraph.getNodes();
 

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -125,13 +126,14 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
 
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagColorer(this.workbench));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+//        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
+        graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
 
@@ -151,9 +153,9 @@ public class GraphCard extends JPanel {
         graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
-        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG coloring.
+        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG edge specialization markups.
         // This is to show the edge types in the graph. - jdramsey 2024/03/13
-        graphWorkbench.setDoPagColoring(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
+        graphWorkbench.markPagEdgeSpecializations(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
 
         this.workbench = graphWorkbench;
 

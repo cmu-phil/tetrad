@@ -73,7 +73,7 @@ public class MbUtils {
                     if (graph.isDefCollider(target, v, w)) {
                         parentsOfChildren.add(w);
                     } else if (graph.getNodesInTo(v, Endpoint.ARROW).contains(target)
-                               && graph.paths().isUndirectedFromTo(v, w)) {
+                               && graph.paths().isUndirected(v, w)) {
                         parentsOfChildren.add(w);
                     }
                 }
@@ -92,9 +92,9 @@ public class MbUtils {
             List<Node> pc = new LinkedList<>();
 
             for (Node node : graph.getAdjacentNodes(target)) {
-                if (graph.paths().isDirectedFromTo(target, node) ||
-                    graph.paths().isDirectedFromTo(node, target) ||
-                    graph.paths().isUndirectedFromTo(node, target)) {
+                if (graph.paths().isDirected(target, node) ||
+                    graph.paths().isDirected(node, target) ||
+                    graph.paths().isUndirected(node, target)) {
                     pc.add(node);
                 }
             }
@@ -106,7 +106,7 @@ public class MbUtils {
                     continue;
                 }
 
-                if (graph.paths().isDirectedFromTo(target, v)) {
+                if (graph.paths().isDirected(target, v)) {
                     children.add(v);
                 }
             }
@@ -125,8 +125,8 @@ public class MbUtils {
                         continue;
                     }
 
-                    if (graph.paths().isDirectedFromTo(target, v) &&
-                        graph.paths().isDirectedFromTo(w, v)) {
+                    if (graph.paths().isDirected(target, v) &&
+                        graph.paths().isDirected(w, v)) {
                         parentsOfChildren.add(w);
                     }
                 }

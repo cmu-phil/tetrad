@@ -188,7 +188,7 @@ public class IcaLingam {
 
     private boolean existsDirectedCycle() {
         for (Node node : new HashSet<>(dummyCyclicNodes)) {
-            if (dummyGraph.paths().existsDirectedPathFromTo(node, node)) {
+            if (dummyGraph.paths().existsDirectedPath(node, node)) {
                 return true;
             } else {
                 dummyCyclicNodes.remove(node);

@@ -131,7 +131,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
-        return GraphTransforms.cpdagForDag(dag);
+        return GraphTransforms.dagToCpdag(dag);
     }
 
     /**

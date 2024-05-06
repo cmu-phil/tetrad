@@ -49,8 +49,8 @@ public final class GraphFileMenu extends JMenu {
             JMenu load = new JMenu("Load...");
             add(load);
 
-            load.add(new LoadGraph(editable, "XML..."));
             load.add(new LoadGraphTxt(editable, "Text..."));
+            load.add(new LoadGraph(editable, "XML..."));
             load.add(new LoadGraphJson(editable, "Json..."));
             load.add(new LoadGraphAmatCpdag(editable, "amat.cpdag..."));
             load.add(new LoadGraphAmatPag(editable, "amat.pag..."));
@@ -59,8 +59,8 @@ public final class GraphFileMenu extends JMenu {
         JMenu save = new JMenu("Save...");
         add(save);
 
-        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));

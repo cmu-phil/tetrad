@@ -21,14 +21,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.utils.SepsetsMinP;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -147,6 +146,14 @@ public final class BFci implements IGraphSearch {
      * used for processing.
      */
     private int numThreads = 1;
+    /**
+     * Determines whether or not almost cyclic paths should be resolved during the graph search.
+     *
+     * Almost cyclic paths are paths that are almost cycles but have a single additional edge
+     * that prevents them from being cycles. Resolving these paths involves determining if the
+     * additional edge should be included or not.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -176,6 +183,8 @@ public final class BFci implements IGraphSearch {
             RandomUtil.getInstance().setSeed(seed);
         }
 
+        this.independenceTest.setVerbose(verbose);
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
@@ -196,21 +205,44 @@ public final class BFci implements IGraphSearch {
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
+        }
+
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-
         fciOrient.doFinalOrientation(graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         return graph;
     }
@@ -320,5 +352,14 @@ public final class BFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
+    }
+
+    /**
+     * Sets whether almost cyclic paths should be resolved during the search.
+     *
+     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

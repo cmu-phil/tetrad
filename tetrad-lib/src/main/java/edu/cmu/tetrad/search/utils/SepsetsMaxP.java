@@ -45,7 +45,7 @@ import java.util.Set;
  * @see SepsetMap
  * @see Cpc
  */
-public class SepsetsConservative implements SepsetProducer {
+public class SepsetsMaxP implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
@@ -60,7 +60,7 @@ public class SepsetsConservative implements SepsetProducer {
      * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      * @param depth            a int
      */
-    public SepsetsConservative(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMaxP(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -68,12 +68,29 @@ public class SepsetsConservative implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
+     * Returns the set of nodes in the sepset between two given nodes, or null if no sepset is found.
+     *
+     * @param i the first node
+     * @param k the second node
+     * @return a Set of Node objects representing the sepset between the two nodes, or null if no sepset is found.
      */
     public Set<Node> getSepset(Node i, Node k) {
-        double _p = 0.0;
+        return getSepsetContaining(i, k, null);
+    }
+
+    /**
+     * Returns the set of nodes in the sepset between two given nodes containing a given set of separator nodes, or null
+     * if no sepset is found. If there is no required set of nodes, pass null for the set.
+     *
+     * @param i the first node
+     * @param k the second node
+     * @param s A set of nodes that must be in the sepset, or null if no such set is required.
+     * @return a Set of Node objects representing the sepset between the two nodes containing the given set, or null if
+     * no sepset is found
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
+        double _p = -1;
         Set<Node> _v = null;
 
         if (this.extraSepsets != null) {
@@ -98,6 +115,10 @@ public class SepsetsConservative implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {
@@ -116,6 +137,11 @@ public class SepsetsConservative implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
                     if (result.isIndependent()) {
@@ -225,13 +251,32 @@ public class SepsetsConservative implements SepsetProducer {
 
 
     /**
-     * {@inheritDoc}
+     * Determines if two nodes are independent given a set of separator nodes.
+     *
+     * @param a      A {@link Node} object representing the first node.
+     * @param b      A {@link Node} object representing the second node.
+     * @param sepset A {@link Set} object representing the set of separator nodes.
+     * @return True if the nodes are independent, false otherwise.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.lastResult = result;
         return result.isIndependent();
+    }
+
+    /**
+     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     *
+     * @param a      the first node
+     * @param b      the second node
+     * @param sepset the set of separator nodes
+     * @return the p-value for the independence test
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
+        return result.getPValue();
     }
 
     /**
