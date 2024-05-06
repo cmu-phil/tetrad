@@ -60,27 +60,42 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for GraspFci.</p>
+     * This class represents a LvLite algorithm.
+     *
+     * <p>
+     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a given data set and parameters. It is a subclass of the Abstract
+     * BootstrapAlgorithm class and implements the Algorithm interface.
+     * </p>
+     *
+     * @see AbstractBootstrapAlgorithm
+     * @see Algorithm
      */
     public LvLite() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for GraspFci.</p>
+     * LvLite is a class that represents a LvLite algorithm.
      *
-     * @param score a {@link ScoreWrapper} object
+     * <p>
+     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a given data set and parameters.
+     * It is a subclass of the AbstractBootstrapAlgorithm class and implements the Algorithm interface.
+     * </p>
+     *
+     * @see AbstractBootstrapAlgorithm
+     * @see Algorithm
      */
     public LvLite(ScoreWrapper score) {
         this.score = score;
     }
 
     /**
-     * Runs a search algorithm to find a graph structure based on a given data set and parameters.
+     * Runs the search algorithm to find a graph structure based on a given data model and parameters.
      *
-     * @param dataModel  the data set to be used for the search algorithm
-     * @param parameters the parameters for the search algorithm
-     * @return the graph structure found by the search algorithm
+     * @param dataModel   The data model to use for the search algorithm.
+     * @param parameters  The parameters to configure the search algorithm.
+     * @return The resulting graph structure.
+     * @throws IllegalArgumentException if the time lag is greater than 0 and the data model is not an instance of DataSet.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
