@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,11 +10,20 @@ import java.util.List;
  * A list of simulations to be compared.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-public class Simulations {
+public class Simulations implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The simulations.
+     */
     private final List<Simulation> simulations = new ArrayList<>();
 
+    /**
+     * <p>Constructor for Simulations.</p>
+     */
     public Simulations() {
     }
 

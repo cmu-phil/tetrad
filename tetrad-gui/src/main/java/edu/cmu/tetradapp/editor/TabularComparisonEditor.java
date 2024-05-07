@@ -7,16 +7,32 @@ import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Map;
 
+/**
+ * <p>TabularComparisonEditor class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class TabularComparisonEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 8455624852328328919L;
 
+    /**
+     * The comparison being edited.
+     */
     private final TabularComparison comparison;
 
+    /**
+     * <p>Constructor for TabularComparisonEditor.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
+     */
     public TabularComparisonEditor(TabularComparison comparison) {
         this.comparison = comparison;
         setup();
@@ -54,7 +70,7 @@ public class TabularComparisonEditor extends JPanel {
 
         StringBuilder b0 = new StringBuilder();
         String trueGraphAndTarget = "Target graphs from " + this.comparison.getTargetName()
-                + "\nTrue graphs from " + this.comparison.getReferenceName();
+                                    + "\nTrue graphs from " + this.comparison.getReferenceName();
         b0.append(trueGraphAndTarget).append("\n\n");
         b0.append(table);
 

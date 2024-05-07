@@ -112,7 +112,7 @@ public final class TestBayesXml {
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        return new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private static BayesIm sampleBayesIm3() {
@@ -138,7 +138,7 @@ public final class TestBayesXml {
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        return new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     /**
@@ -212,12 +212,12 @@ public final class TestBayesXml {
         } catch (ParsingException e) {
             e.printStackTrace();
             fail("The file referred to cannot be parsed as a Bayes IM." +
-                    " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
-                    " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
+                 " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
+                 " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
         } catch (IOException e) {
             e.printStackTrace();
             fail("The file referred to cannot be opened (or doesn't exist). " +
-                    "Maybe the working directory is not set correctly.");
+                 "Maybe the working directory is not set correctly.");
         }
     }
 }

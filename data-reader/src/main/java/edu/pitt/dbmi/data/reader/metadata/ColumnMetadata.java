@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ColumnMetadata {
 
@@ -75,9 +76,9 @@ public class ColumnMetadata {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Return a string representation of the column metadata.
-     *
-     * @return a string representation of the column metadata.
      */
     @Override
     public String toString() {

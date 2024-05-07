@@ -29,8 +29,16 @@ import nu.xom.Elements;
  * This class takes an xml element representing a SEM im and converts it to a SemIM
  *
  * @author Matt Easterday
+ * @version $Id: $Id
  */
 public class SemXmlParser {
+
+    /**
+     * This class represents a parser for SEM XML representation. It provides methods to parse XML and reinstantiate SEM
+     * IM objects. The class does not require any input parameters.
+     */
+    public SemXmlParser() {
+    }
 
     /**
      * Takes an xml representation of a SEM IM and reinstantiates the IM

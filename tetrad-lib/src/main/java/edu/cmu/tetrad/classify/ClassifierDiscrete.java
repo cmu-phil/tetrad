@@ -26,21 +26,28 @@ package edu.cmu.tetrad.classify;
  * Interface implemented by classes that do discrete classification.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public interface ClassifierDiscrete {
 
     /**
+     * <p>classify.</p>
+     *
      * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
      */
     int[] classify();
 
     /**
+     * <p>crossTabulation.</p>
+     *
      * @return the double subscripted int array containing the "confusion matrix" of coefs of estimated versus observed
      * values of the target variable.
      */
     int[][] crossTabulation();
 
     /**
+     * <p>getPercentCorrect.</p>
+     *
      * @return the percentage of cases where the target variable is correctly classified.
      */
     double getPercentCorrect();

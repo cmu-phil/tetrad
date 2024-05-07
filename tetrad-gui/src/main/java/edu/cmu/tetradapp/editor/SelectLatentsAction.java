@@ -36,9 +36,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Highlights all latent variables in the given display graph.
- *
- * @author josephramsey
+ * The SelectLatentsAction class is an implementation of the AbstractAction class and ClipboardOwner interface. It
+ * provides functionality to highlight all latent variables in a given display graph.
  */
 public class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
 
@@ -48,9 +47,10 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     private final GraphWorkbench workbench;
 
     /**
-     * Highlights all latent variables in the given display graph.
+     * The SelectLatentsAction class is an implementation of the AbstractAction class and ClipboardOwner interface. It
+     * provides functionality to highlight all latent variables in a given display graph.
      *
-     * @param workbench the given workbench.
+     * @param workbench the GraphWorkbench containing the target session editor (must not be null)
      */
     public SelectLatentsAction(GraphWorkbench workbench) {
         super("Highlight Latent Nodes");
@@ -63,9 +63,9 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
-     * Highlights all latent variables in the given display graph.
+     * This method is called when an action event occurs. It highlights all latent nodes and edges in the workbench.
      *
-     * @param e the event to be processed
+     * @param e the action event that triggered the method
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
@@ -84,7 +84,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
 
                 if (edge.getNode1().getNodeType() == NodeType.LATENT
-                        && edge.getNode2().getNodeType() == NodeType.LATENT) {
+                    && edge.getNode2().getNodeType() == NodeType.LATENT) {
                     this.workbench.selectEdge(edge);
                 }
             }
@@ -92,7 +92,10 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
-     * Required by the AbstractAction interface; does nothing.
+     * This method is called when the application no longer owns the contents of the clipboard.
+     *
+     * @param clipboard The clipboard that lost ownership of the contents
+     * @param contents The contents that were lost
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

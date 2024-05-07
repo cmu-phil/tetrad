@@ -83,6 +83,11 @@ class RegressionParamsEditorPanel extends JPanel {
     /**
      * Constructs the editor given the <code>Parameters</code> and the
      * <code>DataModel</code> that should be used.
+     *
+     * @param regressionModel a {@link edu.cmu.tetradapp.model.RegressionModel} object
+     * @param parameters      a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model           a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param logistic        a boolean
      */
     public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
                                        DataModel model, boolean logistic) {
@@ -401,6 +406,11 @@ class RegressionParamsEditorPanel extends JPanel {
 
     //========================== Inner classes (a lot of'em) =========================================//
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
@@ -588,8 +598,7 @@ class RegressionParamsEditorPanel extends JPanel {
                     try {
                         //noinspection unchecked
                         List<Comparable> o = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
-                        if (comp instanceof JList) {
-                            JList list = (JList) comp;
+                        if (comp instanceof JList list) {
                             VariableListModel model = (VariableListModel) list.getModel();
                             for (Comparable c : o) {
                                 model.removeFirst(c);
@@ -611,8 +620,7 @@ class RegressionParamsEditorPanel extends JPanel {
         public void dragGestureRecognized(DragGestureEvent dge) {
             Component comp = dge.getComponent();
             List selected = null;
-            if (comp instanceof JList) {
-                JList list = (JList) comp;
+            if (comp instanceof JList list) {
                 selected = list.getSelectedValuesList();
             } else {
                 JTextField pane = (JTextField) comp;

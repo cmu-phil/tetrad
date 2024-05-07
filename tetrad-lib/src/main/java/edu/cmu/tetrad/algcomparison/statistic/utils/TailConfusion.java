@@ -12,17 +12,51 @@ import java.util.List;
  * X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
  *
  * @author josephramsey, rubens (November, 2016)
+ * @version $Id: $Id
  */
 public class TailConfusion {
 
+    /**
+     * The true positive count for tails.
+     */
     private int tailsTp;
+
+    /**
+     * The false positive count for tails.
+     */
     private int tailsFp;
+
+    /**
+     * The false negative count for tails.
+     */
     private int tailsFn;
+
+    /**
+     * The true negative count for tails.
+     */
     private int tailsTn;
+
+    /**
+     * The true positive count for 2-cycles.
+     */
     private int TCtp;
+
+    /**
+     * The false negative count for 2-cycles.
+     */
     private int TCfn;
+
+    /**
+     * The false positive count for 2-cycles.
+     */
     private int TCfp;
 
+    /**
+     * <p>Constructor for TailConfusion.</p>
+     *
+     * @param truth a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param est   a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public TailConfusion(Graph truth, Graph est) {
         Graph est1 = est;
         this.tailsTp = 0;
@@ -199,30 +233,65 @@ public class TailConfusion {
     }
 
 
+    /**
+     * <p>getArrowsTp.</p>
+     *
+     * @return a int
+     */
     public int getArrowsTp() {
         return this.tailsTp;
     }
 
+    /**
+     * <p>getArrowsFp.</p>
+     *
+     * @return a int
+     */
     public int getArrowsFp() {
         return this.tailsFp;
     }
 
+    /**
+     * <p>getArrowsFn.</p>
+     *
+     * @return a int
+     */
     public int getArrowsFn() {
         return this.tailsFn;
     }
 
+    /**
+     * <p>getArrowsTn.</p>
+     *
+     * @return a int
+     */
     public int getArrowsTn() {
         return this.tailsTn;
     }
 
+    /**
+     * <p>getTwoCycleTp.</p>
+     *
+     * @return a int
+     */
     public int getTwoCycleTp() {
         return this.TCtp;
     }
 
+    /**
+     * <p>getTwoCycleFp.</p>
+     *
+     * @return a int
+     */
     public int getTwoCycleFp() {
         return this.TCfp;
     }
 
+    /**
+     * <p>getTwoCycleFn.</p>
+     *
+     * @return a int
+     */
     public int getTwoCycleFn() {
         return this.TCfn;
     }

@@ -32,6 +32,7 @@ import java.util.logging.*;
  * call removeStream(stream).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("UnusedDeclaration")
 public class LogUtils {
@@ -63,6 +64,8 @@ public class LogUtils {
     }
 
     /**
+     * <p>getInstance.</p>
+     *
      * @return Ibid.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -90,7 +93,7 @@ public class LogUtils {
         SimpleFormatter formatter = new SimpleFormatter() {
             public synchronized String format(LogRecord record) {
                 return record.getMessage() +
-                        "\n";
+                       "\n";
             }
         };
 
@@ -149,35 +152,70 @@ public class LogUtils {
         }
     }
 
+    /**
+     * <p>severe.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void severe(String s) {
         getLogger().severe(s);
     }
 
+    /**
+     * <p>warning.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void warning(String s) {
         getLogger().warning(s);
         flushAll();
     }
 
+    /**
+     * <p>config.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void config(String s) {
         getLogger().config(s);
         flushAll();
     }
 
+    /**
+     * <p>info.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void info(String s) {
         getLogger().info(s);
         flushAll();
     }
 
+    /**
+     * <p>fine.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void fine(String s) {
         getLogger().fine(s);
         flushAll();
     }
 
+    /**
+     * <p>finer.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void finer(String s) {
         getLogger().finer(s);
         flushAll();
     }
 
+    /**
+     * <p>finest.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     */
     public void finest(String s) {
         getLogger().finest(s);
         flushAll();

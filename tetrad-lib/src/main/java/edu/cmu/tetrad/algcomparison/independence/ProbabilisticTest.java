@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
  * Dec 17, 2018 3:44:46 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "Probabilistic Test",
@@ -24,8 +26,18 @@ import java.util.List;
 )
 public class ProbabilisticTest implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the ProbabilisticTest class.
+     */
+    public ProbabilisticTest() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestProbabilistic test = new IndTestProbabilistic(SimpleDataLoader.getDiscreteDataSet(dataSet));
@@ -35,16 +47,25 @@ public class ProbabilisticTest implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Probabilistic Conditional Independence Test";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

@@ -28,6 +28,7 @@ import java.nio.file.StandardOpenOption;
  * Dec 12, 2018 11:16:14 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class DataFileReader implements DataReader {
 
@@ -88,7 +89,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of column from the first non-blank line.
      *
      * @return the number of column from the first non-blank line
-     * @throws IOException if an I/O error occurs
+     * @throws java.io.IOException if an I/O error occurs
      */
     protected int countNumberOfColumns() throws IOException {
         int count = 0;
@@ -184,7 +185,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of non-blank lines.
      *
      * @return the number of non-blank and non-commented lines
-     * @throws IOException if an I/O error occurs
+     * @throws java.io.IOException if an I/O error occurs
      */
     protected int countNumberOfLines() throws IOException {
         int count = 0;
@@ -253,7 +254,7 @@ public abstract class DataFileReader implements DataReader {
     /**
      * Sets the quote character.
      *
-     * @param quoteCharacter the quote character
+     * @param quoteCharacter the quote character to be set
      */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
@@ -265,7 +266,7 @@ public abstract class DataFileReader implements DataReader {
     /**
      * Sets the comment marker.
      *
-     * @param commentMarker the comment marker
+     * @param commentMarker the comment marker to be set
      */
     @Override
     public void setCommentMarker(String commentMarker) {

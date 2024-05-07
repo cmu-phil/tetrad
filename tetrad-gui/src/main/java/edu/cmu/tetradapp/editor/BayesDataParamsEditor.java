@@ -32,6 +32,7 @@ import java.awt.*;
  * Edits the parameters for simulating new datasets from a Bayes net.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesDataParamsEditor extends JPanel implements ParameterEditor {
 
@@ -48,6 +49,8 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 
     /**
      * A method required by the interface that does nothing.
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
         // Do nothing.
@@ -116,6 +119,11 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
         setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }
@@ -130,6 +138,8 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the parameter-storing object. This is a separate method because a blank constructor is needed.
      */
     public void setParams(Parameters params) {

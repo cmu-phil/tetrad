@@ -25,22 +25,25 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * wrapper class for passing factor+edge via a propertyChange event
  *
  * @author gmli
+ * @version $Id: $Id
  */
 public class LaggedEdge implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The name of the factor.
      */
     private final String factor;
 
     /**
-     * @serial
+     * The lagged factor.
      */
     private final LaggedFactor laggedFactor;
 
@@ -48,6 +51,9 @@ public class LaggedEdge implements TetradSerializable {
 
     /**
      * Creates new LaggedEdge
+     *
+     * @param factor       a {@link java.lang.String} object
+     * @param laggedFactor a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public LaggedEdge(String factor, LaggedFactor laggedFactor) {
         if (factor == null) {
@@ -64,6 +70,8 @@ public class LaggedEdge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedEdge} object
      */
     public static LaggedEdge serializableInstance() {
         return new LaggedEdge("X", LaggedFactor.serializableInstance());
@@ -71,10 +79,20 @@ public class LaggedEdge implements TetradSerializable {
 
     //=============================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>factor</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getFactor() {
         return this.factor;
     }
 
+    /**
+     * <p>Getter for the field <code>laggedFactor</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     */
     public LaggedFactor getLaggedFactor() {
         return this.laggedFactor;
     }
@@ -86,19 +104,15 @@ public class LaggedEdge implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.factor == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.laggedFactor == null) {
-            throw new NullPointerException();
-        }
-
     }
 }
 

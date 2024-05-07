@@ -17,6 +17,7 @@ import java.util.concurrent.*;
  * Jan 29, 2023 4:10:52 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 public class PagSamplingRfci implements IGraphSearch {
 
@@ -47,9 +48,9 @@ public class PagSamplingRfci implements IGraphSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Search for a PAG.
-     *
-     * @return a PAG.
      */
     @Override
     public Graph search() {
@@ -77,7 +78,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
+        ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
         try {
             while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
                 List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
@@ -106,18 +107,21 @@ public class PagSamplingRfci implements IGraphSearch {
      * Call shutdown to reject incoming tasks, and then calling shutdownNow, if necessary, to cancel any lingering
      * tasks.
      */
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown();
         try {
             if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-                    System.err.println("Pool did not terminate");
+//                    System.err.println("Pool did not terminate");
+                    throw new RuntimeException("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
             pool.shutdownNow();
             Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted");
         }
     }
 

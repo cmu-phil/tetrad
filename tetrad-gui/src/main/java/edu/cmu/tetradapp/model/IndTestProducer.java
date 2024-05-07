@@ -29,15 +29,20 @@ import edu.cmu.tetrad.search.IndependenceTest;
  * calculated).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IndTestProducer {
 
     /**
+     * <p>getIndependenceTest.</p>
+     *
      * @return the getModel independence test.
      */
     IndependenceTest getIndependenceTest();
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of this independence test, e.g. the name of the box.
      */
     String getName();

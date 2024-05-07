@@ -49,10 +49,26 @@ import java.util.*;
  * Runs some basic performance tests of various algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PerformanceTests {
     private PrintStream out = System.out;
 
+    /**
+     * This class represents a set of performance tests for a certain application. It contains various methods to test
+     * the performance of different algorithms.
+     */
+    public PerformanceTests() {
+    }
+
+    /**
+     * <p>endpointMisclassification.</p>
+     *
+     * @param _nodes   a {@link java.util.List} object
+     * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param refGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String endpointMisclassification(List<Node> _nodes, Graph estGraph, Graph refGraph) {
         int[][] counts = new int[4][4];
 
@@ -108,6 +124,11 @@ public class PerformanceTests {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         System.out.println("Start ");
 
@@ -211,6 +232,14 @@ public class PerformanceTests {
         performanceTests.testPc(5000, 1, 1000, .0001);
     }
 
+    /**
+     * <p>testPc.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param alpha      a double
+     */
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
 
@@ -288,11 +317,14 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        GraphSearchUtils.graphComparison(GraphTransforms.cpdagForDag(graph), outGraph, this.out);
+        GraphSearchUtils.graphComparison(GraphTransforms.dagToCpdag(graph), outGraph, this.out);
 
         this.out.close();
     }
 
+    /**
+     * <p>printStuffForKlea.</p>
+     */
     public void printStuffForKlea() {
 
         try {
@@ -340,6 +372,14 @@ public class PerformanceTests {
 
     }
 
+    /**
+     * <p>testPcStable.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param alpha      a double
+     */
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
 
@@ -399,7 +439,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphTransforms.dagToCpdag(dag);
 
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
@@ -409,6 +449,14 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFges.</p>
+     *
+     * @param numVars         a int
+     * @param edgeFactor      a double
+     * @param numCases        a int
+     * @param penaltyDiscount a double
+     */
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
         init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
@@ -462,7 +510,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + FGES) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphTransforms.dagToCpdag(dag);
 
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
@@ -472,6 +520,13 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testCpc.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     */
     public void testCpc(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.0001;
         final int depth = -1;
@@ -550,11 +605,19 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        GraphSearchUtils.graphComparison(GraphTransforms.cpdagForDag(graph), outGraph, this.out);
+        GraphSearchUtils.graphComparison(GraphTransforms.dagToCpdag(graph), outGraph, this.out);
 
         this.out.close();
     }
 
+    /**
+     * <p>testCpcStable.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param alpha      a double
+     */
     public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = 3;
 
@@ -621,7 +684,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + CPC-Stable) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(graph);
+        Graph trueCPDAG = GraphTransforms.dagToCpdag(graph);
 
         GraphSearchUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
@@ -630,6 +693,13 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFci.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     */
     public void testFci(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.001;
         final int depth = 3;
@@ -707,6 +777,12 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testGfci.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     */
     public void testGfci(int numVars, double edgeFactor) {
         final double alpha = .1;
         final int depth = -1;
@@ -800,10 +876,26 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFgesComparisonContinuous.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param numRuns    a int
+     */
     public void testFgesComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, true);
     }
 
+    /**
+     * <p>testFgesComparisonDiscrete.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param numRuns    a int
+     */
     public void testFgesComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, false);
     }
@@ -826,7 +918,7 @@ public class PerformanceTests {
         //noinspection IfStatementWithIdenticalBranches
         if (continuous) {
             init(new File("fges.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -836,7 +928,7 @@ public class PerformanceTests {
 
         } else {
             init(new File("fges.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -859,7 +951,7 @@ public class PerformanceTests {
 
             System.out.println("Calculating CPDAG for DAG");
 
-            Graph CPDAG = GraphTransforms.cpdagForDag(dag);
+            Graph CPDAG = GraphTransforms.dagToCpdag(dag);
 
             List<Node> vars = dag.getNodes();
 
@@ -934,7 +1026,7 @@ public class PerformanceTests {
             } else {
 
                 BayesPm pm = new BayesPm(dag, 3, 3);
-                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
                 DataSet data = im.simulateData(numCases, false, tiers);
 
@@ -1035,10 +1127,26 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFgesMbComparisonContinuous.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param numRuns    a int
+     */
     public void testFgesMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, true);
     }
 
+    /**
+     * <p>testFgesMbComparisonDiscrete.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numCases   a int
+     * @param numRuns    a int
+     */
     public void testFgesMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, false);
     }
@@ -1063,7 +1171,7 @@ public class PerformanceTests {
 
         System.out.println("Calculating CPDAG for DAG");
 
-        Graph CPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph CPDAG = GraphTransforms.dagToCpdag(dag);
 
         int[] tiers = new int[dag.getNumNodes()];
 
@@ -1088,7 +1196,7 @@ public class PerformanceTests {
 
         if (continuous) {
             init(new File("FgesMb.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -1138,7 +1246,7 @@ public class PerformanceTests {
             fges.setMaxDegree(maxIndegree);
         } else {
             init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
-                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                          "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             this.out.println("Num vars = " + numVars);
             this.out.println("Num edges = " + (int) (numVars * edgeFactor));
             this.out.println("Num cases = " + numCases);
@@ -1150,7 +1258,7 @@ public class PerformanceTests {
             this.out.println(new Date());
 
             BayesPm pm = new BayesPm(dag, 3, 3);
-            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
             DataSet data = im.simulateData(numCases, false, tiers);
 
@@ -1287,15 +1395,17 @@ public class PerformanceTests {
     }
 
     private String precisionRecall(double[] comparison) {
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
-        return b.toString();
+        String b = "\n" +
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
+        return b;
     }
 
+    /**
+     * <p>testGFciComparison.</p>
+     */
     public void testGFciComparison() {
         int numVars = 1000;
         double edgeFactor = 1.0;
@@ -1311,7 +1421,7 @@ public class PerformanceTests {
         final boolean faithfulnessAssumed = true;
 
         init(new File("fci.algorithm.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
-                "." + numCases + ".txt"), "Num runs = " + numRuns);
+                      "." + numCases + ".txt"), "Num runs = " + numRuns);
         this.out.println("Num vars = " + numVars);
         this.out.println("Num edges = " + (int) (numVars * edgeFactor));
         this.out.println("Num cases = " + numCases);
@@ -1444,6 +1554,12 @@ public class PerformanceTests {
     }
 
     // Compares two different ways of calculating a PAG_of_the_true_DAG from a DAG, to see if they match up
+
+    /**
+     * <p>testCompareDagToCPDAG.</p>
+     *
+     * @param numLatents a int
+     */
     public void testCompareDagToCPDAG(int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1482,7 +1598,7 @@ public class PerformanceTests {
 
         System.out.println("PC graph = " + left);
 
-        Graph top = GraphTransforms.cpdagForDag(dag);
+        Graph top = GraphTransforms.dagToCpdag(dag);
 
         System.out.println("DAG to CPDAG graph = " + top);
 
@@ -1508,6 +1624,14 @@ public class PerformanceTests {
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
+
+    /**
+     * <p>testComparePcVersions.</p>
+     *
+     * @param numVars    a int
+     * @param edgeFactor a double
+     * @param numLatents a int
+     */
     public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1532,7 +1656,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        Graph left = GraphTransforms.cpdagForDag(dag);//  pc1.search();
+        Graph left = GraphTransforms.dagToCpdag(dag);//  pc1.search();
 
         System.out.println("First FAS graph = " + left);
 
@@ -1682,15 +1806,15 @@ public class PerformanceTests {
                 continue;
             }
             if (!(truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode1(), edge.getNode2()))
-                    || truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode2(), edge.getNode1())))) {
+                  || truePag.containsEdge(Edges.partiallyOrientedEdge(edge.getNode2(), edge.getNode1())))) {
                 continue;
             }
 
             boolean existsCommonCause = false;
 
             for (Node latent : missingNodes) {
-                if (dag.paths().existsDirectedPathFromTo(latent, edge.getNode1())
-                        && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
+                if (dag.paths().existsDirectedPath(latent, edge.getNode1())
+                    && dag.paths().existsDirectedPath(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }
@@ -1782,12 +1906,11 @@ public class PerformanceTests {
         double avg3 = sum3 / comparisons.size();
         double avg4 = sum4 / comparisons.size();
 
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(avg1 * 100)).append("%\t").append(nf.format(avg2 * 100)).append("%\t").append(nf.format(avg3 * 100)).append("%\t").append(nf.format(avg4 * 100)).append("%");
+        String b = "\n" +
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100) + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%";
 
         this.out.println(b);
     }
@@ -1825,12 +1948,11 @@ public class PerformanceTests {
 
         comparison[2] = trueArrow / (double) sumCol;
         comparison[3] = trueArrow / (double) sumRow;
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
+        String b = "\n" +
+                   "APRE\tAREC\tOPRE\tOREC\n" +
+                   nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
 
         this.out.println(b);
     }
@@ -1903,7 +2025,7 @@ public class PerformanceTests {
         double recall = correctArrows / (double) totalTrueArrows;
         this.out.println("Arrow recall = " + nf.format(recall));
         double proportionCorrectNonAncestorRelationships = correctNonAncestorRelationships /
-                (double) totalEstimatedArrows;
+                                                           (double) totalEstimatedArrows;
         this.out.println("Proportion correct arrow nonancestor relationships " + nf.format(proportionCorrectNonAncestorRelationships));
 
         stats[0] = correctArrows;
@@ -1984,7 +2106,7 @@ public class PerformanceTests {
         double recall = correctTails / (double) totalTrueTails;
         this.out.println("Tail recall = " + nf.format(recall));
         double proportionCorrectAncestorRelationships = correctAncestorRelationships /
-                (double) totalEstimatedTails;
+                                                        (double) totalEstimatedTails;
         this.out.println("Proportion correct tail ancestor relationships " + nf.format(proportionCorrectAncestorRelationships));
 
         stats[0] = correctTails;
@@ -2004,6 +2126,9 @@ public class PerformanceTests {
                 numLatents, numEdges, 3, 3, 3, false);
     }
 
+    /**
+     * <p>printGraphDegrees.</p>
+     */
     @Test
     public void printGraphDegrees() {
         final int numVars = 30000;

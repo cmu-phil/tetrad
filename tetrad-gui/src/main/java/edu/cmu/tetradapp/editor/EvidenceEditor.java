@@ -53,6 +53,11 @@ class EvidenceEditor extends JPanel {
     private final HashMap<Integer, JCheckBox> variablesToCheckboxes =
             new HashMap<>();
 
+    /**
+     * <p>Constructor for EvidenceEditor.</p>
+     *
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public EvidenceEditor(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -110,14 +115,14 @@ class EvidenceEditor extends JPanel {
                             getEvidence().getProposition();
 
                     if (proposition.getNumAllowed(i1) ==
-                            getEvidence().getNumCategories(i1)) {
+                        getEvidence().getNumCategories(i1)) {
                         proposition.setCategory(i1, j1);
                     } else if (proposition.getNumAllowed(i1) == 1) {
                         if (proposition.getSingleCategory(i1) == j1) {
                             proposition.removeCategory(i1, j1);
                         } else {
                             if ((ActionEvent.SHIFT_MASK &
-                                    e.getModifiers()) != 1) {
+                                 e.getModifiers()) != 1) {
                                 proposition.setVariable(i1, false);
                             }
 
@@ -189,6 +194,11 @@ class EvidenceEditor extends JPanel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public Evidence getEvidence() {
         return this.evidence;
     }

@@ -36,6 +36,7 @@ import edu.cmu.tetradapp.util.IndTestType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,37 +45,29 @@ import java.util.List;
  * as input for a search box.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public abstract class AbstractMBSearchRunner extends DataWrapper implements MarkovBlanketSearchRunner {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The source data model.
-     *
-     * @serial not null.
      */
     private final DataSet source;
     /**
      * The search params.
-     *
-     * @serial not null.
      */
     private final Parameters params;
     /**
      * Data model.
-     *
-     * @serial may be null.
      */
     private DataSet dataModel;
     /**
      * The variables in the markov blanket.
-     *
-     * @serial may be null.
      */
     private List<Node> variables;
     /**
      * The name of the search algorithm
-     *
-     * @serial may be null.
      */
     private String searchName;
 
@@ -83,6 +76,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      *
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
+     * @serial may be null.
      */
     AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(AbstractMBSearchRunner.castData(source));
@@ -104,6 +98,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
      * @return the parameters for the search.
      */
     public Parameters getParams() {
@@ -111,6 +107,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>getDataModelForMarkovBlanket.</p>
+     *
      * @return the data model for the variables in the Markov blanket or null if the runner has not executed yet.
      */
     public DataSet getDataModelForMarkovBlanket() {
@@ -118,6 +116,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>getMarkovBlanket.</p>
+     *
      * @return the variables in the MB searhc.
      */
     public List<Node> getMarkovBlanket() {
@@ -125,6 +125,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>source</code>.</p>
+     *
      * @return the source of the search.
      */
     public DataSet getSource() {
@@ -132,6 +134,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>searchName</code>.</p>
+     *
      * @return the search name, or "Markov Blanket Search" by default.
      */
     public String getSearchName() {
@@ -143,6 +147,9 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
     //============== Protected methods ===============================//
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSearchName(String n) {
         this.searchName = n;
     }
@@ -215,6 +222,10 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @SuppressWarnings("UnusedDeclaration")
     private void readObject(ObjectInputStream s)

@@ -40,6 +40,7 @@ import java.util.Map;
  * Takes an xml element representing a bayes im and converts it to a BayesIM
  *
  * @author mattheweasterday
+ * @version $Id: $Id
  */
 public class BayesImParser {
 
@@ -70,7 +71,7 @@ public class BayesImParser {
     public BayesIm getBayesIm(Element element) {
         if (!"smile".equals(element.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting " +
-                    "smile" + " element.");
+                                               "smile" + " element.");
         }
 
         Elements elements = element.getChildElements();

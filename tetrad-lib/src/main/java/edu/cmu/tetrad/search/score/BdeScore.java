@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
@@ -39,11 +38,14 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see BdeuScore
  */
 public class BdeScore implements DiscreteScore {
 
-    // The discrete dataset.
+    /**
+     * The discrete dataset.
+     */
     private final DataSet dataSet;
 
     /**
@@ -101,7 +103,7 @@ public class BdeScore implements DiscreteScore {
 
                 if (parentValue == -99) {
                     throw new IllegalStateException("Please remove or impute " +
-                            "missing values.");
+                                                    "missing values.");
                 }
 
                 values[p] = parentValue;
@@ -111,7 +113,7 @@ public class BdeScore implements DiscreteScore {
 
             if (childValue == -99) {
                 throw new IllegalStateException("Please remove or impute missing " +
-                        "values (record " + n + " column " + i + ")");
+                                                "values (record " + n + " column " + i + ")");
 
             }
 
@@ -150,12 +152,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the difference between localScore(y | z, x) and localScore(y | z)
-     *
-     * @param x The index of the x variable
-     * @param y The index of the y variable.
-     * @param z The indices of the z variables
-     * @return The difference in scores.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -164,15 +163,22 @@ public class BdeScore implements DiscreteScore {
 
 
     /**
-     * Returns the dataset being analyzed.
+     * Returns the DataSet associated with this method.
      *
-     * @return This dataset.
+     * @return The DataSet object.
      */
     @Override
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Returns the index of a row in a multidimensional array based on the given dimensions and values.
+     *
+     * @param dim    The dimensions for each axis.
+     * @param values The values for each axis.
+     * @return The index of the row.
+     */
     private int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
@@ -183,23 +189,27 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
+     * Sets the structure prior for the BDe score.
+     *
+     * @param structurePrior The structure prior value.
      */
     public void setStructurePrior(double structurePrior) {
         throw new UnsupportedOperationException("BDe does not use a structure prior.");
     }
 
     /**
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
+     * Sets the sample prior for the BDe score.
+     *
+     * @param samplePrior The sample prior value.
      */
     public void setSamplePrior(double samplePrior) {
         throw new UnsupportedOperationException("BDe does not use a sample prior.");
     }
 
     /**
-     * Returns the variables of the dataset.
+     * Returns the variables present in the DataSet associated with this method.
      *
-     * @return These variables as  list.
+     * @return A list of Node objects representing the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -207,21 +217,19 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the sample size of the data.
+     * Returns the sample size of the data set.
      *
-     * @return This size.
+     * @return The sample size.
      */
     public int getSampleSize() {
         return this.dataSet.getNumRows();
     }
 
     /**
-     * Returns a judgment of whether the given bump in score allows one to conclude that the edge is an "effect edge"
-     * for FGES.
+     * Determines if an edge has an effect.
      *
-     * @param bump The bump.
-     * @return True iff so.
-     * @see Fges
+     * @param bump The bump value.
+     * @return true if the bump value is greater than -20, false otherwise.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -229,9 +237,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the maximum degree of the graphs as they're searched.
+     * Gets the maximum degree of the BDe Score.
      *
-     * @return This maximum degree.
+     * @return The maximum degree.
      */
     @Override
     public int getMaxDegree() {
@@ -239,28 +247,42 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns "BDe Score".
+     * Returns a string representation of the object.
      *
-     * @return This string.
+     * @return A string representation of the object.
      */
     @Override
     public String toString() {
         return "BDe Score";
     }
 
+    /**
+     * Returns the sample size of the data set.
+     *
+     * @return The sample size.
+     */
     private int sampleSize() {
         return dataSet().getNumRows();
     }
 
+    /**
+     * Returns the number of categories for a given variable index.
+     *
+     * @param i The index of the variable.
+     * @return The number of categories for the variable.
+     */
     private int numCategories(int i) {
         return ((DiscreteVariable) dataSet().getVariable(i)).getNumCategories();
     }
 
+    /**
+     * Returns the DataSet associated with this method.
+     *
+     * @return The DataSet object.
+     */
     private DataSet dataSet() {
         return this.dataSet;
     }
-
-
 }
 
 

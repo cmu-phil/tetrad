@@ -29,8 +29,23 @@ import edu.cmu.tetrad.graph.Node;
  * Estimates a DirichletBayesIm from a DirichletBayesIm (the prior) and a data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DirichletEstimator {
+
+    /**
+     * Creates a new instance of DirichletEstimator.
+     */
+    public DirichletEstimator() {
+    }
+
+    /**
+     * <p>estimate.</p>
+     *
+     * @param prior   a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     */
     public static DirichletBayesIm estimate(DirichletBayesIm prior,
                                             DataSet dataSet) {
         if (prior == null) {
@@ -93,7 +108,7 @@ public final class DirichletEstimator {
                         // Ignore cases where one of the parents has a
                         // missing value.
                         if (dataSet.getInt(i, varIndices[p + 1]) ==
-                                DiscreteVariable.MISSING_VALUE) {
+                            DiscreteVariable.MISSING_VALUE) {
                             satisfied = false;
                             break;
                         }

@@ -23,7 +23,6 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.DirectLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -34,7 +33,6 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -42,25 +40,38 @@ import org.apache.commons.math3.linear.RealMatrix;
  * Test the degenerate Gaussian score.
  *
  * @author bandrews
+ * @version $Id: $Id
  */
 public class TestBoss {
+
+    /**
+     * Initializes a new instance of the TestBoss class.
+     */
+    public TestBoss() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
-        if (true) {
-            testGigaflops();
-            return;
-        }
+//        if (false) {
+//            testGigaflops();
+//            return;
+//        }
 
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 60);
-        parameters.set(Params.AVG_DEGREE, 10);
+        parameters.set(Params.NUM_MEASURES, 30);
+        parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
         parameters.set(Params.VAR_LOW, 1);
         parameters.set(Params.VAR_HIGH, 3);
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 1);
         parameters.set(Params.SIMULATION_PARAM1, 1);
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
@@ -69,10 +80,10 @@ public class TestBoss {
 
         parameters.set(Params.USE_BES, false);
         parameters.set(Params.NUM_STARTS, 1);
-        parameters.set(Params.NUM_THREADS, 0);
+        parameters.set(Params.NUM_THREADS, 1);
         parameters.set(Params.USE_DATA_ORDER, false);
 
-        parameters.set(Params.VERBOSE, true);
+        parameters.set(Params.VERBOSE, false);
 
         Statistics statistics = new Statistics();
         statistics.add(new AdjacencyPrecision());
@@ -82,8 +93,8 @@ public class TestBoss {
         statistics.add(new ElapsedCpuTime());
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new DirectLingam(new SemBicScore()));
-//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new DirectLingam(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
 //        algorithms.add(new Dagma());
 
@@ -97,13 +108,14 @@ public class TestBoss {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(false);
-
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>testGigaflops.</p>
+     */
     public static void testGigaflops() {
 
         final long start = MillisecondTimes.timeMillis();// System.currentTimeMillis();

@@ -34,6 +34,7 @@ import java.awt.*;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
+ * @version $Id: $Id
  */
 public class LogParamsEditor extends JPanel implements ParameterEditor {
 
@@ -43,17 +44,33 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params;
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         buildGui();
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }
@@ -92,8 +109,8 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
-                "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
+                          "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
+                          "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
 
         Box b9 = Box.createHorizontalBox();

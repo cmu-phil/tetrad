@@ -36,8 +36,21 @@ import edu.cmu.tetrad.util.Params;
  * An example script to simulate data and run a comparison analysis on it.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleCompareSimulation2 {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleCompareSimulation2() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);

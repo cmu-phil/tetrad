@@ -24,6 +24,7 @@ import java.io.Serial;
  * Nov 6, 2018 2:26:59 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DataReaderException extends RuntimeException {
 

@@ -54,6 +54,7 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
+ * @version $Id: $Id
  * @see Fci
  * @see GFci
  * @see Rfci
@@ -66,13 +67,15 @@ public final class FciOrient {
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private boolean verbose;
-    private Graph truePag;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object representing the independence test,
+     *                which must be given only if the discriminating path rule is used. Otherwise, it can be null.
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
@@ -84,8 +87,9 @@ public final class FciOrient {
      * <p>
      * Probably extremely slow.
      *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
+     * @param n1    The beginning node of the undirectedPaths.
+     * @param n2    The ending node of the undirectedPaths.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     public static List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
@@ -123,7 +127,7 @@ public final class FciOrient {
 
         Node prev = soFar.get(soFar.size() - 1);
         if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
-                || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
+            || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
             return; // Adding curr would make soFar not p.d.
         } else if (soFar.size() >= 2) {
             Node prev2 = soFar.get(soFar.size() - 2);
@@ -154,8 +158,9 @@ public final class FciOrient {
      * <p>
      * Probably extremely slow.
      *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
+     * @param n1    The beginning node of the undirectedPaths.
+     * @param n2    The ending node of the undirectedPaths.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     public static List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
@@ -185,6 +190,15 @@ public final class FciOrient {
         return ucCirclePaths;
     }
 
+    /**
+     * <p>isArrowheadAllowed.</p>
+     *
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a boolean
+     */
     public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
         if (!graph.isAdjacentTo(x, y)) return false;
 
@@ -218,7 +232,10 @@ public final class FciOrient {
      * @return The oriented graph.
      */
     public Graph orient(Graph graph) {
-        this.logger.forceLogMessage("Starting FCI algorithm.");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting FCI orientation.");
+        }
+
         ruleR0(graph);
 
         if (this.verbose) {
@@ -258,6 +275,8 @@ public final class FciOrient {
     }
 
     /**
+     * <p>isCompleteRuleSetUsed.</p>
+     *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
@@ -266,6 +285,8 @@ public final class FciOrient {
     }
 
     /**
+     * <p>Setter for the field <code>completeRuleSetUsed</code>.</p>
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -330,8 +351,6 @@ public final class FciOrient {
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     if (this.verbose) {
                         this.logger.forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c));
-
-                        printWrongColliderMessage(a, b, c, graph);
                     }
                 }
             }
@@ -342,6 +361,8 @@ public final class FciOrient {
      * Orients the graph according to rules in the graph (FCI step D).
      * <p>
      * Zhang's step F4, rules R1-R10.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void doFinalOrientation(Graph graph) {
         if (this.completeRuleSetUsed) {
@@ -351,6 +372,11 @@ public final class FciOrient {
         }
     }
 
+    /**
+     * <p>spirtesFinalOrientation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
@@ -376,6 +402,11 @@ public final class FciOrient {
         }
     }
 
+    /**
+     * <p>zhangFinalOrientation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void zhangFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
@@ -423,6 +454,12 @@ public final class FciOrient {
 
     //Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
+
+    /**
+     * <p>rulesR1R2cycle.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void rulesR1R2cycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
@@ -455,6 +492,15 @@ public final class FciOrient {
 
     /// R1, away from collider
     // If a*->bo-*c and a, c not adjacent then a*->b->c
+
+    /**
+     * <p>ruleR1.</p>
+     *
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
@@ -477,10 +523,19 @@ public final class FciOrient {
 
     //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
     // This is Zhang's rule R2.
+
+    /**
+     * <p>ruleR2.</p>
+     *
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
-                    && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+                && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
@@ -502,6 +557,8 @@ public final class FciOrient {
      * !adj(a, c), D*-oB, then D*->B.
      * <p>
      * This is Zhang's rule R3.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR3(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -554,20 +611,26 @@ public final class FciOrient {
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
+     * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
      *        /  \
      *       v    v
-     * L....A --> C
+     * E....A --> C
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating paths.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4B(Graph graph) {
-
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
+            if (sepsets == null) {
+                throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
+                                               "in FciOrient, you must provide a SepsetProducer.");
+            }
+
             List<Node> nodes = graph.getNodes();
 
             for (Node b : nodes) {
@@ -608,11 +671,16 @@ public final class FciOrient {
     }
 
     /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
+     * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
+     *
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ddpOrient(Node a, Node b, Node c, Graph graph) {
+    private void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
@@ -620,6 +688,8 @@ public final class FciOrient {
         int distance = 0;
 
         Map<Node, Node> previous = new HashMap<>();
+        Set<Node> colliderPath = new HashSet<>();
+        colliderPath.add(a);
 
         List<Node> cParents = graph.getParents(c);
 
@@ -662,9 +732,10 @@ public final class FciOrient {
                 }
 
                 previous.put(d, t);
+                colliderPath.add(t);
 
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, graph)) {
+                    if (doDdpOrientation(d, a, b, c, graph, colliderPath)) {
                         return;
                     }
                 }
@@ -680,6 +751,8 @@ public final class FciOrient {
     /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
      * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -742,6 +815,8 @@ public final class FciOrient {
     /**
      * Implements Zhang's rules R6 and R7, applies them over the graph once. Orient single tails. R6: If A---Bo-*C then
      * A---B--*C. R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR6R7(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -809,6 +884,8 @@ public final class FciOrient {
     /**
      * Implements Zhang's rules R8, R9, R10, applies them over the graph once. Orient arrow tails. I.e., tries R8, R9,
      * and R10 in that sequence on each Ao-&gt;C in the graph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void rulesR8R9R10(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -843,15 +920,41 @@ public final class FciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
+     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
+     * <p>
+     * Reminder:
+     * <pre>
+     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     *      the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     *      <pre>
+     *               B
+     *              xo           x is either an arrowhead or a circle
+     *             /  \
+     *            v    v
+     *      E....A --> C
+     *
+     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
+     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
+     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
+     *      at B; otherwise, there should be a noncollider at B.
+     * </pre>
+     *
+     * @param d            the 'd' node
+     * @param a            the 'a' node
+     * @param b            the 'b' node
+     * @param c            the 'c' node
+     * @param graph        the graph representation
+     * @param colliderPath the list of nodes in the collider path
+     * @return true if the orientation is determined, false otherwise
+     * @throws IllegalArgumentException if 'd' is adjacent to 'c'
      */
-    public boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
+    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph, Set<Node> colliderPath) {
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }
 
-        Set<Node> sepset = getSepsets().getSepset(d, c);
+        Set<Node> sepset = getSepsets().getSepsetContaining(d, c, colliderPath);
 
         if (this.verbose) {
             logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);
@@ -903,7 +1006,8 @@ public final class FciOrient {
      * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
      * A PATH.
      *
-     * @param path The path to orient as all tails.
+     * @param path  The path to orient as all tails.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void orientTailPath(List<Node> path, Graph graph) {
         for (int i = 0; i < path.size() - 1; i++) {
@@ -916,7 +1020,7 @@ public final class FciOrient {
 
             if (verbose) {
                 this.logger.forceLogMessage("R8: Orient circle undirectedPaths " +
-                        GraphUtils.pathString(graph, n1, n2));
+                                            GraphUtils.pathString(graph, n1, n2));
             }
         }
     }
@@ -928,8 +1032,9 @@ public final class FciOrient {
      * <p>
      * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
      *
-     * @param a The node A.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param c     The node C.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return Whether R8 was successfully applied.
      */
     public boolean ruleR8(Node a, Node c, Graph graph) {
@@ -978,8 +1083,9 @@ public final class FciOrient {
      * <p>
      * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param c     The node C.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return Whether R9 was succesfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
@@ -1016,6 +1122,10 @@ public final class FciOrient {
 
     /**
      * Orients according to background knowledge
+     *
+     * @param bk        a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param variables a {@link java.util.List} object
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
@@ -1049,7 +1159,10 @@ public final class FciOrient {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             this.changeFlag = true;
-            this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
+            }
         }
 
         for (Iterator<KnowledgeEdge> it
@@ -1079,7 +1192,10 @@ public final class FciOrient {
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
             this.changeFlag = true;
-            this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            }
         }
 
         if (verbose) {
@@ -1088,6 +1204,8 @@ public final class FciOrient {
     }
 
     /**
+     * <p>Getter for the field <code>maxPathLength</code>.</p>
+     *
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
@@ -1095,6 +1213,8 @@ public final class FciOrient {
     }
 
     /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -1112,31 +1232,6 @@ public final class FciOrient {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * The true PAG if available. Can be null.
-     */
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    /**
-     * Sets the true PAG for comparison.
-     *
-     * @param truePag This PAG.
-     */
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
-    /**
-     * Change flag for repeat rules
-     *
-     * @return True if a change has occurred.
-     */
-    public boolean isChangeFlag() {
-        return this.changeFlag;
     }
 
     /**
@@ -1174,8 +1269,9 @@ public final class FciOrient {
      * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
      * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param c     The node C.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR10(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
@@ -1244,11 +1340,5 @@ public final class FciOrient {
             }
         }
 
-    }
-
-    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
-        if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            logger.forceLogMessage("R0" + ": Orienting collider by mistake: " + a + "*->;" + b + "<-*" + c);
-        }
     }
 }

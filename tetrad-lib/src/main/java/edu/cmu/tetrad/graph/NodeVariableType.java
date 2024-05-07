@@ -9,7 +9,22 @@ package edu.cmu.tetrad.graph;
  * Node variable type.
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public enum NodeVariableType {
-    DOMAIN, INTERVENTION_STATUS, INTERVENTION_VALUE
+
+    /**
+     * The node variable type not intervened on.
+     */
+    DOMAIN,
+
+    /**
+     * The node variable type is intervened on with a specific status, such as treatment or control.
+     */
+    INTERVENTION_STATUS,
+
+    /**
+     * The node variable type is intervened on with a specific value.
+     */
+    INTERVENTION_VALUE
 }

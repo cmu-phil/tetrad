@@ -34,6 +34,7 @@ import java.awt.event.ActionEvent;
  * Pastes a layout into a LayoutEditable gadget, which lays out the graph in that gadget according to the stored graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PasteLayoutAction extends AbstractAction
         implements ClipboardOwner {
@@ -44,6 +45,8 @@ public class PasteLayoutAction extends AbstractAction
 
     /**
      * Constucts an action for loading the session in the given '.tet' file into the layoutEditable.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public PasteLayoutAction(LayoutEditable layoutEditable) {
         super("Paste Layout");
@@ -56,17 +59,18 @@ public class PasteLayoutAction extends AbstractAction
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Transferable transferable = InternalClipboard.getLayoutInstance()
                 .getContents(null);
 
-        if (!(transferable instanceof LayoutSelection)) {
+        if (!(transferable instanceof LayoutSelection selection)) {
             return;
         }
 
-        LayoutSelection selection = (LayoutSelection) transferable;
         DataFlavor flavor = new DataFlavor(LayoutSelection.class, "Layout");
 
         try {
@@ -78,10 +82,9 @@ public class PasteLayoutAction extends AbstractAction
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Notifies this object that it is no longer the owner of the contents of the clipboard.
-     *
-     * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

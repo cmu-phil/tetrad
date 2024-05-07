@@ -50,7 +50,10 @@ final class DeleteSubsessionAction extends AbstractAction
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Invoked when an action occurs. Displays a confirmation dialog and deletes selected nodes in the session editor if
+     * the user chooses to delete.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         SessionEditor sessionEditor = this.desktop.getFrontmostSessionEditor();
@@ -65,7 +68,7 @@ final class DeleteSubsessionAction extends AbstractAction
     }
 
     /**
-     * Notifies this object that it is no longer the owner of the contents of the clipboard.
+     * Notifies that the specified clipboard is no longer owned by the owner.
      *
      * @param clipboard the clipboard that is no longer owned
      * @param contents  the contents which this owner had placed on the clipboard

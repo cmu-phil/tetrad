@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,22 +36,55 @@ import java.util.stream.Collectors;
  * Nov 8, 2019 2:22:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  * @see <a
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The root of the junction tree.
+     */
     private final TreeNode root;
 
+    /**
+     * The nodes in the graph.
+     */
     private final Node[] graphNodes;
+
+    /**
+     * The marginal probabilities of the nodes.
+     */
     private final double[][] margins;
+
+    /**
+     * The maximum cardinality ordering of the nodes.
+     */
     private final Node[] maxCardOrdering;
 
+    /**
+     * The BayesPm.
+     */
     private final BayesPm bayesPm;
+
+    /**
+     * The BayesIm.
+     */
     private final BayesIm bayesIm;
+
+    /**
+     * The tree nodes.
+     */
     private final Map<Node, TreeNode> treeNodes;
 
+    /**
+     * <p>Constructor for JunctionTreeAlgorithm.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public JunctionTreeAlgorithm(Graph graph, DataModel dataModel) {
         this.bayesPm = createBayesPm(dataModel, graph);
         this.bayesIm = createBayesIm(dataModel, this.bayesPm);
@@ -65,6 +99,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         initialize();
     }
 
+    /**
+     * <p>Constructor for JunctionTreeAlgorithm.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public JunctionTreeAlgorithm(BayesIm bayesIm) {
         this.bayesPm = bayesIm.getBayesPm();
         this.bayesIm = bayesIm;
@@ -372,6 +411,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>setEvidence.</p>
+     *
+     * @param iNode a int
+     * @param value a int
+     */
     public void setEvidence(int iNode, int value) {
         validate(iNode, value);
 
@@ -404,7 +449,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     private boolean isAllNodes(int[] nodes) {
         if (nodes.length == this.graphNodes.length) {
             long sum = Arrays.stream(nodes).sum();
-            long total = ((this.graphNodes.length - 1) * this.graphNodes.length) / 2;
+            long total = ((long) (this.graphNodes.length - 1) * this.graphNodes.length) / 2;
 
             return sum == total;
         }
@@ -415,6 +460,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * Get the joint probability of the nodes given their parents. Example: given x &lt;-- z --&gt; y, we can find
      * P(x,y|z). Another example: given x &lt;-- z --&gt; y &lt;-- w, we can find P(x,y|z,w)
+     *
+     * @param nodes        an array of {@link int} objects
+     * @param values       an array of {@link int} objects
+     * @param parents      an array of {@link int} objects
+     * @param parentValues an array of {@link int} objects
+     * @return a double
      */
     public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
         validate(nodes, values);
@@ -443,6 +494,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     /**
      * Get the conditional probability of a node for all of its values.
+     *
+     * @param iNode        a int
+     * @param parents      an array of {@link int} objects
+     * @param parentValues an array of {@link int} objects
+     * @return an array of {@link double} objects
      */
     public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
         validate(iNode);
@@ -466,6 +522,15 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>getConditionalProbability.</p>
+     *
+     * @param iNode        a int
+     * @param value        a int
+     * @param parents      an array of {@link int} objects
+     * @param parentValues an array of {@link int} objects
+     * @return a double
+     */
     public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
         validate(iNode, value);
 
@@ -477,6 +542,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * value(X1), nodeValues[1] = value(X2),...,nodeValues[n-1] = value(Xn).
      *
      * @param nodeValues an array of values for each node
+     * @return a double
      */
     public double getJointProbabilityAll(int[] nodeValues) {
         validateAll(nodeValues);
@@ -487,6 +553,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return FastMath.exp(logJointClusterPotentials - logJointSeparatorPotentials);
     }
 
+    /**
+     * <p>getJointProbability.</p>
+     *
+     * @param nodes  an array of {@link int} objects
+     * @param values an array of {@link int} objects
+     * @return a double
+     */
     public double getJointProbability(int[] nodes, int[] values) {
         validate(nodes, values);
         if (isAllNodes(nodes)) {
@@ -515,6 +588,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>getMarginalProbability.</p>
+     *
+     * @param iNode a int
+     * @return an array of {@link double} objects
+     */
     public double[] getMarginalProbability(int iNode) {
         validate(iNode);
 
@@ -525,20 +604,40 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return marginals;
     }
 
+    /**
+     * <p>getMarginalProbability.</p>
+     *
+     * @param iNode a int
+     * @param value a int
+     * @return a double
+     */
     public double getMarginalProbability(int iNode, int value) {
         validate(iNode, value);
 
         return this.margins[iNode][value];
     }
 
+    /**
+     * <p>getNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getNodes() {
         return Collections.unmodifiableList(Arrays.asList(this.graphNodes));
     }
 
+    /**
+     * <p>getNumberOfNodes.</p>
+     *
+     * @return a int
+     */
     public int getNumberOfNodes() {
         return this.graphNodes.length;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return this.root.toString().trim();
@@ -795,7 +894,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                     int indexChildNodeCPT = getIndexOfCPT(source.parentSeparator.nodes, values, this.nodes);
                     if (source.parentSeparator.parentPotentials[indexChildNodeCPT] != 0) {
                         this.prob[indexNodeCPT] *= source.parentSeparator.childPotentials[indexChildNodeCPT]
-                                / source.parentSeparator.parentPotentials[indexChildNodeCPT];
+                                                   / source.parentSeparator.parentPotentials[indexChildNodeCPT];
                     } else {
                         this.prob[indexNodeCPT] = 0;
                     }

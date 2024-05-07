@@ -5,8 +5,23 @@ import java.util.List;
 
 /**
  * Created by Erich on 4/29/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimSchedule {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimSchedule() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         //parameter: set of positive integers, which are resimSize values.
         List<Integer> schedule = Arrays.asList(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5);

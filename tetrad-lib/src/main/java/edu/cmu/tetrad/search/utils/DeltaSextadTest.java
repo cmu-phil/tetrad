@@ -37,6 +37,7 @@ import java.util.Set;
  * Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad Analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DeltaSextadTest {
     private static final long serialVersionUID = 23L;
@@ -160,10 +161,10 @@ public class DeltaSextadTest {
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
                     double rr = 0.5 * (r(e, f) * r(g, h))
-                            * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
-                            + r(e, g) * r(f, h) + r(e, h) * r(f, g)
-                            - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
-                            - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
+                                * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
+                                + r(e, g) * r(f, h) + r(e, h) * r(f, g)
+                                - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
+                                - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
 
                     // General.
 //                    double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
@@ -367,11 +368,10 @@ public class DeltaSextadTest {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Sigma)) {
+            if (!(o instanceof Sigma _o)) {
                 throw new IllegalArgumentException();
             }
 
-            Sigma _o = (Sigma) o;
             return (_o.getA() == (getA()) && _o.getB() == (getB())) || (_o.getB() == (getA()) && _o.getA() == (getB()));
         }
 

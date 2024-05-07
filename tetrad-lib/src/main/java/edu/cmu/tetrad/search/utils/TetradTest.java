@@ -32,38 +32,163 @@ import java.util.List;
  * including a distribution-free one (which may not be currently practical when the number of variables is too large).
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public interface TetradTest {
+    /**
+     * <p>getDataSet.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     DataSet getDataSet();
 
+    /**
+     * <p>tetradScore.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param q a int
+     * @return a int
+     */
     int tetradScore(int i, int j, int k, int q);
 
+    /**
+     * <p>tetradScore3.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param q a int
+     * @return a boolean
+     */
     boolean tetradScore3(int i, int j, int k, int q);
 
+    /**
+     * <p>tetradScore1.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param q a int
+     * @return a boolean
+     */
     boolean tetradScore1(int i, int j, int k, int q);
 
+    /**
+     * <p>tetradHolds.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param q a int
+     * @return a boolean
+     */
     boolean tetradHolds(int i, int j, int k, int q);
 
+    /**
+     * <p>tetradPValue.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param q a int
+     * @return a double
+     */
     double tetradPValue(int i, int j, int k, int q);
 
+    /**
+     * <p>oneFactorTest.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @param c a int
+     * @param d a int
+     * @return a boolean
+     */
     boolean oneFactorTest(int a, int b, int c, int d);
 
+    /**
+     * <p>oneFactorTest.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @param c a int
+     * @param d a int
+     * @param e a int
+     * @return a boolean
+     */
     boolean oneFactorTest(int a, int b, int c, int d, int e);
 
+    /**
+     * <p>twoFactorTest.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @param c a int
+     * @param d a int
+     * @return a boolean
+     */
     boolean twoFactorTest(int a, int b, int c, int d);
 
+    /**
+     * <p>twoFactorTest.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @param c a int
+     * @param d a int
+     * @param e a int
+     * @return a boolean
+     */
     boolean twoFactorTest(int a, int b, int c, int d, int e);
 
+    /**
+     * <p>twoFactorTest.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @param c a int
+     * @param d a int
+     * @param e a int
+     * @param f a int
+     * @return a boolean
+     */
     boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
 
+    /**
+     * <p>getSignificance.</p>
+     *
+     * @return a double
+     */
     double getSignificance();
 
+    /**
+     * <p>setSignificance.</p>
+     *
+     * @param sig a double
+     */
     void setSignificance(double sig);
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return an array of {@link java.lang.String} objects
+     */
     String[] getVarNames();
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<Node> getVariables();
 
+    /**
+     * <p>getCovMatrix.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     ICovarianceMatrix getCovMatrix();
 }
 

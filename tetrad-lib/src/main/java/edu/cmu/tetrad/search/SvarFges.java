@@ -24,13 +24,14 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.score.DiscreteScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.search.utils.HasPenaltyDiscount;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.TaskManager;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,73 +57,126 @@ import java.util.concurrent.*;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fges
  * @see Knowledge
  * @see SvarFci
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 
-    // The number of threads to use.
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
-    // The logger for this class. The config needs to be set.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+    /**
+     * The number of threads to use.
+     */
+    final int maxThreads = Runtime.getRuntime().availableProcessors();
+    /**
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+     */
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
-    // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-    // The number of graphs searched.
+    /**
+     * The static ForkJoinPool instance.
+     */
+    private final ForkJoinPool pool = new ForkJoinPool(maxThreads);
+    /**
+     * The number of graphs searched.
+     */
     private final int[] count = new int[1];
-    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just has to be transitive.
+    /**
+     * The set of removed edges.
+     */
+    private final Set<Edge> removedEdges = new HashSet<>();
+    /**
+     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
+     * doesn't matter; it just has to be transitive.
+     */
     private int arrowIndex;
-    // The set of removed edges.
-    private Set<Edge> removedEdges = new HashSet<>();
-    // Specification of forbidden and required edges.
+    /**
+     * Specification of forbidden and required edges.
+     */
     private Knowledge knowledge = new Knowledge();
-    // List of variables in the data set, in order.
+    /**
+     * List of variables in the data set, in order.
+     */
     private List<Node> variables;
-    // The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
-    // (that is, edges added that aren't adjacencies in the true graph).
+    /**
+     * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
+     * (that is, edges added that aren't adjacencies in the true graph).
+     */
     private Graph trueGraph;
-    // An initial graph to start from.
+    /**
+     * An initial graph to start from.
+     */
     private Graph externalGraph;
-    // Elapsed time of the most recent search.
+    /**
+     * Elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // The totalScore for discrete searches.
+    /**
+     * The totalScore for discrete searches.
+     */
     private Score score;
-    // The number of top CPDAGs to store.
+    /**
+     * The number of top CPDAGs to store.
+     */
     private int numCPDAGsToStore;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+    /**
+     * Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+     */
     private SortedSet<Arrow> sortedArrows;
-    // Arrows added to sortedArrows for each <i, j>.
+    /**
+     * Arrows added to sortedArrows for each <i, j>.
+     */
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
-    // A utility map to help with orientation.
+    /**
+     * A utility map to help with orientation.
+     */
     private Map<Node, Set<Node>> neighbors;
-    // Map from variables to their column indices in the data set.
+    /**
+     * Map from variables to their column indices in the data set.
+     */
     private ConcurrentMap<Node, Integer> hashIndices;
-    // A running tally of the total BIC totalScore.
+    /**
+     * A running tally of the total BIC totalScore.
+     */
     private double totalScore;
-    // A graph where X--Y means that X and Y have non-zero total effect on one another.
+    /**
+     * A graph where X--Y means that X and Y have non-zero total effect on one another.
+     */
     private Graph effectEdgesGraph;
-    // Where printed output is sent.
+    /**
+     * Where printed output is sent.
+     */
     private PrintStream out = System.out;
-    // An initial adjacencies graph.
+    /**
+     * An initial adjacencies graph.
+     */
     private Graph adjacencies;
-    // The graph being constructed.
+    /**
+     * The graph being constructed.
+     */
     private Graph graph;
-    // Internal.
+    /**
+     * The mode variable represents the current mode of operation.
+     */
     private Mode mode = Mode.heuristicSpeedup;
-    // True if one-edge faithfulness is assumed. Speeds the algorithm up.
+    /**
+     * True if one-edge faithfulness is assumed. Speeds the algorithm up.
+     */
     private boolean faithfulnessAssumed = false;
-    // Bounds the indegree of the graph.
+    /**
+     * Bounds the indegree of the graph.
+     */
     private int maxIndegree = -1;
 
     /**
      * Construct a Score and pass it in here. The totalScore should return a positive value in case of conditional
      * dependence and a negative values in case of conditional independence. See Chickering (2002), locally consistent
      * scoring criterion.
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public SvarFges(Score score) {
         if (score == null) throw new NullPointerException();
@@ -130,7 +184,14 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    // Used to find semidirected paths for cycle checking.
+    /**
+     * Traverses a semi-directed graph from a given node along a given edge.
+     *
+     * @param node The starting node of the traversal.
+     * @param edge The edge to traverse from the starting node.
+     * @return The destination node of the traversal if the edge is traversable from the starting node, or null if the
+     * edge is not traversable from the starting node.
+     */
     private static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
@@ -198,8 +259,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        }
 
         // The final totalScore after search.
 
@@ -208,12 +270,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     *
+     * @param faithfulnessAssumed a boolean
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the background knowledge.
      */
     public Knowledge getKnowledge() {
@@ -258,6 +324,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>numCPDAGsToStore</code>.</p>
+     *
      * @return the number of patterns to store.
      */
     public int getnumCPDAGsToStore() {
@@ -266,6 +334,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the number of patterns to store. This should be set to zero for fast search.
+     *
+     * @param numCPDAGsToStore a int
      */
     public void setNumCPDAGsToStore(int numCPDAGsToStore) {
         if (numCPDAGsToStore < 0) {
@@ -276,6 +346,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>externalGraph</code>.</p>
+     *
      * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
@@ -291,11 +363,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         if (externalGraph != null) {
             externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
 
-            if (this.verbose) {
-                this.out.println("Initial graph variables: " + externalGraph.getNodes());
-                this.out.println("Data set variables: " + this.variables);
-            }
-
             if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
             }
@@ -306,6 +373,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether verbose output should be produced.
+     *
      * @param verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
@@ -313,6 +381,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -321,6 +391,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
      * @param out the output stream.
      */
     public void setOut(PrintStream out) {
@@ -328,7 +399,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the set of preset adjacencies for the algorithm; edges not in this adjacency graph will not be added.
+     * Retrieves the adjacency graph.
+     *
+     * @return the adjacency graph.
      */
     public Graph getAdjacencies() {
         return this.adjacencies;
@@ -336,6 +409,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the set of preset adjacencies for the algorithm; edges not in this adjacencies graph will not be added.
+     *
      * @param adjacencies the adjacencies graph.
      */
     public void setAdjacencies(Graph adjacencies) {
@@ -362,7 +436,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the graph being constructed.
+     * Returns the minimum number of operations to perform before parallelizing.
+     *
+     * @param n The total number of operations to be performed.
+     * @return The minimum number of operations to do before parallelizing.
      */
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
@@ -371,7 +448,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Scores the given DAG, up to a constant.
+     * Calculates the score of a Directed Acyclic Graph (DAG).
+     *
+     * @param dag The Directed Acyclic Graph to calculate the score for.
+     * @return The score of the DAG.
      */
     public double scoreDag(Graph dag) {
         buildIndexing(dag.getNodes());
@@ -396,8 +476,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return _score;
     }
 
-
-    //Sets the discrete scoring function to use.
+    /**
+     * Sets the score and updates the variables, indexing, and maxIndegree accordingly.
+     *
+     * @param totalScore The total score to be set.
+     */
     private void setScore(Score totalScore) {
         this.score = totalScore;
 
@@ -414,6 +497,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.maxIndegree = this.score.getMaxDegree();
     }
 
+    /**
+     * Initializes the forward edges from an empty graph.
+     *
+     * @param nodes The list of nodes in the graph.
+     */
     private void initializeForwardEdgesFromEmptyGraph(List<Node> nodes) {
 
         this.sortedArrows = new ConcurrentSkipListSet<>();
@@ -464,15 +552,29 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromEmptyGraphTask());
+        try {
+            this.pool.invoke(new InitializeFromEmptyGraphTask());
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            this.out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+            TetradLogger.getInstance().forceLogMessage("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
         }
     }
 
+    /**
+     * Initializes two-step edges based on given list of nodes.
+     *
+     * @param nodes The list of nodes to initialize two-step edges.
+     */
     private void initializeTwoStepEdges(List<Node> nodes) {
 
         this.count[0] = 0;
@@ -514,7 +616,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     for (int i = this.from; i < this.to; i++) {
                         if ((i + 1) % 1000 == 0) {
                             SvarFges.this.count[0] += 1000;
-                            SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage("Initializing effect edges: " + (SvarFges.this.count[0]));
+                            }
                         }
 
                         Node y = nodes.get(i);
@@ -573,9 +677,23 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
+    /**
+     * Initializes the forward edges from an existing graph.
+     *
+     * @param nodes The list of nodes in the graph.
+     */
     private void initializeForwardEdgesFromExistingGraph(List<Node> nodes) {
 
         this.count[0] = 0;
@@ -621,14 +739,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                         if ((i + 1) % 1000 == 0) {
                             SvarFges.this.count[0] += 1000;
-                            SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage("Initializing effect edges: " + (SvarFges.this.count[0]));
+                            }
                         }
 
                         Node y = nodes.get(i);
-                        Set<Node> cond = new HashSet<>();
-                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(y, cond));
+//                        Set<Node> cond = new HashSet<>();
+                        Set<Node> D = new HashSet<>(variables);// SvarFges.this.graph.paths().getMConnectedVars(y, cond));
                         D.remove(y);
-                        SvarFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
+//                        SvarFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
                         for (Node x : D) {
                             if (existsKnowledge()) {
@@ -664,11 +784,28 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
+    /**
+     * Perform Forward Equivalence Search.
+     * <p>
+     * This method applies the Forward Equivalence Search algorithm to search for equivalence classes in a graph. It
+     * iteratively processes arrows in a sorted order until all arrows are processed or the thread is interrupted.
+     */
     private void fes() {
-        TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("** FORWARD EQUIVALENCE SEARCH");
+        }
 
         while (!this.sortedArrows.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -729,8 +866,13 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Performs the Backward Equivalence Search algorithm.
+     */
     private void bes() {
-        TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
+        }
 
         this.sortedArrows = new ConcurrentSkipListSet<>();
         this.lookupArrows = new ConcurrentHashMap<>();
@@ -794,23 +936,50 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         meekOrientRestricted(getKnowledge());
     }
 
+    /**
+     * Retrieves the common adjacent nodes of two given nodes.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     * @return A set of nodes that are adjacent to both x and y.
+     */
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> commonChildren = new HashSet<>(this.graph.getAdjacentNodes(x));
         commonChildren.retainAll(this.graph.getAdjacentNodes(y));
         return commonChildren;
     }
 
+    /**
+     * Applies the orientation of nodes in the given set by utilizing the meekOrientRestricted method.
+     *
+     * @return the set of nodes with re-applied orientation
+     */
     private Set<Node> reapplyOrientation() {
         return meekOrientRestricted(getKnowledge());
     }
 
-    // Returns true if knowledge is not empty.
+    /**
+     * Checks if knowledge exists.
+     *
+     * @return true if knowledge is not empty; false otherwise.
+     */
     private boolean existsKnowledge() {
         return !this.knowledge.isEmpty();
     }
 
 
-    // Initiaizes the sorted arrows lists for the backward search.
+    /**
+     * Initializes the sorted arrows lists for the backward search.
+     * <p>
+     * This method iterates over each edge in the graph and performs the following steps: 1. Check if the current thread
+     * is interrupted. If interrupted, the iteration is stopped. 2. Get the source node (x) and target node (y) of the
+     * edge. 3. If knowledge exists, check if there is no required edge between the names of x and y. If required edge
+     * exists, continue to next iteration. 4. Clear the arrow from x to y and from y to x (if they exist). 5. Determine
+     * the direction of the edge and calculate the arrows backward accordingly. (If edge points towards y, calculate
+     * arrows backward from x to y. If edge points towards x, calculate arrows backward from y to x. Otherwise,
+     * calculate arrows backward from x to y and from y to x.) 6. Update the neighbors map with the neighbors of x and
+     * y.
+     */
     private void initializeArrowsBackward() {
         for (Edge edge : this.graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -843,7 +1012,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Calculates new arrows based on changes in the graph for the forward search.
+    /**
+     * Recalculates new arrows based on changes in the graph for the forward search.
+     *
+     * @param nodes the set of nodes to reevaluate
+     */
     private void reevaluateForward(Set<Node> nodes) {
         class AdjTask extends RecursiveTask<Boolean> {
             private final List<Node> nodes;
@@ -891,9 +1064,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
-                            D.remove(x);
-                            adj = new ArrayList<>(D);
+//                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
+//                            D.remove(x);
+                            adj = new ArrayList<>(variables);
+                            adj.remove(x);
                         } else {
                             throw new IllegalStateException();
                         }
@@ -920,7 +1094,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from, this.from + mid));
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from + mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -928,10 +1102,25 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
 
         AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-        this.pool.invoke(task);
+
+        try {
+            pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!this.pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            Thread.currentThread().interrupt();
+        }
     }
 
-    // Calculates the new arrows for an a->b edge.
+    /**
+     * Calculates the new arrows for an a->b edge.
+     *
+     * @param a the Node representing the start node of the edge
+     * @param b the Node representing the end node of the edge
+     */
     private void calculateArrowsForward(Node a, Node b) {
         if (this.mode == Mode.heuristicSpeedup && !this.effectEdgesGraph.isAdjacentTo(a, b)) return;
         if (this.adjacencies != null && !this.adjacencies.isAdjacentTo(a, b)) return;
@@ -999,13 +1188,26 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * Adds an arrow between two nodes.
+     *
+     * @param a    the starting node of the arrow
+     * @param b    the ending node of the arrow
+     * @param naYX a set of nodes with vertical (north and south) positions
+     * @param hOrT a set of nodes with horizontal (west and east) positions
+     * @param bump the amount of bump to apply to the arrow
+     */
     private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, naYX, this.arrowIndex++);
         this.sortedArrows.add(arrow);
         addLookupArrow(a, b, arrow);
     }
 
-    // Reevaluates arrows after removing an edge from the graph.
+    /**
+     * Reevaluates arrows after removing an edge from the graph.
+     *
+     * @param toProcess a set of nodes to process
+     */
     private void reevaluateBackward(Set<Node> toProcess) {
         class BackwardTask extends RecursiveTask<Boolean> {
             private final Node r;
@@ -1055,7 +1257,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from, this.from + mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from + mid, this.to, this.hashIndices));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -1065,11 +1267,27 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
-            this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0, adjacentNodes.size(), this.hashIndices));
+
+            try {
+                this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
+                        adjacentNodes.size(), this.hashIndices));
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
+            }
         }
     }
 
-    // Calculates the arrows for the removal in the backward direction.
+    /**
+     * Calculates the arrows for the removal in the backward direction.
+     *
+     * @param a the starting node
+     * @param b the ending node
+     */
     private void calculateArrowsBackward(Node a, Node b) {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
@@ -1112,7 +1330,14 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
+    /**
+     * Returns a set of neighbors of node Y that are connected to Y by an undirected edge and are not adjacent to node
+     * X.
+     *
+     * @param x the node X
+     * @param y the node Y
+     * @return a set of neighbors of node Y that fulfill the specified conditions
+     */
     private Set<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> tNeighbors = new HashSet<>();
@@ -1134,7 +1359,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return tNeighbors;
     }
 
-    // Get all adj that are connected to Y.
+    /**
+     * Returns a set of neighboring nodes connected to the given node in the graph.
+     *
+     * @param y the node for which to retrieve neighbors
+     * @return a set of neighboring nodes connected to the given node
+     */
     private Set<Node> getNeighbors(Node y) {
         List<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
@@ -1152,7 +1382,17 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return neighbors;
     }
 
-    // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
+    /**
+     * Evaluate the Insert(X, Y, T) operator. This method calculates the score of the graph change caused by inserting
+     * node Y into node X with a set of target nodes T.
+     *
+     * @param x           The destination node X
+     * @param y           The node to be inserted Y
+     * @param t           The set of target nodes T
+     * @param naYX        The set of nodes that are forbidden to be parents of Y if X is its parent
+     * @param hashIndices The map of node-to-index associations
+     * @return The score of the graph change caused by the node insertion
+     */
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
@@ -1160,7 +1400,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return scoreGraphChange(y, set, x, hashIndices);
     }
 
-    // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
+    /**
+     * Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
+     *
+     * @param x           The node to delete from the graph.
+     * @param y           The node to be evaluated as a parent of X.
+     * @param diff        The set of nodes representing the difference between the original graph and the modified
+     *                    graph.
+     * @param hashIndices The map containing the indices of nodes in the hash table.
+     * @return The score of the graph change after deleting the specified node.
+     */
     private double deleteEval(Node x, Node y, Set<Node> diff, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(this.graph.getParents(y));
@@ -1168,7 +1417,15 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return -scoreGraphChange(y, set, x, hashIndices);
     }
 
-    // Do an actual insertion. (Definition 12 from Chickering, 2002).
+    /**
+     * Inserts an edge into the graph based on the given parameters.
+     *
+     * @param x    the source node of the edge to be inserted
+     * @param y    the target node of the edge to be inserted
+     * @param T    the set of nodes to be connected to the target node
+     * @param bump the bump value for the insertion
+     * @return true if the insertion is successful, false otherwise
+     */
     private boolean insert(Node x, Node y, Set<Node> T, double bump) {
         if (this.graph.isAdjacentTo(x, y)) {
             return false; // The initial graph may already have put this edge in the graph.
@@ -1189,16 +1446,19 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().log("insertedEdges", this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) + " " + T + " " + bump + " " + label);
+            String message = this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) + " " + T + " " + bump + " " + label;
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         int numEdges = this.graph.getNumEdges();
 
-        if (numEdges % 1000 == 0) this.out.println("Num edges added: " + numEdges);
+        if (verbose) {
+            if (numEdges % 1000 == 0) TetradLogger.getInstance().forceLogMessage("Num edges added: " + numEdges);
+        }
 
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
-            this.out.println(this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) + " " + T + " " + bump + " " + label + " degree = " + GraphUtils.getDegree(this.graph) + " indegree = " + GraphUtils.getIndegree(this.graph));
+            TetradLogger.getInstance().forceLogMessage(this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) + " " + T + " " + bump + " " + label + " degree = " + GraphUtils.getDegree(this.graph) + " indegree = " + GraphUtils.getIndegree(this.graph));
         }
 
         for (Node _t : T) {
@@ -1217,15 +1477,23 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
             if (this.verbose) {
                 String message = "--- Directing " + this.graph.getEdge(_t, y);
-                TetradLogger.getInstance().log("directedEdges", message);
-                this.out.println(message);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
         return true;
     }
 
-    // Do an actual deletion (Definition 13 from Chickering, 2002).
+    /**
+     * Delete an edge from the graph.
+     *
+     * @param x    The source node of the edge to be deleted.
+     * @param y    The target node of the edge to be deleted.
+     * @param H    The set of nodes.
+     * @param bump The weight of the edge being deleted.
+     * @param naYX The set of nodes not adjacent to both x and y.
+     * @return true if the deletion is successful, false otherwise.
+     */
     private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
         Edge trueEdge = null;
 
@@ -1246,13 +1514,15 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         removeSimilarEdges(x, y);
 
         int numEdges = this.graph.getNumEdges();
-        if (numEdges % 1000 == 0) this.out.println("Num edges (backwards) = " + numEdges);
+
+        if (verbose) {
+            if (numEdges % 1000 == 0) TetradLogger.getInstance().forceLogMessage("Num edges (backwards) = " + numEdges);
+        }
 
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             String message = (this.graph.getNumEdges()) + ". DELETE " + x + "-->" + y + " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
-            TetradLogger.getInstance().log("deletedEdges", message);
-            this.out.println(message);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         for (Node h : H) {
@@ -1269,8 +1539,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             //  **/
 
             if (this.verbose) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " + this.graph.getEdge(y, h));
-                this.out.println("--- Directing " + oldyh + " to " + this.graph.getEdge(y, h));
+                String message = "--- Directing " + oldyh + " to " + this.graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             Edge oldxh = this.graph.getEdge(x, h);
@@ -1286,8 +1556,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                 //  **/
 
                 if (this.verbose) {
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " + this.graph.getEdge(x, h));
-                    this.out.println("--- Directing " + oldxh + " to " + this.graph.getEdge(x, h));
+                    String message = "--- Directing " + oldxh + " to " + this.graph.getEdge(x, h);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 }
             }
         }
@@ -1295,8 +1565,26 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return true;
     }
 
-    // Test if the candidate insertion is a valid operation
-    // (Theorem 15 from Chickering, 2002).
+    /**
+     * Test if the candidate insertion is a valid operation.
+     * <p>
+     * This method checks if the candidate insertion of a node `x` and node `y` is a valid operation based on certain
+     * conditions.
+     * <p>
+     * The conditions checked are:
+     * <ol>
+     * <li> If there is any knowledge that forbids the insertion of nodes `x` and `y`.
+     * <li> If there is any knowledge that forbids the insertion of any nodes in the set `T` with node `y`.
+     * <li> If the union of set `T` and set `naYX` forms a clique in the graph.
+     * <li> If there exists any unblocked semi-directed path from node `y` to node `x` with a cycle bound.
+     * </ol>
+     *
+     * @param x    The node to be inserted.
+     * @param y    The existing node with which `x` is to be connected.
+     * @param T    The set of nodes in the graph.
+     * @param naYX The set of non-adjacent nodes of `y` except `x`.
+     * @return Returns true if the candidate insertion is valid, otherwise false.
+     */
     private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
         boolean violatesKnowledge = false;
 
@@ -1320,6 +1608,15 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return clique && noCycle && !violatesKnowledge;
     }
 
+    /**
+     * Validates if the delete operation is allowed based on the given parameters.
+     *
+     * @param x    the first node involved in the delete operation
+     * @param y    the second node involved in the delete operation
+     * @param H    the set of nodes representing external knowledge
+     * @param naYX the set of nodes that are neighbors to y and adjacent to x.
+     * @return true if the delete operation is valid, false otherwise
+     */
     private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX) {
         boolean violatesKnowledge = false;
 
@@ -1340,7 +1637,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return GraphUtils.isClique(diff, this.graph) && !violatesKnowledge;
     }
 
-    // Adds edges required by knowledge.
+    /**
+     * Adds edges required by knowledge.
+     *
+     * @param graph the graph to add the required edges to
+     */
     private void addRequiredEdges(Graph graph) {
         if (!existsKnowledge()) return;
 
@@ -1357,7 +1658,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
-                TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+
+                if (verbose) {
+                    String message = "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB);
+                    TetradLogger.getInstance().forceLogMessage(message);
+                }
             }
         }
         for (Edge edge : graph.getEdges()) {
@@ -1376,7 +1681,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                            TetradLogger.getInstance().forceLogMessage(message);
+                        }
                     }
                 }
 
@@ -1384,7 +1693,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                            TetradLogger.getInstance().forceLogMessage(message);
+                        }
                     }
                 }
             } else if (this.knowledge.isForbidden(B, A)) {
@@ -1395,23 +1708,36 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                            TetradLogger.getInstance().forceLogMessage(message);
+                        }
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                            TetradLogger.getInstance().forceLogMessage(message);
+                        }
                     }
                 }
             }
         }
     }
 
-    // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
-    // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
-    // forbidden.
+    /**
+     * Determines if the given subset of nodes contains any node that, when oriented towards the specified node 'y',
+     * violates any forbidden directions according to prior knowledge.
+     *
+     * @param y      the node towards which the orientation is being checked
+     * @param subset the set of nodes to be checked for invalid orientations
+     * @return true if any node in the subset violates a forbidden direction when oriented towards 'y', false otherwise
+     */
     private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
@@ -1421,8 +1747,13 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return false;
     }
 
-    // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-    // directed edge).
+    /**
+     * Finds all nodes that are neighbors to y and adjacent to x.
+     *
+     * @param x The first node (X).
+     * @param y The second node (Y).
+     * @return A set of nodes that are neighbors to y and adjacent to x.
+     */
     private Set<Node> getNaYX(Node x, Node y) {
         List<Node> adj = this.graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
@@ -1438,8 +1769,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return nayx;
     }
 
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound.' Cycle checker in other words.
+    /**
+     * Returns true if a path consisting of undirected and directed edges toward 'to' exists of length at most 'bound.'
+     * Cycle checker in other words.
+     *
+     * @param from  the starting node
+     * @param to    the target node
+     * @param cond  the set of nodes to be ignored during traversal
+     * @param bound the maximum length of the path. If -1, there is no limit.
+     * @return true if an unblocked semi-directed path exists, false otherwise.
+     */
     private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
@@ -1488,14 +1827,23 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return false;
     }
 
-    // Runs Meek rules on just the changed adj.
+    /**
+     * Runs Meek rules on just the changed adj.
+     *
+     * @param knowledge the knowledge used for orienting implied edges by MeekRules
+     * @return a set of nodes representing the results of orienting implied edges
+     */
     private Set<Node> meekOrientRestricted(Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         return rules.orientImplied(this.graph);
     }
 
-    // Maps adj to their indices for quick lookup.
+    /**
+     * Builds the indexing of the nodes for quick lookup.
+     *
+     * @param nodes The list of nodes.
+     */
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
 
@@ -1506,7 +1854,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Removes information associated with an edge x->y.
+    /**
+     * Removes information associated with an edge x->y.
+     *
+     * @param x the source node of the edge
+     * @param y the target node of the edge
+     */
     private synchronized void clearArrow(Node x, Node y) {
         OrderedPair<Node> pair = new OrderedPair<>(x, y);
         Set<Arrow> lookupArrows = this.lookupArrows.get(pair);
@@ -1518,8 +1871,13 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.lookupArrows.remove(pair);
     }
 
-    // Adds the given arrow for the adjacency i->j. These all are for i->j but may have
-    // different T or H or NaYX sets, and so different bumps.
+    /**
+     * Adds the given arrow for the adjacency i->j.
+     *
+     * @param i     The starting node of the arrow.
+     * @param j     The ending node of the arrow.
+     * @param arrow The arrow to be added.
+     */
     private void addLookupArrow(Node i, Node j, Arrow arrow) {
         OrderedPair<Node> pair = new OrderedPair<>(i, j);
         Set<Arrow> arrows = this.lookupArrows.get(pair);
@@ -1533,6 +1891,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
 
+    /**
+     * Calculates the score graph change given a node, set of parent nodes, another node, and a hash map of node
+     * indices.
+     *
+     * @param y           the node for which the score graph change is calculated
+     * @param parents     the set of parent nodes
+     * @param x           the other node
+     * @param hashIndices the hash map containing node indices
+     * @return the score graph change as a double value
+     */
     private double scoreGraphChange(Node y, Set<Node> parents, Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
@@ -1553,7 +1921,18 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
 
-    // Stores the graph if its totalScore knocks out one of the top ones.
+    /**
+     * Stores the current graph if its total score is high enough to be considered as one of the top graphs.
+     * <p>
+     * If the number of graphs to store is greater than zero, a copy of the current graph is added to the list of top
+     * graphs along with its `totalScore`. The copy is created to prevent any subsequent modifications to affect the
+     * stored graph.
+     * <p>
+     * If the list of top graphs exceeds the desired number of graphs to store, the lowest scored graph is removed from
+     * the list.
+     * <p>
+     * Note: This method does not return any value.
+     */
     private void storeGraph() {
         if (getnumCPDAGsToStore() > 0) {
             Graph graphCopy = new EdgeListGraph(this.graph);
@@ -1565,9 +1944,14 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+    /**
+     * Returns pairs of similar nodes based on the given nodes x and y.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return the list of similar pairs of nodes
+     */
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
-        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
@@ -1596,12 +1980,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        System.out.println("original independence: " + x + " and " + y);
-
-        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
-        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
-
-
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
@@ -1627,7 +2005,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
             x1 = this.graph.getNode(A);
             y1 = this.graph.getNode(B);
-            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
             simListX.add(x1);
             simListY.add(y1);
         }
@@ -1638,6 +2015,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return (pairList);
     }
 
+    /**
+     * Retrieves the name from the given object without any lag.
+     *
+     * @param obj the object from which to retrieve the name
+     * @return the name extracted from the object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -1645,6 +2028,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
+    /**
+     * Adds similar edges between two nodes.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     */
     public void addSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;
@@ -1655,12 +2044,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         while (itx.hasNext() && ity.hasNext()) {
             Node x1 = itx.next();
             Node y1 = ity.next();
-            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
-            System.out.println("adding edge between x = " + x1 + " and y = " + y1);
             this.graph.addDirectedEdge(x1, y1);
         }
     }
 
+    /**
+     * Removes similar edges between two nodes.
+     *
+     * @param x the first node
+     * @param y the second node
+     */
     public void removeSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;
@@ -1671,8 +2064,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         while (itx.hasNext() && ity.hasNext()) {
             Node x1 = itx.next();
             Node y1 = ity.next();
-            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
-            System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = this.graph.getEdge(x1, y1);
             this.graph.removeEdge(oldxy);
             this.removedEdges.add(Edges.undirectedEdge(x1, y1));
@@ -1680,10 +2071,34 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Internal.
+     * The Mode enum represents different modes/options for a particular algorithm.
+     * <p>
+     * It provides several options that can be used to configure the behavior of the algorithm. Each option has a brief
+     * description explaining its purpose.
      */
     private enum Mode {
-        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
+        /**
+         * Indicates whether unfaithfulness is allowed.
+         */
+        allowUnfaithfulness,
+
+        /**
+         * Represents a mode option for the algorithm.
+         * <p>
+         * This option is used to specify whether to cover noncolliders during the processing or not.
+         */
+        coverNoncolliders,
+
+        /**
+         * Represents a heuristic speedup option.
+         * <p>
+         * This option is used to enable or disable a heuristic speedup algorithm in a particular context. When this
+         * option is enabled, the algorithm will attempt to speed up the processing by using heuristics.
+         *
+         * @see Mode#heuristicSpeedup
+         */
+        heuristicSpeedup
+
     }
 
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
@@ -1699,6 +2114,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         private final Set<Node> naYX;
         private final int index;
 
+        /**
+         * Represents an arrow in a graph connecting two nodes.
+         *
+         * @param bump  the bump value of the arrow object
+         * @param a     a node object representing the 'a' node of the arrow object
+         * @param b     a node object representing the 'b' node of the arrow object
+         * @param hOrT  a set of nodes associated with H or T for the current arrow object
+         * @param naYX  a set of nodes associated with NaYX for the current arrow object
+         * @param index the index value of the arrow object
+         */
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
             this.bump = bump;
             this.a = a;
@@ -1708,32 +2133,59 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             this.index = index;
         }
 
+        /**
+         * Returns the bump value of the Arrow object.
+         *
+         * @return the bump value
+         */
         public double getBump() {
             return this.bump;
         }
 
+        /**
+         * Returns the Node object representing the 'a' node of the Arrow object.
+         *
+         * @return the Node 'a'
+         */
         public Node getA() {
             return this.a;
         }
 
+        /**
+         * Returns the Node object representing the 'b' node of the Arrow object.
+         *
+         * @return the Node 'b'
+         */
         public Node getB() {
             return this.b;
         }
 
+        /**
+         * Returns the set of nodes associated with H or T for the current Arrow object.
+         *
+         * @return the set of nodes associated with H or T
+         */
         public Set<Node> getHOrT() {
             return this.hOrT;
         }
 
+        /**
+         * Returns the set of nodes that are neighbors of y and adjacent to x for the current Arrow object.
+         *
+         * @return the set of nodes associated with NaYX
+         */
         public Set<Node> getNaYX() {
             return this.naYX;
         }
 
-        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero, i.e., have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commented out by default.
+        /**
+         * Compares this Arrow object with the specified Arrow object for order. Returns a negative integer, zero, or a
+         * positive integer as this object is less than, equal to, or greater than the specified object.
+         *
+         * @param arrow the Arrow object to be compared
+         * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater
+         * than the specified object
+         */
         public int compareTo(@NotNull Arrow arrow) {
             int compare = Double.compare(arrow.getBump(), getBump());
 
@@ -1753,6 +2205,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * An internal class representing a recursive task to initialize effect edges in the graph.
+     */
     private class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
         private final int from;
         private final int to;
@@ -1771,7 +2226,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             for (int i = this.from; i < this.to; i++) {
                 if ((i + 1) % 1000 == 0) {
                     SvarFges.this.count[0] += 1000;
-                    SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
                 }
 
                 Node y = this.nodes.get(i);

@@ -5,24 +5,43 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagTruePositiveTails implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * This class represents a statistic that calculates the true positives for tails compared to the true DAG.
+     */
+    public TrueDagTruePositiveTails() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "DTPT";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "True Positives for Tails compared to true DAG";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -44,6 +63,9 @@ public class TrueDagTruePositiveTails implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

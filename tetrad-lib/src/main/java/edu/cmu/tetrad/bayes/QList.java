@@ -28,21 +28,46 @@ package edu.cmu.tetrad.bayes;
  */
 final class QList {
 
+    /**
+     * The number of nodes.
+     */
     private final int nVariables; // number of nodes
 
+    /**
+     * The variables to be summed over in the summation.
+     */
     private boolean inNumerator;   // true: in the numerator; false: in the denominator
+
+    /**
+     * The variables to be summed over in the summation.
+     */
     private int[] sumOverVariables; // the variables to be summed over in the summation
 
-    // only one of probTerm and subList should be instantiated
-    private int[] probTerm;  // probability term
-    private QList subList;  // recursive list to be summed over sumOverVariables
+    /**
+     * probability term. only one of probTerm and subList should be instantiated
+     */
+    private int[] probTerm;
 
+    /**
+     * recursive list to be summed over sumOverVariables
+     */
+    private QList subList;
+
+    /**
+     * The next term in the list.
+     */
     private QList nextTerm;  // next term in the list
 
     //=============================CONSTRUCTORS=========================//
 
     /////////////////////////////////////////////////////////////////
     // intialize an empty QList: Q(emptyset) = 1
+
+    /**
+     * <p>Constructor for QList.</p>
+     *
+     * @param nVariables a int
+     */
     public QList(int nVariables) {
         this.nVariables = nVariables;
         initialize();
@@ -50,6 +75,13 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // initialize with a probability term
+
+    /**
+     * <p>Constructor for QList.</p>
+     *
+     * @param nVariables a int
+     * @param probTerm   an array of {@link int} objects
+     */
     public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
         initialize();
@@ -89,6 +121,14 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // append a term to the end
     //
+
+    /**
+     * <p>add.</p>
+     *
+     * @param q                a {@link edu.cmu.tetrad.bayes.QList} object
+     * @param sumOverVariables an array of {@link int} objects
+     * @param inNumerator      a boolean
+     */
     public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
         QList qAdd = new QList(this.nVariables);
 
@@ -115,9 +155,16 @@ final class QList {
     // index1: the numbering of terms in the linked list
     // index2: the depth of recursive sublists
     //
+
+    /**
+     * <p>printQList.</p>
+     *
+     * @param index1 a int
+     * @param index2 a int
+     */
     public void printQList(int index1, int index2) {
         System.out.println("======= " + index1 + "  " + index2 +
-                ": printQList");
+                           ": printQList");
         System.out.println("inNumerator: " + this.inNumerator);
 
         System.out.print("sumOverVariables: ");
@@ -138,16 +185,16 @@ final class QList {
         // increment index1 and reset index2 to 0
         {
             System.out.println("--------------------------------------- "
-                    + (index1 + 1) + "  " + 0 +
-                    ": subList");
+                               + (index1 + 1) + "  " + 0 +
+                               ": subList");
             this.subList.printQList(index1 + 1, 0);
         }
 
         if (this.nextTerm != null) {
             index2++;
             System.out.println("---------------------------- "
-                    + index1 + "  " + index2 +
-                    ": nextTerm");
+                               + index1 + "  " + index2 +
+                               ": nextTerm");
             this.nextTerm.printQList(index1, index2);
         }
     }
@@ -156,6 +203,14 @@ final class QList {
     // compute the numeric value of the expression in qPTS
     // by using the RowSummingExactUpdater
     //
+
+    /**
+     * <p>computeValue.</p>
+     *
+     * @param bayesIm        a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param fixedVarValues an array of {@link int} objects
+     * @return a double
+     */
     public double computeValue(BayesIm bayesIm, int[] fixedVarValues) {
         double resultAll = 0.0;
         double resultOneConfig;
@@ -280,16 +335,16 @@ final class QList {
 
             // compose next variable value configuration
             if ((this.sumOverVariables[curVar] == 1) &&
-                    (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
+                (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
             ) {
                 loopVarValues[curVar]++;
             } else {
                 while ((curVar >= 0)
-                        &&
-                        ((this.sumOverVariables[curVar] != 1)
-                                ||
-                                (loopVarValues[curVar] ==
-                                        bayesIm.getNumColumns(curVar) - 1))
+                       &&
+                       ((this.sumOverVariables[curVar] != 1)
+                        ||
+                        (loopVarValues[curVar] ==
+                         bayesIm.getNumColumns(curVar) - 1))
                 ) {
                     curVar--;
                 }

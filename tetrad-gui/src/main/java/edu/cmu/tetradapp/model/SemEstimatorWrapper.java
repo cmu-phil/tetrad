@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -40,18 +40,28 @@ import java.util.List;
  * Wraps a SemEstimator for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemEstimatorWrapper implements SessionModel {
     @Serial
     private static final long serialVersionUID = 23L;
-    private final Parameters params;
-    private final SemPm semPm;
+
     /**
-     * @serial Can be null.
+     * The parameters for the estimator.
+     */
+    private final Parameters params;
+
+    /**
+     * The SEM PM for the estimator.
+     */
+    private final SemPm semPm;
+
+    /**
+     * The name of the estimator.
      */
     private String name;
     /**
-     * @serial Cannot be null.
+     * The estimator itself.
      */
     private SemEstimator semEstimator;
 
@@ -60,6 +70,10 @@ public class SemEstimatorWrapper implements SessionModel {
     /**
      * Private constructor for serialization only. Problem is, for the real constructors, I'd like to call the degrees
      * of freedom check, which pops up a dialog. This is irritating when running unit tests. jdramsey 8/29/07
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param semPm     a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemEstimatorWrapper(DataModel dataModel, SemPm semPm, Parameters params) {
         this.params = params;
@@ -89,15 +103,33 @@ public class SemEstimatorWrapper implements SessionModel {
         }
     }
 
-    public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemPmWrapper semPmWrapper, Parameters params) {
+    /**
+     * <p>Constructor for SemEstimatorWrapper.</p>
+     *
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     */
+    public SemEstimatorWrapper(DataWrapper dataWrapper, SemPmWrapper semPmWrapper, Parameters params) {
         this(dataWrapper.getSelectedDataModel(), semPmWrapper.getSemPm(), params);
         log();
     }
 
     /**
+     * Constructs a SemEstimatorWrapper object.
+     *
+     * @param simulation      a Simulation object
+     * @param semPmWrapper    a SemPmWrapper object
+     * @param parameters      a Parameters object
+     */
+    public SemEstimatorWrapper(Simulation simulation, SemPmWrapper semPmWrapper, Parameters parameters) {
+        this(new DataWrapper(simulation, parameters), semPmWrapper, parameters);
+    }
+
+    /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      * @see TetradSerializableUtils
      */
     public static SemEstimatorWrapper serializableInstance() {
@@ -133,11 +165,7 @@ public class SemEstimatorWrapper implements SessionModel {
 
     private boolean degreesOfFreedomCheck(SemPm semPm) {
         if (semPm.getDof() < 1) {
-            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "This model has non-positive degrees of freedom (DOF = "
-                            + semPm.getDof() + "). "
-                            + "\nEstimation will be uninformative. Are you sure you want to proceed?",
-                    "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(), "This model has non-positive degrees of freedom (DOF = " + semPm.getDof() + "). " + "\nEstimation will be uninformative. Are you sure you want to proceed?", "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             return ret == JOptionPane.YES_OPTION;
         }
@@ -146,45 +174,88 @@ public class SemEstimatorWrapper implements SessionModel {
     }
 
     //============================PUBLIC METHODS=========================//
+
+    /**
+     * <p>Getter for the field <code>semEstimator</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEstimator} object
+     */
     public SemEstimator getSemEstimator() {
         return this.semEstimator;
     }
 
+    /**
+     * <p>Setter for the field <code>semEstimator</code>.</p>
+     *
+     * @param semEstimator a {@link edu.cmu.tetrad.sem.SemEstimator} object
+     */
     public void setSemEstimator(SemEstimator semEstimator) {
         this.semEstimator = semEstimator;
     }
 
+    /**
+     * <p>getEstimatedSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getEstimatedSemIm() {
         return this.semEstimator.getEstimatedSem();
     }
 
+    /**
+     * <p>getSemOptimizerType.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getSemOptimizerType() {
         return getParams().getString("semOptimizerType", "Regression");
     }
 
+    /**
+     * <p>setSemOptimizerType.</p>
+     *
+     * @param type a {@link java.lang.String} object
+     */
     public void setSemOptimizerType(String type) {
         getParams().set("semOptimizerType", type);
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semEstimator.getEstimatedSem().getSemPm().getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
     //=============================== Private methods =======================//
     private void log() {
-        TetradLogger.getInstance().log("info", "SEM Estimator:");
-        TetradLogger.getInstance().log("im", "" + getEstimatedSemIm());
-        TetradLogger.getInstance().log("details", "ChiSq = " + getEstimatedSemIm().getChiSquare());
-        TetradLogger.getInstance().log("details", "DOF = " + getEstimatedSemIm().getSemPm().getDof());
-        TetradLogger.getInstance().log("details", "P = " + getEstimatedSemIm().getPValue());
+        TetradLogger.getInstance().forceLogMessage("SEM Estimator:");
+        String message3 = "" + getEstimatedSemIm();
+        TetradLogger.getInstance().forceLogMessage(message3);
+        String message2 = "ChiSq = " + getEstimatedSemIm().getChiSquare();
+        TetradLogger.getInstance().forceLogMessage(message2);
+        String message1 = "DOF = " + getEstimatedSemIm().getSemPm().getDof();
+        TetradLogger.getInstance().forceLogMessage(message1);
+        String message = "P = " + getEstimatedSemIm().getPValue();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**
@@ -192,15 +263,23 @@ public class SemEstimatorWrapper implements SessionModel {
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for). See J. Bloch, Effective Java, for
-     * help.
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for). See J. Bloch, Effective Java,
+     * for help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
@@ -266,26 +345,45 @@ public class SemEstimatorWrapper implements SessionModel {
         return new SemIm(semPm).getNumFixedParams() > 0;
     }
 
+    /**
+     * <p>getScoreType.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public ScoreType getScoreType() {
         return (ScoreType) this.params.get("scoreType", ScoreType.SemBic);
     }
 
+    /**
+     * <p>setScoreType.</p>
+     *
+     * @param scoreType a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public void setScoreType(ScoreType scoreType) {
         this.params.set("scoreType", scoreType);
     }
 
+    /**
+     * <p>getNumRestarts.</p>
+     *
+     * @return a int
+     */
     public int getNumRestarts() {
         return getParams().getInt("numRestarts", 1);
     }
 
+    /**
+     * <p>setNumRestarts.</p>
+     *
+     * @param numRestarts a int
+     */
     public void setNumRestarts(int numRestarts) {
         getParams().set("numRestarts", numRestarts);
     }
 
     private SemOptimizer getDefaultOptimization() {
         if (this.semPm == null) {
-            throw new NullPointerException(
-                    "Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
+            throw new NullPointerException("Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
         }
 
         boolean containsLatent = false;
@@ -299,8 +397,7 @@ public class SemEstimatorWrapper implements SessionModel {
 
         SemOptimizer optimizer;
 
-        if (containsFixedParam(this.semPm) || this.semPm.getGraph().paths().existsDirectedCycle()
-                || SemEstimatorWrapper.containsCovarParam(this.semPm)) {
+        if (containsFixedParam(this.semPm) || this.semPm.getGraph().paths().existsDirectedCycle() || SemEstimatorWrapper.containsCovarParam(this.semPm)) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import javax.swing.*;
 import javax.swing.event.TreeModelListener;
@@ -40,6 +40,7 @@ import java.util.prefs.Preferences;
  * Lets you choose models from a categorized list.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
@@ -71,10 +72,21 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
      */
     private SessionNode sessionNode;
 
+    /**
+     * <p>Getter for the field <code>title</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTitle() {
         return this.title;
     }
 
+    /**
+     * Sets the title of the chooser.
+     *
+     * @param title The title to use for the chooser.
+     * @throws NullPointerException if the title is null
+     */
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The title must not be null");
@@ -82,12 +94,17 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.title = title;
     }
 
-    public Class getSelectedModel() {
+    /**
+     * <p>getSelectedModel.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
+    public Class<?> getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
 
         if (path == null) {
             throw new NullPointerException("I had a problem figuring out the models for this box given the parents. Maybe\n" +
-                    "the parents are wrong, or maybe this isn't the box you were intending to use.");
+                                           "the parents are wrong, or maybe this isn't the box you were intending to use.");
         }
 
         Object selected = path.getLastPathComponent();
@@ -97,6 +114,11 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
+    /**
+     * Sets the model configurations for the chooser.
+     *
+     * @param configs the list of model configurations to be displayed in the chooser
+     */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         ChooserTreeModel model = new ChooserTreeModel(configs);
         this.tree = new JTree(model);
@@ -142,7 +164,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     private String getModelTypeFromSessionNode(SessionNode sessionNode, ChooserTreeModel model) {
 
         // Assumes the tree will always be of depth 2.
-        Class clazz = sessionNode.getLastModelClass();
+        Class<?> clazz = sessionNode.getLastModelClass();
         Object root = model.getRoot();
 
         for (int i = 0; i < model.getChildCount(root); i++) {
@@ -160,6 +182,12 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
+    /**
+     * Sets the ID for the node.
+     *
+     * @param id the ID for the node.
+     * @throws NullPointerException if the given ID is null.
+     */
     public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
@@ -167,21 +195,29 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.nodeId = id;
     }
 
+    /**
+     * Sets the SessionNode for the getModel node.
+     *
+     * @param sessionNode the SessionNode to set
+     */
     public void setSessionNode(SessionNode sessionNode) {
         this.sessionNode = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         this.setLayout(new BorderLayout());
 
         JButton info = new JButton("Help");
 
         info.addActionListener(e -> {
-            Class model = getSelectedModel();
+            Class<?> model = getSelectedModel();
             if (model == null) {
                 JOptionPane.showMessageDialog(this, "No node selected. Select" +
-                        " a node to get help for it.");
+                                                    " a node to get help for it.");
             } else {
                 SessionUtils.showPermissibleParentsDialog(model,
                         this, false, false);
@@ -210,9 +246,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     private static class ModelWrapper {
 
         private final String name;
-        private final Class model;
+        private final Class<?> model;
 
-        public ModelWrapper(String name, Class model) {
+        public ModelWrapper(String name, Class<?> model) {
             this.name = name;
             this.model = model;
         }
@@ -266,9 +302,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         public ChooserTreeModel(List<SessionNodeModelConfig> configs) {
             for (SessionNodeModelConfig config : configs) {
-                String category = config.getCategory();
+                String category = config.category();
                 if (category == null) {
-                    throw new NullPointerException("No Category name associated with model: " + config.getModel());
+                    throw new NullPointerException("No Category name associated with model: " + config.model());
                 }
 
                 if ("Unlisted".equals(category)) {
@@ -280,7 +316,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                 }
 
                 List<ModelWrapper> models = this.map.computeIfAbsent(category, k -> new LinkedList<>());
-                models.add(new ModelWrapper(config.getName(), config.getModel()));
+                models.add(new ModelWrapper(config.name(), config.model()));
             }
         }
 

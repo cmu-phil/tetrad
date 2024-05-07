@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Stores a file for reading in a lag graph from a file.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StoredLagGraphParams implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -48,6 +49,8 @@ public class StoredLagGraphParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.StoredLagGraphParams} object
      */
     public static StoredLagGraphParams serializableInstance() {
         return new StoredLagGraphParams();
@@ -57,6 +60,8 @@ public class StoredLagGraphParams implements TetradSerializable {
 
     /**
      * Returns the stored file.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getFilename() {
         return this.filename;
@@ -64,6 +69,8 @@ public class StoredLagGraphParams implements TetradSerializable {
 
     /**
      * Sets the stored file.
+     *
+     * @param filename a {@link java.lang.String} object
      */
     public void setFilename(String filename) {
         if (filename == null) {

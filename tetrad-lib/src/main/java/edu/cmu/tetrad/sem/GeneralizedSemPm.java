@@ -29,17 +29,20 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.*;
 
 
 /**
- * Parametric model for Generalized SEM model. This contains all the equations of the model with parameters represented
- * symbolically (i.e. no values for parameters).
+ * Parametric model for a Generalized SEM model. This contains all the equations of the model with parameters
+ * represented symbolically (i.e., no values for parameters).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GeneralizedSemPm implements Pm, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -124,6 +127,9 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * A map from names to nodes, speedup.
      */
     private final Map<String, Node> namesToNodes = new HashMap<>();
+    /**
+     * A map from names to nodes, speedup.
+     */
     private final Map<String, Integer> parameterSubscript = new HashMap<>();
     /**
      * Distributions from which initial values for freeParameters are drawn.
@@ -140,11 +146,11 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * The stored template for freeParameters.
      */
-    private String parametersTemplate = "Split(-1.0,-.5,.5,1.0)";
+    private String parametersTemplate = "U(-1.0, 1.0)";
     /**
      * The stored template for freeParameters.
      */
-    private String parametersEstimationInitializationTemplate = "Split(-1.0,-.5,.5,1.0)";
+    private String parametersEstimationInitializationTemplate = "U(-1.0, 1.0)";
 
     /**
      * The list of variable names.
@@ -154,6 +160,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
      * SemGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public GeneralizedSemPm(Graph graph) {
         this(new SemGraph(graph));
@@ -161,15 +169,13 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * Constructs a new SemPm from the given SemGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.SemGraph} object
      */
     public GeneralizedSemPm(SemGraph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
-
-//        if (graph.existsDirectedCycle()) {
-//            throw new IllegalArgumentExcneption("Cycles are not supported.");
-//        }
 
         // Cannot afford to allow error terms on this graph to be shown or hidden from the outside; must make a
         // hidden copy of it and make sure error terms are shown.
@@ -179,7 +185,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         for (Edge edge : this.graph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
                 throw new IllegalArgumentException("The generalized SEM PM cannot currently deal with bidirected " +
-                        "edges. Sorry.");
+                                                   "edges. Sorry.");
             }
         }
 
@@ -194,7 +200,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         for (Node variable : this.nodes) {
             if (variable.getNodeType() == NodeType.MEASURED ||
-                    variable.getNodeType() == NodeType.LATENT) {
+                variable.getNodeType() == NodeType.LATENT) {
                 this.variableNodes.add(variable);
             }
 
@@ -252,8 +258,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                     continue;
                 }
 
-                String variablestemplate = getVariablesTemplate();
-                String formula = TemplateExpander.getInstance().expandTemplate(variablestemplate, this, node);
+                String variablesTemplate = getVariablesTemplate();
+                String formula = TemplateExpander.getInstance().expandTemplate(variablesTemplate, this, node);
                 setNodeExpression(node, formula);
                 Set<String> parameters = getReferencedParameters(node);
 
@@ -264,11 +270,11 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                         if (parametersTemplate != null) {
                             setParameterExpression(parameter, parametersTemplate);
                         } else if (this.graph.isTimeLagModel()) {
-                            final String expressionString = "Split(-0.9, -.1, .1, 0.9)";
+                            final String expressionString = "U(-0.9, 0.9)";
                             setParameterExpression(parameter, expressionString);
                             setParametersTemplate(expressionString);
                         } else {
-                            final String expressionString = "Split(-1.0, -.5, .5, 1.0)";
+                            final String expressionString = "U(-1.0, 1.0)";
                             setParameterExpression(parameter, expressionString);
                             setParametersTemplate(expressionString);
                         }
@@ -280,16 +286,16 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                         if (parametersTemplate != null) {
                             setParameterEstimationInitializationExpression(parameter, parametersTemplate);
                         } else if (this.graph.isTimeLagModel()) {
-                            final String expressionString = "Split(-0.9, -.1, .1, 0.9)";
+                            final String expressionString = "U(-0.9, 0.9)";
                             setParameterEstimationInitializationExpression(parameter, expressionString);
                         } else {
-                            final String expressionString = "Split(-1.0, -.5, .5, 1.0)";
+                            final String expressionString = "U(-1.0, 1.0)";
                             setParameterEstimationInitializationExpression(parameter, expressionString);
                         }
                     }
 
-                    setStartsWithParametersTemplate("s", "Split(-1, -.5, .5, 1.0)");
-                    setStartsWithParametersEstimationInitializaationTemplate("s", "Split(-1.5, -.5, .5, 1.5)");
+                    setStartsWithParametersTemplate("s", "U(-1.0, 1.0)");
+                    setStartsWithParametersEstimationInitializationTemplate("s", "U(-1.5, 1.5)");
                 }
             }
 
@@ -302,7 +308,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                 Set<String> parameters = getReferencedParameters(node);
 
                 setStartsWithParametersTemplate("s", "U(1, 3)");
-                setStartsWithParametersEstimationInitializaationTemplate("s", "U(1, 3)");
+                setStartsWithParametersEstimationInitializationTemplate("s", "U(1, 3)");
 
                 for (String parameter : parameters) {
                     setParameterExpression(parameter, "U(1, 3)");
@@ -313,6 +319,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         }
     }
 
+    /**
+     * Constructs a new GeneralizedSemPm object based on the given SemPm object.
+     *
+     * @param semPm the SemPm object used to construct the GeneralizedSemPm
+     * @throws IllegalStateException if there is a parse error in constructing the initial model
+     */
     public GeneralizedSemPm(SemPm semPm) {
         this(semPm.getGraph());
 
@@ -344,16 +356,16 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                     buf.append("*");
                     buf.append(parents.get(j).getName());
 
-                    setParameterExpression(parameter, "Split(-1.0, -.0, .0, 1.0)");
-                    setStartsWithParametersTemplate(parameter.substring(0, 1), "Split(-1.0, -.0, .0, 1.0)");
-                    setStartsWithParametersEstimationInitializaationTemplate(parameter.substring(0, 1), "Split(-1.5, -.5, .5, 1.5)");
+                    setParameterExpression(parameter, "U(-1.0, 1.0)");
+                    setStartsWithParametersTemplate(parameter.substring(0, 1), "U(-1.0, 1.0)");
+                    setStartsWithParametersEstimationInitializationTemplate(parameter.substring(0, 1), "U(-1.5, 1.5)");
 
                     if (j < parents.size() - 1) {
                         buf.append(" + ");
                     }
                 }
 
-                if (buf.toString().trim().length() != 0) {
+                if (!buf.toString().trim().isEmpty()) {
                     buf.append(" + ");
                 }
 
@@ -369,7 +381,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
                 setNodeExpression(getErrorNode(node), distributionFormula);
                 setParameterExpression(parameter, "U(0, 1)");
                 setStartsWithParametersTemplate(parameter.substring(0, 1), "U(0, 1)");
-                setStartsWithParametersEstimationInitializaationTemplate(parameter.substring(0, 1), "U(0, 1)");
+                setStartsWithParametersEstimationInitializationTemplate(parameter.substring(0, 1), "U(0, 1)");
             }
 
             this.variableNames = new ArrayList<>();
@@ -382,7 +394,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Copy constructor.
+     * Initializes a new instance of the GeneralizedSemPm class by copying the properties of the provided
+     * GeneralizedSemPm object.
+     *
+     * @param semPm The GeneralizedSemPm object to copy.
      */
     public GeneralizedSemPm(GeneralizedSemPm semPm) {
         this.graph = new SemGraph(semPm.graph);
@@ -422,6 +437,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      */
     public static GeneralizedSemPm serializableInstance() {
         Dag dag = new Dag();
@@ -430,6 +447,11 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return new GeneralizedSemPm(Dag.serializableInstance());
     }
 
+    /**
+     * Retrieves the names of the parameters required for a certain operation.
+     *
+     * @return a list containing the names of the parameters
+     */
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add("generalSemFunctionTemplateMeasured");
@@ -439,25 +461,44 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return parameters;
     }
 
+    /**
+     * <p>getNodeExpression.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     */
     public Expression getNodeExpression(Node node) {
         return this.nodeExpressions.get(node);
     }
 
+    /**
+     * <p>getNodeExpressionString.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNodeExpressionString(Node node) {
         return this.nodeExpressionStrings.get(node);
     }
 
+    /**
+     * Sets the expression for a given node.
+     *
+     * @param node             the node for which to set the expression
+     * @param expressionString the expression string to set
+     * @throws ParseException       if the expression string cannot be parsed
+     * @throws NullPointerException if node is null or expressionString is null
+     */
     public void setNodeExpression(Node node, String expressionString) throws ParseException {
         if (node == null) {
             throw new NullPointerException("Node was null.");
         }
 
         if (expressionString == null) {
-//            return;
             throw new NullPointerException("Expression string was null.");
         }
 
-        // Parse the expression. This could throw an ParseException, but that exception needs to handed up the
+        // Parse the expression. This could throw a ParseException, but that exception needs to hand up the
         // chain, because the interface will need it.
         ExpressionParser parser = new ExpressionParser();
         Expression expression = parser.parseExpression(expressionString);
@@ -470,14 +511,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         for (Node parent : parents) {
             parentNames.add(parent.getName());
         }
-
-//        List<String> _params = new ArrayList<String>(parameterNames);
-//        _params.retainAll(variableNames);
-//        _params.removeAll(parentNames);
-//
-//        if (!_params.isEmpty()) {
-//            throw new IllegalArgumentException("Conditioning on a variable other than the parents: " + node);
-//        }
 
         // Make a list of parameter names, by removing from the parser's list of freeParameters any that correspond
         // to parent variables. If there are any variable names (including error terms) that are not among the list of
@@ -558,6 +591,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.nodeExpressionStrings.put(node, expressionString);
     }
 
+    /**
+     * Sets the suitable parameter distribution based on the provided parameter.
+     *
+     * @param parameter the parameter to set the suitable distribution for
+     * @throws ParseException if there is an error parsing the parameter
+     */
     private void setSuitableParameterDistribution(String parameter) throws ParseException {
         boolean found = false;
 
@@ -589,7 +628,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
-     * @throws ParseException If the formula cannot be parsed or contains variable names.
+     * @throws java.text.ParseException If the formula cannot be parsed or contains variable names.
      */
     public void setParameterExpression(String parameter, String expressionString)
             throws ParseException {
@@ -601,21 +640,30 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new NullPointerException("Expression string was null.");
         }
 
-        // Parse the expression. This could throw an ParseException, but that exception needs to handed up the
+        // Parse the expression. This could throw a ParseException, but that exception needs to hand up the
         // chain, because the interface will need it.
         ExpressionParser parser = new ExpressionParser();
         Expression expression = parser.parseExpression(expressionString);
         List<String> parameterNames = parser.getParameters();
 
-        if (parameterNames.size() > 0) {
+        if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution for a parameter may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterExpressions.put(parameter, expression);
         this.parameterExpressionStrings.put(parameter, expressionString);
     }
 
+    /**
+     * Sets the parameter estimation initialization expression for the given parameter.
+     *
+     * @param parameter        The parameter to set the initialization expression for.
+     * @param expressionString The expression string to be parsed and stored.
+     * @throws NullPointerException     If either parameter or expressionString is null.
+     * @throws ParseException           If the expressionString is not valid and cannot be parsed.
+     * @throws IllegalArgumentException If the expressionString contains parameters.
+     */
     public void setParameterEstimationInitializationExpression(String parameter, String expressionString)
             throws ParseException {
         if (parameter == null) {
@@ -626,15 +674,15 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new NullPointerException("Expression string was null.");
         }
 
-        // Parse the expression. This could throw an ParseException, but that exception needs to handed up the
+        // Parse the expression. This could throw a ParseException, but that exception needs to hand up the
         // chain, because the interface will need it.
         ExpressionParser parser = new ExpressionParser();
         Expression expression = parser.parseExpression(expressionString);
         List<String> parameterNames = parser.getParameters();
 
-        if (parameterNames.size() > 0) {
+        if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterEstimationInitializationExpressions.put(parameter, expression);
@@ -647,7 +695,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
-     * @throws ParseException If the formula cannot be parsed or contains variable names.
+     * @param startsWith       a {@link java.lang.String} object
+     * @throws java.text.ParseException If the formula cannot be parsed or contains variable names.
      */
     public void setParameterExpression(String startsWith, String parameter, String expressionString)
             throws ParseException {
@@ -667,15 +716,15 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new NullPointerException("Expression string was null.");
         }
 
-        // Parse the expression. This could throw an ParseException, but that exception needs to handed up the
+        // Parse the expression. This could throw a ParseException, but that exception needs to hand up the
         // chain, because the interface will need it.
         ExpressionParser parser = new ExpressionParser();
         Expression expression = parser.parseExpression(expressionString);
         List<String> parameterNames = parser.getParameters();
 
-        if (parameterNames.size() > 0) {
+        if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterExpressions.put(parameter, expression);
@@ -689,7 +738,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
-     * @throws ParseException If the formula cannot be parsed or contains variable names.
+     * @param startsWith       a {@link java.lang.String} object
+     * @throws java.text.ParseException If the formula cannot be parsed or contains variable names.
      */
     public void setParameterEstimationInitializationExpression(String startsWith, String parameter, String expressionString)
             throws ParseException {
@@ -709,15 +759,15 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new NullPointerException("Expression string was null.");
         }
 
-        // Parse the expression. This could throw an ParseException, but that exception needs to handed up the
+        // Parse the expression. This could throw a ParseException, but that exception needs to hand up the
         // chain, because the interface will need it.
         ExpressionParser parser = new ExpressionParser();
         Expression expression = parser.parseExpression(expressionString);
         List<String> parameterNames = parser.getParameters();
 
-        if (parameterNames.size() > 0) {
+        if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution may not " +
-                    "contain parameters: " + expressionString);
+                                               "contain parameters: " + expressionString);
         }
 
         this.parameterEstimationInitializationExpressions.put(parameter, expression);
@@ -726,39 +776,49 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return the set of freeParameters for the model.
+     * Retrieves the set of parameters.
+     *
+     * @return a Set of String representing the parameters.
      */
     public Set<String> getParameters() {
         return new HashSet<>(this.parameterExpressions.keySet());
     }
 
     /**
-     * @param parameter The parameter whose initial value needs to be evaluated.
-     * @return an expression that can be used to calculate the initial value.
+     * Retrieves the expression associated with the given parameter.
+     *
+     * @param parameter the name of the parameter
+     * @return the expression associated with the given parameter, or null if not found
      */
     public Expression getParameterExpression(String parameter) {
         return this.parameterExpressions.get(parameter);
     }
 
     /**
-     * @param parameter The parameter whose initial value needs to be evaluated.
-     * @return an expression that can be used to calculate the initial value.
+     * Retrieves the initialization expression for a given parameter used in parameter estimation.
+     *
+     * @param parameter the parameter for which to retrieve the initialization expression
+     * @return the initialization expression for the specified parameter, or null if not found
      */
     public Expression getParameterEstimationInitializationExpression(String parameter) {
         return this.parameterEstimationInitializationExpressions.get(parameter);
     }
 
     /**
-     * @param parameter The parameter whose initial value needs to be computed.
-     * @return The formula string that was set using <code>setParameterExpression</code>, with spacing intact.
+     * Returns the expression string associated with the given parameter.
+     *
+     * @param parameter the parameter name
+     * @return the expression string associated with the parameter
      */
     public String getParameterExpressionString(String parameter) {
         return this.parameterExpressionStrings.get(parameter);
     }
 
     /**
-     * @param parameter The parameter whose initial value needs to be computed.
-     * @return The formula string that was set using <code>setParameterExpression</code>, with spacing intact.
+     * Returns the initialization expression string for the given parameter.
+     *
+     * @param parameter the parameter for which the initialization expression string is needed
+     * @return the initialization expression string for the given parameter, or null if not found
      */
     public String getParameterEstimationInitializationExpressionString(String parameter) {
         return this.parameterEstimationInitializationExpressionStrings.get(parameter);
@@ -766,27 +826,35 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * Returns the structural model graph this SEM PM is using.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.SemGraph} object
      */
     public SemGraph getGraph() {
         return new SemGraph(this.graph);
     }
 
     /**
-     * @return all the nodes in the sem, including error nodes.
+     * Retrieves a list of nodes.
+     *
+     * @return A list of nodes.
      */
     public List<Node> getNodes() {
         return new ArrayList<>(this.nodes);
     }
 
     /**
-     * Returns the list of variable nodes--that is, node that are not error nodes.
+     * Returns the list of variable nodes--that is, node that is not error nodes.
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Node> getVariableNodes() {
         return new ArrayList<>(this.variableNodes);
     }
 
     /**
-     * @return the lsit of measured nodes.
+     * Returns a list of measured nodes.
+     *
+     * @return a list of measured nodes.
      */
     public List<Node> getMeasuredNodes() {
         return new ArrayList<>(this.measuredNodes);
@@ -794,14 +862,18 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * Returns the list of exogenous variableNodes.
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Node> getErrorNodes() {
         return new ArrayList<>(this.errorNodes);
     }
 
     /**
-     * @param node The variable node in question.
-     * @return the error node for the given node.
+     * Retrieves the error node associated with the given node.
+     *
+     * @param node The node to check for error association.
+     * @return The error node associated with the given node, or null if no error node is found.
      */
     public Node getErrorNode(Node node) {
         if (this.errorNodes.contains(node)) {
@@ -812,32 +884,26 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (index == -1) {
             return null;
-//            throw new NullPointerException(node + " is not a node in this model.");
         }
 
         return this.errorNodes.get(index);
     }
 
     /**
-     * @param name the name of the parameter.
-     * @return the variable with the given name, if there is one. Otherwise, null.
+     * Returns the Node with the given name.
+     *
+     * @param name the name of the Node to retrieve
+     * @return the Node with the given name, or null if no Node exists with the specified name
      */
     public Node getNode(String name) {
-//        for (Node node : nodes) {
-//            if (name.equals(node.getNode())) {
-//                return node;
-//            }
-//        }
-//
-//        return null;
-
-        // This was slow. jdramsey 20150929
         return this.namesToNodes.get(name);
     }
 
     /**
-     * @param parameter The parameter in question.
-     * @return the set of nodes that reference a given parameter.
+     * Returns a set of nodes that reference the given parameter.
+     *
+     * @param parameter the parameter to search for referencing nodes
+     * @return a set of nodes that reference the given parameter, or an empty set if no nodes are found
      */
     public Set<Node> getReferencingNodes(String parameter) {
         Set<Node> set = this.referencedParameters.get(parameter);
@@ -845,8 +911,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @param node the node doing the referencing.
-     * @return the freeParameters referenced by the given variable (variable node or error node).
+     * Retrieves the set of referenced parameters from a given node.
+     *
+     * @param node The node for which to retrieve referenced parameters.
+     * @return The set of referenced parameters found in the given node.
      */
     public Set<String> getReferencedParameters(Node node) {
         Set<String> parameters = new HashSet<>();
@@ -861,8 +929,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @param node the node doing the referencing.
-     * @return the set of nodes (variable or error) referenced by the expression for the given node.
+     * Retrieves the set of referencing nodes for a given node.
+     *
+     * @param node the node for which to retrieve the referencing nodes
+     * @return a set of referencing nodes
      */
     public Set<Node> getReferencingNodes(Node node) {
         Set<Node> set = this.referencedNodes.get(node);
@@ -870,8 +940,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @param node the node doing the referencing.
-     * @return the variables referenced by the expression for the given node (variable node or error node).
+     * Retrieves a set of referenced nodes for the given node.
+     *
+     * @param node the node for which to retrieve the referenced nodes
+     * @return a set of referenced nodes
      */
     public Set<Node> getReferencedNodes(Node node) {
         Set<Node> nodes = new HashSet<>();
@@ -910,8 +982,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @param node the given node, variable or error.
-     * @return all parents of the given node, with error node(s?) last.
+     * Retrieves the list of parent nodes for the given node.
+     *
+     * @param node the specified node
+     * @return the list of parent nodes
      */
     public List<Node> getParents(Node node) {
         List<Node> parents = this.graph.getParents(node);
@@ -922,6 +996,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * Returns a relatively brief String representation of this SEM PM--the equations and distributions of the model.
      * Initial value distributions for freeParameters are not printed.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -947,8 +1023,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @param node A node in the graph.
-     * @return The non-error parents of <code>node</code>.
+     * Retrieves the parent nodes of the given node that are not of type "ERROR".
+     *
+     * @param node The node for which to retrieve the parent nodes
+     * @return A set of nodes that are the parents of the given node and are not of type "ERROR"
      */
     private Set<Node> getVariableParents(Node node) {
         List<Node> allParents = this.graph.getParents(node);
@@ -962,6 +1040,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return parents;
     }
 
+    /**
+     * Moves error nodes to the end of the list while preserving the order of non-error nodes.
+     *
+     * @param parents a list of nodes to be sorted
+     * @return a new list with error nodes moved to the end
+     */
     private List<Node> putErrorNodesLast(List<Node> parents) {
         List<Node> sortedNodes = new ArrayList<>();
 
@@ -987,17 +1071,34 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help).
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
     }
 
+    /**
+     * Retrieves the variable template.
+     *
+     * @return the variable template
+     */
     public String getVariablesTemplate() {
         return this.variablesTemplate;
     }
 
+    /**
+     * Sets the variable template.
+     *
+     * @param variablesTemplate the template for variables
+     * @throws ParseException       if the variable template fails to parse
+     * @throws NullPointerException if the variable template is null
+     */
     public void setVariablesTemplate(String variablesTemplate) throws ParseException {
         if (variablesTemplate == null) {
             throw new NullPointerException();
@@ -1010,10 +1111,22 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.variablesTemplate = variablesTemplate;
     }
 
+    /**
+     * Returns the error template string.
+     *
+     * @return the error template string
+     */
     public String getErrorsTemplate() {
         return this.errorsTemplate;
     }
 
+    /**
+     * Sets the error template for the software.
+     *
+     * @param errorsTemplate the string representation of the error template
+     * @throws ParseException       if the error template cannot be parsed successfully
+     * @throws NullPointerException if the errorsTemplate parameter is null
+     */
     public void setErrorsTemplate(String errorsTemplate) throws ParseException {
         if (errorsTemplate == null) {
             throw new NullPointerException();
@@ -1026,10 +1139,24 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.errorsTemplate = errorsTemplate;
     }
 
+    /**
+     * Retrieves the template for the parameters.
+     *
+     * @return The template for the parameters.
+     */
     public String getParametersTemplate() {
         return this.parametersTemplate;
     }
 
+    /**
+     * Sets the parameter template for the object.
+     *
+     * @param parametersTemplate the template string representing the parameters
+     * @throws ParseException           if the given parameters template is not valid
+     * @throws NullPointerException     if the parameter template is null
+     * @throws IllegalArgumentException if the parameter template contains parameters
+     * @see ExpressionParser
+     */
     public void setParametersTemplate(String parametersTemplate) throws ParseException {
         if (parametersTemplate == null) {
             throw new NullPointerException();
@@ -1042,16 +1169,28 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         if (!parameterNames.isEmpty()) {
             throw new IllegalArgumentException("Initial distribution for a parameter may not " +
-                    "contain parameters: " + expression.toString());
+                                               "contain parameters: " + expression.toString());
         }
 
         this.parametersTemplate = parametersTemplate;
     }
 
+    /**
+     * Retrieves the parameter estimation initialization template.
+     *
+     * @return The parameter estimation initialization template as a {@code String}.
+     */
     public String getParametersEstimationInitializationTemplate() {
         return this.parametersEstimationInitializationTemplate;
     }
 
+    /**
+     * Sets the template for parameter estimation initialization.
+     *
+     * @param parametersTemplate the template string for parameter estimation initialization
+     * @throws ParseException       if the provided parameters template is not parseable
+     * @throws NullPointerException if the provided parameters template is null
+     */
     public void setParametersEstimationInitializationTemplate(String parametersTemplate) throws ParseException {
         if (parametersTemplate == null) {
             throw new NullPointerException();
@@ -1064,6 +1203,18 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.parametersEstimationInitializationTemplate = parametersTemplate;
     }
 
+    /**
+     * Sets the parameter template for expressions that start with the specified string. If the startsWith parameter is
+     * null or empty, the method does nothing. If the parametersTemplate parameter is null, a NullPointerException is
+     * thrown. The method parses the parametersTemplate to ensure it is a valid expression. If the startsWith string
+     * contains spaces, an IllegalArgumentException is thrown.
+     *
+     * @param startsWith         The starting string for the expressions.
+     * @param parametersTemplate The template for the parameters of the expressions.
+     * @throws ParseException           If the parametersTemplate is not a valid expression.
+     * @throws NullPointerException     If the parametersTemplate is null.
+     * @throws IllegalArgumentException If the startsWith string contains spaces.
+     */
     public void setStartsWithParametersTemplate(String startsWith, String parametersTemplate) throws ParseException {
         if (startsWith == null || startsWith.isEmpty()) {
             return;
@@ -1081,13 +1232,20 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new IllegalArgumentException("Starts with string contains spaces.");
         }
 
-//        this.parametersTemplate = parametersTemplate;
-
         this.startsWithParametersTemplates.put(startsWith, parametersTemplate);
     }
 
-    public void setStartsWithParametersEstimationInitializaationTemplate(String startsWith,
-                                                                         String parametersEstimationInitializationTemplate)
+    /**
+     * Sets the parameter estimation initialization template for a given startsWith string.
+     *
+     * @param startsWith                                 the string that the template should start with
+     * @param parametersEstimationInitializationTemplate the template for initializing the parameter estimation
+     * @throws ParseException           if the template is unable to be parsed
+     * @throws NullPointerException     if the parametersTemplate is null
+     * @throws IllegalArgumentException if the startsWith string contains spaces
+     */
+    public void setStartsWithParametersEstimationInitializationTemplate(String startsWith,
+                                                                        String parametersEstimationInitializationTemplate)
             throws ParseException {
         if (startsWith == null || startsWith.isEmpty()) {
             return;
@@ -1105,20 +1263,35 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
             throw new IllegalArgumentException("Starts with string contains spaces.");
         }
 
-//        this.parametersTemplate = parametersTemplate;
-
         this.startsWithParametersEstimationInitializationTemplates.put(startsWith, parametersEstimationInitializationTemplate);
     }
 
+    /**
+     * <p>getStartsWithParameterTemplate.</p>
+     *
+     * @param startsWith a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public String getStartsWithParameterTemplate(String startsWith) {
 
         return this.startsWithParametersTemplates.get(startsWith);
     }
 
-    public String getStartsWithParameterEstimationInitializatonTemplate(String startsWith) {
+    /**
+     * Retrieves the initialization template for parameter estimation based on the provided starting string.
+     *
+     * @param startsWith The starting string used to find the initialization template.
+     * @return The initialization template corresponding to the starting string.
+     */
+    public String getStartsWithParameterEstimationInitializationTemplate(String startsWith) {
         return this.startsWithParametersEstimationInitializationTemplates.get(startsWith);
     }
 
+    /**
+     * <p>startsWithPrefixes.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> startsWithPrefixes() {
         return this.startsWithParametersTemplates.keySet();
     }

@@ -121,8 +121,8 @@ public final class TestGrasp {
 
         if (dag.getNumEdges() != g.getNumEdges()) {
             System.out.println("Failed " + alg +
-                    " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
-                    + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
+                               " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
+                               + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
             return true;
         }
 
@@ -322,7 +322,6 @@ public final class TestGrasp {
 //        statistics.setWeight("MAS", 1.0);
 
         Comparison comparison = new Comparison();
-        comparison.setParallelized(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 //        comparison.setSortByUtility(true);
         comparison.setShowAlgorithmIndices(true);
@@ -563,7 +562,7 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
-                        + type, simulations,
+                                          + type, simulations,
                 algorithms, statistics, params);
     }
 
@@ -1192,7 +1191,7 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
-                        + numMeasures + "_" + avgDegree, simulations,
+                                          + numMeasures + "_" + avgDegree, simulations,
                 algorithms, statistics, params);
     }
 
@@ -1471,11 +1470,6 @@ public final class TestGrasp {
                     boss.setNonSingularDepth(1);
                     boss.setUncoveredDepth(1);
 
-//                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
-//                    spAlg.setUsePearl(true);
-//                    spAlg.setMethod(OtherPermAlgs.Method.SP);
-//                    spAlg.setUseDataOrder(true);
-//                    spAlg.setNumVariables(numVars);
                     List<Node> spPi = boss.bestOrder(variables);
                     Graph spGraph = boss.getGraph(true);
                     int spNumEdges = spGraph.getNumEdges();
@@ -1515,7 +1509,7 @@ public final class TestGrasp {
 
 //                            if (failingInitialPi != null) {
                             System.out.println("\t#### line = " + index + " FOUND NON-FRUGAL MODEL, INITIAL = " + failingInitialPi + " FINAL = "
-                                    + failingEstPi);
+                                               + failingEstPi);
                             printExistsNonfrugalCase(line, index, facts, spPi, spGraph, failingInitialPi, failingDag, failingEstPi);
 //                                existsNonfrugal++;
 //                            }
@@ -1527,7 +1521,7 @@ public final class TestGrasp {
 
                     if (failingInitialPi != null) {
                         System.out.println("\t#### line = " + index + " FOUND NON-FRUGAL MODEL, INITIAL = " + failingInitialPi + " FINAL = "
-                                + failingEstPi);
+                                           + failingEstPi);
                         printExistsNonfrugalCase(line, index, facts, spPi, spGraph, failingInitialPi, failingDag, failingEstPi);
                         existsNonfrugal++;
                     }
@@ -1565,7 +1559,7 @@ public final class TestGrasp {
         graph.addDirectedEdge(x4, x5);
         graph.addDirectedEdge(x1, x4);
 
-        System.out.println(graph);
+//        System.out.println(graph);
 
 //        IndTestMSep msep = new IndTestMSep(graph);
 //        GraphScore score = new GraphScore(graph);
@@ -2370,7 +2364,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPaths(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -2525,8 +2519,8 @@ public final class TestGrasp {
         statistics.add(new LegalPag());
 //        statistics.add(new NoAlmostCyclicPathsCondition());
 //        statistics.add(new NoCyclicPathsCondition());
-        statistics.add(new NoAlmostCyclicPathsInMagCondition());
-        statistics.add(new NoCyclicPathsInMagCondition());
+        statistics.add(new NoAlmostCyclicPathsCondition());
+        statistics.add(new NoCyclicPathsCondition());
         statistics.add(new MaximalityCondition());
 
         statistics.add(new ParameterColumn(Params.ALPHA));
@@ -2565,7 +2559,6 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-        comparison.setParallelized(true);
 
         comparison.compareFromSimulations(
                 "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
@@ -2780,7 +2773,7 @@ public final class TestGrasp {
 
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.paths().isMSeparatedFrom(x, y, parents)) {
+                    if (!graph.paths().isMSeparatedFrom(x, y, parents, false)) {
                         System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
@@ -3156,7 +3149,7 @@ public final class TestGrasp {
 
                         if (g1.equals(g2)) gsCount++;
                         gsShd += GraphSearchUtils.structuralHammingDistance(
-                                GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g2));
+                                GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3171,7 +3164,7 @@ public final class TestGrasp {
 
                             if (g1.equals(g3)) pearlCounts[i]++;
                             pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
-                                    GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g3));
+                                    GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g3));
                         }
                     }
 
@@ -3305,7 +3298,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPaths(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();
@@ -3357,30 +3350,6 @@ public final class TestGrasp {
         }
     }
 
-    private static class Ret {
-        private final String label;
-        private final IndependenceFacts facts;
-        private int truth;
-
-        public Ret(String label, IndependenceFacts facts, int truth) {
-            this.label = label;
-            this.facts = facts;
-            this.truth = truth;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public IndependenceFacts getFacts() {
-            return facts;
-        }
-
-        public int getTruth() {
-            return truth;
-        }
-    }
-
     public void testJaime() {
         try {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
@@ -3403,10 +3372,34 @@ public final class TestGrasp {
             parameters.set(Params.SAMPLE_STYLE, 1);
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            Cstar alg = new Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class Ret {
+        private final String label;
+        private final IndependenceFacts facts;
+        private int truth;
+
+        public Ret(String label, IndependenceFacts facts, int truth) {
+            this.label = label;
+            this.facts = facts;
+            this.truth = truth;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public IndependenceFacts getFacts() {
+            return facts;
+        }
+
+        public int getTruth() {
+            return truth;
         }
     }
 }

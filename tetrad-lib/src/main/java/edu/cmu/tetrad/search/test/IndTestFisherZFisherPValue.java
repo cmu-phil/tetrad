@@ -49,23 +49,40 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author robertillman
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
-    // The variables of the covariance data, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance data, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // The number of samples in each dataset.
+    /**
+     * The number of samples in each dataset.
+     */
     private final int sampleSize;
-    // The datasets.
+    /**
+     * The datasets.
+     */
     private final List<DataSet> dataSets;
-    // The covariance matrices of the datasets.
+    /**
+     * The covariance matrices of the datasets.
+     */
     private final List<ICovarianceMatrix> ncov;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodesMap;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -98,20 +115,23 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * Returns an Independence test for a sublist of the variables.
+     *
+     * @param vars The sublist of variables.
+     * @return The independence test for the sublist of variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Checks for independence between two nodes given a set of conditioning nodes.
      *
-     * @param x  the one variable being compared.
-     * @param y  the second variable being compared.
-     * @param _z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * @param x  The first node.
+     * @param y  The second node.
+     * @param _z The set of conditioning nodes.
+     * @return The result of the independence test.
+     * @throws RuntimeException If a singularity is encountered during the test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -160,7 +180,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
             if (tf == 0) throw new IllegalArgumentException(
                     "For the Fisher method, all component p values in the calculation may not be zero, " +
-                            "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
+                    "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
             double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
 
             if (Double.isNaN(p)) {
@@ -182,7 +202,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             return result;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
     }
 
@@ -196,10 +216,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the alpha significance cutoff value.
      *
-     * @param alpha This alpha.
+     * @param alpha The alpha significance cutoff value.
+     * @throws IllegalArgumentException If the alpha value is out of range (0.0 to 1.0).
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -220,7 +240,12 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * Determines if a given list of conditioning nodes (z) determines the value of a specific node (x).
+     *
+     * @param z The list of conditioning nodes.
+     * @param x The specific node to determine.
+     * @return True if the list of conditioning nodes determines the specific node; False otherwise.
+     * @throws UnsupportedOperationException Always throws this exception.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
@@ -269,9 +294,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output is printed.
+     * Sets whether verbose output should be printed.
      *
-     * @param verbose True, if so.
+     * @param verbose True if verbose output should be printed, False otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

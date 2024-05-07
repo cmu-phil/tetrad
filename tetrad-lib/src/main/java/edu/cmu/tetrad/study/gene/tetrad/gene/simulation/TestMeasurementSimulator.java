@@ -36,6 +36,7 @@ import org.apache.commons.math3.util.FastMath;
  * the Javadocs, below.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestMeasurementSimulator extends TestCase {
 
@@ -67,6 +68,8 @@ public class TestMeasurementSimulator extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestMeasurementSimulator(String name) {
         super(name);
@@ -75,6 +78,8 @@ public class TestMeasurementSimulator extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 
@@ -170,8 +175,8 @@ public class TestMeasurementSimulator extends TestCase {
         TestCase.assertEquals(4, this.simulator.getStepsGenerated());
         TestCase.assertEquals(1, this.simulator.getFirstStepStored());
         TestCase.assertEquals(1, this.simulator.getInterval());
-        TestCase.assertEquals(false, this.simulator.isRawDataSaved());
-        TestCase.assertEquals(true, this.simulator.isInitSync());
+        TestCase.assertFalse(this.simulator.isRawDataSaved());
+        TestCase.assertTrue(this.simulator.isInitSync());
 
         // Make sure the time steps are 1, 2, 3, 4.
         int[] timeSteps = this.simulator.getTimeSteps();

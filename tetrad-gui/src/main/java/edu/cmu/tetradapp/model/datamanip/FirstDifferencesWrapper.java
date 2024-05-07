@@ -31,12 +31,16 @@ import edu.cmu.tetradapp.model.PcRunner;
  * GUI model for the permute rows function in RectangularDataSet.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class FirstDifferencesWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the wrapper given some data and the params.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FirstDifferencesWrapper(DataWrapper wrapper, Parameters params) {
         LogDataUtils.logDataModelList("Parent data in which rows have been randomly permuted.", getDataModelList());
@@ -45,11 +49,9 @@ public class FirstDifferencesWrapper extends DataWrapper {
         DataModelList outList = new DataModelList();
 
         for (DataModel model : inList) {
-            if (!(model instanceof DataSet)) {
+            if (!(model instanceof DataSet data)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
-
-            DataSet data = (DataSet) model;
 
             if (!(data.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + data.getName());
@@ -79,6 +81,7 @@ public class FirstDifferencesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

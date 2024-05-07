@@ -11,9 +11,22 @@ import java.util.List;
  *
  * @author josephramsey 2016.03.24
  * @author dmalinsky 2016.03.28
+ * @version $Id: $Id
  */
 public class ComparisonScript {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ComparisonScript() {
+
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         new ComparisonScript().runFromSimulation();
     }

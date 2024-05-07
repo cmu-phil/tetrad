@@ -28,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,20 +37,24 @@ import java.util.Map;
  *
  * @author Willie Wheeler 07/99
  * @author josephramsey modifications 12/00
+ * @version $Id: $Id
  */
 public final class ContinuousVariable extends AbstractVariable implements Variable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
-/**
+    /**
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
+
+    /**
+     * The node type.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The node type.
-     *
-     * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
     /**
@@ -58,14 +63,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     /**
      * The x coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerX = -1;
     /**
      * The y coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerY = -1;
     /**
@@ -84,6 +85,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * Copy constructor.
+     *
+     * @param variable a {@link edu.cmu.tetrad.data.ContinuousVariable} object
      */
     public ContinuousVariable(ContinuousVariable variable) {
         super(variable.getName());
@@ -95,12 +98,16 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.ContinuousVariable} object
      */
     public static ContinuousVariable serializableInstance() {
         return new ContinuousVariable("X");
     }
 
     /**
+     * <p>getDoubleMissingValue.</p>
+     *
      * @return the missing value marker.
      */
     public static double getDoubleMissingValue() {
@@ -118,10 +125,9 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Checks the value to make sure it's a legitimate value for this column.
-     *
-     * @param value the value to check.
-     * @return true iff the value is legitimate.
      */
     public boolean checkValue(Object value) {
         if (value instanceof Double) {
@@ -138,6 +144,9 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         ContinuousVariable continuousVariable = new ContinuousVariable(name);
         continuousVariable.setNodeType(getNodeType());
@@ -145,6 +154,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * <p>getMissingValueMarker.</p>
+     *
      * @return the missing value marker, wrapped as a Double.
      */
     public Object getMissingValueMarker() {
@@ -152,10 +163,9 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether the argument is equal to the missing value marker.
-     *
-     * @param value the Object to test--should be a wrapped version of the missing value marker.
-     * @return true iff it really is a wrapped version of the missing value marker.
      */
     public boolean isMissingValue(Object value) {
         if (value instanceof Double) {
@@ -166,11 +176,18 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         return false;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return this.getName().hashCode();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     // The identity of a node can't be changed by changing its name.
@@ -180,15 +197,25 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         return getName().equals(((Node) o).getName());
     }
 
+    /**
+     * <p>Getter for the field <code>nodeType</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.NodeType} object
+     */
     public NodeType getNodeType() {
         return this.nodeType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
     /**
+     * <p>Getter for the field <code>centerX</code>.</p>
+     *
      * @return the x coordinate of the center of the node.
      */
     public int getCenterX() {
@@ -196,6 +223,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public void setCenterX(int centerX) {
@@ -203,6 +232,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * <p>Getter for the field <code>centerY</code>.</p>
+     *
      * @return the y coordinate of the center of the node.
      */
     public int getCenterY() {
@@ -210,6 +241,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public void setCenterY(int centerY) {
@@ -217,6 +250,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public void setCenter(int centerX, int centerY) {
@@ -225,6 +260,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a property change listener.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -246,6 +283,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -256,31 +297,49 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

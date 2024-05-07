@@ -45,27 +45,27 @@ import java.util.regex.Pattern;
  */
 class TabularDataTransferHandler extends TransferHandler {
 
+    /**
+     * {@inheritDoc}
+     */
     public int getSourceActions(JComponent c) {
         return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Create a Transferable to use as the source for a data transfer.
-     *
-     * @param c The component holding the data to be transfered.  This argument is provided to enable sharing of
-     *          TransferHandlers by multiple components.
-     * @return The representation of the data to be transfered.
      */
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof TabularDataJTable) {
-            TabularDataJTable tabularData = (TabularDataJTable) c;
+        if (c instanceof TabularDataJTable tabularData) {
             DataSet dataSet = tabularData.getDataSet();
 
             int[] rows;
             int[] cols;
 
             if (!tabularData.getRowSelectionAllowed() &&
-                    !tabularData.getColumnSelectionAllowed()) {
+                !tabularData.getColumnSelectionAllowed()) {
                 return null;
             }
 
@@ -185,6 +185,9 @@ class TabularDataTransferHandler extends TransferHandler {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean importData(JComponent c, Transferable t) {
         if (c instanceof TabularDataJTable) {
             try {
@@ -224,7 +227,7 @@ class TabularDataTransferHandler extends TransferHandler {
                     }
 
                     if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() ||
-                            startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
+                        startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
                         shouldAsk = false;
                         shiftDown = false;
                     }
@@ -278,10 +281,10 @@ class TabularDataTransferHandler extends TransferHandler {
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "<html>" +
-                                    "This paste cannot be completed, since the variable in " +
-                                    "<br>column " + dataCol +
-                                    " cannot accept the value '" + token +
-                                    "'." + "</html>");
+                            "This paste cannot be completed, since the variable in " +
+                            "<br>column " + dataCol +
+                            " cannot accept the value '" + token +
+                            "'." + "</html>");
                     return false;
                 }
 
@@ -346,7 +349,7 @@ class TabularDataTransferHandler extends TransferHandler {
 
         if (varNames.size() != pasteCols) {
             throw new IllegalArgumentException("Number of variable names must " +
-                    "match the number of columns.");
+                                               "match the number of columns.");
         }
 
         // Resize the dataset if necessary to accomodate the new data.
@@ -436,9 +439,11 @@ class TabularDataTransferHandler extends TransferHandler {
         tableModel.fireTableDataChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void exportDone(JComponent source, Transferable data, int action) {
-        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable) {
-            TabularDataJTable tableTabular = (TabularDataJTable) source;
+        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable tableTabular) {
             tableTabular.deleteSelected();
         }
     }

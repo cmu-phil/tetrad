@@ -22,6 +22,9 @@ import java.util.Set;
 
 /**
  * Created by Erich on 3/28/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimAutoC {
 
@@ -33,6 +36,12 @@ public class HsimAutoC {
 
     //*********Constructors*************//
     //contructor using a previously existing DataSet object
+
+    /**
+     * <p>Constructor for HsimAutoC.</p>
+     *
+     * @param indata a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public HsimAutoC(DataSet indata) {
         //first check if indata is already the right type
         this.data = indata;
@@ -40,6 +49,13 @@ public class HsimAutoC {
     }
 
     //constructor that loads data from a file named readfilename, with delimiter delim
+
+    /**
+     * <p>Constructor for HsimAutoC.</p>
+     *
+     * @param readfilename a {@link java.lang.String} object
+     * @param delim        a char
+     */
     public HsimAutoC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
@@ -56,6 +72,13 @@ public class HsimAutoC {
     }
 
     //***********Public methods*************//
+
+    /**
+     * <p>run.</p>
+     *
+     * @param resimSize a int
+     * @return an array of {@link double} objects
+     */
     public double[] run(int resimSize) {
 
         double[] output;
@@ -147,18 +170,39 @@ public class HsimAutoC {
     }
 
     //******* Methods for setting values to private variables****************//
+
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbosity a boolean
+     */
     public void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
+    /**
+     * <p>Setter for the field <code>write</code>.</p>
+     *
+     * @param setwrite a boolean
+     */
     public void setWrite(boolean setwrite) {
         this.write = setwrite;
     }
 
+    /**
+     * <p>Setter for the field <code>filenameOut</code>.</p>
+     *
+     * @param filename a {@link java.lang.String} object
+     */
     public void setFilenameOut(String filename) {
         this.filenameOut = filename;
     }
 
+    /**
+     * <p>Setter for the field <code>delimiter</code>.</p>
+     *
+     * @param delim a char
+     */
     public void setDelimiter(char delim) {
         this.delimiter = delim;
     }

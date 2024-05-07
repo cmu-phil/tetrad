@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,11 +12,26 @@ import java.util.Map;
  * A list of statistics and their utility weights.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-public class Statistics {
+public class Statistics implements TetradSerializable {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
+
+    /**
+     * The list of statistics.
+     */
     private final List<Statistic> statistics = new ArrayList<>();
+
+    /**
+     * The utility weights for the statistics.
+     */
     private final Map<Statistic, Double> weights = new HashMap<>();
 
+    /**
+     * <p>Constructor for Statistics.</p>
+     */
     public Statistics() {
     }
 
@@ -46,7 +64,7 @@ public class Statistics {
 
         if (!set) {
             throw new IllegalArgumentException("No statistic has been added with that abbreviation: "
-                    + abbrebiation);
+                                               + abbrebiation);
         }
     }
 

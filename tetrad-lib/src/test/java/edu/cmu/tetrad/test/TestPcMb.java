@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -35,7 +34,6 @@ import java.util.*;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestPcMb {
 
@@ -59,7 +57,7 @@ public class TestPcMb {
 
         System.out.println(mbDags.size());
 
-        assertTrue(mbDags.size() == 5);
+        assertEquals(5, mbDags.size());
     }
 
     //    @Test
@@ -131,14 +129,14 @@ public class TestPcMb {
                             }
 
                             if ((Edges.isDirectedEdge(a) &&
-                                    Edges.isUndirectedEdge(b)) || (
-                                    Edges.isUndirectedEdge(a) &&
-                                            Edges.isDirectedEdge(b))) {
+                                 Edges.isUndirectedEdge(b)) || (
+                                        Edges.isUndirectedEdge(a) &&
+                                        Edges.isDirectedEdge(b))) {
                                 continue;
                             }
 
                             fail("EXTRA EDGE: Edge in result MB but not true MB = " +
-                                    resultEdge);
+                                 resultEdge);
                         }
 
                         assertEquals(resultEdge.getEndpoint1(),

@@ -31,6 +31,7 @@ import java.awt.*;
  * Edits the parameters for simulating data from Bayes nets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesPmParamsEditor extends JPanel implements ParameterEditor {
 
@@ -55,10 +56,18 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         this.lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
         this.lowerBoundField.setFilter((value, oldValue) -> {
@@ -109,9 +118,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(25));
         b4.add(new JLabel("<html>" +
-                "All variables will initially have 3 categories, '0', '1' and '2', " +
-                "<br>which can then be changed variable by variable in the editor." +
-                "</html>"));
+                          "All variables will initially have 3 categories, '0', '1' and '2', " +
+                          "<br>which can then be changed variable by variable in the editor." +
+                          "</html>"));
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
@@ -124,8 +133,8 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalStrut(25));
         b6.add(new JLabel("<html>" +
-                "Each variable will be automatically be assigned a number of categories" +
-                "<br>in a range." + "</html>"));
+                          "Each variable will be automatically be assigned a number of categories" +
+                          "<br>in a range." + "</html>"));
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
         b1.add(Box.createVerticalStrut(10));
@@ -171,6 +180,11 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         });
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -185,6 +199,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

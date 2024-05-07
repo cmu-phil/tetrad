@@ -34,11 +34,20 @@ import java.util.prefs.Preferences;
  * Mar 19, 2023 1:45:50 AM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 public class EnsembleMenu extends JMenu {
 
+    /**
+     * The workbench graph.
+     */
     private final GraphWorkbench graphWorkbench;
 
+    /**
+     * <p>Constructor for EnsembleMenu.</p>
+     *
+     * @param graphWorkbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public EnsembleMenu(GraphWorkbench graphWorkbench) {
         super("Ensemble Display");
         this.graphWorkbench = graphWorkbench;
@@ -163,9 +172,7 @@ public class EnsembleMenu extends JMenu {
         } else {
             Edge edge = graph.getEdges().iterator().next();
 
-            return (edge.getEdgeTypeProbabilities() == null)
-                    ? false
-                    : !edge.getEdgeTypeProbabilities().isEmpty();
+            return edge.getEdgeTypeProbabilities() != null && !edge.getEdgeTypeProbabilities().isEmpty();
         }
     }
 

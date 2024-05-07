@@ -32,6 +32,8 @@ import java.io.File;
 final class TetFileFilter extends FileFilter {
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Accepts a file if its name ends with ".tet".
      */
     public boolean accept(File file) {
@@ -39,6 +41,8 @@ final class TetFileFilter extends FileFilter {
     }
 
     /**
+     * <p>getDescription.</p>
+     *
      * @return the description of this file filter that will be displayed in a JFileChooser.
      */
     public String getDescription() {

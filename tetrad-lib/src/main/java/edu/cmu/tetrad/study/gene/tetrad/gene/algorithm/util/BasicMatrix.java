@@ -29,6 +29,7 @@ import java.io.*;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public abstract class BasicMatrix {
     /**
@@ -102,7 +103,7 @@ public abstract class BasicMatrix {
      * generated.
      *
      * @param fname name of the file to read the matrix from
-     * @throws IOException if there is an error reading the file
+     * @throws java.io.IOException if there is an error reading the file
      */
     public BasicMatrix(String fname) throws IOException {
         // Create and prepare stream tokenizer
@@ -117,7 +118,7 @@ public abstract class BasicMatrix {
         // Read matrix name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (!strmTok.sval.toUpperCase().contains("MATRIX"))) {
+            (!strmTok.sval.toUpperCase().contains("MATRIX"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'MATRIX': " + strmTok.sval);
         }
@@ -159,7 +160,7 @@ public abstract class BasicMatrix {
                 }
             } else {
                 throw new IllegalArgumentException("Error parsing element [" +
-                        row + "," + col + "]: " + strmTok.sval);
+                                                   row + "," + col + "]: " + strmTok.sval);
             }
         }
         in.close();
@@ -199,7 +200,7 @@ public abstract class BasicMatrix {
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n");
+                                            " // <- Total # rows\n");
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c < this.n; c++) {

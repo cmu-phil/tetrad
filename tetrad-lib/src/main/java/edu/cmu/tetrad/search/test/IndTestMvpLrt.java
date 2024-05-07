@@ -43,20 +43,33 @@ import java.util.concurrent.ConcurrentHashMap;
  * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class IndTestMvpLrt implements IndependenceTest {
 
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet data;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * Likelihood function
+     */
     private final MvpLikelihood likelihood;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * A cache of results for independence facts.
+     */
+    private final Map<IndependenceFact, IndependenceResult> facts;
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -78,23 +91,27 @@ public class IndTestMvpLrt implements IndependenceTest {
         }
 
         this.alpha = alpha;
+        facts = new ConcurrentHashMap<>();
     }
 
     /**
-     * Returns an independence test for a sublist of the searchVariables.
+     * Returns an Independence test for a sublist of the variables.
      *
-     * @return this test.
-     * @see IndependenceTest
+     * @param vars The sublist of variables.
+     * @return The IndependenceTest object for the sublist of variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns an independence result for x _||_ y | z.
+     * Determines whether two nodes are independent given a set of conditioning nodes.
      *
-     * @return This result.
-     * @see IndependenceResult
+     * @param x  The first node.
+     * @param y  The second node.
+     * @param _z The set of conditioning nodes.
+     * @return The result of the independence test.
+     * @throws RuntimeException if an undefined p-value is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -153,7 +170,7 @@ public class IndTestMvpLrt implements IndependenceTest {
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         boolean independent = pValue > this.alpha;
@@ -182,7 +199,12 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * Determines whether two nodes are independent given a set of conditioning nodes.
+     *
+     * @param z The set of conditioning nodes.
+     * @param y The second node.
+     * @return true if the two nodes are independent, false otherwise.
+     * @throws UnsupportedOperationException if the method is not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -192,14 +214,14 @@ public class IndTestMvpLrt implements IndependenceTest {
      * Returns the significance level of the independence test.
      *
      * @return This level.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * Sets the significance level.
+     * Sets the significance level of the independence test.
      *
      * @param alpha This level.
      */
@@ -217,9 +239,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * Returns true if verbose output is printed.
+     * Returns whether verbose output should be printed.
      *
-     * @return True, if so.
+     * @return true if verbose output should be printed, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -227,9 +249,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * Returns whether verbose output should be printed.
+     * Sets whether this test will print verbose output.
      *
-     * @param verbose True, if so.
+     * @param verbose true if verbose output should be printed, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {

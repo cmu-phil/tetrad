@@ -44,18 +44,47 @@ import java.util.Set;
  * for independence and positive for dependence; this simply reports these differences.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoreIndTest implements IndependenceTest {
+    /**
+     * Represents a Score object. Contains methods to calculate the score of a node given its parents, retrieve the
+     * variables of the score, get the sample size of the data, and convert the score to a string representation.
+     */
     private final Score score;
+    /**
+     * A private final List of Node objects representing variables.
+     */
     private final List<Node> variables;
+    /**
+     * Interface implemented by classes, instantiations of which can serve as data models in Tetrad. Data models may be
+     * named if desired; if provided, these names will be used for display purposes.
+     * <p>
+     * This interface is relatively free of methods, mainly because classes that can serve as data models in Tetrad are
+     * diverse, including continuous and discrete data sets, covariance and correlation matrices, graphs, and lists of
+     * other data models. So this is primarily a tagging interface.
+     */
     private final DataModel data;
-    private double bump = Double.NaN;
+    /**
+     * A boolean variable indicating whether verbose output should be printed.
+     */
     private boolean verbose;
 
+    /**
+     * <p>Constructor for ScoreIndTest.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public ScoreIndTest(Score score) {
         this(score, null);
     }
 
+    /**
+     * <p>Constructor for ScoreIndTest.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public ScoreIndTest(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
@@ -64,18 +93,22 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * @return an Independence test for a subset of the variables.
+     * Tests the independence between variables in a given sublist.
+     *
+     * @param vars The sublist of variables to test independence.
+     * @return The result of the independence test.
      */
     public ScoreIndTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Determines whether x _||_ y | z
+     * Checks the independence between two nodes given a set of additional nodes.
      *
-     * @return The independence result.
-     * @throws RuntimeException if a matrix singularity is encountered.
-     * @see IndependenceResult
+     * @param x The first node
+     * @param y The second node
+     * @param z The set of additional nodes
+     * @return The result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
@@ -86,9 +119,8 @@ public class ScoreIndTest implements IndependenceTest {
 
         if (Double.isNaN(v)) {
             throw new RuntimeException("Undefined score bump encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
+                                       LogUtilsSearch.independenceFact(x, y, z));
         }
-        this.bump = v;
 
         int N = score.getSampleSize();
 
@@ -98,7 +130,7 @@ public class ScoreIndTest implements IndependenceTest {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFact(x, y, z) + " score = " + nf.format(bump));
+                        LogUtilsSearch.independenceFact(x, y, z) + " score = " + nf.format(v));
             }
         }
 
@@ -116,9 +148,10 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns the variable by the given name.
+     * Retrieves the Node object with the specified name.
      *
-     * @return This variable.
+     * @param name The name of the Node object to retrieve.
+     * @return The Node object with the specified name, or null if not found.
      */
     public Node getVariable(String name) {
         for (Node node : this.variables) {
@@ -131,9 +164,11 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * Determines the result of an independence test between a set of variables and a target variable.
      *
-     * @return True is so.
+     * @param z The set of variables to test for independence.
+     * @param y The target variable to test against.
+     * @return The result of the independence test.
      */
     public boolean determines(List<Node> z, Node y) {
         return this.score.determines(z, y);
@@ -143,22 +178,24 @@ public class ScoreIndTest implements IndependenceTest {
      * Returns the significance level of the independence test.
      *
      * @return This level.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return -1;
     }
 
     /**
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
      *
-     * @param alpha This level.
+     * @param alpha The level of significance to be set.
      */
     public void setAlpha(double alpha) {
     }
 
     /**
-     * @return The data model for the independence test.
+     * Retrieves the data model associated with this object.
+     *
+     * @return The data model object.
      */
     public DataModel getData() {
         return this.data;
@@ -174,7 +211,7 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * @throws UnsupportedOperationException since not implemented.
      */
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Method not implemented");
@@ -200,9 +237,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns true if verbose ouput should be printed.
+     * Returns a boolean indicating whether verbose output is enabled.
      *
-     * @return True, if so.
+     * @return true if verbose output is enabled, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -210,9 +247,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * Sets whether verbose output is enabled or not.
      *
-     * @param verbose True, if so.
+     * @param verbose true if verbose output is enabled, false otherwise
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -220,16 +257,21 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns a String representation of this test.
+     * Returns a string representation of the object.
      *
-     * @return This string.
+     * @return A string representing the object.
      */
     @Override
     public String toString() {
         return this.score.toString() + " Interpreted as a Test";
     }
 
-
+    /**
+     * Returns the indices of the given list of nodes within the variables of this class.
+     *
+     * @param z The list of nodes whose indices are to be determined.
+     * @return The indices of the nodes within the variables of this class.
+     */
     private int[] varIndices(List<Node> z) {
         int[] indices = new int[z.size()];
 

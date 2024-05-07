@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,6 +35,7 @@ import java.util.prefs.Preferences;
  * Edits the parameters for generating random graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterEditor {
 
@@ -58,14 +59,27 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
      */
     private Object[] parentModels;
 
+    /**
+     * <p>Setter for the field <code>parentModels</code>.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         List<GraphSource> graphSources = new LinkedList<>();
 
@@ -194,6 +208,9 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

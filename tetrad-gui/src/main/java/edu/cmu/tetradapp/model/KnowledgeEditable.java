@@ -30,10 +30,13 @@ import java.util.List;
  * Interface to indicate a class whose knowledge is capable of being edited by the knowledge editor.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface KnowledgeEditable {
 
     /**
+     * <p>getKnowledge.</p>
+     *
      * @return a copy of the knowledge for this class.
      */
     Knowledge getKnowledge();
@@ -46,11 +49,15 @@ public interface KnowledgeEditable {
     void setKnowledge(Knowledge knowledge);
 
     /**
+     * <p>getSourceGraph.</p>
+     *
      * @return the source graph. This will be used to arrange the graph in the knowledge editor in a recognizable way.
      */
     Graph getSourceGraph();
 
     /**
+     * <p>getVarNames.</p>
+     *
      * @return the variable names that the knowledge editor may use.
      */
     List<String> getVarNames();

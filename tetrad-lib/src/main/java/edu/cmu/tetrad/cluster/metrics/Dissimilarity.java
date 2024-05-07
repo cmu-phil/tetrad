@@ -25,8 +25,18 @@ import edu.cmu.tetrad.util.Vector;
 
 /**
  * Interface for a dissilimarity metric.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Dissimilarity {
+    /**
+     * <p>dissimilarity.</p>
+     *
+     * @param v1 a {@link edu.cmu.tetrad.util.Vector} object
+     * @param v2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a double
+     */
     double dissimilarity(Vector v1, Vector v2);
 }
 

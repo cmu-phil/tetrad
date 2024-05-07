@@ -34,8 +34,21 @@ import java.text.DecimalFormat;
  * An example script to save out data files and graphs from a simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleSave {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleSave() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

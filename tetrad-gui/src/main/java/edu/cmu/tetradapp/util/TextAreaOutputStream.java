@@ -30,6 +30,7 @@ import java.io.OutputStream;
  * An output stream to pipe stuff written to it directly to a JTextArea.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream {
 
@@ -90,6 +91,9 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     }
 
 
+    /**
+     * <p>reset.</p>
+     */
     public void reset() {
         this.textArea.setText("");
         this.lengthWritten = 0;
@@ -105,6 +109,9 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
         return this.lengthWritten;
     }
 
+    /**
+     * <p>moveToEnd.</p>
+     */
     public void moveToEnd() {
         this.textArea.setCaretPosition(0);
     }

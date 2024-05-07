@@ -37,34 +37,88 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements the DAGMA algorithm. The reference is here:
  * <p>
- * Bello, K., Aragam, B., &amp; Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant acyclicity
- * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
+ * Bello, K., Aragam, B., &amp; Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant
+ * acyclicity characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class Dagma {
 
+    /**
+     * The T variable represents an array of doubles.
+     */
     private final double[] T;
+    /**
+     * Initial value of mu.
+     */
     private final double muInit;
+    /**
+     * This is a private final instance variable representing the mu factor. The value of muFactor is used in various
+     * calculations.
+     */
     private final double muFactor;
+    /**
+     * The number of warm-up iterations for the variable warmIter. This variable is used for...
+     */
     private final int warmIter;
+    /**
+     * The maximum number of iterations for the algorithm.
+     */
     private final int maxIter;
+    /**
+     * Learning rate for an optimization algorithm.
+     */
     private final double lr;
+    /**
+     * Represents a checkpoint in the program.
+     */
     private final int checkpoint;
+    /**
+     * This variable represents the value of b1.
+     */
     private final double b1;
+    /**
+     * Represents the value of the b2 variable.
+     */
     private final double b2;
+    /**
+     * The tolerance value for numerical comparisons.
+     */
     private final double tol;
+    /**
+     * Represents a private final variable for covariance matrix.
+     */
     private final RealMatrix cov;
+    /**
+     * Represents the list of Node variables.
+     */
     private final List<Node> variables;
+    /**
+     * Identity.
+     */
     private final RealMatrix I;
+    /**
+     * The variable 'd'.
+     */
     private final int d;
+    /**
+     * The lambda1 variable represents a double value.
+     */
     private double lambda1;
+    /**
+     * Represents the threshold value used for a specific calculation.
+     */
     private double wThreshold;
+    /**
+     * Whether a CPDAG should be returned; otherwise, a DAG is returned.
+     */
     private boolean cpdag;
-
 
     /**
      * Constructor.
+     *
+     * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Dagma(DataSet dataset) {
         this.variables = dataset.getVariables();
@@ -94,9 +148,10 @@ public class Dagma {
         this.tol = 1e-6;
     }
 
-
     /**
-     * NEEDS DOCUMENTATION
+     * Performs a search algorithm to find a graph representation.
+     *
+     * @return a Graph object representing the found graph
      */
     public Graph search() {
         RealMatrix W = createRealMatrix(this.d, this.d);
@@ -120,53 +175,97 @@ public class Dagma {
         return toGraph(W);
     }
 
-
+    /**
+     * Retrieves the value of lambda1.
+     *
+     * @return the value of lambda1
+     */
     public double getLambda1() {
         return this.lambda1;
     }
 
 
+    /**
+     * Sets the value of lambda1.
+     *
+     * @param lambda1 the value of lambda1 to be set
+     */
     public void setLambda1(double lambda1) {
         this.lambda1 = lambda1;
     }
 
 
+    /**
+     * Retrieves the value of the wThreshold field.
+     *
+     * @return the value of the wThreshold field
+     */
     public double getWThreshold() {
         return this.wThreshold;
     }
 
 
+    /**
+     * Sets the value of the wThreshold field.
+     *
+     * @param wThreshold the value of wThreshold to be set
+     */
     public void setWThreshold(double wThreshold) {
         this.wThreshold = wThreshold;
     }
 
 
+    /**
+     * Retrieves the value of the cpdag field.
+     *
+     * @return the value of the cpdag field
+     */
     public boolean getCpdag() {
         return this.cpdag;
     }
 
 
+    /**
+     * Sets the value of the cpdag field.
+     *
+     * @param cpdag the value of cpdag to be set
+     */
     public void setCpdag(boolean cpdag) {
         this.cpdag = cpdag;
     }
 
-
-    // Evaluate value and gradient of the score function.
+    /**
+     * Evaluate value and gradient of the score function.
+     *
+     * @param W The RealMatrix to calculate the score for.
+     * @return The calculated score.
+     */
     private double _score(RealMatrix W) {
         RealMatrix dif = this.I.subtract(W);
         RealMatrix rhs = this.cov.multiply(dif);
         return 0.5 * dif.transpose().multiply(rhs).getTrace();
     }
 
-
-    // Evaluate value and gradient of the logdet acyclicity constraint.
+    /**
+     * Evaluate value and gradient of the logdet acyclicity constraint.
+     *
+     * @param W the RealMatrix to calculate the score for
+     * @param s the value of s
+     * @return the calculated value of `_h`
+     */
     private double _h(RealMatrix W, double s) {
         RealMatrix M = getMMatrix(W, s);
         return this.d * log(s) - logDet(M);
     }
 
-
-    // Evaluate value of the penalized objective function.
+    /**
+     * Evaluate value of the penalized objective function.
+     *
+     * @param W  The RealMatrix representing the input matrix.
+     * @param mu The value of mu.
+     * @param s  The value of s.
+     * @return The calculated value of _func.
+     */
     private double _func(RealMatrix W, double mu, double s) {
         double score = _score(W);
         double h = _h(W, s);
@@ -174,6 +273,14 @@ public class Dagma {
     }
 
 
+    /**
+     * Update the optimizer parameters using the Adam algorithm.
+     *
+     * @param grad The gradient matrix.
+     * @param iter The current iteration count.
+     * @param optM The first moment estimate matrix.
+     * @param optV The second moment estimate matrix.
+     */
     private void adamUpdate(RealMatrix grad, int iter, RealMatrix optM, RealMatrix optV) {
 
         double b1_ = 1 - this.b1;
@@ -198,7 +305,16 @@ public class Dagma {
         }
     }
 
-
+    /**
+     * Minimizes the objective function using the specified parameters.
+     *
+     * @param W         The RealMatrix representing the input matrix.
+     * @param mu        The value of mu.
+     * @param innerIter The number of inner iterations.
+     * @param s         The value of s.
+     * @param lrAdam    The learning rate for the Adam optimizer.
+     * @return true if the optimization is successful, false otherwise.
+     */
     private boolean minimize(RealMatrix W, double mu, int innerIter, double s, double lrAdam) {
         RealMatrix optM = createRealMatrix(this.d, this.d);
         RealMatrix optV = createRealMatrix(this.d, this.d);
@@ -259,7 +375,13 @@ public class Dagma {
         return false;
     }
 
-
+    /**
+     * Calculates the M matrix for a given RealMatrix W and value of s.
+     *
+     * @param W The RealMatrix representing the input matrix.
+     * @param s The value of s.
+     * @return The calculated M matrix.
+     */
     private RealMatrix getMMatrix(RealMatrix W, double s) {
         RealMatrix M = this.I.scalarMultiply(s);
 
@@ -272,7 +394,12 @@ public class Dagma {
         return M;
     }
 
-
+    /**
+     * Sets the entries of the matrix A to the values of the matrix B.
+     *
+     * @param A The RealMatrix to be updated.
+     * @param B The RealMatrix containing the new values.
+     */
     private void setEntries(RealMatrix A, RealMatrix B) {
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
@@ -281,7 +408,12 @@ public class Dagma {
         }
     }
 
-
+    /**
+     * Adds a constant value to each entry of the provided RealMatrix.
+     *
+     * @param A The RealMatrix to be updated.
+     * @param c The constant value to be added.
+     */
     private void addToEntries(RealMatrix A, double c) {
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
@@ -290,7 +422,13 @@ public class Dagma {
         }
     }
 
-
+    /**
+     * Adds each element of matrix B multiplied by constant c to the corresponding element in matrix A.
+     *
+     * @param A The matrix to be updated.
+     * @param B The matrix containing the elements to be added.
+     * @param c The constant value to multiply with the elements of B before adding to A.
+     */
     private void addToEntries(RealMatrix A, RealMatrix B, double c) {
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
@@ -299,7 +437,12 @@ public class Dagma {
         }
     }
 
-
+    /**
+     * Calculates the log determinant of a square RealMatrix.
+     *
+     * @param M The RealMatrix for which to calculate the log determinant.
+     * @return The log determinant of the given RealMatrix.
+     */
     private double logDet(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -318,7 +461,12 @@ public class Dagma {
         return logDet;
     }
 
-
+    /**
+     * Checks whether the given RealMatrix is not an M matrix.
+     *
+     * @param M The RealMatrix to check.
+     * @return true if the RealMatrix is not an M matrix, false otherwise.
+     */
     private boolean notMMatrix(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -334,7 +482,12 @@ public class Dagma {
         return false;
     }
 
-
+    /**
+     * Calculates the absolute sum of all elements in a given RealMatrix.
+     *
+     * @param M The RealMatrix for which to calculate the absolute sum.
+     * @return The absolute sum of all elements in the RealMatrix.
+     */
     private double absSum(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -349,7 +502,12 @@ public class Dagma {
         return s;
     }
 
-
+    /**
+     * Converts a RealMatrix to a Graph representation.
+     *
+     * @param W The RealMatrix to convert to a Graph.
+     * @return The Graph representation of the input RealMatrix.
+     */
     private Graph toGraph(RealMatrix W) {
         RealMatrix W_ = createRealMatrix(this.d, this.d);
         for (int i = 0; i < this.d; i++) {

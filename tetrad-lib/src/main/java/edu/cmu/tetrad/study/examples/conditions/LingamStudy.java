@@ -23,8 +23,8 @@ package edu.cmu.tetrad.study.examples.conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.IcaLingam;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Rskew;
@@ -41,8 +41,21 @@ import edu.cmu.tetrad.util.Params;
  * An example script to simulate data and run a comparison analysis on it.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LingamStudy {
+
+    /**
+     * Private constructor.
+     */
+    private LingamStudy() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Statistics statistics = new Statistics();
 

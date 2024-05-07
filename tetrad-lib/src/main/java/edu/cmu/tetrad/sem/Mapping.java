@@ -35,6 +35,7 @@ import java.io.ObjectInputStream;
  *
  * @author Frank Wimberly
  * @author Joe Ramsey
+ * @version $Id: $Id
  */
 public class Mapping implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -81,6 +82,7 @@ public class Mapping implements TetradSerializable {
      * @param matrix    The array containing matrix[i][j], the element to be manipulated.
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
+     * @param semIm     a {@link edu.cmu.tetrad.sem.ISemIm} object
      */
     public Mapping(ISemIm semIm, Parameter parameter, Matrix matrix,
                    int i, int j) {
@@ -109,6 +111,8 @@ public class Mapping implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.Mapping} object
      */
     public static Mapping serializableInstance() {
         return new Mapping(SemIm.serializableInstance(),
@@ -117,6 +121,8 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
+     * <p>getValue.</p>
+     *
      * @return the value of the array element at (i, j).
      */
     public double getValue() {
@@ -126,10 +132,12 @@ public class Mapping implements TetradSerializable {
     /**
      * Sets the value of the array element at the stored coordinates (i, j). If the array is symmetric sets two
      * elements.
+     *
+     * @param x a double
      */
     public void setValue(double x) {
         if (this.semIm.isParameterBoundsEnforced() &&
-                getParameter().getType() == ParamType.VAR && x < 0.0) {
+            getParameter().getType() == ParamType.VAR && x < 0.0) {
             throw new IllegalArgumentException(
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
@@ -137,13 +145,15 @@ public class Mapping implements TetradSerializable {
         this.a.set(this.i, this.j, x);
 
         if (getParameter().getType() == ParamType.VAR ||
-                getParameter().getType() == ParamType.COVAR) {
+            getParameter().getType() == ParamType.COVAR) {
             this.a.set(this.j, this.i, x);
             this.a.set(this.i, this.j, x);
         }
     }
 
     /**
+     * <p>Getter for the field <code>parameter</code>.</p>
+     *
      * @return the paramter that this mapping maps.
      */
     public Parameter getParameter() {
@@ -151,12 +161,14 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a String containing information (array name and values of subscripts) about the array element associated
      * with this mapping.
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + this.i + "][" + this.j + "]>";
+               "[" + this.i + "][" + this.j + "]>";
     }
 
     /**
@@ -166,6 +178,10 @@ public class Mapping implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

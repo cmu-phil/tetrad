@@ -44,17 +44,36 @@ import java.util.List;
  * Edits which variables get assigned to which clusters.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ClusterEditor extends JPanel {
 
+    /**
+     * The list of variable names.
+     */
     private final List<String> varNames;
+
+    /**
+     * The clusters.
+     */
     private final Clusters clusters;
+
+    /**
+     * The panel that holds the clusters.
+     */
     private JPanel clustersPanel;
+
+    /**
+     * The list of name fields.
+     */
     private ArrayList nameFields;
 
     /**
      * Constructs an editor to allow the user to assign variables to clusters, showing a list of variables to choose
      * from.
+     *
+     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     * @param varNames a {@link java.util.List} object
      */
     public ClusterEditor(Clusters clusters, List<String> varNames) {
         if (clusters == null) {
@@ -77,6 +96,11 @@ public final class ClusterEditor extends JPanel {
         }
     }
 
+    /**
+     * <p>Constructor for ClusterEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     */
     public ClusterEditor(MeasurementModelWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -94,6 +118,11 @@ public final class ClusterEditor extends JPanel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Clusters getClusters() {
 //        return clusters;
         return new Clusters(this.clusters);
@@ -216,10 +245,18 @@ public final class ClusterEditor extends JPanel {
         return this.varNames;
     }
 
+    /**
+     * <p>Getter for the field <code>nameFields</code>.</p>
+     *
+     * @return a {@link java.util.ArrayList} object
+     */
     public ArrayList getNameFields() {
         return this.nameFields;
     }
 
+    /**
+     * A transferable object that represents a list of graph nodes.
+     */
     public static class ListSelection implements Transferable {
 
         /**
@@ -235,6 +272,8 @@ public final class ClusterEditor extends JPanel {
 
         /**
          * Constructs a new selection with the given list of graph nodes.
+         *
+         * @param list a {@link java.util.List} object
          */
         public ListSelection(List list) {
             if (list == null) {
@@ -285,6 +324,9 @@ public final class ClusterEditor extends JPanel {
         }
     }
 
+    /**
+     * A list that supports drag and drop.
+     */
     public class DragDropList extends JList implements DropTargetListener,
             DragSourceListener, DragGestureListener {
 
@@ -293,8 +335,19 @@ public final class ClusterEditor extends JPanel {
          * names. It's needed so that dropped gadgets can cause variable names to be put into the correct cluster.
          */
         private final int cluster;
+
+        /**
+         * The list of items that are being moved.
+         */
         private List movedList;
 
+        /**
+         * Constructs a new list with the given items, cluster, and orientation.
+         *
+         * @param items       a {@link java.util.List} object
+         * @param cluster     a int
+         * @param orientation a int
+         */
         public DragDropList(List items, int cluster, int orientation) {
             if (cluster < -1) {
                 throw new IllegalArgumentException();
@@ -343,10 +396,20 @@ public final class ClusterEditor extends JPanel {
             }
         }
 
+        /**
+         * <p>Getter for the field <code>cluster</code>.</p>
+         *
+         * @return a int
+         */
         public int getCluster() {
             return this.cluster;
         }
 
+        /**
+         * <p>dragGestureRecognized.</p>
+         *
+         * @param dragGestureEvent a {@link java.awt.dnd.DragGestureEvent} object
+         */
         public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
             if (getSelectedIndex() == -1) {
                 return;
@@ -364,6 +427,11 @@ public final class ClusterEditor extends JPanel {
             }
         }
 
+        /**
+         * <p>dragEnter.</p>
+         *
+         * @param dropTargetDropEvent a {@link java.awt.dnd.DropTargetDragEvent} object
+         */
         public void drop(DropTargetDropEvent dropTargetDropEvent) {
             try {
                 Transferable tr = dropTargetDropEvent.getTransferable();
@@ -409,6 +477,11 @@ public final class ClusterEditor extends JPanel {
             }
         }
 
+        /**
+         * <p>dragEnter.</p>
+         *
+         * @param dsde a {@link java.awt.dnd.DropTargetDragEvent} object
+         */
         public void dragDropEnd(DragSourceDropEvent dsde) {
             if (!dsde.getDropSuccess()) {
                 return;
@@ -423,27 +496,67 @@ public final class ClusterEditor extends JPanel {
             }
         }
 
+        /**
+         * <p>dragEnter.</p>
+         *
+         * @param dtde a {@link java.awt.dnd.DropTargetDragEvent} object
+         */
         public void dragEnter(DropTargetDragEvent dtde) {
         }
 
+        /**
+         * <p>dragOver.</p>
+         *
+         * @param dtde a {@link java.awt.dnd.DropTargetDragEvent} object
+         */
         public void dragOver(DropTargetDragEvent dtde) {
         }
 
+        /**
+         * <p>dropActionChanged.</p>
+         *
+         * @param dtde a {@link java.awt.dnd.DropTargetDragEvent} object
+         */
         public void dropActionChanged(DropTargetDragEvent dtde) {
         }
 
+        /**
+         * <p>dragExit.</p>
+         *
+         * @param dte a {@link java.awt.dnd.DropTargetEvent} object
+         */
         public void dragExit(DropTargetEvent dte) {
         }
 
+        /**
+         * <p>dragEnter.</p>
+         *
+         * @param dsde a {@link java.awt.dnd.DragSourceDragEvent} object
+         */
         public void dragEnter(DragSourceDragEvent dsde) {
         }
 
+        /**
+         * <p>dragOver.</p>
+         *
+         * @param dsde a {@link java.awt.dnd.DragSourceDragEvent} object
+         */
         public void dragOver(DragSourceDragEvent dsde) {
         }
 
+        /**
+         * <p>dropActionChanged.</p>
+         *
+         * @param dsde a {@link java.awt.dnd.DragSourceDragEvent} object
+         */
         public void dropActionChanged(DragSourceDragEvent dsde) {
         }
 
+        /**
+         * <p>dragExit.</p>
+         *
+         * @param dse a {@link java.awt.dnd.DragSourceEvent} object
+         */
         public void dragExit(DragSourceEvent dse) {
         }
 

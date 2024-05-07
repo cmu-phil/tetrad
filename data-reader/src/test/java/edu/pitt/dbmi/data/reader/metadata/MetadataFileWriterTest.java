@@ -58,7 +58,7 @@ public class MetadataFileWriterTest {
         Metadata metadata = new Metadata(domainCols, intervCols);
 
         String json = (new MetadataFileWriter()).writeAsString(metadata);
-        Assert.assertTrue(!(json == null || json.isEmpty()));
+        Assert.assertFalse(json == null || json.isEmpty());
     }
 
 }

@@ -20,16 +20,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SimulationParamsSource;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,31 +39,59 @@ import java.util.Map;
  * Holds a tetrad dag with all of the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of models in this wrapper.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the current model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The graphs in the wrapper.
      */
     private List<Graph> graphs;
+
+    /**
+     * The parameter settings for the wrapper.
+     */
     private Map<String, String> allParamSettings;
+
+    /**
+     * The parameters for the wrapper.
+     */
     private Parameters parameters = new Parameters();
 
     // =============================CONSTRUCTORS==========================//
+
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
+        if (graphSource instanceof Simulation simulation) {
             List<Graph> graphs = simulation.getGraphs();
             this.graphs = new ArrayList<>();
             for (Graph graph : graphs) {
@@ -80,6 +108,11 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.SemGraph} object
+     */
     public SemGraphWrapper(SemGraph graph) {
         if (graph == null) {
             throw new NullPointerException("MAG must not be null.");
@@ -91,6 +124,12 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemGraphWrapper(Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             SemGraph semGraph = new SemGraph();
@@ -108,6 +147,12 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
@@ -128,6 +173,12 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
@@ -141,6 +192,12 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
@@ -154,13 +211,22 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.AbstractAlgorithmRunner} object
+     */
     public SemGraphWrapper(AbstractAlgorithmRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public SemGraphWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
+        if (wrapper instanceof Simulation simulation) {
             this.graphs = new ArrayList<>();
 
             for (Graph graph : simulation.getGraphs()) {
@@ -179,43 +245,93 @@ public class SemGraphWrapper implements GraphSource,
         LayoutUtil.defaultLayout(getGraph());
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     */
     public SemGraphWrapper(BayesPmWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     */
     public SemGraphWrapper(BayesImWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     */
     public SemGraphWrapper(BayesEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
+     */
     public SemGraphWrapper(CptInvariantUpdaterWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     */
     public SemGraphWrapper(SemPmWrapper wrapper) {
         this(new SemGraph(wrapper.getSemPm().getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public SemGraphWrapper(SemImWrapper wrapper) {
         this(new SemGraph(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public SemGraphWrapper(SemEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getSemEstimator().getEstimatedSem()
                 .getSemPm().getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.RegressionRunner} object
+     */
     public SemGraphWrapper(RegressionRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
+     */
     public SemGraphWrapper(BuildPureClustersRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
+    /**
+     * <p>Constructor for SemGraphWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
+     */
     public SemGraphWrapper(MimBuildRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
@@ -223,6 +339,7 @@ public class SemGraphWrapper implements GraphSource,
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
      * @see TetradSerializableUtils
      */
     public static SemGraphWrapper serializableInstance() {
@@ -230,10 +347,21 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     // ================================PUBLIC METHODS=======================//
+
+    /**
+     * <p>getSemGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.SemGraph} object
+     */
     public SemGraph getSemGraph() {
         return (SemGraph) getGraph();
     }
 
+    /**
+     * <p>setSemGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.SemGraph} object
+     */
     public void setSemGraph(SemGraph graph) {
         this.graphs = new ArrayList<>();
         graph.setShowErrorTerms(false);
@@ -243,8 +371,9 @@ public class SemGraphWrapper implements GraphSource,
 
     // ============================PRIVATE METHODS========================//
     private void log() {
-        TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
+        TetradLogger.getInstance().forceLogMessage("Structural Equation Model (SEM) Graph");
+        String message = "" + getGraph();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**
@@ -254,46 +383,98 @@ public class SemGraphWrapper implements GraphSource,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graphs.get(getModelIndex());
     }
 
+    /**
+     * <p>setGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
-        this.graphs.add(new SemGraph(graph));
+
+        if (graph instanceof SemGraph) {
+            this.graphs.add(graph);
+        } else {
+            this.graphs.add(new SemGraph(graph));
+        }
+
+//        this.graphs.add(new SemGraph(graph));
         log();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -307,44 +488,90 @@ public class SemGraphWrapper implements GraphSource,
         return paramSettings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParameters() {
         return this.parameters;
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Setter for the field <code>numModels</code>.</p>
+     *
+     * @param numModels a int
+     */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
 
+    /**
+     * <p>Setter for the field <code>modelSourceName</code>.</p>
+     *
+     * @param modelSourceName a {@link java.lang.String} object
+     */
     public void setModelSourceName(String modelSourceName) {
         this.modelSourceName = modelSourceName;
     }
 
+    /**
+     * <p>Getter for the field <code>graphs</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getGraphs() {
         return this.graphs;
     }

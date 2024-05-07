@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -32,24 +33,35 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
- * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
- * (that is, that the nodes have been identified and named and that the number and names of the values for the nodes
- * have been specified) and allows the user to set conditional probabilities of node values given combinations of parent
- * values.
+ * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been
+ * established. (That is, that the nodes have been identified and named that the number and names of the values for the
+ * nodes have been specified). It Also allows the user to set conditional probabilities of node values given
+ * combinations of parent values.
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesEstimatorEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes estimator.
+     */
     private final BayesEstimatorWrapper wrapper;
+
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
@@ -57,13 +69,18 @@ public class BayesEstimatorEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
-    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
-        this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
+    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet, Parameters parameters) {
+        this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm), parameters));
     }
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
+     *
+     * @param bayesEstWrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      */
     public BayesEstimatorEditor(BayesEstimatorWrapper bayesEstWrapper) {
         this.wrapper = bayesEstWrapper;
@@ -109,7 +126,9 @@ public class BayesEstimatorEditor extends JPanel {
     }
 
     /**
-     * Sets the name of this editor.
+     * Sets the name of this component.
+     *
+     * @param name the string that is to be this component's name
      */
     public void setName(String name) {
         String oldName = getName();
@@ -153,13 +172,13 @@ public class BayesEstimatorEditor extends JPanel {
         StringBuilder buf = new StringBuilder();
         BayesProperties.LikelihoodRet ret = properties.getLikelihoodRatioP(graph);
         NumberFormat nf = new DecimalFormat("0.00");
-        buf.append("\nP-value = ").append(nf.format(ret.p));
-//        buf.append("\nP-value = ").append(properties.getVuongP());
+        buf.append("P-value = ").append(nf.format(ret.p));
         buf.append("\nDf = ").append(nf.format(ret.dof));
         buf.append("\nChi square = ").append(nf.format(ret.chiSq));
         buf.append("\nBIC score = ").append(nf.format(ret.bic));
 
-        buf.append("\n\nH0: Complete graph.");
+        buf.append("\n\nH0: Given model");
+        buf.append("\nH1: Complete model");
 
         JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
@@ -191,7 +210,6 @@ public class BayesEstimatorEditor extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 

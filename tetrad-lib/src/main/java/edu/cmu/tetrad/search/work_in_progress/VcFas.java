@@ -39,6 +39,7 @@ import java.util.*;
  * S({x, y}) is returned for edges x *-* y that have been removed.
  *
  * @author josephramsey.
+ * @version $Id: $Id
  */
 public class VcFas {
 
@@ -82,6 +83,11 @@ public class VcFas {
 
     //==========================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for VcFas.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public VcFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
@@ -100,7 +106,7 @@ public class VcFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
         // sepset = new SepsetMap();
@@ -147,15 +153,25 @@ public class VcFas {
 
 //        System.out.println("Finished constructing Graph.");
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
 
         return this.graph;
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return this.depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -165,10 +181,20 @@ public class VcFas {
         this.depth = depth;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
@@ -249,9 +275,10 @@ public class VcFas {
         String name2 = y.getName();
 
         if (this.knowledge.isForbidden(name1, name2) &&
-                this.knowledge.isForbidden(name2, name1)) {
-            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.");
+            this.knowledge.isForbidden(name2, name1)) {
+            String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+                             "forbidden by background knowledge.";
+            TetradLogger.getInstance().forceLogMessage(message);
 
             return true;
         }
@@ -327,26 +354,56 @@ public class VcFas {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
+    /**
+     * <p>Getter for the field <code>numIndependenceTests</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
+    /**
+     * <p>Getter for the field <code>apparentlyNonadjacencies</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Edge, Set<Node>> getApparentlyNonadjacencies() {
         return this.apparentlyNonadjacencies;
     }
 
+    /**
+     * <p>Setter for the field <code>externalGraph</code>.</p>
+     *
+     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>getNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getNodes() {
         return this.test.getVariables();
     }

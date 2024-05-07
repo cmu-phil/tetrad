@@ -35,6 +35,7 @@ import java.util.List;
  * (if it is defined), and then return the average over the estimated probabilities calculated this way.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IntAveDataSetProbs implements DiscreteProbs {
 
@@ -58,6 +59,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
 
     /**
      * Creates a cell count table for the given data set.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public IntAveDataSetProbs(DataSet dataSet) {
         if (dataSet == null) {
@@ -80,6 +83,9 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */
@@ -106,7 +112,10 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated probability of the given proposition.
+     * Calculates the probability of a given assertion.
+     *
+     * @param assertion an object of type Proposition representing the assertion
+     * @return the probability of the given assertion
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
@@ -131,14 +140,20 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion The proposition representing the assertion.
+     * @param condition The proposition representing the condition.
+     * @return The conditional probability of the assertion given the condition.
+     * @throws IllegalArgumentException If the assertion and condition are not for the same Bayes IM or if the variables
+     *                                  in the assertion and data set are different or in a different order.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
@@ -147,9 +162,9 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
-                            " are either different or in a different order: " +
-                            "\n\tAssertion vars: " + assertionVars +
-                            "\n\tData vars: " + dataVars);
+                    " are either different or in a different order: " +
+                    "\n\tAssertion vars: " + assertionVars +
+                    "\n\tData vars: " + dataVars);
         }
 
         int[] point = new int[this.dims.length];
@@ -226,6 +241,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -233,6 +250,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {

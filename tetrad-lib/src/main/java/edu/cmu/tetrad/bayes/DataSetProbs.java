@@ -34,9 +34,9 @@ import java.util.List;
  * Estimates maximum likelihood probabilities directly from data on the fly.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DataSetProbs implements DiscreteProbs {
-    private static final long serialVersionUID = 23L;
 
     /**
      * The data set that this is a cell count table for.
@@ -71,6 +71,8 @@ public final class DataSetProbs implements DiscreteProbs {
 
     /**
      * Creates a cell count table for the given data set.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSetProbs(DataSet dataSet) {
         if (dataSet == null) {
@@ -92,6 +94,9 @@ public final class DataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */
@@ -121,7 +126,10 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated probability of the given proposition.
+     * Calculates the probability of the given assertion in the data set.
+     *
+     * @param assertion the proposition representing the values of variables
+     * @return the probability of the assertion in the data set
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
@@ -149,14 +157,21 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
+     * Calculates the conditional probability of an assertion given a condition in a Bayes information model (Bayes
+     * IM).
+     *
+     * @param assertion a {@link Proposition} object representing the assertion values of variables
+     * @param condition a {@link Proposition} object representing the condition values of variables
+     * @return the conditional probability of the assertion given the condition
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM, or if the
+     *                                  assertion variable and data variables are different or in a different order
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
@@ -168,9 +183,9 @@ public final class DataSetProbs implements DiscreteProbs {
                 new HashSet<>(dataVars))) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
-                            " are either different or in a different order: " +
-                            "\n\tAssertion vars: " + assertionVars +
-                            "\n\tData vars: " + dataVars);
+                    " are either different or in a different order: " +
+                    "\n\tAssertion vars: " + assertionVars +
+                    "\n\tData vars: " + dataVars);
         }
 
         int[] point = new int[this.dims.length];
@@ -201,6 +216,8 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -208,6 +225,8 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {

@@ -26,25 +26,35 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Basic graph utilities.
- *
- * @author josephramsey
+ * Utility class for working with graphs.
  */
 public final class GraphUtils {
 
     /**
-     * @return the node associated with a given error node. This should be the only child of the error node, E --&gt; N.
+     * Private constructor to prevent instantiation.
+     */
+    private GraphUtils() {
+
+    }
+
+    /**
+     * Returns the associated node for the given error node in the specified graph.
+     *
+     * @param errorNode The error node for which the associated node needs to be retrieved.
+     * @param graph     The graph in which to search for the associated node.
+     * @return The associated node of the error node.
+     * @throws IllegalArgumentException If the error node is not of type ERROR or if it does not have exactly one
+     *                                  child.
      */
     public static Node getAssociatedNode(Node errorNode, Graph graph) {
         if (errorNode.getNodeType() != NodeType.ERROR) {
@@ -54,8 +64,8 @@ public final class GraphUtils {
         List<Node> children = graph.getChildren(errorNode);
 
         if (children.size() != 1) {
-            System.out.println("children of " + errorNode + " = " + children);
-            System.out.println(graph);
+//            System.out.println("children of " + errorNode + " = " + children);
+//            System.out.println(graph);
 
             throw new IllegalArgumentException("An error node should have only " + "one child, which is its associated node: " + errorNode);
         }
@@ -64,7 +74,11 @@ public final class GraphUtils {
     }
 
     /**
-     * @return true if <code>set</code> is a clique in <code>graph</code>. R. Silva, June 2004
+     * Checks if the given set of nodes forms a clique in the specified graph.
+     *
+     * @param set   the collection of nodes to be checked
+     * @param graph the graph in which the nodes are located
+     * @return true if the given set forms a clique, false otherwise
      */
     public static boolean isClique(Collection<Node> set, Graph graph) {
         List<Node> setv = new LinkedList<>(set);
@@ -79,10 +93,13 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG.
+     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG. Target Node
+     * is not included in the result graph's nodes list. Edges including the target node is included in the result
+     * graph's edges list.
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph markovBlanketSubgraph(Node target, Graph graph) {
         Set<Node> mb = markovBlanket(target, graph);
@@ -107,6 +124,31 @@ public final class GraphUtils {
         return mbGraph;
     }
 
+    /**
+     * Calculates the subgraph over the Markov blanket of a target node for a DAG, CPDAG, MAG, or PAG. This is not
+     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
+     * list. Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getMarkovBlanketSubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        Set<Node> mbNodes = GraphUtils.markovBlanket(target, g);
+        mbNodes.add(target);
+        Graph res = g.subgraph(new ArrayList<>(mbNodes));
+//        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
+//        System.out.println("Graph result: " + res);
+        return res;
+    }
+
+    /**
+     * <p>removeBidirectedOrientations.</p>
+     *
+     * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph removeBidirectedOrientations(Graph estCpdag) {
         estCpdag = new EdgeListGraph(estCpdag);
 
@@ -121,6 +163,12 @@ public final class GraphUtils {
         return estCpdag;
     }
 
+    /**
+     * <p>undirectedGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph undirectedGraph(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph.getNodes());
 
@@ -133,6 +181,12 @@ public final class GraphUtils {
         return graph2;
     }
 
+    /**
+     * <p>completeGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph completeGraph(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph.getNodes());
 
@@ -152,7 +206,10 @@ public final class GraphUtils {
     }
 
     /**
-     * @return a new graph in which the bidirectred edges of the given graph have been changed to undirected edges.
+     * Converts a bidirected graph to an undirected graph.
+     *
+     * @param graph The bidirected graph to be converted.
+     * @return The converted undirected graph.
      */
     public static Graph bidirectedToUndirected(Graph graph) {
         Graph newGraph = new EdgeListGraph(graph);
@@ -168,7 +225,10 @@ public final class GraphUtils {
     }
 
     /**
-     * @return a new graph in which the undirectred edges of the given graph have been changed to bidirected edges.
+     * Converts an undirected graph to a bidirected graph.
+     *
+     * @param graph the undirected graph to be converted
+     * @return a new bidirected graph with the same nodes and bidirected edges as the input graph
      */
     public static Graph undirectedToBidirected(Graph graph) {
         Graph newGraph = new EdgeListGraph(graph);
@@ -183,16 +243,39 @@ public final class GraphUtils {
         return newGraph;
     }
 
+    /**
+     * <p>pathString.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param path  a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String pathString(Graph graph, List<Node> path) {
         return GraphUtils.pathString(graph, path, new LinkedList<>());
     }
 
+    /**
+     * <p>pathString.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
         return GraphUtils.pathString(graph, path, new LinkedList<>());
     }
 
+    /**
+     * Returns a string representation of the given path in the graph, with additional information about conditioning
+     * variables.
+     *
+     * @param graph            the graph containing the path
+     * @param path             the list of nodes representing the path
+     * @param conditioningVars the list of nodes representing the conditioning variables
+     * @return a string representation of the path with conditioning information
+     */
     private static String pathString(Graph graph, List<Node> path, List<Node> conditioningVars) {
         StringBuilder buf = new StringBuilder();
 
@@ -287,10 +370,6 @@ public final class GraphUtils {
                 convertedGraph.addNode(node1);
             }
 
-//            if (!convertedGraph.containsNode(node1)) {
-//                convertedGraph.addNode(node1);
-//            }
-
             if (node2 == null) {
                 node2 = edge.getNode2();
             }
@@ -298,14 +377,6 @@ public final class GraphUtils {
             if (!convertedGraph.containsNode(node2)) {
                 convertedGraph.addNode(node2);
             }
-
-//            if (!convertedGraph.containsNode(node1)) {
-//                convertedGraph.addNode(node1);
-//            }
-
-//            if (!convertedGraph.containsNode(node2)) {
-//                convertedGraph.addNode(node2);
-//            }
 
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();
@@ -328,6 +399,12 @@ public final class GraphUtils {
         return convertedGraph;
     }
 
+    /**
+     * Removes all latent nodes from the graph and returns the modified graph.
+     *
+     * @param graph the input graph to be modified
+     * @return a new graph with all latent nodes removed
+     */
     public static Graph restrictToMeasured(Graph graph) {
         graph = new EdgeListGraph(graph);
 
@@ -375,7 +452,10 @@ public final class GraphUtils {
     /**
      * Counts the adjacencies that are in graph1 but not in graph2.
      *
-     * @throws IllegalArgumentException if graph1 and graph2 are not namewise isomorphic.
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     * @throws java.lang.IllegalArgumentException if graph1 and graph2 are not namewise isomorphic.
      */
     public static int countAdjErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -403,6 +483,10 @@ public final class GraphUtils {
 
     /**
      * Counts the arrowheads that are in graph1 but not in graph2.
+     *
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
      */
     public static int countArrowptErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -466,6 +550,13 @@ public final class GraphUtils {
         return count;
     }
 
+    /**
+     * <p>getNumCorrectArrowpts.</p>
+     *
+     * @param correct   a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param estimated a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     */
     public static int getNumCorrectArrowpts(Graph correct, Graph estimated) {
         correct = GraphUtils.replaceNodes(correct, estimated.getNodes());
 
@@ -510,7 +601,10 @@ public final class GraphUtils {
     }
 
     /**
-     * @return an empty graph with the given number of nodes.
+     * Creates an empty graph with the specified number of nodes.
+     *
+     * @param numNodes the number of nodes to create in the graph
+     * @return a new empty graph with the specified number of nodes
      */
     public static Graph emptyGraph(int numNodes) {
         List<Node> nodes = new ArrayList<>();
@@ -523,8 +617,12 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
+     * Retrieves the list of ambiguous triples from the given graph for a given node. These are triple (X, Y, Z) for
+     * which Sepset(X, Z) contains Y for some sepsets but not others.
+     *
+     * @param node  the node for which to find ambiguous triples
+     * @param graph the graph from which to retrieve the ambiguous triples
+     * @return the list of ambiguous triples found in the graph for the given node
      */
     public static List<Triple> getAmbiguousTriplesFromGraph(Node node, Graph graph) {
         List<Triple> ambiguousTriples = new ArrayList<>();
@@ -550,8 +648,12 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
+     * Retrieves the underlined triples from the given graph that involve the specified node. These are triples that
+     * represent definite noncolliders in the given graph.
+     *
+     * @param node  the node for which to retrieve the underlined triples
+     * @param graph the graph from which to retrieve the underlined triples
+     * @return a list of underlined triples involving the node
      */
     public static List<Triple> getUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> underlinedTriples = new ArrayList<>();
@@ -578,8 +680,21 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>getUnderlinedTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
      * given graph.
+     */
+
+    /**
+     * Retrieves the list of dotted and underlined triples from the given graph, with the specified node as the middle
+     * node.
+     *
+     * @param node  The middle node to use for finding the triples.
+     * @param graph The graph to search for the triples.
+     * @return The list of dotted and underlined triples containing the specified node as the middle node.
      */
     public static List<Triple> getDottedUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> dottedUnderlinedTriples = new ArrayList<>();
@@ -605,6 +720,21 @@ public final class GraphUtils {
         return dottedUnderlinedTriples;
     }
 
+    /**
+     * <p>getDottedUnderlinedTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
+     * given graph.
+     */
+
+    /**
+     * Checks if a given graph contains a bidirected edge.
+     *
+     * @param graph the graph to check for bidirected edges
+     * @return true if the graph contains a bidirected edge, false otherwise
+     */
     public static boolean containsBidirectedEdge(Graph graph) {
         boolean containsBidirected = false;
 
@@ -617,7 +747,12 @@ public final class GraphUtils {
         return containsBidirected;
     }
 
-
+    /**
+     * Generates a list of triples where a node acts as a collider in a given graph.
+     *
+     * @param graph the graph to search for collider triples in
+     * @return a LinkedList of Triples where a node acts as a collider
+     */
     public static LinkedList<Triple> listColliderTriples(Graph graph) {
         LinkedList<Triple> colliders = new LinkedList<>();
 
@@ -659,6 +794,13 @@ public final class GraphUtils {
         return list;
     }
 
+    /**
+     * Converts an array of indices into a set of corresponding nodes from a given list of nodes.
+     *
+     * @param indices an array of indices representing the positions of nodes in the list
+     * @param nodes   the list of nodes
+     * @return a Set containing the nodes at the specified indices
+     */
     public static Set<Node> asSet(int[] indices, List<Node> nodes) {
         Set<Node> set = new HashSet<>();
 
@@ -666,18 +808,29 @@ public final class GraphUtils {
             if (i >= 0 && i < nodes.size()) {
                 set.add(nodes.get(i));
             }
-//            set.add(nodes.get(i));
         }
 
         return set;
     }
 
+    /**
+     * Converts the given array of nodes into a Set of nodes.
+     *
+     * @param nodes the array of nodes.
+     * @return a Set containing the nodes from the input array.
+     */
     public static Set<Node> asSet(Node... nodes) {
         Set<Node> set = new HashSet<>();
         Collections.addAll(set, nodes);
         return set;
     }
 
+    /**
+     * Calculates the maximum degree of a graph.
+     *
+     * @param graph The graph to calculate the degree.
+     * @return The maximum degree of the graph. Returns 0 if the graph is empty.
+     */
     public static int degree(Graph graph) {
         int maxDegree = 0;
 
@@ -691,6 +844,12 @@ public final class GraphUtils {
         return maxDegree;
     }
 
+    /**
+     * Generates a comparison string for the intersection of multiple graphs.
+     *
+     * @param graphs the list of graphs to compare
+     * @return a string representation of the intersection of the given graphs
+     */
     public static String getIntersectionComparisonString(List<Graph> graphs) {
         if (graphs == null || graphs.isEmpty()) {
             return "";
@@ -703,6 +862,13 @@ public final class GraphUtils {
         return b.toString();
     }
 
+    /**
+     * Returns a StringBuilder object containing information about the undirected edges in the given list of graphs.
+     *
+     * @param graphs A list of Graph objects representing the graphs to process.
+     * @return A StringBuilder object containing information about the undirected edges in the given list of graphs.
+     * @throws IllegalArgumentException if an edge is not found in any of the graphs.
+     */
     private static StringBuilder undirectedEdges(List<Graph> graphs) {
         List<Graph> undirectedGraphs = new ArrayList<>();
 
@@ -791,6 +957,12 @@ public final class GraphUtils {
         return b;
     }
 
+    /**
+     * Returns a StringBuilder object containing the directed edges of the given list of directed graphs.
+     *
+     * @param directedGraphs a list of directed graphs
+     * @return a StringBuilder object that contains the directed edges of the graphs
+     */
     private static StringBuilder directedEdges(List<Graph> directedGraphs) {
         Set<Edge> directedEdgesSet = new HashSet<>();
 
@@ -898,6 +1070,14 @@ public final class GraphUtils {
         return b;
     }
 
+    /**
+     * Generates a textual representation of the edge misclassifications based on the provided counts and number
+     * format.
+     *
+     * @param counts The 2D array representing the counts of edge misclassifications.
+     * @param nf     The number format used to format the counts.
+     * @return A string containing the textual representation of the edge misclassifications.
+     */
     public static String edgeMisclassifications(double[][] counts, NumberFormat nf) {
         StringBuilder builder = new StringBuilder();
 
@@ -923,7 +1103,7 @@ public final class GraphUtils {
                 if (i == 7 && j == 5) {
                     table2.setToken(7 + 1, 5 + 1, "*");
                 } else {
-                    table2.setToken(i + 1, j + 1, "" + nf.format(counts[i][j]));
+                    table2.setToken(i + 1, j + 1, nf.format(counts[i][j]));
                 }
             }
         }
@@ -950,6 +1130,12 @@ public final class GraphUtils {
         return builder.toString();
     }
 
+    /**
+     * Calculates the misclassifications of edges based on the given counts.
+     *
+     * @param counts a 2D array containing the counts for different edge classifications
+     * @return a string representing the misclassifications of edges
+     */
     public static String edgeMisclassifications(int[][] counts) {
         StringBuilder builder = new StringBuilder();
 
@@ -1002,7 +1188,12 @@ public final class GraphUtils {
         return builder.toString();
     }
 
-    public static void addPagColoring(Graph graph) {
+    /**
+     * Adds markups for edge specilizations for the edges in the given graph.
+     *
+     * @param graph The graph to which PAG edge specialization markups will be added.
+     */
+    public static void addEdgeSpecializationMarkup(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             edge.getProperties().clear();
 
@@ -1035,6 +1226,16 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Computes the misclassification counts for each edge in the given graphs.
+     *
+     * @param leftGraph The left graph.
+     * @param topGraph  The top graph.
+     * @param print     Whether to print debug information.
+     * @return A 2-dimensional array containing the counts for each misclassification type. The array has dimensions
+     * [m][n], where m is the number of misclassification types in the left graph and n is the number of
+     * misclassification types in the top graph.
+     */
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
         class CountTask extends RecursiveTask<Counts> {
 
@@ -1112,14 +1313,33 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
-        Counts counts = pool.getPool().invoke(task);
 
-        return counts.countArray();
+        try {
+            Counts counts = pool.invoke(task);
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
+            }
+
+            return counts.countArray();
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
     }
 
+    /**
+     * Returns the type of an edge based on its properties.
+     *
+     * @param edgeTop the edge to determine the type of
+     * @return the type of the edge: - 0 if the edge is undirected - 1 if the edge is nondirected - 2 if the edge is
+     * partially oriented - 3 if the edge is directed - 4 if the edge is bidirected - 5 if the edge is null or of an
+     * unknown type
+     */
     private static int getTypeTop(Edge edgeTop) {
         if (edgeTop == null) {
             return 5;
@@ -1148,6 +1368,14 @@ public final class GraphUtils {
         return 5;
     }
 
+    /**
+     * Determines the type of the left edge based on the provided edges.
+     *
+     * @param edgeLeft the left edge (may be null)
+     * @param edgeTop  the top edge (may be null)
+     * @return the type of the left edge as an integer
+     * @throws IllegalArgumentException if the edge type is unsupported
+     */
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
         if (edgeLeft == null) {
             return 7;
@@ -1191,12 +1419,28 @@ public final class GraphUtils {
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
     }
 
+    /**
+     * Finds all maximal cliques in a given graph.
+     *
+     * @param graph The graph in which to find the maximal cliques
+     * @param nodes The list of nodes in the graph
+     * @return The set of all maximal cliques in the graph
+     */
     public static Set<Set<Node>> maximalCliques(Graph graph, List<Node> nodes) {
         Set<Set<Node>> report = new HashSet<>();
         GraphUtils.brokKerbosh1(new HashSet<>(), new HashSet<>(nodes), new HashSet<>(), report, graph);
         return report;
     }
 
+    /**
+     * Find all cliques (complete subgraphs) in a graph using the Brokk-Kerbosch algorithm.
+     *
+     * @param R      The current clique being constructed
+     * @param P      The candidates to add to the clique
+     * @param X      The excluded vertices
+     * @param report The set of cliques found
+     * @param graph  The graph to search in
+     */
     private static void brokKerbosh1(Set<Node> R, Set<Node> P, Set<Node> X, Set<Set<Node>> report, Graph graph) {
         if (P.isEmpty() && X.isEmpty()) {
             report.add(new HashSet<>(R));
@@ -1215,9 +1459,16 @@ public final class GraphUtils {
         }
     }
 
-    public static String graphToText(Graph graph, boolean doPagColoring) {
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(graph);
+    /**
+     * Converts a given graph to human-readable text format.
+     *
+     * @param graph                       the graph to be converted
+     * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
+     * @return the human-readable representation of the graph
+     */
+    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
+        if (pagEdgeSpecializationMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(graph);
         }
 
         Formatter fmt = new Formatter();
@@ -1256,6 +1507,14 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * Converts the attributes of nodes in a graph to text format.
+     *
+     * @param graph     the graph containing nodes
+     * @param title     the title to be displayed before the attributes, can be null or empty
+     * @param delimiter the delimiter character used for separating node attributes
+     * @return a string representation of the graph node attributes, or null if there are no attributes
+     */
     public static String graphNodeAttributesToText(Graph graph, String title, char delimiter) {
         List<Node> nodes = graph.getNodes();
 
@@ -1279,7 +1538,7 @@ public final class GraphUtils {
         }
 
         if (!graphNodeAttributes.isEmpty()) {
-            StringBuilder sb = (title == null || title.length() == 0) ? new StringBuilder() : new StringBuilder(String.format("%s", title));
+            StringBuilder sb = (title == null || title.isEmpty()) ? new StringBuilder() : new StringBuilder(String.format("%s", title));
 
             for (String key : graphNodeAttributes.keySet()) {
                 Map<String, Object> nodeAttributes = graphNodeAttributes.get(key);
@@ -1310,10 +1569,17 @@ public final class GraphUtils {
         return null;
     }
 
+    /**
+     * Converts the attributes of a given graph into a text format.
+     *
+     * @param graph the graph whose attributes are to be converted
+     * @param title the title to be included at the beginning of the converted text
+     * @return the converted attributes in text format, or null if the graph has no attributes
+     */
     public static String graphAttributesToText(Graph graph, String title) {
         Map<String, Object> attributes = graph.getAllAttributes();
         if (!attributes.isEmpty()) {
-            StringBuilder sb = (title == null || title.length() == 0) ? new StringBuilder() : new StringBuilder(String.format("%s%n", title));
+            StringBuilder sb = (title == null || title.isEmpty()) ? new StringBuilder() : new StringBuilder(String.format("%s%n", title));
 
             for (String key : attributes.keySet()) {
                 Object value = attributes.get(key);
@@ -1333,8 +1599,16 @@ public final class GraphUtils {
         return null;
     }
 
+    /**
+     * Converts the nodes of a graph to a formatted text representation.
+     *
+     * @param graph     the graph containing the nodes
+     * @param title     the title to be displayed at the beginning of the text (optional, can be null)
+     * @param delimiter the character used to separate the nodes in the text
+     * @return a string representing the nodes of the graph
+     */
     public static String graphNodesToText(Graph graph, String title, char delimiter) {
-        StringBuilder sb = (title == null || title.length() == 0) ? new StringBuilder() : new StringBuilder(String.format("%s%n", title));
+        StringBuilder sb = (title == null || title.isEmpty()) ? new StringBuilder() : new StringBuilder(String.format("%s%n", title));
 
         List<Node> nodes = graph.getNodes();
         int size = nodes.size();
@@ -1356,10 +1630,17 @@ public final class GraphUtils {
         return sb.toString();
     }
 
+    /**
+     * Converts the edges of a graph to text representation.
+     *
+     * @param graph The graph whose edges will be converted.
+     * @param title The title to be included in the text representation. Can be null or empty.
+     * @return The text representation of the graph edges.
+     */
     public static String graphEdgesToText(Graph graph, String title) {
         Formatter fmt = new Formatter();
 
-        if (title != null && title.length() > 0) {
+        if (title != null && !title.isEmpty()) {
             fmt.format("%s%n", title);
         }
 
@@ -1385,6 +1666,13 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * Converts a set of triples into a formatted string.
+     *
+     * @param triples the set of triples to convert
+     * @param title   the optional title to include in the string
+     * @return the formatted string representation of the triples
+     */
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();
 
@@ -1408,6 +1696,13 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * Returns the TwoCycleErrors object that represents errors for direct feedback loops.
+     *
+     * @param trueGraph The true Graph object.
+     * @param estGraph  The estimated Graph object.
+     * @return The TwoCycleErrors object that represents the adjacency errors.
+     */
     public static TwoCycleErrors getTwoCycleErrors(Graph trueGraph, Graph estGraph) {
         Set<Edge> trueEdges = trueGraph.getEdges();
         Set<Edge> trueTwoCycle = new HashSet<>();
@@ -1466,6 +1761,12 @@ public final class GraphUtils {
         return new TwoCycleErrors(adjCorrect, adjFn, adjFp);
     }
 
+    /**
+     * Returns the maximum degree of a graph.
+     *
+     * @param graph the graph to calculate the degree for
+     * @return the maximum degree of the graph
+     */
     public static int getDegree(Graph graph) {
         int max = 0;
 
@@ -1478,6 +1779,12 @@ public final class GraphUtils {
         return max;
     }
 
+    /**
+     * Calculates the maximum indegree in a given graph.
+     *
+     * @param graph The graph to calculate the maximum indegree for.
+     * @return The maximum indegree in the graph.
+     */
     public static int getIndegree(Graph graph) {
         int max = 0;
 
@@ -1490,7 +1797,13 @@ public final class GraphUtils {
         return max;
     }
 
-    // Used to find semidirected paths for cycle checking.
+    /**
+     * Traverses a semi-directed edge to identify the next node in the traversal.
+     *
+     * @param node The starting node of the edge.
+     * @param edge The semi-directed edge to be traversed.
+     * @return The next node in the traversal, or null if no such node exists.
+     */
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
@@ -1504,6 +1817,15 @@ public final class GraphUtils {
         return null;
     }
 
+    // Used to find semidirected paths for cycle checking.
+
+    /**
+     * Returns a comparison graph based on the specified parameters.
+     *
+     * @param graph  the original graph to compare
+     * @param params the parameters for comparison
+     * @return the comparison graph based on the specified parameters
+     */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");
 
@@ -1512,7 +1834,7 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.cpdagForDag(graph);
+            return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return GraphTransforms.dagToPag(graph);
@@ -1523,16 +1845,16 @@ public final class GraphUtils {
     }
 
     /**
-     * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking for
+     * The extra-edge removal step for GFCI. This removed edges in triangles in the reference graph by looking for
      * sepsets for edge a--b among the adjacents of a or the adjacents of b.
      *
      * @param graph          The graph being operated on and changed.
      * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
      * @param nodes          The nodes in the graph.
      * @param sepsets        A SepsetProducer that will do the sepset search operation described.
+     * @param verbose        Whether to print verbose output.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes,
-                                                SepsetProducer sepsets) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1555,16 +1877,28 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c)) {// && referenceCpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
                     if (sepset != null) {
                         graph.removeEdge(a, c);
+
+                        if (verbose) {
+                            double pValue = sepsets.getPValue(a, c, sepset);
+                            TetradLogger.getInstance().forceLogMessage("Removed edge " + a + " -- " + c
+                                                                       + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                        }
                     }
                 }
             }
         }
     }
 
+    /**
+     * Adds forbidden reverse edges for directed edges in the given graph based on the knowledge.
+     *
+     * @param graph     The graph to add forbidden reverse edges to.
+     * @param knowledge The knowledge used to determine the forbidden reverse edges.
+     */
     public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
@@ -1578,6 +1912,14 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Removes non-skeleton edges from the given graph based on the provided knowledge. A non-skeleton edge is
+     * determined by the name of the nodes. If either node's name starts with "E_", the edge is considered a skeleton
+     * edge and will not be removed.
+     *
+     * @param graph     the graph from which to remove non-skeleton edges
+     * @param knowledge the knowledge base to check for forbidden edges
+     */
     public static void removeNonSkeletonEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
@@ -1604,6 +1946,13 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Determines if two edges are compatible.
+     *
+     * @param edge1 The first edge to compare.
+     * @param edge2 The second edge to compare.
+     * @return true if the edges are compatible, false otherwise.
+     */
     public static boolean compatible(Edge edge1, Edge edge2) {
         if (edge1 == null || edge2 == null) return true;
 
@@ -1639,6 +1988,15 @@ public final class GraphUtils {
         return mb;
     }
 
+    /**
+     * This method calculates the Markov Blanket by following colliders in a given graph.
+     *
+     * @param d    The node representing the direct cause (can be null).
+     * @param a    The node for which the Markov Blanket is calculated.
+     * @param path A linked list of nodes in the current path.
+     * @param G    The graph in which the Markov Blanket is calculated.
+     * @param mb   A set to store the nodes in the Markov Blanket.
+     */
     private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
         if (path.contains(a)) return;
         path.add(a);
@@ -1665,6 +2023,13 @@ public final class GraphUtils {
         path.remove(a);
     }
 
+    /**
+     * Calculates the district of a given node in a graph.
+     *
+     * @param x the node for which the district needs to be calculated
+     * @param G the graph in which to calculate the district
+     * @return the set of nodes that belong to the district of the given node
+     */
     public static Set<Node> district(Node x, Graph G) {
         Set<Node> district = new HashSet<>();
         Set<Node> boundary = new HashSet<>();
@@ -1700,6 +2065,275 @@ public final class GraphUtils {
         return district;
     }
 
+    /**
+     * Calculates visual-edge adjustments given graph G between two nodes x and y that are subsets of MB(X).
+     *
+     * @param G                the input graph
+     * @param x                the source node
+     * @param y                the target node
+     * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @param graphType        the type of the graph
+     * @return the adjustment sets as a set of sets of nodes
+     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
+     */
+    public static Set<Set<Node>> visibleEdgeAdjustments1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
+
+        if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+            return new HashSet<>();
+        }
+
+        // Get the Markov blanket for x in G2.
+        Set<Node> mbX = markovBlanket(x, G2);
+        mbX.remove(x);
+        mbX.remove(y);
+        mbX.removeAll(G.paths().getDescendants(x));
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
+    }
+
+    /**
+     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Y).
+     *
+     * @param G                the input graph
+     * @param x                the source node
+     * @param y                the target node
+     * @param numSmallestSizes the number of smallest adjustment sets to return
+     * @param graphType        the type of the graph
+     * @return the adjustment sets as a set of sets of nodes
+     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
+     */
+    public static Set<Set<Node>> visualEdgeAdjustments2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
+
+        if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+            return new HashSet<>();
+        }
+
+        // Get the Markov blanket for x in G2.
+        Set<Node> mbX = markovBlanket(y, G2);
+        mbX.remove(x);
+        mbX.remove(y);
+        mbX.removeAll(G.paths().getDescendants(x));
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
+    }
+
+    /**
+     * This method calculates visible-edge adjustments for a given graph, two nodes, a number of smallest sizes, and a
+     * graph type.
+     *
+     * @param G                the input graph
+     * @param x                the first node
+     * @param y                the second node
+     * @param numSmallestSizes the number of smallest sizes to consider
+     * @param graphType        the type of the graph
+     * @return a set of subsets of nodes representing visible-edge adjustments
+     */
+    public static Set<Set<Node>> visibleEdgeAdjustments3(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
+        Graph G2;
+
+        try {
+            G2 = getGraphWithoutXToY(G, x, y, graphType);
+        } catch (Exception e) {
+            return new HashSet<>();
+        }
+
+        if (G2 == null) {
+            return new HashSet<>();
+        }
+
+        if (!G.isAdjacentTo(x, y)) {
+            return new HashSet<>();
+        }
+
+        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
+            return new HashSet<>();
+        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
+            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+            return new HashSet<>();
+        }
+
+        Set<Node> anteriority = G.paths().anteriority(x, y);
+        anteriority.remove(x);
+        anteriority.remove(y);
+        anteriority.removeAll(G.paths().getDescendants(x));
+        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), anteriority, x, y, numSmallestSizes);
+    }
+
+    /**
+     * Returns a graph that is obtained by removing the edge from node x to node y from the input graph. The type of the
+     * output graph is determined by the provided graph type.
+     *
+     * @param G         the input graph
+     * @param x         the starting node of the edge to be removed
+     * @param y         the ending node of the edge to be removed
+     * @param graphType the type of the output graph (CPDAG, PAG, or MAG)
+     * @return the resulting graph after removing the edge from node x to node y
+     * @throws IllegalArgumentException if the input graph type is not legal (must be CPDAG, PAG, or MAG)
+     */
+    public static Graph getGraphWithoutXToY(Graph G, Node x, Node y, GraphType graphType) {
+        if (graphType == GraphType.CPDAG) {
+            return getGraphWithoutXToYMpdag(G, x, y);
+        } else if (graphType == GraphType.PAG) {
+            return getGraphWithoutXToYPag(G, x, y);
+        } else {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG, PAG, or MAG.");
+        }
+    }
+
+    /**
+     * This method returns a graph G2 without the edge between Node x and Node y, creating a Maximum Partially Directed
+     * Acyclic Graph (MPDAG) representation.
+     *
+     * @param G the original graph
+     * @param x the starting node of the edge
+     * @param y the ending node of the edge
+     * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
+     * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
+     *                                  towards y
+     */
+    private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
+        Graph G2 = new EdgeListGraph(G);
+
+        if (!G2.isAdjacentTo(x, y)) {
+            throw new IllegalArgumentException("Edge from x to y must exist.");
+        } else if (Edges.isUndirectedEdge(G2.getEdge(x, y))) {
+            throw new IllegalArgumentException("Edge from x to y must be directed.");
+        } else if (G2.getEdge(x, y).pointsTowards(x)) {
+            throw new IllegalArgumentException("Edge from x to y must point towards y.");
+        }
+
+        G2.removeEdge(x, y);
+        return G2;
+    }
+
+    /**
+     * Returns a graph without the edge from x to y in the given graph. If the edge is undirected, bidirected, or
+     * partially oriented, the method returns null. If the edge is directed, the method orients the edge from x to y and
+     * returns the resulting graph.
+     *
+     * @param G the graph in which to remove the edge
+     * @param x the first node in the edge
+     * @param y the second node in the edge
+     * @return a graph without the edge from x to y
+     * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
+     *                                  towards
+     */
+    private static Graph getGraphWithoutXToYPag(Graph G, Node x, Node y) throws IllegalArgumentException {
+        if (!G.isAdjacentTo(x, y)) return null;
+
+        Edge edge = G.getEdge(x, y);
+
+        if (edge == null) {
+            throw new IllegalArgumentException("Edge from x to y must exist.");
+        } else if (!Edges.isDirectedEdge(edge)) {
+            throw new IllegalArgumentException("Edge from x to y must be directed.");
+        } else if (edge.pointsTowards(x)) {
+            throw new IllegalArgumentException("Edge from x to y must point towards y.");
+        } else if (!G.paths().defVisible(edge)) {
+            throw new IllegalArgumentException("Edge from x to y must be visible.");
+        }
+
+        Graph G2 = new EdgeListGraph(G);
+        G2.removeEdge(x, y);
+        return G2;
+    }
+
+    /**
+     * Returns the subsets T of S such that X _||_ Y | T in G and T is a subset of up to the numSmallestSizes smallest
+     * minimal sizes of subsets for S.
+     *
+     * @param G                the graph in which to compute the subsets
+     * @param S                the set of nodes for which to compute the subsets
+     * @param X                the first node in the separation
+     * @param Y                the second node in the separation
+     * @param numSmallestSizes the number of the smallest sizes for the subsets to return
+     * @return the subsets T of S such that X _||_ Y | T in G and T is a subset of up to the numSmallestSizes minimal
+     * sizes of subsets for S
+     */
+    private static Set<Set<Node>> getNMinimalSubsets(Graph G, Set<Node> S, Node X, Node Y,
+                                                     int numSmallestSizes) {
+        if (numSmallestSizes < 0) {
+            throw new IllegalArgumentException("numSmallestSizes must be greater than or equal to 0.");
+        }
+
+        List<Node> _S = new ArrayList<>(S);
+        Set<Set<Node>> nMinimal = new HashSet<>();
+        var sublists = new SublistGenerator(_S.size(), _S.size());
+        int[] choice;
+        int _n = 0;
+        int size = -1;
+
+        while ((choice = sublists.next()) != null) {
+            List<Node> subset = GraphUtils.asList(choice, _S);
+            HashSet<Node> s = new HashSet<>(subset);
+            if (G.paths().isMSeparatedFrom(X, Y, s, false)) {
+
+                if (choice.length > size) {
+                    size = choice.length;
+                    _n++;
+
+                    if (_n > numSmallestSizes) {
+                        break;
+                    }
+                }
+
+                nMinimal.add(s);
+            }
+        }
+
+        return nMinimal;
+    }
+
+    /**
+     * Computes the anteriority of the given nodes in a graph. An anterior node is a node that has a directed path to
+     * any of the given nodes. This method returns a set of anterior nodes.
+     *
+     * @param G the graph to compute anteriority on
+     * @param x the nodes to compute anteriority for
+     * @return a set of anterior nodes
+     */
+    public static Set<Node> anteriority(Graph G, Node... x) {
+        Set<Node> anteriority = new HashSet<>();
+
+        Z:
+        for (Node z : G.getNodes()) {
+            for (Node _x : x) {
+                if (G.paths().existsDirectedPath(z, _x)) {
+                    anteriority.add(z);
+                }
+            }
+        }
+
+        for (Node _x : x) {
+            anteriority.remove(_x);
+        }
+
+        return anteriority;
+    }
+
+    /**
+     * Determines if the given graph is a directed acyclic graph (DAG).
+     *
+     * @param graph the graph to be checked
+     * @return true if the graph is a DAG, false otherwise
+     */
     public static boolean isDag(Graph graph) {
         boolean allDirected = true;
 
@@ -1717,6 +2351,9 @@ public final class GraphUtils {
      * spec consists of a comma separated list of edge specs of the forms just used in the previous sentence.
      * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify a node as latent, use "Latent()."
      * Example: "Latent(L1),Y-&gt;L1."
+     *
+     * @param spec a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph convert(String spec) {
         Graph graph = new EdgeListGraph();
@@ -1731,8 +2368,7 @@ public final class GraphUtils {
             String var1 = st2.nextToken();
 
             if (var1.startsWith("Latent(")) {
-                String latentName =
-                        (String) var1.subSequence(7, var1.length() - 1);
+                String latentName = (String) var1.subSequence(7, var1.length() - 1);
                 GraphNode node = new GraphNode(latentName);
                 node.setNodeType(NodeType.LATENT);
                 graph.addNode(node);
@@ -1759,9 +2395,7 @@ public final class GraphUtils {
             Edge edge = graph.getEdge(nodeA, nodeB);
 
             if (edge != null) {
-                throw new IllegalArgumentException(
-                        "Multiple edges connecting " +
-                                "nodes is not supported.");
+                throw new IllegalArgumentException("Multiple edges connecting " + "nodes is not supported.");
             }
 
             if (edgeSpec.lastIndexOf("-->") != -1) {
@@ -1786,8 +2420,18 @@ public final class GraphUtils {
         return graph;
     }
 
-    // Due to Spirtes.
-    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
+    /**
+     * Applies the GFCI-R0 algorithm to orient edges in a graph based on a reference CPDAG, sepsets, and knowledge. This
+     * method modifies the given graph by changing the orientation of edges. Due to Spirtes.
+     *
+     * @param graph          The graph to be modified.
+     * @param referenceCpdag The reference CPDAG to guide the orientation of edges.
+     * @param sepsets        The sepsets used to determine the orientation of edges.
+     * @param knowledge      The knowledge used to determine the orientation of edges.
+     * @param verbose        Whether to print verbose output.
+     */
+    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge,
+                              boolean verbose) {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         fciOrientbk(knowledge, graph, graph.getNodes());
@@ -1809,18 +2453,65 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (referenceCpdag.isDefCollider(a, b, c)
-                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                    && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
+                    && !referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+
+                    if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+                        continue;
+                    }
+
+                    if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+                        continue;
+                    }
+
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from score search)).");
+
+                        if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
+                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                        }
+
+                        if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
+                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                        }
+                    }
+                } else if (referenceCpdag.isAdjacentTo(a, c)) {// && !graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null && !sepset.contains(b)
-                            && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    if (graph.isAdjacentTo(a, c)) {
+                        graph.removeEdge(a, c);
+                    }
+
+                    if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
+                            continue;
+                        }
+
+                        if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
+                            continue;
+                        }
+
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                        if (verbose) {
+                            double p = sepsets.getPValue(a, c, sepset);
+                            String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
+
+                            TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from test)), p = " + _p + ".");
+
+                            if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
+                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                            }
+
+                            if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
+                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                            }
+                        }
                     }
                 }
             }
@@ -1828,7 +2519,11 @@ public final class GraphUtils {
     }
 
     /**
-     * Orients according to background knowledge
+     * Attempts to orient the edges in the graph based on the given knowledge.
+     *
+     * @param knowledge The knowledge containing the forbidden and required edges to orient.
+     * @param graph     The graph to orient the edges in.
+     * @param variables The list of nodes representing variables in the graph.
      */
     public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1870,6 +2565,17 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Trims the given graph based on the specified trimming style.
+     *
+     * @param targets       the list of target nodes to be trimmed
+     * @param graph         the graph to be trimmed
+     * @param trimmingStyle the style indicating how the graph should be trimmed - 1: No trimming - 2: Trim nodes
+     *                      adjacent to target nodes - 3: Trim nodes in the Markov blanket of target nodes - 4: Trim
+     *                      semidirected arcs adjacent to target nodes
+     * @return the trimmed graph
+     * @throws IllegalArgumentException if an unknown trimming style is given
+     */
     public static Graph trimGraph(List<Node> targets, Graph graph, int trimmingStyle) {
         switch (trimmingStyle) {
             case 1:
@@ -1890,6 +2596,13 @@ public final class GraphUtils {
         return graph;
     }
 
+    /**
+     * Trims the nodes in the graph that are adjacent to any of the target nodes.
+     *
+     * @param targets The list of target nodes.
+     * @param graph   The graph to be trimmed.
+     * @return The trimmed graph.
+     */
     private static Graph trimAdjacentToTarget(List<Node> targets, Graph graph) {
         Graph _graph = new EdgeListGraph(graph);
 
@@ -1909,6 +2622,13 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * Trims the Markov blanket graph based on the given target nodes.
+     *
+     * @param targets the list of target nodes to trim the Markov blanket graph
+     * @param graph   the original graph from which the Markov blanket graph is derived
+     * @return the trimmed Markov blanket graph
+     */
     private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
         Graph mbDag = new EdgeListGraph(graph);
 
@@ -1937,6 +2657,13 @@ public final class GraphUtils {
         return mbDag;
     }
 
+    /**
+     * Trims a semidirected graph by removing nodes that are not reachable from the target nodes.
+     *
+     * @param targets the list of target nodes
+     * @param graph   the original graph to be trimmed
+     * @return a trimmed graph with only the nodes reachable from the target nodes
+     */
     private static Graph trimSemidirected(List<Node> targets, Graph graph) {
         Graph _graph = new EdgeListGraph(graph);
 
@@ -1956,22 +2683,158 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * Checks if the given trek in a graph is a confounding trek. This is a trek from measured node x to measured node y
+     * that has only latent nodes in between.
+     *
+     * @param trueGraph the true graph representing the causal relationships between nodes
+     * @param trek      the trek to be checked
+     * @param x         the first node in the trek
+     * @param y         the last node in the trek
+     * @return true if the trek is a confounding trek, false otherwise
+     */
+    public static boolean isConfoundingTrek(Graph trueGraph, List<Node> trek, Node x, Node y) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            return false;
+        }
+
+        Node source = getTrekSource(trueGraph, trek);
+
+        if (source == x || source == y) {
+            return false;
+        }
+
+        if (trek.size() < 3) {
+            return false;
+        }
+
+        boolean allLatent = true;
+
+        for (int i = 1; i < trek.size() - 1; i++) {
+            Node z = trek.get(i);
+
+            if (z.getNodeType() != NodeType.LATENT) {
+                allLatent = false;
+                break;
+            }
+        }
+
+        return allLatent;
+    }
+
+    /**
+     * This method returns the source node of a given trek in a graph.
+     *
+     * @param graph The graph containing the nodes and edges.
+     * @param trek  The list of nodes representing the trek.
+     * @return The source node of the trek.
+     */
+    public static Node getTrekSource(Graph graph, List<Node> trek) {
+        Node y = trek.get(trek.size() - 1);
+
+        Node source = y;
+
+        // Find the first node where the direction is left to right.
+        for (int i = 0; i < trek.size() - 1; i++) {
+            Node n1 = trek.get(i);
+            Node n2 = trek.get(i + 1);
+
+            if (graph.getEdge(n1, n2).pointsTowards(n2)) {
+                source = n1;
+                break;
+            }
+        }
+
+        return source;
+    }
+
+    /**
+     * Determines if the given bidirected edge has a latent confounder in the true graph.
+     *
+     * @param edge      The edge to check.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
+     * @throws IllegalArgumentException if the edge is not bidirected.
+     */
+    public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        boolean existsLatentConfounder = false;
+
+        for (List<Node> trek : treks) {
+            if (isConfoundingTrek(trueGraph, trek, x, y)) {
+                existsLatentConfounder = true;
+            }
+        }
+
+        return existsLatentConfounder;
+    }
+
+    /**
+     * The GraphType enum represents the types of graphs that can be used in the application.
+     */
+    public enum GraphType {
+
+        /**
+         * The CPDAG graph type.
+         */
+        CPDAG,
+
+        /**
+         * The PAG graph type.
+         */
+        PAG
+    }
+
+    /**
+     * The Counts class represents a matrix of counts for different edge types.
+     */
     private static class Counts {
 
+        /**
+         * The counts.
+         */
         private final int[][] counts;
 
+        /**
+         * Constructs a new Counts.
+         */
         public Counts() {
             this.counts = new int[8][6];
         }
 
+        /**
+         * Increments the count at the specified matrix position.
+         *
+         * @param m the row index of the matrix
+         * @param n the column index of the matrix
+         */
         public void increment(int m, int n) {
             this.counts[m][n]++;
         }
 
+        /**
+         * Returns the count at the specified matrix position.
+         *
+         * @param m the row index of the matrix
+         * @param n the column index of the matrix
+         * @return the count at the specified matrix position
+         */
         public int getCount(int m, int n) {
             return this.counts[m][n];
         }
 
+        /**
+         * Adds the counts from another Counts object to this Counts object.
+         *
+         * @param counts2 the Counts object containing the counts to add
+         */
         public void addAll(Counts counts2) {
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 6; j++) {
@@ -1980,47 +2843,121 @@ public final class GraphUtils {
             }
         }
 
+        /**
+         * Returns the counts.
+         *
+         * @return a int[][]
+         */
         public int[][] countArray() {
             return this.counts;
         }
     }
 
+    /**
+     * Represents a comparison between two graphs.
+     */
     public static class GraphComparison {
 
+        /**
+         * Counts.
+         */
         private final int[][] counts;
+
+        /**
+         * Adjacency false negatives.
+         */
         private final int adjFn;
+
+        /**
+         * Adjacency false positives.
+         */
         private final int adjFp;
+
+        /**
+         * Adjacency correct.
+         */
         private final int adjCorrect;
-        private final int arrowptFn;
-        private final int arrowptFp;
-        private final int arrowptCorrect;
 
+        /**
+         * Arrowhead false negatives.
+         */
+        private final int ahdFn;
+
+        /**
+         * Arrowhead false positives.
+         */
+        private final int ahdFp;
+
+        /**
+         * Arrowhead correct.
+         */
+        private final int ahdCorrect;
+
+        /**
+         * Adjacency precision.
+         */
         private final double adjPrec;
-        private final double adjRec;
-        private final double arrowptPrec;
-        private final double arrowptRec;
 
+        /**
+         * Adjacency recall.
+         */
+        private final double adjRec;
+
+        /**
+         * Arrowhead precision.
+         */
+        private final double ahdPrec;
+
+        /**
+         * Arrowhead recall.
+         */
+        private final double ahdRec;
+
+        /**
+         * Structural Hamming distance.
+         */
         private final int shd;
 
+        /**
+         * Edges added.
+         */
         private final List<Edge> edgesAdded;
+
+        /**
+         * Edges removed.
+         */
         private final List<Edge> edgesRemoved;
 
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
-                               int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
-                               double arrowptRec, int shd,
-                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                               int[][] counts) {
+        /**
+         * Constructs a new GraphComparison.
+         *
+         * @param adjFn        a int
+         * @param adjFp        a int
+         * @param adjCorrect   a int
+         * @param ahdFn        a int
+         * @param ahdFp        a int
+         * @param ahdCorrect   a int
+         * @param adjPrec      a double
+         * @param adjRec       a double
+         * @param ahdPrec      a double
+         * @param ahdRec       a double
+         * @param shd          a int
+         * @param edgesAdded   a {@link java.util.List} object
+         * @param edgesRemoved a {@link java.util.List} object
+         * @param counts       a int[][]
+         */
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp, int ahdCorrect, double adjPrec, double adjRec, double ahdPrec, double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved, int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
-            this.arrowptFn = arrowptFn;
-            this.arrowptFp = arrowptFp;
-            this.arrowptCorrect = arrowptCorrect;
+            this.ahdFn = ahdFn;
+            this.ahdFp = ahdFp;
+            this.ahdCorrect = ahdCorrect;
 
             this.adjPrec = adjPrec;
             this.adjRec = adjRec;
-            this.arrowptPrec = arrowptPrec;
-            this.arrowptRec = arrowptRec;
+            this.ahdPrec = ahdPrec;
+            this.ahdRec = ahdRec;
 
             this.shd = shd;
             this.edgesAdded = edgesAdded;
@@ -2029,74 +2966,171 @@ public final class GraphUtils {
             this.counts = counts;
         }
 
+        /**
+         * Returns the adjacency false negatives.
+         *
+         * @return the adjacency false negatives.
+         */
         public int getAdjFn() {
             return this.adjFn;
         }
 
+        /**
+         * Returns the adjacency false positives.
+         *
+         * @return the adjacency false positives.
+         */
         public int getAdjFp() {
             return this.adjFp;
         }
 
+        /**
+         * Returns the adjacency correct.
+         *
+         * @return the adjacency correct.
+         */
         public int getAdjCor() {
             return this.adjCorrect;
         }
 
+        /**
+         * Returns the arrowhead false negatives.
+         *
+         * @return the arrowhead false negatives.
+         */
         public int getAhdFn() {
-            return this.arrowptFn;
+            return this.ahdFn;
         }
 
+        /**
+         * Returns the arrowhead false positives.
+         *
+         * @return the arrowhead false positives.
+         */
         public int getAhdFp() {
-            return this.arrowptFp;
+            return this.ahdFp;
         }
 
+        /**
+         * Returns the arrowhead correct.
+         *
+         * @return the arrowhead correct.
+         */
         public int getAhdCor() {
-            return this.arrowptCorrect;
+            return this.ahdCorrect;
         }
 
+        /**
+         * Returns the adjacency precision.
+         *
+         * @return the adjacency precision.
+         */
         public int getShd() {
             return this.shd;
         }
 
+        /**
+         * Returns the edges added.
+         *
+         * @return the edges added.
+         */
         public List<Edge> getEdgesAdded() {
             return this.edgesAdded;
         }
 
+        /**
+         * Returns the edges removed.
+         *
+         * @return the edges removed.
+         */
         public List<Edge> getEdgesRemoved() {
             return this.edgesRemoved;
         }
 
+        /**
+         * Returns the adjaency precision.
+         *
+         * @return the adjacency precision.
+         */
         public double getAdjPrec() {
             return this.adjPrec;
         }
 
+        /**
+         * Returns the adjacency recall.
+         *
+         * @return the adjacency recall.
+         */
         public double getAdjRec() {
             return this.adjRec;
         }
 
+        /**
+         * Returns the arrowhead precision.
+         *
+         * @return the arrowhead precision.
+         */
         public double getAhdPrec() {
-            return this.arrowptPrec;
+            return this.ahdPrec;
         }
 
+        /**
+         * Returns the arrowhead recall.
+         *
+         * @return the arrowhead recall.
+         */
         public double getAhdRec() {
-            return this.arrowptRec;
+            return this.ahdRec;
         }
 
+        /**
+         * Returns the counts.
+         *
+         * @return the counts.
+         */
         public int[][] getCounts() {
             return this.counts;
         }
     }
 
+    /**
+     * Two-cycle errors.
+     */
     public static class TwoCycleErrors {
+
+        /**
+         * The number of correct edges.
+         */
         public int twoCycCor;
+
+        /**
+         * The number of false negatives.
+         */
         public int twoCycFn;
+
+        /**
+         * The number of false positives.
+         */
         public int twoCycFp;
 
+        /**
+         * Constructs a new TwoCycleErrors.
+         *
+         * @param twoCycCor the number of correct edges.
+         * @param twoCycFn  the number of false negatives.
+         * @param twoCycFp  the number of false positives.
+         */
         public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
             this.twoCycCor = twoCycCor;
             this.twoCycFn = twoCycFn;
             this.twoCycFp = twoCycFp;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return a string representation of this object.
+         */
         public String toString() {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }

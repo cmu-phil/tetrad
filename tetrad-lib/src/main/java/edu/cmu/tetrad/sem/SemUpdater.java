@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.Vector;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,16 +40,31 @@ import java.util.List;
  * the Bayes net, possibly with additional information about which variables in the Bayes net have been manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.bayes.Evidence
  * @see edu.cmu.tetrad.bayes.Proposition
  * @see edu.cmu.tetrad.bayes.Manipulation
  */
 public class SemUpdater implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The SEM to be updated.
+     */
     private final SemIm semIm;
+
+    /**
+     * The evidence to be used in the update.
+     */
     private SemEvidence evidence;
 
+    /**
+     * <p>Constructor for SemUpdater.</p>
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemUpdater(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
@@ -61,17 +77,26 @@ public class SemUpdater implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemUpdater} object
      */
     public static SemUpdater serializableInstance() {
         return new SemUpdater(SemIm.serializableInstance());
     }
 
+    /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEvidence} object
+     */
     public SemEvidence getEvidence() {
         return this.evidence;
     }
 
     /**
      * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
+     *
+     * @param evidence a {@link edu.cmu.tetrad.sem.SemEvidence} object
      */
     public void setEvidence(SemEvidence evidence) {
         if (evidence == null) {
@@ -83,6 +108,8 @@ public class SemUpdater implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
      * @return the Bayes instantiated model that is being updated.
      */
     public SemIm getSemIm() {
@@ -91,6 +118,8 @@ public class SemUpdater implements TetradSerializable {
 
     /**
      * See http://en.wikipedia.org/wiki/Multivariate_normal_distribution.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemIm getUpdatedSemIm() {
 
@@ -170,10 +199,20 @@ public class SemUpdater implements TetradSerializable {
         return manipulatedSemIm.updatedIm(new Matrix(sigma2.toArray()), mu);
     }
 
+    /**
+     * <p>getManipulatedGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getManipulatedGraph() {
         return createManipulatedGraph(getSemIm().getSemPm().getGraph());
     }
 
+    /**
+     * <p>getManipulatedSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getManipulatedSemIm() {
         SemGraph graph = getSemIm().getSemPm().getGraph();
         SemGraph manipulatedGraph = createManipulatedGraph(graph);

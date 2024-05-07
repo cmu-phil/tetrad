@@ -35,28 +35,92 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Prodies some common implementation pieces of variaous PC-like algorithms, with options for collider discovery type,
+ * Provides some common implementation pieces of various PC-like algorithms, with options for collider discovery type,
  * FAS type, and conflict rule.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class PcCommon implements IGraphSearch {
 
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
+
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
+
+    /**
+     * The knowledge specification to use.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The depth of the search.
+     */
     private int depth = 1000;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The elapsed time of the search.
+     */
     private long elapsedTime;
+
+    /**
+     * The set of collider triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> colliderTriples;
+
+    /**
+     * The set of noncollider triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> noncolliderTriples;
+
+    /**
+     * The set of ambiguous triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> ambiguousTriples;
+
+    /**
+     * Whether to prevent cycles using Meek's rules.
+     */
     private boolean meekPreventCycles;
+
+    /**
+     * Whether to print verbose output.
+     */
     private boolean verbose = false;
+
+    /**
+     * The max path length for the max p collider orientation heuristic.
+     */
     private int maxPathLength = 3;
+
+    /**
+     * The type of FAS to be used.
+     */
     private FasType fasType = FasType.REGULAR;
+
+    /**
+     * The type of collider discovery to do.
+     */
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
+
+    /**
+     * The conflict rule to use.
+     */
     private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
+
+    /**
+     * Which PC heuristic to use (see Causation, Prediction and Search). Default is PcHeuristicType.NONE.
+     */
     private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
 
     /**
@@ -76,34 +140,47 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Orient a single unshielded triple, x*-*y*-*z, in a graph.
      *
+     * @param x            a {@link Node} object
+     * @param y            a {@link Node} object
+     * @param z            a {@link Node} object
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
+     * @param verbose      If verbose output should be printed.
      * @see PcCommon.ConflictRule
      */
-    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
+    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph, boolean verbose) {
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
+                forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
             }
         } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
 
-            System.out.println("Orienting " + graph.getEdge(x, y) + " " + graph.getEdge(z, y));
+            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(z, y);
+            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
         }
 
-        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
+    }
+
+    private static void forceLogMessage(String s, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage(s);
+        }
     }
 
     /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
      * @param maxPathLength The max path length for the max p collider orientation heuristic.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -111,6 +188,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>fasType</code>.</p>
+     *
      * @param fasType The type of FAS to be used.
      */
     public void setFasType(FasType fasType) {
@@ -118,6 +197,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>pcHeuristicType</code>.</p>
+     *
      * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
      *                    PcHeuristicType.NONE.
      * @see PcHeuristicType
@@ -127,16 +208,18 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return true just in case edges will not be added if they would create cycles.
+     * <p>isMeekPreventCycles.</p>
+     *
+     * @return true, just in case edges will not be added if they create cycles.
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
     }
 
     /**
-     * Sets to true just in case edges will not be added if they would create cycles.
+     * Sets to true just in case edges will not be added if they create cycles.
      *
-     * @param meekPreventCycles True just in case edges will not be added if they would create cycles.
+     * @param meekPreventCycles True, just in case edges will not be added if they create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -152,7 +235,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * Runs the search over the given list of nodes only, returning the serach graph.
+     * Runs the search over the given list of nodes only, returning the search graph.
      *
      * @param nodes The nodes to search over.
      * @return The result graph.
@@ -160,8 +243,11 @@ public final class PcCommon implements IGraphSearch {
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
-        this.logger.log("info", "Starting algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting algorithm");
+            this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -174,7 +260,7 @@ public final class PcCommon implements IGraphSearch {
 
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
+                                               "be in the domain of the independence test provided.");
         }
 
         Fas fas;
@@ -200,7 +286,7 @@ public final class PcCommon implements IGraphSearch {
         if (this.graph.paths().existsDirectedCycle())
             throw new IllegalArgumentException("Graph is cyclic after sepsets!");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
             orientCollidersUsingSepsets(sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
@@ -218,6 +304,7 @@ public final class PcCommon implements IGraphSearch {
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
+            orientCollidersMaxP.setVerbose(verbose);
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
@@ -237,11 +324,9 @@ public final class PcCommon implements IGraphSearch {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        forceLogMessage((this.elapsedTime) / 1000. + " s", verbose);
 
         logTriples();
-
-        TetradLogger.getInstance().flush();
 
         return this.graph;
     }
@@ -266,6 +351,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return The elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
@@ -273,6 +360,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return The knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -281,12 +370,16 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
@@ -295,6 +388,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
@@ -304,7 +399,7 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
-     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE due to a Java bug on multicore systems.
      *
      * @param depth The depth.
      */
@@ -315,7 +410,7 @@ public final class PcCommon implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
@@ -331,6 +426,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
      * @return The set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -339,6 +436,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>colliderTriples</code>.</p>
+     *
      * @return The set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -347,6 +446,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>noncolliderTriples</code>.</p>
+     *
      * @return The set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
@@ -363,29 +464,44 @@ public final class PcCommon implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * Logs the collider triples, noncollider triples, and ambiguous triples (i.e. those triples for which there is
+     * ambiguous data about whether they are colliderDiscovery or not). Only logs the information if verbose is set to
+     * true.
+     */
     private void logTriples() {
-        TetradLogger.getInstance().log("info", "\nCollider triples:");
+        if (verbose) {
+            forceLogMessage("\nCollider triples:", verbose);
 
-        for (Triple triple : this.colliderTriples) {
-            TetradLogger.getInstance().log("info", "Collider: " + triple);
-        }
+            for (Triple triple : this.colliderTriples) {
+                forceLogMessage("Collider: " + triple, verbose);
+            }
 
-        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
+            forceLogMessage("\nNoncollider triples:", verbose);
 
-        for (Triple triple : this.noncolliderTriples) {
-            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
-        }
+            for (Triple triple : this.noncolliderTriples) {
+                forceLogMessage("Noncollider: " + triple, verbose);
+            }
 
-        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliderDiscovery or not):");
+            forceLogMessage("""
 
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
+                    Ambiguous triples (i.e. list of triples for which\s
+                    there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
+
+            for (Triple triple : getAmbiguousTriples()) {
+                forceLogMessage("Ambiguous: " + triple, verbose);
+            }
+
         }
     }
 
+    /**
+     * Orients unshielded triples conservatively based on the given knowledge.
+     *
+     * @param knowledge the knowledge used for orientation
+     */
     private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        forceLogMessage("Starting Collider Orientation:", verbose);
 
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -418,10 +534,9 @@ public final class PcCommon implements IGraphSearch {
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph);
+                        PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
+                        this.colliderTriples.add(new Triple(x, y, z));
                     }
-
-                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (isNoncolliderSepset(y, sepsetsxz)) {
                     this.noncolliderTriples.add(new Triple(x, y, z));
                 } else {
@@ -432,9 +547,17 @@ public final class PcCommon implements IGraphSearch {
             }
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        forceLogMessage("Finishing Collider Orientation.", verbose);
     }
 
+    /**
+     * Retrieves the set of separation sets between two nodes in a graph.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @param g The graph
+     * @return The set of separation sets between node i and node k
+     */
     private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
         List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
@@ -473,6 +596,13 @@ public final class PcCommon implements IGraphSearch {
         return sepsets;
     }
 
+    /**
+     * Checks if a given node is a collider, according to any of the separation sets.
+     *
+     * @param j       The node to check if it is a collider.
+     * @param sepsets The set of separation sets to check for colliders.
+     * @return True if the node is a collider in any of the separation sets, false otherwise.
+     */
     private boolean isColliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
@@ -483,6 +613,13 @@ public final class PcCommon implements IGraphSearch {
         return true;
     }
 
+    /**
+     * Checks if a given node is a noncollider, according to any of the separation sets.
+     *
+     * @param j       The node to check if it is a noncollider.
+     * @param sepsets The set of separation sets to check for noncolliders.
+     * @return True if the node is a noncollider in all of the separation sets, false otherwise.
+     */
     private boolean isNoncolliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
@@ -493,23 +630,38 @@ public final class PcCommon implements IGraphSearch {
         return true;
     }
 
+    /**
+     * Checks if colliders are allowed based on the given knowledge.
+     *
+     * @param x         The first node.
+     * @param y         The second node.
+     * @param z         The third node.
+     * @param knowledge The knowledge object containing the required and forbidden relationships.
+     * @return True if colliders are allowed based on the given knowledge, false otherwise.
+     */
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         boolean result = true;
         if (knowledge != null) {
             result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
-                    && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+                     && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
         }
         if (!result) return false;
         if (knowledge == null) {
             return true;
         }
         return !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
-                && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+               && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
     }
 
     /**
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
      * just in case y is in Sepset({x, z}).
+     *
+     * @param set          the sepset map containing the sepsets between nodes
+     * @param knowledge    the knowledge object used for required and forbidden edges
+     * @param graph        the graph containing all the nodes
+     * @param verbose      a flag indicating whether to display verbose output
+     * @param conflictRule the conflict resolution rule to use when orienting colliders
      */
     private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                              ConflictRule conflictRule) {
@@ -517,7 +669,7 @@ public final class PcCommon implements IGraphSearch {
             System.out.println("FAS Sepset orientation...");
         }
 
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
+        forceLogMessage("Starting Collider Orientation:", verbose);
 
         List<Node> nodes = graph.getNodes();
 
@@ -552,22 +704,23 @@ public final class PcCommon implements IGraphSearch {
                     boolean result1 = true;
                     if (knowledge != null) {
                         result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString())
-                                && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
+                                  && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
                     }
                     if (result1) {
                         boolean result = true;
                         if (knowledge != null) {
                             result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
-                                    && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                                     && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                         }
                         if (result) {
-                            PcCommon.orientCollider(a, b, c, conflictRule, graph);
+                            PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
 
                             if (verbose) {
                                 System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                             }
 
-                            TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
+                            colliderTriples.add(new Triple(a, b, c));
+                            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                         }
                     }
                 }
@@ -576,12 +729,36 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * <p>NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
-     * edges in reverse order using p-values of associated independence facts. See this reference:</p>
-     *
-     * <p>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+     * The PC heuristic type, where this is taken from Causation, Prediction, and Search.
+     * <p>
+     * NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
+     * edges in reverse order using p-values of associated independence facts. See this reference:
+     * <p>
+     * Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.
      */
-    public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+    public enum PcHeuristicType {
+
+        /**
+         * Sort nodes alphabetically.
+         */
+        HEURISTIC_1,
+
+        /**
+         * Sort edges by p-value.
+         */
+        HEURISTIC_2,
+
+        /**
+         * Sort edges in reverse order using p-values of associated independence facts.
+         */
+        HEURISTIC_3,
+
+        /**
+         * No heuristic.
+         */
+        NONE
+
+    }
 
     /**
      * Gives the type of FAS used, regular or stable.
@@ -590,10 +767,21 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see FasType
      */
-    public enum FasType {REGULAR, STABLE}
+    public enum FasType {
+
+        /**
+         * Regular FAS.
+         */
+        REGULAR,
+
+        /**
+         * Stable FAS.
+         */
+        STABLE
+    }
 
     /**
-     * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with
+     * <p>Give the options for the collider discovery algorithm to use--FAS with sepsets reasoning, FAS with
      * conservative reasoning, or FAS with Max P reasoning. See these respective references:</p>
      *
      * <p>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
@@ -608,7 +796,24 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see ColliderDiscovery
      */
-    public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
+    public enum ColliderDiscovery {
+
+        /**
+         * FAS with conservative reasoning.
+         */
+        CONSERVATIVE,
+
+        /**
+         * FAS with sepsets reasoning.
+         */
+        FAS_SEPSETS,
+
+        /**
+         * FAS with Max P reasoning.
+         */
+        MAX_P
+
+    }
 
     /**
      * Gives the type of conflict to be used, priority (when there is a conflict, keep the orientation that has already
@@ -619,6 +824,23 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see ConflictRule
      */
-    public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
+    public enum ConflictRule {
+
+        /**
+         * When there is a conflict, orient a bidirected edge.
+         */
+        ORIENT_BIDIRECTED,
+
+        /**
+         * When there is a conflict, use the new orientation.
+         */
+        OVERWRITE_EXISTING,
+
+        /**
+         * When there is a conflict, keep the orientation that has already been made.
+         */
+        PRIORITIZE_EXISTING
+
+    }
 }
 

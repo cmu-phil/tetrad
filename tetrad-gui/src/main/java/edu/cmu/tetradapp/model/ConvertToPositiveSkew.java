@@ -35,6 +35,7 @@ import java.util.List;
  * Converts a continuous data set to a correlation matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ConvertToPositiveSkew extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -46,11 +47,9 @@ public class ConvertToPositiveSkew extends DataWrapper {
         DataModelList outList = new DataModelList();
 
         for (DataModel model : inList1) {
-            if (!(model instanceof DataSet)) {
+            if (!(model instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
-
-            DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
@@ -85,6 +84,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

@@ -27,6 +27,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -37,9 +38,11 @@ import java.util.*;
  * number of variables, the positive definiteness is "spot-checked"--that is, checked for various submatrices.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.data.CorrelationMatrix
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The wrapped covariance matrix data.
@@ -47,44 +50,41 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     private final Matrix _covariancesMatrix;
     /**
      * The name of the covariance matrix.
-     *
-     * @serial May be null.
      */
     private String name;
     /**
      * The variables (in order) for this covariance matrix.
-     *
-     * @serial Cannot be null.
      */
     private List<Node> variables;
     /**
      * The size of the sample from which this covariance matrix was calculated.
-     *
-     * @serial Range &gt; 0.
      */
     private int sampleSize;
     /**
      * The list of selected variables.
-     *
-     * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
     /**
      * The knowledge for this data.
-     *
-     * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs a new covariance matrix from the given data set.
      *
-     * @throws IllegalArgumentException if this is not a continuous data set.
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix(DataSet dataSet) {
         this(dataSet, true);
     }
 
+    /**
+     * <p>Constructor for CovarianceMatrix.</p>
+     *
+     * @param dataSet       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param biasCorrected a boolean
+     */
     public CovarianceMatrix(DataSet dataSet, boolean biasCorrected) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
@@ -104,14 +104,21 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @param variables  the list of variables (in order) for the covariance matrix.
      * @param matrix     an square array of containing covariances.
      * @param sampleSize the sample size of the data for these covariances.
-     * @throws IllegalArgumentException if the given matrix is not symmetric (to a tolerance of 1.e-5) and positive
-     *                                  definite, if the number of variables does not equal the dimension of m, or if
-     *                                  the sample size is not positive.
+     * @throws java.lang.IllegalArgumentException if the given matrix is not symmetric (to a tolerance of 1.e-5) and
+     *                                            positive definite, if the number of variables does not equal the
+     *                                            dimension of m, or if the sample size is not positive.
      */
     public CovarianceMatrix(List<Node> variables, Matrix matrix, int sampleSize) {
         this(variables, matrix.toArray(), sampleSize);
     }
 
+    /**
+     * <p>Constructor for CovarianceMatrix.</p>
+     *
+     * @param variables  a {@link java.util.List} object
+     * @param matrix     an array of {@link double} objects
+     * @param sampleSize a int
+     */
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
                             int sampleSize) {
         if (variables.size() > matrix.length && variables.size() != matrix[0].length) {
@@ -126,6 +133,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     /**
      * Copy constructor.
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.CovarianceMatrix} object
      */
     public CovarianceMatrix(CovarianceMatrix covMatrix) {
 
@@ -138,12 +147,19 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         this.selectedVariables = covMatrix.getSelectedVariables();
     }
 
+    /**
+     * <p>Constructor for CovarianceMatrix.</p>
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public CovarianceMatrix(ICovarianceMatrix covMatrix) {
         this(covMatrix.getVariables(), covMatrix.getMatrix(), covMatrix.getSampleSize());
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix serializableInstance() {
         List<Node> variables = new ArrayList<>();
@@ -154,12 +170,17 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) {
             throw new IllegalArgumentException("Wrong # of variables.");
@@ -167,13 +188,15 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(variables.get(i).getName())) {
                 throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
-                        + "as the variable being substituted for it.");
+                                                   + "as the variable being substituted for it.");
             }
             this.variables = variables;
         }
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return the variable names, in order.
      */
     public final List<String> getVariableNames() {
@@ -188,7 +211,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return the variable name at the given index.
+     * {@inheritDoc}
      */
     public final String getVariableName(int index) {
         if (index >= getVariables().size()) {
@@ -200,6 +223,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getDimension.</p>
+     *
      * @return the dimension of the covariance matrix.
      */
     public final int getDimension() {
@@ -215,6 +240,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return this.sampleSize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public final void setSampleSize(int sampleSize) {
         if (sampleSize <= 0) {
             throw new IllegalArgumentException("Sample size must be > 0.");
@@ -225,12 +253,16 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     /**
      * Gets the name of the covariance matrix.
+     *
+     * @return a {@link java.lang.String} object
      */
     public final String getName() {
         return this.name;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the covariance matrix.
      */
     public final void setName(String name) {
@@ -238,6 +270,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge associated with this data.
      */
     public final Knowledge getKnowledge() {
@@ -245,6 +279,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Associates knowledge with this data.
      */
     public final void setKnowledge(Knowledge knowledge) {
@@ -256,6 +292,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param indices an array of {@link int} objects
      * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
@@ -269,6 +308,12 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param submatrixVarNames a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public final ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames) {
         String[] varNames = new String[submatrixVarNames.size()];
 
@@ -280,6 +325,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param submatrixVarNames an array of {@link java.lang.String} objects
      * @return a submatrix of this matrix, with variables in the given order.
      */
     public final CovarianceMatrix getSubmatrix(String[] submatrixVarNames) {
@@ -297,9 +345,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         if (!missing.isEmpty()) {
             throw new IllegalArgumentException(
                     "The following variables in the submatrix are missing from the data: " +
-                            "\n   " + missing +
-                            "\nIf there are lagged variables, try using the data box to convert the data to time " +
-                            "\nlagged data first.");
+                    "\n   " + missing +
+                    "\nIf there are lagged variables, try using the data box to convert the data to time " +
+                    "\nlagged data first.");
         }
 
 //        if (!getVariables().containsAll(submatrixVars)) {
@@ -329,13 +377,15 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return the value of element (i,j) in the matrix
+     * {@inheritDoc}
      */
     public final double getValue(int i, int j) {
         return this._covariancesMatrix.get(i, j);
     }
 
     /**
+     * <p>getSize.</p>
+     *
      * @return the size of the square matrix.
      */
     public final int getSize() {
@@ -343,26 +393,40 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getMatrix.</p>
+     *
      * @return a the covariance matrix (not a copy).
      */
     public final Matrix getMatrix() {
         return this._covariancesMatrix;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setMatrix(Matrix matrix) {
         throw new IllegalStateException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public final void select(Node variable) {
         if (this.variables.contains(variable)) {
             getSelectedVariables().add(variable);
         }
     }
 
+    /**
+     * <p>clearSelection.</p>
+     */
     public final void clearSelection() {
         getSelectedVariables().clear();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public final boolean isSelected(Node variable) {
         if (variable == null) {
             throw new NullPointerException("Null variable. Try again.");
@@ -371,6 +435,11 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return getSelectedVariables().contains(variable);
     }
 
+    /**
+     * <p>getSelectedVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public final List<String> getSelectedVariableNames() {
         List<String> selectedVariableNames = new LinkedList<>();
 
@@ -383,6 +452,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     /**
      * Prints out the matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public final String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -412,26 +483,41 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return buf.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -443,17 +529,26 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return new CovarianceMatrix(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setValue(int i, int j, double v) {
         this._covariancesMatrix.set(i, j, v);
         this._covariancesMatrix.set(j, i, v);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeVariables(List<String> remaining) {
         throw new IllegalStateException();
@@ -470,7 +565,12 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -492,6 +592,11 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
     }
 
+    /**
+     * <p>isSingular.</p>
+     *
+     * @return a boolean
+     */
     public boolean isSingular() {
         try {
             _covariancesMatrix.inverse();

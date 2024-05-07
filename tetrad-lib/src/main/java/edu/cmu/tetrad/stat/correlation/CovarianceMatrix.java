@@ -22,6 +22,7 @@ package edu.cmu.tetrad.stat.correlation;
  * Jan 25, 2016 2:13:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class CovarianceMatrix implements Covariance {
 
@@ -31,6 +32,11 @@ public class CovarianceMatrix implements Covariance {
 
     private final int numOfCols;
 
+    /**
+     * <p>Constructor for CovarianceMatrix.</p>
+     *
+     * @param data an array of {@link float} objects
+     */
     public CovarianceMatrix(float[][] data) {
         this.data = data;
         this.numOfRows = data.length;
@@ -50,6 +56,9 @@ public class CovarianceMatrix implements Covariance {
         return mean;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] computeLowerTriangle(boolean biasCorrected) {
         float[] covarianceMatrix = new float[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -75,6 +84,9 @@ public class CovarianceMatrix implements Covariance {
         return covarianceMatrix;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[][] compute(boolean biasCorrected) {
         float[][] covarianceMatrix = new float[this.numOfCols][this.numOfCols];

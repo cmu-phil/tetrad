@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -40,10 +41,12 @@ import java.util.*;
  * to actual values of parameters. Specific values for the Bayes net are stored in a BayesIM object (see).
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
  */
 public final class BayesPm implements Pm, VariableSource {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -311,7 +314,7 @@ public final class BayesPm implements Pm, VariableSource {
 
             if (newCategories.contains(proposedName)) {
                 throw new IllegalArgumentException("Default name already in " +
-                        "list of categories: " + proposedName);
+                                                   "list of categories: " + proposedName);
             }
 
             newCategories.add(proposedName);
@@ -321,20 +324,18 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Will return true if the argument is a BayesPm with the same graph and variables.
-     *
-     * @param o Ibid.
      */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof BayesPm)) {
+        if (!(o instanceof BayesPm bayesPm)) {
             return false;
         }
-
-        BayesPm bayesPm = (BayesPm) o;
 
         return bayesPm.dag.equals(this.dag) && bayesPm.nodesToVariables.equals(this.nodesToVariables);
 
@@ -350,6 +351,11 @@ public final class BayesPm implements Pm, VariableSource {
         mapNodeToVariable(node, categories);
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         List<Node> variables = new LinkedList<>();
 
@@ -406,6 +412,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Prints out the list of values for each node.
+     *
      * @return Ibid.
      */
     public String toString() {
@@ -431,6 +438,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node by the given name.
+     *
      * @param nodeName Ibid.
      * @return Ibid.
      */
@@ -440,6 +448,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node at the given index.
+     *
      * @param index Ibid.
      * @return Ibid.
      */
@@ -449,6 +458,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node index.
+     *
      * @return -1.
      */
     public int getNodeIndex() {
@@ -457,6 +467,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the number of nodes.
+     *
      * @return Ibid.
      */
     public int getNumNodes() {
@@ -521,7 +532,7 @@ public final class BayesPm implements Pm, VariableSource {
 
             if (values.contains(proposedName)) {
                 throw new IllegalArgumentException("Default name already in " +
-                        "list of values: " + proposedName);
+                                                   "list of values: " + proposedName);
             }
 
             values.add(proposedName);
@@ -570,7 +581,12 @@ public final class BayesPm implements Pm, VariableSource {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -33,6 +33,7 @@ import java.util.List;
  * calculating marginals.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.util.MultiDimIntTable
  */
 public final class CellTable {
@@ -102,6 +103,8 @@ public final class CellTable {
     }
 
     /**
+     * <p>getNumValues.</p>
+     *
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */

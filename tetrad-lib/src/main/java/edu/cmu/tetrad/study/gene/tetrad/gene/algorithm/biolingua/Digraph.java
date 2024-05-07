@@ -27,14 +27,15 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.MatrixF;
 import java.io.IOException;
 
 /**
- * Simple implementation of a directed Graph.  edges are just represented by float values (a zero == no edge) stored in
- * a matrix.
+ * Simple implementation of a directed Graph edges are just represented by float values (a zero == no edge) stored in a
+ * matrix.
  * <p>
  * Two edges of different orientation can exist between two nodes, but no more than one edge of a given orientation can
  * exist between two nodes.
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class Digraph extends BasicGraph {
 
@@ -62,6 +63,7 @@ public class Digraph extends BasicGraph {
      * Creates a OldDigraph reading it from file <code>fname</code>.
      *
      * @param fname the name of the file to read the graph from.
+     * @throws java.io.IOException if an error occurs while reading the file.
      */
     public Digraph(String fname) throws IOException {
         super(fname);
@@ -84,6 +86,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns a clone of this graph
+     *
      * @return a clone of this graph
      */
     public Object clone() {
@@ -107,11 +110,9 @@ public class Digraph extends BasicGraph {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets a value of edge between nodes i and j
-     *
-     * @param i     the first node
-     * @param j     the second node
-     * @param value the value of the edge
      */
     public void setEdge(int i, int j, double value) {
         double e = this.getEdges().getDoubleValue(i, j);
@@ -128,11 +129,9 @@ public class Digraph extends BasicGraph {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the value of edge between nodes i and j
-     *
-     * @param i the first node
-     * @param j the second node
-     * @return the value of edge between nodes i and j
      */
     public double getEdge(int i, int j) {
         return this.getEdges().getDoubleValue(i, j);
@@ -151,7 +150,7 @@ public class Digraph extends BasicGraph {
                 double e = this.getEdges().getDoubleValue(i, j);
                 if (e != 0.0) {
                     s = s + i + "  " + j + " \t" + e +
-                            "\n";  //+"\t// # "+ne+"\n";
+                        "\n";  //+"\t// # "+ne+"\n";
                     ne++;
                 }
             }
@@ -177,7 +176,7 @@ public class Digraph extends BasicGraph {
      * 0 (e.g. not null)
      *
      * @param j the index of the node
-     * @return
+     * @return an array with the indexes of the parents of node i.
      */
     public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {

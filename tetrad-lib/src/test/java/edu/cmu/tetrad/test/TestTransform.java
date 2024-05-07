@@ -30,7 +30,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -53,8 +53,8 @@ public final class TestTransform {
         try {
             final String eq = "w = (x + y) * x";
             Transformation.transform(data, eq);
-            assertTrue(data.getDouble(0, 2) == 2.0);
-            assertTrue(data.getDouble(0, 2) == 2.0);
+            assertEquals(2.0, data.getDouble(0, 2), 0.0);
+            assertEquals(2.0, data.getDouble(0, 2), 0.0);
         } catch (Exception ex) {
             ex.printStackTrace();
             fail(ex.getMessage());
@@ -85,24 +85,24 @@ public final class TestTransform {
         try {
             String eq = "z = (x + y)";
             Transformation.transform(copy, eq);
-            assertTrue(copy.getDouble(0, 2) == 3.0);
-            assertTrue(copy.getDouble(1, 2) == 9.0);
-            assertTrue(copy.getDouble(2, 2) == 9.0);
+            assertEquals(3.0, copy.getDouble(0, 2), 0.0);
+            assertEquals(9.0, copy.getDouble(1, 2), 0.0);
+            assertEquals(9.0, copy.getDouble(2, 2), 0.0);
 
             copy = data.copy();
             eq = "x = x + 3";
             Transformation.transform(copy, eq);
-            assertTrue(copy.getDouble(0, 0) == 5.0);
-            assertTrue(copy.getDouble(1, 0) == 6.0);
-            assertTrue(copy.getDouble(2, 0) == 7.0);
+            assertEquals(5.0, copy.getDouble(0, 0), 0.0);
+            assertEquals(6.0, copy.getDouble(1, 0), 0.0);
+            assertEquals(7.0, copy.getDouble(2, 0), 0.0);
 
 
             copy = data.copy();
             eq = "x = pow(x, 2) + y + z";
             Transformation.transform(copy, eq);
-            assertTrue(copy.getDouble(0, 0) == 13.0);
-            assertTrue(copy.getDouble(1, 0) == 23.0);
-            assertTrue(copy.getDouble(2, 0) == 29.0);
+            assertEquals(13.0, copy.getDouble(0, 0), 0.0);
+            assertEquals(23.0, copy.getDouble(1, 0), 0.0);
+            assertEquals(29.0, copy.getDouble(2, 0), 0.0);
 
         } catch (ParseException ex) {
             fail(ex.getMessage());

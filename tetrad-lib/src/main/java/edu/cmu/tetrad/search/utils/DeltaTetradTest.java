@@ -34,6 +34,7 @@ import java.util.*;
  * Analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DeltaTetradTest {
     private final int N;
@@ -116,6 +117,7 @@ public class DeltaTetradTest {
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      *
      * @param tetrads The tetrads for which a chi-square is needed.
+     * @return a double
      */
     public double calcChiSquare(Tetrad... tetrads) {
         this.df = tetrads.length;
@@ -150,10 +152,10 @@ public class DeltaTetradTest {
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
                     double rr = 0.5 * (sxy(e, f) * sxy(g, h))
-                            * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
-                            + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
-                            - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
-                            - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
+                                * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
+                                + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
+                                - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
+                                - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
 
                     sigma_ss.set(i, j, rr);
                 } else if (this.cov != null && this.dataSet == null) {
@@ -223,6 +225,8 @@ public class DeltaTetradTest {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the p value for the most recent test.
      */
     public double getPValue() {
@@ -357,11 +361,10 @@ public class DeltaTetradTest {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Sigma)) {
+            if (!(o instanceof Sigma _o)) {
                 throw new IllegalArgumentException();
             }
 
-            Sigma _o = (Sigma) o;
             return (_o.getA().equals(getA()) && _o.getB().equals(getB())) || (_o.getB().equals(getA()) && _o.getA().equals(getB()));
         }
 

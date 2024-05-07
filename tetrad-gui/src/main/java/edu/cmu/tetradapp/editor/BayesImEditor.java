@@ -27,6 +27,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
+import java.util.ArrayList;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
@@ -36,13 +38,23 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    private final JPanel targetPanel;
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
+    private JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes IM.
+     */
     private final BayesImWrapper wrapper;
+
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
@@ -50,9 +62,16 @@ public class BayesImEditor extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public BayesImEditor(BayesImWrapper wrapper) {
         this.wrapper = wrapper;
+        setupBayesImEditor(wrapper);
+    }
+
+    private void setupBayesImEditor(BayesImWrapper wrapper) {
+        final JPanel targetPanel;
         setLayout(new BorderLayout());
 
         this.targetPanel = new JPanel();
@@ -63,7 +82,11 @@ public class BayesImEditor extends JPanel {
         add(this.targetPanel, BorderLayout.CENTER);
         validate();
 
-        if (wrapper.getNumModels() > 1) {
+        setup2(wrapper);
+    }
+
+    private void setup2(BayesImWrapper wrapper) {
+        if (wrapper.getNumModels() > 0) {
             JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
@@ -92,25 +115,35 @@ public class BayesImEditor extends JPanel {
     }
 
     private void setEditorPanel() {
+        removeAll();
+
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        BayesIm bayesIm = this.wrapper.getBayesIm();
-        Graph graph = bayesIm.getDag();
+        Graph graph = wrapper.getBayesIm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveBayesImXmlAction(this));
-        file.add(new LoadBayesImXmlAction(this.wrapper, this));
-        file.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
+
+        JMenu load = new JMenu("Load");
+        JMenu save = new JMenu("Save");
+
+        file.add(load);
+        file.add(save);
+
+        save.add(new SaveBayesImXmlAction(this));
+        save.add(new SaveBayesImBifAction(this));
+        load.add(new LoadBayesImXmlAction(this.wrapper, this));
+        load.add(new LoadBayesImBifAction(this.wrapper, this));
+        load.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
         panel.add(menuBar, BorderLayout.NORTH);
 
-        this.wizard = new BayesImEditorWizard(bayesIm, workbench);
+        this.wizard = new BayesImEditorWizard(wrapper.getBayesIm(), workbench);
         this.wizard.enableEditing(false);
 
         this.wizard.addPropertyChangeListener(evt -> {
@@ -147,12 +180,16 @@ public class BayesImEditor extends JPanel {
             }
         });
 
+        this.targetPanel.removeAll();
+        this.targetPanel.setLayout(new BorderLayout());
         this.targetPanel.add(panel, BorderLayout.CENTER);
         revalidate();
         repaint();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -162,17 +199,27 @@ public class BayesImEditor extends JPanel {
     }
 
     /**
+     * <p>Getter for the field <code>wizard</code>.</p>
+     *
      * @return a reference to this editor.
      */
     public BayesImEditorWizard getWizard() {
         return this.wizard;
     }
 
-    public void getBayesIm() {
-        removeAll();
+    /**
+     * <p>getBayesIm.</p>
+     */
+    public void retrieveBayesIm() {
         setEditorPanel();
-        revalidate();
-        repaint();
+
+        add(this.targetPanel, BorderLayout.CENTER);
+        validate();
+
+        setup2(wrapper);
+
+        wrapper.setModelIndex(0);
+
         firePropertyChange("modelChanged", null, null);
     }
 

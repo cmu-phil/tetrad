@@ -24,22 +24,36 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
+ * <p>PagFromDagGraphWrapper class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for PagFromDagGraphWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for PagFromDagGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public PagFromDagGraphWrapper(Graph graph) {
         super(graph);
 
@@ -50,10 +64,15 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
         Graph pag = GraphTransforms.dagToPag(graph);
         setGraph(pag);
 
-        TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");
-        TetradLogger.getInstance().log("CPDAG", pag + "");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating allow_latent_common_causes from DAG.");
+        TetradLogger.getInstance().forceLogMessage(pag + "");
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.PagFromDagGraphWrapper} object
+     */
     public static PagFromDagGraphWrapper serializableInstance() {
         return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
     }
@@ -61,6 +80,9 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     //======================== Private Method ======================//
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

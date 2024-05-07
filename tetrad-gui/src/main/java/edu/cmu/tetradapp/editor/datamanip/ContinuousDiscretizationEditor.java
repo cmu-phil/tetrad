@@ -195,6 +195,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     }
 
     /**
+     * <p>getNumCategories.</p>
+     *
      * @return the number of categories.
      */
     public int getNumCategories() {
@@ -203,6 +205,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
     /**
      * Sets the number of categories to use.
+     *
+     * @param numCategories a int
      */
     public void setNumCategories(int numCategories) {
         if (numCategories < 2) {
@@ -231,6 +235,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     }
 
     /**
+     * <p>getDiscretizationSpec.</p>
+     *
      * @return the discretization spec created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {
@@ -247,6 +253,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
     /**
      * Sets the discretization spec that should be used by the editor.
+     *
+     * @param _spec a {@link edu.cmu.tetrad.data.DiscretizationSpec} object
      */
     public void setDiscretizationSpec(DiscretizationSpec _spec) {
         ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) _spec;
@@ -267,6 +275,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     }
 
     /**
+     * <p>Getter for the field <code>method</code>.</p>
+     *
      * @return the method.
      */
     public Method getMethod() {
@@ -277,6 +287,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
     /**
      * Changes the method.
+     *
+     * @param method a {@link edu.cmu.tetradapp.editor.datamanip.ContinuousDiscretizationEditor.Method} object
      */
     public void setMethod(Method method) {
         this.method = method;

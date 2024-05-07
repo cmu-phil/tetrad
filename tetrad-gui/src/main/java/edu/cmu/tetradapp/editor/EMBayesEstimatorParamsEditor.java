@@ -33,6 +33,7 @@ import java.awt.*;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
+ * @version $Id: $Id
  */
 public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEditor {
 
@@ -41,14 +42,27 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
      */
     private Parameters params;
 
+    /**
+     * <p>Constructor for EMBayesEstimatorParamsEditor.</p>
+     */
     public EMBayesEstimatorParamsEditor() {
 
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // Ignore.
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -77,15 +91,15 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The dataset will be used to iteratively estmate the parameters " +
-                "<br>of a Bayes IM until the distance between the vectors of parameters" +
-                "<br>of successive iterates is less than a tolerance set by the user" +
-                "</html>"));
+                          "The dataset will be used to iteratively estmate the parameters " +
+                          "<br>of a Bayes IM until the distance between the vectors of parameters" +
+                          "<br>of successive iterates is less than a tolerance set by the user" +
+                          "</html>"));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>The default value is 0.0001</i>" +
-                "</html>"));
+                          "</html>"));
         b7.add(toleranceField);
 
         b1.add(b2);
@@ -96,6 +110,8 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     }
 
     /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
      * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
      * textfields can edit the model.)
      */
@@ -103,6 +119,9 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

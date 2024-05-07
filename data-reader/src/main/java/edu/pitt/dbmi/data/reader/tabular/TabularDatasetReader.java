@@ -28,6 +28,7 @@ import java.util.Set;
  * Dec 14, 2018 10:58:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface TabularDatasetReader extends DatasetReader {
 
@@ -35,7 +36,7 @@ public interface TabularDatasetReader extends DatasetReader {
      * Read in the data.
      *
      * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * @throws java.io.IOException If an I/O error occurs.
      */
     Data readInData() throws IOException;
 
@@ -44,7 +45,7 @@ public interface TabularDatasetReader extends DatasetReader {
      *
      * @param namesOfColumnsToExclude the names of columns to exclude.
      * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * @throws java.io.IOException If an I/O error occurs.
      */
     Data readInData(Set<String> namesOfColumnsToExclude) throws IOException;
 
@@ -53,7 +54,7 @@ public interface TabularDatasetReader extends DatasetReader {
      *
      * @param columnsToExclude the columns to exclude.
      * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * @throws java.io.IOException If an I/O error occurs.
      */
     Data readInData(int[] columnsToExclude) throws IOException;
 

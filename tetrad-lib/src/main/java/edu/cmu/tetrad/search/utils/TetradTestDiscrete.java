@@ -43,11 +43,23 @@ import java.util.List;
  * A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
-
 public final class TetradTestDiscrete implements TetradTest {
+
+    /**
+     * Max number of distinct values for a discrete variable.
+     */
     private static final int MAX_VALUES = 50;
+
+    /**
+     * Grid size for optimizing the polychoric correlation.
+     */
     private static final int RHO_GRID_SIZE = 1000;
+
+    /**
+     * Coefficients for Gaussian quadrature.
+     */
     private static final double[] GHY = {5.55503518732646782452296868771,
             4.77399234341121942970150957712, 4.12199554749184002081690067728,
             3.53197287713767773917138228262, 2.97999120770459800253772781753,
@@ -60,51 +72,158 @@ public final class TetradTestDiscrete implements TetradTest {
             -1.94496294918625384190191671547, -1.44893425065073196265729314868,
             -0.961499634418369064279422271352,
             -0.479450707079107576294598103513};
+    /**
+     * The dataset.
+     */
+    private final DataSet dataSet;
+    /**
+     * Whether to print out verbose information.
+     */
     public boolean verbose;
-    DataSet dataSet;
-    //    int rawdata[][];
-    int[][][][] counts; //bivariate coefs only
-    int[][] values;
-    int[] valueIndices;
-    double[][] thresholds;
-    int[] indices;
-    int[][][][] currentCounts;
-    int currentVar1, currentVar2;
-    double[][] currentFiBuffer;
-    double[][] currentPi;
-    double currentRho;
-    double[] rhoGrid;
-    double[][] polyCorr;
     /**
-     * @serial
+     * the counts.
      */
-    int[][][][] oneFactor4Tests;
+    private int[][][][] counts; //bivariate coefs only
+
     /**
-     * @serial
+     * The values.
      */
-    int[][][][] twoFactor4Tests;
+    private int[][] values;
+
+    /**
+     * The value indices.
+     */
+    private int[] valueIndices;
+
+    /**
+     * The thresholds.
+     */
+    private double[][] thresholds;
+
+    /**
+     * The indices.
+     */
+    private int[] indices;
+
+    /**
+     * The current counts.
+     */
+    private int[][][][] currentCounts;
+
+    /**
+     * First variable in the current tetrad.
+     */
+    private int currentVar1;
+
+    /**
+     * Second variable in the current tetrad.
+     */
+    private int currentVar2;
+
+    /**
+     * The current fi buffer.
+     */
+    private double[][] currentFiBuffer;
+
+    /**
+     * The current pi.
+     */
+    private double[][] currentPi;
+
+    /**
+     * The current rho.
+     */
+    private double currentRho;
+
+    /**
+     * The rho grid.
+     */
+    private double[] rhoGrid;
+
+    /**
+     * The poly corr.
+     */
+    private double[][] polyCorr;
+
+    /**
+     * The one factor4 tests.
+     */
+    private int[][][][] oneFactor4Tests;
+
+    /**
+     * The two factor4 tests.
+     */
+    private int[][][][] twoFactor4Tests;
+
+    /**
+     * The probs.
+     */
     private double[] prob;
+    /**
+     * The temp prob.
+     */
     private double tempProb;
+
+    /**
+     * The sig1.
+     */
     private double sig1;
+
+    /**
+     * The sig2.
+     */
     private double sig2;
+
+    /**
+     * The sig3.
+     */
     private double sig3;
+
+    /**
+     * The sig.
+     */
     private double sig;
+
+    /**
+     * The bvalues.
+     */
     private boolean[] bvalues;
 
+    /**
+     * <p>Constructor for TetradTestDiscrete.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sig     a double
+     */
     public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;
         this.sig = sig;
         initialization();
     }
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return an array of {@link java.lang.String} objects
+     */
     public String[] getVarNames() {
         return this.dataSet.getVariableNames().toArray(new String[0]);
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.dataSet.getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -190,6 +309,9 @@ public final class TetradTestDiscrete implements TetradTest {
         resetCache();
     }
 
+    /**
+     * <p>resetCache.</p>
+     */
     public void resetCache() {
         for (int v1 = 0; v1 < this.values.length; v1++) {
             for (int v2 = v1 + 1; v2 < this.values.length; v2++) {
@@ -211,14 +333,25 @@ public final class TetradTestDiscrete implements TetradTest {
         }
     }
 
+    /**
+     * <p>getSignificance.</p>
+     *
+     * @return a double
+     */
     public double getSignificance() {
         return this.sig;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSignificance(double sig) {
         this.sig = sig;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int tetradScore(int i, int j, int k, int l) {
         if (!oneFactorTest(i, j, k, l)) {
             twoFactorTest(i, l, j, k);
@@ -263,6 +396,8 @@ public final class TetradTestDiscrete implements TetradTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3), and only that.
      */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
@@ -273,17 +408,25 @@ public final class TetradTestDiscrete implements TetradTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests if all tetrad constraints hold
      */
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return oneFactorTest(v1, v2, v3, v4);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         twoFactorTest(v1, v2, v3, v4);
         return this.tempProb;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradHolds(int i, int j, int k, int l) {
         twoFactorTest(i, l, j, k);
         this.prob[0] = this.tempProb;
@@ -378,7 +521,7 @@ public final class TetradTestDiscrete implements TetradTest {
         for (int i = 0; i < outputCorr.length; i++) {
             for (int j = 0; j <= i; j++) {
                 System.out.print((double) ((int) (100. * outputCorr[i][j])) /
-                        100. + "\t");
+                                 100. + "\t");
             }
             System.out.println();
         }
@@ -455,7 +598,7 @@ public final class TetradTestDiscrete implements TetradTest {
             for (int j = 0; j < this.values[this.currentVar2].length; j++) {
                 score -=
                         this.currentCounts[this.currentVar1][this.currentVar2][i][j] *
-                                FastMath.log(this.currentPi[i][j]);
+                        FastMath.log(this.currentPi[i][j]);
             }
         }
         return score;
@@ -469,9 +612,9 @@ public final class TetradTestDiscrete implements TetradTest {
         for (int i = 0; i < this.values[this.currentVar1].length; i++) {
             for (int j = 0; j < this.values[this.currentVar2].length; j++) {
                 this.currentPi[i][j] = this.currentFiBuffer[i + 1][j + 1] -
-                        this.currentFiBuffer[i][j + 1] -
-                        this.currentFiBuffer[i + 1][j] +
-                        this.currentFiBuffer[i][j];
+                                       this.currentFiBuffer[i][j + 1] -
+                                       this.currentFiBuffer[i + 1][j] +
+                                       this.currentFiBuffer[i][j];
             }
         }
     }
@@ -496,28 +639,48 @@ public final class TetradTestDiscrete implements TetradTest {
         return bestRho;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l, int x, int y) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
 
+    /**
+     * <p>getCovMatrix.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return null;
     }

@@ -31,9 +31,22 @@ import java.util.Set;
  * Some utilities for generating misclassification tables for graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MisclassificationUtils {
 
+    /**
+     * <p>Constructor for MisclassificationUtils.</p>
+     */
+    private MisclassificationUtils() {
+    }
+
+    /**
+     * <p>getIndex.</p>
+     *
+     * @param endpoint a {@link edu.cmu.tetrad.graph.Endpoint} object
+     * @return a int
+     */
     public static int getIndex(Endpoint endpoint) {
         if (endpoint == Endpoint.CIRCLE) return 0;
         if (endpoint == Endpoint.ARROW) return 1;
@@ -42,6 +55,13 @@ public class MisclassificationUtils {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>convertNodes.</p>
+     *
+     * @param edges        a {@link java.util.Set} object
+     * @param newVariables a {@link java.util.List} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Edge> convertNodes(Set<Edge> edges, List<Node> newVariables) {
         Set<Edge> newEdges = new HashSet<>();
         Graph convertedGraph = new EdgeListGraph(newVariables);
@@ -72,6 +92,13 @@ public class MisclassificationUtils {
         return newEdges;
     }
 
+    /**
+     * <p>endpointMisclassification.</p>
+     *
+     * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param refGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String endpointMisclassification(Graph estGraph, Graph refGraph) {
         List<Node> _nodes = refGraph.getNodes();
         estGraph = GraphUtils.replaceNodes(estGraph, _nodes);
@@ -116,6 +143,13 @@ public class MisclassificationUtils {
         return table2.toString();
     }
 
+    /**
+     * <p>edgeMisclassifications.</p>
+     *
+     * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param refGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
         estGraph = GraphUtils.replaceNodes(estGraph, refGraph.getNodes());
 

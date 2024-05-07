@@ -3,16 +3,20 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Calculates the F1 statistic for adjacencies. See
  * <p>
- * https://en.wikipedia.org/wiki/F1_score
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
  * <p>
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class AncestorF1 implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -23,8 +27,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the name of the statistic.
-     * @return the name of the statistic
      */
     @Override
     public String getAbbreviation() {
@@ -32,8 +37,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the name of the statistic.
-     * @return the name of the statistic
      */
     @Override
     public String getDescription() {
@@ -41,11 +47,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Calculates the F1 statistic for adjacencies.
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return the F1 statistic for adjacencies
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -55,9 +59,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the norm value of the statistic.
-     * @param value The value of the statistic.
-     * @return  the value of the statistic
      */
     @Override
     public double getNormValue(double value) {

@@ -24,9 +24,9 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.SessionNode;
 
 /**
  * A collection of public static methods to help construct SessionWrappers manually.
@@ -35,6 +35,16 @@ import edu.cmu.tetradapp.model.SessionWrapper;
  */
 final class SessionWrappers {
 
+    /**
+     * <p>addNode.</p>
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     * @param nodeType       a {@link java.lang.String} object
+     * @param nodeName       a {@link java.lang.String} object
+     * @param centerX        a int
+     * @param centerY        a int
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node addNode(SessionWrapper sessionWrapper, String nodeType,
                                String nodeName, int centerX, int centerY) {
         SessionNodeWrapper node = SessionWrappers.getNewModelNode(nodeType, nodeName);
@@ -43,6 +53,13 @@ final class SessionWrappers {
         return node;
     }
 
+    /**
+     * <p>addEdge.</p>
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     * @param nodeName1      a {@link java.lang.String} object
+     * @param nodeName2      a {@link java.lang.String} object
+     */
     public static void addEdge(SessionWrapper sessionWrapper, String nodeName1,
                                String nodeName2) {
 
@@ -54,13 +71,13 @@ final class SessionWrappers {
         if (node1 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName1 in " +
-                            "the session wrapper: " + nodeName1);
+                    "the session wrapper: " + nodeName1);
         }
 
         if (node2 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName2 in " +
-                            "the session wrapper: " + nodeName2);
+                    "the session wrapper: " + nodeName2);
         }
 
         // Construct an edge.
@@ -80,7 +97,7 @@ final class SessionWrappers {
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
+        Class<?>[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
         SessionNode newNode =
                 new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
@@ -92,7 +109,7 @@ final class SessionWrappers {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
+    private static Class<?>[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
         if (nodeConfig == null) {

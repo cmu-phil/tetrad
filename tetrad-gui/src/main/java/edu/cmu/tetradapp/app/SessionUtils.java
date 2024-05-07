@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AbstractAlgorithmRunner;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import javax.swing.*;
 import java.lang.reflect.Constructor;
@@ -44,10 +44,13 @@ final class SessionUtils {
      * model type with buttons that link to an explanations of how the model works with each combination of parent
      * values.
      *
-     * @param warning   If true, shows a warning icon.
-     * @param onlyModel If true, displays a message indicating that this is the only model consistent with the parents.
+     * @param warning       If true, shows a warning icon.
+     * @param onlyModel     If true, displays a message indicating that this is the only model consistent with the
+     *                      parents.
+     * @param modelClass    a {@link java.lang.Class<?>} object
+     * @param centeringComp a {@link javax.swing.JComponent} object
      */
-    public static void showPermissibleParentsDialog(Class modelClass,
+    public static void showPermissibleParentsDialog(Class<?> modelClass,
                                                     JComponent centeringComp,
                                                     boolean warning,
                                                     boolean onlyModel) {
@@ -62,7 +65,7 @@ final class SessionUtils {
 
         StringBuilder b = new StringBuilder();
         b.append("<html>");
-        b.append("The combinations of parent models you can use for ").append(modelConfig.getName()).append(" are:");
+        b.append("The combinations of parent models you can use for ").append(modelConfig.name()).append(" are:");
 
         for (int i = 0; i < parentCombinations.length; i++) {
             String[] parentCombination = parentCombinations[i];
@@ -85,14 +88,14 @@ final class SessionUtils {
         final int messageType = JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
-                "Information on \"" + modelConfig.getName() + "\"", messageType);
+                "Information on \"" + modelConfig.name() + "\"", messageType);
     }
 
     /**
      * @return a string listing the combinations of legal parent models for a given model class. The item at [i][j] is
      * the jth parent model description of the ith parent model combination.
      */
-    private static String[][] possibleParentCombinations(Class modelClass) {
+    private static String[][] possibleParentCombinations(Class<?> modelClass) {
         List<List<String>> parentCombinations = new LinkedList<>();
 
         Constructor[] constructors = modelClass.getConstructors();
@@ -104,10 +107,10 @@ final class SessionUtils {
             List parameterTypes = new LinkedList(_list);
 
             for (Iterator j = parameterTypes.iterator(); j.hasNext(); ) {
-                Class parameterType = (Class) j.next();
+                Class<?> parameterType = (Class) j.next();
 
                 if (!(SessionModel.class.isAssignableFrom(parameterType) ||
-                        (Parameters.class.isAssignableFrom(parameterType)))) {
+                      (Parameters.class.isAssignableFrom(parameterType)))) {
                     continue PARENT_SET;
                 }
 
@@ -126,7 +129,7 @@ final class SessionUtils {
             List<String> combination = new LinkedList<>();
 
             for (Object parameterType1 : parameterTypes) {
-                Class parameterType = (Class) parameterType1;
+                Class<?> parameterType = (Class<?>) parameterType1;
                 String descrip = SessionUtils.getModelName(parameterType);
                 combination.add(descrip);
             }
@@ -158,7 +161,7 @@ final class SessionUtils {
     /**
      * @return the name of the given model
      */
-    private static String getModelName(Class model) {
+    private static String getModelName(Class<?> model) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
         SessionNodeConfig config = tetradConfig.getSessionNodeConfig(model);
         if (config == null) {
@@ -169,7 +172,7 @@ final class SessionUtils {
             return null;
         }
         SessionNodeModelConfig modelConfig = config.getModelConfig(model);
-        return modelConfig.getName();
+        return modelConfig.name();
     }
 
 

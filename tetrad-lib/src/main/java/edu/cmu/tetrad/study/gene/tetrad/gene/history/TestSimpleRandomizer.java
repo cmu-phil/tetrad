@@ -33,12 +33,15 @@ import java.util.SortedSet;
  * required properties.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestSimpleRandomizer extends TestCase {
     LagGraph lagGraph = new BasicLagGraph();
 
     /**
      * Change the name of this constructor to match the name of the test class.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestSimpleRandomizer(String name) {
         super(name);
@@ -47,6 +50,8 @@ public class TestSimpleRandomizer extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 
@@ -140,8 +145,8 @@ public class TestSimpleRandomizer extends TestCase {
                 sum += parents.size();
 
                 System.out.println("# Nonhousekeeping = " + numNonHousekeeping +
-                        " This num parents = " + parents.size() + " sum = " +
-                        sum);
+                                   " This num parents = " + parents.size() + " sum = " +
+                                   sum);
             }
         }
 
@@ -192,6 +197,9 @@ public class TestSimpleRandomizer extends TestCase {
         TestCase.assertTrue(indegree <= max);
     }
 
+    /**
+     * <p>tearDown.</p>
+     */
     public void tearDown() {
         this.lagGraph = null;
     }

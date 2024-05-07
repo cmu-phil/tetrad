@@ -18,14 +18,17 @@
  */
 package edu.cmu.tetrad.stat;
 
+import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Feb 9, 2016 3:15:29 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class RealVarianceVectorForkJoin implements RealVariance {
 
@@ -37,6 +40,12 @@ public class RealVarianceVectorForkJoin implements RealVariance {
 
     private final int numOfThreads;
 
+    /**
+     * <p>Constructor for RealVarianceVectorForkJoin.</p>
+     *
+     * @param data         an array of {@link double} objects
+     * @param numOfThreads a int
+     */
     public RealVarianceVectorForkJoin(double[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
@@ -44,20 +53,32 @@ public class RealVarianceVectorForkJoin implements RealVariance {
         this.numOfThreads = numOfThreads;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] compute(boolean biasCorrected) {
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoinPool.commonPool();
-        pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
-        pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
-        pool.shutdown();
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        try {
+            pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
+            pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         return means;
     }
 
     class VarianceAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 8630127061304877790L;
 
         private final double[][] data;
@@ -100,7 +121,14 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeVariance();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle),
+                            new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
 
@@ -108,6 +136,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
 
     class MeanAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 3741759201009022262L;
 
         private final double[][] data;
@@ -142,7 +171,14 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeMean();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle),
+                            new MeanAction(this.data, this.means, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
     }

@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,17 +35,18 @@ import java.text.NumberFormat;
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The Bayes updater.
      */
     private ManipulatingBayesUpdater bayesUpdater;
 
     /**
-     * @serial Can be null.
+     * The name of the Bayes updater.
      */
     private String name;
 
@@ -56,6 +57,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //=============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for RowSummingExactWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RowSummingExactWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -65,6 +72,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for RowSummingExactWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -73,6 +86,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for RowSummingExactWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -82,6 +101,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for RowSummingExactWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -90,6 +115,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for RowSummingExactWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.EmBayesEstimatorWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RowSummingExactWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -101,6 +132,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.RowSummingExactWrapper} object
      * @see TetradSerializableUtils
      */
     public static RowSummingExactWrapper serializableInstance() {
@@ -110,14 +142,27 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>bayesUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.ManipulatingBayesUpdater} object
+     */
     public ManipulatingBayesUpdater getBayesUpdater() {
         return this.bayesUpdater;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -140,15 +185,15 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-            TetradLogger.getInstance().log("info", "\nRow Summing Exact Updater");
+            TetradLogger.getInstance().forceLogMessage("\nRow Summing Exact Updater");
 
             String nodeName = node.getName();
             int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
             double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
             double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
-            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
-            TetradLogger.getInstance().log("details", "\nEvidence:");
+            TetradLogger.getInstance().forceLogMessage("\nVariable = " + nodeName);
+            TetradLogger.getInstance().forceLogMessage("\nEvidence:");
             Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
@@ -157,15 +202,16 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
                 int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
-                    TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
+                    TetradLogger.getInstance().forceLogMessage("\t" + variable + " = " + category);
                 }
             }
 
-            TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
+            TetradLogger.getInstance().forceLogMessage("\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
-                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
+                String message = category(evidence, nodeName, i) + "\t"
+                                 + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
         TetradLogger.getInstance().reset();
@@ -187,6 +233,10 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -197,6 +247,11 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

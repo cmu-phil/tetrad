@@ -32,6 +32,7 @@ import java.util.List;
  * @param <N> Type of variable names
  * @param <V> Type of variable values
  * @author YUS24
+ * @version $Id: $Id
  */
 public class DataTableImpl<N, V> implements DataTable<N, V> {
 
@@ -39,6 +40,8 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     private final List<List<V>> rows;
 
     /**
+     * <p>Constructor for DataTableImpl.</p>
+     *
      * @param vars The names of the variables in the table
      */
     public DataTableImpl(List<? extends N> vars) {
@@ -47,7 +50,7 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     }
 
     /**
-     * @return The variables in the table
+     * {@inheritDoc}
      */
     @Override
     public List<N> variables() {
@@ -55,7 +58,7 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     }
 
     /**
-     * @return The number of columns in the table
+     * {@inheritDoc}
      */
     @Override
     public int columnCount() {
@@ -63,7 +66,7 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     }
 
     /**
-     * @return The number of rows in the table
+     * {@inheritDoc}
      */
     @Override
     public int rowCount() {
@@ -71,7 +74,7 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     }
 
     /**
-     * @param row The index of the row to retrieve
+     * {@inheritDoc}
      */
     @Override
     public void addRow(List<? extends V> row) {
@@ -85,6 +88,9 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
         this.rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterator<List<V>> iterator() {
         return Collections.unmodifiableList(this.rows).listIterator();

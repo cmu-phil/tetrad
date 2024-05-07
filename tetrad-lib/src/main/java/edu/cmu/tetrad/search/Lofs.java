@@ -54,42 +54,75 @@ import static org.apache.commons.math3.util.FastMath.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Score
  * @see Rule
  * @see Knowledge
  */
 public class Lofs {
-    // The graph to be oriented.
+    /**
+     * The graph to be oriented.
+     */
     private final Graph cpdag;
-    // The square root of 2 * pi.
+    /**
+     * The square root of 2 * pi.
+     */
     private final double SQRT = sqrt(2. * PI);
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     Matrix _data;
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     private List<DataSet> dataSets;
-    // The matrices to use to do the orientation.
+    /**
+     * The matrices to use to do the orientation.
+     */
     private List<Matrix> matrices;
-    // The alpha to use, where applicable.
+    /**
+     * The alpha to use, where applicable.
+     */
     private double alpha = 1.1;
-    // The regressions to use to do the orientation.
+    /**
+     * The regressions to use to do the orientation.
+     */
     private List<Regression> regressions;
-    // The variables to use to do the orientation.
+    /**
+     * The variables to use to do the orientation.
+     */
     private List<Node> variables;
-    // Whether orientation should be done in the stronger direction, where applicable.
+    /**
+     * Whether orientation should be done in the stronger direction, where applicable.
+     */
     private boolean orientStrongerDirection;
-    // For R2, whether cycles should be oriented.
+    /**
+     * For R2, whether cycles should be oriented.
+     */
     private boolean r2Orient2Cycles = true;
-    // The (LoFS) score to use.
+    /**
+     * The (LoFS) score to use.
+     */
     private Lofs.Score score = Lofs.Score.andersonDarling;
-    // The self-loop strength, if applicable.
+    /**
+     * The self-loop strength, if applicable.
+     */
     private double epsilon = 1.0;
-    // The knowledge to use to do the orientation.
+    /**
+     * The knowledge to use to do the orientation.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The rule to use to do the orientation.
+    /**
+     * The rule to use to do the orientation.
+     */
     private Rule rule = Rule.R1;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double selfLoopStrength;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double[] col;
 
     /**
@@ -98,6 +131,7 @@ public class Lofs {
      * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
      * @param dataSets A list of datasets to use to do the orientation. This may be just one dataset. If more than one
      *                 dataset are given, the data will be concatenated (pooled).
+     * @throws java.lang.IllegalArgumentException if any.
      */
     public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
@@ -275,6 +309,11 @@ public class Lofs {
         return this.regressions;
     }
 
+    /**
+     * Sets the data sets to be used for orientation.
+     *
+     * @param dataSets The list of data sets to be used for orientation.
+     */
     private void setDataSets(List<DataSet> dataSets) {
         this.dataSets = dataSets;
 
@@ -285,6 +324,12 @@ public class Lofs {
         }
     }
 
+    /**
+     * Apply Rule R1 Time Lag to the given skeleton and graph.
+     *
+     * @param skeleton The original graph skeleton.
+     * @param graph    The graph to apply the rule to.
+     */
     private void ruleR1TimeLag(Graph skeleton, Graph graph) {
         List<DataSet> timeSeriesDataSets = new ArrayList<>();
         Knowledge knowledge = null;
@@ -377,6 +422,13 @@ public class Lofs {
         }
     }
 
+    /**
+     * Applies rule R1 to the given graph skeleton and modifies the graph accordingly.
+     *
+     * @param skeleton The skeleton graph.
+     * @param graph    The modified graph.
+     * @param nodes    The list of nodes to apply the rule on.
+     */
     private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
         List<DataSet> centeredData = DataTransforms.center(this.dataSets);
         setDataSets(centeredData);
@@ -420,10 +472,11 @@ public class Lofs {
             }
 
             for (double score : scoreReports.keySet()) {
-                TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
+                String message = "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score;
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
-            TetradLogger.getInstance().log("score", "");
+            TetradLogger.getInstance().forceLogMessage("");
 
             if (parents == null) {
                 continue;
@@ -455,6 +508,12 @@ public class Lofs {
         }
     }
 
+    /**
+     * Applies rule R2 to the given graph skeleton and modifies the graph accordingly.
+     *
+     * @param skeleton The original graph skeleton.
+     * @param graph    The graph to apply the rule to.
+     */
     private void ruleR2(Graph skeleton, Graph graph) {
         List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
         setDataSets(standardized);
@@ -481,8 +540,16 @@ public class Lofs {
         }
     }
 
+    /**
+     * Resolves one edge in the graph using the Maximum 2 algorithm.
+     *
+     * @param graph  The graph to resolve.
+     * @param x      The first node of the edge.
+     * @param y      The second node of the edge.
+     * @param strong Indicates whether to use strong or weak restrictions.
+     */
     private void resolveOneEdgeMax2(Graph graph, Node x, Node y, boolean strong) {
-        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
+        TetradLogger.getInstance().forceLogMessage("\nEDGE " + x + " --- " + y);
 
         SortedMap<Double, String> scoreReports = new TreeMap<>();
 
@@ -494,12 +561,9 @@ public class Lofs {
             }
 
             if (!this.knowledge.isForbidden(_node.getName(), x.getName())) {
-//                if (!knowledge.edgeForbidden(x.getNode(), _node.getNode())) {
                 neighborsx.add(_node);
             }
         }
-
-//        neighborsx.remove(y);
 
         double max = Double.NEGATIVE_INFINITY;
         boolean left = false;
@@ -578,8 +642,8 @@ public class Lofs {
                         if ((yPlus <= yMinus + delta && xMinus <= xPlus + delta) || forbiddenRight) {
 
                             String s = "\nStrong " + y + "->" + x + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
 
@@ -591,8 +655,8 @@ public class Lofs {
                         } else {
 
                             String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
                         }
@@ -602,8 +666,8 @@ public class Lofs {
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
 
                             String s = "\nStrong " + x + "->" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
 
@@ -615,8 +679,8 @@ public class Lofs {
                         } else {
 
                             String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                    "\n   Parents(" + x + ") = " + condxMinus +
-                                    "\n   Parents(" + y + ") = " + condyMinus;
+                                       "\n   Parents(" + x + ") = " + condxMinus +
+                                       "\n   Parents(" + y + ") = " + condyMinus;
 
                             scoreReports.put(-score, s);
                         }
@@ -624,16 +688,16 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     }
@@ -642,8 +706,8 @@ public class Lofs {
                         double score = combinedScore(xPlus, yMinus);
 
                         String s = "\nWeak " + y + "->" + x + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
 
@@ -656,8 +720,8 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nWeak " + x + "->" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
 
@@ -670,16 +734,16 @@ public class Lofs {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
                         String s = "\nNo directed edge " + x + "--" + y + " " + score +
-                                "\n   Parents(" + x + ") = " + condxMinus +
-                                "\n   Parents(" + y + ") = " + condyMinus;
+                                   "\n   Parents(" + x + ") = " + condxMinus +
+                                   "\n   Parents(" + y + ") = " + condyMinus;
 
                         scoreReports.put(-score, s);
                     }
@@ -688,7 +752,8 @@ public class Lofs {
         }
 
         for (double score : scoreReports.keySet()) {
-            TetradLogger.getInstance().log("info", scoreReports.get(score));
+            String message = scoreReports.get(score);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         graph.removeEdges(x, y);
@@ -706,6 +771,11 @@ public class Lofs {
         }
     }
 
+    /**
+     * Applies rule R3 to the given graph.
+     *
+     * @param graph The graph to apply the rule to.
+     */
     private void ruleR3(Graph graph) {
         List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
         setDataSets(standardized);
@@ -725,6 +795,13 @@ public class Lofs {
 
     }
 
+    /**
+     * This method resolves one edge in the graph based on certain conditions.
+     *
+     * @param graph the graph on which the operation needs to be performed
+     * @param x     the first node of the edge
+     * @param y     the second node of the edge
+     */
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
         String xname = x.getName();
         String yname = y.getName();
@@ -752,13 +829,10 @@ public class Lofs {
         double yPlus = score(y, condyPlus);
         double yMinus = score(y, condyMinus);
 
-//        if (!(xPlus > 0.8 && xMinus > 0.8 && yPlus > 0.8 && yMinus > 0.8)) return;
-
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
 
         graph.removeEdges(x, y);
-//        double epsilon = 0;
 
         if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
@@ -767,7 +841,15 @@ public class Lofs {
         }
     }
 
-    // rowIndex is for the W matrix, not for the data.
+    /**
+     * Calculates the score for a given row in a matrix using the specified parameters.
+     *
+     * @param rowIndex   the index of the row to score
+     * @param data       the matrix containing the data
+     * @param rows       the list of rows containing the column indices to score
+     * @param parameters the list of parameters for each column index in the rows
+     * @return the score of the row
+     */
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (this.col == null) {
             this.col = new double[data.getNumRows()];
@@ -802,6 +884,12 @@ public class Lofs {
         return score(this.col);
     }
 
+    /**
+     * Computes the entropy-based graph from the given input graph.
+     *
+     * @param graph The input graph.
+     * @return The entropy-based graph.
+     */
     private Graph entropyBased(Graph graph) {
         DataSet dataSet = DataTransforms.concatenate(this.dataSets);
         dataSet = DataTransforms.standardizeData(dataSet);
@@ -834,7 +922,7 @@ public class Lofs {
             }
 
             double R = -maxEntApprox(xData) - maxEntApprox(d)
-                    + maxEntApprox(yData) + maxEntApprox(e);
+                       + maxEntApprox(yData) + maxEntApprox(e);
 
             if (R > 0) {
                 _graph.addDirectedEdge(x, y);
@@ -846,6 +934,12 @@ public class Lofs {
         return _graph;
     }
 
+    /**
+     * This method calculates the tanhGraph of a given graph.
+     *
+     * @param graph The input graph.
+     * @return The tanhGraph of the input graph.
+     */
     private Graph tanhGraph(Graph graph) {
         DataSet dataSet = DataTransforms.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
@@ -907,7 +1001,13 @@ public class Lofs {
     }
 
 
-    // @param empirical True if the skew signs are estimated empirically.
+    /**
+     * Skews the given graph based on the provided data.
+     *
+     * @param graph     The input graph to be skewed.
+     * @param empirical A boolean flag indicating whether to perform empirical skewness correction.
+     * @return The skewed graph.
+     */
     private Graph skewGraph(Graph graph, boolean empirical) {
         DataSet dataSet = DataTransforms.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
@@ -974,7 +1074,13 @@ public class Lofs {
 
     }
 
-    // @param empirical True if the skew signs are estimated empirically.
+    /**
+     * Performs robust skew graph transformation on the given graph.
+     *
+     * @param graph     The original graph to transform.
+     * @param empirical If true, corrects skewnesses using empirical method.
+     * @return The transformed graph.
+     */
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
         // DataUtils.standardizeData(dataSet));
         List<DataSet> _dataSets = new ArrayList<>(this.dataSets);
@@ -1040,11 +1146,23 @@ public class Lofs {
         return graph;
     }
 
+    /**
+     * Calculates the value of function g(x).
+     *
+     * @param x The input value.
+     * @return The result of applying the function g(x) to the input value.
+     */
     private double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
-    // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
+    /**
+     * This method performs Patel-Tau orientation of the edges in a graph based on a given cutoff value.
+     *
+     * @param graph  The input graph on which Patel-Tau orientation should be performed.
+     * @param cutoff The cutoff value used to determine the presence of an edge.
+     * @return The directed graph with edges oriented based on Patel-Tau test results.
+     */
     private Graph patelTauOrientation(Graph graph, double cutoff) {
         List<DataSet> centered = DataTransforms.center(this.dataSets);
         DataSet concat = DataTransforms.concatenate(centered);
@@ -1081,7 +1199,14 @@ public class Lofs {
         return _graph;
     }
 
-    // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
+    /**
+     * Calculates the patelTau correlation coefficient between two input arrays.
+     *
+     * @param d1in   The first input array.
+     * @param d2in   The second input array.
+     * @param cutoff The cutoff value for binarization. Pass Double.NaN for no binarization.
+     * @return The patelTau correlation coefficient.
+     */
     private double patelTau(double[] d1in, double[] d2in, double cutoff) {
         double grotMIN = percentile(d1in, 10);
         double grotMAX = percentile(d1in, 90);
@@ -1126,7 +1251,6 @@ public class Lofs {
         double theta1 = dotProduct(d1b, d2b) / XT;
         double theta2 = dotProduct(d1b, minus(d2b)) / XT;
         double theta3 = dotProduct(d2b, minus(d1b)) / XT;
-//        double theta4= dotProduct(minus(1, d1b), minus(1, d2b))/XT;
 
         double tau_12;
 
@@ -1136,6 +1260,13 @@ public class Lofs {
         return -tau_12;
     }
 
+    /**
+     * Calculates the dot product of two arrays.
+     *
+     * @param x the first array
+     * @param y the second array
+     * @return the dot product of the arrays
+     */
     private double dotProduct(double[] x, double[] y) {
         double p = 0.0;
 
@@ -1146,6 +1277,12 @@ public class Lofs {
         return p;
     }
 
+    /**
+     * Computes the difference between 1 and each element in the input array.
+     *
+     * @param x the input array
+     * @return an array containing the differences between 1 and each element in the input array
+     */
     private double[] minus(double[] x) {
         double[] y = new double[x.length];
 
@@ -1156,12 +1293,27 @@ public class Lofs {
         return y;
     }
 
+    /**
+     * Returns the value at the specified percentile from the given array of values.
+     *
+     * @param x       the array of values
+     * @param percent the percentile (0 to 100)
+     * @return the value at the specified percentile
+     */
     private double percentile(double[] x, double percent) {
         double[] _x = Arrays.copyOf(x, x.length);
         Arrays.sort(_x);
         return _x[(int) (x.length * (percent / 100.0))];
     }
 
+    /**
+     * Extracts the data from the given DataSet based on the specified x and y Nodes.
+     *
+     * @param data The DataSet containing the data.
+     * @param _x   The x Node indicating the column to extract.
+     * @param _y   The y Node indicating the column to extract.
+     * @return A List of double arrays containing the extracted x and y data.
+     */
     private List<double[]> extractData(DataSet data, Node _x, Node _y) {
         int xIndex = data.getColumn(_x);
         int yIndex = data.getColumn(_y);
@@ -1196,6 +1348,12 @@ public class Lofs {
         return ret;
     }
 
+    /**
+     * Corrects the skewnesses of the given data array.
+     *
+     * @param data the data array to correct
+     * @return a new array with corrected skewnesses
+     */
     private double[] correctSkewnesses(double[] data) {
         double skewness = skewness(data);
         double[] data2 = new double[data.length];
@@ -1203,6 +1361,14 @@ public class Lofs {
         return data2;
     }
 
+    /**
+     * Prepares the data by extracting the values corresponding to the given nodes from the provided DataSet.
+     *
+     * @param concatData The DataSet containing the data.
+     * @param _x         The node representing the X-values.
+     * @param _y         The node representing the Y-values.
+     * @return A list containing the X-values and Y-values as double arrays.
+     */
     private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
         int xIndex = concatData.getColumn(_x);
         int yIndex = concatData.getColumn(_y);
@@ -1235,6 +1401,13 @@ public class Lofs {
         return ret;
     }
 
+    /**
+     * Calculates the regression coefficient for given x and y values.
+     *
+     * @param xValues an array of x values
+     * @param yValues an array of y values
+     * @return the regression coefficient
+     */
     private double regressionCoef(double[] xValues, double[] yValues) {
         List<Node> v = new ArrayList<>();
         v.add(new GraphNode("x"));
@@ -1259,11 +1432,27 @@ public class Lofs {
         return result.getCoef()[1];
     }
 
+    /**
+     * Determines if there is a two-cycle between two nodes in a graph.
+     *
+     * @param graph The graph to check for two-cycle.
+     * @param x     The first node.
+     * @param y     The second node.
+     * @return true if there is a two-cycle between the nodes, false otherwise.
+     */
     private boolean isTwoCycle(Graph graph, Node x, Node y) {
         List<Edge> edges = graph.getEdges(x, y);
         return edges.size() == 2;
     }
 
+    /**
+     * Determines whether there is an undirected edge between two nodes in a graph.
+     *
+     * @param graph the graph to check for undirected edges
+     * @param x     the starting node of the edge
+     * @param y     the ending node of the edge
+     * @return true if there is an undirected edge between the given nodes, otherwise false
+     */
     private boolean isUndirected(Graph graph, Node x, Node y) {
         List<Edge> edges = graph.getEdges(x, y);
         if (edges.size() == 1) {
@@ -1274,10 +1463,21 @@ public class Lofs {
         return false;
     }
 
+    /**
+     * Sets the epsilon value.
+     *
+     * @param epsilon the new value of epsilon
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
+    /**
+     * Sets the knowledge for the object.
+     *
+     * @param knowledge the knowledge to set.
+     * @throws NullPointerException if the knowledge is null.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -1287,12 +1487,24 @@ public class Lofs {
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Calculates the p-value using Fisher's exact test. The p-value is the probability of observing a test statistic as
+     * extreme as the observed value under the null hypothesis. It is used to determine the statistical significance of
+     * the observed value.
+     *
+     * @param fisherZ the Fisher's Z value
+     * @return the p-value
      */
     public double getPValue(double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
     }
 
+    /**
+     * Calculates the Information-Geometric Causal Inference (IGCI) graph based on the given graph.
+     *
+     * @param graph the input graph
+     * @return the IGCI graph
+     * @throws IllegalArgumentException if there is not exactly one data set for IGCI
+     */
     private Graph igci(Graph graph) {
         if (this.dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
 
@@ -1339,6 +1551,14 @@ public class Lofs {
         return _graph;
     }
 
+    /**
+     * Calculates the Information-Geometric Causal Inference (IGCI) between two vectors.
+     *
+     * @param x the first vector
+     * @param y the second vector
+     * @return the IGCI value
+     * @throws IllegalArgumentException if the length of the vectors is different
+     */
     private double igci(double[] x, double[] y) {
         int m = x.length;
 
@@ -1407,6 +1627,12 @@ public class Lofs {
 
     }
 
+    /**
+     * Removes any NaN (Not a Number) values from the given double array.
+     *
+     * @param data the array of double values
+     * @return a new array with NaN values removed
+     */
     private double[] removeNaN(double[] data) {
         List<Double> _leaveOutMissing = new ArrayList<>();
 
@@ -1424,8 +1650,12 @@ public class Lofs {
     }
 
 
-    // digamma
-
+    /**
+     * Calculates the psi value for a given input.
+     *
+     * @param x the input value
+     * @return the result of the psi calculation
+     */
     double psi(double x) {
         double result = 0;
         double xx;
@@ -1442,11 +1672,26 @@ public class Lofs {
         return result;
     }
 
-
+    /**
+     * Calculates the combined score by summing up two scores.
+     *
+     * @param score1 the first score
+     * @param score2 the second score
+     * @return the combined score
+     */
     private double combinedScore(double score1, double score2) {
         return score1 + score2;
     }
 
+    /**
+     * This method calculates the score for a given Node and its parents. The score is calculated based on the specified
+     * score type.
+     *
+     * @param y       The Node for which the score is calculated.
+     * @param parents The list of parent Nodes of the given Node.
+     * @return The calculated score.
+     * @throws IllegalStateException If the specified score type is not supported.
+     */
     private double score(Node y, List<Node> parents) {
         if (this.score == Lofs.Score.andersonDarling) {
             return andersonDarlingPASquare(y, parents);
@@ -1472,6 +1717,13 @@ public class Lofs {
         throw new IllegalStateException();
     }
 
+    /**
+     * Calculates the score for the given column of data.
+     *
+     * @param col the column of data
+     * @return the calculated score
+     * @throws IllegalStateException if an unrecognized score type is encountered
+     */
     private double score(double[] col) {
         if (this.score == Lofs.Score.andersonDarling) {
             return new AndersonDarlingTest(col).getASquaredStar();
@@ -1497,19 +1749,38 @@ public class Lofs {
         throw new IllegalStateException("Unrecognized score: " + this.score);
     }
 
-
+    /**
+     * Calculates the mean absolute value of an array of residuals for a given node and its parents.
+     *
+     * @param node    The node for which residuals are being calculated
+     * @param parents The list of parent nodes of the given node
+     * @return The mean absolute value of the residuals
+     */
     private double meanAbsolute(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, false);
 
         return StatUtils.meanAbsolute(_f);
     }
 
+    /**
+     * Calculates the unstandardized expected score for a given node and its parents.
+     *
+     * @param node    The node for which to calculate the unstandardized expected score.
+     * @param parents The list of parent nodes.
+     * @return The unstandardized expected score for the node.
+     */
     private double expScoreUnstandardized(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, false);
 
         return expScoreUnstandardized(_f);
     }
 
+    /**
+     * Calculates the unstandardized expected score.
+     *
+     * @param _f an array of doubles representing the values.
+     * @return the unstandardized expected score.
+     */
     private double expScoreUnstandardized(double[] _f) {
         double sum = 0.0;
 
@@ -1521,11 +1792,26 @@ public class Lofs {
         return -abs(log(expected));
     }
 
+    /**
+     * Calculates the log-cosh score for a given node and its parents.
+     *
+     * @param node    The node for which to calculate the score.
+     * @param parents The list of parent nodes of the given node.
+     * @return The log-cosh score for the given node and its parents.
+     */
     private double logCoshScore(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true);
         return StatUtils.logCoshScore(_f);
     }
 
+    /**
+     * Calculates the residuals for a given node and its parent nodes.
+     *
+     * @param node        The node for which the residuals are calculated.
+     * @param parents     The parent nodes that are used as regressors.
+     * @param standardize Indicates whether the residuals should be standardized.
+     * @return An array of doubles representing the residuals.
+     */
     private double[] residuals(Node node, List<Node> parents, boolean standardize) {
         List<Double> _residuals = new ArrayList<>();
 
@@ -1597,17 +1883,38 @@ public class Lofs {
         return _f;
     }
 
+    /**
+     * Calculates the Anderson-Darling test statistic for the probability integral transform of the residuals using the
+     * PASquare method.
+     *
+     * @param node    The node whose residuals need to be calculated.
+     * @param parents The list of parent nodes used in the calculation.
+     * @return The Anderson-Darling test statistic for the probability integral transform of the residuals.
+     */
     private double andersonDarlingPASquare(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true);
-//        return new AndersonDarlingTest(_f).getASquaredStar();
         return new AndersonDarlingTest(_f).getASquared();
     }
 
+    /**
+     * Calculates the entropy of a given node.
+     *
+     * @param node    the node for which the entropy is to be calculated
+     * @param parents the list of parent nodes
+     * @return the entropy value
+     */
     private double entropy(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true);
         return maxEntApprox(_f);
     }
 
+    /**
+     * Calculates the p-value for a given node and list of parents.
+     *
+     * @param node    the node for which to calculate the p-value
+     * @param parents the list of parents for the node
+     * @return the calculated p-value
+     */
     private double pValue(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
@@ -1678,10 +1985,22 @@ public class Lofs {
         return p;
     }
 
+    /**
+     * Retrieves the CPDAG (Completed Partially Directed Acyclic Graph).
+     *
+     * @return the CPDAG as a Graph object
+     */
     private Graph getCpdag() {
         return this.cpdag;
     }
 
+    /**
+     * Finds a variable node by name from a given list of nodes.
+     *
+     * @param variables the list of nodes to search through
+     * @param name      the name of the variable node to find
+     * @return the variable node with the specified name, or null if not found
+     */
     private Node getVariable(List<Node> variables, String name) {
         for (Node node : variables) {
             if (name.equals(node.getName())) {
@@ -1692,11 +2011,16 @@ public class Lofs {
         return null;
     }
 
+    /**
+     * Resolves edge conditionals in the given graph.
+     *
+     * @param graph The graph in which edge conditionals need to be resolved.
+     * @return The graph with resolved edge conditionals.
+     */
     private Graph resolveEdgeConditional(Graph graph) {
         setDataSets(this.dataSets);
 
         Set<Edge> edgeList1 = graph.getEdges();
-//        RandomUtil.shuffle(edgeList1);
 
         for (Edge adj : edgeList1) {
             Node x = adj.getNode1();
@@ -1708,6 +2032,13 @@ public class Lofs {
         return graph;
     }
 
+    /**
+     * Resolves the edge conditionality between two nodes in the graph.
+     *
+     * @param graph The graph object representing the network.
+     * @param x     The first node.
+     * @param y     The second node.
+     */
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (this._data == null) {
             this._data = DataTransforms.centerData(this.matrices.get(0));
@@ -1770,6 +2101,13 @@ public class Lofs {
         }
     }
 
+    /**
+     * Calculates the conditional residuals based on the given inputs.
+     *
+     * @param x The array of values to calculate the residuals for.
+     * @param y The matrix of values used to calculate the residuals.
+     * @return The array containing the conditional residuals.
+     */
     private double[] conditionalResiduals(double[] x, double[][] y) {
         int N = x.length;
         double[] residuals = new double[N];
@@ -1803,6 +2141,13 @@ public class Lofs {
         return residuals;
     }
 
+    /**
+     * Computes the optimal bandwidth for kernel density estimation using the method suggested by Bowman and Azzalini
+     * (1997). The optimal bandwidth is computed as the geometric mean across variables.
+     *
+     * @param xCol the input array of values for which the optimal bandwidth needs to be computed
+     * @return the optimal bandwidth value
+     */
     private double h(double[] xCol) {
 //        % optimal bandwidth suggested by Bowman and Azzalini (1997) p.31 (rks code Matlab)
 //        h *= median(abs(x-median(x)))/0.6745*(4/3/r.h)^0.2, geometric mean across variables.
@@ -1813,57 +2158,114 @@ public class Lofs {
         return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
+    /**
+     * Calculates the kernel value for a given input.
+     *
+     * @param z the input value to calculate the kernel value for.
+     * @return the calculated kernel value for the given input.
+     */
     public double kernel(double z) {
         return kernel1(z);
     }
 
-    // Gaussian
+    /**
+     * Computes the value of the kernel function 1 for a given input. (Gaussian.)
+     *
+     * @param z the input value for which the kernel function is computed
+     * @return the value of the kernel function computed for the given input value
+     */
     public double kernel1(double z) {
         return exp(-(z * z) / 2.) / this.SQRT; //(sqrt(2. * PI));
     }
 
-    // Uniform
+    /**
+     * Calculates the value of the kernel2 function for the given input. (Uniform.)
+     *
+     * @param z the input value to calculate the kernel2 for
+     * @return the calculated value of kernel2
+     */
     public double kernel2(double z) {
         if (abs(z) > 1) return 0;
         else return .5;
     }
 
-    // Triangular
+    /**
+     * This method calculates the value of the kernel function, kernel3, for a given input. (Triangular.)
+     *
+     * @param z the input value for which the kernel function is to be calculated
+     * @return the calculated value of the kernel function
+     */
     public double kernel3(double z) {
         if (abs(z) > 1) return 0;
         else return 1 - abs(z);
     }
 
-    // Epanechnikov
+    /**
+     * Calculates the result of kernel4 function. (Epanechnikov)
+     *
+     * @param z a double value representing the input parameter
+     * @return the result of kernel4 function
+     */
     public double kernel4(double z) {
         if (abs(z) > 1) return 0;
         else return (3. / 4.) * (1. - z * z);
     }
 
-    // Quartic
+    /**
+     * Calculates the value of the kernel function, kernel5, for the given input. (Quartic)
+     * <p>
+     * The kernel function calculates the value based on the input value z. If the absolute value of z is greater than
+     * 1, the function returns 0. Otherwise, it returns the result of the calculation: (15 / 16)
+     *
+     * @param z the input parameter
+     * @return the result of kernel5 function
+     */
     public double kernel5(double z) {
         if (abs(z) > 1) return 0;
         else return 15. / 16. * pow(1. - z * z, 2.);
     }
 
-    // Triweight
+    /**
+     * Calculates the value of the kernel function 6 given a parameter z. (Triweight)
+     *
+     * @param z the input parameter
+     * @return the calculated value of the kernel function 6
+     */
     public double kernel6(double z) {
         if (abs(z) > 1) return 0;
         else return 35. / 32. * pow(1. - z * z, 3.);
     }
 
-    // Tricube
+    /**
+     * Computes the value of the kernel7 function for the given value. (Tricube)
+     *
+     * @param z the input value
+     * @return the computed value of the kernel7 function
+     */
     public double kernel7(double z) {
         if (abs(z) > 1) return 0;
         else return 70. / 81. * pow(1. - z * z * z, 3.);
     }
 
-    // Cosine
+    /**
+     * Calculates the value of the kernel8 function for the given input. (Cosine)
+     *
+     * @param z the input value for the kernel8 function
+     * @return the calculated value of the kernel8 function
+     */
     public double kernel8(double z) {
         if (abs(z) > 1) return 0;
         else return (PI / 4.) * cos((PI / 2.) * z);
     }
 
+    /**
+     * Calculates the distance between two elements from a two-dimensional array.
+     *
+     * @param yCols a two-dimensional array containing data
+     * @param i     the index of the first element
+     * @param j     the index of the second element
+     * @return the distance between the two elements
+     */
     private double distance(double[][] yCols, int i, int j) {
         double sum = 0.0;
 
@@ -1875,6 +2277,13 @@ public class Lofs {
         return sqrt(sum);
     }
 
+    /**
+     * Resolves the difference between the maximum R3 values obtained from two edge cases.
+     *
+     * @param x The input values for the first edge case.
+     * @param y The input values for the second edge case.
+     * @return The difference between the maximum R^3 values.
+     */
     private double resolveOneEdgeMaxR3(double[] x, double[] y) {
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
         double[][] _x = new double[1][];
@@ -1899,6 +2308,14 @@ public class Lofs {
         return deltaX - deltaY;
     }
 
+    /**
+     * Calculates the difference between the conditional residuals of two arrays, x and y, based on the Anderson-Darling
+     * test.
+     *
+     * @param x An array of double values representing the x-coordinates.
+     * @param y An array of double values representing the y-coordinates.
+     * @return The difference between the conditional residuals.
+     */
     private double resolveOneEdgeMaxR3b(double[] x, double[] y) {
         int N = x.length;
 
@@ -1931,18 +2348,130 @@ public class Lofs {
      * Gives a list of options for non-Gaussian transformations that can be used for some scores.
      */
     public enum Score {
-        andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
-        exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
+        /**
+         * The absolute value.
+         */
+        absoluteValue,
+        /**
+         * The  Anderson-Darling score.
+         */
+        andersonDarling,
+        /**
+         * The  entropy.
+         */
+        entropy,
+        /**
+         * The exp.
+         */
+        exp,
+        /**
+         * The exp unstandardized.
+         */
+        expUnstandardized,
+        /**
+         * The exp unstandardized inverted.
+         */
+        expUnstandardizedInverted,
+        /**
+         * The fifth moment.
+         */
+        fifthMoment,
+        /**
+         * The kurtosis.
+         */
+        kurtosis,
+        /**
+         * The logcosh.
+         */
+        logcosh,
+        /**
+         * Other score.
+         */
+        other,
+        /**
+         * The skew.
+         */
+        skew
+
     }
 
     /**
      * Give a list of options for rules for doing the non-Gaussian orientations.
      */
     public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
+        /**
+         * The EB rule.
+         */
+        EB,
+        /**
+         * The FastICA rule.
+         */
+        FastICA,
+        /**
+         * The IGCI rule.
+         */
+        IGCI,
+        /**
+         * The Patel rule.
+         */
+        Patel,
+        /**
+         * The Patel25 rule.
+         */
+        Patel25,
+        /**
+         * The Patel50 rule.
+         */
+        Patel50,
+        /**
+         * The Patel75 rule.
+         */
+        Patel75,
+        /**
+         * The Patel90 rule.
+         */
+        Patel90,
+        /**
+         * The R1 rule.
+         */
+        R1,
+        /**
+         * The R1 Time Lag rule.
+         */
+        R1TimeLag,
+        /**
+         * The R2 rule.
+         */
+        R2,
+        /**
+         * The R3 rule.
+         */
+        R3,
+        /**
+         * The RC rule.
+         */
+        RC,
+        /**
+         * The RSkew rule.
+         */
+        RSkew,
+        /**
+         * The RSkewE rule.
+         */
+        RSkewE,
+        /**
+         * The Skew rule.
+         */
+        Skew,
+        /**
+         * The SkewE rule.
+         */
+        SkewE,
+        /**
+         * The Tahn rule.
+         */
+        Tanh
     }
-
 }
 
 

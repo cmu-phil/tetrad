@@ -50,6 +50,8 @@ class QQPlotAction extends AbstractAction {
 
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public QQPlotAction(DataEditor editor) {
         super("Q-Q Plots...");
@@ -57,6 +59,9 @@ class QQPlotAction extends AbstractAction {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
@@ -71,7 +76,7 @@ class QQPlotAction extends AbstractAction {
             // warn user if they selected more than 10
             if (10 < selected.length) {
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                        " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
+                                                                        " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
                 if (option == JOptionPane.NO_OPTION) {
                     return;

@@ -24,30 +24,48 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for UndirectedToBidirectedWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public UndirectedToBidirectedWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for UndirectedToBidirectedWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public UndirectedToBidirectedWrapper(Graph graph) {
         super(GraphUtils.undirectedToBidirected(graph), "Make Bidirected Edges Undirected");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.UndirectedToBidirectedWrapper} object
+     */
     public static UndirectedToBidirectedWrapper serializableInstance() {
         return new UndirectedToBidirectedWrapper(EdgeListGraph.serializableInstance());
     }
@@ -56,6 +74,9 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     //======================== Private Methods ================================//
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

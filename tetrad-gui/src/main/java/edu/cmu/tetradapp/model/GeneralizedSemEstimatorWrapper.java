@@ -28,11 +28,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemEstimator;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 
@@ -40,24 +42,53 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource {
+    @Serial
     private static final long serialVersionUID = 23L;
-    private final DataSet data;
+
     /**
-     * @serial Can be null.
+     * The data model.
+     */
+    private final DataSet data;
+
+    /**
+     * The name of the model.
      */
     private String name;
+
+    /**
+     * The wrapped SemPm.
+     */
     private GeneralizedSemPm semPm;
     /**
      * True just in case errors should be shown in the interface.
      */
     private boolean showErrors;
+
+    /**
+     * The estimated SEM IM.
+     */
     private GeneralizedSemIm estIm;
+
+    /**
+     * The report.
+     */
     private String report = "";
 
     //==============================CONSTRUCTORS==========================//
 
+    public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, Simulation simulation, Parameters parameters) {
+        this(semPm, new DataWrapper(simulation, parameters));
+    }
+
+    /**
+     * <p>Constructor for GeneralizedSemEstimatorWrapper.</p>
+     *
+     * @param semPm a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param data  a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, DataWrapper data) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");
@@ -69,10 +100,18 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         execute();
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node serializableInstance() {
         return new GraphNode("X");
     }
 
+    /**
+     * <p>execute.</p>
+     */
     public void execute() {
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         this.estIm = estimator.estimate(this.semPm, this.data);
@@ -82,6 +121,11 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //============================PUBLIC METHODS=========================//
 
+    /**
+     * <p>getSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     */
     public GeneralizedSemIm getSemIm() {
         return this.estIm;
     }
@@ -93,28 +137,55 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semPm.getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>isShowErrors.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowErrors() {
         return this.showErrors;
     }
 
+    /**
+     * <p>Setter for the field <code>showErrors</code>.</p>
+     *
+     * @param showErrors a boolean
+     */
     public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
@@ -122,22 +193,43 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     //======================= Private methods ====================//
 
     private void log(GeneralizedSemIm im) {
-        TetradLogger.getInstance().log("info", "Generalized SEM IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Generalized SEM IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
@@ -145,15 +237,27 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     /**
      * The wrapped SemPm.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      */
     public GeneralizedSemPm getSemPm() {
         return this.semPm;
     }
 
+    /**
+     * <p>Setter for the field <code>semPm</code>.</p>
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public void setSemPm(GeneralizedSemPm semPm) {
         this.semPm = semPm;
     }
 
+    /**
+     * <p>Getter for the field <code>report</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReport() {
         return this.report;
     }

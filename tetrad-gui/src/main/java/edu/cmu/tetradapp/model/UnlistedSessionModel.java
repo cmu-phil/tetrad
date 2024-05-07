@@ -28,8 +28,12 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * may be constructed by the session.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface UnlistedSessionModel extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
 }

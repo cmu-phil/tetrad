@@ -42,6 +42,7 @@ import java.util.*;
  * models ideally should be.&gt; 0
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public final class SepsetMapDci {
     private static final long serialVersionUID = 23L;
@@ -56,9 +57,17 @@ public final class SepsetMapDci {
 
     //=============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for SepsetMapDci.</p>
+     */
     public SepsetMapDci() {
     }
 
+    /**
+     * <p>Constructor for SepsetMapDci.</p>
+     *
+     * @param map a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     */
     public SepsetMapDci(SepsetMapDci map) {
         this.sepsets = new HashMap<>(map.sepsets);
         this.sepsetSets = new HashMap<>(map.sepsetSets);
@@ -66,6 +75,8 @@ public final class SepsetMapDci {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public static SepsetMap serializableInstance() {
         return new SepsetMap();
@@ -75,6 +86,10 @@ public final class SepsetMapDci {
 
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      */
     public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
@@ -98,6 +113,10 @@ public final class SepsetMapDci {
 
     /**
      * Retrieves the sepset previously set for {x, y}, or null if no such set was previously set.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
      */
     public Set<Node> get(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
@@ -108,6 +127,10 @@ public final class SepsetMapDci {
 
     /**
      * Retrieves the set of all condioning sets for {x, y} or null if no such set was ever set
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
      */
     public Set<Set<Node>> getSet(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
@@ -116,6 +139,12 @@ public final class SepsetMapDci {
         return this.sepsetSets.get(pair);
     }
 
+    /**
+     * <p>set.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.LinkedHashSet} object
+     */
     public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
             this.parents.get(x).addAll(z);
@@ -124,20 +153,33 @@ public final class SepsetMapDci {
         }
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.LinkedHashSet} object
+     */
     public LinkedHashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new LinkedHashSet<>() : this.parents.get(x);
     }
 
+    /**
+     * <p>getSeparatedPairs.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Set<Node>> getSeparatedPairs() {
         return this.sepsets.keySet();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
-        if (!(o instanceof SepsetMapDci)) {
+        if (!(o instanceof SepsetMapDci _sepset)) {
             return false;
         }
 
-        SepsetMapDci _sepset = (SepsetMapDci) o;
         return this.sepsets.equals(_sepset.sepsets) && this.sepsetSets.equals(_sepset.sepsetSets);
     }
 
@@ -159,10 +201,20 @@ public final class SepsetMapDci {
         }
     }
 
+    /**
+     * <p>size.</p>
+     *
+     * @return a int
+     */
     public int size() {
         return this.sepsets.keySet().size();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return this.sepsets.toString() + "\n" + this.sepsetSets.toString();
     }

@@ -6,26 +6,50 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
- * @author josephramsey
+ * Represents the statistic of False Negatives for Arrows compared to the true DAG.
  */
 public class TrueDagFalseNegativesArrows implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public TrueDagFalseNegativesArrows() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
+     */
     @Override
     public String getAbbreviation() {
         return "DFNA";
     }
 
+    /**
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of the statistic.
+     */
     @Override
     public String getDescription() {
         return "False Negatives for Arrows compared to true DAG";
     }
 
+    /**
+     * Calculates the number of false negatives for arrows compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of false negatives for arrows.
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fn = 0;
@@ -49,6 +73,12 @@ public class TrueDagFalseNegativesArrows implements Statistic {
         return fn;
     }
 
+    /**
+     * Retrieves the normalized value of a statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
+     */
     @Override
     public double getNormValue(double value) {
         return value;

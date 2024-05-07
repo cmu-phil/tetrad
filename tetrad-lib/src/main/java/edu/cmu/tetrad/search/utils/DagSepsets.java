@@ -33,6 +33,7 @@ import java.util.Set;
  * Determines sepsets, collider, and noncolliders by examining d-separation facts in a DAG.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagSepsets implements SepsetProducer {
     // The DAG being analyzed.
@@ -48,11 +49,9 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the list of sepset for {a, b}.
-     *
-     * @param a One node.
-     * @param b The other node.
-     * @return The list of sepsets for {a, b}.
      */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
@@ -60,12 +59,33 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
-     * True iff i*-*j*-*k is an unshielded collider.
+     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note
+     * that for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
+     * otherwise, an exception is thrown.
      *
-     * @param i Node 1
-     * @param j Node 2
-     * @param k Node 3
-     * @return True if the condition holds.
+     * @param a The first node.
+     * @param b The second node.
+     * @param s The set of nodes that must be contained in the sepset.
+     * @return The sepset containing 'a' and 'b' that also contains all the nodes in 's'.
+     * @throws IllegalArgumentException If the sepset of 'a' and 'b' does not contain all the nodes in 's'.
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+        Set<Node> sepset = this.dag.getSepset(a, b);
+        sepset.addAll(s);
+
+//        if (sepset != null && !sepset.containsAll(s)) {
+//            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
+//                                               + ") to contain all the nodes in " + s + ".");
+//        }
+
+        return sepset;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * True iff i*-*j*-*k is an unshielded collider.
      */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
@@ -74,9 +94,9 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Not implemented; required for an interface.
-     *
-     * @throws UnsupportedOperationException Since this is not implemented.
      */
     @Override
     public double getScore() {
@@ -84,24 +104,29 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true just in case msep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
      * d-separation method. We only use the name isIndependent so that this can be used in place of an independence
      * check.
-     *
-     * @param a Node 1
-     * @param b NOde 2
-     * @param c A set of conditoning nodes.
-     * @return True if the condition holds.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        return this.dag.paths().isMSeparatedFrom(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        return this.dag.paths().isMSeparatedFrom(a, b, sepset, false);
     }
 
     /**
+     * @throws UnsupportedOperationException if this method is called.
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        throw new UnsupportedOperationException("This makes no sense for this subclass.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * Returns the nodes in the DAG.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -109,9 +134,9 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Thsi method is not used.
-     *
-     * @throws UnsupportedOperationException Since this method is not used (but is required by an interface).
      */
     @Override
     public void setVerbose(boolean verbose) {

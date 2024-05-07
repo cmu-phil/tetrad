@@ -6,26 +6,45 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumLatentCommonAncestorBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumLatentCommonAncestorBidirected() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#X<->Y,X<~~L~~>Y";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "# X<->Y in estimated where X<~~L~~>Y in true";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -47,6 +66,9 @@ public class NumLatentCommonAncestorBidirected implements Statistic {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

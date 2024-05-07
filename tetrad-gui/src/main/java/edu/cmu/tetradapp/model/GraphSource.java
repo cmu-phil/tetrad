@@ -27,15 +27,20 @@ import edu.cmu.tetrad.graph.Graph;
  * Indicates a class that is capable of producing a graph on demand.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface GraphSource {
 
     /**
+     * <p>getGraph.</p>
+     *
      * @return the graph produced by this source.
      */
     Graph getGraph();
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the graph produced by this source.
      */
     String getName();

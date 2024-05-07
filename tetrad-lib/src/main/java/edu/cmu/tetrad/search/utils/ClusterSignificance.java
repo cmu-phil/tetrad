@@ -23,6 +23,7 @@ import java.util.Set;
  * Significance of these models is returned.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClusterSignificance {
     // The variables in the model.
@@ -111,10 +112,10 @@ public class ClusterSignificance {
             try {
                 double p = clusterSignificance.significance(new ArrayList<>(_out));
                 TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                        + " p = " + nf.format(p));
+                                                           + " p = " + nf.format(p));
             } catch (Exception e) {
                 TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                        + " p = EXCEPTION");
+                                                           + " p = EXCEPTION");
             }
         }
     }
@@ -295,5 +296,21 @@ public class ClusterSignificance {
      * Gives the options for checking significance of clusters--could check the significance using a regression model,
      * or could check to see if the cluster is a clique, or could not do the check.
      */
-    public enum CheckType {Significance, Clique, None}
+    public enum CheckType {
+
+        /**
+         * Check the significance using a regression model.
+         */
+        Significance,
+
+        /**
+         * Check to see if the cluster is a clique.
+         */
+        Clique,
+
+        /**
+         * Do not do the check.
+         */
+        None
+    }
 }

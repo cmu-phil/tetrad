@@ -38,6 +38,7 @@ import static org.apache.commons.math3.util.FastMath.round;
  * To see what this class does, try calling ChoiceGenerator.testPrint(5, 3), for instance.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("WeakerAccess")
 public final class ChoiceGenerator {
@@ -65,7 +66,6 @@ public final class ChoiceGenerator {
      */
     public ChoiceGenerator(int a, int b) {
         if (a < 0 || b < 0) throw new IllegalArgumentException("ERROR: a and b must be non-negative");
-        if (b > a) b = a;
 
         this.a = a;
         this.b = b;
@@ -142,9 +142,15 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
+        if (a < b) {
+            return null;
+        }
+
         int i = getB();
 
         // Scan from the right for the first index whose value is less than
@@ -173,6 +179,8 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>Getter for the field <code>a</code>.</p>
+     *
      * @return Ibid.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -181,6 +189,8 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>Getter for the field <code>b</code>.</p>
+     *
      * @return Ibid.
      */
     public int getB() {

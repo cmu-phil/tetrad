@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,22 +39,31 @@ import java.util.List;
  * all variables--i.e. it is a tautology.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemProposition implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * Represents a final variable semIm.
      */
     private final SemIm semIm;
 
     /**
-     * @serial Cannot be null.
+     * Represents a private final array of double values.
+     * <p>
+     * This variable is part of the SemProposition class in the Tetrad API. SemProposition is a class that represents a
+     * Proposition for a Bayes IM (Bayesian Inference Model). It allows for semantic checks when deserializing.
+     * <p>
+     * The values array contains the double values associated with the Proposition.
      */
     private final double[] values;
 
     /**
      * Creates a new Proposition which allows all values.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemProposition(SemIm semIm) {
         if (semIm == null) {
@@ -66,54 +76,78 @@ public final class SemProposition implements TetradSerializable {
         Arrays.fill(this.values, Double.NaN);
     }
 
+    /**
+     * Creates a new SemProposition object by copying the values and semIm from the given proposition.
+     *
+     * @param proposition the SemProposition object to be copied
+     */
     public SemProposition(SemProposition proposition) {
         this.semIm = proposition.semIm;
         this.values = Arrays.copyOf(proposition.values, proposition.values.length);
     }
 
+    /**
+     * Creates a tautology by wrapping the given SemIm object.
+     *
+     * @param semIm the SemIm object to be wrapped
+     * @return a SemProposition object representing the tautology
+     */
     public static SemProposition tautology(SemIm semIm) {
         return new SemProposition(semIm);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemProposition} object
      */
     public static SemProposition serializableInstance() {
         return new SemProposition(SemIm.serializableInstance());
     }
 
     /**
-     * @return the Bayes IM that this is a proposition for.
+     * Retrieves the SemIm object associated with this SemProposition.
+     *
+     * @return the SemIm object
      */
     public SemIm getSemIm() {
         return this.semIm;
     }
 
     /**
-     * @return the number of variables for the proposition.
+     * Returns the number of variables in the current object.
+     *
+     * @return the number of variables
      */
     public int getNumVariables() {
         return this.values.length;
     }
 
     /**
-     * @return the index of the variable with the given name, or -1 if such a variable does not exist.
+     * Returns the index of the node.
+     *
+     * @return the index of the node
      */
     public int getNodeIndex() {
 
         return -1;
     }
 
+    /**
+     * Compares this SemProposition object with the specified object for equality.
+     *
+     * @param o the object to be compared with this SemProposition
+     * @return true if the given object is equal to this SemProposition, false otherwise
+     * @throws IllegalArgumentException if the given object is not an instance of SemProposition
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof SemProposition)) {
+        if (!(o instanceof SemProposition proposition)) {
             throw new IllegalArgumentException();
         }
-
-        SemProposition proposition = (SemProposition) o;
 
         if (!(this.semIm == proposition.semIm)) {
             return false;
@@ -130,6 +164,11 @@ public final class SemProposition implements TetradSerializable {
         return true;
     }
 
+    /**
+     * Calculates the hash code for this object.
+     *
+     * @return the hash code value for this object
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + this.semIm.hashCode();
@@ -137,6 +176,11 @@ public final class SemProposition implements TetradSerializable {
         return hashCode;
     }
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object
+     */
     public String toString() {
         List<Node> nodes = this.semIm.getVariableNodes();
         StringBuilder buf = new StringBuilder();
@@ -157,25 +201,53 @@ public final class SemProposition implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * Retrieves the value at the specified index.
+     *
+     * @param i the index of the value to retrieve
+     * @return the value at the specified index
+     */
     public double getValue(int i) {
         return this.values[i];
     }
 
+    /**
+     * Sets the value at the specified index in the array of values.
+     *
+     * @param i     the index of the value to set
+     * @param value the value to set
+     */
     public void setValue(int i, double value) {
         this.values[i] = value;
     }
 
+    /**
+     * Retrieves the value associated with the given node.
+     *
+     * @param node the node for which the value is retrieved
+     * @return the value associated with the given node
+     */
     public double getValue(Node node) {
         List<Node> nodes = this.semIm.getVariableNodes();
         return this.values[nodes.indexOf(node)];
     }
 
+    /**
+     * Sets the value for a given node in the SemProposition object.
+     *
+     * @param node  the node for which the value is to be set
+     * @param value the value to be assigned to the node
+     */
     public void setValue(Node node, double value) {
         List<Node> nodes = this.semIm.getVariableNodes();
         this.values[nodes.indexOf(node)] = value;

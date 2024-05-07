@@ -47,6 +47,8 @@ class NumberCellEditor extends DefaultCellEditor {
 
     /**
      * Constructs a new number cell editor.
+     *
+     * @param nf a {@link java.text.NumberFormat} object
      */
     public NumberCellEditor(NumberFormat nf) {
         super(new JTextField());
@@ -102,10 +104,20 @@ class NumberCellEditor extends DefaultCellEditor {
         this.textField.addActionListener(this.delegate);
     }
 
+    /**
+     * <p>Getter for the field <code>emptyString</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getEmptyString() {
         return this.emptyString;
     }
 
+    /**
+     * <p>Setter for the field <code>emptyString</code>.</p>
+     *
+     * @param emptyString a {@link java.lang.String} object
+     */
     public void setEmptyString(String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();

@@ -32,11 +32,14 @@ import java.awt.event.ComponentEvent;
  *
  * @author josephramsey
  * @author ChatGPT
+ * @version $Id: $Id
  */
 public abstract class WatchedProcess {
     private final JFrame frame;
     private Thread longRunningThread;
     private JDialog dialog;
+
+    private boolean interrupted;
 
     /**
      * Constructor.
@@ -68,7 +71,7 @@ public abstract class WatchedProcess {
      * This is the method that will be called in a separate thread. It should be a long-running process that can be
      * interrupted by the user.
      *
-     * @throws InterruptedException if the process is interrupted while running.
+     * @throws java.lang.InterruptedException if the process is interrupted while running.
      */
     public abstract void watch() throws InterruptedException;
 
@@ -77,9 +80,11 @@ public abstract class WatchedProcess {
             try {
                 watch();
             } catch (InterruptedException e) {
-                TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
+                TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping; see console for stack trace.");
+                e.printStackTrace();
             } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("Exception while watching: " + e.getMessage());
+                TetradLogger.getInstance().forceLogMessage("Exception while watching; see console for stack trace.");
+                e.printStackTrace();
             }
 
             if (dialog != null) {
@@ -89,6 +94,12 @@ public abstract class WatchedProcess {
 
         showStopDialog();
         longRunningThread.start();
+    }
+
+    protected void disposeStopDialog() {
+        if (dialog != null) {
+            SwingUtilities.invokeLater(() -> dialog.dispose());
+        }
     }
 
     private void showStopDialog() {
@@ -118,6 +129,8 @@ public abstract class WatchedProcess {
             if (dialog != null) {
                 SwingUtilities.invokeLater(() -> dialog.dispose());
             }
+
+            interrupted = true;
         });
 
         JPanel panel = new JPanel();
@@ -130,4 +143,14 @@ public abstract class WatchedProcess {
 
         SwingUtilities.invokeLater(() -> dialog.setVisible(true));
     }
+
+    /**
+     * Checks if the object has been interrupted.
+     *
+     * @return true if the object has been interrupted, false otherwise.
+     */
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
 }

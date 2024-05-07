@@ -44,6 +44,7 @@ import java.text.NumberFormat;
  *
  * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class LogisticRegressionEditor extends JPanel {
 
@@ -59,16 +60,20 @@ public class LogisticRegressionEditor extends JPanel {
      */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+    /**
+     * <p>Constructor for LogisticRegressionEditor.</p>
+     *
+     * @param regressionRunner a {@link edu.cmu.tetradapp.model.LogisticRegressionRunner} object
+     */
     public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
 
         DataSet dataSet = (DataSet) regressionRunner.getDataModel();
 
         for (Node node : dataSet.getVariables()) {
-            if (node instanceof DiscreteVariable) {
-                DiscreteVariable v = (DiscreteVariable) node;
+            if (node instanceof DiscreteVariable v) {
                 if (v.getNumCategories() != 2) {
                     throw new IllegalArgumentException("Logistic regression requires a dataset in which all variables " +
-                            "are either continuous or binary.");
+                                                       "are either continuous or binary.");
                 }
             }
         }
@@ -138,11 +143,14 @@ public class LogisticRegressionEditor extends JPanel {
             LayoutUtil.defaultLayout(outGraph);
             LayoutUtil.fruchtermanReingoldLayout(outGraph);
             workbench.setGraph(outGraph);
-            TetradLogger.getInstance().log("result", this.modelParameters.getText());
+            String message = this.modelParameters.getText();
+            TetradLogger.getInstance().forceLogMessage(message);
         });
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override

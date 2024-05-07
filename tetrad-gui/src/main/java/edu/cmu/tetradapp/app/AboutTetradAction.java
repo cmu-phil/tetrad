@@ -47,7 +47,9 @@ final class AboutTetradAction extends AbstractAction {
     }
 
     /**
-     * Closes the frontmost session of this action's desktop.
+     * Performs the action when an event is triggered.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         Box b1 = Box.createVerticalBox();
@@ -58,13 +60,13 @@ final class AboutTetradAction extends AbstractAction {
 
         JLabel label = new JLabel();
         label.setText("<html>" + "<b>Tetrad " + currentVersion + "</b>" +
-                "<br>" +
-                "<br>Laboratory for Symbolic and Educational Computing" +
-                "<br>Department of Philosophy" +
-                "<br>Carnegie Mellon University" + "<br>" +
-                "<br>Project Direction: Clark Glymour, Richard Scheines, Peter Spirtes" +
-                "<br>Lead Developer: Joseph Ramsey" +
-                "<br>" + copyright + "</html>"
+                      "<br>" +
+                      "<br>Laboratory for Symbolic and Educational Computing" +
+                      "<br>Department of Philosophy" +
+                      "<br>Carnegie Mellon University" + "<br>" +
+                      "<br>Project Direction: Clark Glymour, Richard Scheines, Peter Spirtes" +
+                      "<br>Lead Developer: Joseph Ramsey" +
+                      "<br>" + copyright + "</html>"
 
         );
         label.setBackground(Color.LIGHT_GRAY);

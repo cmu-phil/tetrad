@@ -32,8 +32,8 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul
  * Saavedra</a> (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
-
 public class Biolingua {
     private static final float ALMOST_ZERO = (float) 0.00001;
     private static final float SIGNIF_LEVEL = (float) 0.05;
@@ -70,6 +70,7 @@ public class Biolingua {
      *
      * @param correlMatrix the correlation matrix
      * @param initGraph    the initial graph
+     * @return the graph found after the search stopped improving the evaluation metric
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph) {
@@ -87,12 +88,14 @@ public class Biolingua {
      * Runs the biolingua algorithm using the given correlation matrix (all values are assumed significant), an initial
      * graph, and the coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the
      * graph found after the search stopped improving the evaluation metric.
+     *
      * @param correlMatrix the correlation matrix
-     * @param initGraph the initial graph
+     * @param initGraph    the initial graph
      * @param vBitsAnnotat the coefficient for annotations in the evaluation metric
-     * @param vBitsErrors the coefficient for errors in the evaluation metric
-     * @param vbitsLinks the coefficient for links in the evaluation metric
-     * @param vBitsPredic the coefficient for predictions in the evaluation metric
+     * @param vBitsErrors  the coefficient for errors in the evaluation metric
+     * @param vbitsLinks   the coefficient for links in the evaluation metric
+     * @param vBitsPredic  the coefficient for predictions in the evaluation metric
+     * @return the graph found after the search stopped improving the evaluation metric
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph,
@@ -106,13 +109,15 @@ public class Biolingua {
      * Runs the biolingua algorithm using the given correlation matrix, significance matrix, the initial graph, and the
      * coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the graph found
      * after the search stopped improving the evaluation metric.
+     *
      * @param correlMatrix the correlation matrix
      * @param signifMatrix the significance matrix
-     * @param initGraph the initial graph
+     * @param initGraph    the initial graph
      * @param vBitsAnnotat the coefficient for annotations in the evaluation metric
-     * @param vBitsErrors the coefficient for errors in the evaluation metric
-     * @param vbitsLinks the coefficient for links in the evaluation metric
-     * @param vBitsPredic the coefficient for predictions in the evaluation metric
+     * @param vBitsErrors  the coefficient for errors in the evaluation metric
+     * @param vbitsLinks   the coefficient for links in the evaluation metric
+     * @param vBitsPredic  the coefficient for predictions in the evaluation metric
+     * @return the graph found after the search stopped improving the evaluation metric
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
@@ -121,6 +126,7 @@ public class Biolingua {
         return Biolingua.doBiolinguaAlgorithm(correlMatrix, signifMatrix, initGraph,
                 vbitsLinks, vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
+
     private static BiolinguaDigraph doBiolinguaAlgorithm(
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
             BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
@@ -133,13 +139,13 @@ public class Biolingua {
 
         if (Biolingua.nvars != initGraph.getSize()) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + initGraph.getSize() +
-                    " in initial graph.");
+                                               Biolingua.nvars + " in Correl.Matrix, " + initGraph.getSize() +
+                                               " in initial graph.");
         }
         if ((signifMatrix != null) && (signifMatrix.getSize() != Biolingua.nvars)) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
-                    " in Significance Matrix.");
+                                               Biolingua.nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
+                                               " in Significance Matrix.");
         }
 
         Biolingua.path = new int[Biolingua.nvars];
@@ -247,6 +253,7 @@ public class Biolingua {
      * accordingly.<p> Count the # of predictions that agree with the input correlation matrix given to Biolingua, as
      * well as the # of errors (erroneous predictions) After checking all undirectedPaths, compute the evaluation
      * metric
+     *
      * @return the evaluation metric for the current model
      */
     private static float evalCurrentModel() {
@@ -330,7 +337,7 @@ public class Biolingua {
         int nEdges = Biolingua.g.getNumEdges();
 
         return Biolingua.bitsLinks * nEdges + Biolingua.bitsAnnotat * annotations +
-                Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
+               Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
     }
 
     // Think about a new name for this method, since it not only "finds"

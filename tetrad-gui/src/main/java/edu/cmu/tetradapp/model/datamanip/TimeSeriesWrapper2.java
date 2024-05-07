@@ -29,7 +29,10 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 /**
+ * <p>TimeSeriesWrapper2 class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransferable {
     private static final long serialVersionUID = 23L;
@@ -45,11 +48,10 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
         DataModelList timeSeriesDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
             DataSet timeSeries = TsUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
@@ -68,6 +70,7 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

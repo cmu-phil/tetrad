@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * algorithm by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class MaxP {
     private final IndependenceTest independenceTest;
@@ -46,6 +47,7 @@ public final class MaxP {
     private boolean useHeuristic;
     private int maxPathLength = 3;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private boolean verbose = false;
 
     /**
      * Constructor.
@@ -68,6 +70,8 @@ public final class MaxP {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search.
      */
     public void setDepth(int depth) {
@@ -180,7 +184,7 @@ public final class MaxP {
         adjc.remove(a);
 
         if (!(GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)
-                && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
+              && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
             return;
         }
 
@@ -263,7 +267,7 @@ public final class MaxP {
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        PcCommon.orientCollider(a, b, c, conflictRule, graph);
+        PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
@@ -306,6 +310,15 @@ public final class MaxP {
         }
 
         return false;
+    }
+
+    /**
+     * Sets the verbose flag.
+     *
+     * @param verbose The boolean value indicating whether to enable verbose logging.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

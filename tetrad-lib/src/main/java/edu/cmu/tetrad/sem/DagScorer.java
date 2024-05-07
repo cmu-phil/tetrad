@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,19 +46,52 @@ import java.util.TreeSet;
  * measured.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DagScorer implements TetradSerializable, Scorer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The covariance matrix.
+     */
     private final ICovarianceMatrix covMatrix;
+    /**
+     * The edge coefficients.
+     */
     private final Matrix edgeCoef;
+    /**
+     * The error covariance.
+     */
     private final Matrix errorCovar;
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
+    /**
+     * The sample covariance.
+     */
     private final Matrix sampleCovar;
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+    /**
+     * The DAG.
+     */
     private Graph dag;
+    /**
+     * The implied covariance matrix for the measured variables.
+     */
     private Matrix implCovarMeasC;
+    /**
+     * The log determinant of the sample covariance matrix.
+     */
     private double logDetSample;
+
+    /**
+     * The fml score.
+     */
     private double fml = Double.NaN;
 
 
@@ -95,14 +129,18 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.Scorer} object
      */
     public static Scorer serializableInstance() {
         return new DagScorer(CovarianceMatrix.serializableInstance());
     }
 
     /**
-     * Runs the estimator on the data and SemPm passed in through the constructor. Returns the fml score of the
-     * resulting model.
+     * Scores the given DAG using the implemented algorithm.
+     *
+     * @param dag the DAG to be scored
+     * @return the score of the DAG
      */
     public double score(Graph dag) {
         List<Node> changedNodes = getChangedNodes(dag);
@@ -198,11 +236,18 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return changedNodes;
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the Sem.
      */
     public String toString() {
@@ -213,6 +258,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     /**
      * The value of the maximum likelihood function for the getModel the model (Bollen 107). To optimize, this should be
      * minimized.
+     *
+     * @return a double
      */
     public double getFml() {
         if (!Double.isNaN(this.fml)) {
@@ -255,6 +302,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
+     * <p>getBicScore.</p>
+     *
      * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
@@ -263,6 +312,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
+     * <p>getChiSquare.</p>
+     *
      * @return the chi square value for the model.
      */
     public double getChiSquare() {
@@ -270,6 +321,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the p-value for the model.
      */
     public double getPValue() {
@@ -283,10 +336,14 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws java.io.IOException              if any.
+     * @throws java.lang.ClassNotFoundException if any.
      */
-    private void readObject
-    (ObjectInputStream
-             s)
+    @Serial
+    private void readObject(ObjectInputStream
+                                    s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -379,43 +436,93 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return this.logDetSample;
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>getNumFreeParams.</p>
+     *
+     * @return a int
+     */
     public int getNumFreeParams() {
         return this.dag.getEdges().size() + this.dag.getNodes().size();
     }
 
+    /**
+     * <p>getDof.</p>
+     *
+     * @return a int
+     */
     public int getDof() {
         return (this.dag.getNodes().size() * (this.dag.getNodes().size() + 1)) / 2 - getNumFreeParams();
     }
 
+    /**
+     * <p>getSampleSize.</p>
+     *
+     * @return a int
+     */
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
 
 
+    /**
+     * <p>getMeasuredNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getMeasuredNodes() {
         return this.getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>sampleCovar</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getSampleCovar() {
         return this.sampleCovar;
     }
 
+    /**
+     * <p>Getter for the field <code>edgeCoef</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getEdgeCoef() {
         return this.edgeCoef;
     }
 
+    /**
+     * <p>Getter for the field <code>errorCovar</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getErrorCovar() {
         return this.errorCovar;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>getEstSem.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getEstSem() {
         SemPm pm = new SemPm(this.dag);
 

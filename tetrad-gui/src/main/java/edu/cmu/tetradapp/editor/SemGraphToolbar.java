@@ -72,6 +72,8 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public SemGraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
@@ -193,6 +195,8 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

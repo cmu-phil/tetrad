@@ -25,6 +25,7 @@ import java.util.Map;
  * Feb 16, 2017 11:33:31 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ValidationResult {
 
@@ -61,9 +62,9 @@ public class ValidationResult {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Return the string representation of this object.
-     *
-     * @return the string representation of this object.
      */
     @Override
     public String toString() {

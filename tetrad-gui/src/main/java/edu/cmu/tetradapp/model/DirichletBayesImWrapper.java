@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -31,30 +30,47 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
-     * @serial Cannot be null.
+     * The Dirichlet Bayes IM.
      */
     private final DirichletBayesIm dirichletBayesIm;
+
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     //===========================CONSTRUCTORS=============================//
+
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public DirichletBayesImWrapper(Simulation simulation) {
         throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
     }
 
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
                                    Parameters params) {
         if (bayesPmWrapper == null) {
@@ -80,6 +96,11 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
     }
 
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     */
     public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -91,6 +112,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
      * @see TetradSerializableUtils
      */
     public static DirichletBayesImWrapper serializableInstance() {
@@ -100,6 +122,12 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     //================================PUBLIC METHODS=======================//
+
+    /**
+     * <p>Getter for the field <code>dirichletBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     */
     public DirichletBayesIm getDirichletBayesIm() {
         return this.dirichletBayesIm;
     }
@@ -111,7 +139,12 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws java.io.IOException              if any.
+     * @throws java.lang.ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -121,36 +154,70 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Dirichlet Bayes IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 }

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -36,19 +37,19 @@ import java.util.Arrays;
  * </ol>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PolynomialTerm implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
      * The variables of the term.
-     *
-     * @serial
      */
     private final int[] variables;
+
     /**
      * The coefficient of the term.
-     *
-     * @serial
      */
     private double coefficient;
 
@@ -56,6 +57,9 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Constructs a term.
+     *
+     * @param coefficient a double
+     * @param variables   an array of {@link int} objects
      */
     public PolynomialTerm(double coefficient, int[] variables) {
         if (variables == null) {
@@ -70,6 +74,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public static PolynomialTerm serializableInstance() {
         return new PolynomialTerm(0.0, new int[0]);
@@ -79,6 +85,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Returns the coefficient.
+     *
+     * @return a double
      */
     public double getCoefficient() {
         return this.coefficient;
@@ -86,6 +94,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Sets the coefficient.
+     *
+     * @param coefficient a double
      */
     public void setCoefficient(double coefficient) {
         this.coefficient = coefficient;
@@ -93,6 +103,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Returns the number of variables in this term.
+     *
+     * @return a int
      */
     public int getNumVariables() {
         return this.variables.length;
@@ -100,6 +112,9 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Returns the index'th variable.
+     *
+     * @param index a int
+     * @return a int
      */
     public int getVariable(int index) {
         return this.variables[index];
@@ -107,6 +122,9 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Returns true iff the given variable list is equal to the variable list of this term.
+     *
+     * @param variables an array of {@link int} objects
+     * @return a boolean
      */
     public boolean isVariableListEqual(int[] variables) {
         return Arrays.equals(variables, this.variables);
@@ -114,6 +132,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Returns the highest variable index in this term.
+     *
+     * @return a int
      */
     public int getMaxIndex() {
         int max = 0;
@@ -127,6 +147,9 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Evaluates the term.
+     *
+     * @param values an array of {@link double} objects
+     * @return a double
      */
     public double evaluate(double[] values) {
         double product = this.coefficient;
@@ -138,6 +161,8 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Prints out a representation of the term.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -160,7 +185,12 @@ public class PolynomialTerm implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

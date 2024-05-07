@@ -25,13 +25,14 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,22 +42,45 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemPmWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The wrapped SemPm.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the model to display.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the source of the model.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
+    /**
+     * The wrapped SemPm.
+     */
     private List<SemPm> semPms;
 
     //==============================CONSTRUCTORS==========================//
+
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public SemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -72,6 +96,9 @@ public class SemPmWrapper implements SessionModel {
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(Simulation simulation, Parameters parameters) {
         List<SemIm> semIms = null;
@@ -88,24 +115,14 @@ public class SemPmWrapper implements SessionModel {
 
         if (_simulation instanceof LinearFisherModel) {
             throw new IllegalArgumentException("Large SEM simulations cannot be represented "
-                    + "using a SEM PM or IM box, sorry.");
+                                               + "using a SEM PM or IM box, sorry.");
         }
 
         if (!(_simulation instanceof SemSimulation)) {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation.");
         }
 
-        semIms = ((SemSimulation) _simulation).getSemIms();
-
-        if (semIms == null) {
-            throw new NullPointerException("It looks like you have not done a simulation.");
-        }
-
         this.semPms = new ArrayList<>();
-
-        for (SemIm semIm : semIms) {
-            this.semPms.add(semIm.getSemPm());
-        }
 
         this.numModels = simulation.getDataModelList().size();
         this.modelIndex = 0;
@@ -114,6 +131,9 @@ public class SemPmWrapper implements SessionModel {
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph() instanceof TimeLagGraph
@@ -121,28 +141,56 @@ public class SemPmWrapper implements SessionModel {
                 : new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphSource.getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
         SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
                 .getSemPm();
         setSemPm(oldSemPm);
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public SemPmWrapper(SemImWrapper wrapper) {
         SemPm pm = wrapper.getSemIm().getSemPm();
         setSemPm(pm);
 
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
+     */
     public SemPmWrapper(MimBuildRunner wrapper) {
         SemPm pm = wrapper.getSemPm();
         setSemPm(pm);
 
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
+     */
     public SemPmWrapper(BuildPureClustersRunner wrapper) {
         Graph graph = wrapper.getResultGraph();
         if (graph == null) {
@@ -153,6 +201,11 @@ public class SemPmWrapper implements SessionModel {
 
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public SemPmWrapper(Simulation simulation) {
         List<Graph> graphs = simulation.getGraphs();
 
@@ -163,18 +216,38 @@ public class SemPmWrapper implements SessionModel {
         setSemPm(new SemPm(graphs.get(0)));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
+     */
     public SemPmWrapper(AlgorithmRunner wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link DagFromCPDAGWrapper} object
+     */
     public SemPmWrapper(DagFromCPDAGWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
+     */
     public SemPmWrapper(ScoredGraphsWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for SemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.PValueImproverWrapper} object
+     */
     public SemPmWrapper(PValueImproverWrapper wrapper) {
         SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
         log(0, oldSemPm);
@@ -184,6 +257,7 @@ public class SemPmWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
      * @see TetradSerializableUtils
      */
     public static SemPmWrapper serializableInstance() {
@@ -191,6 +265,12 @@ public class SemPmWrapper implements SessionModel {
     }
 
     //============================PUBLIC METHODS=========================//
+
+    /**
+     * <p>getSemPm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPms.get(getModelIndex());
     }
@@ -211,59 +291,117 @@ public class SemPmWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semPms.get(this.modelIndex).getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
     //======================= Private methods ====================//
     private void log(int i, SemPm pm) {
-        TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
-        TetradLogger.getInstance().log("info", "PM # " + (i + 1));
-        TetradLogger.getInstance().log("pm", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().forceLogMessage("PM # " + (i + 1));
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getResultGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
@@ -271,6 +409,7 @@ public class SemPmWrapper implements SessionModel {
     /**
      * The wrapped SemPm.
      *
+     * @return a {@link java.util.List} object
      * @serial Cannot be null.
      */
     public List<SemPm> getSemPms() {

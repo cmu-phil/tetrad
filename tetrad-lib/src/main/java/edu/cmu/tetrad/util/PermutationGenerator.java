@@ -35,8 +35,9 @@ import java.util.LinkedList;
  * To see what this class does, try calling PermutationGenerator.testPrint(5), for instance.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-public final class  PermutationGenerator {
+public final class PermutationGenerator {
 
     /**
      * The number of objects being permuted.
@@ -115,6 +116,8 @@ public final class  PermutationGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next combination in the series, or null if the series is finished.
      */
     public int[] next() {

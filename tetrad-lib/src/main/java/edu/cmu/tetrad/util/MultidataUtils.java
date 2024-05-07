@@ -28,12 +28,19 @@ import java.util.stream.Collectors;
  * Aug 7, 2018 10:21:59 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class MultidataUtils {
 
     private MultidataUtils() {
     }
 
+    /**
+     * <p>combineDataset.</p>
+     *
+     * @param dataModels a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel combineDataset(List<DataModel> dataModels) {
         if (dataModels == null || dataModels.isEmpty()) {
             return null;
@@ -121,6 +128,15 @@ public final class MultidataUtils {
         }
     }
 
+    /**
+     * <p>combineMixedDiscreteData.</p>
+     *
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
+     * @param combinedData an array of {@link int} objects
+     * @param numOfRows    a int
+     * @param numOfColumns a int
+     */
     public static void combineMixedDiscreteData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
         if (dataModels.size() == 1) {
             MultidataUtils.combineSingleMixedDiscreteData(dataModels, combinedData, numOfColumns);
@@ -170,6 +186,15 @@ public final class MultidataUtils {
         }
     }
 
+    /**
+     * <p>combineMixedContinuousData.</p>
+     *
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
+     * @param combinedData an array of {@link double} objects
+     * @param numOfRows    a int
+     * @param numOfColumns a int
+     */
     public static void combineMixedContinuousData(List<DataModel> dataModels, List<Node> variables, double[][] combinedData, int numOfRows, int numOfColumns) {
         if (dataModels.size() == 1) {
             MultidataUtils.combineSingleMixedContinuousData(dataModels, combinedData, numOfColumns);
@@ -178,6 +203,15 @@ public final class MultidataUtils {
         }
     }
 
+    /**
+     * <p>combineDiscreteDataToDiscreteVerticalData.</p>
+     *
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
+     * @param combinedData an array of {@link int} objects
+     * @param numOfRows    a int
+     * @param numOfColumns a int
+     */
     public static void combineDiscreteDataToDiscreteVerticalData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
         DiscreteVariable[] discreteVars = variables.stream()
                 .map(e -> (e instanceof DiscreteVariable) ? (DiscreteVariable) e : null)
@@ -205,6 +239,12 @@ public final class MultidataUtils {
         }
     }
 
+    /**
+     * <p>combineContinuousData.</p>
+     *
+     * @param dataModels   a {@link java.util.List} object
+     * @param combinedData an array of {@link double} objects
+     */
     public static void combineContinuousData(List<DataModel> dataModels, double[][] combinedData) {
         List<DoubleDataBox> models = dataModels.stream()
                 .map(e -> {
@@ -341,6 +381,12 @@ public final class MultidataUtils {
         }
     }
 
+    /**
+     * <p>getRowCounts.</p>
+     *
+     * @param dataModels a {@link java.util.List} object
+     * @return an array of {@link int} objects
+     */
     public static int[] getRowCounts(List<DataModel> dataModels) {
         int[] counts = new int[dataModels.size()];
 
@@ -354,6 +400,12 @@ public final class MultidataUtils {
         return counts;
     }
 
+    /**
+     * <p>getNumberOfColumns.</p>
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a int
+     */
     public static int getNumberOfColumns(DataModel dataModel) {
         return (dataModel instanceof BoxDataSet)
                 ? ((BoxDataSet) dataModel).getDataBox().numCols()

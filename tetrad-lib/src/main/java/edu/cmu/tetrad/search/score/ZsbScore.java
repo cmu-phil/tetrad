@@ -57,6 +57,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ZsbScore implements Score {
 
@@ -99,7 +100,8 @@ public class ZsbScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      *
-     * @param dataSet The data set.
+     * @param dataSet               The data set.
+     * @param precomputeCovariances a boolean
      */
     public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
         this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
@@ -163,7 +165,7 @@ public class ZsbScore implements Score {
             varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                                       LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         int m0 = estMaxParents[i];
@@ -180,12 +182,9 @@ public class ZsbScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns localScore(y | z, x) - localScore(y | z).
-     *
-     * @param x Node 1
-     * @param y Node 2
-     * @param z The conditioning nodes.
-     * @return The score.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -221,7 +220,7 @@ public class ZsbScore implements Score {
 
         if (exists) {
             throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
+                                               + ") in absolute value.");
         }
 
         this.sampleSize = covariances.getSampleSize();
@@ -237,10 +236,10 @@ public class ZsbScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
      *
-     * @param bump The bump.
-     * @return True, if so.
      * @see Fges
      */
     @Override
@@ -249,9 +248,9 @@ public class ZsbScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -259,9 +258,10 @@ public class ZsbScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a judgment of max degree for some algorithms.
      *
-     * @return This maximum.
      * @see Fges
      */
     @Override
@@ -270,9 +270,9 @@ public class ZsbScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if the variable in Z determine y.
-     *
-     * @return True, if so.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

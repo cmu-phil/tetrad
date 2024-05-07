@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.stat.correlation;
 
+import java.io.Serial;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -28,9 +29,9 @@ import java.util.concurrent.RecursiveAction;
  * Jan 27, 2016 5:37:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class RealCovarianceMatrixForkJoin implements RealCovariance {
-    private static final long serialVersionUID = 23L;
 
     private final double[][] data;
 
@@ -40,6 +41,12 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
     private final int numOfThreads;
 
+    /**
+     * <p>Constructor for RealCovarianceMatrixForkJoin.</p>
+     *
+     * @param data         an array of {@link double} objects
+     * @param numOfThreads a int
+     */
     public RealCovarianceMatrixForkJoin(double[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
@@ -47,6 +54,9 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] computeLowerTriangle(boolean biasCorrected) {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -60,6 +70,9 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         return covarianceMatrix;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[][] compute(boolean biasCorrected) {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
@@ -75,6 +88,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
     class CovarianceAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 1034920868427599720L;
 
         private final double[][] covariance;
@@ -137,6 +151,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
     class CovarianceLowerTriangleAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 1818119309247848613L;
 
         private final double[] covariance;
@@ -198,6 +213,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
     class MeanAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 2419217605658853345L;
 
         private final double[] means;

@@ -30,12 +30,19 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.reveal;
  * measures of mutual information implemented in the RevealEvaluator class.  This approach is described by Liang et al.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class RevealSearch {
     private final int ngenes;
     String[] names;
     RevealEvaluator re;
 
+    /**
+     * <p>Constructor for RevealSearch.</p>
+     *
+     * @param cases an array of {@link int} objects
+     * @param names an array of {@link java.lang.String} objects
+     */
     public RevealSearch(int[][] cases, String[] names) {
         this.names = names;
         int ntimes = cases.length;
@@ -47,6 +54,8 @@ public class RevealSearch {
      * This method computes m/e values for all single regulators, pairs and triples at a given time lag.  The m/e value
      * is the ratio of the mutual information between the regulated gene and the regulator set divided by the entropy of
      * the regulated gene.
+     *
+     * @param lag a int
      */
     public void exhaustiveSearch(int lag) {
 
@@ -118,7 +127,7 @@ public class RevealSearch {
                         parents[child][1] = p2;
                     }
                     System.out.println("for parents = " + p1 + "," + p2 +
-                            " m = " + mm + " m/e = " + mme);
+                                       " m = " + mm + " m/e = " + mme);
                 }
             }
         }
@@ -139,7 +148,7 @@ public class RevealSearch {
                         double mmm = this.re.mutualInformation(child, ppp, lag);
                         double mmme = mmm / entropies[child];
                         if (mmme > best3[child] && mmme > best2[child] &&
-                                mmme > best1[child]) {
+                            mmme > best1[child]) {
                             best3[child] = mmme;
                             parents[child] = new int[3];
                             parents[child][0] = p1;
@@ -147,7 +156,7 @@ public class RevealSearch {
                             parents[child][2] = p3;
                         }
                         System.out.println("for parents = " + p1 + "," + p2 +
-                                "," + p3 + " m = " + mmm + " m/e = " + mmme);
+                                           "," + p3 + " m = " + mmm + " m/e = " + mmme);
 
                     }
                 }

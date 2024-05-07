@@ -22,25 +22,48 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * Stores a 2D array of double continuousData. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class MixedDataBox implements DataBox {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables in the dataset.
+     */
     private final List<Node> variables;
+
+    /**
+     * The number of rows in the dataset.
+     */
     private final int numRows;
+
+    /**
+     * The continuous data.
+     */
     private double[][] continuousData;
+
+    /**
+     * The discrete data.
+     */
     private int[][] discreteData;
 
     /**
      * The variables here are used only to determine which columns are discrete and which are continuous; bounds
      * checking is not done.
+     *
+     * @param variables a {@link java.util.List} object
+     * @param numRows   a int
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -119,6 +142,8 @@ public class MixedDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -127,7 +152,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return the number of rows in this continuousData box.
+     * {@inheritDoc}
      */
     @Override
     public int numRows() {
@@ -135,7 +160,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return the number of columns in this continuousData box.
+     * {@inheritDoc}
      */
     @Override
     public int numCols() {
@@ -143,6 +168,8 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     @Override
@@ -167,7 +194,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
+     * {@inheritDoc}
      */
     @Override
     public Number get(int row, int col) {
@@ -187,7 +214,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return a copy of this continuousData box.
+     * {@inheritDoc}
      */
     @Override
     public DataBox copy() {
@@ -203,7 +230,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return a DataBox of type DoubleDataBox, but with the given dimensions.
+     * {@inheritDoc}
      */
     @Override
     public DataBox like() {
@@ -220,6 +247,11 @@ public class MixedDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /**
+     * <p>addVariable.</p>
+     *
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public void addVariable(Node variable) {
         this.variables.add(variable);
 
@@ -235,6 +267,9 @@ public class MixedDataBox implements DataBox {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         List<Node> newVars = new ArrayList<>();
@@ -257,10 +292,20 @@ public class MixedDataBox implements DataBox {
         return _dataBox;
     }
 
+    /**
+     * <p>Getter for the field <code>continuousData</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getContinuousData() {
         return this.continuousData;
     }
 
+    /**
+     * <p>Getter for the field <code>discreteData</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[][] getDiscreteData() {
         return this.discreteData;
     }

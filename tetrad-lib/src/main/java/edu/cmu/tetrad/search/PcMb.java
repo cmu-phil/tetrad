@@ -43,41 +43,70 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see FgesMb
  * @see Knowledge
  */
 public final class PcMb implements IMbSearch, IGraphSearch {
 
-    // The independence test used to perform the search.
+    /**
+     * The independence test used to perform the search.
+     */
     private final IndependenceTest test;
-    // The logger for this class. The config needs to be set.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The list of variables being searched over. Must contain the target.
+    /**
+     * The list of variables being searched over. Must contain the target.
+     */
     private List<Node> variables;
-    // The target variable.
+    /**
+     * The target variable.
+     */
     private List<Node> targets;
-    // The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
-    // any independence test.
+    /**
+     * The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
+     * any independence test.
+     */
     private int depth;
-    // The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
-    // DAGs.
+    /**
+     * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
+     * DAGs.
+     */
     private Graph resultGraph;
-    // A count of the number of independence tests performed in the course of the most recent search.
+    /**
+     * A count of the number of independence tests performed in the course of the most recent search.
+     */
     private int numIndependenceTests;
-    // Information to help understand what part of the search is taking the most time.
+    /**
+     * Information to help understand what part of the search is taking the most time.
+     */
     private int[] maxRemainingAtDepth;
-    // The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
+    /**
+     * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
+     */
     private Set<Node> a;
-    // Elapsed time for the last run of the algorithm.
+    /**
+     * Elapsed time for the last run of the algorithm.
+     */
     private long elapsedTime;
-    // Knowledge.
-    private Knowledge knowledge = new Knowledge();
-    // Set of ambiguous unshielded triples.
+    /**
+     * Knowledge.
+     */
+    private Knowledge knowledge;
+    /**
+     * Set of ambiguous unshielded triples.
+     */
     private Set<Triple> ambiguousTriples;
-    // True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+    /**
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+     */
     private boolean meekPreventCycles;
-    // True if the search should return the MB, not the MB CPDAG.
+    /**
+     * True if the search should return the MB, not the MB CPDAG.
+     */
     private boolean findMb = false;
+    /**
+     * Flag indicating whether verbose output should be enabled.
+     */
+    private boolean verbose = false;
 
     /**
      * Constructs a new search.
@@ -101,6 +130,25 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.test = test;
         this.depth = depth;
         this.variables = test.getVariables();
+        knowledge = new Knowledge();
+    }
+
+    /**
+     * Determines whether an arrowhead is allowed from one node to another based on knowledge.
+     *
+     * @param from      the starting node
+     * @param to        the target node
+     * @param knowledge the knowledge information
+     * @return true if the arrowhead is allowed, false otherwise
+     */
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+               !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -116,6 +164,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * Searches for the MB CPDAG for the given targets.
      *
      * @param targets The targets variable.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> targets) {
         long start = MillisecondTimes.timeMillis();
@@ -129,13 +178,13 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         this.targets = targets;
 
-        this.logger.log("info", "Target = " + targets);
+        TetradLogger.getInstance().forceLogMessage("Target = " + targets);
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
         Arrays.fill(this.maxRemainingAtDepth, -1);
 
-        this.logger.log("info", "targets = " + getTargets());
+        TetradLogger.getInstance().forceLogMessage("targets = " + getTargets());
 
         Graph graph = new EdgeListGraph();
 
@@ -150,7 +199,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.a = new HashSet<>();
 
         // Step 1. Get associates for the targets.
-        this.logger.log("info", "BEGINNING step 1 (prune targets).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 1 (prune targets).");
 
         for (Node target : getTargets()) {
             if (target == null) throw new NullPointerException("Target not specified");
@@ -158,17 +207,15 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             graph.addNode(target);
             constructFan(target, graph);
 
-            this.logger.log("graph", "After step 1 (prune targets)" + graph);
-            this.logger.log("graph", "After step 1 (prune targets)" + graph);
+            TetradLogger.getInstance().forceLogMessage("After step 1 (prune targets)" + graph);
+            TetradLogger.getInstance().forceLogMessage("After step 1 (prune targets)" + graph);
         }
 
         // Step 2. Get associates for each variable adjacent to the targets,
         // removing edges based on those associates where possible. After this
         // step, adjacencies to the targets are parents or children of the targets.
         // Call this set PC.
-        this.logger.log("info", "BEGINNING step 2 (prune PC).");
-
-//        variables = graph.getNodes();
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 2 (prune PC).");
 
         if (findMb) {
             for (Node target : getTargets()) {
@@ -219,13 +266,13 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     }
                 }
 
-                this.logger.log("graph", "After step 2 (prune PC)" + graph);
+                TetradLogger.getInstance().forceLogMessage("After step 2 (prune PC)" + graph);
 
                 // Step 3. Get associates for each node now two links away from the
                 // targets, removing edges based on those associates where possible.
                 // After this step, adjacencies to adjacencies of the targets are parents
                 // or children of adjacencies to the targets. Call this set PCPC.
-                this.logger.log("info", "BEGINNING step 3 (prune PCPC).");
+                TetradLogger.getInstance().forceLogMessage("BEGINNING step 3 (prune PCPC).");
 
                 for (Node v : graph.getAdjacentNodes(target)) {
                     for (Node w : graph.getAdjacentNodes(v)) {
@@ -239,11 +286,11 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             }
         }
 
-        this.logger.log("graph", "After step 3 (prune PCPC)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 3 (prune PCPC)" + graph);
 
-        this.logger.log("info", "BEGINNING step 4 (PC Orient).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 4 (PC Orient).");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes(), verbose);
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
@@ -253,10 +300,10 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
-        this.logger.log("graph", "After step 4 (PC Orient)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 4 (PC Orient)" + graph);
 
-        this.logger.log("info", "BEGINNING step 5 (Trim graph to {T} U PC U " +
-                "{Parents(Children(T))}).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 5 (Trim graph to {T} U PC U " +
+                                                   "{Parents(Children(T))}).");
 
         if (findMb) {
             Set<Node> mb = new HashSet<>();
@@ -291,7 +338,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             }
         }
 
-        this.logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 6 (Remove edges among P and P of C)" + graph);
 
         finishUp(start, graph);
 
@@ -299,9 +346,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Does the search.
+     * Searches for the Markov blanket CPDAG for the given targets.
      *
-     * @return a CPDAG.
+     * @return The Markov blanket CPDAG as a Graph object.
      */
     public Graph search() {
         this.numIndependenceTests = 0;
@@ -430,10 +477,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the Markov blanket variables (not the Markov blanket DAG).
-     *
-     * @param target The target variable.
-     * @return This list.
      */
     public Set<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
@@ -450,7 +496,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public IndependenceTest getTest() {
         return this.test;
     }
-
 
     /**
      * Returns The knowledge used in search.
@@ -471,17 +516,11 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.knowledge = new Knowledge(knowledge);
     }
 
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-
+    /**
+     * Returns the set of nodes in A. A is a set of nodes.
+     *
+     * @return The set of nodes in A.
+     */
     private Set<Node> getA() {
         return this.a;
     }
@@ -497,6 +536,12 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         prune(target, graph);
     }
 
+    /**
+     * Adds allowable associates to a node in the graph.
+     *
+     * @param v     The node to add associates to.
+     * @param graph The graph object to which the associates are added.
+     */
     private void addAllowableAssociates(Node v, Graph graph) {
         getA().add(v);
         int numAssociated = 0;
@@ -512,11 +557,15 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             }
         }
 
-//        System.out.println("***************NUMASSOC = " + numAssociated);
-
         noteMaxAtDepth(0, numAssociated);
     }
 
+    /**
+     * Prunes edges in the graph based on the given node and graph.
+     *
+     * @param node  The node about which pruning will take place.
+     * @param graph The graph to be modified by pruning.
+     */
     private void prune(Node node, Graph graph) {
         for (int depth = 1; depth <= getDepth(); depth++) {
             if (graph.getAdjacentNodes(node).size() < depth) {
@@ -537,8 +586,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param depth The maximum number of conditioning variables.
      */
     private void prune(Node node, Graph graph, int depth) {
-        this.logger.log("pruning", "Trying to remove edges adjacent to node " + node +
-                ", depth = " + depth + ".");
+        TetradLogger.getInstance().forceLogMessage("Trying to remove edges adjacent to node " + node +
+                                                   ", depth = " + depth + ".");
 
         // Otherwise, try removing all other edges adjacent node. Return
         // true if more edges could be removed at the next depth.
@@ -582,19 +631,34 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         noteMaxAtDepth(depth, numAdjacents);
     }
 
+    /**
+     * Finish up the search process by calculating elapsed time, logging messages, and assigning the result graph.
+     *
+     * @param start The start time of the search process.
+     * @param graph The result graph of the search process.
+     */
     private void finishUp(long start, Graph graph) {
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        this.logger.log("info", "PC-MB took " + nf.format(seconds) + " seconds.");
-        this.logger.log("info", "Number of independence tests performed = " +
-                getNumIndependenceTests());
+        String message = "PC-MB took " + nf.format(seconds) + " seconds.";
+        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().forceLogMessage("Number of independence tests performed = " +
+                                                   getNumIndependenceTests());
 
         this.resultGraph = graph;
     }
 
+    /**
+     * Determines whether the given nodes are independent.
+     *
+     * @param v The first node.
+     * @param w The second node.
+     * @param z The set of nodes to condition on.
+     * @return True if the nodes are independent, false otherwise.
+     */
     private boolean independent(Node v, Node w, Set<Node> z) {
         boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
@@ -602,6 +666,13 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         return independent;
     }
 
+    /**
+     * Adds an undirected edge between two nodes in a graph if the source node does not already exist in the graph.
+     *
+     * @param graph The graph to which the edge will be added.
+     * @param w     The source node.
+     * @param v     The target node.
+     */
     private void addEdge(Graph graph, Node w, Node v) {
         if (!graph.containsNode(w)) {
             graph.addNode(w);
@@ -610,15 +681,29 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         graph.addUndirectedEdge(v, w);
     }
 
+    /**
+     * Notes the maximum number of adjacents at a given depth.
+     *
+     * @param depth        the depth at which to note the maximum number of adjacents
+     * @param numAdjacents the number of adjacents
+     */
     private void noteMaxAtDepth(int depth, int numAdjacents) {
         if (depth < this.maxRemainingAtDepth.length &&
-                numAdjacents > this.maxRemainingAtDepth[depth]) {
+            numAdjacents > this.maxRemainingAtDepth[depth]) {
             this.maxRemainingAtDepth[depth] = numAdjacents;
         }
     }
 
+    /**
+     * Orients unshielded triples in a given graph based on the provided knowledge.
+     *
+     * @param knowledge the knowledge used for orientation
+     * @param graph     the graph containing the triples
+     * @param depth     the depth of the orientation process
+     * @param nodes     the specific nodes to orient triples for (if null, all nodes in the graph will be considered)
+     */
     private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
-        this.logger.log("info", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
 
         this.ambiguousTriples = new HashSet<>();
 
@@ -654,22 +739,35 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
-                        this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
+                        String message = "Collider oriented: " + Triple.pathString(graph, x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    String message = "tripleClassifications: " + Triple.pathString(graph, x, y, z);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 } else {
-                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    String message = "tripleClassifications: " + Triple.pathString(graph, x, y, z);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 }
             }
         }
 
-        this.logger.log("info", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
     }
 
+    /**
+     * Determines the type of a triple based on the given graph, nodes, and depth.
+     *
+     * @param graph the graph representing the causal relationships between nodes
+     * @param x     the first node of the triple
+     * @param y     the second node of the triple
+     * @param z     the third node of the triple
+     * @param depth the depth of the search for separating sets (-1 for unlimited depth)
+     * @return the type of the triple (AMBIGUOUS, NONCOLLIDER, COLLIDER)
+     */
     private TripleType getTripleType(Graph graph, Node x, Node y, Node z, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
@@ -755,14 +853,28 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         }
     }
 
+    /**
+     * Checks if there is a forbidden edge between two nodes.
+     *
+     * @param x1 the first node
+     * @param x2 the second node
+     * @return true if there is a forbidden edge between the two nodes, false otherwise.
+     */
     private boolean edgeForbidden(Node x1, Node x2) {
         return getKnowledge().isForbidden(x1.toString(), x2.toString()) &&
-                getKnowledge().isForbidden(x2.toString(), x1.toString());
+               getKnowledge().isForbidden(x2.toString(), x1.toString());
     }
 
+    /**
+     * Checks if an edge is required between two nodes.
+     *
+     * @param x1 the first node
+     * @param x2 the second node
+     * @return true if an edge is required between the two nodes, false otherwise
+     */
     private boolean edgeRequired(Node x1, Node x2) {
         return getKnowledge().isRequired(x1.toString(), x2.toString()) ||
-                getKnowledge().isRequired(x2.toString(), x1.toString());
+               getKnowledge().isRequired(x2.toString(), x1.toString());
     }
 
     /**
@@ -797,22 +909,63 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
+    /**
+     * Checks if colliders are allowed based on the given parameters.
+     *
+     * @param x         the first node
+     * @param y         the middle node
+     * @param z         the last node
+     * @param knowledge the knowledge object
+     * @return true if colliders are allowed, false otherwise
+     */
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
-                PcMb.isArrowheadAllowed1(z, y, knowledge);
+               PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
+    /**
+     * <p>Setter for the field <code>variables</code>.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setVariables(List<Node> variables) {
         this.variables = variables;
     }
 
+    /**
+     * <p>Setter for the field <code>findMb</code>.</p>
+     *
+     * @param findMb a boolean
+     */
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
     }
 
+    /**
+     * Sets the verbosity level of the search.
+     *
+     * @param verbose true if verbose output should be enabled, false otherwise
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
+    /**
+     * The TripleType class represents the possible types of triples.
+     */
     private enum TripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
+        /**
+         * Could be either a collider or not; indeterminate.
+         */
+        AMBIGUOUS,
+        /**
+         * The COLLIDER variable represents X*-&gt;Y&lt;*Z.
+         */
+        COLLIDER,
+        /**
+         * Not a collider.
+         */
+        NONCOLLIDER
     }
 }
 

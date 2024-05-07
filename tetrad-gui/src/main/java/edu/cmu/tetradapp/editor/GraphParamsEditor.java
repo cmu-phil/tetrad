@@ -31,8 +31,13 @@ import java.awt.*;
  * Edits the parameters for generating random graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphParamsEditor extends JPanel implements ParameterEditor {
+
+    /**
+     * The parameters to edit.
+     */
     private Parameters params = new Parameters();
 
     /**
@@ -41,6 +46,9 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public GraphParamsEditor() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
@@ -50,10 +58,18 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         setup();
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
         RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
@@ -75,10 +91,10 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        String type = this.params.getString("randomGraphType", "Uniform");
+        String type = this.params.getString("randomGraphType", "Dag");
 
         switch (type) {
-            case "Uniform":
+            case "Dag":
                 tabs.setSelectedIndex(0);
                 break;
             case "Mim":
@@ -95,7 +111,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
             if (pane.getSelectedIndex() == 0) {
-                GraphParamsEditor.this.params.set("randomGraphType", "Uniform");
+                GraphParamsEditor.this.params.set("randomGraphType", "Dag");
             } else if (pane.getSelectedIndex() == 1) {
                 GraphParamsEditor.this.params.set("randomGraphType", "Mim");
             } else if (pane.getSelectedIndex() == 2) {
@@ -115,6 +131,11 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         add(b1, BorderLayout.CENTER);
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }

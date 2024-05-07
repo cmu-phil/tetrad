@@ -33,7 +33,7 @@ import java.util.*;
 
 
 /**
- * Checks independence result by listing all tests with those variables, testing each one, and returning the resolution
+ * Checks independence results by listing all tests with those variables, testing each one, and returning the resolution
  * of these test results. The reference is here:
  * <p>
  * Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
@@ -47,17 +47,26 @@ import java.util.*;
  * Based on work by Rob Tillman, Peter Spirtes, and referencing earlier work by David Danks.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndTestIod implements IndependenceTest {
-    // The list of nodes over which this independence checker is capable of determining independence relations.
+    /**
+     * The list of nodes over which this independence checker is capable of determining independence relations.
+     */
     private final List<Node> nodeList;
-    // The list of independence tests.
+    /**
+     * The list of independence tests.
+     */
     private final List<IndependenceTest> tests;
-    // Whether the test is verbose.
+    /**
+     * Whether the test is verbose.
+     */
     private boolean verbose;
 
     /**
      * Constructs a new pooled independence test from the given list of independence tests.
+     *
+     * @param tests a {@link java.util.List} object
      */
     public IndTestIod(List<IndependenceTest> tests) {
         for (IndependenceTest test : tests) {
@@ -97,19 +106,23 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Since the method is not implemented.
+     * Calculates the independence test for a subset of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return The independence test result.
+     * @throws java.lang.UnsupportedOperationException if this method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * Checks the indicated independence fact by pooling available tests for the given variables.
+     * Checks the independence between two nodes given a set of nodes.
      *
-     * @param x one node.
-     * @param y a second node.
-     * @param z a List of nodes (conditioning variables)
-     * @return True iff x _||_ y | z
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of nodes.
+     * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<IndependenceTest> tests = new ArrayList<>();
@@ -136,39 +149,36 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Returns true if z contains x.
+     * Determines whether the variables in z determine x.
      *
-     * @param z A list of nodes.
-     * @param x The target node.
-     * @return True if z contains x.
+     * @param z The list of nodes to search.
+     * @param x The node to check for containment.
+     * @return True if the node is contained in the list, false otherwise.
      */
     public boolean determines(List<Node> z, Node x) {
         return z.contains(x);
     }
 
     /**
-     * Returns the alpha level for this test.
-     *
-     * @return This level.
+     * @throws java.lang.UnsupportedOperationException since the method is not implemented.
      */
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Sets the alpha level for this test.
-     *
-     * @param alpha This level.
+     * @throws java.lang.UnsupportedOperationException since the method is not implemented.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the variable associated with the given name in the graph.
+     * Retrieves a variable with the given name.
      *
-     * @param name The name of the variable.
-     * @return This variable.
+     * @param name the name of the variable
+     * @return the variable with the given name
+     * @throws IllegalArgumentException if the variable is not found
      */
     public Node getVariable(String name) {
         for (Node variable : nodeList) {
@@ -183,6 +193,7 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Returns the variable associated with the given node in the graph.
      *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return This variable.
      */
     public Node getVariable(Node node) {
@@ -192,6 +203,7 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Return the node associated with the given variable in the graph.
      *
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
      * @return This node.
      */
     public Node getNode(Node variable) {
@@ -214,9 +226,7 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * The data set for this test is undefined, since the test is pooled over multiple datasets.
-     *
-     * @return null.
+     * @throws UnsupportedOperationException since the method is not implemented.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("No single dataset; this test pools over multiple datasets.");
@@ -232,7 +242,7 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Sets the test to verbose or not.
+     * Sets whether this test will print verbose output.
      *
      * @param verbose True, if so.
      */
@@ -244,6 +254,15 @@ public class IndTestIod implements IndependenceTest {
         this.verbose = verbose;
     }
 
+    /**
+     * Determines whether the given nodes and independence test contain all the required variables.
+     *
+     * @param x    The first node.
+     * @param y    The second node.
+     * @param z    The set of nodes.
+     * @param test The independence test to be performed.
+     * @return True if all the required variables are present, false otherwise.
+     */
     private boolean containsAll(@NotNull Node x, Node y, Set<Node> z, @NotNull IndependenceTest test) {
         if (test.getVariable(x.getName()) == null) {
             return false;

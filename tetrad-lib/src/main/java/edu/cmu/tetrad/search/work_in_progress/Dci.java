@@ -42,8 +42,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * consistent with all the PAGs (same d-separations and d-connections)
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
-
 public class Dci {
 
     /**
@@ -137,6 +137,11 @@ public class Dci {
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for Dci.</p>
+     *
+     * @param tests a {@link java.util.List} object
+     */
     public Dci(List<IndependenceTest> tests) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
@@ -150,6 +155,12 @@ public class Dci {
         this.variables.addAll(variables);
     }
 
+    /**
+     * <p>Constructor for Dci.</p>
+     *
+     * @param tests  a {@link java.util.List} object
+     * @param method a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
+     */
     public Dci(List<IndependenceTest> tests, ResolveSepsets.Method method) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
@@ -241,7 +252,7 @@ public class Dci {
             if (conditioning.contains(node1)) {
                 Node node0 = path.get(path.size() - 3);
                 if (graph.getEndpoint(node0, node1).equals(Endpoint.TAIL) ||
-                        graph.getEndpoint(next, node1).equals(Endpoint.TAIL)) {
+                    graph.getEndpoint(next, node1).equals(Endpoint.TAIL)) {
                     path.removeLast();
                     visited.remove(next);
                     continue;
@@ -279,10 +290,20 @@ public class Dci {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -292,6 +313,11 @@ public class Dci {
         this.depth = depth;
     }
 
+    /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
+     * @return a long
+     */
     public long getElapsedTime() {
         return elapsedTime;
     }
@@ -300,6 +326,8 @@ public class Dci {
 
     /**
      * Gets the resulting sepsets
+     *
+     * @return a {@link java.util.List} object
      */
     public List<SepsetMapDci> getSepset() {
         return this.sepsetMaps;
@@ -307,6 +335,8 @@ public class Dci {
 
     /**
      * Begins the DCI search procedure, described at each step
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Graph> search() {
         this.elapsedTime = MillisecondTimes.timeMillis();
@@ -479,7 +509,7 @@ public class Dci {
                             continue;
                         }
                         System.out.println("Check here " + k + "\n " + sepset.get(a, c) +
-                                "\n" + graph + "\n" + b);
+                                           "\n" + graph + "\n" + b);
                         graph.setEndpoint(a, graph.getNode(b.getName()), Endpoint.ARROW);
                         graph.setEndpoint(c, graph.getNode(b.getName()), Endpoint.ARROW);
                         //logger.colliderOrientations(SearchLogUtils.colliderOrientedMsg(a, b, c));
@@ -531,7 +561,7 @@ public class Dci {
 
                         //skip anything not a double triangle
                         if (!graph.isAdjacentTo(A, D) ||
-                                !graph.isAdjacentTo(C, D)) {
+                            !graph.isAdjacentTo(C, D)) {
                             continue;
                         }
 
@@ -545,11 +575,11 @@ public class Dci {
                         final boolean checkADC = false;
                         for (Set<Node> marginalSet : this.marginalVars) {
                             if (marginalSet.contains(A) && marginalSet.contains(B) &&
-                                    marginalSet.contains(C)) {
+                                marginalSet.contains(C)) {
                                 checkABC = true;
                             }
                             if (marginalSet.contains(A) && marginalSet.contains(D) &&
-                                    marginalSet.contains(C)) {
+                                marginalSet.contains(C)) {
                                 checkABC = true;
                             }
                         }
@@ -612,7 +642,7 @@ public class Dci {
                 boolean checkABC = false;
                 for (Set<Node> marginalSet : this.marginalVars) {
                     if (marginalSet.contains(A) && marginalSet.contains(B) &&
-                            marginalSet.contains(C)) {
+                        marginalSet.contains(C)) {
                         checkABC = true;
                         break;
                     }
@@ -636,7 +666,7 @@ public class Dci {
         Endpoint CB = graph.getEndpoint(c, b);
 
         if (!(graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
+            (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
             if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
                 if (BC == Endpoint.CIRCLE) {
                     if (!isArrowheadAllowed(graph, b, c)) {
@@ -659,12 +689,12 @@ public class Dci {
 
     private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+            (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+                (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
+                        (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
+                        (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
                 if (!isArrowheadAllowed(graph, a, c)) {
                     return;
@@ -678,9 +708,9 @@ public class Dci {
 
     private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
-                (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+            (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
+            (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
+            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
@@ -728,7 +758,7 @@ public class Dci {
                     boolean checkABC = false;
                     for (Set<Node> marginalSet : this.marginalVars) {
                         if (marginalSet.contains(a) && marginalSet.contains(b) &&
-                                marginalSet.contains(c)) {
+                            marginalSet.contains(c)) {
                             checkABC = true;
                             break;
                         }
@@ -777,7 +807,7 @@ public class Dci {
                 boolean checkABCL = false;
                 for (Set<Node> marginalSet : this.marginalVars) {
                     if (marginalSet.contains(a) && marginalSet.contains(b) &&
-                            marginalSet.contains(c) && marginalSet.contains(l)) {
+                        marginalSet.contains(c) && marginalSet.contains(l)) {
                         checkABCL = true;
                         break;
                     }
@@ -907,6 +937,10 @@ public class Dci {
 
     /**
      * Determines whether one trek is a subtrek of another trek
+     *
+     * @param trek    a {@link java.util.List} object
+     * @param subtrek a {@link java.util.List} object
+     * @return a boolean
      */
     public boolean isSubtrek(List<Node> trek, List<Node> subtrek) {
         int l = 0;
@@ -1197,7 +1231,7 @@ public class Dci {
                 if (add) {
                     for (Triple triple : newColliders) {
                         if (path.contains(this.oldGraph.getEdge(triple.getX(), triple.getY())) &&
-                                path.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
+                            path.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
                             if (!possiblePaths.get(path).containsKey(triple)) {
                                 add = false;
                                 break;
@@ -1237,10 +1271,10 @@ public class Dci {
         }
         for (Triple triple : this.allTriples) {
             if (!graph.isAdjacentTo(triple.getX(), triple.getZ()) && !this.definiteNoncolliders.contains(triple)
-                    && !graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ()) &&
-                    graph.isAdjacentTo(triple.getX(), triple.getY()) &&
-                    graph.isAdjacentTo(triple.getY(), triple.getZ()) &&
-                    !graph.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
+                && !graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ()) &&
+                graph.isAdjacentTo(triple.getX(), triple.getY()) &&
+                graph.isAdjacentTo(triple.getY(), triple.getZ()) &&
+                !graph.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
                 this.currentPossibleColliders.add(triple);
             }
         }
@@ -1252,8 +1286,8 @@ public class Dci {
                 boolean size1 = necessaryTrek.size() == 1;
                 for (Set<Edge> path : necessaryTrek.keySet()) {
                     if (!path.contains(this.oldGraph.getEdge(triple.getX(), triple.getY())) ||
-                            !path.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY())) ||
-                            necessaryTrek.get(path).containsKey(triple)) {
+                        !path.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY())) ||
+                        necessaryTrek.get(path).containsKey(triple)) {
                         necessary = false;
                         break;
                     }
@@ -1263,7 +1297,7 @@ public class Dci {
                         for (List<Set<Edge>> path : tripleMap.values()) {
                             if (path.size() == 1) {
                                 if (path.get(0).contains(this.oldGraph.getEdge(triple.getX(), triple.getY())) &&
-                                        path.get(0).contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
+                                    path.get(0).contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
                                     necessary = true;
                                     break;
                                 }
@@ -1360,27 +1394,27 @@ public class Dci {
                     boolean pathOkay = true;
                     for (Triple triple : newSet) {
                         if (path.contains(this.currentGraph.getEdge(triple.getX(), triple.getY())) && path.contains(this.currentGraph.getEdge(triple.getY(), triple.getZ()))
-                                && !necessaryTrek.get(path).containsKey(triple)) {
+                            && !necessaryTrek.get(path).containsKey(triple)) {
                             pathOkay = false;
                             break;
                         } else {
                             for (Triple collider : necessaryTrek.get(path).keySet()) {
                                 if (!this.currentGraph.isDefCollider(collider.getX(), collider.getY(), collider.getZ()) &&
-                                        !newSet.contains(collider)) {
+                                    !newSet.contains(collider)) {
                                     pathOkay = false;
                                     break;
                                 } else {
                                     pathOkay = false;
                                     for (Set<Edge> adjPath : necessaryTrek.get(path).get(collider)) {
                                         if (adjPath.contains(this.oldGraph.getEdge(triple.getX(), triple.getY())) &&
-                                                adjPath.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
+                                            adjPath.contains(this.oldGraph.getEdge(triple.getZ(), triple.getY()))) {
                                             continue;
                                         } else if (adjPath.contains(this.oldGraph.getEdge(triple.getX(), triple.getY()))) {
                                             List<Node> findPath = getPathFromEdges(adjPath, collider.getY());
                                             boolean adjPathOkay = true;
                                             for (int k = 0; k < findPath.size() - 1; k++) {
                                                 if (findPath.get(k).equals(triple.getY()) &&
-                                                        findPath.get(k + 1).equals(triple.getX())) {
+                                                    findPath.get(k + 1).equals(triple.getX())) {
                                                     adjPathOkay = false;
                                                     break;
                                                 }
@@ -1393,7 +1427,7 @@ public class Dci {
                                             boolean adjPathOkay = true;
                                             for (int k = 0; k < findPath.size() - 1; k++) {
                                                 if (findPath.get(k).equals(triple.getY()) &&
-                                                        findPath.get(k + 1).equals(triple.getZ())) {
+                                                    findPath.get(k + 1).equals(triple.getZ())) {
                                                     adjPathOkay = false;
                                                     break;
                                                 }
@@ -1483,7 +1517,7 @@ public class Dci {
 
                         //skip anything not a double triangle
                         if (!graph.isAdjacentTo(A, D) ||
-                                !graph.isAdjacentTo(C, D)) {
+                            !graph.isAdjacentTo(C, D)) {
                             continue;
                         }
 
@@ -1710,7 +1744,7 @@ public class Dci {
                         continue;
                     }
                     for (Set<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.paths().isMSeparatedFrom(x, y, condSet)) {
+                        if (!graph.paths().isMSeparatedFrom(x, y, condSet, false)) {
                             return true;
                         }
                     }
@@ -1830,7 +1864,7 @@ public class Dci {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
                 Set<Node> z = new HashSet<>(set);
-                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z, false)) {
                     continue;
                 }
                 combinedSepset.set(pair.getFirst(), pair.getSecond(), new HashSet<>(set));
@@ -1903,7 +1937,7 @@ public class Dci {
                     for (Set<Node> inpset : pset) {
                         Set<Node> cond = new HashSet<>(inpset);
                         cond.add(node);
-                        if (fciResult.paths().isMSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isMSeparatedFrom(x, y, cond, false)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -1935,7 +1969,7 @@ public class Dci {
             int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet))) {
+                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet), false)) {
                     sepset.set(x, y, new HashSet<>(condSet));
                 }
                 c++;
@@ -2115,7 +2149,7 @@ public class Dci {
                         for (List<Node> trek : trekMap.keySet()) {
                             for (List<Node> trekNext : trekMapNext.keySet()) {
                                 if (trekMap.get(trek).containsAll(trekMapNext.get(trekNext)) &&
-                                        isSubtrek(trekNext, trek)) {
+                                    isSubtrek(trekNext, trek)) {
                                     remove.add(trekNext);
                                 }
                             }

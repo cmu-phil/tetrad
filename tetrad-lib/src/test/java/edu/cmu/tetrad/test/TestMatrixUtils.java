@@ -35,8 +35,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the MatrixUtils class.
@@ -57,7 +56,7 @@ public class TestMatrixUtils {
         double[][] m4 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.05, 27.0}};
 
-        assertTrue(!MatrixUtils.equals(m1, m2));
+        assertFalse(MatrixUtils.equals(m1, m2));
         assertTrue(MatrixUtils.equals(m3, m3));
         assertTrue(MatrixUtils.equals(m3, m4, 0.1));
     }

@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
  * Extends JInternalFrame to ask the user if she wants to close the window.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TetradInternalFrame extends JInternalFrame {
 

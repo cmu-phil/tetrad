@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
@@ -10,23 +12,41 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumCompatibleDirectedEdgeConfounded implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumCompatibleDirectedEdgeConfounded() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#CompDConf";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number compatible X-->Y for which X and Y are confounded by a latent";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.addPagColoring(estGraph);
+        GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 
@@ -52,6 +72,9 @@ public class NumCompatibleDirectedEdgeConfounded implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

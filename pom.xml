@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.cmu-phil</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.6.3</version>
+    <version>7.6.4</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -119,6 +119,11 @@
                 <version>3.6.3</version>
                 <configuration>
                     <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
+                    <show>public</show>
+                    <additionalJOptions>
+                        <additionalJOption>-Xmaxwarns</additionalJOption>
+                        <additionalJOption>700</additionalJOption>
+                    </additionalJOptions>
                 </configuration>
                 <executions>
                     <execution>

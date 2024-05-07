@@ -24,6 +24,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * A typesafe enum of the types of the types of freeParameters for SEM models (COEF, MEAN, VAR, COVAR). COEF
@@ -31,6 +32,7 @@ import java.io.ObjectStreamException;
  * COVAR freeParameters are (non-variance) covariances among the error terms.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ParamType implements TetradSerializable {
     /**
@@ -61,6 +63,10 @@ public class ParamType implements TetradSerializable {
      * The name of this type.
      */
     private final transient String name;
+
+    /**
+     * The ordinal of this type.
+     */
     private final int ordinal = ParamType.NEXT_ORDINAL++;
 
     /**
@@ -72,6 +78,8 @@ public class ParamType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamType} object
      */
     public static ParamType serializableInstance() {
         return ParamType.COEF;
@@ -79,11 +87,20 @@ public class ParamType implements TetradSerializable {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;
     }
 
+    /**
+     * Returns the type of the parameter.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamType} object
+     * @throws java.io.ObjectStreamException if any.
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return ParamType.TYPES[this.ordinal]; // Canonicalize.
     }

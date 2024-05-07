@@ -25,12 +25,22 @@ import java.util.List;
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
  * @author josephramsey 2016.03.24
+ * @version $Id: $Id
  */
 public class Comparison {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Comparison() {
+    }
+
+    /**
      * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data, printing out error
      * statistics.
+     *
+     * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
+     * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet;
@@ -102,7 +112,7 @@ public class Comparison {
                 }
 
                 BayesPm pm = new BayesPm(trueDag, 3, 3);
-                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                 dataSet = im.simulateData(params.getSampleSize(), false, tiers);
             } else {
                 throw new IllegalArgumentException("Unrecognized data type.");
@@ -188,27 +198,20 @@ public class Comparison {
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
-            if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fges search = new Fges(score);
-            search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
-            result.setResultGraph(search.search());
-            Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
+            result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
@@ -242,6 +245,13 @@ public class Comparison {
         return null;
     }
 
+    /**
+     * <p>summarize.</p>
+     *
+     * @param results      a {@link java.util.List} object
+     * @param tableColumns a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
         List<Node> variables = new ArrayList<>();
@@ -362,8 +372,69 @@ public class Comparison {
         return table;
     }
 
+    /**
+     * An enumeration of the columns in the comparison table.
+     */
     public enum TableColumn {
-        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+
+        /**
+         * The number of adjacency correct edges.
+         */
+        AdjCor,
+
+        /**
+         * The number of adjacency false negative edges.
+         */
+        AdjFn,
+
+        /**
+         * The number of adjacency false positive edges.
+         */
+        AdjFp,
+
+        /**
+         * The number of arrowhead false positive edges.
+         */
+        AhdCor,
+
+        /**
+         * The number of arrowhead false negative edges.
+         */
+        AhdFn,
+
+        /**
+         * The number of arrowhead false positive edges.
+         */
+        AhdFp,
+
+        /**
+         * The structural Hamming distance.
+         */
+        SHD,
+
+        /**
+         * The adjacency precision.
+         */
+        AdjPrec,
+
+        /**
+         * The adjacency recall.
+         */
+        AdjRec,
+
+        /**
+         * The arrowhead precision.
+         */
+        AhdPrec,
+
+        /**
+         * The arrowhead recall.
+         */
+        AhdRec,
+
+        /**
+         * The elapsed time.
+         */
+        Elapsed
     }
 }

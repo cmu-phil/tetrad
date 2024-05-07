@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetradapp.util.DesktopController;
 
@@ -37,7 +36,6 @@ import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -47,11 +45,6 @@ import java.util.Map;
 class GeneralizedSemPmParamsEditor extends JPanel {
 
     /**
-     * Font size for parameter values in the graph.
-     */
-    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
-
-    /**
      * The SemPm being edited.
      */
     private final GeneralizedSemPm semPm;
@@ -59,11 +52,14 @@ class GeneralizedSemPmParamsEditor extends JPanel {
     /**
      * The set of launched editors--or rather, the objects associated with the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+    private final Map<Object, EditorWindow> launchedEditors;
     private Box formulasBox;
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
+     *
+     * @param semPm           a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemPmParamsEditor(GeneralizedSemPm semPm, Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
@@ -85,6 +81,9 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         return this.formulasBox;
     }
 
+    /**
+     * <p>refreshLabels.</p>
+     */
     public void refreshLabels() {
         this.formulasBox.removeAll();
 
@@ -98,7 +97,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        beginParamEdit(parameter, label, label);
+                        beginParamEdit(parameter, label);
                     }
                 }
             });
@@ -117,7 +116,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         this.formulasBox.repaint();
     }
 
-    private void beginParamEdit(String parameter, JLabel label, JComponent centering) {
+    private void beginParamEdit(String parameter, JComponent centering) {
         if (this.launchedEditors.containsKey(parameter)) {
             this.launchedEditors.get(parameter).moveToFront();
             return;
@@ -145,13 +144,12 @@ class GeneralizedSemPmParamsEditor extends JPanel {
                     String expressionString = paramEditor.getExpressionString();
                     try {
                         GeneralizedSemPmParamsEditor.this.semPm.setParameterExpression(parameter, expressionString);
-//                        label.setText(parameter + " ~ " + semPm().getParameterExpressionString(parameter));
                         refreshLabels();
                     } catch (ParseException e) {
                         // This is an expression that's been vetted by the expression editor.
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                         GeneralizedSemPmParamsEditor.this.launchedEditors.remove(parameter);
-                        throw new RuntimeException("The expression editor returned an unparseable string: " + expressionString, e);
+                        throw new RuntimeException("The expression editor returned an unparsable string: " + expressionString, e);
                     } catch (IllegalArgumentException e) {
                         JOptionPane.showMessageDialog(panel, e.getMessage());
                         GeneralizedSemPmParamsEditor.this.launchedEditors.remove(parameter);
@@ -167,10 +165,6 @@ class GeneralizedSemPmParamsEditor extends JPanel {
 
     private GeneralizedSemPm semPm() {
         return this.semPm;
-    }
-
-    private Graph graph() {
-        return semPm().getGraph();
     }
 
 }

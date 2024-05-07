@@ -25,28 +25,32 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 /**
  * Sundry methods for logging data.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class LogDataUtils {
+
+    /**
+     * Private constructor.
+     */
+    private LogDataUtils() {
+
+    }
+
+    /**
+     * <p>logDataModelList.</p>
+     *
+     * @param info a {@link java.lang.String} object
+     * @param list a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public static void logDataModelList(String info, DataModelList list) {
-        TetradLogger.getInstance().log("info", info);
+        TetradLogger.getInstance().forceLogMessage(info);
 
         if (list.size() == 1) {
-            TetradLogger.getInstance().log("info", "\nThere is one data set in this box.");
-
-            if (TetradLogger.getInstance().isEventActive("data")) {
-                TetradLogger.getInstance().log("data", list.get(0).toString());
-            }
+            TetradLogger.getInstance().forceLogMessage("\nThere is one data set in this box.");
         } else {
-            TetradLogger.getInstance().log("info", "\nThere are " + list.size() + " data sets in this box.");
-
-
-            for (int i = 0; i < list.size(); i++) {
-                TetradLogger.getInstance().log("data", "\nData set # " + (i + 1));
-
-                if (TetradLogger.getInstance().isEventActive("data")) {
-                    TetradLogger.getInstance().log("data", "" + list.get(i));
-                }
-            }
+            TetradLogger.getInstance().forceLogMessage("\nThere are " + list.size() + " data sets in this box.");
         }
     }
 }

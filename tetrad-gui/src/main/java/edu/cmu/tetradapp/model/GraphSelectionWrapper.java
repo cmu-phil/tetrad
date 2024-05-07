@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -32,6 +31,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -39,17 +39,43 @@ import java.util.*;
  * application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph.
+     */
     private final Parameters params;
+
+    /**
+     * The selected nodes.
+     */
     private List<Node> selectedNodes;
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for GraphSelectionWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
     }
 
+    /**
+     * <p>Constructor for GraphSelectionWrapper.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public GraphSelectionWrapper(List<Graph> graphs, Parameters params) {
         if (graphs == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -63,6 +89,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for GraphSelectionWrapper.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public GraphSelectionWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -76,14 +108,22 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         init(params, graphs);
     }
 
+    /**
+     * <p>Constructor for GraphSelectionWrapper.</p>
+     *
+     * @param graphs  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param message a {@link java.lang.String} object
+     */
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
         this(graphs, params);
-        TetradLogger.getInstance().log("info", message);
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
      * @see TetradSerializableUtils
      */
     public static GraphSelectionWrapper serializableInstance() {
@@ -106,12 +146,22 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         log();
     }
 
+    /**
+     * <p>getSelectedVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getSelectedVariables() {
         return this.selectedNodes;
     }
 
     //===============================================METHODS================================//
 
+    /**
+     * <p>setSelectedVariables.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setSelectedVariables(List<Node> variables) {
         this.selectedNodes = variables;
     }
@@ -121,6 +171,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 Collections.singletonList(new EdgeListGraph()));
     }
 
+    /**
+     * <p>calculateSelection.</p>
+     */
     public void calculateSelection() {
         List<Graph> selectedGraphs = new ArrayList<>();
 
@@ -131,6 +184,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         this.params.set("selectionGraphs", selectedGraphs);
     }
 
+    /**
+     * <p>Getter for the field <code>graphs</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getGraphs() {
 
         if (this.graphs == null || this.graphs.isEmpty()) {
@@ -142,6 +200,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         }
     }
 
+    /**
+     * <p>Setter for the field <code>graphs</code>.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     */
     public void setGraphs(List<Graph> graphs) {
         this.graphs = graphs;
 
@@ -393,7 +456,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
+                    List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -431,21 +494,21 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, -1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
@@ -468,7 +531,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -476,7 +539,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, -1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -484,7 +547,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -506,7 +569,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
+                    List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -635,10 +698,22 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     // Sorry, this has to return the selection graph since its used downstream in the interface.
+
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getSelectionGraphs(this.params).get(0);
     }
 
+    /**
+     * <p>getSelectionGraph.</p>
+     *
+     * @param i a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSelectionGraph(int i) {
         List<Graph> selectionGraphs = (List<Graph>) this.params.get("selectionGraphs", new ArrayList<>());
 
@@ -653,18 +728,38 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return selectionGraphs.get(i);
     }
 
+    /**
+     * <p>getOriginalGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getOriginalGraph() {
         return getSelectedGraph(0);
     }
 
+    /**
+     * <p>getDialogText.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDialogText() {
         return this.params.getString("dialogText", "");
     }
 
+    /**
+     * <p>setDialogText.</p>
+     *
+     * @param dialogText a {@link java.lang.String} object
+     */
     public void setDialogText(String dialogText) {
         this.params.set("dialogText", dialogText);
     }
 
+    /**
+     * <p>getType.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper.Type} object
+     */
     public Type getType() {
         String graphSelectionType = this.params.getString("graphSelectionType", "subgraph");
 
@@ -677,51 +772,109 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>setType.</p>
+     *
+     * @param type a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper.Type} object
+     */
     public void setType(Type type) {
         this.params.set("graphSelectionType", type.toString());
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.params.getString("name", null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.params.set("name", name);
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getSelectedGraph(0);
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return (getSelectionGraphs(this.params)).get(0);
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getSelectedGraph(0).getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getSelectedGraph(0).getNodes();
     }
 
+    /**
+     * <p>getN.</p>
+     *
+     * @return a int
+     */
     public int getN() {
         return this.params.getInt("n", 0);
     }
 
+    /**
+     * <p>setN.</p>
+     *
+     * @param n a int
+     */
     public void setN(int n) {
         if (n < 0) throw new IllegalArgumentException();
         this.params.set("n", n);
     }
 
+    /**
+     * <p>getNType.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getNType() {
         return this.params.getString("nType", "atLeast");
     }
 
+    /**
+     * <p>setNType.</p>
+     *
+     * @param NType a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper.nType} object
+     */
     public void setNType(nType NType) {
         this.params.set("nType", NType.toString());
     }
 
+    /**
+     * <p>getHighlightInEditor.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getHighlightInEditor() {
         return (List<Node>) this.params.get("highlightInEditor", new ArrayList<Node>());
     }
@@ -809,7 +962,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void log() {
-        TetradLogger.getInstance().log("info", "General Graph");
+        TetradLogger.getInstance().forceLogMessage("General Graph");
     }
 
     private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {
@@ -834,25 +987,150 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());
     }
 
+    /**
+     * An enum of which type of graph selection to perform.
+     */
     public enum Type {
-        Subgraph, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Parents, Children, Ancestors, Descendants,
-        Markov_Blankets, Treks, Trek_Edges,
-        Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
-        Pag_Y_Structures, Indegree, Out_Degree, Degree
+
+        /**
+         * Subgraph.
+         */
+        Subgraph,
+
+        /**
+         * Adjacents.
+         */
+        Adjacents,
+
+        /**
+         * Adjacents of Adjacents.
+         */
+        Adjacents_of_Adjacents,
+
+        /**
+         * Adjacents of Adjacents of Adjacents.
+         */
+        Adjacents_of_Adjacents_of_Adjacents,
+
+        /**
+         * Parents.
+         */
+        Parents,
+
+        /**
+         * Children.
+         */
+        Children,
+
+        /**
+         * Ancestors.
+         */
+        Ancestors,
+
+        /**
+         * Descendants.
+         */
+        Descendants,
+
+        /**
+         * Markov Blankets.
+         */
+        Markov_Blankets,
+
+        /**
+         * Treks.
+         */
+        Treks,
+
+        /**
+         * Trek Edges.
+         */
+        Trek_Edges,
+
+        /**
+         * Paths.
+         */
+        Paths,
+
+        /**
+         * Path Edges.
+         */
+        Path_Edges,
+
+        /**
+         * Directed Paths.
+         */
+        Directed_Paths,
+
+        /**
+         * Directed Path Edges.
+         */
+        Directed_Path_Edges,
+
+        /**
+         * Y Structures.
+         */
+        Y_Structures,
+
+        /**
+         * Pag Y Structures.
+         */
+        Pag_Y_Structures,
+
+        /**
+         * Indegree.
+         */
+        Indegree,
+
+        /**
+         * Out Degree.
+         */
+        Out_Degree,
+
+        /**
+         * Degree.
+         */
+        Degree
     }
 
-    public enum nType {equals, atMost, atLeast}
+    /**
+     * An enum of which type of n to use.
+     */
+    public enum nType {
+
+        /**
+         * equals.
+         */
+        equals,
+
+        /**
+         * atMost.
+         */
+        atMost,
+
+        /**
+         * atLeast.
+         */
+        atLeast
+    }
 }
 
 

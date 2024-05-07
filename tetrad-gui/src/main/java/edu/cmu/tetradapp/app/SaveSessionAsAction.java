@@ -41,19 +41,28 @@ import java.util.prefs.Preferences;
  * Saves a session from a file.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SaveSessionAsAction extends AbstractAction {
 
     @Serial
     private static final long serialVersionUID = 2798487128341621686L;
 
+    /**
+     * Constant <code>saved=false</code>
+     */
     public static boolean saved = false;
 
+    /**
+     * <p>Constructor for SaveSessionAsAction.</p>
+     */
     public SaveSessionAsAction() {
         super("Save Session As...");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of saving a session to a file.
      */
     @Override
@@ -79,11 +88,11 @@ public final class SaveSessionAsAction extends AbstractAction {
 
         if ((DesktopController.getInstance().existsSessionByName(
                 file.getName())
-                && !(sessionWrapper.getName().equals(file.getName())))) {
+             && !(sessionWrapper.getName().equals(file.getName())))) {
             saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                            + "\nclose that session first.");
+                    + "\nclose that session first.");
             return;
         }
 

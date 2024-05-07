@@ -29,7 +29,10 @@ import edu.cmu.tetradapp.model.PcRunner;
 import org.apache.commons.math3.util.FastMath;
 
 /**
+ * <p>BoxCoxWrapper class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class BoxCoxWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -68,6 +71,7 @@ public class BoxCoxWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

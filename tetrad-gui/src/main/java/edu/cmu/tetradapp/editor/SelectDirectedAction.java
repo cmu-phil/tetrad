@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
  * Selects all directed edges in the given display graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SelectDirectedAction extends AbstractAction implements ClipboardOwner {
 
@@ -61,9 +62,9 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Selects all directed edges in the given display graph.
-     *
-     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
@@ -79,6 +80,8 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

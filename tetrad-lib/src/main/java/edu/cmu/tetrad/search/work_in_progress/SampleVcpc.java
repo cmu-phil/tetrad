@@ -49,6 +49,7 @@ import java.util.*;
  * locally.
  *
  * @author josephramsey (this version).
+ * @version $Id: $Id
  */
 public final class SampleVcpc implements IGraphSearch {
 
@@ -106,6 +107,8 @@ public final class SampleVcpc implements IGraphSearch {
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SampleVcpc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -144,6 +147,15 @@ public final class SampleVcpc implements IGraphSearch {
 
     //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
 //    Uses traverseFuturePath to add nodes to set.
+
+    /**
+     * <p>futureNodeVisit.</p>
+     *
+     * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param b           a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path        a {@link java.util.LinkedList} object
+     * @param futureNodes a {@link java.util.Set} object
+     */
     public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
         path.addLast(b);
         futureNodes.add(b);
@@ -169,15 +181,27 @@ public final class SampleVcpc implements IGraphSearch {
         path.removeLast();
     }
 
+    /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIm;
     }
 
+    /**
+     * <p>Setter for the field <code>semIm</code>.</p>
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public void setSemIm(SemIm semIm) {
         this.semIm = semIm;
     }
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -186,12 +210,16 @@ public final class SampleVcpc implements IGraphSearch {
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
+     *
+     * @param meekPreventCycles a boolean
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
@@ -199,6 +227,8 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -207,12 +237,16 @@ public final class SampleVcpc implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
@@ -221,6 +255,8 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
@@ -231,6 +267,8 @@ public final class SampleVcpc implements IGraphSearch {
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     *
+     * @param depth a int
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -239,13 +277,15 @@ public final class SampleVcpc implements IGraphSearch {
 
         if (depth == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
+                                               "due to a known bug.");
         }
 
         this.depth = depth;
     }
 
     /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
      * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -254,6 +294,8 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>colliderTriples</code>.</p>
+     *
      * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -262,6 +304,8 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>noncolliderTriples</code>.</p>
+     *
      * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
@@ -269,6 +313,11 @@ public final class SampleVcpc implements IGraphSearch {
         return new HashSet<>(this.noncolliderTriples);
     }
 
+    /**
+     * <p>getAdjacencies.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
@@ -276,6 +325,11 @@ public final class SampleVcpc implements IGraphSearch {
 
     //==========================PRIVATE METHODS===========================//
 
+    /**
+     * <p>getApparentNonadjacencies.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getApparentNonadjacencies() {
         return new HashSet<>(this.apparentlyNonadjacencies.keySet());
     }
@@ -284,15 +338,29 @@ public final class SampleVcpc implements IGraphSearch {
 //    of its boundary such that no new colliders are created. For each combination, a new CPDAG is added to the
 //    list dagCPDAGs.
 
+    /**
+     * <p>getDefiniteNonadjacencies.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getDefiniteNonadjacencies() {
         return new HashSet<>(this.definitelyNonadjacencies);
     }
 
     //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
+
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
 
-        this.logger.log("info", "Starting VCCPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -315,7 +383,7 @@ public final class SampleVcpc implements IGraphSearch {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes, verbose);
             orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
@@ -673,22 +741,23 @@ public final class SampleVcpc implements IGraphSearch {
         System.out.println("# of Apparent Nonadj: " + this.apparentlyNonadjacencies.size());
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
-        TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("Disambiguated CPDAGs: " + CPDAGs);
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            logTriples();
+        }
 
-        TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-
-        TetradLogger.getInstance().log("CPDAGs", "Disambiguated CPDAGs: " + CPDAGs);
-
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
-
-        logTriples();
-
-        TetradLogger.getInstance().flush();
-//        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
         return this.graph;
     }
 
+    /**
+     * <p>getCov.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCov() {
         return this.covMatrix;
     }
@@ -735,29 +804,32 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     private void logTriples() {
-        TetradLogger.getInstance().log("info", "\nCollider triples:");
+        if (verbose) {
 
-        for (Triple triple : this.colliderTriples) {
-            TetradLogger.getInstance().log("info", "Collider: " + triple);
-        }
+            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
 
-        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
+            for (Triple triple : this.colliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+            }
 
-        for (Triple triple : this.noncolliderTriples) {
-            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
-        }
+            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
 
-        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliders or not):");
+            for (Triple triple : this.noncolliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+            }
 
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
+            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
+                                                       "\nthere is ambiguous data about whether they are colliders or not):");
+
+            for (Triple triple : getAmbiguousTriples()) {
+                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            }
         }
     }
 
     private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");
 
@@ -791,7 +863,8 @@ public final class SampleVcpc implements IGraphSearch {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
+                        String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
@@ -807,7 +880,7 @@ public final class SampleVcpc implements IGraphSearch {
             }
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
@@ -815,32 +888,62 @@ public final class SampleVcpc implements IGraphSearch {
         return GraphSearchUtils.isArrowheadAllowed(z, y, knowledge);
     }
 
+    /**
+     * <p>isDoOrientation.</p>
+     *
+     * @return a boolean
+     */
     public boolean isDoOrientation() {
         return true;
     }
 
     /**
      * The graph that's constructed during the search.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>setFacts.</p>
+     */
     public void setFacts() {
     }
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPm;
     }
 
+    /**
+     * <p>Setter for the field <code>semPm</code>.</p>
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public void setSemPm(SemPm semPm) {
         this.semPm = semPm;
     }

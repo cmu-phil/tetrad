@@ -11,8 +11,15 @@ import java.util.Stack;
  *
  * @author josephramsey
  * @author ChatGPT
+ * @version $Id: $Id
  */
 public class NRooks {
+
+    /**
+     * Prevent instantiation.
+     */
+    private NRooks() {
+    }
 
     /**
      * Solves the N-Rooks problem for the given board or allowable positions.

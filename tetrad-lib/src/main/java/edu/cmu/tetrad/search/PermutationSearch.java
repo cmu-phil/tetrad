@@ -12,16 +12,16 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.*;
 
 /**
- * Implements common elements of a permutation search. The specific parts for each permutation search are implemented as
- * a SuborderSearch.
- * <p>
- * This class specifically handles an optimization for tiered knowledge, whereby tiers in the knowledge can be searched
- * one at a time in order from the lowest to highest, taking all variables from previous tiers as a fixed for a later
- * tier. This allows these permutation searches to search over many more variables than otherwise, so long as tiered
- * knowledge is available to organize the search.
- * <p>
- * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.
+ * <p>Implements common elements of a permutation search. The specific parts
+ * for each permutation search are implemented as a SuborderSearch.</p>
+ *
+ * <p>This class specifically handles an optimization for tiered knowledge, whereby
+ * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
+ * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
+ * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
+ *
+ * <p>This class is configured to respect the knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
  *
  * @author bryanandrews
  * @see SuborderSearch
@@ -30,11 +30,47 @@ import java.util.*;
  * @see Knowledge
  */
 public class PermutationSearch {
+
+    /**
+     * Private final variable representing an interface for suborder searches for various types of permutation
+     * algorithms.
+     * <p>
+     * This variable is used in the containing class PermutationSearch to form a complete permutation search algorithm.
+     * The SuborderSearch interface defines methods for searching suborders, setting knowledge, retrieving variables,
+     * retrieving parents, and retrieving the score.
+     *
+     * @see PermutationSearch
+     * @see SuborderSearch
+     */
     private final SuborderSearch suborderSearch;
+
+    /**
+     * Represents a list of Node variables.
+     * <p>
+     * This list is immutable and cannot be modified once initialized. It contains nodes used in graph construction and
+     * search algorithms.
+     */
     private final List<Node> variables;
+
+    /**
+     * Represents an ordered list of Node objects.
+     */
     private final List<Node> order;
+
+    /**
+     * The gsts variable represents a mapping between Nodes and GrowShrinkTree objects. It is a private final instance
+     * variable of type Map. The Map is used to associate each Node with its corresponding GrowShrinkTree.
+     */
     private final Map<Node, GrowShrinkTree> gsts;
+
+    /**
+     * Represents a private instance variable {@code knowledge} of type Knowledge in the class PermutationSearch. This
+     * variable is used to store knowledge for the search.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    private boolean cpdag = true;
+
     private long seed = -1;
 
     /**
@@ -72,14 +108,12 @@ public class PermutationSearch {
         return getGraph(nodes, parents, null, cpDag);
     }
 
-    // TO DO: moved to a better place like GraphUtils
-
     /**
-     * Construct a graph given a specification of the parents for each node.
+     * Constructs a graph given a specification of the parents for each node.
      *
      * @param nodes     The nodes.
      * @param parents   A map from each node to its parents.
-     * @param knowledge the knoweldge to use to construct the graph.
+     * @param knowledge the knowledge to use to construct the graph.
      * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
      * @return The construted graph.
      */
@@ -100,8 +134,6 @@ public class PermutationSearch {
 
         return graph;
     }
-
-    // TO DO: moved to a better place like GraphUtils
 
     /**
      * Performe the search and return a CPDAG.
@@ -130,7 +162,6 @@ public class PermutationSearch {
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
                     this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
-                    ;
                 }
 
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;
@@ -146,33 +177,50 @@ public class PermutationSearch {
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
+    /**
+     * Retrieves the order list.
+     *
+     * @return The order list.
+     */
     public List<Node> getOrder() {
         return this.order;
     }
 
+    /**
+     * Sets the order list for the search.
+     *
+     * @param order The order list to set. Must contain all variables.
+     * @throws AssertionError If the order list does not contain all variables.
+     */
     public void setOrder(List<Node> order) {
         assert new HashSet<>(order).containsAll(this.variables);
         this.order.clear();
         this.order.addAll(order);
     }
 
+    /**
+     * Retrieves the GrowShrinkTree (GST) associated with the given Node.
+     *
+     * @param node The Node whose GST is to be retrieved.
+     * @return The GrowShrinkTree associated with the given Node.
+     */
     public GrowShrinkTree getGST(Node node) {
         return this.gsts.get(node);
     }
 
     /**
-     * Returns the variables.
+     * Retrieves the list of variables.
      *
-     * @return This list.
+     * @return The list of variables.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
     /**
-     * Sets the knowledge to be used in the search.
+     * Sets the knowledge to be used for the search.
      *
-     * @param knowledge This knowledge.
+     * @param knowledge The knowledge to be set.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
@@ -190,6 +238,29 @@ public class PermutationSearch {
         }
     }
 
+    /**
+     * Retrieves the value of cpdag.
+     *
+     * @return The value of the cpdag flag.
+     */
+    public boolean getCpdag() {
+        return cpdag;
+    }
+
+    /**
+     * Sets the flag indicating whether a CPDAG (partially directed acyclic graph) is wanted or not.
+     *
+     * @param cpdag The value indicating whether a CPDAG is wanted or not.
+     */
+    public void setCpdag(boolean cpdag) {
+        this.cpdag = cpdag;
+    }
+
+    /**
+     * Sets the seed value used for generating random numbers.
+     *
+     * @param seed The seed value to set.
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

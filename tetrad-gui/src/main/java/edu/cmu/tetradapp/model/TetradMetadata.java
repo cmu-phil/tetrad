@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Date;
 
 /**
@@ -36,9 +37,11 @@ import java.util.Date;
  * without disturbing serialization. It must be the case that metadata can load even if the SessionWrapper cannot load.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TetradMetadata
         implements TetradSerializable, TetradMetadataIndirectRef {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -58,7 +61,7 @@ public class TetradMetadata
     //===========================CONSTRUCTORS=============================//
 
     /**
-     *
+     * <p>Constructor for TetradMetadata.</p>
      */
     public TetradMetadata() {
         try {
@@ -73,6 +76,7 @@ public class TetradMetadata
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.TetradMetadata} object
      * @see TetradSerializableUtils
      */
     public static TetradMetadata serializableInstance() {
@@ -81,10 +85,20 @@ public class TetradMetadata
 
     //==========================PUBLIC METHODS===========================//
 
+    /**
+     * <p>Getter for the field <code>version</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version getVersion() {
         return this.version;
     }
 
+    /**
+     * <p>Getter for the field <code>date</code>.</p>
+     *
+     * @return a {@link java.util.Date} object
+     */
     public Date getDate() {
         return this.date;
     }
@@ -98,6 +112,10 @@ public class TetradMetadata
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -6,24 +6,44 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumDirectedEdgeReversed implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumDirectedEdgeReversed() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#X->Y-Rev";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number X-->Y for which Y~~>X in true";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -42,6 +62,9 @@ public class NumDirectedEdgeReversed implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

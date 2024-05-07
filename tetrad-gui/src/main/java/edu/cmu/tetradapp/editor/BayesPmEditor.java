@@ -21,8 +21,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -35,11 +35,19 @@ import java.beans.PropertyChangeListener;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesPmEditor extends JPanel
         implements PropertyChangeListener, DelegatesEditing {
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes PM.
+     */
     private final BayesPmWrapper wrapper;
 
     /**
@@ -49,6 +57,8 @@ public class BayesPmEditor extends JPanel
 
     /**
      * Constructs a new editor for parameterized models (for now only for Bayes net parameterized models).
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public BayesPmEditor(BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
@@ -133,6 +143,8 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * G Reacts to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -152,6 +164,8 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name fo the Bayes PM.
      */
     public void setName(String name) {
@@ -160,6 +174,11 @@ public class BayesPmEditor extends JPanel
         firePropertyChange("name", oldName, getName());
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return this.wizard;
     }

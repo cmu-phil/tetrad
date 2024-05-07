@@ -43,12 +43,19 @@ import java.util.List;
  * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class UnderliningsAction extends AbstractAction implements ClipboardOwner {
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and clipboard.
+     *
+     * @param graph a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public UnderliningsAction(GraphWorkbench graph) {
         super("Underlinings");
@@ -56,6 +63,8 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -107,7 +116,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
         if (allEmpty) {
             textArea.append(
                     "\n\nNo underlinings were marked in this graph. All triple classifications not marked are " +
-                            "inferable from the graph itself.");
+                    "inferable from the graph itself.");
         }
 
         Box b2 = Box.createHorizontalBox();
@@ -160,6 +169,8 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,14 +34,14 @@ import java.util.List;
  * ...}.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Polynomial implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The terms of the polynomial.
-     *
-     * @serial
      */
     private final List<PolynomialTerm> terms;
 
@@ -48,6 +49,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Constructs a polynomial from a list of terms.
+     *
+     * @param terms a {@link java.util.List} object
      */
     public Polynomial(List<PolynomialTerm> terms) {
 
@@ -60,6 +63,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Polynomial} object
      */
     public static Polynomial serializableInstance() {
         return new Polynomial(new ArrayList<>());
@@ -69,6 +74,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the number of terms.
+     *
+     * @return a int
      */
     public int getNumTerms() {
         return this.terms.size();
@@ -76,6 +83,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the coefficient.
+     *
+     * @param index a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public PolynomialTerm getTerm(int index) {
         return this.terms.get(index);
@@ -83,6 +93,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Finds the first term matching the given profile.
+     *
+     * @param variables an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public PolynomialTerm findTerm(int[] variables) {
         for (PolynomialTerm term1 : this.terms) {
@@ -96,6 +109,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the highest variable index in any term.
+     *
+     * @return a int
      */
     public int getMaxIndex() {
         int max = 0;
@@ -110,6 +125,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Evaluates the term.
+     *
+     * @param values an array of {@link double} objects
+     * @return a double
      */
     public double evaluate(double[] values) {
         double sum = 0.0;
@@ -121,6 +139,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Prints out a representation of the term.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -140,14 +160,15 @@ public final class Polynomial implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.terms == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

@@ -44,21 +44,36 @@ import java.util.concurrent.ConcurrentHashMap;
  * Assumes a conditional Gaussian model and uses a likelihood ratio test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet data;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * Likelihood function
+     */
     private final ConditionalGaussianLikelihood likelihood;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The number of categories to discretize continuous variables into.
+    /**
+     * The number of categories to discretize continuous variables into.
+     */
     private int numCategoriesToDiscretize = 3;
 
     /**
@@ -84,7 +99,12 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented
+     * This method returns an instance of the IndependenceTest interface that can test the independence of a subset of
+     * variables.
+     *
+     * @param vars The sublist of variables to test for independence.
+     * @return An instance of the IndependenceTest interface.
+     * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
@@ -93,7 +113,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
-     * @return an independence result (see)
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -175,12 +198,15 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * Determines whether a given list of nodes (z) determines a node (y).
      *
-     * @return True, if so.
+     * @param z The list of nodes to check if they determine y.
+     * @param y The node to check if it is determined by z.
+     * @return True if z determines y, false otherwise.
+     * @throws UnsupportedOperationException if not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
-        return false; //stub
+        throw new UnsupportedOperationException("Determinism method not implemented.");
     }
 
     /**
@@ -194,8 +220,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Sets the significance level.
-     *
-     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -222,8 +246,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Returns true iff verbose output should be printed.
-     *
-     * @return This.
      */
     @Override
     public boolean isVerbose() {
@@ -232,8 +254,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -249,6 +269,13 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
+    /**
+     * Returns a list of row indices where the values of the specified nodes are not missing or invalid.
+     *
+     * @param allVars  The list of nodes to check.
+     * @param nodeHash A map containing node-index pairs.
+     * @return A list of row indices.
+     */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
         List<Integer> rows = new ArrayList<>();
 

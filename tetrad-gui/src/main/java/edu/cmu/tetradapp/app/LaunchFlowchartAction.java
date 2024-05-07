@@ -43,13 +43,15 @@ final class LaunchFlowchartAction extends AbstractAction {
     }
 
     /**
-     * Closes the frontmost session of this action's desktop.
+     * This method handles the action event triggered by a user interaction.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         Desktop d = Desktop.getDesktop();
         try {
-            d.browse(new URI("https://htmlpreview.github.io/?https://raw.githubusercontent.com/cmu-phil/tetrad/" +
-                    "development/docs/manual/flowchart.html"));
+            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/" +
+                    "tetrad/blob/development/tetrad-lib/src/main/resources/docs/manual/flowchart.html"));
         } catch (IOException | URISyntaxException e2) {
             e2.printStackTrace();
         }

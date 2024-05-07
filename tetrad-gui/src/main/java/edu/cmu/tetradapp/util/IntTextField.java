@@ -34,6 +34,7 @@ import java.awt.event.FocusEvent;
  * variables to be within a certain range; see the <code>setFilter</code> method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IntTextField extends JTextField {
 
@@ -107,11 +108,18 @@ public final class IntTextField extends JTextField {
         });
     }
 
+    /**
+     * <p>setUnfilteredValue.</p>
+     *
+     * @param value a int
+     */
     public void setUnfilteredValue(int value) {
         setText(String.valueOf(value));
     }
 
     /**
+     * <p>Getter for the field <code>value</code>.</p>
+     *
      * @return the int value currently displayed.
      */
     public int getValue() {
@@ -120,6 +128,8 @@ public final class IntTextField extends JTextField {
 
     /**
      * Sets the value of the text field to the given int value.
+     *
+     * @param value a int
      */
     public void setValue(int value) {
         if (value == this.value) {
@@ -139,6 +149,8 @@ public final class IntTextField extends JTextField {
 
     /**
      * Sets whether the given value should be accepted.
+     *
+     * @param filter a {@link edu.cmu.tetradapp.util.IntTextField.Filter} object
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -189,6 +201,7 @@ public final class IntTextField extends JTextField {
          *
          * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
+         * @return The value that should be displayed.
          */
         int filter(int value, int oldValue);
     }

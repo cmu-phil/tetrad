@@ -7,7 +7,29 @@ import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
 
+/**
+ * <p>LayoutUtil class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LayoutUtil {
+
+    /**
+     * Constructor.
+     */
+    public LayoutUtil() {
+    }
+
+    /**
+     * <p>kamadaKawaiLayout.</p>
+     *
+     * @param graph               a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param randomlyInitialized a boolean
+     * @param naturalEdgeLength   a double
+     * @param springConstant      a double
+     * @param stopEnergy          a double
+     */
     public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
         layout.setRandomlyInitialized(randomlyInitialized);
@@ -17,11 +39,22 @@ public class LayoutUtil {
         layout.doLayout();
     }
 
+    /**
+     * <p>fruchtermanReingoldLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void fruchtermanReingoldLayout(Graph graph) {
         FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(graph);
         layout.doLayout();
     }
 
+    /**
+     * <p>arrangeByLayout.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param layout a {@link java.util.HashMap} object
+     */
     public static void arrangeByLayout(Graph graph, HashMap<String, PointXy> layout) {
         for (Node node : graph.getNodes()) {
             PointXy point = layout.get(node.getName());
@@ -31,6 +64,7 @@ public class LayoutUtil {
 
     /**
      * Arranges the nodes in the graph in a circle if there are 20 or fewer nodes, otherwise arranges them in a square.
+     *
      * @param graph the graph to be arranged.
      */
     public static void defaultLayout(Graph graph) {
@@ -43,6 +77,7 @@ public class LayoutUtil {
 
     /**
      * Arranges the nodes in the graph in a circle.
+     *
      * @param graph the graph to be arranged.
      */
     public static void circleLayout(Graph graph) {
@@ -71,6 +106,11 @@ public class LayoutUtil {
         }
     }
 
+    /**
+     * <p>squareLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void squareLayout(Graph graph) {
         List<Node> nodes = new ArrayList<>(graph.getNodes());
 
@@ -120,10 +160,15 @@ public class LayoutUtil {
             }
             Node node = nodes.get(i + 3 * side);
             node.setCenterX(bufferx);
-            node.setCenterY(buffery + spacey * (side  - i));
+            node.setCenterY(buffery + spacey * (side - i));
         }
     }
 
+    /**
+     * <p>layoutByCausalOrder.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void layoutByCausalOrder(Graph graph) {
         List<List<Node>> tiers = getTiers(graph);
 
@@ -210,6 +255,8 @@ public class LayoutUtil {
     /**
      * Arranges the nodes in the result graph according to their positions in the source graph.
      *
+     * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param sourceGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return true if all the nodes were arranged, false if not.
      */
     public static boolean arrangeBySourceGraph(Graph resultGraph, Graph sourceGraph) {
@@ -307,6 +354,11 @@ public class LayoutUtil {
 
         //==============================CONSTRUCTORS===========================//
 
+        /**
+         * Constructs a new Kamada-Kawai layout for the given graph.
+         *
+         * @param graph the graph to be laid out.
+         */
         public KamadaKawaiLayout(Graph graph) {
             if (graph == null) {
                 throw new NullPointerException();
@@ -317,6 +369,9 @@ public class LayoutUtil {
 
         //============================PUBLIC METHODS==========================//
 
+        /**
+         * Lays out the graph.
+         */
         public void doLayout() {
             defaultLayout(this.graph);
 
@@ -347,6 +402,13 @@ public class LayoutUtil {
             return this.randomlyInitialized;
         }
 
+        /**
+         * Sets whether the spring layout should start from a randomlyInitialized position or from the getModel
+         * positions of the nodes.
+         *
+         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false
+         *                            if the spring layout should start from the getModel positions of the nodes.
+         */
         public void setRandomlyInitialized(boolean randomlyInitialized) {
             this.randomlyInitialized = randomlyInitialized;
         }
@@ -355,6 +417,11 @@ public class LayoutUtil {
             return this.stopEnergy;
         }
 
+        /**
+         * Sets the max delta at which the algorithm will stop settling.
+         *
+         * @param stopEnergy the max delta at which the algorithm will stop settling.
+         */
         public void setStopEnergy(double stopEnergy) {
             if (stopEnergy <= 0.0) {
                 throw new IllegalArgumentException(
@@ -369,6 +436,11 @@ public class LayoutUtil {
             return this.naturalEdgeLength;
         }
 
+        /**
+         * Sets the natural length of an edge.
+         *
+         * @param naturalEdgeLength the natural length of an edge.
+         */
         public void setNaturalEdgeLength(double naturalEdgeLength) {
             if (naturalEdgeLength < 0.0) {
                 throw new IllegalArgumentException(
@@ -382,6 +454,11 @@ public class LayoutUtil {
             return this.springConstant;
         }
 
+        /**
+         * Sets the spring constant; higher for more elasticity.
+         *
+         * @param springConstant the spring constant; higher for more elasticity.
+         */
         public void setSpringConstant(double springConstant) {
             if (springConstant < 0.0) {
                 throw new IllegalArgumentException(
@@ -768,6 +845,11 @@ public class LayoutUtil {
 
         //==============================CONSTRUCTORS===========================//
 
+        /**
+         * Constructs a new FruchtermanReingoldLayout for the given graph.
+         *
+         * @param graph the graph to be laid out.
+         */
         public FruchtermanReingoldLayout(Graph graph) {
             if (graph == null) {
                 throw new NullPointerException();
@@ -778,6 +860,9 @@ public class LayoutUtil {
 
         //============================PUBLIC METHODS==========================//
 
+        /**
+         * Lays out the graph.
+         */
         public void doLayout() {
             defaultLayout(this.graph);
 
@@ -809,7 +894,7 @@ public class LayoutUtil {
             List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
             edges.removeIf(edge -> !nodes.contains(edge.getNode1()) ||
-                    !nodes.contains(edge.getNode2()));
+                                   !nodes.contains(edge.getNode2()));
 
             this.edges = new int[edges.size()][2];
 
@@ -872,7 +957,7 @@ public class LayoutUtil {
                     nodeDisposition()[v][1] -= attractY;
 
                     if (Double.isNaN(nodeDisposition()[v][0]) ||
-                            Double.isNaN(nodeDisposition()[v][1])) {
+                        Double.isNaN(nodeDisposition()[v][1])) {
                         throw new IllegalStateException("Undefined disposition.");
                     }
 
@@ -880,7 +965,7 @@ public class LayoutUtil {
                     nodeDisposition()[u][1] += attractY;
 
                     if (Double.isNaN(nodeDisposition()[u][0]) ||
-                            Double.isNaN(nodeDisposition()[u][1])) {
+                        Double.isNaN(nodeDisposition()[u][1])) {
                         throw new IllegalStateException("Undefined disposition.");
                     }
                 }
@@ -889,12 +974,12 @@ public class LayoutUtil {
                     double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
 
                     nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                            FastMath.min(norm, getTemperature());
+                                            FastMath.min(norm, getTemperature());
                     nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                            FastMath.min(norm, getTemperature());
+                                            FastMath.min(norm, getTemperature());
 
                     if (Double.isNaN(nodePosition()[v][0]) ||
-                            Double.isNaN(nodePosition()[v][1])) {
+                        Double.isNaN(nodePosition()[v][1])) {
                         throw new IllegalStateException("Undefined position.");
                     }
                 }

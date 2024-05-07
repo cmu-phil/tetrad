@@ -54,6 +54,7 @@ import java.util.*;
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class Purify {
     /**
@@ -114,9 +115,15 @@ public class Purify {
     private int numVars;
     private TetradTest tetradTest;
 
-    /*********************************************************
-     * INITIALIZATION                                                                                        o
-     *********************************************************/
+    /**
+     * ****************************************************** INITIALIZATION o
+     * *******************************************************
+     *
+     * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
+     * @param sig               a double
+     * @param testType          a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param clusters          a {@link edu.cmu.tetrad.data.Clusters} object
+     */
 
     /*
      * Constructor Purify
@@ -133,12 +140,20 @@ public class Purify {
         if (testType == BpcTestType.TETRAD_DELTA) {
             throw new RuntimeException(
                     "Covariance/correlation matrix is not enough to " +
-                            "run Bollen's tetrad test.");
+                    "run Bollen's tetrad test.");
         }
 
         this.variables = correlationMatrix.getVariables();
     }
 
+    /**
+     * <p>Constructor for Purify.</p>
+     *
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sig      a double
+     * @param testType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Purify(DataSet dataSet, double sig, BpcTestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(dataSet)) {
@@ -158,6 +173,12 @@ public class Purify {
         this.variables = dataSet.getVariables();
     }
 
+    /**
+     * <p>Constructor for Purify.</p>
+     *
+     * @param tetradTest a {@link edu.cmu.tetrad.search.utils.TetradTest} object
+     * @param knowledge  a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;
         initAlgorithm(-1., BpcTestType.NONE, knowledge);
@@ -165,6 +186,12 @@ public class Purify {
         this.variables = tetradTest.getVariables();
     }
 
+    /**
+     * <p>convertSearchGraph.</p>
+     *
+     * @param input a {@link edu.cmu.tetrad.graph.SemGraph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph convertSearchGraph(SemGraph input) {
         if (input == null) {
             List<Node> nodes = new ArrayList<>();
@@ -190,7 +217,7 @@ public class Purify {
                 Edge edge = input.getEdge(node1, node2);
                 if (edge != null) {
                     if (node1.getNodeType() == NodeType.ERROR &&
-                            node2.getNodeType() == NodeType.ERROR) {
+                        node2.getNodeType() == NodeType.ERROR) {
                         Iterator<Node> ci = input.getChildren(node1).iterator();
                         Node indicator1 =
                                 ci.next(); //Assuming error nodes have only one children in SemGraphs...
@@ -204,9 +231,9 @@ public class Purify {
                                     Endpoint.ARROW);
                         }
                     } else if ((node1.getNodeType() != NodeType.LATENT ||
-                            node2.getNodeType() != NodeType.LATENT) &&
-                            node1.getNodeType() != NodeType.ERROR &&
-                            node2.getNodeType() != NodeType.ERROR) {
+                                node2.getNodeType() != NodeType.LATENT) &&
+                               node1.getNodeType() != NodeType.ERROR &&
+                               node2.getNodeType() != NodeType.ERROR) {
                         output.setEndpoint(edge.getNode1(), edge.getNode2(),
                                 Endpoint.ARROW);
                         output.setEndpoint(edge.getNode2(), edge.getNode1(),
@@ -253,8 +280,9 @@ public class Purify {
     /**
      * ****************************************************** SEARCH INTERFACE
      * *******************************************************
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-
     public Graph search() {
         return getResultGraph();
     }
@@ -506,7 +534,7 @@ public class Purify {
         System.out.println("allPValues = " + allPValues.size());
         int c = 0;
         while (allPValues.get(c) <
-                this.tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
+               this.tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
             c++;
         }
         double cutoff = allPValues.get(c);
@@ -548,8 +576,8 @@ public class Purify {
 
         if (numImpurities > 0) {
             printlnMessage(clusterName + " -- Original Status: " +
-                    numImpurities + " of " + allPValues.size() +
-                    " tetrads fail the FDR test.");
+                           numImpurities + " of " + allPValues.size() +
+                           " tetrads fail the FDR test.");
         } else {
             printlnMessage(
                     clusterName + " -- Original Status: Needs NO pruning.");
@@ -593,9 +621,9 @@ public class Purify {
                 return;
             }
             printlnMessage("Dropped " +
-                    this.tetradTest.getVarNames()[cluster[max_index]] +
-                    "  Without it, " + numImpurities + " of " + allPValues.size() +
-                    " fail the FDR test.");
+                           this.tetradTest.getVarNames()[cluster[max_index]] +
+                           "  Without it, " + numImpurities + " of " + allPValues.size() +
+                           " fail the FDR test.");
         }
     }
 
@@ -628,8 +656,8 @@ public class Purify {
 
         if (numImpurities > 0) {
             printlnMessage(clusterName + " -- Original Status: " +
-                    numImpurities + " of " + allPValues.size() +
-                    " tetrads fail the FDR test.");
+                           numImpurities + " of " + allPValues.size() +
+                           " tetrads fail the FDR test.");
         } else {
             printlnMessage(
                     clusterName + " -- Original Status: Needs NO pruning.");
@@ -865,7 +893,7 @@ public class Purify {
                                 }
                                 if (this.tetradTest.tetradPValue(cluster1[i],
                                         cluster2[k], cluster1[j], cluster2[l]) <
-                                        cutoff) {
+                                    cutoff) {
                                     int[] newFailure = new int[4];
                                     newFailure[0] = cluster1[i];
                                     newFailure[1] = cluster1[j];
@@ -886,7 +914,7 @@ public class Purify {
 
         if (numImpurities > 0) {
             printlnMessage("Iteration 1   " + numImpurities + " of " +
-                    allPValues.size() + " tetrads fail the FDR test.");
+                           allPValues.size() + " tetrads fail the FDR test.");
         } else {
             printlnMessage("Needs NO pruning.");
         }
@@ -933,8 +961,8 @@ public class Purify {
             int[] cluster = partition.get(max_index_p);
             String var = this.tetradTest.getVarNames()[(cluster[max_index_i])];
             printlnMessage("Dropped " + var + "  Without it, " +
-                    numImpurities + " of " + allPValues.size() +
-                    " tetrads fail the FDR test.");
+                           numImpurities + " of " + allPValues.size() +
+                           " tetrads fail the FDR test.");
         }
     }
 
@@ -957,7 +985,7 @@ public class Purify {
 
         if (numImpurities > 0) {
             printlnMessage("Iteration 1   " + numImpurities + " of " +
-                    allPValues.size() + " tetrads fail the FDR test.");
+                           allPValues.size() + " tetrads fail the FDR test.");
         } else {
             printlnMessage("Needs NO pruning.");
         }
@@ -1176,21 +1204,21 @@ public class Purify {
                             for (int v3 = 0;
                                  v3 < cluster1.length && !found1; v3++) {
                                 if (v3 == v1 ||
-                                        relations[cluster1[v1]][cluster1[v3]] ==
-                                                IMPURE ||
-                                        relations[cluster2[v2]][cluster1[v3]] ==
-                                                IMPURE) {
+                                    relations[cluster1[v1]][cluster1[v3]] ==
+                                    IMPURE ||
+                                    relations[cluster2[v2]][cluster1[v3]] ==
+                                    IMPURE) {
                                     continue;
                                 }
                                 for (int v4 = 0;
                                      v4 < cluster1.length && !found1; v4++) {
                                     if (v4 == v1 || v4 == v3 ||
-                                            relations[cluster1[v1]][cluster1[v4]] ==
-                                                    IMPURE ||
-                                            relations[cluster2[v2]][cluster1[v4]] ==
-                                                    IMPURE ||
-                                            relations[cluster1[v3]][cluster1[v4]] ==
-                                                    IMPURE) {
+                                        relations[cluster1[v1]][cluster1[v4]] ==
+                                        IMPURE ||
+                                        relations[cluster2[v2]][cluster1[v4]] ==
+                                        IMPURE ||
+                                        relations[cluster1[v3]][cluster1[v4]] ==
+                                        IMPURE) {
                                         continue;
                                     }
                                     if (this.tetradTest.tetradScore3(cluster1[v1],
@@ -1216,21 +1244,21 @@ public class Purify {
                             for (int v3 = 0;
                                  v3 < cluster2.length && !found2; v3++) {
                                 if (v3 == v2 ||
-                                        relations[cluster1[v1]][cluster2[v3]] ==
-                                                IMPURE ||
-                                        relations[cluster2[v2]][cluster2[v3]] ==
-                                                IMPURE) {
+                                    relations[cluster1[v1]][cluster2[v3]] ==
+                                    IMPURE ||
+                                    relations[cluster2[v2]][cluster2[v3]] ==
+                                    IMPURE) {
                                     continue;
                                 }
                                 for (int v4 = 0;
                                      v4 < cluster2.length && !found2; v4++) {
                                     if (v4 == v2 || v4 == v3 ||
-                                            relations[cluster1[v1]][cluster2[v4]] ==
-                                                    IMPURE ||
-                                            relations[cluster2[v2]][cluster2[v4]] ==
-                                                    IMPURE ||
-                                            relations[cluster2[v3]][cluster2[v4]] ==
-                                                    IMPURE) {
+                                        relations[cluster1[v1]][cluster2[v4]] ==
+                                        IMPURE ||
+                                        relations[cluster2[v2]][cluster2[v4]] ==
+                                        IMPURE ||
+                                        relations[cluster2[v3]][cluster2[v4]] ==
+                                        IMPURE) {
                                         continue;
                                     }
                                     if (this.tetradTest.tetradScore3(cluster1[v1],
@@ -1319,12 +1347,12 @@ public class Purify {
             }
             for (int j = i + 1; j < this.numObserved; j++) {
                 impurities[i][j] = this.correlatedErrors[i][j] ||
-                        this.observedParent[i][j] || this.observedParent[j][i];
+                                   this.observedParent[i][j] || this.observedParent[j][i];
                 impurities[j][i] = impurities[i][j];
             }
         }
         if (((TetradTestContinuous) this.tetradTest).getTestType() ==
-                BpcTestType.GAUSSIAN_SCORE) {
+            BpcTestType.GAUSSIAN_SCORE) {
             bestGraph = removeMarkedImpurities(bestGraph, impurities);
         }
         return bestGraph;
@@ -1352,7 +1380,7 @@ public class Purify {
             for (int i = 0; i < this.numObserved; i++) {
                 for (int j = i + 1; j < this.numObserved; j++) {
                     if (this.correlatedErrors[i][j] || this.observedParent[i][j] ||
-                            this.observedParent[j][i]) {
+                        this.observedParent[j][i]) {
                         numImpurities[i]++;
                         numImpurities[j]++;
                         changed = true;
@@ -1379,9 +1407,9 @@ public class Purify {
                     int[] nextCluster =
                             (int[]) partition.get(this.clusterId[nextChoice]);
                     if ((nextCluster.length > chosenCluster.length &&
-                            chosenCluster.length >= 3) || (
-                            nextCluster.length < chosenCluster.length &&
-                                    nextCluster.length < 3)) {
+                         chosenCluster.length >= 3) || (
+                                nextCluster.length < chosenCluster.length &&
+                                nextCluster.length < 3)) {
                         choice = nextChoice;
                         chosenCluster = nextCluster;
                     }
@@ -1484,7 +1512,7 @@ public class Purify {
         this.purePartitionGraph = new SemGraph(this.basicGraph);
 
         if (((TetradTestContinuous) this.tetradTest).getTestType() ==
-                BpcTestType.NONE) {
+            BpcTestType.NONE) {
             return;
         }
 
@@ -1506,7 +1534,7 @@ public class Purify {
         for (int i = 0; i < cov.length; i++) {
             for (int j = 0; j < cov.length; j++) {
                 if (this.observableNames.get(varNames[i]) != null &&
-                        this.observableNames.get(varNames[j]) != null) {
+                    this.observableNames.get(varNames[j]) != null) {
                     this.Cyy[((Integer) this.observableNames.get(
                             varNames[i]))][((Integer) this.observableNames
                             .get(varNames[j]))] = cov[i][j];
@@ -1645,7 +1673,7 @@ public class Purify {
         }
         for (Edge nextEdge : semMag.getEdges()) {
             if (nextEdge.getEndpoint1() == Endpoint.ARROW &&
-                    nextEdge.getEndpoint2() == Endpoint.ARROW) {
+                nextEdge.getEndpoint2() == Endpoint.ARROW) {
                 //By construction, getNode1() and getNode2() are error nodes. They have only one child each.
                 Iterator it1 = semMag.getChildren(nextEdge.getNode1())
                         .iterator();
@@ -1763,13 +1791,13 @@ public class Purify {
                 Node from = parameter.getNodeA();
                 Node to = parameter.getNodeB();
                 if (to.getNodeType() == NodeType.MEASURED &&
-                        from.getNodeType() == NodeType.LATENT) {
+                    from.getNodeType() == NodeType.LATENT) {
                     //latent-to-indicator edge
                     int position1 = (Integer) this.latentNames.get(from.getName());
                     int position2 = (Integer) this.observableNames.get(to.getName());
                     lambdaL[position2][position1] = paramValues[i];
                 } else if (to.getNodeType() == NodeType.MEASURED &&
-                        from.getNodeType() == NodeType.MEASURED) {
+                           from.getNodeType() == NodeType.MEASURED) {
                     //indicator-to-indicator edge
                     int position1 =
                             (Integer) this.observableNames.get(from.getName());
@@ -1902,7 +1930,7 @@ public class Purify {
 
                     //indicator &lt;-&gt; indicator edges
                     if (!this.correlatedErrors[i][j] && !this.observedParent[i][j] &&
-                            !this.observedParent[j][i]) {
+                        !this.observedParent[j][i]) {
                         this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = true;
                         double newScore = scoreCandidate();
                         //System.out.println("Trying impurity " + i + " &lt;-&gt; " + j + " (Score = " + newScore + ")"); //System.exit(0);
@@ -1924,30 +1952,30 @@ public class Purify {
                         this.latentParent[bestChoice1][bestChoice2] = true;
                         System.out.println(
                                 "****************************Added impurity: " +
-                                        this.latentNodes.get(
-                                                bestChoice2).toString() +
-                                        " --> " + this.measuredNodes.get(
+                                this.latentNodes.get(
+                                        bestChoice2).toString() +
+                                " --> " + this.measuredNodes.get(
                                         bestChoice1).toString() + " " +
-                                        nextScore);
+                                nextScore);
                         break;
                     case 1:
                         this.observedParent[bestChoice1][bestChoice2] = true;
                         System.out.println(
                                 "****************************Added impurity: " +
-                                        this.measuredNodes.get(
-                                                bestChoice2).toString() +
-                                        " --> " + this.measuredNodes.get(
+                                this.measuredNodes.get(
+                                        bestChoice2).toString() +
+                                " --> " + this.measuredNodes.get(
                                         bestChoice1).toString() + " " +
-                                        nextScore);
+                                nextScore);
                         break;
                     case 2:
                         System.out.println(
                                 "****************************Added impurity: " +
-                                        this.measuredNodes.get(
-                                                bestChoice1).toString() +
-                                        " <-> " + this.measuredNodes.get(
+                                this.measuredNodes.get(
+                                        bestChoice1).toString() +
+                                " <-> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
-                                        nextScore);
+                                nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =
                                 this.correlatedErrors[bestChoice2][bestChoice1] =
                                         true;
@@ -2004,19 +2032,19 @@ public class Purify {
                         if (this.observedParent[bestChoice1][bestChoice2]) {
                             System.out.println(
                                     "****************************Removed impurity: " +
-                                            this.measuredNodes.get(bestChoice2)
-                                                    .toString() + " --> " +
-                                            this.measuredNodes.get(bestChoice1)
-                                                    .toString() + " " +
-                                            nextScore);
+                                    this.measuredNodes.get(bestChoice2)
+                                            .toString() + " --> " +
+                                    this.measuredNodes.get(bestChoice1)
+                                            .toString() + " " +
+                                    nextScore);
                         } else {
                             System.out.println(
                                     "****************************Removed impurity: " +
-                                            this.measuredNodes.get(bestChoice1)
-                                                    .toString() + " --> " +
-                                            this.measuredNodes.get(bestChoice2)
-                                                    .toString() + " " +
-                                            nextScore);
+                                    this.measuredNodes.get(bestChoice1)
+                                            .toString() + " --> " +
+                                    this.measuredNodes.get(bestChoice2)
+                                            .toString() + " " +
+                                    nextScore);
                         }
                         this.observedParent[bestChoice1][bestChoice2] =
                                 this.observedParent[bestChoice2][bestChoice1] =
@@ -2025,11 +2053,11 @@ public class Purify {
                     case 1:
                         System.out.println(
                                 "****************************Removed impurity: " +
-                                        this.measuredNodes.get(
-                                                bestChoice1).toString() +
-                                        " <-> " + this.measuredNodes.get(
+                                this.measuredNodes.get(
+                                        bestChoice1).toString() +
+                                " <-> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
-                                        nextScore);
+                                nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =
                                 this.correlatedErrors[bestChoice2][bestChoice1] =
                                         false;
@@ -2062,7 +2090,7 @@ public class Purify {
         SemIm semIm = new SemIm(semPm, this.covarianceMatrix);
         gaussianMaximization(semIm);
         return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
-                FastMath.log(this.covarianceMatrix.getSampleSize());
+                                     FastMath.log(this.covarianceMatrix.getSampleSize());
     }
 
     private SemGraph updatedGraph() {
@@ -2083,7 +2111,7 @@ public class Purify {
                 int pos2 = (Integer) this.latentNames.get(
                         output.getNodes().get(j).toString());
                 if (this.latentParent[pos1][pos2] &&
-                        output.getEdge(node1, node2) == null) {
+                    output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node2, node1);
                 }
             }
@@ -2099,14 +2127,14 @@ public class Purify {
                 int pos2 = (Integer) this.observableNames.get(
                         output.getNodes().get(j).toString());
                 if (this.correlatedErrors[pos1][pos2] &&
-                        output.getEdge(errnode1, errnode2) == null) {
+                    output.getEdge(errnode1, errnode2) == null) {
                     output.addBidirectedEdge(errnode1, errnode2);
                 }
                 if (this.observedParent[pos1][pos2] &&
-                        output.getEdge(node1, node2) == null) {
+                    output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node2, node1);
                 } else if (this.observedParent[pos2][pos1] &&
-                        output.getEdge(node1, node2) == null) {
+                           output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node1, node2);
                 }
             }
@@ -2146,7 +2174,7 @@ public class Purify {
                 Node node1 = nextP.getNodeA();
                 Node node2 = nextP.getNodeB();
                 if (node1.getNodeType() == NodeType.LATENT &&
-                        node2.getNodeType() == NodeType.LATENT) {
+                    node2.getNodeType() == NodeType.LATENT) {
                     continue;
                 }
                 Node latent = null, observed = null;
@@ -2223,7 +2251,7 @@ public class Purify {
                     MatrixUtils.inverse(this.parentsLatCov[i]),
                     this.parentsChildLatCov[i]);
             this.varErrorLatent[i] = this.Czz[i][i] -
-                    MatrixUtils.innerProduct(this.parentsChildLatCov[i], betaL);
+                                     MatrixUtils.innerProduct(this.parentsChildLatCov[i], betaL);
             for (int j = 0; j < this.parentsLat[i].length; j++) {
                 this.betasLat[i][this.parentsLat[i][j]] = betaL[j];
             }
@@ -2313,7 +2341,7 @@ public class Purify {
                                     this.covErrors[ii][this.spouses[ii][j]];
                         } else if (this.spouses[ii][j] < i) {
                             this.omega[index_ii][this.numLatent +
-                                    this.spouses[ii][j]] =
+                                                 this.spouses[ii][j]] =
                                     this.covErrors[ii][this.spouses[ii][j]];
                         }
                     }
@@ -2333,53 +2361,53 @@ public class Purify {
                             if (this.parentsL[ii][p]) {
                                 this.sampleCovErrors[ii][j] -=
                                         this.betas[ii][this.parents[ii][p]] *
-                                                this.Cyz[j][this.parents[ii][p]];
+                                        this.Cyz[j][this.parents[ii][p]];
                             } else {
                                 this.sampleCovErrors[ii][j] -= this.betas[ii][
-                                        this.numLatent + this.parents[ii][p]] *
-                                        this.Cyy[j][this.parents[ii][p]];
+                                                                       this.numLatent + this.parents[ii][p]] *
+                                                               this.Cyy[j][this.parents[ii][p]];
                             }
                         }
                         for (int p = 0; p < this.parents[j].length; p++) {
                             if (this.parentsL[j][p]) {
                                 this.sampleCovErrors[ii][j] -=
                                         this.betas[j][this.parents[j][p]] *
-                                                this.Cyz[ii][this.parents[j][p]];
+                                        this.Cyz[ii][this.parents[j][p]];
                             } else {
                                 this.sampleCovErrors[ii][j] -= this.betas[j][
-                                        this.numLatent + this.parents[j][p]] *
-                                        this.Cyy[ii][this.parents[j][p]];
+                                                                       this.numLatent + this.parents[j][p]] *
+                                                               this.Cyy[ii][this.parents[j][p]];
                             }
                         }
                         for (int p1 = 0; p1 < this.parents[ii].length; p1++) {
                             for (int p2 = 0; p2 < this.parents[j].length; p2++) {
                                 if (this.parentsL[ii][p1] &&
-                                        this.parentsL[j][p2]) {
+                                    this.parentsL[j][p2]) {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.parents[ii][p1]] *
-                                                    this.betas[j][this.parents[j][p2]] *
-                                                    this.Czz[this.parents[ii][p1]][this.parents[j][p2]];
+                                            this.betas[j][this.parents[j][p2]] *
+                                            this.Czz[this.parents[ii][p1]][this.parents[j][p2]];
                                 } else if (this.parentsL[ii][p1] &&
-                                        !this.parentsL[j][p2]) {
+                                           !this.parentsL[j][p2]) {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.parents[ii][p1]] *
-                                                    this.betas[j][this.numLatent +
-                                                            this.parents[j][p2]] *
-                                                    this.Cyz[this.parents[j][p2]][this.parents[ii][p1]];
+                                            this.betas[j][this.numLatent +
+                                                          this.parents[j][p2]] *
+                                            this.Cyz[this.parents[j][p2]][this.parents[ii][p1]];
                                 } else if (!this.parentsL[ii][p1] &&
-                                        this.parentsL[j][p2]) {
+                                           this.parentsL[j][p2]) {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.numLatent +
-                                                    this.parents[ii][p1]] *
-                                                    this.betas[j][this.parents[j][p2]] *
-                                                    this.Cyz[this.parents[ii][p1]][this.parents[j][p2]];
+                                                           this.parents[ii][p1]] *
+                                            this.betas[j][this.parents[j][p2]] *
+                                            this.Cyz[this.parents[ii][p1]][this.parents[j][p2]];
                                 } else {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.numLatent +
-                                                    this.parents[ii][p1]] *
-                                                    this.betas[j][this.numLatent +
-                                                            this.parents[j][p2]] *
-                                                    this.Cyy[this.parents[ii][p1]][this.parents[j][p2]];
+                                                           this.parents[ii][p1]] *
+                                            this.betas[j][this.numLatent +
+                                                          this.parents[j][p2]] *
+                                            this.Cyy[this.parents[ii][p1]][this.parents[j][p2]];
                                 }
                             }
                         }
@@ -2405,7 +2433,7 @@ public class Purify {
                             for (int p = 0; p < this.parentsLat[j].length; p++) {
                                 this.parentsResidualsCovar[i][ii][j] -=
                                         this.betasLat[j][this.parentsLat[j][p]] *
-                                                this.Czz[this.parents[i][ii]][this.parentsLat[j][p]];
+                                        this.Czz[this.parents[i][ii]][this.parentsLat[j][p]];
                             }
                         } else {
                             this.parentsResidualsCovar[i][ii][j] =
@@ -2413,7 +2441,7 @@ public class Purify {
                             for (int p = 0; p < this.parentsLat[j].length; p++) {
                                 this.parentsResidualsCovar[i][ii][j] -=
                                         this.betasLat[j][this.parentsLat[j][p]] *
-                                                this.Cyz[this.parents[i][ii]][this.parentsLat[j][p]];
+                                        this.Cyz[this.parents[i][ii]][this.parentsLat[j][p]];
                             }
                         }
                     }
@@ -2434,12 +2462,12 @@ public class Purify {
                                 if (this.parentsL[j][p]) {
                                     this.parentsResidualsCovar[i][ii][index_j] -=
                                             this.betas[j][this.parents[j][p]] *
-                                                    this.Czz[this.parents[i][ii]][this.parents[j][p]];
+                                            this.Czz[this.parents[i][ii]][this.parents[j][p]];
                                 } else {
                                     this.parentsResidualsCovar[i][ii][index_j] -=
                                             this.betas[j][this.numLatent +
-                                                    this.parents[j][p]] *
-                                                    this.Cyz[this.parents[j][p]][this.parents[i][ii]];
+                                                          this.parents[j][p]] *
+                                            this.Cyz[this.parents[j][p]][this.parents[i][ii]];
                                 }
                             }
                         } else {
@@ -2449,12 +2477,12 @@ public class Purify {
                                 if (this.parentsL[j][p]) {
                                     this.parentsResidualsCovar[i][ii][index_j] -=
                                             this.betas[j][this.parents[j][p]] *
-                                                    this.Cyz[this.parents[i][ii]][this.parents[j][p]];
+                                            this.Cyz[this.parents[i][ii]][this.parents[j][p]];
                                 } else {
                                     this.parentsResidualsCovar[i][ii][index_j] -=
                                             this.betas[j][this.numLatent +
-                                                    this.parents[j][p]] *
-                                                    this.Cyy[this.parents[j][p]][this.parents[i][ii]];
+                                                          this.parents[j][p]] *
+                                            this.Cyy[this.parents[j][p]][this.parents[i][ii]];
                                 }
                             }
                         }
@@ -2468,7 +2496,7 @@ public class Purify {
                     for (int p = 0; p < this.parentsLat[j].length; p++) {
                         this.iResidualsCovar[j] -=
                                 this.betasLat[j][this.parentsLat[j][p]] *
-                                        this.Cyz[i][this.parentsLat[j][p]];
+                                this.Cyz[i][this.parentsLat[j][p]];
                     }
                 }
                 for (int j = 0; j < this.numObserved; j++) {
@@ -2485,10 +2513,10 @@ public class Purify {
                         if (this.parentsL[j][p]) {
                             this.iResidualsCovar[index_j] -=
                                     this.betas[j][this.parents[j][p]] *
-                                            this.Cyz[i][this.parents[j][p]];
+                                    this.Cyz[i][this.parents[j][p]];
                         } else {
                             this.iResidualsCovar[index_j] -= this.betas[j][this.numLatent + this.parents[j][p]] *
-                                    this.Cyy[i][this.parents[j][p]];
+                                                             this.Cyy[i][this.parents[j][p]];
                         }
                     }
                 }
@@ -2508,7 +2536,7 @@ public class Purify {
                     for (int j = 0; j < this.numLatent; j++) {
                         this.auxInverseOmega[i][ii][j] =
                                 this.selectedInverseOmega[i][ii][j] *
-                                        this.varErrorLatent[j];
+                                this.varErrorLatent[j];
                     }
                     for (int j = 0; j < this.numObserved; j++) {
                         int index_j;
@@ -2531,7 +2559,7 @@ public class Purify {
                             }
                             this.auxInverseOmega[i][ii][index_j] +=
                                     this.selectedInverseOmega[i][ii][index_k] *
-                                            this.sampleCovErrors[k][j];
+                                    this.sampleCovErrors[k][j];
                         }
                     }
                 }
@@ -2546,16 +2574,16 @@ public class Purify {
                 for (int ii = 0; ii < this.parents[i].length; ii++) {
                     for (int j = 0; j < this.nSpouses[i]; j++) {
                         this.pseudoParentsCov[i][ii][this.parents[i].length +
-                                j] = 0.;
+                                                     j] = 0.;
                         for (int k = 0;
                              k < this.numLatent + this.numObserved - 1; k++) {
                             this.pseudoParentsCov[i][ii][this.parents[i]
-                                    .length + j] +=
+                                                                 .length + j] +=
                                     this.parentsResidualsCovar[i][ii][k] *
-                                            this.selectedInverseOmega[i][j][k];
+                                    this.selectedInverseOmega[i][j][k];
                         }
                         this.pseudoParentsCov[i][this.parents[i].length +
-                                j][ii] = this.pseudoParentsCov[i][ii][
+                                                 j][ii] = this.pseudoParentsCov[i][ii][
                                 this.parents[i].length + j];
                     }
                 }
@@ -2566,17 +2594,17 @@ public class Purify {
                         for (int k = 0;
                              k < this.numLatent + this.numObserved - 1; k++) {
                             this.pseudoParentsCov[i][this.parents[i].length +
-                                    ii][this.parents[i].length + j] +=
+                                                     ii][this.parents[i].length + j] +=
                                     this.auxInverseOmega[i][ii][k] *
-                                            this.selectedInverseOmega[i][j][k];
+                                    this.selectedInverseOmega[i][j][k];
                         }
                         this.pseudoParentsCov[i][this.parents[i].length + j][
                                 this.parents[i].length + ii] =
                                 this.pseudoParentsCov[i][this.parents[i]
-                                        .length + ii][this.parents[i].length +
-                                        j];
+                                                                 .length + ii][this.parents[i].length +
+                                                                               j];
                         if (this.pseudoParentsCov[i][this.parents[i].length +
-                                j][this.parents[i].length + ii] == 0.) {
+                                                     j][this.parents[i].length + ii] == 0.) {
                             System.out.println("Zero here... Iter = " + iter);
                             iter = 1000;
                             break;
@@ -2592,8 +2620,8 @@ public class Purify {
                     for (int k = 0;
                          k < this.numLatent + this.numObserved - 1; k++) {
                         this.pseudoParentsChildCov[i][this.parents[i].length +
-                                j] += this.selectedInverseOmega[i][j][k] *
-                                this.iResidualsCovar[k];
+                                                      j] += this.selectedInverseOmega[i][j][k] *
+                                                            this.iResidualsCovar[k];
                     }
                 }
 
@@ -2624,12 +2652,12 @@ public class Purify {
                     }
                 }
                 double conditionalVar = this.Cyy[i][i] -
-                        MatrixUtils.innerProduct(this.pseudoParentsChildCov[i],
-                                params);
+                                        MatrixUtils.innerProduct(this.pseudoParentsChildCov[i],
+                                                params);
                 this.covErrors[i][i] = conditionalVar +
-                        MatrixUtils.innerProduct(
-                                MatrixUtils.product(this.omegaI, inverseOmega),
-                                this.omegaI);
+                                       MatrixUtils.innerProduct(
+                                               MatrixUtils.product(this.omegaI, inverseOmega),
+                                               this.omegaI);
             }
             change = 0.;
             for (int i = 0; i < this.covErrors.length; i++) {
@@ -2713,7 +2741,7 @@ public class Purify {
             return -Double.MAX_VALUE;
         }
         return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
-                FastMath.log(this.covarianceMatrix.getSampleSize());
+                                     FastMath.log(this.covarianceMatrix.getSampleSize());
     }
 
     private SemGraph removeMarkedImpurities(SemGraph graph,
@@ -2747,7 +2775,7 @@ public class Purify {
             for (int j = i + 1; j < impurities.length; j++) {
                 if (impurities[i][j]) {
                     System.out.println(this.measuredNodes.get(i).toString() + " x " +
-                            this.measuredNodes.get(j).toString());
+                                       this.measuredNodes.get(j).toString());
                 }
             }
         }
@@ -2947,7 +2975,7 @@ public class Purify {
             for (int j : next) {
                 for (int[] element : elements) {
                     if (element[0] == j &&
-                            !eliminated[element[0]]) {
+                        !eliminated[element[0]]) {
                         draftArea[draftCount++] = j;
                     }
                 }

@@ -48,6 +48,7 @@ import java.awt.*;
  * @author Aaron Powers
  * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class RegressionEditor extends JPanel {
 
@@ -75,7 +76,8 @@ public class RegressionEditor extends JPanel {
     /**
      * Constructs a regression editor. A regression runner is required, since that's what does the actual regression.
      *
-     * @throws NullPointerException if <code>regressionRunner</code> is null.
+     * @param regressionRunner a {@link edu.cmu.tetradapp.model.RegressionRunner} object
+     * @throws java.lang.NullPointerException if <code>regressionRunner</code> is null.
      */
     public RegressionEditor(RegressionRunner regressionRunner) {
         if (regressionRunner == null) {
@@ -88,7 +90,8 @@ public class RegressionEditor extends JPanel {
         JButton executeButton = new JButton("Execute");
         executeButton.addActionListener(e -> {
             runRegression();
-            TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
+            String message = RegressionEditor.this.reportText.getText();
+            TetradLogger.getInstance().forceLogMessage(message);
         });
 
         this.workbench = new GraphWorkbench(outGraph);
@@ -167,6 +170,8 @@ public class RegressionEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {

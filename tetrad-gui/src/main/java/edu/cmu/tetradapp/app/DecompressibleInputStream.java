@@ -33,19 +33,33 @@ import java.io.ObjectStreamClass;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DecompressibleInputStream extends ObjectInputStream {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(DecompressibleInputStream.class);
 
+    /**
+     * <p>Constructor for DecompressibleInputStream.</p>
+     *
+     * @param in a {@link java.io.InputStream} object
+     * @throws java.io.IOException if any.
+     */
     public DecompressibleInputStream(InputStream in) throws IOException {
         super(in);
     }
 
+    /**
+     * Reads and returns the class descriptor when deserializing an object.
+     *
+     * @return the class descriptor for the deserialized object.
+     * @throws IOException            if an I/O error occurs while reading the class descriptor.
+     * @throws ClassNotFoundException if the class for the class descriptor is not found.
+     */
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-        Class localClass; // the class in the local JVM that this descriptor represents.
+        Class<?> localClass; // the class in the local JVM that this descriptor represents.
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (ClassNotFoundException e) {

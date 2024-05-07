@@ -24,6 +24,7 @@ import java.util.List;
  * Sep 26, 2017 1:18:28 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfIndependence> {
 
@@ -33,10 +34,21 @@ public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfInd
         super("edu.cmu.tetrad.algcomparison.independence", TestOfIndependence.class);
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations} object
+     */
     public static TestOfIndependenceAnnotations getInstance() {
         return TestOfIndependenceAnnotations.INSTANCE;
     }
 
+    /**
+     * <p>filterOutExperimental.</p>
+     *
+     * @param list a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<AnnotatedClass<TestOfIndependence>> filterOutExperimental(List<AnnotatedClass<TestOfIndependence>> list) {
         return filterOutByAnnotation(list, Experimental.class);
     }

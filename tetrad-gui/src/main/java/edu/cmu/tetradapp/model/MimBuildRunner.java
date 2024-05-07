@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,15 +44,36 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild algorithm.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The full graph.
+     */
     private Graph fullGraph;
+
+    /**
+     * The covariance matrix.
+     */
     private ICovarianceMatrix covMatrix;
 
     //============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for MimBuildRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MimBuildRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
                           Parameters params) {
@@ -61,6 +83,13 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         params.set("clusters", mmWrapper.getClusters());
     }
 
+    /**
+     * <p>Constructor for MimBuildRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.PurifyRunner} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MimBuildRunner(DataWrapper dataWrapper,
                           PurifyRunner mmWrapper,
                           Parameters params) {
@@ -70,6 +99,13 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         params.set("clusters", mmWrapper.getClusters());
     }
 
+    /**
+     * <p>Constructor for MimBuildRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MimBuildRunner(DataWrapper dataWrapper,
                           GraphSource graphSource,
                           Parameters params) {
@@ -81,12 +117,18 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
@@ -95,6 +137,8 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     /**
      * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
+     *
+     * @throws java.lang.Exception if any.
      */
     public void execute() throws Exception {
         DataSet data = this.dataSet;
@@ -126,7 +170,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-        TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
+        TetradLogger.getInstance().forceLogMessage("Latent covs = \n" + latentsCov);
 
         Graph fullGraph = mimbuild.getFullGraph();
         LayoutUtil.defaultLayout(fullGraph);
@@ -146,9 +190,9 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         double p = mimbuild.getpValue();
 
-        TetradLogger.getInstance().log("details", "\nStructure graph = " + structureGraph);
-        TetradLogger.getInstance().log("details", getLatentClustersString(fullGraph).toString());
-        TetradLogger.getInstance().log("details", "P = " + p);
+        TetradLogger.getInstance().forceLogMessage("\nStructure graph = " + structureGraph);
+        TetradLogger.getInstance().forceLogMessage(getLatentClustersString(fullGraph).toString());
+        TetradLogger.getInstance().forceLogMessage("P = " + p);
 
         if (getParams().getBoolean("showMaxP", false)) {
             if (p > getParams().getDouble("maxP", 1.0)) {
@@ -166,9 +210,11 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
             }
             setResultGraph((Graph) getParams().get("maxFullGraph", null));
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().get("maxStructureGraph", null));
-            TetradLogger.getInstance().log("maxmodel", getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
-            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("maxP", 1.0));
+            String message1 = "\nMAX Graph = " + getParams().get("maxStructureGraph", null);
+            TetradLogger.getInstance().forceLogMessage(message1);
+            TetradLogger.getInstance().forceLogMessage(getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
+            String message = "MAX P = " + getParams().getDouble("maxP", 1.0);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -196,17 +242,32 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         return builder;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
     //===========================PRIVATE METHODS==========================//
 
+    /**
+     * <p>getSemPm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         Graph graph = getResultGraph();
         return new SemPm(graph);
     }
 
+    /**
+     * <p>Getter for the field <code>fullGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getFullGraph() {
         return this.fullGraph;
     }

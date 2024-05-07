@@ -272,7 +272,7 @@ public class TestAutisticClassification {
             typical = true;
         }
 
-        String name = "" + (i + 1) + ". " + filenames.get(i) + ". ";
+        String name = (i + 1) + ". " + filenames.get(i) + ". ";
 
         if (autistic && !typical) {
             System.out.println(name + ". Autistic");

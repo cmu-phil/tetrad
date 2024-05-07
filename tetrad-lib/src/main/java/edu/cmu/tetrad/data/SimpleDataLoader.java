@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.data;
 
-import com.google.gson.Gson;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -18,7 +19,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * <p>SimpleDataLoader class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class SimpleDataLoader {
+
+    /**
+     * Prevent instantiation.
+     */
+    private SimpleDataLoader() {
+    }
 
     /**
      * Loads a continuous dataset from a file.
@@ -31,7 +44,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first column should be excluded from the data.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -40,10 +53,11 @@ public class SimpleDataLoader {
                                              boolean excludeFirstColumn)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        columnReader.setCommentMarker(commentMarker);
+        columnReader.setQuoteCharacter(quoteCharacter);
+
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
                 new int[]{1} : new int[]{}, false);
-
-        columnReader.setCommentMarker(commentMarker);
 
         TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 
@@ -70,7 +84,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first columns should be excluded from the data.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -111,7 +125,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first columns should be excluded from the data set.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -135,7 +149,7 @@ public class SimpleDataLoader {
 
         Data data = dataReader.read(dataColumns, hasHeader);
 
-        if (data != null){
+        if (data != null) {
             DataModel dataModel = DataConvertUtils.toDataModel(data);
             dataModel.setName(file.getName());
             return (DataSet) dataModel;
@@ -159,6 +173,13 @@ public class SimpleDataLoader {
      * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
+     *
+     * @param chars              an array of {@link char} objects
+     * @param commentMarker      a {@link java.lang.String} object
+     * @param delimiterType      a {@link edu.cmu.tetrad.data.DelimiterType} object
+     * @param quoteChar          a char
+     * @param missingValueMarker a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix loadCovarianceMatrix(char[] chars, String commentMarker,
                                                          DelimiterType delimiterType,
@@ -174,7 +195,7 @@ public class SimpleDataLoader {
         ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2, commentMarker,
                 delimiterType, quoteChar, missingValueMarker);
 
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        TetradLogger.getInstance().forceLogMessage("\nData set loaded!");
         return covarianceMatrix;
     }
 
@@ -186,7 +207,8 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param quoteCharacter     The quote character, e.g., '\"'.
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
-     * @throws IOException if the file cannot be read.
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @throws java.io.IOException if the file cannot be read.
      */
     public static ICovarianceMatrix loadCovarianceMatrix(File file, String commentMarker,
                                                          DelimiterType delimiter,
@@ -199,7 +221,7 @@ public class SimpleDataLoader {
             ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
                     delimiter, quoteCharacter, missingValueMarker);
 
-            TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
+            TetradLogger.getInstance().forceLogMessage("\nCovariance matrix loaded!");
             return covarianceMatrix;
         } catch (FileNotFoundException e) {
             throw e;
@@ -214,13 +236,13 @@ public class SimpleDataLoader {
 
     private static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
                                                       char quoteChar, String missingValueMarker) {
-        TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
-        TetradLogger.getInstance().log("info", "File type = COVARIANCE");
-        TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
-        TetradLogger.getInstance().log("info", "Delimiter type = " + delimiterType);
-        TetradLogger.getInstance().log("info", "Quote char = " + quoteChar);
-        TetradLogger.getInstance().log("info", "Missing value marker = " + missingValueMarker);
-        TetradLogger.getInstance().log("info", "--------------------");
+        TetradLogger.getInstance().forceLogMessage("\nDATA LOADING PARAMETERS:");
+        TetradLogger.getInstance().forceLogMessage("File type = COVARIANCE");
+        TetradLogger.getInstance().forceLogMessage("Comment marker = " + commentMarker);
+        TetradLogger.getInstance().forceLogMessage("Delimiter type = " + delimiterType);
+        TetradLogger.getInstance().forceLogMessage("Quote char = " + quoteChar);
+        TetradLogger.getInstance().forceLogMessage("Missing value marker = " + missingValueMarker);
+        TetradLogger.getInstance().forceLogMessage("--------------------");
 
         Lineizer lineizer = new Lineizer(reader, commentMarker);
 
@@ -265,7 +287,7 @@ public class SimpleDataLoader {
             String _token = st.nextToken();
 
             if ("".equals(_token)) {
-                TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
+                TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a variable name--ignoring.");
                 continue;
             }
 
@@ -274,10 +296,10 @@ public class SimpleDataLoader {
 
         String[] varNames = vars.toArray(new String[0]);
 
-        TetradLogger.getInstance().log("info", "Variables:");
+        TetradLogger.getInstance().forceLogMessage("Variables:");
 
         for (String varName : varNames) {
-            TetradLogger.getInstance().log("info", varName + " --> Continuous");
+            TetradLogger.getInstance().forceLogMessage(varName + " --> Continuous");
         }
 
         // Read br covariances.
@@ -289,15 +311,15 @@ public class SimpleDataLoader {
             for (int j = 0; j <= i; j++) {
                 if (!st.hasMoreTokens()) {
                     throw new IllegalArgumentException("Expecting " + (i + 1)
-                            + " numbers on line " + (i + 1)
-                            + " of the covariance " + "matrix input.");
+                                                       + " numbers on line " + (i + 1)
+                                                       + " of the covariance " + "matrix input.");
                 }
 
                 String literal = st.nextToken();
 
                 if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
-                            + "covariance value--ignoring.");
+                    TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a "
+                                                               + "covariance value--ignoring.");
                     continue;
                 }
 
@@ -321,12 +343,15 @@ public class SimpleDataLoader {
 
         covarianceMatrix.setKnowledge(knowledge);
 
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        TetradLogger.getInstance().forceLogMessage("\nData set loaded!");
         return covarianceMatrix;
     }
 
     /**
      * Returns the datamodel case to DataSet if it is discrete.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getDiscreteDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
@@ -338,6 +363,9 @@ public class SimpleDataLoader {
 
     /**
      * Returns the datamodel case to DataSet if it is continuous.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getContinuousDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
@@ -349,6 +377,9 @@ public class SimpleDataLoader {
 
     /**
      * Returns the datamodel case to DataSet if it is mixed.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getMixedDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet)) {
@@ -362,6 +393,10 @@ public class SimpleDataLoader {
     /**
      * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
      * for a dataset.
+     *
+     * @param dataModel             a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param precomputeCovariances a boolean
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel, boolean precomputeCovariances) {
         if (dataModel == null) {
@@ -378,6 +413,13 @@ public class SimpleDataLoader {
         }
     }
 
+    /**
+     * <p>getCovarianceMatrix.</p>
+     *
+     * @param dataSet               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param precomputeCovariances a boolean
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     @NotNull
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
         if (precomputeCovariances) {
@@ -387,6 +429,12 @@ public class SimpleDataLoader {
         }
     }
 
+    /**
+     * <p>getCorrelationMatrix.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     @NotNull
     public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
         return new CorrelationMatrix(dataSet);
@@ -398,6 +446,8 @@ public class SimpleDataLoader {
      * @param file          The text file to load the data from.
      * @param delimiter     One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param commentMarker The comment marker as a string--e.g., "//".
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @throws java.io.IOException if any.
      */
     public static Knowledge loadKnowledge(File file, DelimiterType delimiter, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
@@ -432,7 +482,7 @@ public class SimpleDataLoader {
             firstLine = line;
         }
 
-        TetradLogger.getInstance().log("info", "\nLoading knowledge.");
+        TetradLogger.getInstance().forceLogMessage("\nLoading knowledge.");
 
         SECTIONS:
         while (lineizer.hasMoreLines()) {
@@ -502,7 +552,7 @@ public class SimpleDataLoader {
 
                         knowledge.addToTier(tier, name);
 
-                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier) + " " + name);
+                        TetradLogger.getInstance().forceLogMessage("Adding to tier " + (tier) + " " + name);
                     }
                 }
             } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
@@ -656,12 +706,12 @@ public class SimpleDataLoader {
 
                     if (st.hasMoreTokens()) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
+                                                           + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
+                                                           + ": Line contains fewer than two elements.");
                     }
 
                     addVariable(knowledge, from);
@@ -707,12 +757,12 @@ public class SimpleDataLoader {
 
                     if (st.hasMoreTokens()) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
+                                                           + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
                         throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
+                                                           + ": Line contains fewer than two elements.");
                     }
 
                     addVariable(knowledge, from);
@@ -723,7 +773,7 @@ public class SimpleDataLoader {
                 }
             } else {
                 throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                        + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
+                                                   + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
             }
         }
 

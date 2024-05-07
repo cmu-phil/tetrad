@@ -34,14 +34,25 @@ import java.beans.PropertyChangeSupport;
  * Displays a DataSet object as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DataDisplay extends JPanel implements DataModelContainer,
         PropertyChangeListener {
+
+    /**
+     * The JTable that displays the data.
+     */
     private final TabularDataJTable tabularDataJTable;
+
+    /**
+     * The property change support.
+     */
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataDisplay(DataSet dataSet) {
         this.tabularDataJTable = new TabularDataJTable(dataSet);
@@ -50,14 +61,27 @@ public class DataDisplay extends JPanel implements DataModelContainer,
         add(new JScrollPane(getDataDisplayJTable()), BorderLayout.CENTER);
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return getDataDisplayJTable().getDataModel();
     }
 
+    /**
+     * <p>getDataDisplayJTable.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.editor.TabularDataJTable} object
+     */
     public TabularDataJTable getDataDisplayJTable() {
         return this.tabularDataJTable;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
         // For some reason openjdk leaves this null at this point first call. Not sure why. 4/23/2009 jdr
@@ -68,6 +92,9 @@ public class DataDisplay extends JPanel implements DataModelContainer,
         this.pcs.addPropertyChangeListener(listener);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("DataDisplay: " + evt.getPropertyName());
         this.pcs.firePropertyChange(evt);

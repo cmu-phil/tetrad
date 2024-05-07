@@ -29,7 +29,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
+ * <p>TimeSeriesParamsEditor class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
 
@@ -48,6 +51,8 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the parameters.
      */
     public void setParams(Parameters params) {
@@ -56,6 +61,8 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Does nothing
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
 
@@ -84,6 +91,11 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
         add(b1, BorderLayout.CENTER);
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }

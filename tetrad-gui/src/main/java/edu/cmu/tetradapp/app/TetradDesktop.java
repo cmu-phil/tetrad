@@ -21,11 +21,11 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author josephramsey
  * @author Raul Salinas wsalinas@andrew.cmu.edu
+ * @version $Id: $Id
  */
 public final class TetradDesktop extends JPanel implements DesktopControllable,
         PropertyChangeListener {
@@ -147,6 +148,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         frame.setBounds(tx, ty, d.width, d.height);
     }
 
+    /**
+     * <p>newSessionEditor.</p>
+     */
     public void newSessionEditor() {
         String newName = getNewSessionName();
         SessionEditor editor = new SessionEditor(newName);
@@ -154,6 +158,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a component to the middle layer of the desktop--that is, the layer for session node editors. Note: The comp
      * is a SessionEditor
      */
@@ -170,7 +176,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // bounds when the users unmazimizes it.
         Dimension fullSize = this.desktopPane.getSize();
         int smallSize = FastMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
-                - TetradDesktop.MARGIN);
+                                                                            - TetradDesktop.MARGIN);
         Dimension size = new Dimension(smallSize, smallSize);
         TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
         this.desktopPane.add(frame);
@@ -192,6 +198,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds the given component to the given layer.
      */
     public void addEditorWindow(EditorWindowIndirectRef windowRef, int layer) {
@@ -206,7 +214,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
                 source.getLocation(), this);
 
         int x = convertedPoint.x + source.getWidth() / 2 - preferredSize.width
-                / 2;
+                                                           / 2;
         int y = convertedPoint.y - 25 + source.getHeight() / 2
                 - preferredSize.height / 2;
 
@@ -223,9 +231,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
 
         int height = FastMath.min(preferredSize.height, getHeight() - topMargin
-                - bottomMargin);
+                                                        - bottomMargin);
         int width = FastMath.min(preferredSize.width, getWidth() - leftMargin
-                - rightMargin);
+                                                      - rightMargin);
 
         if (x + width > getWidth() - rightMargin) {
             x = getWidth() - width - rightMargin;
@@ -251,6 +259,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         window.setVisible(true);
     }
 
+    /**
+     * <p>closeFrontmostSession.</p>
+     */
     public void closeFrontmostSession() {
         for (JInternalFrame frame : this.desktopPane.getAllFrames()) {
             if (frame instanceof EditorWindow) {
@@ -275,6 +286,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void closeSessionByName(String name) {
         for (JInternalFrame frame : this.desktopPane.getAllFrames()) {
             if (frame instanceof EditorWindow) {
@@ -290,6 +304,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
+    /**
+     * <p>closeEmptySessions.</p>
+     */
     public void closeEmptySessions() {
         JInternalFrame[] frames = this.desktopPane.getAllFramesInLayer(0);
 
@@ -308,6 +325,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsSessionByName(String name) {
         JInternalFrame[] allFrames = this.desktopPane.getAllFramesInLayer(0);
 
@@ -325,6 +345,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Session getSessionByName(String name) {
         JInternalFrame[] allFrames = this.desktopPane.getAllFramesInLayer(0);
@@ -344,6 +367,11 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return null;
     }
 
+    /**
+     * <p>getFrontmostSessionEditor.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.app.SessionEditor} object
+     */
     public SessionEditor getFrontmostSessionEditor() {
         JInternalFrame[] allFrames = this.desktopPane.getAllFramesInLayer(0);
 
@@ -359,9 +387,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reacts to property change events 'editorClosing', 'closeFrame', and 'name'.
-     *
-     * @param e the property change event.
      */
     public void propertyChange(PropertyChangeEvent e) {
 
@@ -392,10 +420,15 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
+    /**
+     * <p>setMainTitle.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public void setMainTitle(String name) {
         JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         jFrame.setTitle(name + " - " + "Tetrad "
-                + Version.currentViewableVersion());
+                        + Version.currentViewableVersion());
     }
 
     /**
@@ -405,6 +438,11 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         firePropertyChange("exitProgram", null, null);
     }
 
+    /**
+     * <p>Getter for the field <code>desktopPane</code>.</p>
+     *
+     * @return a {@link javax.swing.JDesktopPane} object
+     */
     public JDesktopPane getDesktopPane() {
         return this.desktopPane;
     }
@@ -432,7 +470,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "Would you like to save the changes you made to " + name
-                            + "?", "Advise needed...",
+                    + "?", "Advise needed...",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -452,6 +490,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void putMetadata(SessionWrapperIndirectRef sessionWrapperRef,
                             TetradMetadataIndirectRef metadataRef) {
         SessionWrapper sessionWrapper = (SessionWrapper) sessionWrapperRef;
@@ -460,6 +501,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         this.metadataMap.put(sessionWrapper, metadata);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TetradMetadataIndirectRef getTetradMetadata(
             SessionWrapperIndirectRef sessionWrapperRef) {
         SessionWrapper sessionWrapper = (SessionWrapper) sessionWrapperRef;
@@ -480,6 +524,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * Sets whether the display log output should be displayed or not. If true then a text area roughly 20% of the
      * screen size will appear on the bottom and will display any log output, otherwise just the standard tetrad
      * workbench is shown.
+     *
+     * @param displayLogging a boolean
      */
     public void setDisplayLogging(boolean displayLogging) {
         if (displayLogging) {
@@ -596,13 +642,12 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * it will display a prompt asking the user whether they would like to disable automatic popups.
      */
     private boolean allowAutomaticLogPopup() {
-        Boolean allowed = TetradLogger.getInstance()
-                .isAutomaticLogDisplayEnabled();
+        Boolean allowed = false;
         // ask the user whether they way the feature etc.
         if (allowed == null) {
             final String message = "<html>Whenever Tetrad's logging features are active any generated log <br>"
-                    + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
-                    + "to continue to automatically open the log display window whenever there is logging output?</html>";
+                                   + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
+                                   + "to continue to automatically open the log display window whenever there is logging output?</html>";
             int option = JOptionPane.showConfirmDialog(this, message,
                     "Automatic Logging", JOptionPane.YES_NO_OPTION);
             if (option == JOptionPane.NO_OPTION) {
@@ -625,11 +670,11 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      */
     private class LoggerListener implements TetradLoggerListener {
 
-        public void configurationActived(TetradLoggerEvent evt) {
+        public void configurationActivated(TetradLoggerEvent evt) {
             TetradLoggerConfig config = evt.getTetradLoggerConfig();
             // if logging is actually turned on, then open display.
-            if (TetradLogger.getInstance().isLogging() && config.isActive()
-                    && TetradLogger.getInstance().isDisplayLogEnabled()) {
+            if (TetradLogger.getInstance().isLogging() && config.active()
+                && TetradLogger.getInstance().isDisplayLogEnabled()) {
                 // if the log display isn't already up, open it.
                 if (!isDisplayLogging() && allowAutomaticLogPopup()) {
                     setDisplayLogging(true);
@@ -637,7 +682,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             }
         }
 
-        public void configurationDeactived(TetradLoggerEvent evt) {
+        public void configurationDeactivated(TetradLoggerEvent evt) {
             // do nothing.
         }
 

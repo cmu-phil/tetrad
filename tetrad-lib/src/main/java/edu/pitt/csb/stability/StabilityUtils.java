@@ -29,7 +29,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.Mgm;
@@ -40,8 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability as in "Stability Selection" and "Stability
@@ -50,10 +49,27 @@ import java.util.concurrent.RecursiveAction;
  * This is under construction...likely to be buggy
  * <p>
  * Created by ajsedgewick on 9/4/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class StabilityUtils {
 
-    //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+    /**
+     * Prevent instantiation.
+     */
+    private StabilityUtils() {
+    }
+
+    /**
+     * <p>StabilitySearch.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param gs   a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N    a int
+     * @param b    a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) {
         int numVars = data.getNumColumns();
         DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
@@ -73,6 +89,16 @@ public class StabilityUtils {
     }
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+
+    /**
+     * <p>StabilitySearchPar.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param gs   a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N    a int
+     * @param b    a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D StabilitySearchPar(DataSet data, DataGraphSearch gs, int N, int b) {
 
         int numVars = data.getNumColumns();
@@ -80,7 +106,8 @@ public class StabilityUtils {
 
         int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         class StabilityAction extends RecursiveAction {
             private final int chunk;
@@ -111,7 +138,6 @@ public class StabilityUtils {
                         addToMat(thetaMat, curAdj);
                     }
 
-                    return;
                 } else {
                     List<StabilityAction> tasks = new ArrayList<>();
 
@@ -120,14 +146,23 @@ public class StabilityUtils {
                     tasks.add(new StabilityAction(this.chunk, this.from, mid));
                     tasks.add(new StabilityAction(this.chunk, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
                 }
             }
         }
 
         final int chunk = 2;
 
-        pool.invoke(new StabilityAction(chunk, 0, N));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, N));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         thetaMat.assign(Functions.mult(1.0 / N));
 
@@ -138,6 +173,14 @@ public class StabilityUtils {
 
     //needs a symmetric matrix
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+
+    /**
+     * <p>totalInstabilityUndir.</p>
+     *
+     * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param vars a {@link java.util.List} object
+     * @return an array of {@link double} objects
+     */
     public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
@@ -166,6 +209,14 @@ public class StabilityUtils {
     }
 
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+
+    /**
+     * <p>totalInstabilityDir.</p>
+     *
+     * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param vars a {@link java.util.List} object
+     * @return an array of {@link double} objects
+     */
     public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
@@ -186,6 +237,15 @@ public class StabilityUtils {
     }
 
     //returns an numSub by subSize matrix of subsamples of the sequence 1:sampSize
+
+    /**
+     * <p>subSampleNoReplacement.</p>
+     *
+     * @param sampSize a int
+     * @param subSize  a int
+     * @param numSub   a int
+     * @return an array of {@link int} objects
+     */
     public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
 
         if (subSize < 1) {
@@ -234,6 +294,12 @@ public class StabilityUtils {
 
 
     //some tests...
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
         Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(new File(fn));

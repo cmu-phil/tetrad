@@ -41,6 +41,7 @@ import java.util.*;
  *
  * @author Robert Tillman
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Ion {
 
@@ -111,6 +112,14 @@ public class Ion {
 
     //============================= Public Methods ============================//
 
+    /**
+     * <p>treks.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.List} object
+     */
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
         Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
@@ -199,9 +208,9 @@ public class Ion {
     public List<Graph> search() {
 
         long start = MillisecondTimes.timeMillis();
-        TetradLogger.getInstance().log("info", "Starting ION Search.");
+        TetradLogger.getInstance().forceLogMessage("Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
-        TetradLogger.getInstance().log("info", "Transfering local information.");
+        TetradLogger.getInstance().forceLogMessage("Transfering local information.");
         long steps = MillisecondTimes.timeMillis();
 
         /*
@@ -223,7 +232,8 @@ public class Ion {
         for (NodePair pair : nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
-        TetradLogger.getInstance().log("info", "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message3 = "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message3);
         System.out.println("step2");
         System.out.println(graph);
 
@@ -260,14 +270,14 @@ public class Ion {
         // iterates over path length, then adjacencies
         for (int l = pl; l < numNodes; l++) {
             if (this.pathLengthSearch) {
-                TetradLogger.getInstance().log("info", "Braching over path lengths: " + l + " of " + (numNodes - 1));
+                TetradLogger.getInstance().forceLogMessage("Braching over path lengths: " + l + " of " + (numNodes - 1));
             }
             int seps = this.separations.size();
             final int currentSep = 1;
             int numAdjacencies = this.separations.size();
             for (IonIndependenceFacts fact : this.separations) {
                 if (this.doAdjacencySearch) {
-                    TetradLogger.getInstance().log("info", "Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
+                    TetradLogger.getInstance().forceLogMessage("Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
@@ -380,14 +390,14 @@ public class Ion {
                             for (Triple triple : triples) {
                                 if (node1.equals(triple.getY())) {
                                     if (node2.equals(triple.getX()) ||
-                                            node2.equals(triple.getZ())) {
+                                        node2.equals(triple.getZ())) {
                                         badhittingset = true;
                                         break;
                                     }
                                 }
                                 if (node2.equals(triple.getY())) {
                                     if (node1.equals(triple.getX()) ||
-                                            node1.equals(triple.getZ())) {
+                                        node1.equals(triple.getZ())) {
                                         badhittingset = true;
                                         break;
                                     }
@@ -398,7 +408,7 @@ public class Ion {
                             }
                             for (NodePair pair : gc.getOrients()) {
                                 if ((node1.equals(pair.getFirst()) && node2.equals(pair.getSecond())) ||
-                                        (node2.equals(pair.getFirst()) && node1.equals(pair.getSecond()))) {
+                                    (node2.equals(pair.getFirst()) && node1.equals(pair.getSecond()))) {
                                     badhittingset = true;
                                     break;
                                 }
@@ -412,13 +422,13 @@ public class Ion {
                                 for (Triple triple : gc.getNoncolliders()) {
                                     if (pair.getSecond().equals(triple.getY())) {
                                         if (pair.getFirst().equals(triple.getX()) &&
-                                                pag.getEndpoint(triple.getZ(), triple.getY()).equals(Endpoint.ARROW)) {
+                                            pag.getEndpoint(triple.getZ(), triple.getY()).equals(Endpoint.ARROW)) {
                                             badhittingset = true;
                                             break;
 
                                         }
                                         if (pair.getFirst().equals(triple.getZ()) &&
-                                                pag.getEndpoint(triple.getX(), triple.getY()).equals(Endpoint.ARROW)) {
+                                            pag.getEndpoint(triple.getX(), triple.getY()).equals(Endpoint.ARROW)) {
                                             badhittingset = true;
                                             break;
                                         }
@@ -446,7 +456,7 @@ public class Ion {
                         }
                         // reject if null, predicts false independencies or has cycle
                         if (predictsFalseIndependence(associations, changed)
-                                || changed.paths().existsDirectedCycle()) {
+                            || changed.paths().existsDirectedCycle()) {
                             reject.add(changed);
                         }
                         // makes orientations preventing definite noncolliders from becoming colliders
@@ -463,7 +473,8 @@ public class Ion {
                 }
             }
         }
-        TetradLogger.getInstance().log("info", "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message2 = "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message2);
         Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
@@ -540,7 +551,8 @@ public class Ion {
         outputPags = removeMoreSpecific(outputPags);
 //        outputPags = applyKnowledge(outputPags);
 
-        TetradLogger.getInstance().log("info", "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message1 = "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message1);
 
         /*
          * Step 5
@@ -583,7 +595,8 @@ public class Ion {
         outputSet = checkPaths(outputSet);
 
         this.output.addAll(outputSet);
-        TetradLogger.getInstance().log("info", "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message = "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message);
         this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -594,6 +607,8 @@ public class Ion {
     // return hitting set sizes
 
     /**
+     * <p>Getter for the field <code>runtime</code>.</p>
+     *
      * @return The total runtime and times for hitting set calculations.
      */
     public List<String> getRuntime() {
@@ -618,6 +633,8 @@ public class Ion {
     // summarizes time and hitting set time and size information for latex
 
     /**
+     * <p>getMaxMemUsage.</p>
+     *
      * @return The maximum memory used in a run of ION
      */
     public double getMaxMemUsage() {
@@ -626,6 +643,11 @@ public class Ion {
 
     //============================= Private Methods ============================//
 
+    /**
+     * <p>getIterations.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Integer> getIterations() {
         int totalit = 0;
         int largestit = 0;
@@ -686,10 +708,11 @@ public class Ion {
      */
     private void logGraphs(String message, List<? extends Graph> graphs) {
         if (message != null) {
-            TetradLogger.getInstance().log("graph", message);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
         for (Graph graph : graphs) {
-            TetradLogger.getInstance().log("graph", graph.toString());
+            String message1 = graph.toString();
+            TetradLogger.getInstance().forceLogMessage(message1);
         }
     }
 
@@ -745,7 +768,7 @@ public class Ion {
                 Endpoint firstCurrent = graph.getEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst());
                 if (!first.equals(Endpoint.CIRCLE)) {
                     if ((first.equals(Endpoint.ARROW) && firstCurrent.equals(Endpoint.TAIL)) ||
-                            (first.equals(Endpoint.TAIL) && firstCurrent.equals(Endpoint.ARROW))) {
+                        (first.equals(Endpoint.TAIL) && firstCurrent.equals(Endpoint.ARROW))) {
                         graph.setEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst(), Endpoint.CIRCLE);
                     } else {
                         graph.setEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst(), edge.getEndpoint1());
@@ -755,7 +778,7 @@ public class Ion {
                 Endpoint secondCurrent = graph.getEndpoint(graphNodePair.getFirst(), graphNodePair.getSecond());
                 if (!second.equals(Endpoint.CIRCLE)) {
                     if ((second.equals(Endpoint.ARROW) && secondCurrent.equals(Endpoint.TAIL)) ||
-                            (second.equals(Endpoint.TAIL) && secondCurrent.equals(Endpoint.ARROW))) {
+                        (second.equals(Endpoint.TAIL) && secondCurrent.equals(Endpoint.ARROW))) {
                         graph.setEndpoint(graphNodePair.getFirst(), graphNodePair.getSecond(), Endpoint.CIRCLE);
                     } else {
                         graph.setEndpoint(graphNodePair.getFirst(), graphNodePair.getSecond(), edge.getEndpoint2());
@@ -848,7 +871,7 @@ public class Ion {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset))) {
+                        if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset), false)) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
                                 indep.addMoreZ(new HashSet<>(subset));
@@ -895,7 +918,7 @@ public class Ion {
         for (IonIndependenceFacts assocFact : associations)
             for (Set<Node> conditioningSet : assocFact.getZ())
                 if (pag.paths().isMSeparatedFrom(
-                        assocFact.getX(), assocFact.getY(), conditioningSet))
+                        assocFact.getX(), assocFact.getY(), conditioningSet, false))
                     return true;
         return false;
     }
@@ -907,9 +930,9 @@ public class Ion {
         Set<Triple> possibleTriples = new HashSet<>();
         for (Triple triple : getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
-                    && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
-                    !this.definiteNoncolliders.contains(triple) &&
-                    !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
+                && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
+                !this.definiteNoncolliders.contains(triple) &&
+                !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                 possibleTriples.add(triple);
             }
         }
@@ -1139,7 +1162,7 @@ public class Ion {
 
                         //skip anything not a double triangle
                         if (!graph.isAdjacentTo(A, D) ||
-                                !graph.isAdjacentTo(C, D)) {
+                            !graph.isAdjacentTo(C, D)) {
                             continue;
                         }
 
@@ -1248,14 +1271,14 @@ public class Ion {
         }
 
         if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.ARROW
-                && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE) {
+            && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE) {
             if (!isArrowheadAllowed(graph, a, c)) {
                 return;
             }
 
             graph.setEndpoint(a, c, Endpoint.ARROW);
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
-                && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
+                   && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
         ) {
             if (!isArrowheadAllowed(graph, a, c)) {
                 return;
@@ -1287,7 +1310,7 @@ public class Ion {
         Endpoint CB = graph.getEndpoint(c, b);
 
         if (!(graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
+            (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
             if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
                 if (BC == Endpoint.CIRCLE) {
                     if (!isArrowheadAllowed(graph, b, c)) {
@@ -1310,12 +1333,12 @@ public class Ion {
 
     private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+            (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+                (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
+                        (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
+                        (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
                 if (!isArrowheadAllowed(graph, a, c)) {
                     return;
@@ -1330,9 +1353,9 @@ public class Ion {
     //if Ao->c and a-->b-->c, then a-->c
     private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
-                (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+            (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
+            (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
+            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
@@ -1438,7 +1461,7 @@ public class Ion {
         this.changeFlag = true;
         for (IonIndependenceFacts iif : this.separations) {
             if ((iif.getX().equals(l) && iif.getY().equals(c)) ||
-                    iif.getY().equals(l) && iif.getX().equals(c)) {
+                iif.getY().equals(l) && iif.getX().equals(c)) {
                 for (Set<Node> condSet : iif.getZ()) {
                     if (condSet.contains(b)) {
                         graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -1693,15 +1716,14 @@ public class Ion {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof IonIndependenceFacts)) {
+            if (!(obj instanceof IonIndependenceFacts fact)) {
                 return false;
             }
 
-            IonIndependenceFacts fact = (IonIndependenceFacts) obj;
             return (this.x.equals(fact.x) && this.y.equals(fact.y) &&
                     this.z.equals(fact.z))
-                    || (this.x.equals(fact.y) & this.y.equals(fact.x) &&
-                    this.z.equals(fact.z));
+                   || (this.x.equals(fact.y) & this.y.equals(fact.x) &&
+                       this.z.equals(fact.z));
         }
 
         public String toString() {

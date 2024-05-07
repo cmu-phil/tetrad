@@ -65,6 +65,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.search.Fges
  * @see edu.cmu.tetrad.search.Sp
  * @see edu.cmu.tetrad.search.Grasp
@@ -72,33 +73,61 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScore implements Score {
 
-    // The sample size of the covariance matrix.
+    /**
+     * The sample size of the covariance matrix.
+     */
     private final int sampleSize;
-    // A  map from variable names to their indices.
+    /**
+     * A  map from variable names to their indices.
+     */
     private final Map<Node, Integer> indexMap;
-    // The log of the sample size.
+    /**
+     * The log of the sample size.
+     */
     private final double logN;
-    // True if row subsets should be calculated.
+    /**
+     * True if row subsets should be calculated.
+     */
     private boolean calculateRowSubsets;
-    // The dataset.
+    /**
+     * The dataset.
+     */
     private DataModel dataModel;
-    // .. as matrix
+    /**
+     * .. as matrix
+     */
     private Matrix data;
-    // The correlation matrix.
+    /**
+     * The correlation matrix.
+     */
     private ICovarianceMatrix covariances;
-    // The variables of the covariance matrix.
+    /**
+     * The variables of the covariance matrix.
+     */
     private List<Node> variables;
-    // True if verbose output should be sent to out.
+    /**
+     * True if verbose output should be sent to out.
+     */
     private boolean verbose;
-    // The penalty penaltyDiscount, 1 for standard BIC.
-    private double penaltyDiscount = 1.0;
-    // The structure prior, 0 for standard BIC.
+    /**
+     * The penalty penaltyDiscount, 1 for standard BIC.
+     */
+    private double penaltyDiscount;
+    /**
+     * The structure prior, 0 for standard BIC.
+     */
     private double structurePrior;
-    // The covariance matrix.
+    /**
+     * The covariance matrix.
+     */
     private Matrix matrix;
-    // The rule type to use.
+    /**
+     * The rule type to use.
+     */
     private RuleType ruleType = RuleType.CHICKERING;
-    // True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+    /**
+     * True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     */
     private boolean usePseudoInverse = false;
 
     /**
@@ -116,6 +145,7 @@ public class SemBicScore implements Score {
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
         this.logN = log(sampleSize);
+        penaltyDiscount = 1.0;
     }
 
     /**
@@ -149,6 +179,7 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
+        penaltyDiscount = 1.0;
     }
 
     /**
@@ -158,7 +189,10 @@ public class SemBicScore implements Score {
      * @param parents             The indices of the parents.
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param usePseudoInverse    a boolean
      * @return The variance of the residual of the regression of the ith variable on its parents.
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
                                   boolean calculateRowSubsets, boolean usePseudoInverse)
@@ -303,6 +337,9 @@ public class SemBicScore implements Score {
         this.usePseudoInverse = usePseudoInverse;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -312,6 +349,14 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * <p>nandyBic.</p>
+     *
+     * @param x a int
+     * @param y a int
+     * @param z an array of {@link int} objects
+     * @return a double
+     */
     public double nandyBic(int x, int y, int[] z) {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
@@ -331,7 +376,7 @@ public class SemBicScore implements Score {
         double c = getPenaltyDiscount();
 
         return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
-                - 2.0 * (sp1 - sp2);
+               - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -353,7 +398,7 @@ public class SemBicScore implements Score {
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
-                    LogUtilsSearch.getScoreFact(i, parents, variables));
+                               LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -438,10 +483,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if the given bump is an effect edge.
-     *
-     * @param bump The bump.
-     * @return True if the given bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -476,9 +520,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables of the covariance matrix.
-     *
-     * @return The variables of the covariance matrix.
      */
     @Override
     public List<Node> getVariables() {
@@ -499,9 +543,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the maximum degree of the score.
-     *
-     * @return The maximum degree of the score.
      */
     @Override
     public int getMaxDegree() {
@@ -509,11 +553,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true is the variables in z determine the variable y.
-     *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return True is the variables in z determine the variable y.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
@@ -707,8 +749,25 @@ public class SemBicScore implements Score {
     /**
      * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
      */
-    public enum RuleType {CHICKERING, NANDY}
+    public enum RuleType {
 
+        /**
+         * The standard linear, Gaussian BIC score.
+         */
+        CHICKERING,
+
+        /**
+         * The formulation of the standard BIC score given in Nandy et al.
+         */
+        NANDY
+    }
+
+    /**
+     * Represents a covariance matrix and regression coefficients.
+     *
+     * @param cov The covariance matrix.
+     * @param b   The regression coefficients.
+     */
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }
 }

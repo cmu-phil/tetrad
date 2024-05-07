@@ -51,51 +51,155 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  * Panel (to be put in a dialog) for letting the user choose how a data file should be loaded.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class LoadDataDialog extends JPanel {
 
     @Serial
     private static final long serialVersionUID = 2299304318793152418L;
 
+    /**
+     * The files to be loaded.
+     */
     private final List<File> loadedFiles;
 
+    /**
+     * The validation results.
+     */
     private final List<String> validationResults;
 
+    /**
+     * The files that failed to load.
+     */
     private final List<String> failedFiles;
+
+    /**
+     * The data model list.
+     */
     private final DataModelList dataModelList;
+
+    /**
+     * The text pane for the validation results.
+     */
     private final JTextPane validationResultTextPane;
+
+    /**
+     * The text area for the file preview.
+     */
     private final JTextArea filePreviewTextArea;
+
+    /**
+     * The line to start the preview from.
+     */
     private final int previewFromLine;
+
+    /**
+     * The line to end the preview at.
+     */
     private final int previewToLine;
+
+    /**
+     * The number of characters to show per line in the preview.
+     */
     private final int previewNumOfCharactersPerLine;
+
+    /**
+     * The list model for the file list.
+     */
     private final DefaultListModel fileListModel;
+
+    /**
+     * The list model for the validated file list.
+     */
     private final DefaultListModel validatedFileListModel;
+
+    /**
+     * The default border title for the preview box.
+     */
     private final String defaulyPreviewBoxBorderTitle;
+
+    /**
+     * The load data settings.
+     */
     private LoadDataSettings loadDataSettings;
+
+    /**
+     * The file list.
+     */
     private JList fileList;
+
+    /**
+     * The validation file list.
+     */
     private JList validationFileList;
+
+    /**
+     * The loading indicator dialog.
+     */
     private JDialog loadingIndicatorDialog;
+
+    /**
+     * The preview box border title.
+     */
     private Box filePreviewBox;
+
+    /**
+     * The preview box border title.
+     */
     private String previewBoxBorderTitle;
+
+    /**
+     * The container for the dialog.
+     */
     private Box container;
 
+    /**
+     * The container for the preview.
+     */
     private Box previewContainer;
 
+    /**
+     * The container for the file list.
+     */
     private Box fileListBox;
 
+    /**
+     * The container for the validation results.
+     */
     private Box basicSettingsBox;
 
+    /**
+     * The container for the validation results.
+     */
     private Box advancedSettingsBox;
 
+    /**
+     * The container for the validation results.
+     */
     private Box validationResultsContainer;
 
+    /**
+     * The settings button.
+     */
     private JButton settingsButton;
 
+    /**
+     * The validate button.
+     */
     private JButton validateButton;
 
+    /**
+     * The load button.
+     */
     private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
+
+    /**
+     * <p>Constructor for LoadDataDialog.</p>
+     *
+     * @param files a {@link java.io.File} object
+     */
     public LoadDataDialog(File... files) {
         // Add all files into the loadedFiles list - Zhou
         // Arrays.asList: Returns a fixed-size list backed by the specified array.
@@ -134,6 +238,12 @@ public final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
+
+    /**
+     * <p>showDataLoaderDialog.</p>
+     *
+     * @throws java.io.IOException if any.
+     */
     public void showDataLoaderDialog() throws IOException {
         // Overall container
         // contains data preview panel, loading params panel, and load button
@@ -825,6 +935,8 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * This is called by LoadDataAction.java
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public DataModelList getDataModels() {
         return this.dataModelList;

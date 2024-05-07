@@ -29,25 +29,34 @@ import java.util.List;
  * @param <N> Type of variable names
  * @param <V> Type of variable values
  * @author YUS24
+ * @version $Id: $Id
  */
 public interface DataTable<N, V> extends Iterable<List<V>> {
 
     /**
+     * <p>variables.</p>
+     *
      * @return The names of the variables in the table
      */
     List<N> variables();
 
     /**
+     * <p>columnCount.</p>
+     *
      * @return The number of columns in the table
      */
     int columnCount();
 
     /**
+     * <p>rowCount.</p>
+     *
      * @return The number of rows in the table
      */
     int rowCount();
 
     /**
+     * <p>addRow.</p>
+     *
      * @param row The index of the row to retrieve
      */
     void addRow(List<? extends V> row);

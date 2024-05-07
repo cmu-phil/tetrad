@@ -34,21 +34,46 @@ import java.util.Map;
  * View for the Histogram class. Shows a histogram and gives controls for conditioning, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class HistogramPanel extends JPanel {
+    /**
+     * Constant <code>tiles</code>
+     */
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
     private static final Color LINE_COLOR = Color.GRAY.darker();
+
+    /**
+     * The histogram to display.
+     */
     private final Histogram histogram;
+
+    /**
+     * The rectangles in the histogram.
+     */
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
+
+    /**
+     * Whether to draw the axes.
+     */
     private final boolean drawAxes;
+
+    /**
+     * The padding for the x-axis.
+     */
     private final int paddingX;
+
+    /**
+     * The color of the bars.
+     */
     private Color barColor = Color.RED.darker();
 
     /**
      * Constructs the histogram display panel given the initial histogram to display.
      *
      * @param histogram The histogram to display.
+     * @param drawAxes  a boolean
      */
     public HistogramPanel(Histogram histogram, boolean drawAxes) {
         this.drawAxes = drawAxes;
@@ -77,6 +102,9 @@ public class HistogramPanel extends JPanel {
         return max;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getToolTipText(MouseEvent evt) {
 
         Point point = evt.getPoint();
@@ -95,13 +123,15 @@ public class HistogramPanel extends JPanel {
     }
 
     /**
-     * Paints the histogram and related items.
+     * This method is responsible for painting the histogram display on a graphical component.
+     *
+     * @param graphics the Graphics object to be used for drawing
      */
     public void paintComponent(Graphics graphics) {
         int paddingY = drawAxes ? 15 : 5;
         int height = getHeight() - 2;
         int width = getWidth() - (drawAxes ? 4 : 2);
-        int displayedHeight = (int) (height - paddingY);
+        int displayedHeight = height - paddingY;
         int space = drawAxes ? 2 : 1;
         int dash = 10;
 
@@ -159,11 +189,18 @@ public class HistogramPanel extends JPanel {
 
     /**
      * The histogram we are displaying.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Histogram} object
      */
     public Histogram getHistogram() {
         return this.histogram;
     }
 
+    /**
+     * <p>Setter for the field <code>barColor</code>.</p>
+     *
+     * @param barColor a {@link java.awt.Color} object
+     */
     public void setBarColor(Color barColor) {
         this.barColor = barColor;
     }

@@ -29,6 +29,7 @@ import java.io.*;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public abstract class BasicGraph {
 
@@ -95,7 +96,7 @@ public abstract class BasicGraph {
      * depend on how a subclass of Graph implement the set of edges.
      *
      * @param fname name of the file to read the graph from
-     * @throws IOException if there is a problem reading the file
+     * @throws java.io.IOException if there is a problem reading the file
      */
     public BasicGraph(String fname) throws IOException {
         // Create and prepare stream tokenizer
@@ -110,7 +111,7 @@ public abstract class BasicGraph {
         // Read graph name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (!strmTok.sval.toUpperCase().contains("GRAPH"))) {
+            (!strmTok.sval.toUpperCase().contains("GRAPH"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'GRAPH': " + strmTok.sval);
         }
@@ -225,7 +226,7 @@ public abstract class BasicGraph {
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.graphName + "\n" +
-                this.nNodes + " // <-- Total # nodes\n");
+                                            this.nNodes + " // <-- Total # nodes\n");
         s.append("\n// Node names:\n");
         for (int i = 0; i < this.nNodes; i++) {
             s.append(this.getNodeName(i)).append("\t// # ").append(i).append("\n");
@@ -241,7 +242,7 @@ public abstract class BasicGraph {
      */
     protected void badNodeIndex(int i) {
         throw new IllegalArgumentException("Bad node index " + i +
-                " for Graph with " + this.nNodes + " nodes");
+                                           " for Graph with " + this.nNodes + " nodes");
     }
 
     /**
@@ -276,6 +277,7 @@ public abstract class BasicGraph {
 
     /**
      * Returns a string representation of the set of edges in this graph
+     *
      * @return a string representation of the set of edges in this graph
      */
     public abstract String EdgesToString();

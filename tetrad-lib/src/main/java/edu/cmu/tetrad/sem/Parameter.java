@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Stores information about the identity of a SEM parameter--its name, its type (COEF, COVAR), and the node(s) it is
@@ -37,8 +38,10 @@ import java.io.ObjectInputStream;
  *
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Parameter implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -101,6 +104,8 @@ public final class Parameter implements TetradSerializable {
     private double startingValue = 1.0d;
 
     /**
+     * <p>Constructor for Parameter.</p>
+     *
      * @param name  The name of the parameter.
      * @param type  The type of the parameter--ParamType.COEF, ParamType.VAR, or ParamType.COVAR.
      * @param nodeA The "from" node.
@@ -124,13 +129,13 @@ public final class Parameter implements TetradSerializable {
         if (type == ParamType.VAR && nodeA != nodeB) {
             throw new IllegalArgumentException(
                     "Variance parameters must have " +
-                            "nodeA and nodeB the same.");
+                    "nodeA and nodeB the same.");
         }
 
         if (type == ParamType.COVAR && nodeA == nodeB) {
             throw new IllegalArgumentException(
                     "Covariance parameters must have " +
-                            "nodeA and nodeB different.");
+                    "nodeA and nodeB different.");
         }
 
         this.name = name;
@@ -141,6 +146,8 @@ public final class Parameter implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
      */
     public static Parameter serializableInstance() {
         return new Parameter("X", ParamType.COEF, new GraphNode("X"),
@@ -148,6 +155,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the parameter.
      */
     public String getName() {
@@ -157,7 +166,8 @@ public final class Parameter implements TetradSerializable {
     /**
      * Sets the name for this parameter.
      *
-     * @throws IllegalArgumentException if the name does not begin with a letter.
+     * @param name a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if the name does not begin with a letter.
      */
     public void setName(String name) {
         if (name == null) {
@@ -173,14 +183,18 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation for this parameter.
      */
     public String toString() {
         return "<" + this.name + ", " + this.type + ", " + this.nodeA + ", " +
-                this.nodeB + ", " + (this.fixed ? "fixed" : "free") + ">";
+               this.nodeB + ", " + (this.fixed ? "fixed" : "free") + ">";
     }
 
     /**
+     * <p>Getter for the field <code>nodeA</code>.</p>
+     *
      * @return the "from" node for the edge this parameter is associated with.
      */
     public Node getNodeA() {
@@ -188,6 +202,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>nodeB</code>.</p>
+     *
      * @return the "to" node for the edge this parameter is associated with.
      */
     public Node getNodeB() {
@@ -195,6 +211,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
      * @return the type of this parameter--ParamType.COEF or ParamType.COVAR. This is set at construction time.
      */
     public ParamType getType() {
@@ -202,6 +220,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>distribution</code>.</p>
+     *
      * @return the distributions that initial values should be drawn from for this parameter.
      */
     public Distribution getDistribution() {
@@ -212,6 +232,7 @@ public final class Parameter implements TetradSerializable {
      * Sets the distribution that initial values should be drawn from for this parameter. To set the parameter to always
      * use the same initial value, use tetrad.util.SingleValue.
      *
+     * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
      * @see edu.cmu.tetrad.util.dist.SingleValue
      */
     public void setDistribution(Distribution distribution) {
@@ -222,6 +243,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>isFixed.</p>
+     *
      * @return true iff this parameter should be held fixed during estimation.
      */
     public boolean isFixed() {
@@ -238,6 +261,8 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>startingValue</code>.</p>
+     *
      * @return the starting value if this is a fixed parameter.
      */
     public double getStartingValue() {
@@ -246,12 +271,16 @@ public final class Parameter implements TetradSerializable {
 
     /**
      * Sets the starting value in case this is a fixed parameter.
+     *
+     * @param startingValue a double
      */
     public void setStartingValue(double startingValue) {
         this.startingValue = startingValue;
     }
 
     /**
+     * <p>isInitializedRandomly.</p>
+     *
      * @return true iff this parameter should be initialized randomly by drawing an initial value from its preset random
      * distribution.
      */
@@ -262,6 +291,8 @@ public final class Parameter implements TetradSerializable {
     /**
      * Set to true iff this parameter should be initialized randomly by drawing an initial value from its preset random
      * distribution.
+     *
+     * @param initializedRandomly a boolean
      */
     public void setInitializedRandomly(boolean initializedRandomly) {
         this.initializedRandomly = initializedRandomly;
@@ -274,7 +305,12 @@ public final class Parameter implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -30,20 +30,20 @@ import java.awt.datatransfer.Transferable;
  */
 class DescriptiveStatisticsTransferHandler extends TransferHandler {
 
+    /**
+     * {@inheritDoc}
+     */
     public int getSourceActions(JComponent c) {
         return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Create a Transferable to use as the source for a data transfer.
-     *
-     * @param c The component holding the data to be transferred.  This argument is provided to enable sharing of
-     *          TransferHandlers by multiple components.
-     * @return The representation of the data to be transferred.
      */
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof DescriptiveStatisticsJTable) {
-            DescriptiveStatisticsJTable tabularData = (DescriptiveStatisticsJTable) c;
+        if (c instanceof DescriptiveStatisticsJTable tabularData) {
 
             StringBuilder buf = new StringBuilder();
             final int[] selectedRows = tabularData.getSelectedRows();

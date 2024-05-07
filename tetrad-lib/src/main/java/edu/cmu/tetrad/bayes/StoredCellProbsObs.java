@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -35,22 +36,39 @@ import java.util.*;
  * to be a very large table, it might not be a good idea to use this class except for unit testing.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 
 //////////////////////////////////////////////////////////////////////
 // used also for MlBayesImObs to store the JPD of observed variables
 //////////////////////////////////////////////////////////////////////
-
 public final class StoredCellProbsObs implements TetradSerializable, DiscreteProbs {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables for which the cell probabilities are stored.
+     */
     private final List<Node> variables;
+
+    /**
+     * The number of values for each parent.
+     */
     private final int[] parentDims;
+
+    /**
+     * The probabilities.
+     */
     private final double[] probs;
 
 
     //============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for StoredCellProbsObs.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public StoredCellProbsObs(List<Node> variables) {
         if (variables == null) {
             throw new NullPointerException();
@@ -86,9 +104,9 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
             if (numCells > 1000000 /* Integer.MAX_VALUE / dim*/) {
                 throw new IllegalArgumentException(
                         "The number of rows in the " +
-                                "probability table " +
-                                " is greater than 1,000,000 and cannot be " +
-                                "represented.");
+                        "probability table " +
+                        " is greater than 1,000,000 and cannot be " +
+                        "represented.");
             }
             numCells *= parentDim;
         }
@@ -98,6 +116,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.StoredCellProbsObs} object
      */
     public static StoredCellProbsObs serializableInstance() {
         return new StoredCellProbsObs(new ArrayList<>());
@@ -121,6 +141,10 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     // clear the probability table
+
+    /**
+     * <p>clearCellTable.</p>
+     */
     public void clearCellTable() {
         Arrays.fill(this.probs, Double.NaN);
     }
@@ -128,6 +152,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     //=============================PUBLIC METHODS=========================//
 
     // get vaues by marginalizing probabilities from allowUnfaithfulness bayesIm
+
+    /**
+     * <p>createCellTable.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.MlBayesIm} object
+     */
     public void createCellTable(MlBayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -151,6 +181,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     // copy from another MlBayesImObs
+
+    /**
+     * <p>createCellTable.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.MlBayesImObs} object
+     */
     public void createCellTable(MlBayesImObs bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -162,6 +198,9 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
      */
@@ -169,6 +208,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return this.probs[getOffset(variableValues)];
     }
 
+    /**
+     * <p>getProb.</p>
+     *
+     * @param assertion a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @return a double
+     */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -213,12 +258,20 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return p;
     }
 
+    /**
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion The proposition representing the assertion.
+     * @param condition The proposition representing the condition.
+     * @return The conditional probability of the assertion given the condition.
+     * @throws IllegalArgumentException If the assertion and condition are not for the same Bayes IM.
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         // Initialize to 0's.
@@ -272,14 +325,29 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return assertionTrue / conditionTrue;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>getNumRows.</p>
+     *
+     * @return a int
+     */
     public int getNumRows() {
         return this.probs.length;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -319,6 +387,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return buf.toString();
     }
 
+    /**
+     * <p>getVariableValues.</p>
+     *
+     * @param rowIndex a int
+     * @return an array of {@link int} objects
+     */
     public int[] getVariableValues(int rowIndex) {
         int[] dims = getParentDims();
         int[] values = new int[dims.length];
@@ -336,6 +410,13 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     // No guarantee the probabilities will add to 1.0 if they're
     // set one at a time.
     //
+
+    /**
+     * <p>setCellProbability.</p>
+     *
+     * @param variableValues an array of {@link int} objects
+     * @param probability    a double
+     */
     public void setCellProbability(int[] variableValues, double probability) {
         if (probability < 0.0 || probability > 1.0) {
             throw new IllegalArgumentException(

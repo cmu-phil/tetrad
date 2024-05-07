@@ -39,6 +39,7 @@ import java.util.prefs.Preferences;
  * Saves out a PNG image for a component.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SaveGraph extends AbstractAction {
 
@@ -55,6 +56,13 @@ public class SaveGraph extends AbstractAction {
      */
     private String title;
 
+    /**
+     * <p>Constructor for SaveGraph.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title         a {@link java.lang.String} object
+     * @param type          a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
+     */
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
         this.title = title;
@@ -70,6 +78,8 @@ public class SaveGraph extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
@@ -84,9 +94,8 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, true);
+            GraphSaveLoadUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
-            out.close();
         } else if (this.type == Type.text) {
             File file = EditorUtils.getSaveFile("graph", "txt", parent, false, this.title);
 
@@ -95,9 +104,8 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, false);
+            GraphSaveLoadUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
-            out.close();
         } else if (this.type == Type.r) {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, this.title);
 
@@ -168,8 +176,33 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        } else if (this.type == Type.pcalg) {
-            File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
+        }
+//        else if (this.type == Type.pcalg) {
+//            File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
+//
+//            if (file == null) {
+//                System.out.println("File was null.");
+//                return;
+//            }
+//
+//            try {
+//                String text = GraphSaveLoadUtils.graphToPcalg(graph);
+//
+//                PrintWriter out = new PrintWriter(file);
+//                out.println(text);
+//                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+//                out.close();
+//            } catch (FileNotFoundException e1) {
+//                e1.printStackTrace();
+//                throw new RuntimeException("Not a directed graph.", e1);
+//            } catch (IllegalArgumentException e1) {
+//
+//                // Probably not a directed graph.
+//                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+//            }
+//        }
+        else if (this.type == Type.amatCpdag) {
+            File file = EditorUtils.getSaveFile("graph", "amat.cpag.txt", parent, false, this.title);
 
             if (file == null) {
                 System.out.println("File was null.");
@@ -177,14 +210,33 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphSaveLoadUtils.graphToPcalg(graph);
+                String text = GraphSaveLoadUtils.graphToAmatCpag(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
                 out.close();
             } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
+        } else if (this.type == Type.amatPag) {
+            File file = EditorUtils.getSaveFile("graph", "amat.pag.txt", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
+            try {
+                String text = GraphSaveLoadUtils.graphToAmatPag(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
                 throw new RuntimeException("Not a directed graph.", e1);
             } catch (IllegalArgumentException e1) {
 
@@ -221,7 +273,56 @@ public class SaveGraph extends AbstractAction {
         return this.graphEditable;
     }
 
-    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
+    /**
+     * Enumerates the types of files that can be saved.
+     */
+    public enum Type {
+
+        /**
+         * Save as a text file.
+         */
+        text,
+
+        /**
+         * Save as an XML file.
+         */
+        xml,
+
+        /**
+         *
+         */
+        json,
+
+        /**
+         * Save as a R file.
+         */
+        r,
+
+        /**
+         * Save as a dot file.
+         */
+        dot,
+
+        /**
+         * Save as a pcalg file.
+         */
+        pcalg,
+
+        /**
+         * Save as a amat.cpdag file.
+         */
+        amatCpdag,
+
+        /**
+         * Save as a amat.pag file.
+         */
+        amatPag,
+
+        /**
+         * Save as a lavaan file.
+         */
+        lavaan
+    }
 }
 
 

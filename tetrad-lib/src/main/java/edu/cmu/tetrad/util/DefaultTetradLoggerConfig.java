@@ -22,15 +22,18 @@
 package edu.cmu.tetrad.util;
 
 
+import java.io.Serial;
 import java.util.*;
 
 /**
  * Logger configuration.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -74,11 +77,18 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.util.DefaultTetradLoggerConfig} object
      */
     public static DefaultTetradLoggerConfig serializableInstance() {
         return new DefaultTetradLoggerConfig();
     }
 
+    /**
+     * <p>copy.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+     */
     public TetradLoggerConfig copy() {
         DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
         copy.events = new ArrayList<>(events);
@@ -88,18 +98,34 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //=========================== public methods ================================//
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isEventActive(String id) {
         return active.contains(id);
     }
 
-    public boolean isActive() {
+    /**
+     * <p>isActive.</p>
+     *
+     * @return a boolean
+     */
+    public boolean active() {
         return !active.isEmpty();
     }
 
+    /**
+     * <p>getSupportedEvents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<TetradLoggerConfig.Event> getSupportedEvents() {
         return Collections.unmodifiableList(events);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setEventActive(String id, boolean active) {
         if (!this.contains(id)) {
             throw new IllegalArgumentException("There is no event known under the given id: " + id);
@@ -111,6 +137,11 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("\nDefaultTetradLoggerConfig: events as follows:");
@@ -135,13 +166,30 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //================================= Inner class ==================================//
 
+    /**
+     * A default implementation of the event.
+     */
     public static class DefaultEvent implements TetradLoggerConfig.Event {
+        @Serial
         private static final long serialVersionUID = 23L;
 
+        /**
+         * The id of the event.
+         */
         private final String id;
+
+        /**
+         * The description of the event.
+         */
         private final String description;
 
 
+        /**
+         * Constructs the event.
+         *
+         * @param id          The id of the event.
+         * @param description The description of the event.
+         */
         public DefaultEvent(String id, String description) {
             if (id == null) {
                 throw new NullPointerException("The given id must not be null");
@@ -156,19 +204,36 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
+         * @return a {@link edu.cmu.tetrad.util.DefaultTetradLoggerConfig.DefaultEvent} object
          */
         public static DefaultEvent serializableInstance() {
             return new DefaultEvent("", "");
         }
 
+        /**
+         * <p>getId.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getId() {
             return this.id;
         }
 
+        /**
+         * <p>getDescription.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getDescription() {
             return this.description;
         }
 
+        /**
+         * <p>toString.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String toString() {
             return "Event(" + this.id + ", " + this.description + ")";
         }

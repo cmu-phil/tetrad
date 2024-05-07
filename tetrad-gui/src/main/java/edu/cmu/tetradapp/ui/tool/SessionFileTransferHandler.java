@@ -18,7 +18,6 @@
  */
 package edu.cmu.tetradapp.ui.tool;
 
-import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -27,6 +26,7 @@ import edu.cmu.tetradapp.app.SessionEditor;
 import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
@@ -46,13 +46,18 @@ import java.util.prefs.Preferences;
  * Dec 6, 2017 1:02:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class SessionFileTransferHandler extends TransferHandler {
 
     private static final long serialVersionUID = -6674597813640455425L;
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
-
+    /**
+     * Determines whether the transfer can be imported.
+     *
+     * @param support the object containing the details of the transfer, not <code>null</code>.
+     * @return true if the transfer can be imported, false otherwise.
+     */
     @Override
     public boolean canImport(TransferSupport support) {
         for (DataFlavor flavor : support.getDataFlavors()) {
@@ -64,6 +69,12 @@ public class SessionFileTransferHandler extends TransferHandler {
         return false;
     }
 
+    /**
+     * Imports data from a file into the session editor.
+     *
+     * @param support the object containing the details of the transfer, not <code>null</code>.
+     * @return true if the data import was successful, false otherwise.
+     */
     @Override
     public boolean importData(TransferSupport support) {
         try {
@@ -120,7 +131,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
-                                        "The session was saved by Tetrad " + version + " on " + df.format(date));
+                                "The session was saved by Tetrad " + version + " on " + df.format(date));
 
                         return false;
                     }

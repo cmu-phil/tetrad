@@ -36,11 +36,24 @@ import java.util.Set;
  * The method of this class are used only internally and so are not documented for public use.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClusterUtils {
 
-    // The prefix for latent variables.
+    /**
+     * The prefix for latent variables.
+     */
     public static final String LATENT_PREFIX = "_L";
+
+
+    /**
+     * The ClusterUtils class provides utility methods for manipulating clusters and converting data. This class cannot
+     * be instantiated.
+     *
+     * @since <version>
+     */
+    private ClusterUtils() {
+    }
 
     /**
      * Converts a list of indices into a list of Nodes representing a cluster.
@@ -251,7 +264,7 @@ public class ClusterUtils {
             buf.append("\n");
         }
 
-        TetradLogger.getInstance().log("clusters", buf.toString());
+        TetradLogger.getInstance().forceLogMessage(buf.toString());
     }
 
     /**

@@ -41,24 +41,42 @@ import java.util.concurrent.ConcurrentHashMap;
  * nonlinear nonGaussian with the additive error case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
-    // Formats as 0.0000.
+    /**
+     * The number format used for formatting numbers in the application. It is obtained from the application-wide
+     * NumberFormatUtil instance.
+     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    // The instance of CCI that is wrapped.
+    /**
+     * The instance of CCI that is wrapped.
+     */
     private final ConditionalCorrelationIndependence cci;
-    //The variables of the covariance data, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance data, in order. (Unmodifiable list.)
+     */
     private final List<Node> variables;
-    // Stores a reference to the data set passed in through the constructor.
+    /**
+     * Stores a reference to the data set passed in through the constructor.
+     */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // The score of the last test.
+    /**
+     * The score of the last test.
+     */
     private double score = Double.NaN;
 
 
@@ -91,8 +109,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
-     *
-     * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
@@ -101,7 +117,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Checks the independence of x _||_ y | z
      *
-     * @return the result.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -153,8 +172,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha The alpha level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -176,7 +193,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Since such code is not available.
+     * Determines whether the nodes z determine x.
+     *
+     * @param z A list of Node objects representing the conditioning set.
+     * @param x The Node object to check independence for.
+     * @return True if the nodes z determine x, false otherwise.
+     * @throws UnsupportedOperationException Always throws this exception as the method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
@@ -211,8 +233,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

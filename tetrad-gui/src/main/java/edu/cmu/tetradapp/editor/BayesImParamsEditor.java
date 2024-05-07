@@ -31,6 +31,7 @@ import java.awt.*;
  * Edits the parameters for simulating data from Bayes nets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImParamsEditor extends JPanel implements ParameterEditor {
 
@@ -45,6 +46,11 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public BayesImParamsEditor() {
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
@@ -60,7 +66,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         JRadioButton randomly = new JRadioButton();
 
         manually.setText("Manually: Probability tables initially blank");
-        randomly.setText("Randomly: Random probabilties are assigned, which can then be edited");
+        randomly.setText("Randomly: Random probabilities are assigned, which can then be edited");
 
         ButtonGroup group = new ButtonGroup();
         group.add(manually);
@@ -104,6 +110,11 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -118,6 +129,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

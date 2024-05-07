@@ -7,30 +7,45 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stability selection.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StabilitySelection implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private final Algorithm algorithm;
 
+    /**
+     * <p>Constructor for StabilitySelection.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet = (DataSet) dataSet;
@@ -42,7 +57,8 @@ public class StabilitySelection implements Algorithm {
 
         List<Graph> graphs = new ArrayList<>();
 
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         class StabilityAction extends RecursiveAction {
 
@@ -81,7 +97,16 @@ public class StabilitySelection implements Algorithm {
 
         final int chunk = 2;
 
-        pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
@@ -106,21 +131,33 @@ public class StabilitySelection implements Algorithm {
         counts.put(edge, counts.get(edge) + 1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Stability selection for " + this.algorithm.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

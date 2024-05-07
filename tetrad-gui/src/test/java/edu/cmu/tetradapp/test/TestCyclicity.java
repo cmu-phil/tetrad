@@ -81,8 +81,8 @@ public class TestCyclicity {
                 System.out.println();
                 System.out.println(
                         "This package participates in a package cycle. In the following " +
-                                "\nlist, for each i, some class in package i depends on some " +
-                                "\nclass in package i + 1. Please find the cycle and remove it.");
+                        "\nlist, for each i, some class in package i depends on some " +
+                        "\nclass in package i + 1. Please find the cycle and remove it.");
 
                 List l = new LinkedList();
                 p.collectCycle(l);

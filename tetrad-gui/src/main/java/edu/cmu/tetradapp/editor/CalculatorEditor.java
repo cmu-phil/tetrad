@@ -43,6 +43,7 @@ import java.util.List;
  * Editor to use for the calculator.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CalculatorEditor extends JPanel implements FinalizingParameterEditor {
 
@@ -114,6 +115,8 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the data set that the editor is working with.
      */
     public DataSet getDataSet() {
@@ -121,9 +124,9 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the calculator's params.
-     *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -131,6 +134,8 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     /**
      * Grabs the data set that the calculator is working on.
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
@@ -171,12 +176,19 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     //=============================== Private Methods ===================================//
 
     /**
+     * <p>mustBeShown.</p>
+     *
      * @return true.
      */
     public boolean mustBeShown() {
         return false;
     }
 
+    /**
+     * <p>finalizeEdit.</p>
+     *
+     * @return a boolean
+     */
     public boolean finalizeEdit() {
         if (this.canceled) {
             return false;
@@ -236,7 +248,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
                     JOptionPane.showMessageDialog(this, s);
                 } else {
                     JOptionPane.showMessageDialog(this, "Could not parse " +
-                            "equations.");
+                                                        "equations.");
                 }
 
                 e.printStackTrace();

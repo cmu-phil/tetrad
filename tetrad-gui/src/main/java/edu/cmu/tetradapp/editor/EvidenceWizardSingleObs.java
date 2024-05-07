@@ -42,6 +42,11 @@ import javax.swing.border.MatteBorder;
 // same as EvidenceWizardSingle.java except that here EvidenceEditorObs
 // is called instead of EvidenceEditor
 //
+
+////////////////////////////////////////////////////////////////////////
+// same as EvidenceWizardSingle.java except that here EvidenceEditorObs
+// is called instead of EvidenceEditor
+//
 class EvidenceWizardSingleObs extends JPanel {
     private final UpdaterWrapper updaterWrapper;
     private final GraphWorkbench workbench;
@@ -50,6 +55,9 @@ class EvidenceWizardSingleObs extends JPanel {
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to update
      * based on it.
+     *
+     * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardSingleObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench) {
@@ -78,10 +86,10 @@ class EvidenceWizardSingleObs extends JPanel {
         // Do Layout.
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
-                "Select the node in the graph that you would like to see updated" +
-                "<br>probabilities for. In the list below, select the evidence that" +
-                "<br>you would like to update on. Click the 'Do Update Now' button" +
-                "<br>to view updated probabilities." + "</html>"));
+                          "Select the node in the graph that you would like to see updated" +
+                          "<br>probabilities for. In the list below, select the evidence that" +
+                          "<br>you would like to update on. Click the 'Do Update Now' button" +
+                          "<br>to view updated probabilities." + "</html>"));
         b0.add(Box.createHorizontalGlue());
         add(b0);
         add(Box.createVerticalStrut(10));

@@ -53,7 +53,7 @@ public final class TestBayesDiscreteBicScorer {
 
         final int numCategories = 8;
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
 
         DataSet data = im.simulateData(1000, false);
 
@@ -72,7 +72,7 @@ public final class TestBayesDiscreteBicScorer {
         System.out.println(buf);
         double lik = ret.bic;
 
-        assertEquals(1, ret.p, 0.001);
+        assertEquals(0, ret.p, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {

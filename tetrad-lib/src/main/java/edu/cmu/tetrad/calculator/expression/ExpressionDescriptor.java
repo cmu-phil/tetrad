@@ -27,44 +27,83 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Represents a definition for some expression.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface ExpressionDescriptor extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name that the expressions is known under.
      */
     String getName();
 
     /**
+     * <p>getToken.</p>
+     *
      * @return the token that represents the expression, such as "+".
      */
     String getToken();
 
     /**
+     * <p>getSignature.</p>
+     *
      * @return the signature that should be used.
      */
     ExpressionSignature getSignature();
 
     /**
+     * <p>getPosition.</p>
+     *
      * @return the position that the expression can occur in.
      */
     Position getPosition();
 
     /**
      * Creates the actual expression that can be used to evaluate matters from the given expressions.
+     *
+     * @param expressions a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @throws edu.cmu.tetrad.calculator.expression.ExpressionInitializationException if any.
      */
     Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 
 
+    /**
+     * An enum of positions that an expression can occur in.
+     */
     enum Position implements TetradSerializable {
+        /**
+         * The expression can occur in neither the prefix nor infix position.
+         */
         NEITHER,
+
+        /**
+         * The expression can occur in the infix position.
+         */
         INFIX,
+
+        /**
+         * The expression can occur in the prefix position.
+         */
         PREFIX,
+
+        /**
+         * The expression can occur in both the prefix and infix position.
+         */
         BOTH;
 
         private static final long serialVersionUID = 23L;
 
+        /**
+         * <p>serializableInstance.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+         */
         public static Position serializableInstance() {
             return Position.NEITHER;
         }

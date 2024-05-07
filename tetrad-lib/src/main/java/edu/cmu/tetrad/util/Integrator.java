@@ -26,8 +26,16 @@ package edu.cmu.tetrad.util;
  * Integrates under a function from one endpoint to another.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Integrator {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private Integrator() {
+
+    }
 
     /**
      * Finds the area under function f between x1 and x2 using Simpson's rule. Divides the interval [x1, x2] into
@@ -48,8 +56,8 @@ public class Integrator {
         if (!(x1 <= x2)) {
             //            return Double.NaN;
             throw new IllegalArgumentException("Integrating area under curve " +
-                    "for interval [" + x1 + ", " + x2 + "], but " + x1 +
-                    " is not less than " + x2 + ".");
+                                               "for interval [" + x1 + ", " + x2 + "], but " + x1 +
+                                               " is not less than " + x2 + ".");
         }
 
         double deltaX = x2 - x1;

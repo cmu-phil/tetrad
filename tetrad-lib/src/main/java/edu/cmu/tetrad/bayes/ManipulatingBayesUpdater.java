@@ -28,8 +28,12 @@ import edu.cmu.tetrad.graph.Graph;
  * will eliminate edges into X, so the updating operation on the manipulated model will produce different results.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface ManipulatingBayesUpdater extends BayesUpdater {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -56,24 +60,26 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     Evidence getEvidence();
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
-     *
-     * @param evidence the new evidence.
      */
     void setEvidence(Evidence evidence);
 
     /**
      * Returns the updated Bayes IM. This is the Bayes IM in which all probabilities of variables conditional on their
      * parents have been updated.
+     *
      * @return the updated Bayes IM--that is, the Bayes IM in which all probabilities of variables conditional on their
      * parents have been updated.
      */
     BayesIm getUpdatedBayesIm();
 
     /**
-     * Returns the updated graph. This is the graph in which all probabilities of variables conditional on their
-     * parents have been updated.
-     * @return P(variable = category | evidence) where evidence is getEvidence().
+     * {@inheritDoc}
+     * <p>
+     * Returns the updated graph. This is the graph in which all probabilities of variables conditional on their parents
+     * have been updated.
      */
     double getMarginal(int variable, int category);
 

@@ -33,13 +33,29 @@ import java.io.File;
 
 /**
  * Created by ajsedgewick on 9/10/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExploreIndepTests {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExploreIndepTests() {
+
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
             Graph dag3 = GraphSaveLoadUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
-            Graph trueGraph = GraphTransforms.cpdagForDag(dag3);
+            Graph trueGraph = GraphTransforms.dagToCpdag(dag3);
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);
@@ -56,17 +72,17 @@ public class ExploreIndepTests {
 
             long time = MillisecondTimes.timeMillis();
             Graph dag2 = s1.search();
-            Graph g1 = GraphTransforms.cpdagForDag(dag2);
+            Graph g1 = GraphTransforms.dagToCpdag(dag2);
             System.out.println("Mix Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
             Graph dag1 = s2.search();
-            Graph g2 = GraphTransforms.cpdagForDag(dag1);
+            Graph g2 = GraphTransforms.dagToCpdag(dag1);
             System.out.println("Wald lin Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
             Graph dag = s3.search();
-            Graph g3 = GraphTransforms.cpdagForDag(dag);
+            Graph g3 = GraphTransforms.dagToCpdag(dag);
             System.out.println("Wald log Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             System.out.println(MixedUtils.EdgeStatHeader);

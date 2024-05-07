@@ -27,10 +27,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.maxEntApprox;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -44,13 +44,20 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Journal of Machine Learning Research 14:111-152, 2013.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class DirectLingam {
-    // the data set
+    /**
+     * the data set
+     */
     private final DataSet dataset;
-    // the variables
+    /**
+     * the variables
+     */
     private final List<Node> variables;
-    // the grow-shrink trees
+    /**
+     * the grow-shrink trees
+     */
     private final Map<Node, GrowShrinkTree> gsts;
 
     /**
@@ -70,6 +77,45 @@ public class DirectLingam {
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
         }
+    }
+
+    /**
+     * Calculates the maximum entropy approximation for the given array of values.
+     *
+     * @param x the array of values
+     * @return the maximum entropy approximation
+     */
+    public static double maxEntApprox(double[] x) {
+        x = StatUtils.standardizeData(x);
+
+        final double k1 = 79.047;
+        double k2 = 36 / (8 * sqrt(3) - 9);
+        final double gamma = 0.37457;
+        double gaussianEntropy = (log(2.0 * PI) / 2.0) + 1.0 / 2.0;
+
+        // This is negentropy
+        double b1 = 0.0;
+
+        for (double aX1 : x) {
+
+            // First term for the Taylor expansion of logcosh.
+            b1 += aX1 * aX1 / 2.0;
+        }
+
+        b1 /= x.length;
+
+        double b2 = 0.0;
+
+        for (double aX : x) {
+            b2 += aX * exp(-(aX * aX) / 2);
+        }
+
+        b2 /= x.length;
+
+        double d = b1 - gamma;
+        double negentropy = k1 * (d * d) + k2 * (b2 * b2);
+
+        return gaussianEntropy - negentropy;
     }
 
     /**
@@ -108,6 +154,13 @@ public class DirectLingam {
         return g;
     }
 
+    /**
+     * Returns the next node in the list U that minimizes the objective function.
+     *
+     * @param U the list of nodes
+     * @param R a map of nodes to residuals
+     * @return the next node in the list U that minimizes the objective function
+     */
     private Node getNext(List<Node> U, Map<Node, double[]> R) {
         Node m = U.get(0);
         double best = Double.POSITIVE_INFINITY;
@@ -123,7 +176,8 @@ public class DirectLingam {
 
                 double lr = maxEntApprox(R.get(y)) - entx;
                 lr += maxEntApprox(rxy) - maxEntApprox(ryx);
-                curr += pow(min(0, lr), 2);
+                double min = min(0, lr);
+                curr += min * min;
             }
 
             if (curr < best) {
@@ -135,6 +189,11 @@ public class DirectLingam {
         return m;
     }
 
+    /**
+     * Standardizes an array of doubles.
+     *
+     * @param x the array of doubles to be standardized
+     */
     private void standardize(double[] x) {
         int n = x.length;
         double mu = 0;
@@ -142,17 +201,24 @@ public class DirectLingam {
 
         for (double v : x) {
             mu += v;
-            std += pow(v, 2);
+            std += v * v;
         }
 
         mu /= n;
-        std = sqrt(std / n - pow(mu, 2));
+        std = sqrt(std / n - mu * mu);
 
         for (int i = 0; i < n; i++) {
             x[i] = (x[i] - mu) / std;
         }
     }
 
+    /**
+     * Calculates the residuals between two arrays.
+     *
+     * @param x the first array
+     * @param y the second array
+     * @return an array of residuals
+     */
     private double[] residuals(double[] x, double[] y) {
         int n = x.length;
         double cov = 0;
@@ -160,7 +226,7 @@ public class DirectLingam {
 
         for (int i = 0; i < n; i++) {
             cov += x[i] * y[i];
-            var += pow(y[i], 2);
+            var += y[i] * y[i];
         }
         double b = cov / var;
 
@@ -171,5 +237,4 @@ public class DirectLingam {
 
         return r;
     }
-
 }

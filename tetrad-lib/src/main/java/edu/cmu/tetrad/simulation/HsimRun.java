@@ -19,9 +19,28 @@ import java.util.Set;
 
 /**
  * Created by Erich on 3/28/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimRun {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimRun() {
+
+    }
+
+    /**
+     * <p>run.</p>
+     *
+     * @param readfilename   a {@link java.lang.String} object
+     * @param filenameOut    a {@link java.lang.String} object
+     * @param delimiter      a char
+     * @param resimNodeNames an array of {@link java.lang.String} objects
+     * @param verbose        a boolean
+     */
     public static void run(String readfilename, String filenameOut, char delimiter, String[] resimNodeNames, boolean verbose) {
 
         //===========read data from file=============

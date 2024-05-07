@@ -24,26 +24,42 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+
+import java.io.Serial;
 
 /**
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public DagFromCPDAGWrapper(Graph graph) {
-        super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        super(DagFromCPDAGWrapper.getGraph(graph), "Choose Random DAG in CPDAG.");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     private static Graph getGraph(Graph graph) {
@@ -51,10 +67,18 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link DagFromCPDAGWrapper} object
+     */
     public static DagFromCPDAGWrapper serializableInstance() {
         return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

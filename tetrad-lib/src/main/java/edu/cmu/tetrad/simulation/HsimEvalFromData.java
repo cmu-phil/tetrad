@@ -18,15 +18,31 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 /**
  * Created by ekummerfeld on 1/26/2017.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimEvalFromData {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimEvalFromData() {
+
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         long timestart = System.nanoTime();
         System.out.println("Beginning Evaluation");
@@ -112,13 +128,13 @@ public class HsimEvalFromData {
                     //if (verbosity>3) System.out.println(avErrors.allToString());
                     //****calculate the squared errors of prediction, store all these errors in a list
                     double FsimAR2 = (avErrors.getAdjRecall() - oErrors.getAdjRecall())
-                            * (avErrors.getAdjRecall() - oErrors.getAdjRecall());
+                                     * (avErrors.getAdjRecall() - oErrors.getAdjRecall());
                     double FsimAP2 = (avErrors.getAdjPrecision() - oErrors.getAdjPrecision())
-                            * (avErrors.getAdjPrecision() - oErrors.getAdjPrecision());
+                                     * (avErrors.getAdjPrecision() - oErrors.getAdjPrecision());
                     double FsimOR2 = (avErrors.getOrientRecall() - oErrors.getOrientRecall())
-                            * (avErrors.getOrientRecall() - oErrors.getOrientRecall());
+                                     * (avErrors.getOrientRecall() - oErrors.getOrientRecall());
                     double FsimOP2 = (avErrors.getOrientPrecision() - oErrors.getOrientPrecision())
-                            * (avErrors.getOrientPrecision() - oErrors.getOrientPrecision());
+                                     * (avErrors.getOrientPrecision() - oErrors.getOrientPrecision());
                     PRAOerrors Fsim2 = new PRAOerrors(new double[]{FsimAR2, FsimAP2, FsimOR2, FsimOP2},
                             "squared errors for Fsim at repeat=" + fsimRepeat.get(whichFrepeat));
                     //add the fsim squared errors to the appropriate list
@@ -128,16 +144,16 @@ public class HsimEvalFromData {
                 for (whichHrepeat = 0; whichHrepeat < hsimRepeat.size(); whichHrepeat++) {
                     HsimRepeatAC study = new HsimRepeatAC(data1);
                     PRAOerrors HsimErrors = new PRAOerrors(study.run(1, hsimRepeat.get(whichHrepeat)), "Hsim errors"
-                            + "at rsize=" + 1 + " repeat=" + hsimRepeat.get(whichHrepeat));
+                                                                                                       + "at rsize=" + 1 + " repeat=" + hsimRepeat.get(whichHrepeat));
                     //****calculate the squared errors of prediction
                     double HsimAR2 = (HsimErrors.getAdjRecall() - oErrors.getAdjRecall())
-                            * (HsimErrors.getAdjRecall() - oErrors.getAdjRecall());
+                                     * (HsimErrors.getAdjRecall() - oErrors.getAdjRecall());
                     double HsimAP2 = (HsimErrors.getAdjPrecision() - oErrors.getAdjPrecision())
-                            * (HsimErrors.getAdjPrecision() - oErrors.getAdjPrecision());
+                                     * (HsimErrors.getAdjPrecision() - oErrors.getAdjPrecision());
                     double HsimOR2 = (HsimErrors.getOrientRecall() - oErrors.getOrientRecall())
-                            * (HsimErrors.getOrientRecall() - oErrors.getOrientRecall());
+                                     * (HsimErrors.getOrientRecall() - oErrors.getOrientRecall());
                     double HsimOP2 = (HsimErrors.getOrientPrecision() - oErrors.getOrientPrecision())
-                            * (HsimErrors.getOrientPrecision() - oErrors.getOrientPrecision());
+                                     * (HsimErrors.getOrientPrecision() - oErrors.getOrientPrecision());
                     PRAOerrors Hsim2 = new PRAOerrors(new double[]{HsimAR2, HsimAP2, HsimOR2, HsimOP2},
                             "squared errors for Hsim, rsize=" + 1 + " repeat=" + hsimRepeat.get(whichHrepeat));
                     hsimErrsByPars[0][whichHrepeat].add(Hsim2);
@@ -150,7 +166,7 @@ public class HsimEvalFromData {
             String[][] latexTableArray = new String[hsimRepeat.size() + fsimRepeat.size()][5];
             for (int j = 0; j < fMSE.length; j++) {
                 fMSE[j] = new PRAOerrors(fsimErrsByPars[j], "MSE for Fsim at vars=" + vars + " edgeratio=" + edgeratio
-                        + " cases=" + cases + " frepeat=" + fsimRepeat.get(j) + " iterations=" + iterations);
+                                                            + " cases=" + cases + " frepeat=" + fsimRepeat.get(j) + " iterations=" + iterations);
                 //if(verbosity>0){System.out.println(fMSE[j].allToString());}
                 output = output + fMSE[j].allToString() + nl;
                 latexTableArray[j] = HsimEvalFromData.prelimToPRAOtable(fMSE[j]);
@@ -158,7 +174,7 @@ public class HsimEvalFromData {
             for (int j = 0; j < hMSE.length; j++) {
                 for (int k = 0; k < hMSE[j].length; k++) {
                     hMSE[j][k] = new PRAOerrors(hsimErrsByPars[j][k], "MSE for Hsim at vars=" + vars + " edgeratio=" + edgeratio
-                            + " cases=" + cases + " rsize=" + 1 + " repeat=" + hsimRepeat.get(k) + " iterations=" + iterations);
+                                                                      + " cases=" + cases + " rsize=" + 1 + " repeat=" + hsimRepeat.get(k) + " iterations=" + iterations);
                     //if(verbosity>0){System.out.println(hMSE[j][k].allToString());}
                     output = output + hMSE[j][k].allToString() + nl;
                     latexTableArray[fsimRepeat.size() + j * hMSE[j].length + k] = HsimEvalFromData.prelimToPRAOtable(hMSE[j][k]);
@@ -167,11 +183,11 @@ public class HsimEvalFromData {
             //record all the params, the base error values, and the fsim/hsim mean squared errors
             String latexTable = HsimUtils.makeLatexTable(latexTableArray);
 
-            PrintWriter writer = new PrintWriter("latexTable.txt", "UTF-8");
+            PrintWriter writer = new PrintWriter("latexTable.txt", StandardCharsets.UTF_8);
             writer.println(latexTable);
             writer.close();
 
-            PrintWriter writer2 = new PrintWriter("HvsF-SimulationEvaluation.txt", "UTF-8");
+            PrintWriter writer2 = new PrintWriter("HvsF-SimulationEvaluation.txt", StandardCharsets.UTF_8);
             writer2.println(output);
             writer2.close();
 

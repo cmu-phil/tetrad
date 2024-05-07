@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for linear, Gaussian SEM BIC score.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Sem BIC Score",
@@ -29,8 +30,21 @@ public class SemBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
+    /**
+     * Constructs a new instance of the SemBicScore.
+     */
+    public SemBicScore() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -64,16 +78,31 @@ public class SemBicScore implements ScoreWrapper {
         return semBicScore;
     }
 
+    /**
+     * Returns the description of the Sem BIC Score.
+     *
+     * @return the description of the Sem BIC Score
+     */
     @Override
     public String getDescription() {
         return "Sem BIC Score";
     }
 
+    /**
+     * Returns the data type of the current score.
+     *
+     * @return the data type of the score
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Returns a list of parameters applicable to this method.
+     *
+     * @return a list of parameters
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -85,6 +114,12 @@ public class SemBicScore implements ScoreWrapper {
         return parameters;
     }
 
+    /**
+     * Retrieves the variable with the given name from the data set.
+     *
+     * @param name the name of the variable
+     * @return the variable with the given name, or null if no such variable exists
+     */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

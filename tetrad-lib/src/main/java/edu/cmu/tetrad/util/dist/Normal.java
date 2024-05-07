@@ -33,6 +33,7 @@ import java.text.NumberFormat;
  * = standard deviation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Normal implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -51,6 +52,12 @@ public class Normal implements Distribution {
      */
     private double sd;
 
+    /**
+     * <p>Constructor for Normal.</p>
+     *
+     * @param mean a double
+     * @param sd   a double
+     */
     public Normal(double mean, double sd) {
         setParameter(0, mean);
         setParameter(1, sd);
@@ -66,10 +73,18 @@ public class Normal implements Distribution {
     }
 
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "N";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -77,10 +92,13 @@ public class Normal implements Distribution {
             this.sd = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
-                    index + ": " + value);
+                                               index + ": " + value);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -91,6 +109,9 @@ public class Normal implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
@@ -102,6 +123,8 @@ public class Normal implements Distribution {
     }
 
     /**
+     * <p>getNumParameters.</p>
+     *
      * @return the number of parameters = 2.
      */
     public int getNumParameters() {
@@ -109,12 +132,19 @@ public class Normal implements Distribution {
     }
 
     /**
+     * <p>nextRandom.</p>
+     *
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextNormal(this.mean, this.sd);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "N(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ")";

@@ -32,17 +32,26 @@ import java.util.*;
  * Implements a tetrad-based purify method.
  *
  * @author ricardosilva
+ * @version $Id: $Id
  */
 public class PurifyTetradBased implements IPurify {
     private final TetradTest tetradTest;
 
     private final List<Node> nodes;
 
+    /**
+     * <p>Constructor for PurifyTetradBased.</p>
+     *
+     * @param tetradTest a {@link edu.cmu.tetrad.search.utils.TetradTest} object
+     */
     public PurifyTetradBased(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
         this.nodes = tetradTest.getVariables();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Node>> purify(List<List<Node>> clustering) {
 
         // The input nodes may not be object-identical to the ones from the tetrad test, so we map them over then
@@ -75,6 +84,9 @@ public class PurifyTetradBased implements IPurify {
         return convertedResult;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setTrueGraph(Graph mim) {
     }
 

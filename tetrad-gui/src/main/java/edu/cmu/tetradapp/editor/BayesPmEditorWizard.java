@@ -101,6 +101,9 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * This is the wizard for the PMEditor class. Its function is to allow the user to enter, for each variable in the
      * associated Graph, the number of categories it may take on and the string names for each of those categories.
+     *
+     * @param bayesPm   a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public BayesPmEditorWizard(BayesPm bayesPm, GraphWorkbench workbench) {
         if (bayesPm == null) {
@@ -231,6 +234,9 @@ final class BayesPmEditorWizard extends JPanel {
             setEnabled(isEditingLatentVariablesAllowed() || this.categoryEditor.getNode().getNodeType() != NodeType.LATENT);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         this.numCategoriesSpinner.setEnabled(enabled);
@@ -308,9 +314,9 @@ final class BayesPmEditorWizard extends JPanel {
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "<html>"
-                            + "The categories for this node have been copied; to transfer "
-                            + "<br>these categories, choose another node and paste. You may"
-                            + "<br>paste multiple times." + "</html>");
+                    + "The categories for this node have been copied; to transfer "
+                    + "<br>these categories, choose another node and paste. You may"
+                    + "<br>paste multiple times." + "</html>");
         });
 
         paste.addActionListener((e) -> pasteCategories());
@@ -397,6 +403,11 @@ final class BayesPmEditorWizard extends JPanel {
         return this.editingMeasuredVariablesAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>editingMeasuredVariablesAllowed</code>.</p>
+     *
+     * @param editingMeasuredVariablesAllowed a boolean
+     */
     public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
         this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
         setNode(this.categoryEditor.getNode());
@@ -408,6 +419,11 @@ final class BayesPmEditorWizard extends JPanel {
         return this.editingLatentVariablesAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>editingLatentVariablesAllowed</code>.</p>
+     *
+     * @param editingLatentVariablesAllowed a boolean
+     */
     public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
         this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
         setNode(this.categoryEditor.getNode());
@@ -622,7 +638,7 @@ final class BayesPmEditorWizard extends JPanel {
             if (categories.size() < 2) {
                 throw new IllegalArgumentException(
                         "Number of categories must be" + " >= 2: "
-                                + categories.size());
+                        + categories.size());
             }
 
             for (Object category : categories) {

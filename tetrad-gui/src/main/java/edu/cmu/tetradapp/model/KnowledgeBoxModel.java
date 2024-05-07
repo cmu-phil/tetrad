@@ -21,34 +21,71 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.ParamsResettable;
+import edu.cmu.tetradapp.session.SessionModel;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
+ * <p>KnowledgeBoxModel class.</p>
+ *
  * @author kaalpurush
+ * @version $Id: $Id
  */
 public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The source graph.
+     */
     private final Graph sourceGraph = new EdgeListGraph();
+
+    /**
+     * The name of the model.
+     */
     private String name;
+
+    /**
+     * The parameters.
+     */
     private Parameters params;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The variables.
+     */
     private List<Node> variables = new ArrayList<>();
+
+    /**
+     * The variable names.
+     */
     private List<String> variableNames = new ArrayList<>();
+
+    /**
+     * The number of tiers.
+     */
     private int numTiers = 3;
 
+    /**
+     * <p>Constructor for KnowledgeBoxModel.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public KnowledgeBoxModel(Parameters params) {
         this.knowledge = new Knowledge();
         this.numTiers = 3;
@@ -59,6 +96,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     /**
      * Constructor from dataWrapper edge
+     *
+     * @param inputs an array of {@link KnowledgeBoxInput} objects
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
@@ -102,8 +142,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
         Object myKnowledge = params.get("__myKnowledge");
         if (myKnowledge instanceof Knowledge
-                && new HashSet<>(((Knowledge) myKnowledge).getVariables())
-                .equals(new HashSet<>(variableNames))) {
+            && new HashSet<>(((Knowledge) myKnowledge).getVariables())
+                    .equals(new HashSet<>(variableNames))) {
             this.knowledge = (Knowledge) myKnowledge;
         } else {
             this.knowledge = new Knowledge();
@@ -115,12 +155,13 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             params.set("__myKnowledge", this.knowledge);
         }
 
-        TetradLogger.getInstance().log("info", "Knowledge");
+        TetradLogger.getInstance().forceLogMessage("Knowledge");
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      * @see TetradSerializableUtils
      */
     public static KnowledgeBoxModel serializableInstance() {
@@ -147,36 +188,60 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
     //    @Override
+
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return this.sourceGraph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getVarNames() {
         return this.variableNames;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -190,6 +255,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void resetParams(Object params) {
         this.params = (Parameters) params;
@@ -199,25 +267,50 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getResettableParams() {
         return this.params;
     }
 
     //    @Override
+
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     //    @Override
+
+    /**
+     * <p>Getter for the field <code>variableNames</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return this.variableNames;
     }
 
+    /**
+     * <p>Getter for the field <code>numTiers</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumTiers() {
         return this.numTiers;
     }
 
+    /**
+     * <p>Setter for the field <code>numTiers</code>.</p>
+     *
+     * @param numTiers a int
+     */
     public void setNumTiers(int numTiers) {
         this.numTiers = numTiers;
     }

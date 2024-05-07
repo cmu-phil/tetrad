@@ -29,6 +29,9 @@ import java.util.List;
 
 /**
  * Stores a 2D array of byte data. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ByteDataBox implements DataBox {
     @Serial
@@ -101,6 +104,8 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -108,6 +113,8 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.n
      */
     public int numCols() {
@@ -115,12 +122,10 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.byteValue(). If the
      * value is null, the missing value marker (-99) is used.
-     *
-     * @param row   the row index.
-     * @param col   the column index.
-     * @param value the value to store.
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -135,7 +140,7 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
+     * {@inheritDoc}
      */
     public Number get(int row, int col) {
         byte datum = this.data[row][col];
@@ -148,6 +153,8 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -163,6 +170,8 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type ByteDataBox, but with the given dimensions.
      */
     public DataBox like() {
@@ -175,6 +184,9 @@ public class ByteDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new ByteDataBox(rows.length, cols.length);

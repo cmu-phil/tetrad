@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,27 +37,27 @@ import java.util.List;
  * Science, University of California, Los Angeles, 2002.
  *
  * @author Choh Man Teng
+ * @version $Id: $Id
  */
 public final class Identifiability implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The BayesIm which this updater modifies.
-     *
-     * @serial Cannot be null.
      */
     private final BayesIm bayesIm;
+
+    /**
+     * The last manipulated BayesIm.
+     */
     private final boolean debug = false;
     /**
      * Stores evidence for all variables.
-     *
-     * @serial Cannot be null.
      */
     private Evidence evidence;
     /**
      * The last manipulated BayesIm.
-     *
-     * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
 
@@ -65,6 +66,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public Identifiability(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
@@ -74,6 +77,13 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // Constructs a new updater with misc tests.
     // debug indicates debug information is to be generated
     //
+
+    /**
+     * <p>Constructor for Identifiability.</p>
+     *
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public Identifiability(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -92,6 +102,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Identifiability} object
      */
     public static Identifiability serializableInstance() {
         return new Identifiability(MlBayesIm.serializableInstance());
@@ -104,6 +116,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * The BayesIm that this updater bases its update on. This BayesIm is not modified; rather, a new BayesIm is created
      * and updated.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm getBayesIm() {
         return this.bayesIm;
@@ -112,6 +126,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     /**
+     * <p>Getter for the field <code>manipulatedBayesIm</code>.</p>
+     *
      * @return the updated BayesIm.
      */
     public BayesIm getManipulatedBayesIm() {
@@ -119,6 +135,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * <p>getManipulatedGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
@@ -128,6 +150,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * The updated BayesIm. This is a different object from the source BayesIm.
      *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @see #getBayesIm
      */
     public BayesIm getUpdatedBayesIm() {
@@ -137,6 +160,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
      * @return a defensive copy of the evidence.
      */
     public Evidence getEvidence() {
@@ -144,6 +169,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -151,8 +180,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
-                    "given bayesIm must be compatible with the variable list " +
-                    "for this evidence.");
+                                               "given bayesIm must be compatible with the variable list " +
+                                               "for this evidence.");
         }
 
         this.evidence = evidence;
@@ -169,6 +198,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * <p>isJointMarginalSupported.</p>
+     *
+     * @return a boolean
+     */
     public boolean isJointMarginalSupported() {
         return true;
     }
@@ -182,6 +217,14 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // (i.e., no disjunctions of values of a variable even those they
     // are allowed in Proposition)
     //
+
+    /**
+     * <p>getJointMarginal.</p>
+     *
+     * @param sVariables an array of {@link int} objects
+     * @param sValues    an array of {@link int} objects
+     * @return a double
+     */
     public double getJointMarginal(int[] sVariables, int[] sValues) {
         if (sVariables.length != sValues.length) {
             throw new IllegalArgumentException("Values must match variables.");
@@ -274,8 +317,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                         sNodes.remove(tNodeInBayesIm);
                         if (this.debug) {
                             System.out.println("sNode removed: index: "
-                                    + tNodeInBayesIm
-                                    + "; name: " + tNodeStr);
+                                               + tNodeInBayesIm
+                                               + "; name: " + tNodeStr);
                         }
                     } else
                     // S and T have different values for this same variable
@@ -320,7 +363,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         if (this.debug) {
             for (int i = 0; i < nCComponents; i++) {
                 System.out.println("c-component " + i + ": " +
-                        cComponentNodes.get(i));
+                                   cComponentNodes.get(i));
             }
         }
 
@@ -351,8 +394,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
             if (this.debug) {
                 System.out.println("cFactors " + i + "   " +
-                        this.bayesIm.getDag().getNodes() + "   " +
-                        cComponentNodes.get(i)
+                                   this.bayesIm.getDag().getNodes() + "   " +
+                                   cComponentNodes.get(i)
                 );
                 System.out.println("============== QList: qV ==============");
                 qV.printQList(0, 0);
@@ -366,7 +409,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             );
             if (this.debug) {
                 System.out.println("============== QList: cFactors[" + i +
-                        "] ==============");
+                                   "] ==============");
                 cFactors[i].printQList(0, 0);
             }
         }
@@ -398,7 +441,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         Dag gD = new Dag(this.bayesIm.getDag().subgraph(dNodes));
 
         BayesPm bayesPmD = new BayesPm(gD, this.bayesIm.getBayesPm());
-        BayesIm bayesImD = new MlBayesIm(bayesPmD, this.bayesIm, MlBayesIm.RANDOM);
+        BayesIm bayesImD = new MlBayesIm(bayesPmD, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
 
         if (this.debug) {
             System.out.println("------ bayeIm.getDag() -------------");
@@ -435,7 +478,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     if (this.debug) {
                         System.out.println("----- Di   Sj --------");
                         System.out.println(i + "   " + cComponentNodesDi
-                                + "    " + cComponentNodesSj);
+                                           + "    " + cComponentNodesSj);
                     }
 
                     flag = true;
@@ -448,7 +491,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     if (qD[i] == null) {
                         if (this.debug) {
                             System.out.println("----- FAIL qD[" + i
-                                    + "] --------");
+                                               + "] --------");
                         }
                         // fail: P_t(s) not identifiable with this algorithm
                         return -1.0;
@@ -456,7 +499,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
                     if (this.debug) {
                         System.out.println("======================== QList: qD["
-                                + i + "] =================");
+                                           + i + "] =================");
                         qD[i].printQList(0, 0);
                     }
                 }
@@ -505,6 +548,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // The following methods are for here for compatibility with ManipulatingBayesUpdater
     //
 
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         int[] sVariables = {variable};
         int[] sValues = {value};
@@ -512,6 +558,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -532,6 +582,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         //double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
         double[] marginals = new double[getBayesIm().getNumColumns(nodeIndex)];
@@ -545,6 +599,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 
     /////////////////////////////////////////////////////////////////
+
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Identifiability";
     }
@@ -580,7 +640,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             for (int i = 0; i < nParents; i++) {
                 int parentIndex = bayesIm.getParent(nodeIndex, i);
                 if (bayesIm.getNode(parentIndex).getNodeType() ==
-                        NodeType.LATENT
+                    NodeType.LATENT
                 ) {
                     int cComponentIndexOld = cComponents1[parentIndex];
                     if (cComponentIndexOld != cComponentIndexNew) {
@@ -656,7 +716,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     //
     private void printCComponents(int[] cComponents) {
         System.out.println("----- printCComponents: total " +
-                nCComponents(cComponents) + " -----");
+                           nCComponents(cComponents) + " -----");
 
         for (int i = 0; i < cComponents.length; i++) {
             System.out.println(i + ": " + cComponents[i]);
@@ -711,7 +771,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             int nodeHjIndex = graphWhole.getNodeIndex(nodeHj);
 
             if (graphWhole.getNode(nodeHjIndex).getNodeType() ==
-                    NodeType.MEASURED)  // skip latent variables
+                NodeType.MEASURED)  // skip latent variables
             {
                 // get index of node hj in the tier ordering of the nodes
                 //of the original graph
@@ -738,7 +798,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 }
                 for (int i = nodeHjTierIndex + 1; i < tierSize; i++) {
                     if (graphWhole.getNode(tiers[i]).getNodeType() ==
-                            NodeType.MEASURED
+                        NodeType.MEASURED
                     ) {
                         sumOverVariables[tiers[i]] = 1;
                     }
@@ -783,7 +843,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         for (Node node1 : bigSet) {
             if (!smallSet.contains(node1) &&
-                    node1.getNodeType() == NodeType.MEASURED) {
+                node1.getNodeType() == NodeType.MEASURED) {
                 sumOverVariables[this.bayesIm.getNodeIndex(node1)] = 1;
             }
         }
@@ -815,9 +875,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             System.out.println("nodesT: " + nodesT);
             System.out.println("nodesA: " + nodesA);
             System.out.println("nodesC containsAll nodesA: " +
-                    nodesC.containsAll(nodesA));
+                               nodesC.containsAll(nodesA));
             System.out.println("nodesA containsAll nodesT: " +
-                    nodesA.containsAll(nodesT));
+                               nodesA.containsAll(nodesT));
         }
 
         /////////////////////////////////
@@ -859,7 +919,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         // construct an IM with the dag graphA
         BayesPm bayesPmA = new BayesPm(graphA, this.bayesIm.getBayesPm());
-        BayesIm bayesImA = new MlBayesIm(bayesPmA, this.bayesIm, MlBayesIm.RANDOM);
+        BayesIm bayesImA = new MlBayesIm(bayesPmA, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
 
         // get c-components of graphA
         int[] cComponentsA = getCComponents(bayesImA);
@@ -884,7 +944,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 System.out.println("identify Q[A]: i: " + i);
                 System.out.println("cComponentNodesT2: " + cComponentNodesT2);
                 System.out.println("cComponentNodesT2.containsAll(nodesC): " +
-                        cComponentNodesT2.containsAll(nodesC));
+                                   cComponentNodesT2.containsAll(nodesC));
             }
 
             if (cComponentNodesT2.containsAll(nodesC)) {
@@ -907,7 +967,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
@@ -941,7 +1001,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

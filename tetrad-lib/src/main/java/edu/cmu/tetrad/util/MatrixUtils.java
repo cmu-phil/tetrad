@@ -43,8 +43,16 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Tianjiao Chu
  * @author josephramsey
  * @author Kevin V. Bui
+ * @version $Id: $Id
  */
 public final class MatrixUtils {
+
+    /**
+     * Private constructor.
+     */
+    private MatrixUtils() {
+
+    }
 
     /**
      * Make a repeat copy of matrix mat.
@@ -52,6 +60,7 @@ public final class MatrixUtils {
      * @param mat     matrix to copy
      * @param nRow    number of repeat copy of row
      * @param mColumn number of repeat copy of column
+     * @return an array of {@link double} objects
      */
     public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
         int numOfRow = mat.length;
@@ -68,7 +77,9 @@ public final class MatrixUtils {
     /**
      * Make a n repeat copy of the rows and columns of the matrix mat.
      *
-     * @param n number of repeat copy
+     * @param n   number of repeat copy
+     * @param mat an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[][] repmat(double[][] mat, int n) {
         int numOfRow = mat.length;
@@ -181,6 +192,8 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>isSquare.</p>
+     *
      * @param m A 2D double matrix.
      * @return Ibid.
      */
@@ -190,6 +203,8 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>isSymmetric.</p>
+     *
      * @param m         The matrix to check.
      * @param tolerance A double &gt;= 0.
      * @return Ibid.
@@ -208,6 +223,8 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>determinant.</p>
+     *
      * @param m The matrix whose determinant is sought. Must be square.
      * @return Ibid.
      */
@@ -217,6 +234,10 @@ public final class MatrixUtils {
 
     /**
      * A copy of the original (square) matrix with the stated index row/column removed
+     *
+     * @param m   an array of {@link double} objects
+     * @param rem a int
+     * @return an array of {@link double} objects
      */
     public static double[][] submatrix(double[][] m, int rem) {
         int[] indices = new int[m.length];
@@ -235,6 +256,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>inverse.</p>
+     *
+     * @param m an array of {@link double} objects
      * @return the inverse of the given square matrix if it is nonsingular, otherwise the pseudoinverse.
      */
     public static double[][] inverse(double[][] m) {
@@ -242,6 +266,12 @@ public final class MatrixUtils {
         return mm.inverse().toArray();
     }
 
+    /**
+     * <p>pseudoInverse.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[][] pseudoInverse(double[][] x) {
         if (x.length == 0) {
             return new Matrix(x).toArray();
@@ -264,6 +294,10 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>product.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
      * @return the outerProduct of ma and mb. The dimensions of ma and mb must be compatible for multiplication.
      */
     public static double[][] product(double[][] ma, double[][] mb) {
@@ -272,27 +306,65 @@ public final class MatrixUtils {
         return d.times(e).toArray();
     }
 
+    /**
+     * <p>product.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] product(double[] ma, double[][] mb) {
         return new Matrix(mb).transpose().times(new Vector(ma)).toArray();
     }
 
+    /**
+     * <p>product.</p>
+     *
+     * @param ma a {@link edu.cmu.tetrad.util.Vector} object
+     * @param mb a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public static Vector product(Vector ma, Matrix mb) {
         return mb.transpose().times(ma);
     }
 
+    /**
+     * <p>product.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] product(double[][] ma, double[] mb) {
         return new Matrix(ma).times(new Vector(mb)).toArray();
     }
 
+    /**
+     * <p>outerProduct.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[][] outerProduct(double[] ma, double[] mb) {
         return TetradAlgebra.multOuter(new Vector(ma), new Vector(mb)).toArray();
     }
 
+    /**
+     * <p>innerProduct.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return a double
+     */
     public static double innerProduct(double[] ma, double[] mb) {
         return new Vector(ma).dotProduct(new Vector(mb));
     }
 
     /**
+     * <p>transpose.</p>
+     *
+     * @param m an array of {@link double} objects
      * @return the transpose of the given matrix.
      */
     public static double[][] transpose(double[][] m) {
@@ -300,18 +372,19 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>trace.</p>
+     *
+     * @param m an array of {@link double} objects
      * @return the trace of the given (square) m.
      */
     public static double trace(double[][] m) {
         return new Matrix(m).trace();
     }
 
-    //Returns the sum of all values in a double matrix.
-    public static double zSum(double[][] m) {
-        return new Matrix(m).zSum();
-    }
-
     /**
+     * <p>identity.</p>
+     *
+     * @param size a int
      * @return the identity matrix of the given order.
      */
     public static double[][] identity(int size) {
@@ -319,6 +392,10 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>sum.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
      * @return the sum of ma and mb.
      */
     public static double[][] sum(double[][] ma, double[][] mb) {
@@ -328,6 +405,13 @@ public final class MatrixUtils {
         return _ma.toArray();
     }
 
+    /**
+     * <p>sum.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] sum(double[] ma, double[] mb) {
         Vector _ma = new Vector(ma);
         Vector _mb = new Vector(mb);
@@ -335,6 +419,13 @@ public final class MatrixUtils {
         return _ma.toArray();
     }
 
+    /**
+     * <p>subtract.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[][] subtract(double[][] ma, double[][] mb) {
         Matrix _ma = new Matrix(ma);
         Matrix _mb = new Matrix(mb);
@@ -342,6 +433,13 @@ public final class MatrixUtils {
         return _ma.toArray();
     }
 
+    /**
+     * <p>subtract.</p>
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] subtract(double[] ma, double[] mb) {
         Vector _ma = new Vector(ma);
         Vector _mb = new Vector(mb);
@@ -351,6 +449,10 @@ public final class MatrixUtils {
 
     /**
      * Computes the direct (Kronecker) outerProduct.
+     *
+     * @param ma an array of {@link double} objects
+     * @param mb an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[][] directProduct(double[][] ma, double[][] mb) {
         int arow = ma.length;
@@ -377,12 +479,23 @@ public final class MatrixUtils {
 
     /**
      * Multiplies the given matrix through by the given scalar.
+     *
+     * @param scalar a double
+     * @param m      an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
         return _m.scalarMult(scalar).toArray();
     }
 
+    /**
+     * <p>scalarProduct.</p>
+     *
+     * @param scalar a double
+     * @param m      an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] scalarProduct(double scalar, double[] m) {
         Vector _m = new Vector(m);
         _m = _m.scalarMult(scalar);
@@ -391,6 +504,9 @@ public final class MatrixUtils {
 
     /**
      * Concatenates the vectors rows[i], i = 0...rows.length, into a single vector.
+     *
+     * @param vectors an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[] concatenate(double[][] vectors) {
         int numVectors = vectors.length;
@@ -405,6 +521,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>asRow.</p>
+     *
+     * @param v an array of {@link double} objects
      * @return the vector as a 1 x n row matrix.
      */
     public static double[][] asRow(double[] v) {
@@ -425,25 +544,27 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>impliedCovar2.</p>
+     *
      * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter in this matrix just in case i--&gt;j is
      *                 an edge in the model. All other entries in the matrix are zero.
      * @param errCovar The error covariance matrix. errCovar(i, i) is the variance of i; off-diagonal errCovar(i, j) are
      *                 covariance parameters that are specified in the model. All other matrix entries are zero.
      * @return The implied covariance matrix, which is the covariance matrix over the measured variables that is implied
      * by all the given information.
-     * @throws IllegalArgumentException if edgeCoef or errCovar contains an undefined value (Double.NaN).
+     * @throws java.lang.IllegalArgumentException if edgeCoef or errCovar contains an undefined value (Double.NaN).
      */
     public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             throw new IllegalArgumentException("Edge coefficient matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         final int sampleSize = 10000;
@@ -464,18 +585,25 @@ public final class MatrixUtils {
         return sample.transpose().times(sample).scalarMult(1.0 / sampleSize);
     }
 
+    /**
+     * <p>impliedCovar.</p>
+     *
+     * @param edgeCoef a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param errCovar a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix impliedCovar(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
             throw new IllegalArgumentException("Edge coefficient matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
-                    + "contain undefined values. Probably the search put them "
-                    + "there.");
+                                               + "contain undefined values. Probably the search put them "
+                                               + "there.");
         }
 
 //        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
@@ -511,6 +639,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>vech.</p>
+     *
+     * @param m an array of {@link double} objects
      * @return vech of the given array. (This is what you get when you stack all of the elements of m in the lower
      * triangular of m to form a vector. The elements are stacked in columns left to right, top to bottom.)
      */
@@ -534,6 +665,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>invVech.</p>
+     *
+     * @param vech an array of {@link double} objects
      * @return the symmetric matrix for which the given array is the vech.
      */
     public static double[][] invVech(double[] vech) {
@@ -556,6 +690,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>vec.</p>
+     *
+     * @param m an array of {@link double} objects
      * @return vech of the given array. (This is what you get when you stack all of the elements of m to form a vector.
      * The elements are stacked in columns left to right, top to bottom.)
      */
@@ -577,6 +714,9 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>sum0ToN.</p>
+     *
+     * @param n a int
      * @return the sum of integers from 0 up to n.
      */
     public static int sum0ToN(int n) {
@@ -591,6 +731,7 @@ public final class MatrixUtils {
      * The matrix which, when postmultiplied by vech, return vec.
      *
      * @param n the size of the square matrix that vec and vech come from.
+     * @return an array of {@link double} objects
      */
     public static double[][] vechToVecLeft(int n) {
         int row = n * n;
@@ -613,6 +754,11 @@ public final class MatrixUtils {
     }
 
     /**
+     * <p>hasDimensions.</p>
+     *
+     * @param m an array of {@link double} objects
+     * @param i a int
+     * @param j a int
      * @return true just in case the given matrix has the given dimensions --that is, just in case m.length == i and
      * m[0].length == j.
      */
@@ -621,6 +767,13 @@ public final class MatrixUtils {
         return _m.getNumRows() == i && _m.getNumColumns() == j;
     }
 
+    /**
+     * <p>zeros.</p>
+     *
+     * @param rows a int
+     * @param cols a int
+     * @return an array of {@link double} objects
+     */
     public static double[][] zeros(int rows, int cols) {
         return new Matrix(rows, cols).toArray();
     }
@@ -628,6 +781,9 @@ public final class MatrixUtils {
     /**
      * Return true if the given matrix is symmetric positive definite--that is, if it would make a valid covariance
      * matrix.
+     *
+     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a boolean
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
@@ -651,6 +807,12 @@ public final class MatrixUtils {
         return true;
     }
 
+    /**
+     * <p>cholesky.</p>
+     *
+     * @param covar a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix cholesky(Matrix covar) {
         RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(new BlockRealMatrix(covar.toArray())).getL();
         return new Matrix(L.getData());
@@ -660,6 +822,9 @@ public final class MatrixUtils {
     /**
      * Converts a covariance matrix to a correlation matrix in place; the same matrix is returned for convenience, but m
      * is modified in the process.
+     *
+     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix convertCovToCorr(Matrix m) {
         if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
@@ -670,10 +835,14 @@ public final class MatrixUtils {
         Matrix corr = m.like();
 
         for (int i = 0; i < m.getNumRows(); i++) {
-            for (int j = i + 1; j < m.getNumColumns(); j++) {
+            for (int j = 0; j < m.getNumColumns(); j++) {
                 double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
+
+                if (v < -1) v = -1;
+                if (v > 1) v = 1;
+
                 corr.set(i, j, v);
-                corr.set(j, i, v);
+//                corr.set(j, i, v);
             }
         }
 
@@ -687,6 +856,9 @@ public final class MatrixUtils {
     /**
      * Converts a matrix in lower triangular form to a symmetric matrix in square form. The lower triangular matrix need
      * not contain matrix elements to represent elements in the upper triangle.
+     *
+     * @param arr an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[][] convertLowerTriangleToSymmetric(double[][] arr) {
         int size = arr.length;
@@ -705,12 +877,22 @@ public final class MatrixUtils {
     /**
      * Copies the given array, using a standard scientific notation number formatter and beginning each line with a tab
      * character. The number format is DecimalFormat(" 0.0000;-0.0000").
+     *
+     * @param m an array of {@link double} objects
+     * @return a {@link java.lang.String} object
      */
     public static String toString(double[][] m) {
         NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
         return MatrixUtils.toString(m, nf);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m         an array of {@link double} objects
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(double[][] m, List<String> variables) {
         NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
         return MatrixUtils.toString(m, nf, variables);
@@ -763,11 +945,26 @@ public final class MatrixUtils {
         return result;
     }
 
+    /**
+     * <p>toStringSquare.</p>
+     *
+     * @param m         an array of {@link double} objects
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toStringSquare(double[][] m, List<String> variables) {
         NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
         return MatrixUtils.toStringSquare(m, nf, variables);
     }
 
+    /**
+     * <p>toStringSquare.</p>
+     *
+     * @param m         an array of {@link double} objects
+     * @param nf        a {@link java.text.NumberFormat} object
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toStringSquare(double[][] m, NumberFormat nf, List<String> variables) {
         String result;
         if (nf == null) {
@@ -804,6 +1001,12 @@ public final class MatrixUtils {
         return result;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m an array of {@link int} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(int[] m) {
         StringBuilder buf = new StringBuilder();
 
@@ -814,6 +1017,13 @@ public final class MatrixUtils {
         return buf.toString();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m         an array of {@link int} objects
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(int[][] m, List<String> variables) {
         String result;
 
@@ -846,6 +1056,13 @@ public final class MatrixUtils {
         return result;
     }
 
+    /**
+     * <p>toStringSquare.</p>
+     *
+     * @param m         an array of {@link int} objects
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toStringSquare(int[][] m, List<String> variables) {
         String result;
 
@@ -879,6 +1096,12 @@ public final class MatrixUtils {
         return result;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m an array of {@link double} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(double[] m) {
         StringBuilder buf = new StringBuilder();
 
@@ -889,6 +1112,13 @@ public final class MatrixUtils {
         return buf.toString();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m  an array of {@link double} objects
+     * @param nf a {@link java.text.NumberFormat} object
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(double[] m, NumberFormat nf) {
         StringBuilder buf = new StringBuilder();
 
@@ -899,6 +1129,12 @@ public final class MatrixUtils {
         return buf.toString();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @param m an array of {@link int} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String toString(int[][] m) {
         TextTable textTable = new TextTable(m.length, m[0].length);
 
@@ -913,6 +1149,9 @@ public final class MatrixUtils {
 
     /**
      * Copies the given array, starting each line with a tab character..
+     *
+     * @param m an array of {@link boolean} objects
+     * @return a {@link java.lang.String} object
      */
     public static String toString(boolean[][] m) {
         String result;
@@ -936,8 +1175,8 @@ public final class MatrixUtils {
     //=========================PRIVATE METHODS===========================//
     private static String nullMessage() {
         return "\n"
-                + "\t"
-                + "<Matrix is null>";
+               + "\t"
+               + "<Matrix is null>";
     }
 
     /**
@@ -958,12 +1197,25 @@ public final class MatrixUtils {
         return order;
     }
 
+    /**
+     * <p>copyOf.</p>
+     *
+     * @param arr    an array of {@link int} objects
+     * @param length a int
+     * @return an array of {@link int} objects
+     */
     public static int[] copyOf(int[] arr, int length) {
         int[] copy = new int[arr.length];
         System.arraycopy(arr, 0, copy, 0, length);
         return copy;
     }
 
+    /**
+     * <p>copyOf.</p>
+     *
+     * @param arr an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[][] copyOf(double[][] arr) {
         double[][] copy = new double[arr.length][arr[0].length];
 
@@ -974,6 +1226,12 @@ public final class MatrixUtils {
         return copy;
     }
 
+    /**
+     * <p>transposeWithoutCopy.</p>
+     *
+     * @param apacheData a {@link org.apache.commons.math3.linear.RealMatrix} object
+     * @return a {@link org.apache.commons.math3.linear.RealMatrix} object
+     */
     public static RealMatrix transposeWithoutCopy(RealMatrix apacheData) {
         return new AbstractRealMatrix(apacheData.getColumnDimension(), apacheData.getRowDimension()) {
             @Override

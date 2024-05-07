@@ -27,20 +27,58 @@ import edu.cmu.tetrad.sem.SemIm;
 
 /**
  * Interface for Bff (Heuristic Best Significant Model Search) algorithm. See implementations.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Hbsms {
+    /**
+     * <p>setAlpha.</p>
+     *
+     * @param alpha a double
+     */
     void setAlpha(double alpha);
 
+    /**
+     * <p>setBeamWidth.</p>
+     *
+     * @param beamWidth a int
+     */
     void setBeamWidth(int beamWidth);
 
+    /**
+     * <p>setHighPValueAlpha.</p>
+     *
+     * @param alpha a double
+     */
     void setHighPValueAlpha(double alpha);
 
+    /**
+     * <p>setKnowledge.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     void setKnowledge(Knowledge knowledge);
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     Graph search();
 
+    /**
+     * <p>getOriginalSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     SemIm getOriginalSemIm();
 
+    /**
+     * <p>getNewSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     SemIm getNewSemIm();
 }
 

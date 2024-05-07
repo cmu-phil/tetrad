@@ -27,6 +27,7 @@ import java.nio.file.Path;
  * Dec 12, 2018 12:14:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class AbstractDataFileValidation extends DataFileReader implements Validation {
 
@@ -47,9 +48,9 @@ public abstract class AbstractDataFileValidation extends DataFileReader implemen
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Set the maximum number of messages to validate.
-     *
-     * @param maxNumOfMsg the maximum number of messages
      */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {

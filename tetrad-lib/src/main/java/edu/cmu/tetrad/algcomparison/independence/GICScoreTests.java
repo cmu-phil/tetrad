@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.LinearGaussian;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -17,9 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
- *
- * @author josephramsey
+ * Represents a class for Generalized Information Criterion Score Tests. It implements the IndependenceWrapper
+ * interface.
  */
 
 // Removing from interface.
@@ -34,6 +32,16 @@ public class GICScoreTests implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Represents a class for Generalized Information Criterion Score Tests. It implements the IndependenceWrapper
+     * interface.
+     */
+    public GICScoreTests() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         GicScores score;
@@ -80,16 +88,25 @@ public class GICScoreTests implements IndependenceWrapper {
         return new ScoreIndTest(score, dataSet);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Generalized Information Criterion Score Tests";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

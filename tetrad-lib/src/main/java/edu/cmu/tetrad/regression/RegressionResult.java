@@ -33,6 +33,7 @@ import java.text.NumberFormat;
  * Stores the various components of a regression result so they can be passed around together more easily.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RegressionResult implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -130,6 +131,7 @@ public class RegressionResult implements TetradSerializable {
      * @param r2                   The R squared statistic for the regression.
      * @param rss                  The residual sum of squares of the regression.
      * @param alpha                The alpha value for the regression, determining which regressors are taken to be
+     * @param res                  a {@link edu.cmu.tetrad.util.Vector} object
      */
     public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames, int n, double[] b, double[] t,
                             double[] p, double[] se, double r2, double rss, double alpha, Vector res) {
@@ -168,6 +170,8 @@ public class RegressionResult implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */
     public static RegressionResult serializableInstance() {
         return new RegressionResult(true, new String[0],
@@ -176,6 +180,8 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>n</code>.</p>
+     *
      * @return the number of data points.
      */
     public int getN() {
@@ -183,6 +189,8 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
+     * <p>getNumRegressors.</p>
+     *
      * @return the number of regressors.
      */
     public int getNumRegressors() {
@@ -190,6 +198,8 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
+     * <p>getCoef.</p>
+     *
      * @return the array of regression coeffients.
      */
     public double[] getCoef() {
@@ -197,6 +207,8 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>t</code>.</p>
+     *
      * @return the array of t-statistics for the regression coefficients.
      */
     public double[] getT() {
@@ -204,21 +216,39 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>p</code>.</p>
+     *
      * @return the array of p-values for the regression coefficients.
      */
     public double[] getP() {
         return this.p;
     }
 
+    /**
+     * <p>Getter for the field <code>se</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] getSe() {
         return this.se;
     }
 
 
+    /**
+     * <p>Getter for the field <code>regressorNames</code>.</p>
+     *
+     * @return an array of {@link java.lang.String} objects
+     */
     public String[] getRegressorNames() {
         return this.regressorNames;
     }
 
+    /**
+     * <p>getPredictedValue.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @return a double
+     */
     public double getPredictedValue(double[] x) {
         double yHat = 0.0;
 
@@ -235,6 +265,11 @@ public class RegressionResult implements TetradSerializable {
         return yHat;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder summary = new StringBuilder(getPreamble());
         TextTable table = getResultsTable();
@@ -243,6 +278,11 @@ public class RegressionResult implements TetradSerializable {
         return summary.toString();
     }
 
+    /**
+     * <p>getResultsTable.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TextTable} object
+     */
     public TextTable getResultsTable() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         TextTable table = new TextTable(getNumRegressors() + 3, 6);
@@ -290,19 +330,29 @@ public class RegressionResult implements TetradSerializable {
         return table;
     }
 
+    /**
+     * <p>getPreamble.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getPreamble() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         String rssString = nf.format(this.rss);
         String r2String = nf.format(this.r2);
         return "\n REGRESSION RESULT" +
-                "\n n = " + this.n + ", k = " +
-                (getNumRegressors() + 1) + ", alpha = " + this.alpha +
-                "\n" + " SSE = " + rssString +
-                "\n" + " R^2 = " + r2String +
-                "\n";
+               "\n n = " + this.n + ", k = " +
+               (getNumRegressors() + 1) + ", alpha = " + this.alpha +
+               "\n" + " SSE = " + rssString +
+               "\n" + " R^2 = " + r2String +
+               "\n";
     }
 
+    /**
+     * <p>getResiduals.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector getResiduals() {
         return this.res;
     }

@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -58,31 +55,52 @@ import java.util.Set;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
  */
 public final class SvarFci implements IGraphSearch {
-    // The independence test to use.
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The PAG being constructed.
+    /**
+     * The PAG being constructed.
+     */
     private Graph graph;
-    // The SepsetMap being constructed.
+    /**
+     * The SepsetMap being constructed.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+    /**
+     * flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // The depth for the fast adjacency search.
+    /**
+     * The depth for the fast adjacency search.
+     */
     private int depth = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * Represents whether to resolve almost cyclic paths during the search.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SvarFci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -135,8 +153,11 @@ public final class SvarFci implements IGraphSearch {
      * @see IFas
      */
     public Graph search(IFas fas) {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
@@ -179,7 +200,7 @@ public final class SvarFci implements IGraphSearch {
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 
         long time6 = MillisecondTimes.timeMillis();
-        this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+        TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
 
         SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
 
@@ -188,6 +209,21 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
 
         return this.graph;
     }
@@ -292,21 +328,26 @@ public final class SvarFci implements IGraphSearch {
         return this.independenceTest;
     }
 
-
-    // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    // this version removes edges from graph instead of the list of adjacencies
+    /**
+     * Removes similar pairs of nodes based on the given independence test, nodes x and y, and a set of conditioning
+     * nodes.
+     * <p>
+     * removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+     * <p>
+     * this version removes edges from graph instead of the list of adjacencies
+     *
+     * @param test    The independence test to determine if nodes x and y are independent.
+     * @param x       The first node.
+     * @param y       The second node.
+     * @param condSet The set of conditioning nodes.
+     */
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, Set<Node> condSet) {
-        System.out.println("Entering removeSimilarPairs method...");
-        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
-
         if (x.getName().equals("time") || y.getName().equals("time")) {
-            System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
 
         for (Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
-                System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }
@@ -386,9 +427,9 @@ public final class SvarFci implements IGraphSearch {
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);
@@ -431,9 +472,9 @@ public final class SvarFci implements IGraphSearch {
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                        || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                                + "of window, so not added to SepSet");
+                                           + "of window, so not added to SepSet");
                         continue;
                     }
 
@@ -448,11 +489,23 @@ public final class SvarFci implements IGraphSearch {
         }
     }
 
+    /**
+     * Returns the name of the given object without any lagging characters.
+     *
+     * @param obj The object to get the name from.
+     * @return The name of the object without any lagging characters.
+     */
     public String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
-            return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        return TsUtils.getNameNoLag(obj);
+    }
+
+    /**
+     * Sets whether almost cyclic paths should be resolved during the search.
+     *
+     * @param resolveAlmostCyclicPaths true if almost cyclic paths should be resolved, false otherwise
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

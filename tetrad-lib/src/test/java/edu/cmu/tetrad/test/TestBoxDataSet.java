@@ -112,7 +112,7 @@ public final class TestBoxDataSet {
 
         assertTrue(dataSet.getVariables().get(0) instanceof DiscreteVariable);
         assertTrue(dataSet.getVariables().get(1) instanceof ContinuousVariable);
-        assertTrue(dataSet.getInt(0, 0) == -99);
+        assertEquals(-99, dataSet.getInt(0, 0));
         assertTrue(Double.isNaN(dataSet.getDouble(1, 0)));
     }
 

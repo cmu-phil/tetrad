@@ -49,6 +49,8 @@ final class LoadDataAction extends AbstractAction {
 
     /**
      * Creates a new load data action for the given dataEditor.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public LoadDataAction(DataEditor editor) {
         super("Load Data...");
@@ -73,6 +75,8 @@ final class LoadDataAction extends AbstractAction {
     //======================= private methods =========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     @Override

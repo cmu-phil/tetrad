@@ -25,10 +25,19 @@ package edu.cmu.tetrad.util;
  * Specifies the protocol used in Tetrad for variable names. This protocol should be used throughout Tetrad.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NamingProtocol {
 
     /**
+     * <p>Constructor for NamingProtocol.</p>
+     */
+    private NamingProtocol() {
+    }
+
+    /**
+     * <p>isLegalName.</p>
+     *
      * @param name Ibid.
      * @return Ibid.
      */
@@ -37,11 +46,13 @@ public class NamingProtocol {
     }
 
     /**
+     * <p>getProtocolDescription.</p>
+     *
      * @return Ibid.
      */
     public static String getProtocolDescription() {
         return "Names must begin with non-numeric characters and may not contain " +
-                "\nspaces or tabs.";
+               "\nspaces or tabs.";
     }
 }
 

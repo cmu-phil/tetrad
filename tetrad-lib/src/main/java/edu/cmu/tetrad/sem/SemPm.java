@@ -41,6 +41,7 @@ import java.util.*;
  *
  * @author Donald Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemPm implements Pm, TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -105,6 +106,8 @@ public final class SemPm implements Pm, TetradSerializable {
     /**
      * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
      * SemGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public SemPm(Graph graph) {
         this(new SemGraph(graph));
@@ -112,6 +115,8 @@ public final class SemPm implements Pm, TetradSerializable {
 
     /**
      * Constructs a new SemPm from the given SemGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.SemGraph} object
      */
     public SemPm(SemGraph graph) {
         if (graph == null) {
@@ -129,6 +134,8 @@ public final class SemPm implements Pm, TetradSerializable {
 
     /**
      * Copy constructor.
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
      */
     public SemPm(SemPm semPm) {
         this.graph = semPm.graph;
@@ -144,11 +151,16 @@ public final class SemPm implements Pm, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
      */
     public static SemPm serializableInstance() {
         return new SemPm(Dag.serializableInstance());
     }
 
+    /**
+     * <p>fixLatentErrorVariances.</p>
+     */
     public void fixLatentErrorVariances() {
         Graph graph = getGraph();
         List<Node> nodes = graph.getNodes();
@@ -163,6 +175,9 @@ public final class SemPm implements Pm, TetradSerializable {
         }
     }
 
+    /**
+     * <p>fixOneLoadingPerLatent.</p>
+     */
     public void fixOneLoadingPerLatent() {
         for (Node x : this.graph.getNodes()) {
             if (x.getNodeType() != NodeType.LATENT) {
@@ -195,6 +210,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return the structural model graph this SEM PM is using.
      */
     public SemGraph getGraph() {
@@ -202,6 +219,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
      * @return a list of all the freeParameters, including variance, covariance, coefficient, and mean freeParameters.
      */
     public List<Parameter> getParameters() {
@@ -209,6 +228,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>variableNodes</code>.</p>
+     *
      * @return the list of variable nodes--that is, node that are not error nodes.
      */
     public List<Node> getVariableNodes() {
@@ -216,6 +237,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getMeasuredNodes.</p>
+     *
      * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes() {
@@ -231,6 +254,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getLatentNodes.</p>
+     *
      * @return the list of latent variableNodes.
      */
     public List<Node> getLatentNodes() {
@@ -246,6 +271,9 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getParameter.</p>
+     *
+     * @param name a {@link java.lang.String} object
      * @return the first parameter encountered with the given name, or null if there is no such parameter.
      */
     public Parameter getParameter(String name) {
@@ -258,6 +286,13 @@ public final class SemPm implements Pm, TetradSerializable {
         return null;
     }
 
+    /**
+     * <p>getParameter.</p>
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getParameter(Node nodeA, Node nodeB) {
         nodeA = getGraph().getVarNode(nodeA);
         nodeB = getGraph().getVarNode(nodeB);
@@ -281,6 +316,9 @@ public final class SemPm implements Pm, TetradSerializable {
     /**
      * Return the parameter for the variance of the error term for the given node, which is the variance of the node if
      * the node is an error term, and the variance of the node's error term if not.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
      */
     public Parameter getVarianceParameter(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
@@ -299,6 +337,13 @@ public final class SemPm implements Pm, TetradSerializable {
         return null;
     }
 
+    /**
+     * <p>getCovarianceParameter.</p>
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getCovarianceParameter(Node nodeA, Node nodeB) {
         if (nodeA.getNodeType() == NodeType.ERROR) {
             List<Node> children = getGraph().getChildren(nodeA);
@@ -325,6 +370,13 @@ public final class SemPm implements Pm, TetradSerializable {
         return null;
     }
 
+    /**
+     * <p>getCoefficientParameter.</p>
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getCoefficientParameter(Node nodeA, Node nodeB) {
         for (Parameter parameter : this.parameters) {
             Node _nodeA = parameter.getNodeA();
@@ -338,6 +390,12 @@ public final class SemPm implements Pm, TetradSerializable {
         return null;
     }
 
+    /**
+     * <p>getMeanParameter.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getMeanParameter(Node node) {
         for (Parameter parameter : this.parameters) {
             Node _nodeA = parameter.getNodeA();
@@ -352,6 +410,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getMeasuredVarNames.</p>
+     *
      * @return the list of measured variable names in the order in which they appear in the list of nodes. (This order
      * is fixed.)
      */
@@ -369,6 +429,10 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getParamComparison.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param b a {@link edu.cmu.tetrad.sem.Parameter} object
      * @return the comparison of parameter a to parameter b.
      */
     public ParamComparison getParamComparison(Parameter a, Parameter b) {
@@ -386,6 +450,10 @@ public final class SemPm implements Pm, TetradSerializable {
 
     /**
      * Sets the comparison of parameter a to parameter b.
+     *
+     * @param a          a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param b          a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param comparison a {@link edu.cmu.tetrad.sem.ParamComparison} object
      */
     public void setParamComparison(Parameter a, Parameter b,
                                    ParamComparison comparison) {
@@ -405,6 +473,11 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
 
+    /**
+     * <p>getFreeParameters.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Parameter> getFreeParameters() {
         List<Parameter> parameters = getParameters();
 
@@ -424,6 +497,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
+     * <p>getDof.</p>
+     *
      * @return the degrees of freedom for the model.
      */
     public int getDof() {
@@ -439,6 +514,11 @@ public final class SemPm implements Pm, TetradSerializable {
         return (numMeasured * (numMeasured + 1)) / 2 - numFreeParams;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("\nParameters:\n");
@@ -466,7 +546,7 @@ public final class SemPm implements Pm, TetradSerializable {
         for (Node node : this.nodes) {
 
             if (node.getNodeType() == NodeType.MEASURED ||
-                    node.getNodeType() == NodeType.LATENT) {
+                node.getNodeType() == NodeType.LATENT) {
                 varNodes.add(node);
             }
         }
@@ -501,8 +581,8 @@ public final class SemPm implements Pm, TetradSerializable {
             }
 
             if (!SemGraph.isErrorEdge(edge) &&
-                    edge.getEndpoint1() == Endpoint.TAIL &&
-                    edge.getEndpoint2() == Endpoint.ARROW) {
+                edge.getEndpoint1() == Endpoint.TAIL &&
+                edge.getEndpoint2() == Endpoint.ARROW) {
                 if (!this.graph.isParameterizable(edge.getNode2())) {
                     continue;
                 }
@@ -591,6 +671,10 @@ public final class SemPm implements Pm, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

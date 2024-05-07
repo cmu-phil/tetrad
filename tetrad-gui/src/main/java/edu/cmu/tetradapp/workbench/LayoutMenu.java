@@ -21,27 +21,36 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 
 import javax.swing.*;
-import java.util.ArrayList;
 
 /**
  * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LayoutMenu extends JMenu {
+
+    /**
+     * The layout editable object.
+     */
     private final LayoutEditable layoutEditable;
+
+    /**
+     * The copy layout action.
+     */
     private final CopyLayoutAction copyLayoutAction;
 
+    /**
+     * <p>Constructor for LayoutMenu.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public LayoutMenu(LayoutEditable layoutEditable) {
         super("Layout");
         this.layoutEditable = layoutEditable;
@@ -93,16 +102,16 @@ public class LayoutMenu extends JMenu {
 
             likeLag0.addActionListener(e -> {
                 if (LayoutUtils.getLayout() == LayoutUtils.Layout.topToBottom
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
+                    || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
                     LayoutUtils.copyLag0LayoutTopToBottom(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.bottomToTop
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
                     LayoutUtils.copyLag0LayoutBottomToTop(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.leftToRight
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
                     LayoutUtils.copyLag0LayoutLeftToRight(LayoutMenu.this.getLayoutEditable());
                 } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.rightToLeft
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
+                           || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
                     LayoutUtils.copyLag0LayoutRightToLeft(LayoutMenu.this.getLayoutEditable());
                 }
 

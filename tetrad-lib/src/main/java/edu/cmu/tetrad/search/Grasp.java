@@ -25,8 +25,8 @@ import static java.util.Collections.shuffle;
  * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
  * <p>
  * GRaSP can use either a score or an independence test; you can provide both, though if you do you need to use the
- * parameters to choose which one will be used. The score options is more scalable and accurate, though the independence
- * option is perhaps a little easier ot deal with theoretically and are useful for generating unit test results.
+ * parameters to choose which one will be used. The score option is more scalable and accurate, though the independence
+ * option is perhaps a little easier ot deal with theoretically and is useful for generating unit test results.
  * <p>
  * As shown the reference above, GRaSP generates results for the linear, Gaussian case for N = 1000 with precisions for
  * adjacencies and arrowheads near 1 and recalls of about 0.85, when the linear, Gaussian BIC score is used with a
@@ -47,44 +47,78 @@ import static java.util.Collections.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Boss
  * @see Sp
  * @see Knowledge
  */
 public class Grasp {
-    // The variables to be permuted.
+    /**
+     * The variables to be permuted.
+     */
     private final List<Node> variables;
-    // The score or test to be used.
+    /**
+     * The score or test to be used.
+     */
     private Score score;
-    // The test to be used.
+    /**
+     * The test to be used.
+     */
     private IndependenceTest test;
-    // The knowledge to be used.
+    /**
+     * The knowledge to be used.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The scorer to be used.
+    /**
+     * The scorer to be used.
+     */
     private TeyssierScorer scorer;
-    // The time at which the algorithm started.
+    /**
+     * The time at which the algorithm started.
+     */
     private long start;
-    // Whether to use the score or the test.
+    /**
+     * Whether to use the score or the test.
+     */
     private boolean useScore = true;
-    // Whether to use the Raskutti-Uhler method or the Verma-Pearl method.
+    /**
+     * Whether to use the Raskutti-Uhler method or the Verma-Pearl method.
+     */
     private boolean useRaskuttiUhler;
-    // Whether to impose an ordering on the three GRaSP algorithms.
+    /**
+     * Whether to impose an ordering on the three GRaSP algorithms.
+     */
     private boolean ordered = false;
-    // Whether to use verbose output.
+    /**
+     * Whether to use verbose output.
+     */
     private boolean verbose;
-    // The maximum depth of the depth-first search for tucks.
+    /**
+     * The maximum depth of the depth-first search for tucks.
+     */
     private int uncoveredDepth = 1;
-    // The maximum depth of the depth-first search for uncovered tucks.
+    /**
+     * The maximum depth of the depth-first search for uncovered tucks.
+     */
     private int nonSingularDepth = 1;
-    // Whether to use the data order or a random order for the initial permutation.
+    /**
+     * Whether to use the data order or a random order for the initial permutation.
+     */
     private boolean useDataOrder = true;
-    // The maximum depth of the depth-first search for singular tucks.
+    /**
+     * The maximum depth of the depth-first search for singular tucks.
+     */
     private int depth = 3;
-    // The number of times to run the algorithm with different starting permutations.
+    /* The number of times to run the algorithm with different starting permutations. */
     private int numStarts = 1;
-    // Whether to allow internal randomness in the algorithm.
+    /**
+     * Whether to allow internal randomness in the algorithm.
+     */
     private boolean allowInternalRandomness = false;
+    /**
+     * Represents the seed used for random number generation or shuffling.
+     */
     private long seed = -1;
 
     /**
@@ -107,6 +141,7 @@ public class Grasp {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
+        this.useRaskuttiUhler = true;
     }
 
     /**
@@ -344,6 +379,12 @@ public class Grasp {
         this.allowInternalRandomness = allowInternalRandomness;
     }
 
+    /**
+     * Checks if the given order violates the knowledge.
+     *
+     * @param order The order of nodes to check.
+     * @return True if the order violates the knowledge, false otherwise.
+     */
     private boolean violatesKnowledge(List<Node> order) {
         if (this.knowledge.isEmpty()) return false;
 
@@ -358,6 +399,12 @@ public class Grasp {
         return false;
     }
 
+    /**
+     * Implements the GRaSP algorithm to search for a best permutation of variables based on a scorer.
+     *
+     * @param scorer The scorer used to evaluate the permutations.
+     * @return A list of Node objects representing the discovered permutation at the end of the procedure.
+     */
     private List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
         List<int[]> depths = new ArrayList<>();
@@ -391,14 +438,19 @@ public class Grasp {
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (GRaSP)"
-                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                                                       + " Score = " + scorer.score()
+                                                       + " (GRaSP)"
+                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
     }
 
+    /**
+     * Makes a valid knowledge order by rearranging the given list of nodes according to the knowledge constraints.
+     *
+     * @param order The initial order of nodes.
+     */
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (this.knowledge.isEmpty()) return;
 
@@ -436,6 +488,16 @@ public class Grasp {
         }
     }
 
+    /**
+     * Executes a Depth-First Search (DFS) algorithm for graph traversal with certain parameters.
+     *
+     * @param scorer       the TeyssierScorer object that scores the graph
+     * @param sOld         the original score before the DFS
+     * @param depth        an array of integers representing the depth limits for certain conditions
+     * @param currentDepth the current depth of the DFS traversal
+     * @param tucks        a set of sets of nodes representing the tucks performed
+     * @param dfsHistory   a set of sets of sets of nodes representing the DFS history
+     */
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
         List<Node> vars = scorer.getPi();
@@ -453,7 +515,9 @@ public class Grasp {
             }
 
             for (Node x : parents) {
-                if (Thread.currentThread().isInterrupted()) return;
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
@@ -527,6 +591,11 @@ public class Grasp {
         }
     }
 
+    /**
+     * Sets the seed for random number generation.
+     *
+     * @param seed The seed to set.
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

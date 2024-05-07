@@ -26,11 +26,13 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util;
  * Represents a graph that's output by a genetic search algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface OutputGraph {
 
     /**
      * Returns the number of variables over which the graph is defined.
+     *
      * @return the number of variables over which the graph is defined.
      */
     int getSize();

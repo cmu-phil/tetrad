@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
- *
- * @author josephramsey
+ * The GicScores class is an implementation of the ScoreWrapper interface that calculates the Generalized Information
+ * Criterion (GIC) scores for a given data model. It is used to test the independence between variables in the data
+ * set.
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Generalized Information Criterion Scores",
@@ -29,8 +29,20 @@ public class GicScores implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
+    /**
+     * Constructs a new instance of the algorithm.
+     */
+    public GicScores() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -64,16 +76,25 @@ public class GicScores implements ScoreWrapper {
         return score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Generalized Information Criterion Scores";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -85,6 +106,9 @@ public class GicScores implements ScoreWrapper {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return dataSet.getVariable(name);

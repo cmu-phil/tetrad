@@ -39,6 +39,7 @@ import java.util.List;
  * and a list of means.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RegressionCovariance implements Regression {
 
@@ -136,15 +137,17 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
-     *
-     * @param alpha The significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return This graph.
      */
     public Graph getGraph() {
@@ -261,10 +264,17 @@ public class RegressionCovariance implements Regression {
                     bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
-                    LogUtilsSearch.getScoreFact(target, regressors));
+                                       LogUtilsSearch.getScoreFact(target, regressors));
         }
     }
 
+    /**
+     * <p>regress.</p>
+     *
+     * @param target     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param regressors a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
+     */
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);

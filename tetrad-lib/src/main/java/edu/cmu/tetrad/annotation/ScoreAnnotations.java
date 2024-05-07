@@ -24,6 +24,7 @@ import java.util.List;
  * Sep 26, 2017 1:14:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ScoreAnnotations extends AbstractAnnotations<Score> {
 
@@ -33,10 +34,21 @@ public class ScoreAnnotations extends AbstractAnnotations<Score> {
         super("edu.cmu.tetrad.algcomparison.score", Score.class);
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.annotation.ScoreAnnotations} object
+     */
     public static ScoreAnnotations getInstance() {
         return ScoreAnnotations.INSTANCE;
     }
 
+    /**
+     * <p>filterOutExperimental.</p>
+     *
+     * @param list a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<AnnotatedClass<Score>> filterOutExperimental(List<AnnotatedClass<Score>> list) {
         return filterOutByAnnotation(list, Experimental.class);
     }

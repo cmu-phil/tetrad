@@ -24,40 +24,61 @@ import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntBinaryOperator;
 
 /**
- * Wraps a Bayes Pm for use in the Tetrad application.
+ * Wraps a Bayes IM for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImWrapper implements SessionModel, Memorable {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // The number of models in the simulation.
+    /**
+     * The number of models in the simulation.
+     */
     private int numModels = 1;
-    // The index of the model to be used.
+    /**
+     * The index of the model to be used.
+     */
     private int modelIndex;
-    // The name of the model source.
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
-    // The name of the Bayes IM.
+    /**
+     * The name of the Bayes IM.
+     */
     private String name;
-    // The Bayes IM.
+    /**
+     * The Bayes IM.
+     */
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
+
+    public BayesImWrapper(Parameters parameters) {
+        parameters.set("initializationMode", "trinary");
+        Graph graph = new EdgeListGraph();
+        BayesPmWrapper bayesPmWrapper = new BayesPmWrapper(graph, parameters);
+        BayesImWrapper oldBayesImwrapper = new BayesImWrapper(bayesPmWrapper, parameters);
+        setup(bayesPmWrapper, oldBayesImwrapper, parameters);
+    }
 
     /**
      * Constructs a new BayesImWrapper.
@@ -67,6 +88,10 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @param params            the parameters
      */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
+        setup(bayesPmWrapper, oldBayesImwrapper, params);
+    }
+
+    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -76,14 +101,20 @@ public class BayesImWrapper implements SessionModel, Memorable {
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+
+        if (bayesIms == null) {
+            setBayesIm(new MlBayesIm(bayesPm));
+            return;
+        }
+
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }
 
@@ -93,7 +124,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @param simulation the simulation
      */
     public BayesImWrapper(Simulation simulation) {
-        List<BayesIm> bayesIms = null;
+        List<BayesIm> bayesIms;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
@@ -126,7 +157,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * Constructs a new BayesImWrapper for a RowSummingExactUpdaterWrapper.
      *
      * @param wrapper    the wrapper
-     * @param parameters the parameters
+     * @param parameters the parameters, unused but the field is required.
      */
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
@@ -139,7 +170,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * Constructs a new BayesImWrapper for a CptInvariantUpdaterWrapper.
      *
      * @param wrapper    the wrapper
-     * @param parameters the parameters
+     * @param parameters the parameters, unused but the field is required.
      */
     public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
@@ -148,6 +179,13 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * Constructs a new BayesImWrapper with the provided ApproximateUpdaterWrapper and Parameters.
+     *
+     * @param wrapper    The ApproximateUpdaterWrapper to be wrapped.
+     * @param parameters The Parameters for the BayesImWrapper.
+     * @throws NullPointerException if wrapper is null.
+     */
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -155,6 +193,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * <p>Constructor for BayesImWrapper.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -169,9 +213,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             setBayesIm(new MlBayesIm(bayesPm));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }
 
@@ -190,6 +234,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      * @see TetradSerializableUtils
      */
     public static BayesImWrapper serializableInstance() {
@@ -235,9 +280,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the BayesIm.
-     *
-     * @param name the name of the BayesIm
      */
     public void setName(String name) {
         this.name = name;
@@ -317,9 +362,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //============================== private methods ============================//
 
-    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
+    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, MlBayesIm.InitializationMethod initializationMethod) {
         this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, initializationMethod));
     }
 
     /**
@@ -329,6 +374,10 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

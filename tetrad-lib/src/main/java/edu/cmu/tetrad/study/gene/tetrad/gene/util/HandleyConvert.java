@@ -38,8 +38,16 @@ import java.util.StringTokenizer;
  * and converts them into LagGraphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class HandleyConvert {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HandleyConvert() {
+
+    }
 
     /**
      * Converts the graph file from the moves line.
@@ -50,7 +58,7 @@ public class HandleyConvert {
     public static void main(String[] args) {
         if (args.length != 1) {
             throw new IllegalArgumentException("Expecting exactly one " +
-                    "argument, the filename " + "of the file to translate.");
+                                               "argument, the filename " + "of the file to translate.");
         }
 
         try {

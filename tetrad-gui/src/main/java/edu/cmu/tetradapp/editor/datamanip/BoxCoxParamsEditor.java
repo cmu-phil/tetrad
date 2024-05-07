@@ -31,7 +31,10 @@ import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
+ * <p>BoxCoxParamsEditor class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
@@ -50,6 +53,8 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the parameters.
      */
     public void setParams(Parameters params) {
@@ -58,6 +63,8 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Does nothing
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
 
@@ -91,6 +98,8 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
+     * <p>mustBeShown.</p>
+     *
      * @return true.
      */
     public boolean mustBeShown() {

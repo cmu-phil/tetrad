@@ -28,9 +28,37 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * circle (-o), start (-*), and null (no endpoint).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public enum Endpoint implements TetradSerializable {
-    TAIL, ARROW, CIRCLE, STAR, NULL;
+
+    /**
+     * Tail endpoint.
+     */
+    TAIL,
+
+    /**
+     * Arrow endpoint.
+     */
+    ARROW,
+
+    /**
+     * Circle endpoint.
+     */
+    CIRCLE,
+
+    /**
+     * Star endpoint.
+     */
+    STAR,
+
+    /**
+     * No endpoint.
+     */
+    NULL;
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     private static final long serialVersionUID = 23L;
 }
 

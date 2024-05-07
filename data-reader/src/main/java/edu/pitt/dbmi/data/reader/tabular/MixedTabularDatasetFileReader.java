@@ -30,6 +30,7 @@ import java.util.Set;
  * Dec 14, 2018 1:54:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MixedTabularDatasetFileReader extends DatasetFileReader implements MixedTabularDatasetReader {
 
@@ -52,10 +53,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data.
-     *
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public Data readInData() throws IOException {
@@ -63,9 +63,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
-     * @param namesOfColumnsToExclude the names of columns to exclude
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * {@inheritDoc}
      */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
@@ -89,11 +87,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data.
-     *
-     * @param columnsToExclude the columns to exclude
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
@@ -117,8 +113,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     private Data toMixedData(Data data) {
-        if (data instanceof ContinuousData) {
-            ContinuousData continuousData = (ContinuousData) data;
+        if (data instanceof ContinuousData continuousData) {
             double[][] contData = continuousData.getData();
             int numOfRows = contData.length;
             int numOfCols = contData[0].length;
@@ -137,8 +132,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
             }
 
             return new MixedTabularData(numOfRows, columns, vertContData, new int[0][0]);
-        } else if (data instanceof DiscreteData) {
-            DiscreteData verticalDiscreteData = (DiscreteData) data;
+        } else if (data instanceof DiscreteData verticalDiscreteData) {
             int[][] discreteData = verticalDiscreteData.getData();
             int numOfRows = discreteData[0].length;
 
@@ -153,8 +147,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
                     }).toArray(DiscreteDataColumn[]::new);
 
             return new MixedTabularData(numOfRows, columns, new double[0][0], discreteData);
-        } else if (data instanceof MixedTabularData) {
-            MixedTabularData mixedTabularData = (MixedTabularData) data;
+        } else if (data instanceof MixedTabularData mixedTabularData) {
             DiscreteDataColumn[] columns = mixedTabularData.getDataColumns();
             double[][] continuousData = mixedTabularData.getContinuousData();
             int[][] discreteData = mixedTabularData.getDiscreteData();
@@ -167,9 +160,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether the data file has a header.
-     *
-     * @param hasHeader Whether the data file has a header.
      */
     @Override
     public void setHasHeader(boolean hasHeader) {
@@ -177,9 +170,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the quote character.
-     *
-     * @param quoteCharacter The quote character.
      */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {

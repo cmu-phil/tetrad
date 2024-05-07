@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.data.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -12,10 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,18 +22,44 @@ import java.util.Objects;
  * Load data sets and graphs from a directory.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The path.
+     */
     private final String path;
+
+    /**
+     * The graphs.
+     */
     private final List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The used parameters.
+     */
     private final List<String> usedParameters = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
 
+    /**
+     * <p>Constructor for LoadContinuousDataAndGraphs.</p>
+     *
+     * @param path a {@link java.lang.String} object
+     */
     public LoadContinuousDataAndGraphs(String path) {
         this.path = path;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
@@ -95,16 +119,25 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         try {
@@ -126,16 +159,35 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
     }
 
     @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

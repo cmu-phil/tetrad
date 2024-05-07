@@ -53,19 +53,65 @@ import java.util.prefs.Preferences;
  * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndependenceFactsEditor extends JPanel {
+
+    /**
+     * The number format.
+     */
     private final NumberFormat nf = new DecimalFormat("0.0000");
+
+    /**
+     * The independence test model.
+     */
     private IndTestModel model;
+
+    /**
+     * The independence test producers.
+     */
     private LinkedList<String> vars;
+
+    /**
+     * The text field.
+     */
     private JTextField textField;
+
+    /**
+     * The independence test producers.
+     */
     private List<IndTestProducer> indTestProducers;
+
+    /**
+     * The results.
+     */
     private List<List<IndependenceResultIndFacts>> results = new ArrayList<>();
+
+    /**
+     * The table model.
+     */
     private AbstractTableModel tableModel;
+
+    /**
+     * The sort direction.
+     */
     private int sortDir;
+
+    /**
+     * The last sort column.
+     */
     private int lastSortCol;
+
+    /**
+     * Whether to show p values.
+     */
     private boolean showPs;
 
+    /**
+     * <p>Constructor for IndependenceFactsEditor.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndTestModel} object
+     */
     public IndependenceFactsEditor(IndTestModel model) {
         this.indTestProducers = model.getIndTestProducers();
         this.model = model;
@@ -103,6 +149,12 @@ public class IndependenceFactsEditor extends JPanel {
 
     //========================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Constructor for IndependenceFactsEditor.</p>
+     *
+     * @param layout           a {@link java.awt.LayoutManager} object
+     * @param isDoubleBuffered a boolean
+     */
     public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }
@@ -177,7 +229,7 @@ public class IndependenceFactsEditor extends JPanel {
                     vars.addLast(var);
                 }
             } else if ((vars.indexOf("?") < 2) && !(vars.contains("+")) &&
-                    !(vars.contains(var))) {
+                       !(vars.contains(var))) {
                 vars.add(var);
             }
 
@@ -587,7 +639,7 @@ public class IndependenceFactsEditor extends JPanel {
 
                     for (int prod = 0; prod < indTestProducers.size(); prod++) {
                         String[] vars4 = new String[fixedIndices.length + questionMarkFirstTwoIndices.length
-                                + questionMarkRestIndices.length + choice3.length];
+                                                    + questionMarkRestIndices.length + choice3.length];
 
                         for (int i = 0; i < fixedIndices.length; i++) {
                             vars4[fixedIndices[i]] = fixedVars[i];

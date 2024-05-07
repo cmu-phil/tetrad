@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -11,6 +14,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MixedUtils;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,20 +23,50 @@ import java.util.List;
  * A version of the Lee and Hastic simulation which is guaranteed ot generate a discrete data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LeeHastieSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data type.
+     */
     private DataType dataType;
+
+    /**
+     * The shuffled order.
+     */
     private List<Node> shuffledOrder;
 
+    /**
+     * <p>Constructor for LeeHastieSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public LeeHastieSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (parameters.getLong(Params.SEED) != -1L) {
@@ -87,21 +121,41 @@ public class LeeHastieSimulation implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Lee & Hastie simulation using " + this.randomGraph.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getShortName() {
+        return "Lee & Hastie Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -114,7 +168,6 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.RANDOMIZE_COLUMNS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
-
         parameters.add(Params.VERBOSE);
 //        parameters.add(Params.SEED);
 
@@ -122,10 +175,26 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.dataType;

@@ -24,13 +24,50 @@ import java.util.List;
 //MP: Each BootstrapWorker object will run the RFCI method on one Bootstrap and append the results to the results list
 
 
+/**
+ * <p>DataForCalibrationRfci class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class DataForCalibrationRfci {
-    public int depth = 5;
-    PrintWriter outProb;
-    private PrintWriter outGraph;
-    private PrintWriter outPag;
+    /**
+     * Constant <code>precomputeCovariances=false</code>
+     */
     private static boolean precomputeCovariances = false;
 
+    /**
+     * Constant <code>depth=5</code>
+     */
+    public int depth = 5;
+
+    /**
+     * Constant <code>outProb</code>
+     */
+    PrintWriter outProb;
+
+    /**
+     * Constant <code>outGraph</code>
+     */
+    private PrintWriter outGraph;
+
+    /**
+     * Constant <code>outPag</code>
+     */
+    private PrintWriter outPag;
+
+    /**
+     * Constant <code>NEWLINE="System.getProperty(line.separator)"</code>
+     */
+    private DataForCalibrationRfci() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     * @throws java.io.IOException if any.
+     */
     public static void main(String[] args) throws IOException {
 
 
@@ -325,12 +362,20 @@ public class DataForCalibrationRfci {
                     estType = 7;
             }
             print(n1 + ", " + n2 + ", " + trueType + ", " + AnilB + ", " +
-                    AtoB + ", " + BtoA + ", " +
-                    ACtoB + ", " + BCtoA + ", " +
-                    AccB + ", " + AbB + ", " + AuB + ", " + estType + "\n", outP);
+                  AtoB + ", " + BtoA + ", " +
+                  ACtoB + ", " + BCtoA + ", " +
+                  AccB + ", " + AbB + ", " + AuB + ", " + estType + "\n", outP);
         }
     }
 
+    /**
+     * <p>makeDAG.</p>
+     *
+     * @param numVars              a int
+     * @param edgesPerNode         a double
+     * @param numLatentConfounders a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph makeDAG(int numVars, double edgesPerNode, int numLatentConfounders) {
         final int numEdges = (int) (numVars * edgesPerNode);
 
@@ -348,10 +393,25 @@ public class DataForCalibrationRfci {
         return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
     }
 
+    /**
+     * <p>bootStrapSampling.</p>
+     *
+     * @param data               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param bootsrapSampleSize a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet bootStrapSampling(DataSet data, int bootsrapSampleSize) {
         return DataTransforms.getBootstrapSample(data, bootsrapSampleSize);
     }
 
+    /**
+     * <p>learnBNRFCI.</p>
+     *
+     * @param bootstrapSample a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param depth           a int
+     * @param truePag         a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);
         final SemBicScore score = new SemBicScore(bootstrapSample, precomputeCovariances);
@@ -372,6 +432,21 @@ public class DataForCalibrationRfci {
         return estPag;
     }
 
+    /**
+     * <p>checkProbFileExists.</p>
+     *
+     * @param modelName            a {@link java.lang.String} object
+     * @param numVars              a int
+     * @param numEdges             a int
+     * @param numCases             a int
+     * @param numBootstrapSamples  a int
+     * @param alg                  a {@link java.lang.String} object
+     * @param i                    a int
+     * @param numLatentConfounders a double
+     * @param alpha                a double
+     * @param data_path            a {@link java.lang.String} object
+     * @return a boolean
+     */
     public boolean checkProbFileExists(String modelName, int numVars, int numEdges, int numCases, int numBootstrapSamples, String alg, int i, double numLatentConfounders, double alpha, String data_path) {
 //		String dirname = System.getProperty("user.dir") +  "/CalibrationConstraintBased/"+ alg + "/" + modelName +"-Vars" + numVars +  "-Edges" + numEdges +  "-Cases" + numCases +  "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha ;
         String dirname = data_path + "/CalibrationConstraintBased/" + alg + "/" + modelName + "-Vars" + numVars + "-Edges" + numEdges + "-Cases" + numCases + "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha;
@@ -382,6 +457,21 @@ public class DataForCalibrationRfci {
         return probFile.exists();
     }
 
+    /**
+     * <p>setOut.</p>
+     *
+     * @param modelName            a {@link java.lang.String} object
+     * @param numVars              a int
+     * @param numEdges             a int
+     * @param numCases             a int
+     * @param numBootstrapSamples  a int
+     * @param alg                  a {@link java.lang.String} object
+     * @param i                    a int
+     * @param numLatentConfounders a double
+     * @param alpha                a double
+     * @param data_path            a {@link java.lang.String} object
+     * @return a boolean
+     */
     public boolean setOut(String modelName, int numVars, int numEdges, int numCases, int numBootstrapSamples, String alg, int i, double numLatentConfounders, double alpha, String data_path) {
         try {
             String dirname = data_path + "/CalibrationConstraintBased/" + alg + "/" + modelName + "-Vars" + numVars + "-Edges" + numEdges + "-Cases" + numCases + "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha;
@@ -416,8 +506,13 @@ public class DataForCalibrationRfci {
         out.flush();
     }
 
+    /**
+     * <p>Setter for the field <code>precomputeCovariances</code>.</p>
+     *
+     * @param precomputeCovariances a boolean
+     */
     public void setPrecomputeCovariances(boolean precomputeCovariances) {
-        this.precomputeCovariances = precomputeCovariances;
+        DataForCalibrationRfci.precomputeCovariances = precomputeCovariances;
     }
 
     private interface EdgeProbabiity {

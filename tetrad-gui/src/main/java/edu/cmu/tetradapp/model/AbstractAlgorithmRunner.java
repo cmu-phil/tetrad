@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.session.ParamsResettable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -41,20 +41,61 @@ import java.util.*;
  * as parent. Contains basic methods for executing algorithm and returning results.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The parameters settings.
+     */
     final Map<String, String> paramSettings = new LinkedHashMap<>();
+
+    /**
+     * The data wrapper.
+     */
     private DataWrapper dataWrapper;
+
+    /**
+     * The name of the algorithm.
+     */
     private String name;
+
+    /**
+     * The parameters.
+     */
     private Parameters params;
+
+    /**
+     * The data model.
+     */
     private transient DataModel dataModel;
+
+    /**
+     * The source graph.
+     */
     private Graph sourceGraph;
+
+    /**
+     * The result graph.
+     */
     private Graph resultGraph = new EdgeListGraph();
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs;
+
+    /**
+     * The all param settings.
+     */
     private Map<String, String> allParamSettings;
 
     //===========================CONSTRUCTORS===========================//
@@ -270,6 +311,8 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Returns the graph that was the result of the algorithm's execution.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public final Graph getResultGraph() {
         return this.resultGraph;
@@ -277,6 +320,8 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Sets the graph that was the result of the algorithm's execution.
+     *
+     * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public final void setResultGraph(Graph resultGraph) {
         this.resultGraph = resultGraph;
@@ -310,18 +355,18 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the external graph for the algorithm.
-     *
-     * @param graph the graph
      */
     public void setExternalGraph(Graph graph) {
         this.externalGraph = graph;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the algorithm's name.
-     *
-     * @return
      */
     @Override
     public abstract String getAlgorithmName();
@@ -387,9 +432,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Resets the parameters.
-     *
-     * @param params the parameters
      */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
@@ -419,9 +464,9 @@ public abstract class AbstractAlgorithmRunner
             }
 
             throw new IllegalArgumentException("<html>" +
-                    "This data set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithm in Tetrad currently to " +
-                    "<br>search over such data sets." + "</html>");
+                                               "This data set contains a mixture of discrete and continuous " +
+                                               "<br>columns; there are no algorithm in Tetrad currently to " +
+                                               "<br>search over such data sets." + "</html>");
         } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;
         } else if (dataModel instanceof TimeSeriesData) {
@@ -453,6 +498,10 @@ public abstract class AbstractAlgorithmRunner
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -470,9 +519,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the algorithm.
-     *
-     * @param name the name
      */
     public void setName(String name) {
         this.name = name;
@@ -489,9 +538,9 @@ public abstract class AbstractAlgorithmRunner
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the param settings.
-     *
-     * @return the param settings
      */
     @Override
     public Map<String, String> getParamSettings() {
@@ -509,9 +558,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets all param settings.
-     *
-     * @param allParamSettings the all param settings map.
      */
     public void setAllParamSettings(Map<String, String> allParamSettings) {
         this.allParamSettings = allParamSettings;

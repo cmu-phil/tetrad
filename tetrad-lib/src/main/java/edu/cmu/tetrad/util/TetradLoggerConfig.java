@@ -28,12 +28,15 @@ import java.util.List;
  * merely the events that the model supports.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface TetradLoggerConfig extends TetradSerializable {
 
-
     /**
      * States whether the event associated with the given id is active, that is whether it should be logged or not.
+     *
+     * @param id a {@link java.lang.String} object
+     * @return a boolean
      */
     boolean isEventActive(String id);
 
@@ -44,27 +47,36 @@ public interface TetradLoggerConfig extends TetradSerializable {
      *
      * @return - true iff its active.
      */
-    boolean isActive();
+    boolean active();
 
 
     /**
-     * @return - events
+     * Retrieves the list of supported events.
+     *
+     * @return the list of supported events
      */
     List<Event> getSupportedEvents();
 
 
     /**
      * Sets whether the event associated with the given id is active or not.
+     *
+     * @param id     a {@link java.lang.String} object
+     * @param active a boolean
      */
     void setEventActive(String id, boolean active);
 
     /**
-     * @return a copy of this configuration.
+     * Creates a copy of the TetradLoggerConfig object.
+     *
+     * @return a copy of the TetradLoggerConfig object
      */
     TetradLoggerConfig copy();
 
     /**
-     * @return a string representation.
+     * Returns a string representation of the object.
+     *
+     * @return the string representation of the object
      */
     String toString();
 
@@ -75,20 +87,20 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
         /**
-         * @return the Sting ID fo the event.
+         * Returns the ID of the event.
+         *
+         * @return the ID of the event
          */
         String getId();
 
 
         /**
-         * @return the String description of the event.
+         * Returns the description of the event.
+         *
+         * @return the description of the event
          */
         String getDescription();
-
-
     }
-
-
 }
 
 

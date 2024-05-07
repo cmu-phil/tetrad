@@ -31,20 +31,22 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class InvertCovMatrixWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public InvertCovMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
         DataModel model = wrapper.getSelectedDataModel();
-        if (model instanceof ICovarianceMatrix) {
-            ICovarianceMatrix dataSet = (ICovarianceMatrix) model;
+        if (model instanceof ICovarianceMatrix dataSet) {
             Matrix data = dataSet.getMatrix();
             Matrix inverse = data.inverse();
             String[] varNames = dataSet.getVariableNames().toArray(new String[0]);
@@ -64,6 +66,7 @@ public class InvertCovMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

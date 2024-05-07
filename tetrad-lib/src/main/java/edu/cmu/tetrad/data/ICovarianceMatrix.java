@@ -28,60 +28,201 @@ import java.util.List;
 
 /**
  * Interface for covariance matrices. Implemented in different ways. See implementations.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface ICovarianceMatrix extends DataModel {
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<Node> getVariables();
 
+    /**
+     * <p>setVariables.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     void setVariables(List<Node> variables);
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<String> getVariableNames();
 
+    /**
+     * <p>getVariableName.</p>
+     *
+     * @param index a int
+     * @return a {@link java.lang.String} object
+     */
     String getVariableName(int index);
 
+    /**
+     * <p>getDimension.</p>
+     *
+     * @return a int
+     */
     int getDimension();
 
+    /**
+     * <p>getSampleSize.</p>
+     *
+     * @return a int
+     */
     int getSampleSize();
 
+    /**
+     * <p>setSampleSize.</p>
+     *
+     * @param sampleSize a int
+     */
     void setSampleSize(int sampleSize);
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String getName();
 
+    /**
+     * {@inheritDoc}
+     */
     void setName(String name);
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     Knowledge getKnowledge();
 
+    /**
+     * {@inheritDoc}
+     */
     void setKnowledge(Knowledge knowledge);
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param indices an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     ICovarianceMatrix getSubmatrix(int[] indices);
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param submatrixVarNames a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames);
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param submatrixVarNames an array of {@link java.lang.String} objects
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     ICovarianceMatrix getSubmatrix(String[] submatrixVarNames);
 
+    /**
+     * <p>getValue.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @return a double
+     */
     double getValue(int i, int j);
 
+    /**
+     * <p>getSize.</p>
+     *
+     * @return a int
+     */
     int getSize();
 
+    /**
+     * <p>getMatrix.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     Matrix getMatrix();
 
+    /**
+     * <p>setMatrix.</p>
+     *
+     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     void setMatrix(Matrix matrix);
 
+    /**
+     * <p>select.</p>
+     *
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void select(Node variable);
 
+    /**
+     * <p>clearSelection.</p>
+     */
     void clearSelection();
 
+    /**
+     * <p>isSelected.</p>
+     *
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     boolean isSelected(Node variable);
 
+    /**
+     * <p>getSelectedVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<String> getSelectedVariableNames();
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String toString();
 
+    /**
+     * {@inheritDoc}
+     */
     Node getVariable(String name);
 
+    /**
+     * <p>setValue.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param v a double
+     */
     void setValue(int i, int j, double v);
 
+    /**
+     * <p>removeVariables.</p>
+     *
+     * @param remaining a {@link java.util.List} object
+     */
     void removeVariables(List<String> remaining);
 
+    /**
+     * <p>getSelection.</p>
+     *
+     * @param rows an array of {@link int} objects
+     * @param cols an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     Matrix getSelection(int[] rows, int[] cols);
 }
 

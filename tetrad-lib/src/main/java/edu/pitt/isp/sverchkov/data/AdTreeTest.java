@@ -39,6 +39,7 @@ import java.util.TreeMap;
  * A test of the AD tree implementation.
  *
  * @author Jeremy Espino MD Created  6/24/15 3:32 PM
+ * @version $Id: $Id
  */
 public class AdTreeTest {
 
@@ -52,7 +53,7 @@ public class AdTreeTest {
      * Test the AD tree
      *
      * @param args ignored
-     * @throws Exception if something goes wrong
+     * @throws java.lang.Exception if something goes wrong
      */
     public static void main(String[] args) throws Exception {
         final int columns = 40;
@@ -71,7 +72,7 @@ public class AdTreeTest {
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
         DataSet data = im.simulateData(rows, false);
 
         // This implementation uses a DataTable to represent the data

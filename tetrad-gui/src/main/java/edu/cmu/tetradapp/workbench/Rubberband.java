@@ -82,6 +82,8 @@ class Rubberband extends JComponent {
     /**
      * Updates the track point for the rubber band so that it extends from the initial location point to the point
      * specified as the argument.
+     *
+     * @param p a {@link java.awt.Point} object
      */
     public void updateTrackPoint(Point p) {
         int newLocX = FastMath.min(p.x, this.anchor.x);
@@ -93,6 +95,8 @@ class Rubberband extends JComponent {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the rubberband.
      */
     public void paint(Graphics g) {
@@ -114,6 +118,8 @@ class Rubberband extends JComponent {
     }
 
     /**
+     * <p>Getter for the field <code>shape</code>.</p>
+     *
      * @return the shape of the rubberband, which can be used to determine which components it intersects.
      */
     public Shape getShape() {

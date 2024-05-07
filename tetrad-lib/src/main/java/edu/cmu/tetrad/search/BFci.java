@@ -21,14 +21,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.utils.SepsetsMinP;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -37,22 +36,27 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than GFCI
- * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
+ * Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than
+ * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for BFCI is here:
+ * <p>
+ * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast Scalable and Accurate
+ * Discovery of DAGs Using the Best Order Score Search and Grow Shrink Trees. Advances in Neural Information Processing
+ * Systems, 36.
+ * <p>
+ * The reference for GFCI is here:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  * Here, BOSS has been substituted for FGES.
  * <p>
- * BOSS is an algorithm that is currently being written up for publication, so we don't yet have a reference for it.
- * <p>
- * For BOSS only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and
- * a score need to be given.
+ * For BOSS only a score is needed, but there are steps in GFCI that require a test; for these, a test is additionally
+ * required.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *
  * @author josephramsey
  * @author bryan andrews
+ * @version $Id: $Id
  * @see Boss
  * @see GFci
  * @see GraspFci
@@ -62,28 +66,94 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class BFci implements IGraphSearch {
 
-    // The conditional independence test.
+    /**
+     * The conditional independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The sample size.
+    /**
+     * The sample size.
+     */
     int sampleSize;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+    /**
+     * Flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed = true;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * The number of times to restart the search.
+     * <p>
+     * The search algorithm may converge to a suboptimal solution. To mitigate this, the algorithm can be restart
+     * multiple times with different initial conditions. The {@code numStarts} variable represents the number of times
+     * the search algorithm will be restarted.
+     * </p>
+     *
+     * @see BFci#setNumStarts(int)
+     * @see BFci#search()
+     */
     private int numStarts = 1;
+    /**
+     * Represents the depth of the search for the constraint-based step.
+     *
+     * <p>
+     * The depth determines how deep the search will go in exploring the possible graph structures during the
+     * constraint-based step. A depth of -1 indicates unlimited depth, meaning that the search will explore all possible
+     * structures.
+     * </p>
+     *
+     * <p>
+     * The default value for depth is -1.
+     * </p>
+     *
+     * @see BFci
+     * @see BFci#setDepth(int)
+     */
     private int depth = -1;
+    /**
+     * Whether to apply the discriminating path rule during the search.
+     */
     private boolean doDiscriminatingPathRule = true;
+    /**
+     * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
+     * final step.
+     */
     private boolean bossUseBes = false;
+    /**
+     * The seed for the random number generator used in the search. Defaults to -1 if not set.
+     */
     private long seed = -1;
-
+    /**
+     * The number of threads to use for parallel processing. This variable determines the degree of parallelism for
+     * certain operations that can be performed concurrently to improve performance. For example, in multithreaded
+     * environments, setting this variable to a value greater than 1 can distribute work across multiple threads,
+     * allowing for faster execution of the algorithm.
+     * <p>
+     * The value of this variable must be at least 1. By default, it is set to 1, meaning that only one thread will be
+     * used for processing.
+     */
+    private int numThreads = 1;
+    /**
+     * Determines whether or not almost cyclic paths should be resolved during the graph search.
+     *
+     * Almost cyclic paths are paths that are almost cycles but have a single additional edge
+     * that prevents them from being cycles. Resolving these paths involves determining if the
+     * additional edge should be included or not.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -113,15 +183,20 @@ public final class BFci implements IGraphSearch {
             RandomUtil.getInstance().setSeed(seed);
         }
 
+        this.independenceTest.setVerbose(verbose);
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting BFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
+        subAlg.setNumThreads(numThreads);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
@@ -130,21 +205,44 @@ public final class BFci implements IGraphSearch {
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
+        }
+
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-
         fciOrient.doFinalOrientation(graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         return graph;
     }
@@ -235,7 +333,33 @@ public final class BFci implements IGraphSearch {
         this.bossUseBes = useBes;
     }
 
+    /**
+     * Sets the seed for the random number generator.
+     *
+     * @param seed The seed for the random number generator.
+     */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets the number of threads to use.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
+    }
+
+    /**
+     * Sets whether almost cyclic paths should be resolved during the search.
+     *
+     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

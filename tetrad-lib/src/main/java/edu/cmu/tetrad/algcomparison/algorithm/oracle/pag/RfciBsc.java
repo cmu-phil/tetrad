@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
@@ -7,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -23,29 +25,39 @@ import java.util.List;
  * Runs RFCI-BSC, which is RFCI with bootstrap sampling of PAGs.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
-
-// Taking this out for now until we can get a good description for it.
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "RFCI-BSC",
-//        command = "rfci-bsc",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Discrete
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "RFCI-BSC",
+        command = "rfci-bsc",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Discrete
+)
 @Experimental
-public class RfciBsc implements Algorithm, HasKnowledge {
+public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // Independence test; must the ProbabilisticTest.
+    /**
+     * Independence test; must the ProbabilisticTest.
+     */
     private final IndependenceWrapper test = new ProbabilisticTest();
-    // Knowledge
+    /**
+     * Knowledge
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Returns the knowledge.
+     * Blank constructor.
+     */
+    public RfciBsc() {
+
+    }
+
+    /**
+     * Retrieves the knowledge associated with this object.
      *
-     * @return the knowledge
+     * @return The knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -53,25 +65,29 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Sets the knowledge.
+     * Sets the knowledge object.
      *
-     * @param knowledge a knowledge object.
+     * @param knowledge The knowledge object to be set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * Performs the RFCI-BSC search.
+     * Runs a search algorithm using a given dataset and parameters.
      *
-     * @param dataSet    The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return the graph
+     * @param dataModel  The dataset to run the search on.
+     * @param parameters The parameters for the search algorithm.
+     * @return The resulting graph from the search algorithm.
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet && dataModel.isDiscrete())) {
+            throw new IllegalArgumentException("Expecting a discrete dataset.");
+        }
+
+        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
@@ -94,10 +110,10 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Returns the comparison graph.
+     * Retrieves the comparison graph from the true directed graph, if there is one.
      *
      * @param graph The true directed graph, if there is one.
-     * @return the comparison graph
+     * @return The true PAG.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -106,9 +122,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the description of the algorithm.
-     *
-     * @return the description of the algorithm
      */
     @Override
     public String getDescription() {
@@ -116,9 +132,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the data type that the algorithm can handle, which is discrete.
-     *
-     * @return the data type that the algorithm can handle, which is discrete.
      */
     @Override
     public DataType getDataType() {
@@ -126,9 +142,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters of the algorithm.
-     *
-     * @return the parameters of the algorithm
      */
     @Override
     public List<String> getParameters() {

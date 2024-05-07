@@ -3,29 +3,49 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public NumCompatibleDirectedEdgeNonAncestors() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#CompDNA";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number X-->Y for which not X<~~L->..->Y in true";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.addPagColoring(estGraph);
+        GraphUtils.addEdgeSpecializationMarkup(estGraph);
 //        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
 
         int tp = 0;
@@ -50,6 +70,9 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

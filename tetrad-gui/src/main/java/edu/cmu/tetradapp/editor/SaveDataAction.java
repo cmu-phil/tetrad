@@ -29,7 +29,6 @@ import edu.cmu.tetradapp.model.EditorUtils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -57,6 +56,8 @@ final class SaveDataAction extends AbstractAction {
 
     /**
      * Creates a new action to save data.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public SaveDataAction(DataEditor editor) {
         super("Save Data...");
@@ -69,6 +70,11 @@ final class SaveDataAction extends AbstractAction {
     }
 
 
+    /**
+     * <p>Constructor for SaveDataAction.</p>
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.MarkovBlanketSearchEditor} object
+     */
     public SaveDataAction(MarkovBlanketSearchEditor editor) {
         super("Save Data...");
         if (editor == null) {
@@ -79,6 +85,8 @@ final class SaveDataAction extends AbstractAction {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
@@ -117,7 +125,7 @@ final class SaveDataAction extends AbstractAction {
         String name = dataModel.getName();
         if (name == null) name = "data";
 
-        if (dataModel instanceof DataSet) {
+        if (dataModel instanceof DataSet dataSet) {
             File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
@@ -138,8 +146,6 @@ final class SaveDataAction extends AbstractAction {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
             }
-
-            DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isContinuous()) {
                 DataWriter.writeRectangularData(dataSet, out, delimiter);
@@ -169,12 +175,10 @@ final class SaveDataAction extends AbstractAction {
             DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, this.nf);
 
             out.close();
-        } else if (dataModel instanceof DataModelList) {
+        } else if (dataModel instanceof DataModelList list) {
             File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             final char delimiter = '\t';
-
-            DataModelList list = (DataModelList) dataModel;
 
             for (int i = 0; i < list.size(); i++) {
 

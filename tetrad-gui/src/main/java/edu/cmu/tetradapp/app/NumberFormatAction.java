@@ -62,8 +62,10 @@ final class NumberFormatAction extends AbstractAction
     }
 
     /**
-     * Pops up a dialog that lets the user decide how to render real numbers. A basic and an advanced version are
-     * available.
+     * {@inheritDoc}
+     * <p>
+     * Required by the AbstractAction interface; shows a dialog allowing the user to change the number format used to
+     * render real numbers throughout Tetrad.
      */
     public void actionPerformed(ActionEvent e) {
 
@@ -299,6 +301,8 @@ final class NumberFormatAction extends AbstractAction
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

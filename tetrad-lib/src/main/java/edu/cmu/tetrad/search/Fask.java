@@ -129,58 +129,106 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author josephramsey
  * @author rubensanchez
+ * @version $Id: $Id
  * @see Knowledge
  * @see Lofs
  */
 public final class Fask implements IGraphSearch {
 
 
-    // The score to be used for the FAS adjacency search.
+    /**
+     * The score to be used for the FAS adjacency search.
+     */
     private final IndependenceTest test;
+    /**
+     * Represents a Score.
+     */
     private final Score score;
-    // The data sets being analyzed. They must all have the same variables and the same
-    // number of records.
+    /**
+     * The data sets being analyzed. They must all have the same variables and the same number of records.
+     */
     private final DataSet dataSet;
-    // Used for calculating coefficient values.
+    /**
+     * Used for calculating coefficient values.
+     */
     private final RegressionDataset regressionDataset;
+    /**
+     * Represents the data as a double[][] array, with D[i] beimg the data for variable i.
+     */
     private double[][] D;
-    // An initial graph to constrain the adjacency step.
+    /**
+     * An initial graph to constrain the adjacency step.
+     */
     private Graph externalGraph;
-    // Elapsed time of the search, in milliseconds.
+    /**
+     * Elapsed time of the search, in milliseconds.
+     */
     private long elapsed;
-    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
+    /**
+     * For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
+     */
     private int depth = -1;
-    // Knowledge the search will obey, of forbidden and required edges.
+    /**
+     * Knowledge the search will obey, of forbidden and required edges.
+     */
     private Knowledge knowledge = new Knowledge();
-    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
-    // this threshold.
+    /**
+     * A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower this
+     * threshold.
+     */
     private double skewEdgeThreshold;
-    // A threshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
-    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
+    /**
+     * A threshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work with the
+     * FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
+     */
     private double twoCycleScreeningCutoff;
-    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
-    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
-    // two-cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    /**
+     * At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then tested
+     * statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the two-cycle alpha to
+     * a number in [0, 1]. The default alpha  is 0.01.
+     */
     private double orientationCutoff;
-    // The corresponding alpha.
+    /**
+     * The corresponding alpha.
+     */
     private double orientationAlpha;
-    // Bias for orienting with negative coefficients.
+    /**
+     * Bias for orienting with negative coefficients.
+     */
     private double delta;
-    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.)
+    /**
+     * Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.)
+     */
     private boolean empirical = true;
-    // By default, FAS Stable will be used for adjacencies, though this can be set.
+    /**
+     * By default, FAS Stable will be used for adjacencies, though this can be set.
+     */
     private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
-    // The left right rule to use, default FASK.
+    /**
+     * The left right rule to use, default FASK.
+     */
     private LeftRight leftRight = LeftRight.RSKEW;
-    // The graph resulting from search.
+    /**
+     * The graph resulting from search.
+     */
     private Graph graph;
+    /**
+     * Represents the seed used to initialize the random number generator in the search algorithm. The seed determines
+     * the sequence of random numbers generated during the search. By setting a specific seed, you can reproduce the
+     * same sequence of random numbers for every run of the algorithm.
+     */
     private long seed = -1;
+    /**
+     * Determines if verbose mode is enabled or disabled.
+     */
+    private boolean verbose = false;
 
     /**
      * Constructor.
      *
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
+     * @param score   a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public Fask(DataSet dataSet, Score score, IndependenceTest test) {
         if (dataSet == null) {
@@ -201,6 +249,15 @@ public final class Fask implements IGraphSearch {
     }
 
 
+    /**
+     * Calculates the left-right judgment for two arrays of double values. This is for version 2.
+     *
+     * @param x         The data for the first variable.
+     * @param y         The data for the second variable.
+     * @param empirical Whether to use an empirical judgment.
+     * @param delta     The delta value for the judgment.
+     * @return The left-right judgment, which is negative if x &lt; y, positive if x $gt; y, and 0 if indeterminate.
+     */
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);
         double sy = skewness(y);
@@ -218,6 +275,15 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * Calculates the left-right ratio using the Fask method version 1.
+     *
+     * @param x         the array of values for variable x
+     * @param y         the array of values for variable y
+     * @param empirical if true, applies empirical correction to the correlation coefficient
+     * @param delta     the threshold value for determining the sign of the left-right ratio
+     * @return the left-right ratio
+     */
     public static double faskLeftRightV1(double[] x, double[] y, boolean empirical, double delta) {
         double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
         double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
@@ -237,6 +303,14 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * Calculates a left-right judgment using the robust skewness between two arrays of double values.
+     *
+     * @param x         The data for the first variable.
+     * @param y         The data for the second variable.
+     * @param empirical Whether to use an empirical correction to the skewness.
+     * @return The robust skewness between the two arrays.
+     */
     public static double robustSkew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -253,6 +327,14 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * Calculates a left-right judgument using the skewness of two arrays of double values.
+     *
+     * @param x         the first array of double values
+     * @param y         the second array of double values
+     * @param empirical flag to indicate whether to apply empirical correction for skewness
+     * @return the skewness of the two arrays
+     */
     public static double skew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -269,14 +351,86 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * Calculates the logarithm of the hyperbolic cosine of the maximum of x and 0.
+     *
+     * @param x The input value.
+     * @return The result of the calculation.
+     */
     public static double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
+    /**
+     * Corrects the skewness of the given data using the provided skewness value.
+     *
+     * @param data The array of data to be corrected.
+     * @param sk   The skewness value to be used for correction.
+     * @return The corrected data array.
+     */
     public static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;
+    }
+
+    /**
+     * Calculates the conditional mean of the product of corresponding elements from two arrays based on a given
+     * condition.
+     *
+     * @param x         an array of doubles to be multiplied
+     * @param y         an array of doubles to be multiplied
+     * @param condition an array of doubles representing the condition for multiplication
+     * @return the conditional mean of the product of corresponding elements from x and y based on the given condition
+     */
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    /**
+     * Returns E(XY | Z > 0); Z is typically either X or Y.
+     *
+     * @param x an array of double values
+     * @param y an array of double values
+     * @param z an array of double values
+     * @return the expected value of the product of elements in x and y, considering only the elements in z that are
+     * greater than zero
+     */
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    /**
+     * Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+     *
+     * @param x an array of double values representing the first set of data
+     * @param y an array of double values representing the second set of data
+     * @param z an array of double values representing the third set of data
+     * @return the correlation coefficient between the three sets of data
+     */
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     /**
@@ -365,7 +519,7 @@ public final class Fask implements IGraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, G, G.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, G, G.getNodes(), verbose);
 
         Graph graph = new EdgeListGraph(G.getNodes());
 
@@ -392,29 +546,29 @@ public final class Fask implements IGraphSearch {
 
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "<->" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "<->" + Y
                         );
                         continue;
                     }
 
                     if (knowledgeOrients(X, Y)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "-->" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "-->" + Y
                         );
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
-                                + "\t" + nf.format(lr)
-                                + "\t" + X + "<--" + Y
+                                                                   + "\t" + nf.format(lr)
+                                                                   + "\t" + X + "<--" + Y
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {
                         if (zeroDiff(i, j, this.D)) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "...TC?..." + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "...TC?..." + Y
                             );
 
                             System.out.println(X + " " + Y + " lr = " + lr + " zero");
@@ -423,8 +577,8 @@ public final class Fask implements IGraphSearch {
 
                         if (this.twoCycleScreeningCutoff > 0 && abs(faskLeftRightV2(x, y, empirical, delta)) < this.twoCycleScreeningCutoff) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "...TC?..." + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "...TC?..." + Y
                             );
 
                             twoCycles.add(new NodePair(X, Y));
@@ -433,14 +587,14 @@ public final class Fask implements IGraphSearch {
 
                         if (lr > 0) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + X + "-->" + Y
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + X + "-->" + Y
                             );
                             graph.addDirectedEdge(X, Y);
                         } else if (lr < 0) {
                             TetradLogger.getInstance().forceLogMessage(Y + "\t" + X + "\tleft-right"
-                                    + "\t" + nf.format(lr)
-                                    + "\t" + Y + "-->" + X
+                                                                       + "\t" + nf.format(lr)
+                                                                       + "\t" + Y + "-->" + X
                             );
                             graph.addDirectedEdge(Y, X);
                         }
@@ -536,6 +690,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
@@ -543,6 +699,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. Unlimited. Making this too
      *              high may result in statistical errors.
      */
@@ -551,6 +709,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>getElapsedTime.</p>
+     *
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
@@ -558,6 +718,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the current knowledge.
      */
     public Knowledge getKnowledge() {
@@ -565,6 +727,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -675,43 +839,15 @@ public final class Fask implements IGraphSearch {
         throw new IllegalStateException("Left right rule not configured: " + this.leftRight);
     }
 
-
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
-    }
-
+    /**
+     * Calculates a left-right judgment using the hyperbolic tangent of each element in the given arrays and performs a
+     * computation combining these results.
+     *
+     * @param x         an array of doubles
+     * @param y         an array of doubles
+     * @param empirical flag indicating whether empirical correction should be applied to the input arrays
+     * @return the final result of the computation
+     */
     private double tanh(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -728,14 +864,38 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * Determines if the knowledge orients the nodes X and Y.
+     *
+     * @param X The first node.
+     * @param Y The second node.
+     * @return true if the knowledge forbids the orientation of Y towards X, or if X is required by Y; false otherwise.
+     */
     private boolean knowledgeOrients(Node X, Node Y) {
         return this.knowledge.isForbidden(Y.getName(), X.getName()) || this.knowledge.isRequired(X.getName(), Y.getName());
     }
 
+    /**
+     * Checks if an edge between two nodes is forbidden based on the knowledge.
+     *
+     * @param X the first node
+     * @param Y the second node
+     * @return true if the edge is forbidden, false otherwise
+     */
     private boolean edgeForbiddenByKnowledge(Node X, Node Y) {
         return this.knowledge.isForbidden(Y.getName(), X.getName()) && this.knowledge.isForbidden(X.getName(), Y.getName());
     }
 
+    /**
+     * Tests for the presence of a two-cycle in a graph.
+     *
+     * @param i  The index of the first node in V.
+     * @param j  The index of the second node in V.
+     * @param D  The distance matrix of the graph.
+     * @param G0 The original graph.
+     * @param V  The list of nodes.
+     * @return True if a two-cycle is found, false otherwise.
+     */
     private boolean twoCycleTest(int i, int j, double[][] D, Graph G0, List<Node> V) {
         Node X = V.get(i);
         Node Y = V.get(j);
@@ -808,6 +968,17 @@ public final class Fask implements IGraphSearch {
         return true;
     }
 
+    /**
+     * Calculates the zero difference test for two variables. The zero difference test compares the partial correlation
+     * between two variables, conditioned on other variables, and checks if the difference is statistically
+     * significant.
+     *
+     * @param i the index of the first variable in the data array
+     * @param j the index of the second variable in the data array
+     * @param D the data array where each row represents a variable and each column represents an observation
+     * @return true if the difference is statistically significant, false otherwise
+     * @throws RuntimeException if a singularity is encountered when computing partial correlation
+     */
     private boolean zeroDiff(int i, int j, double[][] D) {
         double[] x = D[i];
         double[] y = D[j];
@@ -821,7 +992,7 @@ public final class Fask implements IGraphSearch {
         } catch (SingularMatrixException e) {
             List<Node> nodes = dataSet.getVariables();
             throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
-                    + nodes.get(i) + ", " + nodes.get(j));
+                                       + nodes.get(i) + ", " + nodes.get(j));
         }
 
         int nc1 = getRows(x, x, 0, +1).size();
@@ -835,12 +1006,33 @@ public final class Fask implements IGraphSearch {
         return abs(zv) <= this.twoCycleScreeningCutoff;
     }
 
+    /**
+     * Calculates the partial correlation coefficient between two variables while controlling for other variables.
+     *
+     * @param x         the first variable
+     * @param y         the second variable
+     * @param z         the matrix containing the control variables
+     * @param condition the control variables for partial correlation
+     * @param threshold the threshold for excluding cases
+     * @return the partial correlation coefficient
+     * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted
+     */
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
         double[][] cv = covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
 
+    /**
+     * Logs the two-cycle information.
+     *
+     * @param nf        The number format used to format the result.
+     * @param variables The list of nodes representing variables.
+     * @param d         The two-dimensional array representing the distances between variables.
+     * @param X         The first variable node.
+     * @param Y         The second variable node.
+     * @param type      The type of two-cycle.
+     */
     private void logTwoCycle(NumberFormat nf, List<Node> variables, double[][] d, Node X, Node Y, String type) {
         int i = variables.indexOf(X);
         int j = variables.indexOf(Y);
@@ -851,13 +1043,27 @@ public final class Fask implements IGraphSearch {
         double lr = leftRight(x, y);
 
         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t" + type
-                + "\t" + nf.format(lr)
-                + "\t" + X + "<=>" + Y
+                                                   + "\t" + nf.format(lr)
+                                                   + "\t" + X + "<=>" + Y
         );
     }
 
+    /**
+     * Sets the seed for generating random numbers.
+     *
+     * @param seed the seed value to set
+     */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets the verbose mode.
+     *
+     * @param verbose the flag indicating whether to enable verbose mode or not
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**
@@ -866,12 +1072,68 @@ public final class Fask implements IGraphSearch {
      * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
      * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
      */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+    public enum LeftRight {
+        /**
+         * The original FASK left-right rule.
+         */
+        FASK1,
+
+        /**
+         * The modified FASK left-right rule.
+         */
+        FASK2,
+
+        /**
+         * The robust skew rule from the Hyvarinen and Smith paper.
+         */
+        RSKEW,
+
+        /**
+         * The skew rule from the Hyvarinen and Smith paper.
+         */
+        SKEW,
+
+        /**
+         * The tanh rule from the Hyvarinen and Smith paper.
+         */
+        TANH
+    }
 
     /**
      * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
      */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
+    public enum AdjacencyMethod {
+
+        /**
+         * Fast Adjacency Search (FAS) with the stable option.
+         */
+        FAS_STABLE,
+
+        /**
+         * FGES with the BIC score.
+         */
+        FGES,
+
+        /**
+         * A permutation search with the BOSS algorithm.
+         */
+        BOSS,
+
+        /**
+         * A permutation search with the GRASP algorithm.
+         */
+        GRASP,
+
+        /**
+         * Use an external graph.
+         */
+        EXTERNAL_GRAPH,
+
+        /**
+         * No initial adjacencies.
+         */
+        NONE
+    }
 }
 
 

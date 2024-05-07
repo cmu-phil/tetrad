@@ -25,6 +25,7 @@ package edu.cmu.tetrad.util;
  * Tagging interface for parametric models.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Pm {
 }

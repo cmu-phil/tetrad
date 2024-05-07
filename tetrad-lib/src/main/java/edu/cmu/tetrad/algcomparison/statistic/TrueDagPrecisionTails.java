@@ -6,26 +6,52 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
- * @author josephramsey
+ * A class that implements the Statistic interface to calculate the proportion of X-->Y edges in the estimated graph for
+ * which there is a path X~~>Y in the true graph.
  */
 public class TrueDagPrecisionTails implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * This class represents a statistic that calculates the precision for tails compared to the true DAG.
+     */
+    public TrueDagPrecisionTails() {
+    }
+
+    /**
+     * Returns the abbreviation for the statistic.
+     *
+     * @return The abbreviation string.
+     */
     @Override
     public String getAbbreviation() {
         return "-->-Prec";
     }
 
+    /**
+     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     *
+     * @return The description of the statistic.
+     */
     @Override
     public String getDescription() {
         return "Proportion of X-->Y in estimated for which there is a path X~~>Y in true graph";
     }
 
+    /**
+     * Calculates the proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true
+     * graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true graph.
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -60,7 +86,12 @@ public class TrueDagPrecisionTails implements Statistic {
         return tp / (double) (tp + fp);
     }
 
-
+    /**
+     * Calculates the normalized value of a statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
+     */
     @Override
     public double getNormValue(double value) {
         return value;

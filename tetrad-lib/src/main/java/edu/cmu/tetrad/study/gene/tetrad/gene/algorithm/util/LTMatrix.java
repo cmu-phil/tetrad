@@ -28,12 +28,16 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class LTMatrix extends BasicLTMatrix {
     protected short[] A;
 
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
+     *
+     * @param mname a {@link java.lang.String} object
+     * @param nrows a int
      */
     public LTMatrix(String mname, int nrows) {
         super(mname, nrows);
@@ -42,6 +46,9 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
+     *
+     * @param fname a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
      */
     public LTMatrix(String fname) throws IOException {
         super(fname);
@@ -55,6 +62,8 @@ public class LTMatrix extends BasicLTMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Casts double x to short and assigns it to element (r,c) This method checks that x can be converted to a short
      * without causing overflow.
      */
@@ -69,6 +78,10 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Assigns integer x to matrix element (r, c).  This method checks that x can be converted to a short without
      * causing overflow.
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a int
      */
     public void setValue(int r, int c, int x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
@@ -80,6 +93,10 @@ public class LTMatrix extends BasicLTMatrix {
 
     /**
      * Assigns short x to matrix element (r, c)
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a short
      */
     public void setValue(int r, int c, short x) {
         if (r < c) {
@@ -92,6 +109,8 @@ public class LTMatrix extends BasicLTMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {
@@ -103,6 +122,10 @@ public class LTMatrix extends BasicLTMatrix {
 
     /**
      * Returns element (r,c)
+     *
+     * @param r a int
+     * @param c a int
+     * @return a short
      */
     public short getValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
@@ -122,10 +145,12 @@ public class LTMatrix extends BasicLTMatrix {
 
     /**
      * Returns a specially formatted string with all the contents of this matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n";
+                   " // <- Total # rows\n";
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c <= r; c++) {
@@ -138,7 +163,7 @@ public class LTMatrix extends BasicLTMatrix {
 
     private void upperTriangXcp(int r, int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
-                "," + c + ") -> " + "Upper Triangular region ");
+                                           "," + c + ") -> " + "Upper Triangular region ");
     }
 
 }

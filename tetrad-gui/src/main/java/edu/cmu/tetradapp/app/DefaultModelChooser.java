@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -72,10 +72,21 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
 
     }
 
+    /**
+     * <p>Getter for the field <code>title</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTitle() {
         return this.title;
     }
 
+    /**
+     * Sets the title to be used for the chooser.
+     *
+     * @param title The title to use for the chooser.
+     * @throws NullPointerException if the given title is null.
+     */
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The given title must not be null");
@@ -83,18 +94,28 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.title = title;
     }
 
-    public Class getSelectedModel() {
+    /**
+     * <p>getSelectedModel.</p>
+     *
+     * @return a {@link java.lang.Class<?>} object
+     */
+    public Class<?> getSelectedModel() {
         ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
         return wrapper.getWrappedClass();
     }
 
+    /**
+     * Sets the model configurations for the chooser.
+     *
+     * @param configs the models that this chooser should display
+     */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         List<ClassWrapper> wrapperList = new LinkedList<>();
 
         for (SessionNodeModelConfig config : configs) {
-            Class modelClass = config.getModel();
+            Class<?> modelClass = config.model();
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
-                wrapperList.add(new ClassWrapper(modelClass, config.getName()));
+                wrapperList.add(new ClassWrapper(modelClass, config.name()));
             }
         }
 
@@ -121,6 +142,12 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         }
     }
 
+    /**
+     * Sets the id for the node.
+     *
+     * @param id the id for the node. Cannot be null.
+     * @throws NullPointerException if the given id is null.
+     */
     public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
@@ -128,6 +155,11 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.id = id;
     }
 
+    /**
+     * Sets the SessionNode for the getModel node.
+     *
+     * @param sessionNode the SessionNode for the getModel node.
+     */
     public void setSessionNode(SessionNode sessionNode) {
         /*(
       The session node for the getModel node.
@@ -135,6 +167,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.nodeName = sessionNode.getDisplayName();
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         JButton info = new JButton("Help");
 
@@ -174,15 +209,15 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
      * Basic wrapper class.
      */
     private static final class ClassWrapper {
-        private final Class wrappedClass;
+        private final Class<?> wrappedClass;
         private final String name;
 
-        public ClassWrapper(Class wrappedClass, String name) {
+        public ClassWrapper(Class<?> wrappedClass, String name) {
             this.wrappedClass = wrappedClass;
             this.name = name;
         }
 
-        public Class getWrappedClass() {
+        public Class<?> getWrappedClass() {
             return this.wrappedClass;
         }
 

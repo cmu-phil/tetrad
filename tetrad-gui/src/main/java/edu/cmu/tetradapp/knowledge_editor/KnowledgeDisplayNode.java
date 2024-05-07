@@ -39,11 +39,14 @@ import java.util.List;
  * This class represents a knowledge variable on screen.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class KnowledgeDisplayNode extends DisplayNode {
 
     /**
      * Constructs a new measured workbench node.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public KnowledgeDisplayNode(Node modelNode) {
         setModelNode(modelNode);
@@ -52,6 +55,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether the given coordinate lie inside the component.
      */
     public boolean contains(int x, int y) {
@@ -60,6 +65,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
     /**
      * Calculates the size of the component based on its name.
+     *
+     * @return a {@link java.awt.Dimension} object
      */
     public Dimension getPreferredSize() {
         FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
@@ -78,9 +85,9 @@ public class KnowledgeDisplayNode extends DisplayNode {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Launches an editor for this node.
-     *
-     * @param graph Strings which are invalid names for this node.
      */
     public void doDoubleClickAction(Graph graph) {
         String newName;
@@ -122,11 +129,11 @@ public class KnowledgeDisplayNode extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue loop;
                     }
                 }
@@ -162,9 +169,9 @@ public class KnowledgeDisplayNode extends DisplayNode {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the component.
-     *
-     * @param g the graphics context.
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;

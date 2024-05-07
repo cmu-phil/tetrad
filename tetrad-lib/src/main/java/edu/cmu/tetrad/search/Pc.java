@@ -39,9 +39,9 @@ import java.util.Set;
 /**
  * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of all
  * remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally to
- * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. An
- * version of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter
- * 6 of the following book:
+ * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A version
+ * of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter 6 of the
+ * following book:
  * <p>
  * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
  * <p>
@@ -59,37 +59,66 @@ import java.util.Set;
  * @author chrismeek
  * @author clarkglymour
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
  */
 public class Pc implements IGraphSearch {
-    // The oracle for conditional independence facts.
+    /**
+     * The oracle for conditional independence facts.
+     */
     private final IndependenceTest independenceTest;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The knowledge specification.
+    /**
+     * The knowledge specification.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The sepset map from the most recent search.
+    /**
+     * The sepset map from the most recent search.
+     */
     private SepsetMap sepsets;
-    // The depth of the search.
+    /**
+     * The depth of the search.
+     */
     private int depth = 1000;
-    // The graph from the most recent search.
+    /**
+     * The graph from the most recent search.
+     */
     private Graph graph;
-    // The elapsed time of the most recent search.
+    /**
+     * The elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // The number of independence tests performed in the most recent search.
+    /**
+     * The number of independence tests performed in the most recent search.
+     */
     private int numIndependenceTests;
-    // Whether the search is verbose.
+    /**
+     * Whether the search is verbose.
+     */
     private boolean verbose = false;
-    // The rule to use for resolving collider orientation conflicts.
+    /**
+     * The rule to use for resolving collider orientation conflicts.
+     */
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-    // Whether the stable adjacency search should be used.
+    /**
+     * Whether the stable adjacency search should be used.
+     */
     private boolean stable = true;
-    // Whether cycles should be checked in the Meek rules.
+    /**
+     * Whether cycles should be checked in the Meek rules.
+     */
     private boolean meekPreventCycles = true;
-    // Whether the max-p heuristic should be used for collider discovery.
+    /**
+     * Whether the max-p heuristic should be used for collider discovery.
+     */
     private boolean useMaxPHeuristic = false;
-    // The PC heuristic type.
+    /**
+     * The PC heuristic type.
+     */
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     /**
@@ -114,9 +143,6 @@ public class Pc implements IGraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @return The found CPDAG. In some cases, there may be some errant bidirected edges or cycles, depending on the
-     * settings and whether the faithfulness assumption holds. If the faithfulness assumption holds, bidirected edges
-     * will indicate the existence of latent variables, so a latent variable search like FCI should be run.
      * @see Fci
      */
     @Override
@@ -170,7 +196,7 @@ public class Pc implements IGraphSearch {
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
+                                               "be in the domain of the independence test provided.");
         }
 
         PcCommon search = getPcCommon();
@@ -191,6 +217,11 @@ public class Pc implements IGraphSearch {
         return this.graph;
     }
 
+    /**
+     * Retrieves an instance of the {@link PcCommon} class with the specified configurations.
+     *
+     * @return The {@link PcCommon} instance.
+     */
     @NotNull
     private PcCommon getPcCommon() {
         PcCommon search = new PcCommon(independenceTest);
@@ -373,8 +404,8 @@ public class Pc implements IGraphSearch {
      * Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
      * reference for this:
      * <p>
-     * Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv preprint
-     * arXiv:1610.00378.
+     * Ramsey, J. (2016). Improving the accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
+     * preprint arXiv:1610.00378.
      *
      * @param useMaxPHeuristic True, if so.
      */

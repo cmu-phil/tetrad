@@ -41,8 +41,12 @@ class DescriptiveStats {
 
     /**
      * Constructs a readable table of normality test results
+     *
+     * @param dataSet               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param variable              a {@link edu.cmu.tetrad.graph.Node} object
+     * @param precomputeCovariances a boolean
+     * @return a {@link java.lang.String} object
      */
-
     public static String generateDescriptiveStats(DataSet dataSet, Node variable,
                                                   boolean precomputeCovariances) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -100,7 +104,7 @@ class DescriptiveStats {
         table.setToken(rowindex, 0, "Skewness:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
 
-        table.setToken(rowindex, 0, "" + "Kurtosis:");
+        table.setToken(rowindex, 0, "Kurtosis:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.kurtosis(data)));
 
         if (continuous) {
@@ -138,6 +142,13 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
+
+    /**
+     * <p>median.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] median(double[] data) {
         Arrays.sort(data);
 
@@ -158,6 +169,13 @@ class DescriptiveStats {
         return result;
     }
 
+    /**
+     * <p>standardErrorMean.</p>
+     *
+     * @param stdDev     a double
+     * @param sampleSize a double
+     * @return a double
+     */
     public static double standardErrorMean(double stdDev, double sampleSize) {
         return stdDev / (FastMath.sqrt(sampleSize));
     }
@@ -165,9 +183,9 @@ class DescriptiveStats {
     /**
      * Given some variable, returns the mean, standard deviation, and variance.
      *
+     * @param data an array of {@link double} objects
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
-
     public static double[] normalParams(double[] data) {
         double mean = 0.0;
         double sd = 0.0;

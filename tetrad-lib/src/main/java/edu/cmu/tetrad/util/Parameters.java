@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.util;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -8,18 +9,39 @@ import java.util.stream.Collectors;
  * parameters with their values, for the parameters whose values have been retrieved, using the toString method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Parameters implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The parameters.
+     */
     private Map<String, Object[]> parameters = new LinkedHashMap<>();
+
+    /**
+     * The used parameters.
+     */
     private Set<String> usedParameters = new LinkedHashSet<>();
+
+    /**
+     * The overridden parameters.
+     */
     private Map<String, Object> overriddenParameters = new HashMap<>();
 
+    /**
+     * <p>Constructor for Parameters.</p>
+     */
     public Parameters() {
     }
 
+    /**
+     * <p>Constructor for Parameters.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters(Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
@@ -29,11 +51,22 @@ public class Parameters implements TetradSerializable {
         this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public static Parameters serializableInstance() {
         return new Parameters();
     }
 
     // Includes all of the given parameters setting with the current parameter settings.
+
+    /**
+     * <p>putAll.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void putAll(Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
@@ -44,9 +77,9 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a list of the parameters whose values were actually used in the course of the simulation.
-     *
-     * @return this list, in String form
      */
     @Override
     public String toString() {
@@ -122,7 +155,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the integer value of the given parameter, looking up its default in the ParamDescriptions map.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a int
      * @return The integer value of this parameter.
      */
     public int getInt(String name, int defaultValue) {
@@ -132,7 +166,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the long value of the given parameter, looking up its default in the ParamDescriptions map.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a long
      * @return The long value of this parameter.
      */
     public long getLong(String name, long defaultValue) {
@@ -142,7 +177,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the boolean value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a boolean
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name, boolean defaultValue) {
@@ -158,7 +194,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a double
      * @return The double value of this parameter.
      */
     public double getDouble(String name, double defaultValue) {
@@ -168,7 +205,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the string value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a {@link java.lang.String} object
      * @return The string value of this parameter.
      */
     public String getString(String name, String defaultValue) {
@@ -178,7 +216,8 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
+     * @param name         The name of the parameter.
+     * @param defaultValue a {@link java.lang.Object} object
      * @return The object value of this parameter.
      */
     public Object get(String name, Object defaultValue) {
@@ -199,7 +238,7 @@ public class Parameters implements TetradSerializable {
         } else {
             if (getNumValues(name) != 1) {
                 System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
-                        + "for this algorithm. Skipping this run.\n");
+                                   + "for this algorithm. Skipping this run.\n");
             }
 
             return objects[0];
@@ -286,7 +325,21 @@ public class Parameters implements TetradSerializable {
         this.parameters.put(name, new String[]{value});
     }
 
+    /**
+     * <p>getParametersNames.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> getParametersNames() {
         return this.parameters.keySet();
+    }
+
+    /**
+     * Removes the specified parameter from the list of parameters.
+     *
+     * @param parameter The parameter to remove.
+     */
+    public void remove(String parameter) {
+        parameters.remove(parameter);
     }
 }

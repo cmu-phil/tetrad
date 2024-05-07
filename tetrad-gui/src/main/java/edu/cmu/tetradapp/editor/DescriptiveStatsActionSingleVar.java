@@ -48,19 +48,23 @@ class DescriptiveStatsActionSingleVar extends AbstractAction {
 
     /**
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code> that its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public DescriptiveStatsActionSingleVar(DataEditor editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
-        if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet)) {
+        if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet dataSet)) {
             JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset to generate descriptive statistics.");
             return;
         }
 
-        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;

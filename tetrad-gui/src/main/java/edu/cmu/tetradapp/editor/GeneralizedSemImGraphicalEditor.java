@@ -62,6 +62,9 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
+     *
+     * @param semIm           a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemImGraphicalEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;
@@ -76,6 +79,10 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     //============================================PUBLIC======================================================//
+
+    /**
+     * <p>refreshLabels.</p>
+     */
     public void refreshLabels() {
         List nodes = graph().getNodes();
 
@@ -86,6 +93,11 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         workbench().repaint();
     }
 
+    /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
@@ -184,10 +196,20 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

@@ -53,7 +53,7 @@ public class TestRubenData {
 
                 Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File(path2));
 
-                graph = GraphTransforms.cpdagForDag(graph);
+                graph = GraphTransforms.dagToCpdag(graph);
 
                 SemBicScore score = new SemBicScore(data, precomputeCovariances);
                 score.setPenaltyDiscount(2);

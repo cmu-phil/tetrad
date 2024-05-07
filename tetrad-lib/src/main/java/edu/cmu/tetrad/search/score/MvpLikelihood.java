@@ -44,6 +44,7 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
  * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class MvpLikelihood {
 
@@ -302,6 +303,11 @@ public class MvpLikelihood {
 
     }
 
+    /**
+     * <p>getEBICprior.</p>
+     *
+     * @return a double
+     */
     public double getEBICprior() {
 
         double n = this.dataSet.getNumColumns();

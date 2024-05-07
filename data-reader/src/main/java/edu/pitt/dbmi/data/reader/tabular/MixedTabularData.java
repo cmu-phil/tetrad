@@ -25,6 +25,7 @@ import edu.pitt.dbmi.data.reader.MixedData;
  * Dec 29, 2018 5:16:48 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MixedTabularData implements MixedData {
 
@@ -49,9 +50,9 @@ public class MixedTabularData implements MixedData {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the number of rows.
-     *
-     * @return the number of rows.
      */
     @Override
     public int getNumOfRows() {
@@ -59,9 +60,9 @@ public class MixedTabularData implements MixedData {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the data columns.
-     *
-     * @return the data columns.
      */
     @Override
     public DiscreteDataColumn[] getDataColumns() {
@@ -69,9 +70,9 @@ public class MixedTabularData implements MixedData {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the continuous data.
-     *
-     * @return the continuous data.
      */
     @Override
     public double[][] getContinuousData() {
@@ -79,9 +80,9 @@ public class MixedTabularData implements MixedData {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the discrete data.
-     *
-     * @return the discrete data.
      */
     @Override
     public int[][] getDiscreteData() {

@@ -31,19 +31,28 @@ import java.util.List;
  * Estimates probabilities from data by constructing the entire cell count table for the data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CellTableProbs implements DiscreteProbs {
 
-    // The data set that this is a cell count table for.
+    /**
+     * The data set that this is a cell count table for.
+     */
     private final DataSet dataSet;
-    // An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
-    // numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+    /**
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+     */
     private final int[] dims;
-    // A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
-    // for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
-    // to dims[0] & dims[1] ... * dims[dims.length - 1].
+    /**
+     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data for
+     * each cell allowed for by the given dimension array--in other words, the length must be greater than or equal to
+     * dims[0] & dims[1] ... * dims[dims.length - 1].
+     */
     private final int[] cells;
-    // The total number of points in the cell count table.
+    /**
+     * The total number of points in the cell count table.
+     */
     private int numPoints;
 
     //============================CONSTRUCTORS===========================//
@@ -115,6 +124,9 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */
@@ -125,7 +137,10 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated probability of the given proposition.
+     * This method calculates the probability of a given proposition.
+     *
+     * @param assertion a Proposition object representing the proposition for which the probability is calculated.
+     * @return the probability of the given proposition.
      */
     public double getProb(Proposition assertion) {
 
@@ -167,14 +182,21 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion A {@link Proposition} representing the assertion.
+     * @param condition A {@link Proposition} representing the condition.
+     * @return The conditional probability of the assertion given the condition.
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM, or if the
+     *                                  variables in the assertion and data set are either different or in a different
+     *                                  order.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
@@ -183,9 +205,9 @@ public final class CellTableProbs implements DiscreteProbs {
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
-                            " are either different or in a different order: " +
-                            "\n\tAssertion vars: " + assertionVars +
-                            "\n\tData vars: " + dataVars);
+                    " are either different or in a different order: " +
+                    "\n\tAssertion vars: " + assertionVars +
+                    "\n\tData vars: " + dataVars);
         }
 
         int[] variableValues = new int[condition.getNumVariables()];
@@ -241,6 +263,8 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -250,6 +274,8 @@ public final class CellTableProbs implements DiscreteProbs {
     //===========================PRIVATE METHODS===========================//
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
@@ -280,9 +306,9 @@ public final class CellTableProbs implements DiscreteProbs {
             for (int i = 0; i < coords.length; i++) {
                 if ((coords[i] < 0) || (coords[i] >= this.dims[i])) {
                     throw new IllegalArgumentException("Coordinate #" + i +
-                            " for variable " + this.dataSet.getVariable(i) +
-                            " is out of bounds [0, " + (this.dims[i] - 1) + "]: " +
-                            coords[i]);
+                                                       " for variable " + this.dataSet.getVariable(i) +
+                                                       " is out of bounds [0, " + (this.dims[i] - 1) + "]: " +
+                                                       coords[i]);
                 }
             }
         }
@@ -293,7 +319,7 @@ public final class CellTableProbs implements DiscreteProbs {
 
             if (cellIndex == Integer.MAX_VALUE || cellIndex < 0) {
                 throw new ArrayIndexOutOfBoundsException("Cannot construct a " +
-                        "cell table with that many cells.");
+                                                         "cell table with that many cells.");
             }
         }
 

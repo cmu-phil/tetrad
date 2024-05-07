@@ -36,11 +36,18 @@ import java.util.List;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ConcatenateDatasetsWrapper extends DataWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for ConcatenateDatasetsWrapper.</p>
+     *
+     * @param data   an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
@@ -48,6 +55,7 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

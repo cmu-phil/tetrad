@@ -48,12 +48,20 @@ import static org.apache.commons.math3.util.FastMath.*;
  * expiration date. Commercial (for profit) use requires written permission."
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class StatUtils {
     private static final double logCoshExp = StatUtils.logCoshExp();
-    static double pow2 = StatUtils.pow();
 
     /**
+     * Prevent instantiation.
+     */
+    private StatUtils() {
+    }
+
+    /**
+     * <p>mean.</p>
+     *
      * @param array a long array.
      * @return the mean of the values in this array.
      */
@@ -62,6 +70,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mean.</p>
+     *
      * @param array a double array.
      * @return the mean of the values in this array.
      */
@@ -70,6 +80,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mean.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
@@ -89,6 +101,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mean.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
@@ -108,6 +122,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mean.</p>
+     *
      * @param data a column vector.
      * @param N    the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
@@ -127,6 +143,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>median.</p>
+     *
      * @param array a long array.
      * @return the median of the values in this array.
      */
@@ -135,6 +153,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>median.</p>
+     *
      * @param array a double array.
      * @return the median of the values in this array.
      */
@@ -143,6 +163,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>median.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the median of the first N values in this array.
@@ -198,6 +220,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>median.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the median of the first N values in this array.
@@ -253,6 +277,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>quartile.</p>
+     *
      * @param array          a long array.
      * @param quartileNumber 1, 2, or 3.
      * @return the requested quartile of the values in this array.
@@ -262,6 +288,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>quartile.</p>
+     *
      * @param array          a double array.
      * @param quartileNumber 1, 2, or 3.
      * @return the requested quartile of the values in this array.
@@ -271,6 +299,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>quartile.</p>
+     *
      * @param array          a long array.
      * @param N              the number of values of array which should be considered.
      * @param quartileNumber 1, 2, or 3.
@@ -280,7 +310,7 @@ public final class StatUtils {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
-                    "Quartile number must be 1, 2, or 3.");
+                                               "Quartile number must be 1, 2, or 3.");
         }
 
         long[] a = new long[N + 1];
@@ -341,6 +371,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>quartile.</p>
+     *
      * @param array          a double array.
      * @param N              the number of values of array which should be considered.
      * @param quartileNumber 1, 2, or 3.
@@ -350,7 +382,7 @@ public final class StatUtils {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
-                    "Quartile number must be 1, 2, or 3.");
+                                               "Quartile number must be 1, 2, or 3.");
         }
 
         double[] a = new double[N + 1];
@@ -410,6 +442,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>min.</p>
+     *
      * @param array a long array.
      * @return the minimum of the values in this array.
      */
@@ -418,6 +452,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>min.</p>
+     *
      * @param array a double array.
      * @return the minimum of the values in this array.
      */
@@ -426,6 +462,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>min.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the minimum of the first N values in this array.
@@ -444,6 +482,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>min.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the minimum of the first N values in this array.
@@ -462,6 +502,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>max.</p>
+     *
      * @param array a long array.
      * @return the maximum of the values in this array.
      */
@@ -470,6 +512,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>max.</p>
+     *
      * @param array a double array.
      * @return the maximum of the values in this array.
      */
@@ -478,6 +522,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>max.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the maximum of the first N values in this array.
@@ -496,6 +542,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>max.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the maximum of the first N values in this array.
@@ -514,6 +562,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>range.</p>
+     *
      * @param array a long array.
      * @return the range of the values in this array.
      */
@@ -522,6 +572,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>range.</p>
+     *
      * @param array a double array.
      * @return the range of the values in this array.
      */
@@ -530,6 +582,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>range.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the range of the first N values in this array.
@@ -539,6 +593,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>range.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the range of the first N values in this array.
@@ -548,6 +604,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>N.</p>
+     *
      * @param array a long array.
      * @return the length of this array.
      */
@@ -556,6 +614,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>N.</p>
+     *
      * @param array a double array.
      * @return the length of this array.
      */
@@ -564,6 +624,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>ssx.</p>
+     *
      * @param array a long array.
      * @return the sum of the squared differences from the mean in array.
      */
@@ -572,6 +634,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>ssx.</p>
+     *
      * @param array a double array.
      * @return the sum of the squared differences from the mean in array.
      */
@@ -580,6 +644,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>ssx.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the sum of the squared differences from the mean of the first N values in array.
@@ -600,6 +666,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>ssx.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the sum of the squared differences from the mean of the first N values in array.
@@ -620,6 +688,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sxy.</p>
+     *
      * @param array1 a long array.
      * @param array2 a long array, same length as array1.
      * @return the sum of the squared differences of the products from the products of the sample means for array1 and
@@ -633,13 +703,15 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
     }
 
     /**
+     * <p>sxy.</p>
+     *
      * @param array1 a double array.
      * @param array2 a double array, same length as array1.
      * @return the sum of the squared differences of the products from the products of the sample means for array1 and
@@ -653,13 +725,15 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
     }
 
     /**
+     * <p>sxy.</p>
+     *
      * @param array1 a long array.
      * @param array2 a long array.
      * @param N      the number of values of array which should be considered.
@@ -681,6 +755,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sxy.</p>
+     *
      * @param array1 a double array.
      * @param array2 a double array.
      * @param N      the number of values of array which should be considered.
@@ -700,6 +776,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sxy.</p>
+     *
      * @param data1 a column vector of doubles.
      * @param data2 a column vector of doubles.
      * @param N     the number of values of array which should be considered.
@@ -719,6 +797,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>variance.</p>
+     *
      * @param array a long array.
      * @return the variance of the values in array.
      */
@@ -727,6 +807,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>variance.</p>
+     *
      * @param array a double array.
      * @return the variance of the values in array.
      */
@@ -735,6 +817,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>variance.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the variance of the first N values in array.
@@ -744,6 +828,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>variance.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the variance of the first N values in array.
@@ -753,6 +839,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sd.</p>
+     *
      * @param array a long array.
      * @return the standard deviation of the values in array.
      */
@@ -761,6 +849,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sd.</p>
+     *
      * @param array a double array.
      * @return the standard deviation of the values in array.
      */
@@ -769,6 +859,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sd.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the standard deviation of the first N values in array.
@@ -778,6 +870,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sd.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the standard deviation of the first N values in array.
@@ -787,6 +881,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>covariance.</p>
+     *
      * @param array1 a long array.
      * @param array2 a second long array (same length as array1).
      * @return the covariance of the values in array.
@@ -799,13 +895,15 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
     }
 
     /**
+     * <p>covariance.</p>
+     *
      * @param array1 a double array.
      * @param array2 a second double array (same length as array1).
      * @return the covariance of the values in array.
@@ -817,13 +915,15 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
     }
 
     /**
+     * <p>covariance.</p>
+     *
      * @param array1 a long array.
      * @param array2 a second long array.
      * @param N      the number of values to be considered in array1 and array2.
@@ -834,6 +934,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>covariance.</p>
+     *
      * @param array1 a double array.
      * @param array2 a second double array (same length as array1).
      * @param N      the number of values to be considered in array1 and array2.
@@ -844,6 +946,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>correlation.</p>
+     *
      * @param array1 a long array.
      * @param array2 a second long array (same length as array1).
      * @return the Pearson's correlation of the values in array1 and array2.
@@ -856,13 +960,15 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
     }
 
     /**
+     * <p>correlation.</p>
+     *
      * @param array1 a double array.
      * @param array2 a second double array (same length as array1).
      * @return the Pearson's correlation of the values in array1 and array2.
@@ -875,12 +981,19 @@ public final class StatUtils {
         if (N1 != N2) {
             throw new IllegalArgumentException(
                     "Arrays passed (or lengths specified) of " +
-                            "unequal lengths.");
+                    "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
     }
 
+    /**
+     * <p>correlation.</p>
+     *
+     * @param data1 a {@link edu.cmu.tetrad.util.Vector} object
+     * @param data2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a double
+     */
     public static double correlation(Vector data1, Vector data2) {
         int N = data1.size();
         double covXY = StatUtils.sxy(data1, data2, N);
@@ -889,11 +1002,20 @@ public final class StatUtils {
         return (covXY / (sqrt(covXX) * sqrt(covYY)));
     }
 
+    /**
+     * <p>compressedCorrelation.</p>
+     *
+     * @param data1 a {@link edu.cmu.tetrad.util.Vector} object
+     * @param data2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a short
+     */
     public static short compressedCorrelation(Vector data1, Vector data2) {
         return (short) (StatUtils.correlation(data1, data2) * 10000);
     }
 
     /**
+     * <p>correlation.</p>
+     *
      * @param array1 a long array.
      * @param array2 a second long array.
      * @param N      the number of values to be considered in array1 and array2.
@@ -907,6 +1029,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>correlation.</p>
+     *
      * @param array1 a double array.
      * @param array2 a second double array.
      * @param N      the number of values to be considered in array1 and array2.
@@ -917,9 +1041,21 @@ public final class StatUtils {
         double covXY = StatUtils.sxy(array1, array2, N);
         double covXX = StatUtils.sxy(array1, array1, N);
         double covYY = StatUtils.sxy(array2, array2, N);
-        return (covXY / (sqrt(covXX) * sqrt(covYY)));
+        double r = covXY / (sqrt(covXX) * sqrt(covYY));
+
+        if (r < -1) r = -1;
+        if (r > 1) r = 1;
+
+        return r;
     }
 
+    /**
+     * <p>rankCorrelation.</p>
+     *
+     * @param arr1 an array of {@link double} objects
+     * @param arr2 an array of {@link double} objects
+     * @return a double
+     */
     public static double rankCorrelation(double[] arr1, double[] arr2) {
         if (arr1.length != arr2.length) {
             throw new IllegalArgumentException("Arrays not the same length.");
@@ -931,6 +1067,13 @@ public final class StatUtils {
         return StatUtils.correlation(ranks1, ranks2);
     }
 
+    /**
+     * <p>kendallsTau.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @param y an array of {@link double} objects
+     * @return a double
+     */
     public static double kendallsTau(double[] x, double[] y) {
         if (x.length != y.length) {
             throw new IllegalArgumentException("Arrays not the same length.");
@@ -948,6 +1091,12 @@ public final class StatUtils {
         return numerator / (0.5 * N * (N - 1));
     }
 
+    /**
+     * <p>getRanks.</p>
+     *
+     * @param arr an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] getRanks(double[] arr) {
         double[] arr2 = new double[arr.length];
         System.arraycopy(arr, 0, arr2, 0, arr.length);
@@ -973,6 +1122,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sSquare.</p>
+     *
      * @param array a long array.
      * @return the unbaised estimate of the variance of the distribution of the values in array asuming the mean is
      * unknown.
@@ -982,6 +1133,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sSquare.</p>
+     *
      * @param array a double array.
      * @return the unbaised estimate of the variance of the distribution of the values in array asuming the mean is
      * unknown.
@@ -991,6 +1144,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sSquare.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the variance of the distribution of the first N values in array asuming the mean
@@ -1001,6 +1156,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>sSquare.</p>
+     *
      * @param array a double array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the variance of the distribution of the first N values in array asuming the mean
@@ -1011,6 +1168,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>varHat.</p>
+     *
      * @param array a long array.
      * @return the unbaised estimate of the variance of the distribution of the values in array asuming the mean is
      * known.
@@ -1020,6 +1179,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>varHat.</p>
+     *
      * @param array a double array.
      * @return the unbaised estimate of the variance of the distribution of the values in array asuming the mean is
      * known.
@@ -1029,6 +1190,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>varHat.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the variance of the distribution of the first N values in array asuming the mean
@@ -1048,6 +1211,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>varHat.</p>
+     *
      * @param array a double array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the variance of the distribution of the first N values in array asuming the mean
@@ -1067,6 +1232,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mu.</p>
+     *
      * @param array a long array.
      * @return the unbaised estimate of the mean of the distribution of the values in array.
      */
@@ -1075,6 +1242,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mu.</p>
+     *
      * @param array a double array.
      * @return the unbaised estimate of the mean of the distribution of the values in array.
      */
@@ -1083,6 +1252,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mu.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the mean of the distribution of the first N values in array.
@@ -1092,6 +1263,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>mu.</p>
+     *
      * @param array a double array.
      * @param N     the number of values to be considered in array.
      * @return the unbaised estimate of the mean of the distribution of the first N values in array.
@@ -1101,6 +1274,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>muHat.</p>
+     *
      * @param array a long array.
      * @return the maximum likelihood estimate of the mean of the distribution of the values in array.
      */
@@ -1109,6 +1284,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>muHat.</p>
+     *
      * @param array a double array.
      * @return the maximum likelihood estimate of the mean of the distribution of the values in array.
      */
@@ -1117,6 +1294,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>muHat.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the maximum likelihood estimate of the mean of the distribution of the first N values in array.
@@ -1126,6 +1305,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>muHat.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the maximum likelihood estimate of the mean of the distribution of the first N values in array.
@@ -1135,6 +1316,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>averageDeviation.</p>
+     *
      * @param array a long array.
      * @return the average deviation of the values in array.
      */
@@ -1143,6 +1326,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>averageDeviation.</p>
+     *
      * @param array a double array.
      * @return the average deviation of the values in array.
      */
@@ -1151,6 +1336,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>averageDeviation.</p>
+     *
      * @param array a long array.
      * @param N     the number of values to be considered in array.
      * @return the average deviation of the first N values in array.
@@ -1169,6 +1356,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>averageDeviation.</p>
+     *
      * @param array a double array.
      * @param N     the number of values to be considered in array.
      * @return the average deviation of the first N values in array.
@@ -1187,6 +1376,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>skewness.</p>
+     *
      * @param array a long array.
      * @return the skew of the values in array.
      */
@@ -1195,6 +1386,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>skewness.</p>
+     *
      * @param array a double array.
      * @return the skew of the values in array.
      */
@@ -1204,6 +1397,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>skewness.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the skew of the first N values in array.
@@ -1224,13 +1419,15 @@ public final class StatUtils {
 
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-                    "when the variance is zero.");
+                                          "when the variance is zero.");
         }
 
         return esss / FastMath.pow(ess, 1.5);
     }
 
     /**
+     * <p>skewness.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the skew of the first N values in array.
@@ -1258,6 +1455,12 @@ public final class StatUtils {
         return esss / FastMath.pow(ess, 1.5);
     }
 
+    /**
+     * <p>removeNaN.</p>
+     *
+     * @param x1 an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] removeNaN(double[] x1) {
         int i;
 
@@ -1273,6 +1476,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>kurtosis.</p>
+     *
      * @param array a long array.
      * @return the kurtosis of the values in array.
      */
@@ -1281,6 +1486,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>kurtosis.</p>
+     *
      * @param array a double array.
      * @return the curtosis of the values in array.
      */
@@ -1289,6 +1496,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>kurtosis.</p>
+     *
      * @param array a long array.
      * @param N     the number of values of array which should be considered.
      * @return the curtosis of the first N values in array.
@@ -1315,10 +1524,23 @@ public final class StatUtils {
         return kurt;
     }
 
+    /**
+     * <p>standardizedFifthMoment.</p>
+     *
+     * @param array an array of {@link double} objects
+     * @return a double
+     */
     public static double standardizedFifthMoment(double[] array) {
         return StatUtils.standardizedFifthMoment(array, array.length);
     }
 
+    /**
+     * <p>standardizedFifthMoment.</p>
+     *
+     * @param array an array of {@link double} objects
+     * @param N     a int
+     * @return a double
+     */
     public static double standardizedFifthMoment(double[] array, int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
@@ -1339,10 +1561,23 @@ public final class StatUtils {
         return kurt;
     }
 
+    /**
+     * <p>standardizedSixthMoment.</p>
+     *
+     * @param array an array of {@link double} objects
+     * @return a double
+     */
     public static double standardizedSixthMoment(double[] array) {
         return StatUtils.standardizedFifthMoment(array, array.length);
     }
 
+    /**
+     * <p>standardizedSixthMoment.</p>
+     *
+     * @param array an array of {@link double} objects
+     * @param N     a int
+     * @return a double
+     */
     public static double standardizedSixthMoment(double[] array, int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
@@ -1364,6 +1599,8 @@ public final class StatUtils {
     }
 
     /**
+     * <p>kurtosis.</p>
+     *
      * @param array a double array.
      * @param N     the number of values of array which should be considered.
      * @return the curtosis of the first N values in array.
@@ -1471,7 +1708,7 @@ public final class StatUtils {
 
         for (int i = 0; i < 100; i++) {
             sum += (StatUtils.gamma(a) / StatUtils.gamma(a + 1.0 + (double) i)) *
-                    FastMath.pow(x, i);
+                   FastMath.pow(x, i);
         }
 
         return (coef * sum);
@@ -1514,6 +1751,8 @@ public final class StatUtils {
     /**
      * Calculates the one-tail probability of the Chi-squared distribution for doubles
      *
+     * @param x                a double
+     * @param degreesOfFreedom a int
      * @return value of Chi at x with the stated degrees of freedom.
      */
     public static double chidist(double x, int degreesOfFreedom) {
@@ -1526,6 +1765,13 @@ public final class StatUtils {
     }
 
     //returns the value of a toss of an n-sided die
+
+    /**
+     * <p>dieToss.</p>
+     *
+     * @param n a int
+     * @return a int
+     */
     public static int dieToss(int n) {
         return (int) floor(n * random());
     }
@@ -1543,6 +1789,7 @@ public final class StatUtils {
      *                             yes, false if no). If they are uncorrelated, or positively correlated, a level of
      *                             alpha is used; if they are not correlated, a level of alpha / SUM_i=1_n(1 / i) is
      *                             used.
+     * @param pSorted              a boolean
      * @return the FDR alpha, which is the first p-value sorted high to low to fall below a line from (1.0, level) to
      * (0.0, 0.0). Hypotheses less than or equal to this p-value should be rejected.
      */
@@ -1550,10 +1797,28 @@ public final class StatUtils {
         return StatUtils.fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, pSorted);
     }
 
+    /**
+     * <p>fdrCutoff.</p>
+     *
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
+     * @param negativelyCorrelated a boolean
+     * @return a double
+     */
     public static double fdrCutoff(double alpha, List<Double> pValues, boolean negativelyCorrelated) {
         return StatUtils.fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, false);
     }
 
+    /**
+     * <p>fdrCutoff.</p>
+     *
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
+     * @param _k                   an array of {@link int} objects
+     * @param negativelyCorrelated a boolean
+     * @param pSorted              a boolean
+     * @return a double
+     */
     public static double fdrCutoff(double alpha, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
         if (_k.length != 1) {
             throw new IllegalArgumentException("k must be a length 1 int array, to return the index of q.");
@@ -1569,6 +1834,10 @@ public final class StatUtils {
     }
 
     /**
+     * <p>fdr.</p>
+     *
+     * @param alpha   a double
+     * @param pValues a {@link java.util.List} object
      * @return the index, &gt;=, in the sorted list of p values of which all p values are rejected. It the index is -1,
      * all p values are rejected.
      */
@@ -1576,6 +1845,15 @@ public final class StatUtils {
         return StatUtils.fdr(alpha, pValues, true, false);
     }
 
+    /**
+     * <p>fdr.</p>
+     *
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
+     * @param negativelyCorrelated a boolean
+     * @param pSorted              a boolean
+     * @return a int
+     */
     public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
         if (!pSorted) {
             pValues = new ArrayList<>(pValues);
@@ -1620,6 +1898,13 @@ public final class StatUtils {
         }
     }
 
+    /**
+     * <p>fdrQ.</p>
+     *
+     * @param pValues a {@link java.util.List} object
+     * @param k       a int
+     * @return a double
+     */
     public static double fdrQ(List<Double> pValues, int k) {
         double high = 1.0;
         double low = 0.0;
@@ -1651,6 +1936,7 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial covariance one wants is covariance(X, Y | Z1,...,Zn). This may
      * be extracted using DataUtils.submatrix().
      *
+     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
      * @return the given partial covariance.
      */
     public static double partialCovarianceWhittaker(Matrix submatrix) {
@@ -1676,6 +1962,12 @@ public final class StatUtils {
     }
 
     /**
+     * <p>partialCovarianceWhittaker.</p>
+     *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param y          a int
+     * @param z          a int
      * @return the partial covariance(x, y | z) where these represent the column/row indices of the desired variables in
      * <code>covariance</code>
      */
@@ -1696,10 +1988,26 @@ public final class StatUtils {
         return StatUtils.partialCovarianceWhittaker(covariance.getSelection(selection, selection));
     }
 
+    /**
+     * <p>partialVariance.</p>
+     *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param z          a int
+     * @return a double
+     */
     public static double partialVariance(Matrix covariance, int x, int... z) {
         return StatUtils.partialCovarianceWhittaker(covariance, x, x, z);
     }
 
+    /**
+     * <p>partialStandardDeviation.</p>
+     *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param z          a int
+     * @return a double
+     */
     public static double partialStandardDeviation(Matrix covariance, int x, int... z) {
         double var = StatUtils.partialVariance(covariance, x, z);
         return sqrt(var);
@@ -1710,7 +2018,9 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial correlation one wants is correlation(X, Y | Z1,...,Zn). This
      * may be extracted using DataUtils.submatrix().
      *
+     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
      * @return the given partial correlation.
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static synchronized double partialCorrelation(Matrix submatrix) throws SingularMatrixException {
 //        try {
@@ -1720,12 +2030,28 @@ public final class StatUtils {
 //        }
     }
 
+    /**
+     * <p>partialCorrelationPrecisionMatrix.</p>
+     *
+     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a double
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
+     */
     public static double partialCorrelationPrecisionMatrix(Matrix submatrix) throws SingularMatrixException {
         Matrix inverse = submatrix.inverse();
-        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        if (r < -1) r = -1;
+        if (r > 1) r = 1;
+        return r;
     }
 
     /**
+     * <p>partialCorrelation.</p>
+     *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param y          a int
+     * @param z          a int
      * @return the partial correlation(x, y | z) where these represent the column/row indices of the desired variables
      * in <code>covariance</code>
      */
@@ -1743,6 +2069,12 @@ public final class StatUtils {
         return StatUtils.partialCorrelation(covariance.getSelection(selection, selection));
     }
 
+    /**
+     * <p>logCoshScore.</p>
+     *
+     * @param _f an array of {@link double} objects
+     * @return a double
+     */
     public static double logCoshScore(double[] _f) {
         _f = StatUtils.standardizeData(_f);
 
@@ -1758,6 +2090,12 @@ public final class StatUtils {
         return diff * diff;
     }
 
+    /**
+     * <p>meanAbsolute.</p>
+     *
+     * @param _f an array of {@link double} objects
+     * @return a double
+     */
     public static double meanAbsolute(double[] _f) {
         _f = StatUtils.standardizeData(_f);
 
@@ -1770,6 +2108,11 @@ public final class StatUtils {
         return diff * diff;
     }
 
+    /**
+     * <p>pow.</p>
+     *
+     * @return a double
+     */
     public static double pow() {
         double sum = 0.0;
 
@@ -1781,6 +2124,12 @@ public final class StatUtils {
         return sum / 1000;
     }
 
+    /**
+     * <p>expScore.</p>
+     *
+     * @param _f an array of {@link double} objects
+     * @return a double
+     */
     public static double expScore(double[] _f) {
 //        _f = DataUtils.standardizeData(_f);
         DoubleArrayList f = new DoubleArrayList(_f);
@@ -1795,11 +2144,23 @@ public final class StatUtils {
 
     }
 
+    /**
+     * <p>logCoshExp.</p>
+     *
+     * @return a double
+     */
     public static double logCoshExp() {
 //        return 0.3745232061467262;
         return 0.3746764078432371;
     }
 
+    /**
+     * <p>entropy.</p>
+     *
+     * @param numBins a int
+     * @param _f      an array of {@link double} objects
+     * @return a double
+     */
     public static double entropy(int numBins, double[] _f) {
         double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
 
@@ -1830,6 +2191,12 @@ public final class StatUtils {
         return -sum;
     }
 
+    /**
+     * <p>maxEntApprox.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @return a double
+     */
     public static double maxEntApprox(double[] x) {
 
         x = StatUtils.standardizeData(x);
@@ -1861,6 +2228,12 @@ public final class StatUtils {
         return gaussianEntropy - negentropy;
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
 
@@ -1891,18 +2264,37 @@ public final class StatUtils {
         return data2;
     }
 
+    /**
+     * <p>factorial.</p>
+     *
+     * @param c a int
+     * @return a double
+     */
     public static double factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;
         return c * StatUtils.factorial(c - 1);
     }
 
+    /**
+     * <p>getZForAlpha.</p>
+     *
+     * @param alpha a double
+     * @return a double
+     */
     public static double getZForAlpha(double alpha) {
         NormalDistribution dist = new NormalDistribution(0, 1);
         return 1.0 - dist.inverseCumulativeProbability(alpha / 2.0);
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
+
+    /**
+     * <p>logsum.</p>
+     *
+     * @param logs a {@link java.util.List} object
+     * @return a double
+     */
     public static double logsum(List<Double> logs) {
 
         logs.sort((o1, o2) -> -Double.compare(o1, o2));
@@ -1920,12 +2312,28 @@ public final class StatUtils {
         return loga0 + log(sum);
     }
 
+    /**
+     * <p>sum.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @return a double
+     */
     public static double sum(double[] x) {
         double sum = 0.0;
         for (double xx : x) sum += xx;
         return sum;
     }
 
+    /**
+     * <p>cov.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param condition an array of {@link double} objects
+     * @param threshold a double
+     * @param direction a double
+     * @return an array of {@link double} objects
+     */
     public static double[] cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;
@@ -1971,6 +2379,17 @@ public final class StatUtils {
         return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx};
     }
 
+    /**
+     * <p>covMatrix.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param z         an array of {@link double} objects
+     * @param condition an array of {@link double} objects
+     * @param threshold a double
+     * @param direction a double
+     * @return an array of {@link double} objects
+     */
     public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {
         List<Integer> rows = StatUtils.getRows(condition, threshold, direction);
 
@@ -2007,6 +2426,14 @@ public final class StatUtils {
         return cov;
     }
 
+    /**
+     * <p>getRows.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param threshold a double
+     * @param direction a double
+     * @return a {@link java.util.List} object
+     */
     public static List<Integer> getRows(double[] x, double threshold, double direction) {
         List<Integer> rows = new ArrayList<>();
 
@@ -2029,6 +2456,15 @@ public final class StatUtils {
         return rows;
     }
 
+    /**
+     * <p>getRows.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param condition an array of {@link double} objects
+     * @param threshold a double
+     * @param direction a double
+     * @return a {@link java.util.List} object
+     */
     public static List<Integer> getRows(double[] x, double[] condition, double threshold, double direction) {
         List<Integer> rows = new ArrayList<>();
 
@@ -2046,6 +2482,16 @@ public final class StatUtils {
         return rows;
     }
 
+    /**
+     * <p>E.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param condition an array of {@link double} objects
+     * @param threshold a double
+     * @param direction a double
+     * @return an array of {@link double} objects
+     */
     public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;

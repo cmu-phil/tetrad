@@ -28,21 +28,56 @@ import java.awt.*;
  * Nov 21, 2017 2:13:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 @SuppressWarnings("ALL")
 public class DualListPanel extends JPanel {
 
     private static final long serialVersionUID = -5301381955599984479L;
 
+    /**
+     * The panel for the buttons.
+     */
     private JPanel buttonPanel;
+
+    /**
+     * The panel for the buttons parents.
+     */
     private JPanel buttonParentPanel;
+
+    /**
+     * The button to move to source.
+     */
     private JButton moveToSource;
+
+    /**
+     * The button to move to selector.
+     */
     private JButton moveToselector;
+
+    /**
+     * The list of selected nodes.
+     */
     private JList<Node> selectedList;
+
+    /**
+     * The scroll pane for the selected list.
+     */
     private JScrollPane selectedScrollPane;
+
+    /**
+     * The list of source nodes.
+     */
     private JList<Node> sourceList;
+
+    /**
+     * The scroll pane for the source list.
+     */
     private JScrollPane unselectedScrollPane;
 
+    /**
+     * <p>Constructor for DualListPanel.</p>
+     */
     public DualListPanel() {
         initComponents();
     }
@@ -135,26 +170,56 @@ public class DualListPanel extends JPanel {
         this.unselectedScrollPane.getAccessibleContext().setAccessibleDescription("");
     }
 
+    /**
+     * <p>Getter for the field <code>moveToSource</code>.</p>
+     *
+     * @return a {@link javax.swing.JButton} object
+     */
     public JButton getMoveToSource() {
         return this.moveToSource;
     }
 
+    /**
+     * <p>Getter for the field <code>moveToselector</code>.</p>
+     *
+     * @return a {@link javax.swing.JButton} object
+     */
     public JButton getMoveToselector() {
         return this.moveToselector;
     }
 
+    /**
+     * <p>Getter for the field <code>selectedList</code>.</p>
+     *
+     * @return a {@link javax.swing.JList} object
+     */
     public JList<Node> getSelectedList() {
         return this.selectedList;
     }
 
+    /**
+     * <p>Getter for the field <code>selectedScrollPane</code>.</p>
+     *
+     * @return a {@link javax.swing.JScrollPane} object
+     */
     public JScrollPane getSelectedScrollPane() {
         return this.selectedScrollPane;
     }
 
+    /**
+     * <p>Getter for the field <code>sourceList</code>.</p>
+     *
+     * @return a {@link javax.swing.JList} object
+     */
     public JList<Node> getSourceList() {
         return this.sourceList;
     }
 
+    /**
+     * <p>Getter for the field <code>unselectedScrollPane</code>.</p>
+     *
+     * @return a {@link javax.swing.JScrollPane} object
+     */
     public JScrollPane getUnselectedScrollPane() {
         return this.unselectedScrollPane;
     }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,48 +41,47 @@ import java.util.List;
  * @author Ricardo Silva
  * @author Don Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemEstimator implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The SemPm containing the graph and the freeParameters to be estimated.
-     *
-     * @serial Cannot be null.
      */
     private SemPm semPm;
 
     /**
      * The covariance matrix used to estimate the SemIm. Note that the variables names in the covariance matrix must be
      * in the same order as the variable names in the semPm.
-     *
-     * @serial Cannot be null.
      */
     private ICovarianceMatrix covMatrix;
 
     /**
      * The algorithm that minimizes the fitting function for the SEM.
-     *
-     * @serial
      */
     private SemOptimizer semOptimizer;
 
     /**
      * The most recently estimated model, or null if no model has been estimated yet.
-     *
-     * @serial Can be null.
      */
     private SemIm estimatedSem;
 
     /**
      * The data set being estimated from (needed to calculate means of variables).  May be null in which case means are
      * set to zero.
-     *
-     * @serial Can be null.
      */
     private DataSet dataSet;
 
+    /**
+     * The score type used to optimize the SEM.
+     */
     private ScoreType scoreType = ScoreType.Fgls;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts = 1;
 
     /**
@@ -155,6 +155,8 @@ public final class SemEstimator implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEstimator} object
      */
     public static SemEstimator serializableInstance() {
         return new SemEstimator(CovarianceMatrix.serializableInstance(),
@@ -176,6 +178,8 @@ public final class SemEstimator implements TetradSerializable {
 
     /**
      * Runs the estimator on the data and SemPm passed in through the constructor.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemIm estimate() {
         if (getSemOptimizer() != null) {
@@ -221,11 +225,15 @@ public final class SemEstimator implements TetradSerializable {
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 //        TetradLogger.getInstance().log("stats", "Final Score = " + nf.format(semIm.getScore()));
-        TetradLogger.getInstance().log("stats", "Sample Size = " + semIm.getSampleSize());
-        TetradLogger.getInstance().log("stats", "Model Chi Square = " + nf.format(semIm.getChiSquare()));
-        TetradLogger.getInstance().log("stats", "Model DOF = " + nf.format(this.semPm.getDof()));
-        TetradLogger.getInstance().log("stats", "Model P Value = " + nf.format(semIm.getPValue()));
-        TetradLogger.getInstance().log("stats", "Model BIC = " + nf.format(semIm.getBicScore()));
+        TetradLogger.getInstance().forceLogMessage("Sample Size = " + semIm.getSampleSize());
+        String message3 = "Model Chi Square = " + nf.format(semIm.getChiSquare());
+        TetradLogger.getInstance().forceLogMessage(message3);
+        String message2 = "Model DOF = " + nf.format(this.semPm.getDof());
+        TetradLogger.getInstance().forceLogMessage(message2);
+        String message1 = "Model P Value = " + nf.format(semIm.getPValue());
+        TetradLogger.getInstance().forceLogMessage(message1);
+        String message = "Model BIC = " + nf.format(semIm.getBicScore());
+        TetradLogger.getInstance().forceLogMessage(message);
 
         System.out.println(this.estimatedSem);
 
@@ -233,6 +241,8 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>estimatedSem</code>.</p>
+     *
      * @return the estimated SemIm. If the <code>estimate</code> method has not yet been called, <code>null</code> is
      * returned.
      */
@@ -244,6 +254,11 @@ public final class SemEstimator implements TetradSerializable {
         this.estimatedSem = estimatedSem;
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -264,6 +279,11 @@ public final class SemEstimator implements TetradSerializable {
         this.dataSet = _dataSet;
     }
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPm;
     }
@@ -272,6 +292,11 @@ public final class SemEstimator implements TetradSerializable {
         this.semPm = semPm;
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
@@ -284,11 +309,18 @@ public final class SemEstimator implements TetradSerializable {
         return this.semOptimizer;
     }
 
+    /**
+     * <p>Setter for the field <code>semOptimizer</code>.</p>
+     *
+     * @param semOptimizer a {@link edu.cmu.tetrad.sem.SemOptimizer} object
+     */
     public void setSemOptimizer(SemOptimizer semOptimizer) {
         this.semOptimizer = semOptimizer;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the Sem.
      */
     public String toString() {
@@ -329,7 +361,7 @@ public final class SemEstimator implements TetradSerializable {
         SemOptimizer optimizer;
 
         if (containsFixedParam() || getSemPm().getGraph().paths().existsDirectedCycle() ||
-                SemEstimator.containsCovarParam(getSemPm())) {
+            SemEstimator.containsCovarParam(getSemPm())) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();
@@ -362,7 +394,7 @@ public final class SemEstimator implements TetradSerializable {
             e.printStackTrace();
             throw new RuntimeException(
                     "All of the variables from the SEM parameterized model " +
-                            "must be in the data set.", e);
+                    "must be in the data set.", e);
         }
     }
 
@@ -415,6 +447,10 @@ public final class SemEstimator implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream
                                     s)
@@ -434,10 +470,20 @@ public final class SemEstimator implements TetradSerializable {
         return this.scoreType;
     }
 
+    /**
+     * <p>Setter for the field <code>scoreType</code>.</p>
+     *
+     * @param scoreType a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public void setScoreType(ScoreType scoreType) {
         this.scoreType = scoreType;
     }
 
+    /**
+     * <p>Setter for the field <code>numRestarts</code>.</p>
+     *
+     * @param numRestarts a int
+     */
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }

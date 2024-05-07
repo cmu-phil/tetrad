@@ -22,13 +22,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PcCommon;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -62,41 +57,74 @@ import java.util.Set;
  * @author clarkglymour
  * @author jijizhang
  * @author josephramsey
+ * @version $Id: $Id
  * @see FciOrient
  * @see Pc
  * @see Fas
- * @see FciOrient
  * @see Knowledge
  */
 public final class Fci implements IGraphSearch {
-    // The variables to search over.
+    /**
+     * The variables to search over.
+     */
     private final List<Node> variables = new ArrayList<>();
-    // The independence test to use.
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The sepsets from FAS.
+    /**
+     * The sepsets from FAS.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Whether the Zhang complete rule set should be used.
+    /**
+     * Whether the Zhang complete rule set should be used.
+     */
     private boolean completeRuleSetUsed = true;
-    // Whether the possible msep step should be done.
+    /**
+     * Whether the possible msep step should be done.
+     */
     private boolean possibleMsepSearchDone = true;
-    // The maximum length of any discriminating path.
+    /**
+     * The maximum length of any discriminating path.
+     */
     private int maxPathLength = -1;
-    // The depth of search.
+    /**
+     * The depth of search.
+     */
     private int depth = -1;
-    // The elapsed time of search.
+    /**
+     * The elapsed time of search.
+     */
     private long elapsedTime;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
-    // The PC heuristic type to use.
+    /**
+     * The PC heuristic type to use.
+     */
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
-    // Whether the stable options should be used.
+    /**
+     * Whether the stable options should be used.
+     */
     private boolean stable = true;
-    // Whether the discriminating path rule should be used.
+    /**
+     * Whether the discriminating path rule should be used.
+     */
     private boolean doDiscriminatingPathRule = true;
+    /**
+     * Flag indicating whether almost cyclic paths should be resolved during the search.
+     * Default value is false.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor.
@@ -147,16 +175,19 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Performs the search.
+     * Performs a search using the FCI algorithm.
      *
-     * @return The graph.
+     * @return The resulting graph.
      */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
@@ -172,7 +203,8 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
+//        SepsetProducer sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
+        SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
 
         if (this.possibleMsepSearchDone) {
             new FciOrient(sepsets1).ruleR0(graph);
@@ -197,7 +229,24 @@ public final class Fci implements IGraphSearch {
 
         fciOrient.doFinalOrientation(graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         long stop = MillisecondTimes.timeMillis();
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         this.elapsedTime = stop - start;
 
@@ -336,6 +385,15 @@ public final class Fci implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Sets whether to resolve almost cyclic paths during the search.
+     *
+     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

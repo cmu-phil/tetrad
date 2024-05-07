@@ -34,17 +34,29 @@ import org.apache.commons.math3.util.FastMath;
  * Returns edges whose entries in the precision matrix exceed a certain threshold.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class InverseCorrelation {
 
     private final DataSet data;
     private final double threshold;
 
+    /**
+     * <p>Constructor for InverseCorrelation.</p>
+     *
+     * @param dataSet   a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param threshold a double
+     */
     public InverseCorrelation(DataSet dataSet, double threshold) {
         this.data = dataSet;
         this.threshold = threshold;
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
         CovarianceMatrix cov = new CovarianceMatrix(this.data);
 
@@ -67,7 +79,7 @@ public class InverseCorrelation {
                 int z = this.data.getNumColumns();
 
                 double fisherZ = FastMath.sqrt(sampleSize - z - 3.0) *
-                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
                 double p = getPValue(fisherZ);
 
@@ -83,6 +95,12 @@ public class InverseCorrelation {
         return graph;
     }
 
+    /**
+     * <p>getPValue.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double getPValue(double z) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(z)));
     }

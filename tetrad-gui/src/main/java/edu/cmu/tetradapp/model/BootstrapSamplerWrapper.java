@@ -27,22 +27,31 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BootstrapSamplerWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The output data set.
      */
     private final DataSet outputDataSet;
 
     //=============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for BootstrapSamplerWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BootstrapSamplerWrapper(DataWrapper wrapper,
                                    Parameters params) {
         if (wrapper == null) {
@@ -81,6 +90,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -89,6 +99,11 @@ public class BootstrapSamplerWrapper extends DataWrapper {
 
     //=============================PUBLIC METHODS=========================//
 
+    /**
+     * <p>getOutputDataset.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getOutputDataset() {
         return this.outputDataSet;
     }
@@ -100,6 +115,10 @@ public class BootstrapSamplerWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -25,26 +25,25 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Stores the parameters needed to generate a new lag graph, whether randomized or manually constructed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ManualLagGraphParams implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The number of variables per individual.
-     *
-     * @serial
      */
     private int varsPerInd = 5;
 
     /**
      * The maximum lag of the lag graph.
-     *
-     * @serial
      */
     private int mlag = 1;
 
@@ -58,6 +57,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.ManualLagGraphParams} object
      */
     public static ManualLagGraphParams serializableInstance() {
         return new ManualLagGraphParams();
@@ -67,6 +68,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Returns the number of variables per individual.
+     *
+     * @return a int
      */
     public int getVarsPerInd() {
         return this.varsPerInd;
@@ -74,6 +77,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Sets the number of variables per individual.
+     *
+     * @param varsPerInd a int
      */
     public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd <= 0) {
@@ -85,6 +90,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Returns the maximum lag.
+     *
+     * @return a int
      */
     public int getMlag() {
         return this.mlag;
@@ -92,6 +99,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Sets the maximum lag.
+     *
+     * @param mlag a int
      */
     public void setMlag(int mlag) {
         if (mlag <= 0) {
@@ -108,7 +117,12 @@ public class ManualLagGraphParams implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

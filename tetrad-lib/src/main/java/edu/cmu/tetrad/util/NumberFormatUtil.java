@@ -29,6 +29,7 @@ import java.util.prefs.Preferences;
  * Provides an application-wide "memory" of the number format to be used.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumberFormatUtil {
     private static final NumberFormatUtil INSTANCE = new NumberFormatUtil();
@@ -45,6 +46,8 @@ public class NumberFormatUtil {
     }
 
     /**
+     * <p>getInstance.</p>
+     *
      * @return Ibid.
      */
     public static NumberFormatUtil getInstance() {
@@ -52,6 +55,8 @@ public class NumberFormatUtil {
     }
 
     /**
+     * <p>getNumberFormat.</p>
+     *
      * @return Ibid.
      */
     public NumberFormat getNumberFormat() {
@@ -62,7 +67,7 @@ public class NumberFormatUtil {
      * Sets the number format, <code>nf</code>.
      *
      * @param nf Ibid.
-     * @throws NullPointerException if nf is null.
+     * @throws java.lang.NullPointerException if nf is null.
      */
     public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {

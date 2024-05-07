@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.work_in_progress.IndTestPositiveCorr;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,11 +15,26 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PositiveCorr implements IndependenceWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The alpha level for the test.
+     */
     private double alpha = 0.001;
 
+    /**
+     * Constructs a new instance of the FisherZTest.
+     */
+    public PositiveCorr() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         double alpha = parameters.getDouble("alpha");
@@ -31,16 +47,25 @@ public class PositiveCorr implements IndependenceWrapper {
         throw new IllegalArgumentException("Expecting a data set.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Fisher Z test, alpha = " + this.alpha;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

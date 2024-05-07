@@ -5,31 +5,50 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * MaximalMag statistic.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MaximalityCondition implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public MaximalityCondition() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "MaximalMag";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "1 if the maximality condition passes in the MAG, 0 if not";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
 
-        Graph mag = GraphTransforms.pagToMag(estGraph);
+        Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
 
         List<Node> nodes = pag.getNodes();
 
@@ -49,6 +68,9 @@ public class MaximalityCondition implements Statistic {
         return 1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

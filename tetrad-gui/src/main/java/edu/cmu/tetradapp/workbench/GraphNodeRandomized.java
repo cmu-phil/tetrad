@@ -38,22 +38,28 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNodeRandomized extends DisplayNode {
 
     /**
      * Constructs a new node for representing latent variables in the graph workbench.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeRandomized(Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.LATENT) {
             throw new IllegalArgumentException("GraphNodeLatent requires " +
-                    "a GraphNode of type NodeType.LATENT.");
+                                               "a GraphNode of type NodeType.LATENT.");
         }
 
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void doDoubleClickAction(Graph graph) {
         String newName;
         List<Node> nodes = graph.getNodes();
@@ -64,7 +70,7 @@ public class GraphNodeRandomized extends DisplayNode {
         boolean changed = false;
 
         if (this.getModelNode() != null &&
-                !newName.equals(this.getModelNode().getName())) {
+            !newName.equals(this.getModelNode().getName())) {
             this.getModelNode().setName(newName);
             firePropertyChange("resetGraph", null, null);
             changed = true;
@@ -133,11 +139,11 @@ public class GraphNodeRandomized extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue LOOP;
                     }
                 }
@@ -148,6 +154,9 @@ public class GraphNodeRandomized extends DisplayNode {
         return newName;
     }
 
+    /**
+     * <p>doDoubleClickAction.</p>
+     */
     public void doDoubleClickAction() {
         doDoubleClickAction(new EdgeListGraph());
     }

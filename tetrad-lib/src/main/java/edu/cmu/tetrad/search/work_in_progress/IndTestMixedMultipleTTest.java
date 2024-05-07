@@ -50,20 +50,62 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Augustus Mayo.
+ * @version $Id: $Id
  */
 public class IndTestMixedMultipleTTest implements IndependenceTest {
+    /**
+     * The original data set.
+     */
     private final DataSet originalData;
+    /**
+     * The searchVariables.
+     */
     private final List<Node> searchVariables;
+    /**
+     * The modified data set.
+     */
     private final DataSet internalData;
+    /**
+     * A map from searchVariables to their dummy variables.
+     */
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    /**
+     * The logistic regression.
+     */
     private final LogisticRegression logisticRegression;
+    /**
+     * The regression.
+     */
     private final RegressionDataset regression;
-    int[] _rows;
+    /**
+     * The rows.
+     */
+    private int[] _rows;
+    /**
+     * The significance level of the test.
+     */
     private double alpha;
+    /**
+     * The probability associated with the most recently executed independence test.
+     */
     private double lastP;
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * Represents a boolean flag indicating whether linear dependencies should be preferred in the independence test. If
+     * set to true, the test will prioritize linear dependencies over other types of dependencies. If set to false, the
+     * test will consider all types of dependencies equally.
+     */
     private boolean preferLinear = true;
 
+    /**
+     * <p>Constructor for IndTestMixedMultipleTTest.</p>
+     *
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha a double
+     */
     public IndTestMixedMultipleTTest(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
@@ -82,21 +124,30 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         this.regression = new RegressionDataset(internalData);
     }
 
+    /**
+     * <p>Setter for the field <code>preferLinear</code>.</p>
+     *
+     * @param preferLinear a boolean
+     */
     public void setPreferLinear(boolean preferLinear) {
         this.preferLinear = preferLinear;
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * @param vars The sublist of variables.
+     * @return an IndependenceTest object
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return True if the given independence question is judged true, False if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * Checks for independence between two nodes.
+     *
+     * @param x the first node to check independence for
+     * @param y the second node to check independence for
+     * @param z a set of conditioning nodes
+     * @return the result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
@@ -117,37 +168,47 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * Returns the p-value from the last independence test.
+     *
+     * @return the p-value
      */
     public double getPValue() {
         return this.lastP; //STUB
     }
 
     /**
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
-     * relations.
+     * Retrieves the list of variables used in the original data set. Note that it returns the variables from the
+     * original data set, not the modified dataset.
+     *
+     * @return The list of variables from the original data set.
      */
     public List<Node> getVariables() {
         return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * Determines if a given set of nodes z determines the node y.
+     *
+     * @param z The set of nodes to check if they determine y.
+     * @param y The node to check if it is determined by z.
+     * @return true if z determines y, false otherwise.
+     * @throws java.lang.UnsupportedOperationException since not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException since not implemented.
      */
     public double getAlpha() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -163,7 +224,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of the object.
+     *
+     * @return This.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -180,7 +243,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * Sets whether this test will print verbose output.
      *
      * @param verbose True, if so.
      */

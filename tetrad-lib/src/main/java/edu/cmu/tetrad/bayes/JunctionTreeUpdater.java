@@ -24,51 +24,54 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Jan 21, 2020 11:03:09 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The BayesIm which this updater modifies.
-     *
-     * @serial Cannot be null.
      */
     private final BayesIm bayesIm;
     /**
      * Stores evidence for all variables.
-     *
-     * @serial Cannot be null.
      */
     private Evidence evidence;
     /**
      * The last manipulated BayesIm.
-     *
-     * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
     /**
      * The BayesIm after update, if this was calculated.
-     *
-     * @serial Can be null.
      */
     private BayesIm updatedBayesIm;
     /**
      * Calculates probabilities from the manipulated Bayes IM.
-     *
-     * @serial Can be null.
      */
-//    private BayesImProbs bayesImProbs;
     private JunctionTreeAlgorithm jta;
 
+    /**
+     * <p>Constructor for JunctionTreeUpdater.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public JunctionTreeUpdater(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
     }
 
+    /**
+     * <p>Constructor for JunctionTreeUpdater.</p>
+     *
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -78,21 +81,33 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         setEvidence(evidence);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
@@ -101,8 +116,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the "
-                    + "given bayesIm must be compatible with the variable list "
-                    + "for this evidence.");
+                                               + "given bayesIm must be compatible with the variable list "
+                                               + "for this evidence.");
         }
 
         this.evidence = evidence;
@@ -119,6 +134,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         this.jta = new JunctionTreeAlgorithm(this.updatedBayesIm);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
@@ -128,6 +146,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return this.updatedBayesIm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getMarginal(int variable, int category) {
         Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
@@ -142,11 +163,17 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isJointMarginalSupported() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getJointMarginal(int[] variables, int[] values) {
         if (variables.length != values.length) {
@@ -173,11 +200,17 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
@@ -194,6 +227,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
@@ -205,6 +241,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Junction tree updater, evidence = " + this.evidence;
@@ -261,7 +300,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.MANUAL);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
@@ -293,7 +332,12 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

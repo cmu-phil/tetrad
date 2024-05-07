@@ -40,6 +40,8 @@ public class TimeSeriesDataDisplayJTable extends JTable
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param model the DataSet to be displayed.
      */
     public TimeSeriesDataDisplayJTable(TimeSeriesData model) {
         setModel(new TimeSeriesDataDisplayTable(model));
@@ -148,7 +150,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
         if (column == 0) {
             return row + 1;    // present as 1-indexed.
         } else if (column < this.dataSet.getNumVars() + 1 &&
-                row < this.dataSet.getNumTimePoints()) {
+                   row < this.dataSet.getNumTimePoints()) {
             return this.dataSet.getDatum(row, column - 1);
         } else {
             return null;

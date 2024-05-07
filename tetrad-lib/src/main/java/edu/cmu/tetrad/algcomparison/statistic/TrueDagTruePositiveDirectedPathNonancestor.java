@@ -4,26 +4,53 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * This class represents a statistic that calculates the true positives for arrows compared to the true DAG.
+     */
+    public TrueDagTruePositiveDirectedPathNonancestor() {
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation.
+     */
     @Override
     public String getAbbreviation() {
         return "DTPA";
     }
 
+    /**
+     * Retrieves the description of the statistic.
+     *
+     * @return The description of the statistic.
+     */
     @Override
     public String getDescription() {
         return "True Positives for Arrows compared to true DAG";
     }
 
+    /**
+     * Calculates the true positives for arrows compared to the true DAG.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The number of true positives for arrows.
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -42,23 +69,15 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
             }
         }
 
-//        for (Edge edge : estGraph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.ARROW) {
-//                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
-//                    tp++;
-//                }
-//            }
-//
-//            if (edge.getEndpoint2() == Endpoint.ARROW) {
-//                if (!trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-//                    tp++;
-//                }
-//            }
-//        }
-
         return tp;
     }
 
+    /**
+     * Retrieves the normalized value of a statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
+     */
     @Override
     public double getNormValue(double value) {
         return value;

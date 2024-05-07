@@ -34,6 +34,7 @@ import java.util.*;
  * "from" node and Node2 is the "to" node (ie 1 o-&gt; 2).</p>
  *
  * @author Trevor Burns
+ * @version $Id: $Id
  */
 public class GraphChange {
     private final List<Edge> removes;
@@ -53,6 +54,8 @@ public class GraphChange {
 
     /**
      * Copy constructor.
+     *
+     * @param source a {@link edu.cmu.tetrad.search.work_in_progress.GraphChange} object
      */
     public GraphChange(GraphChange source) {
         this.removes = new ArrayList<>(source.removes);
@@ -64,6 +67,8 @@ public class GraphChange {
 
     /**
      * Absorbs all changes from the GraphChange other into the calling GraphChange.
+     *
+     * @param other a {@link edu.cmu.tetrad.search.work_in_progress.GraphChange} object
      */
     public void union(GraphChange other) {
         this.removes.addAll(other.removes);
@@ -75,6 +80,9 @@ public class GraphChange {
 
     /**
      * Consistency check, nonexhaustive, but catches the most blatant inconsistencies.
+     *
+     * @param other a {@link edu.cmu.tetrad.search.work_in_progress.GraphChange} object
+     * @return a boolean
      */
     public boolean isConsistent(GraphChange other) {
 
@@ -93,7 +101,7 @@ public class GraphChange {
         for (Edge e : this.removes) {
             NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsOther.contains(rem) || nonColidePairsOther.contains(rem)
-                    || other.orients.contains(rem))
+                || other.orients.contains(rem))
                 return false;
         }
 
@@ -104,7 +112,7 @@ public class GraphChange {
         for (Edge e : other.removes) {
             NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsThis.contains(rem) || nonColidePairsThis.contains(rem)
-                    || this.orients.contains(rem))
+                || this.orients.contains(rem))
                 return false;
         }
 
@@ -115,6 +123,9 @@ public class GraphChange {
     /**
      * Outputs a new PAG, a copy of the input excepting the applied changes of this object. Will return null if some
      * change fails (ie an obscure inconsistensy).
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph applyTo(Graph graph) {
         Graph output = new EdgeListGraph(graph);
@@ -144,6 +155,8 @@ public class GraphChange {
 
     /**
      * Add another remove operation to the GraphChange.
+     *
+     * @param removalEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public void addRemove(Edge removalEdge) {
         this.removes.add(removalEdge);
@@ -152,6 +165,8 @@ public class GraphChange {
 
     /**
      * Add another collider operation to the GraphChange.
+     *
+     * @param colliderTrip a {@link edu.cmu.tetrad.graph.Triple} object
      */
     public void addCollider(Triple colliderTrip) {
         this.colliders.add(colliderTrip);
@@ -160,6 +175,8 @@ public class GraphChange {
 
     /**
      * Add another non-collider operation to the GraphChange.
+     *
+     * @param nonColliderTrip a {@link edu.cmu.tetrad.graph.Triple} object
      */
     public void addNonCollider(Triple nonColliderTrip) {
         this.nonColliders.add(nonColliderTrip);
@@ -168,6 +185,9 @@ public class GraphChange {
 
     /**
      * Add another orient operation to the GraphChange.
+     *
+     * @param from a {@link edu.cmu.tetrad.graph.Node} object
+     * @param to   a {@link edu.cmu.tetrad.graph.Node} object
      */
     public void addOrient(Node from, Node to) {
         this.orients.add(new NodePair(from, to));
@@ -177,6 +197,9 @@ public class GraphChange {
     /**
      * Contains is defined such that if the internal strucs of this GraphChange all individually contain the elements in
      * the corresponding strucs of GraphChange gc, then this "contains" gc.
+     *
+     * @param gc a {@link edu.cmu.tetrad.search.work_in_progress.GraphChange} object
+     * @return a boolean
      */
     public boolean contains(GraphChange gc) {
         if (!this.removes.containsAll(gc.removes)) return false;
@@ -188,6 +211,8 @@ public class GraphChange {
 
     /**
      * Anly outputs ops which have elements, not empty structures.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         String ret = "[ ";
@@ -206,6 +231,8 @@ public class GraphChange {
 
     /**
      * Return colliders
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Triple> getColliders() {
         return this.colliders;
@@ -213,6 +240,8 @@ public class GraphChange {
 
     /**
      * Return noncolliders
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Triple> getNoncolliders() {
         return this.nonColliders;
@@ -220,6 +249,8 @@ public class GraphChange {
 
     /**
      * Return removes
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Edge> getRemoves() {
         return this.removes;
@@ -227,6 +258,8 @@ public class GraphChange {
 
     /**
      * Return orients
+     *
+     * @return a {@link java.util.List} object
      */
     public List<NodePair> getOrients() {
         return this.orients;
@@ -234,21 +267,27 @@ public class GraphChange {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Equals is defined such that if the internal strucs of this GraphChange all individually equal the corresponding
      * strucs of GraphChange gc, then this "equals" gc
      */
     public boolean equals(Object other) {
-        if (!(other instanceof GraphChange))
+        if (!(other instanceof GraphChange otherGC))
             return false;
-        GraphChange otherGC = (GraphChange) other;
 
         return otherGC.removes.equals(this.removes) &&
-                otherGC.colliders.equals(this.colliders) &&
-                otherGC.nonColliders.equals(this.nonColliders) &&
-                otherGC.orients.equals(this.orients);
+               otherGC.colliders.equals(this.colliders) &&
+               otherGC.nonColliders.equals(this.nonColliders) &&
+               otherGC.orients.equals(this.orients);
     }
 
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hash = 1;
         hash *= 17 * this.removes.hashCode();
@@ -320,12 +359,11 @@ public class GraphChange {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof NodePair)) {
+            if (!(o instanceof NodePair thatPair)) {
                 return false;
             }
-            NodePair thatPair = (NodePair) o;
             return this.getFirst().equals(thatPair.getFirst())
-                    && this.getSecond().equals(thatPair.getSecond());
+                   && this.getSecond().equals(thatPair.getSecond());
 
         }
     }

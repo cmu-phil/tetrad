@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  * may not be parseable. If it is not, the original template was ill-formedm, and the expansion should be disgarded.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TemplateExpander {
     private static final TemplateExpander INSTANCE = new TemplateExpander();
@@ -43,6 +44,11 @@ public class TemplateExpander {
     private TemplateExpander() {
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.TemplateExpander} object
+     */
     public static TemplateExpander getInstance() {
         return TemplateExpander.INSTANCE;
     }
@@ -62,11 +68,11 @@ public class TemplateExpander {
      *                 expressions --i.e. any TSUM or TPROD expressions--but it may contain NEW expressions. If semPm is
      *                 null, then node must be null as well, since the node is relative to a generalized SEM PM.
      * @return The expanded template.
-     * @throws ParseException for any of a variety of reasons. It may be that the original template cannot be parsed. It
-     *                        may be that the expanded formula without the error term added cannot be parsed. It may be
-     *                        that the expanded formula contains a "$", which means there was a "$" that was not
-     *                        properly embedded in a TSUM or TPROD. It may be that a TSUM or TPROD was embedded inside
-     *                        another TSUM or TPROD.
+     * @throws java.text.ParseException for any of a variety of reasons. It may be that the original template cannot be
+     *                                  parsed. It may be that the expanded formula without the error term added cannot
+     *                                  be parsed. It may be that the expanded formula contains a "$", which means there
+     *                                  was a "$" that was not properly embedded in a TSUM or TPROD. It may be that a
+     *                                  TSUM or TPROD was embedded inside another TSUM or TPROD.
      */
     public String expandTemplate(String template, GeneralizedSemPm semPm, Node node) throws ParseException {
         ExpressionParser parser = new ExpressionParser();
@@ -74,12 +80,12 @@ public class TemplateExpander {
 
         if (semPm == null && template.contains("$")) {
             throw new IllegalArgumentException("If semPm is null, the template may not contain any parameters or " +
-                    "$ expressions.");
+                                               "$ expressions.");
         }
 
         if (semPm == null && node != null) {
             throw new IllegalArgumentException("If semPm is not specified, then node may not be specified either. The" +
-                    " node must be for a specific generalized SEM PM.");
+                                               " node must be for a specific generalized SEM PM.");
         }
 
         // Must make sure the original template is parseable.
@@ -294,10 +300,10 @@ public class TemplateExpander {
 
                             if (allStar) {
                                 formula = formula.substring(0, first - 1) + " * " +
-                                        formula.substring(last + 1);
+                                          formula.substring(last + 1);
                             } else {
                                 formula = formula.substring(0, first - 1) + " + " +
-                                        formula.substring(last + 1);
+                                          formula.substring(last + 1);
                             }
                         }
 

@@ -27,6 +27,7 @@ package edu.cmu.tetrad.data;
  * details.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DataFilter {
 

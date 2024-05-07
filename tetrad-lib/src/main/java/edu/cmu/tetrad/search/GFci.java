@@ -21,14 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -60,6 +56,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author Juan Miguel Ogarrio
  * @author peterspirtes
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see FciOrient
  * @see GraspFci
@@ -69,30 +66,65 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  */
 public final class GFci implements IGraphSearch {
-    // The independence test used in search.
+    /**
+     * The independence test used in search.
+     */
     private final IndependenceTest independenceTest;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The score used in search.
+    /**
+     * The score used in search.
+     */
     private final Score score;
-    // The knowledge used in search.
+    /**
+     * The knowledge used in search.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Whether Zhang's complete rules are used.
+    /**
+     * Whether Zhang's complete rules are used.
+     */
     private boolean completeRuleSetUsed = true;
-    // The maximum path length for the discriminating path rule.
+    /**
+     * The maximum path length for the discriminating path rule.
+     */
     private int maxPathLength = -1;
-    // The maximum degree of the output graph.
+    /**
+     * The maximum degree of the output graph.
+     */
     private int maxDegree = -1;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
-    // The print stream used for output.
+    /**
+     * The print stream used for output.
+     */
     private PrintStream out = System.out;
-    // Whether one-edge faithfulness is assumed.
+    /**
+     * Whether one-edge faithfulness is assumed.
+     */
     private boolean faithfulnessAssumed = true;
-    // Whether the discriminating path rule should be used.
+    /**
+     * Whether the discriminating path rule should be used.
+     */
     private boolean doDiscriminatingPathRule = true;
-    // The depth of the search for the possible m-sep search.
+    /**
+     * The depth of the search for the possible m-sep search.
+     */
     private int depth = -1;
+    /**
+     * The number of threads to use in the search. Must be at least 1.
+     */
+    private int numThreads = 1;
+    /**
+     * Determines whether almost cyclic paths should be resolved.
+     * If true, the algorithm will attempt to break almost cyclic paths by removing one edge.
+     * If false, almost cyclic paths will be treated as genuine causal relationships.
+     * The default value is false.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
 
     /**
@@ -119,8 +151,10 @@ public final class GFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting GFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         Graph graph;
 
@@ -130,25 +164,48 @@ public final class GFci implements IGraphSearch {
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
+        fges.setNumThreads(numThreads);
         graph = fges.search();
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        }
+
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+//        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
-
+        fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
+
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         return graph;
     }
 
@@ -274,5 +331,24 @@ public final class GFci implements IGraphSearch {
         this.depth = depth;
     }
 
+    /**
+     * Sets the number of threads to use in the search.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
+    }
 
+    /**
+     * Sets the flag to resolve almost cyclic paths.
+     *
+     * @param resolveAlmostCyclicPaths true if almost cyclic paths should be resolved, false otherwise
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    }
 }

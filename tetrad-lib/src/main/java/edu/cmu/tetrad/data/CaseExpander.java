@@ -27,8 +27,16 @@ package edu.cmu.tetrad.data;
  * copied out n times. This increases the number of rows in the data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CaseExpander implements DataFilter {
+
+    /**
+     * Initializes a new instance of the CaseExpander class.
+     */
+    public CaseExpander() {
+
+    }
 
     private static DataSet expand(DataSet dataSet) {
         int rows = 0;
@@ -59,7 +67,7 @@ public final class CaseExpander implements DataFilter {
                     newDataSet.setInt(index, j, dataSet.getInt(i, j));
                 } else {
                     throw new IllegalStateException("Expecting either a " +
-                            "continuous or a discrete variable.");
+                                                    "continuous or a discrete variable.");
                 }
 
             }
@@ -70,6 +78,8 @@ public final class CaseExpander implements DataFilter {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Expands cases for the given dataset.
      */
     public DataSet filter(DataSet dataSet) {

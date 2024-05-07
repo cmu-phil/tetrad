@@ -197,7 +197,7 @@ public final class TestRowSummingUpdater {
         graph.addDirectedEdge(x2Node, x3Node);
 
         BayesPm bayesPm = new BayesPm(graph);
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
@@ -240,7 +240,7 @@ public final class TestRowSummingUpdater {
         graph.addDirectedEdge(x4Node, x2Node);
 
         BayesPm bayesPm = new BayesPm(graph);
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         int x1 = bayesIm.getNodeIndex(x1Node);
         int x2 = bayesIm.getNodeIndex(x2Node);

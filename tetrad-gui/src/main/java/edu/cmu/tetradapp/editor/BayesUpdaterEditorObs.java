@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -39,6 +39,7 @@ import java.beans.PropertyChangeEvent;
  * Lets the user calculate updated probabilities for a Bayes net.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private static final int SINGLE_VALUE = 0;
@@ -115,7 +116,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         this.workbench.addPropertyChangeListener(evt -> {
             if (BayesUpdaterEditorObs.this.mode == BayesUpdaterEditorObs.MULTI_VALUE &&
-                    "selectedNodes".equals(evt.getPropertyName())) {
+                "selectedNodes".equals(evt.getPropertyName())) {
                 setMode(BayesUpdaterEditorObs.MULTI_VALUE);
             }
         });
@@ -124,6 +125,8 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     //================================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -140,6 +143,11 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         return this.evidenceWizardMultiple;
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return this.evidenceWizardSingle;
     }
@@ -154,6 +162,8 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
     /**
      * Reacts to property change events.
+     *
+     * @param e a {@link java.beans.PropertyChangeEvent} object
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {

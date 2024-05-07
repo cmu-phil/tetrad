@@ -51,26 +51,45 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ConditionalGaussianLikelihood {
 
-    // A constant.
+    /**
+     * A constant.
+     */
     private static final double LOG2PI = log(2.0 * FastMath.PI);
-    // The data set. May contain continuous and/or discrete mixedVariables.
+    /**
+     * The data set. May contain continuous and/or discrete mixedVariables.
+     */
     private final DataSet mixedDataSet;
-    // The data set with all continuous mixedVariables discretized.
+    /**
+     * The data set with all continuous mixedVariables discretized.
+     */
     private final DataSet dataSet;
-    // The mixedVariables of the mixed data set.
+    /**
+     * The mixedVariables of the mixed data set.
+     */
     private final List<Node> mixedVariables;
-    // Indices of mixedVariables.
+    /**
+     * Indices of mixedVariables.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Continuous data only.
+    /**
+     * Continuous data only.
+     */
     private final double[][] continuousData;
-    // Number of categories to use to discretize continuous mixedVariables.
+    /**
+     * Number of categories to use to discretize continuous mixedVariables.
+     */
     private int numCategoriesToDiscretize = 3;
-    // "Cell" consisting of all rows.
+    /**
+     * "Cell" consisting of all rows.
+     */
     private List<Integer> rows;
-    // Discretize the parents
+    /**
+     * Discretize the parents
+     */
     private boolean discretize;
 
     /**
@@ -117,6 +136,7 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Sets the rows to use for the likelihood calculation. If not set, all rows will be used.
+     *
      * @param rows The rows to use.
      */
     public void setRows(List<Integer> rows) {
@@ -355,23 +375,52 @@ public class ConditionalGaussianLikelihood {
      * for it.
      */
     public static final class Ret {
+
+        /**
+         * The likelihood.
+         */
         private final double lik;
+
+        /**
+         * The degrees of freedom.
+         */
         private final int dof;
 
+        /**
+         * Constructs a return value for a conditional Gaussian likelihood.
+         *
+         * @param lik The likelihood.
+         * @param dof The degrees of freedom.
+         */
         @Contract(pure = true)
         private Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
+        /**
+         * Returns the likelihood.
+         *
+         * @return The likelihood.
+         */
         public double getLik() {
             return this.lik;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         *
+         * @return The degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return A string representation of this object.
+         */
         public String toString() {
             return "lik = " + this.lik + " dof = " + this.dof;
         }

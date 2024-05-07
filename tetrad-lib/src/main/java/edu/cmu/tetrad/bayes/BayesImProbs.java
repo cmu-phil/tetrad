@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,17 +37,19 @@ import java.util.List;
  * table. (To force the entire table to be constructed, use StoredCellProbs.)
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * Represents a variable of the BayesIm class.
      */
     private final BayesIm bayesIm;
 
     /**
-     * @serial Cannot be null.
+     * Represents a list of nodes.
      */
     private final List<Node> variables;
 
@@ -54,6 +57,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     /**
      * Constructs a BayesImProbs object from the given BayesIm.
+     *
      * @param bayesIm Ibid.
      */
     public BayesImProbs(BayesIm bayesIm) {
@@ -116,6 +120,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * values they do in that cell. The returned value will be undefined (Double.NaN) if any of the conditional
      * probabilities being multiplied together is undefined.
      *
+     * @param variableValues an array of {@link int} objects
      * @return the cell probability, or NaN if this probability is undefined.
      */
     public double getCellProb(int[] variableValues) {
@@ -148,6 +153,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return p;
     }
 
+    /**
+     * Calculates the probability of a given proposition.
+     *
+     * @param assertion the proposition for which we want to calculate the probability
+     * @return the probability of the given proposition
+     */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -192,12 +203,20 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return p;
     }
 
+    /**
+     * Calculates the conditional probability of an assertion given a condition.
+     *
+     * @param assertion the proposition representing the assertion
+     * @param condition the proposition representing the condition
+     * @return the conditional probability of the assertion given the condition
+     * @throws IllegalArgumentException if the assertion and condition are not for the same Bayes IM
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
-                            "for the same Bayes IM.");
+                    "for the same Bayes IM.");
         }
 
         int[] variableValues = new int[condition.getNumVariables()];
@@ -255,6 +274,11 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return assertionTrue / conditionTrue;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -266,7 +290,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

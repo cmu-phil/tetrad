@@ -31,8 +31,16 @@ import java.util.*;
  * Provides some useful utilities for dealing with Markov blankets and Markov blanket DAGs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MbUtils {
+
+    /**
+     * <p>Constructor for MbUtils.</p>
+     */
+    private MbUtils() {
+
+    }
 
     /**
      * Trims the graph to the target, the parents and children of the target, and the parents of the children of the
@@ -65,7 +73,7 @@ public class MbUtils {
                     if (graph.isDefCollider(target, v, w)) {
                         parentsOfChildren.add(w);
                     } else if (graph.getNodesInTo(v, Endpoint.ARROW).contains(target)
-                            && graph.paths().isUndirectedFromTo(v, w)) {
+                               && graph.paths().isUndirected(v, w)) {
                         parentsOfChildren.add(w);
                     }
                 }
@@ -84,9 +92,9 @@ public class MbUtils {
             List<Node> pc = new LinkedList<>();
 
             for (Node node : graph.getAdjacentNodes(target)) {
-                if (graph.paths().isDirectedFromTo(target, node) ||
-                        graph.paths().isDirectedFromTo(node, target) ||
-                        graph.paths().isUndirectedFromTo(node, target)) {
+                if (graph.paths().isDirected(target, node) ||
+                    graph.paths().isDirected(node, target) ||
+                    graph.paths().isUndirected(node, target)) {
                     pc.add(node);
                 }
             }
@@ -98,7 +106,7 @@ public class MbUtils {
                     continue;
                 }
 
-                if (graph.paths().isDirectedFromTo(target, v)) {
+                if (graph.paths().isDirected(target, v)) {
                     children.add(v);
                 }
             }
@@ -117,8 +125,8 @@ public class MbUtils {
                         continue;
                     }
 
-                    if (graph.paths().isDirectedFromTo(target, v) &&
-                            graph.paths().isDirectedFromTo(w, v)) {
+                    if (graph.paths().isDirected(target, v) &&
+                        graph.paths().isDirected(w, v)) {
                         parentsOfChildren.add(w);
                     }
                 }
@@ -221,6 +229,10 @@ public class MbUtils {
      * Generates the list of MB DAGs consistent with the MB CPDAG returned by the previous search.
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
+     * @param mbCPDAG               a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param test                  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param depth                 a int
+     * @param target                a {@link edu.cmu.tetrad.graph.Node} object
      * @return a list of Dag's.
      */
     public static List<Graph> generateMbDags(Graph mbCPDAG,

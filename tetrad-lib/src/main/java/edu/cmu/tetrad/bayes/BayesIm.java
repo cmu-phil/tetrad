@@ -46,6 +46,7 @@ import java.util.List;
  * details.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesPm
  */
@@ -236,6 +237,8 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     /**
      * Returns a row index.
      *
+     * @param nodeIndex the index of the node in question.
+     * @param values    the combination of parent values in question.
      * @return the row in the table at which the given combination of parent values is represented for the given node.
      * The row is calculated as a variable-base place-value number. For instance, if the array of parent dimensions is
      * [3, 5, 7] and the parent value combination is [2, 4, 5], then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 =
@@ -243,8 +246,6 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * <p>
      * Note: If the node has n values, the length of 'values' must be &gt;= the number of parents. Only the first n
      * values are used.
-     * @param nodeIndex the index of the node in question.
-     * @param values    the combination of parent values in question.
      * @see #getParentValues
      */
     int getRowIndex(int nodeIndex, int[] values);
@@ -359,21 +360,20 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     boolean isIncomplete(int nodeIndex);
 
     /**
-     * Simulates a sample with the given sample size.
+     * Simulates a data set with the specified number of rows.
      *
-     * @param sampleSize the sample size.
-     * @param latentDataSaved true iff the latent data is to be saved.
-     * @return the simulated sample as a DataSet.
+     * @param sampleSize      the number of rows to simulate.
+     * @param latentDataSaved if true, latent variables are saved in the data set.
+     * @return the simulated data set.
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
 
     /**
-     * Overwrites the given dataSet with a new simulated dataSet, to avoid allocating memory. The given dataSet must
-     * have the necessary number of columns.
+     * Simulates data based on the provided data set and saves the latent data if specified.
      *
-     * @param dataSet the dataSet to be overwritten.
-     * @param latentDataSaved true iff the latent data is to be saved.
-     * @return the simulated sample as a DataSet.
+     * @param dataSet         the data set to simulate data for
+     * @param latentDataSaved a boolean value indicating whether the latent data should be saved or not
+     * @return the simulated data set
      */
     DataSet simulateData(DataSet dataSet, boolean latentDataSaved);
 
@@ -393,4 +393,13 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * @return a string representation for this Bayes net.
      */
     String toString();
+
+    /**
+     * Retrieves the CptMapType for this instance.
+     *
+     * @return the CptMapType for this instance
+     */
+    default MlBayesIm.CptMapType getCptMapType() {
+        return MlBayesIm.CptMapType.PROB_MAP;
+    }
 }

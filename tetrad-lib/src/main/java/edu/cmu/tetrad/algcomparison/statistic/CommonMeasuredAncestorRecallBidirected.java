@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveBidirected.existsCommonAncestor;
@@ -15,20 +16,37 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CommonMeasuredAncestorRecallBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Initializes a new instance of the CommonMeasuredAncestorRecallBidirected class.
+     */
+    public CommonMeasuredAncestorRecallBidirected() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#X<-M->Y,adj(X,Y),X<->Y";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number of X<~~M->...>Y for X*-*Y in est marked as bidirected";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -42,7 +60,7 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
                 Node y = nodes.get(j);
 
                 if (existsCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))
-                        && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
+                    && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {
@@ -59,6 +77,9 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

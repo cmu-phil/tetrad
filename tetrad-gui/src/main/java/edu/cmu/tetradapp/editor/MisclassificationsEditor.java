@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
@@ -35,20 +36,32 @@ import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MisclassificationsEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -5291697901326757833L;
 
     /**
      * The model for the note.
      */
     private final Misclassifications comparison;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The text area for the note.
+     */
     private JTextArea area;
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.Misclassifications} object
      */
     public MisclassificationsEditor(Misclassifications comparison) {
         this.comparison = comparison;

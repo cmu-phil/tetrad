@@ -31,15 +31,12 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * manipulation information into account. See implementations for details.)
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Evidence
  * @see Proposition
  * @see Manipulation
  */
 public interface BayesUpdater extends TetradSerializable {
-    /**
-     * Serial version ID for serialization.
-     */
-    long serialVersionUID = 23L;
 
     /**
      * Returns the marginal probability of the given variable taking the given value, given the evidence.

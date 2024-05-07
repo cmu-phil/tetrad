@@ -2,9 +2,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.SemBicScorer;
+
+import java.io.Serial;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.tanh;
@@ -13,29 +16,44 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Difference between the true and estiamted BIC scores.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BicDiffPerRecord implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Whether to precompute covariances.
+     */
     private boolean precomputeCovariances = true;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public BicDiffPerRecord() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "BicDiffPerRecord";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Difference between the true and estimated BIC scores, " +
-                "divided by the sample size";
+               "divided by the sample size";
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the difference between the true and estimated BIC scores, divided by the sample size.
-     *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The difference between the true and estimated BIC scores, divided by the sample size.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -47,10 +65,9 @@ public class BicDiffPerRecord implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the normalized value of the statistic.
-     *
-     * @param value The value of the statistic.
-     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

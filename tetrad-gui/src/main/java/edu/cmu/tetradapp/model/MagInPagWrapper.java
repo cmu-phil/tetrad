@@ -24,37 +24,58 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for MagInPagWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MagInPagWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for MagInPagWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public MagInPagWrapper(Graph graph) {
-        super(MagInPagWrapper.getGraph(graph), "Choose DAG in CPDAG.");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        super(MagInPagWrapper.getGraph(graph), "Choose Zhang MAG in PAG.");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     private static Graph getGraph(Graph graph) {
-        return GraphTransforms.pagToMag(graph);
+        return GraphTransforms.zhangMagFromPag(graph);
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.MagInPagWrapper} object
+     */
     public static MagInPagWrapper serializableInstance() {
         return new MagInPagWrapper(EdgeListGraph.serializableInstance());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

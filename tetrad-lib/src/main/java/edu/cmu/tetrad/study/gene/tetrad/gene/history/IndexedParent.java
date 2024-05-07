@@ -25,27 +25,26 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Holds an ordered pair (index, lag) to represent a causal parent of a factor, where the factor at the given index is
  * independently known.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndexedParent implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The index of the parent.
-     *
-     * @serial
      */
     private final int index;
 
     /**
      * The lag of the parent.
-     *
-     * @serial
      */
     private final int lag;
 
@@ -53,6 +52,9 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Constructs a new index parent.
+     *
+     * @param index a int
+     * @param lag   a int
      */
     public IndexedParent(int index, int lag) {
 
@@ -70,6 +72,8 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedParent} object
      */
     public static IndexedParent serializableInstance() {
         return new IndexedParent(0, 1);
@@ -79,6 +83,8 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Returns the index of the parent.
+     *
+     * @return a int
      */
     public int getIndex() {
         return this.index;
@@ -86,27 +92,32 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Returns the lag of the parent.
+     *
+     * @return a int
      */
     public int getLag() {
         return this.lag;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true iff the lags and indices are equal.
      */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof IndexedParent)) {
+        if (!(o instanceof IndexedParent c)) {
             return false;
         }
-        IndexedParent c = (IndexedParent) o;
         return c.getIndex() == this.getIndex() && c.getLag() == this.getLag();
     }
 
     /**
      * Prints out the factor index and lag.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "IndexedParent, index = " + getIndex() + ", lag = " + getLag();
@@ -119,7 +130,12 @@ public final class IndexedParent implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

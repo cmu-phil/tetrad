@@ -26,19 +26,21 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.FactoredBayesStructuralEM;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes search
+ * @version $Id: $Id
  */
 public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     private static final long serialVersionUID = 23L;
@@ -83,11 +85,24 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         log();
     }
 
+    /**
+     * <p>Constructor for StructEmBayesSearchRunner.</p>
+     *
+     * @param simulation     a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     */
     public StructEmBayesSearchRunner(Simulation simulation,
                                      BayesPmWrapper bayesPmWrapper) {
         this((DataWrapper) simulation, bayesPmWrapper);
     }
 
+    /**
+     * <p>Constructor for StructEmBayesSearchRunner.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
                                      BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -120,6 +135,13 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         log();
     }
 
+    /**
+     * <p>Constructor for StructEmBayesSearchRunner.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
                                      BayesImWrapper bayesImWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -157,6 +179,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -165,6 +188,11 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
     //================================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>estimatedBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimatedBayesIm() {
         return this.estimatedBayesIm;
     }
@@ -180,10 +208,15 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+                                       "and discrete data set do not match.");
         }
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -195,7 +228,12 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -209,21 +247,34 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.estimatedBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
     private void log() {
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
-        TetradLogger.getInstance().log("im", "" + this.estimatedBayesIm);
+        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM");
+        TetradLogger.getInstance().forceLogMessage("" + this.estimatedBayesIm);
     }
 }
 

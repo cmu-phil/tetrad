@@ -33,17 +33,25 @@ import java.util.Arrays;
  * Creates a data set in which missing values in each column are filled using the mode of that column.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ModeInterpolator implements DataFilter {
 
+    /**
+     * <p>Constructor for ModeInterpolator.</p>
+     */
+    public ModeInterpolator() {
+    }
 
+    /**
+     * {@inheritDoc}
+     */
     public DataSet filter(DataSet dataSet) {
         DataSet newDataSet = dataSet.copy();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node var = dataSet.getVariable(j);
-            if (var instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) var;
+            if (var instanceof DiscreteVariable variable) {
                 int numCategories = variable.getNumCategories();
                 int[] categoryCounts = new int[numCategories];
 

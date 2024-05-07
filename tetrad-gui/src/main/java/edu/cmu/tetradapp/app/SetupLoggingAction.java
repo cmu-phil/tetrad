@@ -34,11 +34,15 @@ import java.util.prefs.Preferences;
  * Prompts and allows them to config general logging features.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class SetupLoggingAction extends AbstractAction {
 
     private static final long serialVersionUID = -3792483383186114713L;
 
+    /**
+     * <p>Constructor for SetupLoggingAction.</p>
+     */
     public SetupLoggingAction() {
         super("Logging");
     }
@@ -97,8 +101,8 @@ public class SetupLoggingAction extends AbstractAction {
             if (!text.matches("[a-zA-Z_]*")) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Spaces, numbers, and special characters (" +
-                                "except underlines) in filenames will be " +
-                                "ignored. You might want to delete them.",
+                        "except underlines) in filenames will be " +
+                        "ignored. You might want to delete them.",
                         "Friendly Detail Message",
                         JOptionPane.WARNING_MESSAGE);
             }
@@ -149,9 +153,9 @@ public class SetupLoggingAction extends AbstractAction {
 
         Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("<html>" +
-                "Output will be written to sequentially numbered files, using the<br>" +
-                "given file prefix, in the given directory, with one output file<br>" +
-                "generated per search." + "</html>"));
+                          "Output will be written to sequentially numbered files, using the<br>" +
+                          "given file prefix, in the given directory, with one output file<br>" +
+                          "generated per search." + "</html>"));
         b1.add(b8);
 
         return b1;
@@ -188,6 +192,9 @@ public class SetupLoggingAction extends AbstractAction {
         return box;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,

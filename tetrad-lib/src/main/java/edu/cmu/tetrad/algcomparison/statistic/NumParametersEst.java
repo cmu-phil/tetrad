@@ -16,25 +16,38 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Number of parameters for a discrete Bayes model of the data. Must be for a discrete dataset.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumParametersEst implements Statistic {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for NumParametersEst.</p>
+     */
     public NumParametersEst() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "NumParams";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number of parameters for the estimated graph for a Bayes or SEM model";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         if (dataModel.isDiscrete()) {
@@ -66,6 +79,9 @@ public class NumParametersEst implements Statistic {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return tanh(value / 1e6);

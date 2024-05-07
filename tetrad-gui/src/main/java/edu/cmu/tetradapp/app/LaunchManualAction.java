@@ -43,13 +43,15 @@ final class LaunchManualAction extends AbstractAction {
     }
 
     /**
-     * Closes the frontmost session of this action's desktop.
+     * This method handles the action performed when a specific event is triggered.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         Desktop d = Desktop.getDesktop();
         try {
-            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/" +
-                    "tetrad/blob/development/docs/manual/index.html"));
+            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/" +
+                             "tetrad-lib/src/main/resources/docs/manual/index.html"));
         } catch (IOException | URISyntaxException e2) {
             e2.printStackTrace();
         }

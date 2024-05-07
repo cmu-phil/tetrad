@@ -268,7 +268,7 @@
     </session-node>
     <session-node id="IM">
         <models>
-            <model name="Bayes Instantiated Model" acronym="Bayes IM"
+            <model name="ML Bayes Instantiated Model" acronym="ML Bayes IM"
                    help="bayes_im">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -881,6 +881,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesEstimatorEditor
                 </editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.BayesEstimatorParamsEditor
+                </params-editor-class>
             </model>
             <model name="SEM Estimator" acronym="SEM Est" help="sem_estimator">
                 <logger>
@@ -1142,6 +1145,26 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.MarkovCheckEditor</editor-class>
             </model>
+            <model name="IDA Check" acronym="IDA Check"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.IdaModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
+            </model>
+            <model name="Algcomparison" acronym="Algcomparison"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.AlgcomparisonModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.AlgcomparisonEditor</editor-class>
+            </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>
@@ -1156,7 +1179,7 @@
                    help="Model Fit" category="Simulation-Algorithm Comparisons">
                 <model-class>edu.cmu.tetradapp.model.CPDAGFitModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.CPDAGFitEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.CpdagFitEditor</editor-class>
             </model>
             <model name="Check Knowledge" acronym="Check Knowledge"
                    help="check_knowledge" category="Graph-Knowledge Comparisons">

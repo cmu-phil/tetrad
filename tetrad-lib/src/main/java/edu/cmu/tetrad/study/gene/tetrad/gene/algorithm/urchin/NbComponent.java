@@ -22,16 +22,24 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
+/**
+ * <p>NbComponent interface.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public interface NbComponent {
 
     /**
      * Returns the parents of this component.
+     *
      * @return the parents of this component.
      */
     double getValue();
 
     /**
      * Sets the parents of this component.
+     *
      * @param v the value
      */
     void setValue(double v);
@@ -51,7 +59,8 @@ public interface NbComponent {
 
     /**
      * Returns the name.
-     * @return  the name.
+     *
+     * @return the name.
      */
     String getName();
 }

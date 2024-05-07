@@ -30,6 +30,7 @@ import java.awt.*;
  * Provides a modified appearance for session nodes to be used for notes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
@@ -57,7 +58,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * Paints the component.
+     * Paints the component with the given Graphics context.
+     *
+     * @param g the Graphics context in which to paint
      */
     public void paint(Graphics g) {
         int width = getSize().width;
@@ -81,7 +84,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * Sets the acronym of the component.
+     * Unused.
+     *
+     * @param acronym the acronym (e.g. "PC") for the node.
      */
     public void setAcronym(String acronym) {
 
@@ -97,20 +102,27 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
-     * Sets the comp as selected.
+     * @param selected a boolean
      */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
     /**
-     * Does nothing.
+     * Unused.
+     *
+     * @param b a boolean
      */
     public void setHasModel(boolean b) {
         // Ignore.
     }
 
 
+    /**
+     * Sets the name of the node.
+     *
+     * @param name the name of the node.
+     */
     public void setName(String name) {
         super.setName(name);
         this.name.setText(name);

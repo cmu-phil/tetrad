@@ -55,10 +55,13 @@ import java.util.List;
  * <p>
  * A suitable clustering for Mimbuild may be obtained using the BPC or FOFC algorithm (see).
  * <p>
+ * This algorithm is described in Spirtes et al., Causation, Prediction, and Search.
+ * <p>
  * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
@@ -189,6 +192,8 @@ public class Mimbuild {
     }
 
     /**
+     * <p>Getter for the field <code>minimum</code>.</p>
+     *
      * @return The minimum function (Fgsl) value achieved.
      */
     public double getMinimum() {
@@ -196,6 +201,8 @@ public class Mimbuild {
     }
 
     /**
+     * <p>Getter for the field <code>pValue</code>.</p>
+     *
      * @return The p value of the optimization.
      */
     public double getpValue() {
@@ -325,8 +332,8 @@ public class Mimbuild {
 
         if (df < 1) throw new IllegalStateException(
                 "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
-                        "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-                        "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
+                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
 
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
@@ -448,11 +455,18 @@ public class Mimbuild {
 
     /**
      * jf Clusters smaller than this size will be tossed out.
+     *
+     * @return a int
      */
     public int getMinClusterSize() {
         return this.minClusterSize;
     }
 
+    /**
+     * <p>Setter for the field <code>minClusterSize</code>.</p>
+     *
+     * @param minClusterSize a int
+     */
     public void setMinClusterSize(int minClusterSize) {
         if (minClusterSize < 3)
             throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);
@@ -511,6 +525,11 @@ public class Mimbuild {
         return sum;
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

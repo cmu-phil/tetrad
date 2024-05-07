@@ -89,10 +89,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value at the given (row, column) coordinates of the table as an Object.  If the variable for the
-     * column is a DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned.
-     * If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
-     * in the wrapped table model at the given coordinates is returned.
+     * {@inheritDoc}
      */
     public Object getValueAt(int row, int col) {
         final int firstDataRow = 4;
@@ -111,23 +108,26 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             return getVariableName(matrixRow);
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             return getVariableName(matrixCol);
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (matrixCol <= matrixRow)) {
+            (matrixCol <= matrixRow)) {
             return getValue(matrixRow, matrixCol);
         }
 
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCellEditable(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -141,26 +141,29 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             return true;
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             return true;
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol < matrixRow)) {
+            (col >= firstDataCol) && (matrixCol < matrixRow)) {
             return true;
         }
 
         return !(this.covMatrix instanceof CorrelationMatrix) &&
-                (row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol == matrixRow);
+               (row >= firstDataRow) && (row < lastDataRow) &&
+               (col >= firstDataCol) && (matrixCol == matrixRow);
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setValueAt(Object aValue, int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -177,19 +180,19 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
-                (row < lastDataRow)) {
+            (row < lastDataRow)) {
             setVariableName(matrixRow, (String) aValue);
             fireTableDataChanged();
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
-                (col < lastDataCol)) {
+            (col < lastDataCol)) {
             setVariableName(matrixCol, (String) aValue);
             fireTableDataChanged();
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-                (col >= firstDataCol) && (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (matrixCol <= matrixRow)) {
             String value = (String) aValue;
             double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);
@@ -198,6 +201,11 @@ class CovMatrixTable extends AbstractTableModel {
         }
     }
 
+    /**
+     * <p>addPropertyChangeListener.</p>
+     *
+     * @param listener a {@link java.beans.PropertyChangeListener} object
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
@@ -247,6 +255,11 @@ class CovMatrixTable extends AbstractTableModel {
         return this.editingMatrix.get(matrixRow, matrixCol);
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
@@ -255,10 +268,18 @@ class CovMatrixTable extends AbstractTableModel {
         return this.covMatrix.getSize();
     }
 
+    /**
+     * <p>isEditingMatrixPositiveDefinite.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEditingMatrixPositiveDefinite() {
         return this.editingMatrixPositiveDefinite;
     }
 
+    /**
+     * <p>restore.</p>
+     */
     public void restore() {
         this.editingMatrix = this.covMatrix.getMatrix();
         this.editingMatrixPositiveDefinite =

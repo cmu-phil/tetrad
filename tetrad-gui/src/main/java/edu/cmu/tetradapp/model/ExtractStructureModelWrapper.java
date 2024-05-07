@@ -22,26 +22,40 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <p>ExtractStructureModelWrapper class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for ExtractStructureModelWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for ExtractStructureModelWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public ExtractStructureModelWrapper(Graph graph) {
         super(new EdgeListGraph());
 
@@ -68,9 +82,14 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
         LayoutUtil.fruchtermanReingoldLayout(graph3);
         setGraph(graph3);
 
-        TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating CPDAG from DAG.");
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.ExtractStructureModelWrapper} object
+     */
     public static ExtractStructureModelWrapper serializableInstance() {
         return new ExtractStructureModelWrapper(EdgeListGraph.serializableInstance());
     }
@@ -78,10 +97,9 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     //======================== Private Method ======================//
 
 
-    private static Graph getCPDAG(Dag dag) {
-        return GraphTransforms.cpdagForDag(dag);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

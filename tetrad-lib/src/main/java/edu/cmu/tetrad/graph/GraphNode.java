@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,21 +33,24 @@ import java.util.Map;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNode implements Node {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The attributes of the node.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The name of the node.
-     *
-     * @serial
      */
     private String name = "??";
     /**
      * The type of the node.
      *
-     * @serial
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
@@ -56,14 +60,10 @@ public class GraphNode implements Node {
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     /**
      * The x coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerX = -1;
     /**
      * The y coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerY = -1;
     /**
@@ -75,6 +75,8 @@ public class GraphNode implements Node {
 
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public GraphNode(String name) {
         setName(name);
@@ -82,6 +84,8 @@ public class GraphNode implements Node {
 
     /**
      * Copy constructor.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.GraphNode} object
      */
     public GraphNode(GraphNode node) {
         this.name = node.name;
@@ -92,6 +96,8 @@ public class GraphNode implements Node {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.GraphNode} object
      */
     public static GraphNode serializableInstance() {
         return new GraphNode("X");
@@ -100,6 +106,8 @@ public class GraphNode implements Node {
     //============================PUBLIC METHODS========================//
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the variable.
      */
     public final String getName() {
@@ -107,6 +115,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -120,6 +130,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>nodeType</code>.</p>
+     *
      * @return the node type.
      * @see edu.cmu.tetrad.graph.NodeType
      */
@@ -128,6 +140,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the node type.
      *
      * @see edu.cmu.tetrad.graph.NodeType
@@ -140,6 +154,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>centerX</code>.</p>
+     *
      * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
@@ -147,6 +163,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public final void setCenterX(int centerX) {
@@ -154,6 +172,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>centerY</code>.</p>
+     *
      * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
@@ -161,6 +181,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public final void setCenterY(int centerY) {
@@ -168,6 +190,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public final void setCenter(int centerX, int centerY) {
@@ -187,6 +211,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a property change listener.
      */
     public final void addPropertyChangeListener(PropertyChangeListener l) {
@@ -194,17 +220,26 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return the name of the node as its string representation.
      */
     public String toString() {
         return this.name;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return this.getName().hashCode();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
@@ -213,6 +248,9 @@ public class GraphNode implements Node {
         return getName().equals(((Node) o).getName());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         GraphNode node = new GraphNode(name);
         node.setNodeType(getNodeType());
@@ -226,7 +264,12 @@ public class GraphNode implements Node {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -293,31 +336,49 @@ public class GraphNode implements Node {
 //        return node1.compareTo(node2);
 //    }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

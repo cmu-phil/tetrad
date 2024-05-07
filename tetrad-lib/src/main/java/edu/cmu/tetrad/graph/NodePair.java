@@ -25,6 +25,7 @@ package edu.cmu.tetrad.graph;
  * An unordered pair of nodes.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class NodePair {
 
@@ -41,6 +42,12 @@ public class NodePair {
     private final Node second;
 
 
+    /**
+     * <p>Constructor for NodePair.</p>
+     *
+     * @param first  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param second a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public NodePair(Node first, Node second) {
         if (first == null) {
             throw new NullPointerException("First node must not be null.");
@@ -54,31 +61,53 @@ public class NodePair {
 
     //============================== Public methods =============================//
 
+    /**
+     * <p>Getter for the field <code>first</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getFirst() {
         return this.first;
     }
 
+    /**
+     * <p>Getter for the field <code>second</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getSecond() {
         return this.second;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return this.first.hashCode() + this.second.hashCode();
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof NodePair)) {
+        if (!(o instanceof NodePair thatPair)) {
             return false;
         }
-        NodePair thatPair = (NodePair) o;
-//        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
+        //        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
         return (this.first == thatPair.first && this.second == thatPair.second) || (this.first == thatPair.second && this.second == thatPair.first);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "{" + this.first + ", " + this.second + "}";
     }

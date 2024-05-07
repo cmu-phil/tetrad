@@ -26,18 +26,39 @@ import java.lang.annotation.*;
  * Sep 1, 2017 10:51:13 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Score {
 
+    /**
+     * The name of the score.
+     *
+     * @return the name of the score
+     */
     String name();
 
+    /**
+     * The command to execute the score.
+     *
+     * @return the command to execute the score
+     */
     String command();
 
+    /**
+     * The description of the score.
+     *
+     * @return the description of the score
+     */
     String description() default "";
 
+    /**
+     * The data types that the score can be applied to.
+     *
+     * @return the data types that the score can be applied to
+     */
     DataType[] dataType();
 
 }

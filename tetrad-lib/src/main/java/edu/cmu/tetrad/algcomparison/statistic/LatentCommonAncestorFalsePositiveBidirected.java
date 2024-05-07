@@ -5,26 +5,46 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LatentCommonAncestorFalsePositiveBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for LatentCommonAncestorFalsePositiveBidirected.</p>
+     */
+    public LatentCommonAncestorFalsePositiveBidirected() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "LCAFPB";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Latent Common Ancestor False Positive Bidirected";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fp = 0;
@@ -38,6 +58,9 @@ public class LatentCommonAncestorFalsePositiveBidirected implements Statistic {
         return fp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

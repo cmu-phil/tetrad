@@ -43,6 +43,7 @@ import java.util.List;
  * shifting.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ShiftSearch {
     private final List<DataModel> dataSets;
@@ -55,10 +56,20 @@ public class ShiftSearch {
     private boolean forwardSearch;
     private boolean precomputeCovariances = false;
 
+    /**
+     * <p>Constructor for ShiftSearch.</p>
+     *
+     * @param dataSets a {@link java.util.List} object
+     */
     public ShiftSearch(List<DataModel> dataSets) {
         this.dataSets = dataSets;
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] search() {
         if (this.maxShift < 1) {
             throw new IllegalStateException("Max shift should be >= 1: " + this.maxShift);
@@ -122,46 +133,99 @@ public class ShiftSearch {
         return bestshifts;
     }
 
+    /**
+     * <p>Getter for the field <code>maxShift</code>.</p>
+     *
+     * @return a int
+     */
     public int getMaxShift() {
         return this.maxShift;
     }
 
+    /**
+     * <p>Setter for the field <code>maxShift</code>.</p>
+     *
+     * @param maxShift a int
+     */
     public void setMaxShift(int maxShift) {
         this.maxShift = maxShift;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * <p>Getter for the field <code>c</code>.</p>
+     *
+     * @return a int
+     */
     public int getC() {
         return this.c;
     }
 
+    /**
+     * <p>Setter for the field <code>c</code>.</p>
+     *
+     * @param c a int
+     */
     public void setC(int c) {
         this.c = c;
     }
 
+    /**
+     * <p>Getter for the field <code>maxNumShifts</code>.</p>
+     *
+     * @return a int
+     */
     public int getMaxNumShifts() {
         return this.maxNumShifts;
     }
 
+    /**
+     * <p>Setter for the field <code>maxNumShifts</code>.</p>
+     *
+     * @param maxNumShifts a int
+     */
     public void setMaxNumShifts(int maxNumShifts) {
         this.maxNumShifts = maxNumShifts;
     }
 
+    /**
+     * <p>Setter for the field <code>out</code>.</p>
+     *
+     * @param out a {@link java.io.OutputStream} object
+     */
     public void setOut(OutputStream out) {
         this.out = new PrintStream(out);
     }
 
+    /**
+     * <p>stop.</p>
+     */
     public void stop() {
         this.scheduleStop = true;
     }
 
+    /**
+     * <p>Setter for the field <code>forwardSearch</code>.</p>
+     *
+     * @param forwardSearch a boolean
+     */
     public void setForwardSearch(boolean forwardSearch) {
         this.forwardSearch = forwardSearch;
     }
@@ -224,6 +288,11 @@ public class ShiftSearch {
         return -images.getModelScore() / dataSets.size();
     }
 
+    /**
+     * <p>Setter for the field <code>precomputeCovariances</code>.</p>
+     *
+     * @param precomputeCovariances a boolean
+     */
     public void setPrecomputeCovariances(boolean precomputeCovariances) {
         this.precomputeCovariances = precomputeCovariances;
     }

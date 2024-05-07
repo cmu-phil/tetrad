@@ -241,8 +241,10 @@ public final class TestSearchGraph {
                     }
 
                     if (graph.isMSeparatedFrom(x, y, z) != graph.isMSeparatedFrom(y, x, z)) {
+                        System.out.println(graph);
+
                         fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same m-sep result as " +
-                                LogUtilsSearch.independenceFact(y, x, z));
+                             LogUtilsSearch.independenceFact(y, x, z));
                     }
                 }
 
@@ -285,8 +287,8 @@ public final class TestSearchGraph {
                         z.add(theRest.get(value));
                     }
 
-                    boolean mConnectedTo = graph.paths().isMConnectedTo(x, y, z);
-                    boolean mConnectedTo1 = graph.paths().isMConnectedTo(y, x, z);
+                    boolean mConnectedTo = graph.paths().isMConnectedTo(x, y, z, false);
+                    boolean mConnectedTo1 = graph.paths().isMConnectedTo(y, x, z, false);
 
                     if (mConnectedTo != mConnectedTo1) {
                         System.out.println(x + " d connected to " + y + " given " + z);
@@ -304,10 +306,10 @@ public final class TestSearchGraph {
     // Trying to trip up the breadth first algorithm.
     public void testMSeparation3() {
         Graph graph = GraphUtils.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
-        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new HashSet<>()));
+        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new HashSet<>(), false));
 
         graph = GraphUtils.convert("1-->2,2&lt;--4,2-->7,2-->3");
-        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new HashSet<>()));
+        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new HashSet<>(), false));
 
         graph = GraphUtils.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(mConnected(graph, "X2", "X4", "X3", "X6"));
@@ -378,7 +380,7 @@ public final class TestSearchGraph {
             _z.add(graph.getNode(name));
         }
 
-        return graph.paths().isMConnectedTo(_x, _y, _z);
+        return graph.paths().isMConnectedTo(_x, _y, _z, false);
     }
 
     public void testAlternativeGraphs() {

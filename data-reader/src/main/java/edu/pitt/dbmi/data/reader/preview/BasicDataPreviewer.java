@@ -35,6 +35,7 @@ import java.util.List;
  * Feb 20, 2017 2:13:13 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPreviewer {
 
@@ -50,11 +51,11 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
     /**
      * Get the previews of the data file.
      *
-     * @param fromLine        The starting line number.
-     * @param toLine          The ending line number.
-     * @param numOfCharacters The number of characters to preview.
-     * @return the previews.
-     * @throws IOException if an I/O error occurs.
+     * @param fromLine        the starting line number
+     * @param toLine          the ending line number
+     * @param numOfCharacters the number of characters to preview
+     * @return the previews
+     * @throws java.io.IOException if an I/O error occurs
      */
     @Override
     public List getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException {
@@ -82,7 +83,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
      * @param toLine          the ending line number
      * @param numOfCharacters the number of characters to preview
      * @param list            the list to store the previews
-     * @throws IOException if an I/O error occurs
+     * @throws java.io.IOException if an I/O error occurs
      */
     protected void getPreviews(int fromLine, int toLine, int numOfCharacters, List<String> list) throws IOException {
         try (FileChannel fc = new RandomAccessFile(this.dataFile.toFile(), "r").getChannel()) {

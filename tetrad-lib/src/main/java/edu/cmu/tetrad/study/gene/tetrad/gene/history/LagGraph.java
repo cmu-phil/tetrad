@@ -32,6 +32,7 @@ import java.util.SortedSet;
  * Lag graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface LagGraph extends TetradSerializable {
 
@@ -92,6 +93,7 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Gets the maximum allowable lag. Edges may not be added with lags greated than this.
+     *
      * @return the maximum allowable lag.
      */
     int getMaxLagAllowable();
@@ -163,20 +165,23 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Returns a string representation of the graph, indicating for each factor which lagged factors map into it.
-     * @param base the base name of the factors.
+     *
+     * @param base       the base name of the factors.
      * @param numFactors the number of factors.
      */
     void addFactors(String base, int numFactors);
 
     /**
      * Sets the location.
+     *
      * @param factor the factor.
-     * @param point the point.
+     * @param point  the point.
      */
     void setLocation(String factor, PointXy point);
 
     /**
      * Gets the location.
+     *
      * @param factor the factor.
      * @return the location.
      */
@@ -184,6 +189,7 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Gets the locations.
+     *
      * @return the locations.
      */
     Map getLocations();

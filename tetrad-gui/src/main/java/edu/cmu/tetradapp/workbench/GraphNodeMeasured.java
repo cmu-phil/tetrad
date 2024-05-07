@@ -38,6 +38,7 @@ import java.util.List;
  * variable is latent.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphNodeMeasured extends DisplayNode {
 
@@ -50,12 +51,14 @@ public class GraphNodeMeasured extends DisplayNode {
 
     /**
      * Constructs a new measured workbench node.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeMeasured(Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException("GraphNodeMeasured requires " +
-                    "a GraphNode of type NodeType.MEASURED.");
+                                               "a GraphNode of type NodeType.MEASURED.");
         }
 
         setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
@@ -65,6 +68,8 @@ public class GraphNodeMeasured extends DisplayNode {
     /**
      * Constructs a new display node for measured variables that doesn't bind to a model node, and instead has the name
      * set manually.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public GraphNodeMeasured(String name) {
         setName(name);
@@ -74,9 +79,9 @@ public class GraphNodeMeasured extends DisplayNode {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Launches an editor for this node.
-     *
-     * @param graph Strings which are invalid names for this node.
      */
     public void doDoubleClickAction(Graph graph) {
         if (!isEditExitingMeasuredVarsAllowed()) {
@@ -92,7 +97,7 @@ public class GraphNodeMeasured extends DisplayNode {
         boolean changed = false;
 
         if (this.getModelNode() != null &&
-                !newName.equals(this.getModelNode().getName())) {
+            !newName.equals(this.getModelNode().getName())) {
             this.getModelNode().setName(newName);
             firePropertyChange("resetGraph", null, null);
             changed = true;
@@ -162,11 +167,11 @@ public class GraphNodeMeasured extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue LOOP;
                     }
                 }
@@ -190,6 +195,11 @@ public class GraphNodeMeasured extends DisplayNode {
         return this.editExitingMeasuredVarsAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>editExitingMeasuredVarsAllowed</code>.</p>
+     *
+     * @param editExitingMeasuredVarsAllowed a boolean
+     */
     public void setEditExitingMeasuredVarsAllowed(boolean editExitingMeasuredVarsAllowed) {
         this.editExitingMeasuredVarsAllowed = editExitingMeasuredVarsAllowed;
     }

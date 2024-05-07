@@ -17,6 +17,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "G Square Test",
@@ -28,6 +29,18 @@ public class GSquare implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * GSquare class represents a wrapper for the G Square test, which is a statistical test for independence between
+     * two variables conditional on a third variable.
+     * <p>
+     * This class implements the IndependenceWrapper interface, which requires the implementation of several methods.
+     */
+    public GSquare() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("test"));
@@ -35,16 +48,25 @@ public class GSquare implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "G Square Test";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

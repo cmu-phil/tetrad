@@ -47,37 +47,60 @@ import java.util.Set;
  *
  * @author peterspirtes
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Fasd
  * @see Pc
  * @see Knowledge
  */
 public class Pcd implements IGraphSearch {
 
-    // The independence test used for the PC search.
+    /**
+     * The independence test used for the PC search.
+     */
     private final IndependenceTest independenceTest;
-    // The logger for this class. The config needs to be set.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // Forbidden and required edges for the search.
+    /**
+     * Forbidden and required edges for the search.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Sepset information accumulated in the search.
+    /**
+     * Sepset information accumulated in the search.
+     */
     private SepsetMap sepsets;
-    // The maximum number of nodes conditioned on in the search. The default it 1000.
+    /**
+     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     */
     private int depth = 1000;
-    // The graph that's constructed during the search.
+    /**
+     * The graph that's constructed during the search.
+     */
     private Graph graph;
-    // Elapsed time of the most recent search.
+    /**
+     * Elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+    /**
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
+     */
     private boolean meekPreventCycles;
-    // In an enumeration of triple types, these are the collider triples.
+    /**
+     * In an enumeration of triple types, these are the collider triples.
+     */
     private Set<Triple> unshieldedColliders;
-    // In an enumeration of triple types, these are the noncollider triples.
+    /**
+     * In an enumeration of triple types, these are the noncollider triples.
+     */
     private Set<Triple> unshieldedNoncolliders;
-    // The number of independence tests in the last search.
+    /**
+     * The number of independence tests in the last search.
+     */
     private int numIndependenceTests;
-    // True iff the algorithm should be run with verbose output.
+    /**
+     * True iff the algorithm should be run with verbose output.
+     */
     private boolean verbose;
-    // True iff the algorithm should be run with False Discovery Rate tests.
+    /**
+     * True iff the algorithm should be run with False Discovery Rate tests.
+     */
     private boolean fdr;
 
     /**
@@ -96,35 +119,46 @@ public class Pcd implements IGraphSearch {
 
 
     /**
-     * @return true, iff edges will not be added if they would create cycles.
+     * Returns whether the algorithm should prevent cycles during the search.
+     *
+     * @return true if cycles should be prevented, false otherwise.
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
     }
 
     /**
-     * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
+     * Sets whether the algorithm should prevent cycles during the search.
+     *
+     * @param meekPreventCycles true if cycles should be prevented, false otherwise
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
-     * @return the independence test being used in the search.
+     * Retrieves the IndependenceTest used by this method.
+     *
+     * @return The IndependenceTest used by this method.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * @return the knowledge specification used in the search. Non-null.
+     * Retrieves the Knowledge object used by this method.
+     *
+     * @return The Knowledge object used by this method.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
-     * Sets the knowledge specification to be used in the search. May not be null.
+     * Sets the knowledge object used by this method.
+     *
+     * @param knowledge The knowledge object used by this method.
+     * @throws NullPointerException if knowledge is null.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -135,6 +169,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>sepsets</code>.</p>
+     *
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepsets() {
@@ -142,6 +178,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the current depth of search--that is, the maximum number of conditioning nodes for any conditional
      * independence checked.
      */
@@ -175,6 +213,8 @@ public class Pcd implements IGraphSearch {
      * independence information is consistent with the hypothesis that there are no latent common causes. It may,
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         return search(this.independenceTest.getVariables());
@@ -188,6 +228,9 @@ public class Pcd implements IGraphSearch {
      * or due to statistical errors in conditional independence judgments.
      * <p>
      * All the given nodes must be in the domain of the given conditional independence test.
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -195,11 +238,26 @@ public class Pcd implements IGraphSearch {
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
+    /**
+     * Searches for a graph using the given IFas instance and list of nodes.
+     *
+     * @param fas   The IFas instance to use for the search.
+     * @param nodes The list of nodes to search for.
+     * @return The resultant graph. The returned graph will be a CPDAG if the independence information is consistent
+     * with the hypothesis that there are no latent common causes. It may, however, contain cycles or bidirected edges
+     * if this assumption is not born out, either due to the actual presence of latent common causes, or due to
+     * statistical errors in conditional independence judgments.
+     * @throws NullPointerException     If fas is null or if the independence test is null.
+     * @throws IllegalArgumentException If any of the given nodes is not in the domain of the independence test
+     *                                  provided.
+     */
     public Graph search(IFas fas, List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting PC algorithm");
+            String message = "Independence test = " + getIndependenceTest() + ".";
+            TetradLogger.getInstance().forceLogMessage(message);
+        }
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -210,7 +268,7 @@ public class Pcd implements IGraphSearch {
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
+                                               "be in the domain of the independence test provided.");
         }
 
 
@@ -225,7 +283,7 @@ public class Pcd implements IGraphSearch {
 
         enumerateTriples();
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);
         GraphSearchUtils.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
 
         MeekRules rules = new MeekRules();
@@ -235,53 +293,63 @@ public class Pcd implements IGraphSearch {
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+        }
 
         return this.graph;
     }
 
     /**
-     * @return the elapsed time of the search, in milliseconds.
+     * Returns the elapsed time in milliseconds since the start of the method.
+     *
+     * @return the elapsed time in milliseconds
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
+     * Retrieves the set of unshielded colliders in the graph returned by the method search().
+     *
+     * @return The set of unshielded colliders. Non-null after search() is called.
      */
     public Set<Triple> getUnshieldedColliders() {
         return this.unshieldedColliders;
     }
 
     /**
-     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
+     * Retrieves the set of unshielded noncolliders in the graph returned by the method search().
+     *
+     * @return The set of unshielded noncolliders. Non-null after search() is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
         return this.unshieldedNoncolliders;
     }
 
     /**
-     * @return the graph returned by <code>search()</code>. Non-null after <code>search</code> is called.
+     * Returns the set of adjacent edges in the graph.
+     *
+     * @return The set of adjacent edges.
      */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
     /**
-     * @return the number of independence tests performed in the last search.
+     * Retrieves the number of independence tests performed by the graph search.
+     *
+     * @return The number of independence tests performed.
      */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
     /**
-     * @return the list of nodes in the graph returned by <code>search()</code>. Non-null after <code>search</code> is
-     * called.
+     * Retrieves the list of nodes in the graph.
+     *
+     * @return The list of nodes in the graph.
      */
     public List<Node> getNodes() {
         return this.graph.getNodes();
@@ -323,6 +391,12 @@ public class Pcd implements IGraphSearch {
         this.fdr = fdr;
     }
 
+    /**
+     * Enumerates the triples in the graph and classifies them as unshielded colliders or unshielded noncolliders.
+     * <p>
+     * The unshielded colliders and unshielded noncolliders are stored in the respective instance variables of the
+     * class.
+     */
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();

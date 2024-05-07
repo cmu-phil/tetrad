@@ -26,24 +26,27 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Implements a parametric gene model.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class GenePm implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The wrapped lag workbench.
-     *
-     * @serial Cannot be null.
      */
     private final LagGraph lagGraph;
 
     /**
-     * Construct a new gene pm, wrapping the given lag workbench.
+     * Construct a new gene pm, wrapping the given lag graph.
+     *
+     * @param lagGraph The lag graph to wrap.
      */
     public GenePm(LagGraph lagGraph) {
         if (lagGraph == null) {
@@ -55,6 +58,8 @@ public abstract class GenePm implements TetradSerializable {
 
     /**
      * Gets the lag workbench that is wrapped.
+     *
+     * @return The lag workbench that is wrapped.
      */
     public LagGraph getLagGraph() {
         return this.lagGraph;
@@ -67,14 +72,15 @@ public abstract class GenePm implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.lagGraph == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

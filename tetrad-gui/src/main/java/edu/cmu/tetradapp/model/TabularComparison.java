@@ -24,15 +24,15 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
+import edu.cmu.tetradapp.session.SimulationParamsSource;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -42,33 +42,90 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class TabularComparison implements SessionModel, SimulationParamsSource,
         DoNotAddOldModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The target graph.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph.
+     */
     private final Graph referenceGraph;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The data model.
+     */
     private final DataModel dataModel = null;
+
+    /**
+     * The elapsed time in milliseconds.
+     */
+    private long elapsedTime = 0L;
+
+    /**
+     * The name of the comparison.
+     */
     private String name;
+
+    /**
+     * The parameters for the comparison.
+     */
     private Map<String, String> allParamSettings;
+
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+
+    /**
+     * The statistics.
+     */
     private ArrayList<Statistic> statistics;
+
+    /**
+     * The name of the target graph.
+     */
     private String targetName;
+
+    /**
+     * The name of the reference graph.
+     */
     private String referenceName;
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * Compares the results an algorithm run using various statistics.
+     *
+     * @param model1 the first model to compare; its graph is used.
+     * @param model2 the second model to compare; its graph is used.
+     * @param params the parameters for the comparison.
+     */
     public TabularComparison(GraphSource model1, GraphSource model2,
                              Parameters params) {
         this(model1, model2, null, params);
     }
 
     /**
-     * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
-     * can be retrieved using the methods
-     * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     * Compares the results an algorithm run using various statistics.
+     *
+     * @param model1      the first model to compare; its graph is used.
+     * @param model2      the second model to compare; its graph is used.
+     * @param dataWrapper the data wrapper to use for the comparison. (Unused here.)
+     * @param params      the parameters for the comparison.
      */
     public TabularComparison(GraphSource model1, GraphSource model2,
                              DataWrapper dataWrapper, Parameters params) {
@@ -78,6 +135,12 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         if (model1 == null || model2 == null) {
             throw new NullPointerException("Null graph source>");
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner) {
+            this.elapsedTime = ((GeneralAlgorithmRunner) model1).getElapsedTime();
+        } else if (model2 instanceof GeneralAlgorithmRunner) {
+            this.elapsedTime = ((GeneralAlgorithmRunner) model2).getElapsedTime();
         }
 
         this.params = params;
@@ -101,9 +164,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         newExecution();
 
-//        addRecord();
-
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
     }
 
     private void newExecution() {
@@ -136,25 +197,29 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         }
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-//    public static TabularComparison serializableInstance() {
-//        return new TabularComparison(DagWrapper.serializableInstance(),
-//                DagWrapper.serializableInstance(),
-//                new Parameters());
-//    }
     //==============================PUBLIC METHODS========================//
+
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -168,56 +233,119 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 
+    /**
+     * <p>Getter for the field <code>referenceGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getReferenceGraph() {
         return this.referenceGraph;
     }
 
+    /**
+     * <p>Getter for the field <code>targetGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getTargetGraph() {
         return this.targetGraph;
     }
 
+    /**
+     * <p>Getter for the field <code>targetName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTargetName() {
         return this.targetName;
     }
 
+    /**
+     * <p>Setter for the field <code>targetName</code>.</p>
+     *
+     * @param targetName a {@link java.lang.String} object
+     */
     public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
+    /**
+     * <p>Getter for the field <code>referenceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReferenceName() {
         return this.referenceName;
     }
 
+    /**
+     * <p>Setter for the field <code>referenceName</code>.</p>
+     *
+     * @param referenceName a {@link java.lang.String} object
+     */
     public void setReferenceName(String referenceName) {
         this.referenceName = referenceName;
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * <p>Getter for the field <code>dataModel</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return this.dataModel;
+    }
+
+    /**
+     * Returns the elapsed time in milliseconds. If the elapsed time is not available, this method returns -1.
+     *
+     * @return the elapsed time in milliseconds.
+     */
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 }

@@ -33,8 +33,15 @@ import java.util.List;
  * This class converts a SemIm into xml.
  *
  * @author Matt Easterday
+ * @version $Id: $Id
  */
 public class SemXmlRenderer {
+
+    /**
+     * Prevent instantiation.
+     */
+    private SemXmlRenderer() {
+    }
 
     /**
      * Converts a Sem Im into xml.

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -33,16 +34,19 @@ import java.util.Arrays;
  * has been manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Manipulation implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variable source for which this manipulation is defined.
+     */
     private final VariableSource variableSource;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
-     *
-     * @serial Cannot be null.
      */
     private final boolean[] manipulated;
 
@@ -50,6 +54,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Constructs a container for evidence for the given Bayes IM.
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
      */
     public Manipulation(VariableSource variableSource) {
         if (variableSource == null) {
@@ -62,6 +68,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Copy constructor.
+     *
+     * @param manipulation a {@link edu.cmu.tetrad.bayes.Manipulation} object
      */
     public Manipulation(Manipulation manipulation) {
         if (manipulation == null) {
@@ -70,7 +78,7 @@ public final class Manipulation implements TetradSerializable {
 
         if (manipulation.getVariableSource() == null) {
             throw new NullPointerException("Please reconstruct this part of the " +
-                    "session; there was an error.");
+                                           "session; there was an error.");
         }
 
         this.variableSource = manipulation.getVariableSource();
@@ -84,6 +92,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Manipulation} object
      */
     public static Manipulation serializableInstance() {
         return new Manipulation(MlBayesIm.serializableInstance());
@@ -91,10 +101,21 @@ public final class Manipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
+    /**
+     * <p>Setter for the field <code>manipulated</code>.</p>
+     *
+     * @param nodeIndex   a int
+     * @param manipulated a boolean
+     */
     public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulated[nodeIndex] = manipulated;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
 
@@ -109,16 +130,17 @@ public final class Manipulation implements TetradSerializable {
         return buf.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof Manipulation)) {
+        if (!(o instanceof Manipulation evidence)) {
             return false;
         }
-
-        Manipulation evidence = (Manipulation) o;
 
         if (!(getVariableSource() == evidence.getVariableSource())) {
             return false;
@@ -133,6 +155,11 @@ public final class Manipulation implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + getVariableSource().hashCode();
@@ -146,6 +173,12 @@ public final class Manipulation implements TetradSerializable {
         return getVariableSource().getVariables().size();
     }
 
+    /**
+     * <p>isManipulated.</p>
+     *
+     * @param nodeIndex a int
+     * @return a boolean
+     */
     public boolean isManipulated(int nodeIndex) {
         return this.manipulated[nodeIndex];
     }
@@ -157,7 +190,12 @@ public final class Manipulation implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

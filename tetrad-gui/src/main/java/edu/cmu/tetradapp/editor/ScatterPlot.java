@@ -43,17 +43,58 @@ import static org.apache.commons.math3.util.FastMath.abs;
  *
  * @author Adrian Tang
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScatterPlot {
+
+    /**
+     * The name of the x-axis variable.
+     */
     private final String x;
+
+    /**
+     * The name of the y-axis variable.
+     */
     private final String y;
+
+    /**
+     * Whether to include the regression line in the plot.
+     */
     private final boolean includeLine;
+
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The continuous conditioning variables.
+     */
     private final Map<Node, double[]> continuousIntervals;
+
+    /**
+     * The discrete conditioning variables.
+     */
     private final Map<Node, Integer> discreteValues;
+
+    /**
+     * The x-axis variable.
+     */
     private final Node _x;
+
+    /**
+     * The y-axis variable.
+     */
     private final Node _y;
-    private boolean removeZeroPointsPerPlot;
+
+    /**
+     * Whether to remove zero points per plot.
+     */
+    private final boolean removeZeroPointsPerPlot;
+
+    /**
+     * The jitter style.
+     */
     private JitterStyle jitterStyle = JitterStyle.None;
 
     /**
@@ -63,6 +104,7 @@ public class ScatterPlot {
      * @param x                       y-axis variable name.
      * @param y                       x-axis variable name.
      * @param removeZeroPointsPerPlot whether to remove zero points per plot.
+     * @param dataSet                 a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y, boolean removeZeroPointsPerPlot) {
         this.dataSet = dataSet;
@@ -76,6 +118,11 @@ public class ScatterPlot {
         this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
     }
 
+    /**
+     * <p>Setter for the field <code>jitterStyle</code>.</p>
+     *
+     * @param jitterStyle a {@link edu.cmu.tetradapp.editor.ScatterPlot.JitterStyle} object
+     */
     public void setJitterStyle(JitterStyle jitterStyle) {
         this.jitterStyle = jitterStyle;
     }
@@ -91,6 +138,11 @@ public class ScatterPlot {
         return regression.regress(_y, regressors);
     }
 
+    /**
+     * <p>getCorrelationCoeff.</p>
+     *
+     * @return a double
+     */
     public double getCorrelationCoeff() {
         DataSet dataSet = getDataSet();
         Matrix data = dataSet.getDoubleData();
@@ -112,34 +164,9 @@ public class ScatterPlot {
         return correlation;
     }
 
-    private static class Result {
-        public double[] xdata;
-        public double[] ydata;
-
-        public Result(double[] xdata, double[] ydata, boolean removeZeroPointsPerPlot) {
-            this.xdata = xdata;
-            this.ydata = ydata;
-
-            if (removeZeroPointsPerPlot) {
-                List<Double> x = new ArrayList<>();
-                List<Double> y = new ArrayList<>();
-                for (int i = 0; i < xdata.length; i++) {
-                    if (xdata[i] != 0 && ydata[i] != 0) {
-                        x.add(xdata[i]);
-                        y.add(ydata[i]);
-                    }
-                }
-                this.xdata = new double[x.size()];
-                this.ydata = new double[y.size()];
-                for (int i = 0; i < x.size(); i++) {
-                    this.xdata[i] = x.get(i);
-                    this.ydata[i] = y.get(i);
-                }
-            }
-        }
-    }
-
     /**
+     * <p>getCorrelationPValue.</p>
+     *
      * @return the p-value of the correlation coefficient statistics.
      */
     public double getCorrelationPValue() {
@@ -161,6 +188,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getXmin.</p>
+     *
      * @return the minimum x-axis value from the set of sample values.
      */
     public double getXmin() {
@@ -173,6 +202,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getYmin.</p>
+     *
      * @return the minimum y-axis value from the set of sample values.
      */
     public double getYmin() {
@@ -185,6 +216,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getXmax.</p>
+     *
      * @return the maximum x-axis value from the set of sample values.
      */
     public double getXmax() {
@@ -197,6 +230,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getYmax.</p>
+     *
      * @return the maximum y-axis value from the set of sample values.
      */
     public double getYmax() {
@@ -225,6 +260,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getXvar.</p>
+     *
      * @return the name of the predictor variable.
      */
     public String getXvar() {
@@ -232,6 +269,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>getYvar.</p>
+     *
      * @return the name of the response variable.
      */
     public String getYvar() {
@@ -239,6 +278,8 @@ public class ScatterPlot {
     }
 
     /**
+     * <p>isIncludeLine.</p>
+     *
      * @return whether to include the regression line.
      */
     public boolean isIncludeLine() {
@@ -247,18 +288,27 @@ public class ScatterPlot {
 
     /**
      * Calculates the regression coefficient for the variables return a regression coefficient.
+     *
+     * @return a double
      */
     public double getRegressionCoeff() {
         return getRegressionResult().getCoef()[1];
     }
 
     /**
+     * <p>getRegressionIntercept.</p>
+     *
      * @return the zero intercept of the regression equation.
      */
     public double getRegressionIntercept() {
         return getRegressionResult().getCoef()[0];
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -306,8 +356,6 @@ public class ScatterPlot {
         return _data;
     }
 
-    //======================================PRIVATE METHODS=======================================//
-
     private List<Double> getConditionedDataContinuous(String target) {
         if (this.continuousIntervals == null) return getUnconditionedDataContinuous(target);
 
@@ -323,6 +371,8 @@ public class ScatterPlot {
 
         return _data;
     }
+
+    //======================================PRIVATE METHODS=======================================//
 
     // Returns the rows in the data that satisfy the conditioning constraints.
     private List<Integer> getConditionedRows() {
@@ -402,7 +452,53 @@ public class ScatterPlot {
         return max - min;
     }
 
-    public enum JitterStyle {None, Gaussian, Uniform}
+    /**
+     * Enum for the jitter style.
+     */
+    public enum JitterStyle {
+
+        /**
+         * No jitter.
+         */
+        None,
+
+        /**
+         * Gaussian jitter.
+         */
+        Gaussian,
+
+        /**
+         * Uniform jitter.
+         */
+        Uniform
+    }
+
+    private static class Result {
+        public double[] xdata;
+        public double[] ydata;
+
+        public Result(double[] xdata, double[] ydata, boolean removeZeroPointsPerPlot) {
+            this.xdata = xdata;
+            this.ydata = ydata;
+
+            if (removeZeroPointsPerPlot) {
+                List<Double> x = new ArrayList<>();
+                List<Double> y = new ArrayList<>();
+                for (int i = 0; i < xdata.length; i++) {
+                    if (xdata[i] != 0 && ydata[i] != 0) {
+                        x.add(xdata[i]);
+                        y.add(ydata[i]);
+                    }
+                }
+                this.xdata = new double[x.size()];
+                this.ydata = new double[y.size()];
+                for (int i = 0; i < x.size(); i++) {
+                    this.xdata[i] = x.get(i);
+                    this.ydata[i] = y.get(i);
+                }
+            }
+        }
+    }
 }
 
 

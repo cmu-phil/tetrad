@@ -32,11 +32,18 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CopySelectedDatasetWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for CopySelectedDatasetWrapper.</p>
+     *
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CopySelectedDatasetWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
@@ -52,6 +59,7 @@ public class CopySelectedDatasetWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

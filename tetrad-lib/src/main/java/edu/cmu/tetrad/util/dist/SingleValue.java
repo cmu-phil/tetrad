@@ -21,16 +21,20 @@
 
 package edu.cmu.tetrad.util.dist;
 
+import java.io.Serial;
+
 /**
  * A pretend distribution that always returns the given value when nextRandom() is called.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SingleValue implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * Represents a single value in a statistical distribution.
      */
     private double value;
 
@@ -54,6 +58,13 @@ public class SingleValue implements Distribution {
         return new SingleValue(0.5);
     }
 
+    /**
+     * Sets the index'th parameter to the given value.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; number of parameters.
+     * @param value The value to set.
+     * @throws IllegalArgumentException If index is not a valid parameter index.
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.value = value;
@@ -62,6 +73,13 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * Returns the index'th parameter.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; # parameters.
+     * @return The value of the parameter.
+     * @throws IllegalArgumentException If index is not a valid parameter index.
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.value;
@@ -70,6 +88,13 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * Returns the name of the index'th parameter.
+     *
+     * @param index The index of the parameter. Must be &gt;= 0 and &lt; number of parameters.
+     * @return The name of the parameter.
+     * @throws IllegalArgumentException If index is not a valid parameter index.
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Value";
@@ -78,19 +103,29 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * Returns the number of parameters in the distribution.
+     *
+     * @return the number of parameters.
+     */
     public int getNumParameters() {
         return 1;
     }
 
-    //============================PUBLIC METHODS========================//
-
     /**
-     * @return the value that was set.
+     * Returns the next random number from the distribution.
+     *
+     * @return A random number generated from the distribution.
      */
     public double nextRandom() {
         return getValue();
     }
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return A string representation of the object.
+     */
     public String toString() {
         return "[" + getValue() + "]";
     }
@@ -100,6 +135,11 @@ public class SingleValue implements Distribution {
     }
 
 
+    /**
+     * Returns the name of the distribution.
+     *
+     * @return the name.
+     */
     public String getName() {
         return "Single Value";
     }

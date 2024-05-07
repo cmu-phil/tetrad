@@ -24,34 +24,36 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 
 ///////////////////////////////////////
 // Identifiability wrapper
 // based on RowSummingExactWrapper
 ///////////////////////////////////////
-
 public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The Bayes updater.
      */
     private ManipulatingBayesUpdater bayesUpdater;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
@@ -62,6 +64,12 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //=============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for IdentifiabilityWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -74,6 +82,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -82,14 +91,27 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>bayesUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.ManipulatingBayesUpdater} object
+     */
     public ManipulatingBayesUpdater getBayesUpdater() {
         return this.bayesUpdater;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -112,15 +134,15 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-            TetradLogger.getInstance().log("info", "\nIdentifiability");
+            TetradLogger.getInstance().forceLogMessage("\nIdentifiability");
 
             String nodeName = node.getName();
             int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
             double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
             double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
-            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
-            TetradLogger.getInstance().log("details", "\nEvidence:");
+            TetradLogger.getInstance().forceLogMessage("\nVariable = " + nodeName);
+            TetradLogger.getInstance().forceLogMessage("\nEvidence:");
             Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
@@ -129,15 +151,16 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
                 int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
-                    TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
+                    TetradLogger.getInstance().forceLogMessage("\t" + variable + " = " + category);
                 }
             }
 
-            TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
+            TetradLogger.getInstance().forceLogMessage("\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
-                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
+                String message = category(evidence, nodeName, i) + "\t"
+                                 + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
         TetradLogger.getInstance().reset();
@@ -159,6 +182,10 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -169,6 +196,11 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

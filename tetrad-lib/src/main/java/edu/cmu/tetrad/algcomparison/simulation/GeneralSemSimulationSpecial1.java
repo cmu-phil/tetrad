@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -12,6 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.*;
 
@@ -21,17 +25,39 @@ import java.util.*;
  *
  * @author ekummerfeld@gmail.com
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
 
+    /**
+     * <p>Constructor for GeneralSemSimulationSpecial1.</p>
+     *
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public GeneralSemSimulationSpecial1(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -69,30 +95,58 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getShortName() {
+        return "General SEM Special 1";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -102,6 +156,16 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SEED);
         return parameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     private GeneralizedSemPm getPm(Graph graph) {

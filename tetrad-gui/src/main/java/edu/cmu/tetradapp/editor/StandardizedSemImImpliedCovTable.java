@@ -67,6 +67,10 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     /**
      * Constructs a new table for the given covariance matrix, the nodes for which are as specified (in the order they
      * appear in the matrix).
+     *
+     * @param semIm        a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
+     * @param measured     a boolean
+     * @param correlations a boolean
      */
     public StandardizedSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
                                             boolean correlations) {
@@ -105,9 +109,9 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
                 } else {
                     throw new IllegalArgumentException(
                             "Off-diagonal element at (" + i + ", " + j +
-                                    ") cannot be converted to correlation: " +
-                                    d1 + " <= FastMath.pow(" + d2 + " * " + d3 +
-                                    ", 0.5)");
+                            ") cannot be converted to correlation: " +
+                            d1 + " <= FastMath.pow(" + d2 + " * " + d3 +
+                            ", 0.5)");
                 }
             }
         }
@@ -120,6 +124,8 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
+     * <p>getRowCount.</p>
+     *
      * @return the number of rows being displayed--one more than the size of the matrix, which may be different
      * depending on whether only the observed variables are being displayed or all the variables are being displayed.
      */
@@ -132,6 +138,8 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
+     * <p>getColumnCount.</p>
+     *
      * @return the number of columns displayed--one more than the size of the matrix, which may be different depending
      * on whether only the observed variables are being displayed or all the variables are being displayed.
      */
@@ -144,8 +152,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * @return the name of the column at columnIndex, which is "" for column 0 and the name of the variable for the
-     * other columns.
+     * {@inheritDoc}
      */
     public String getColumnName(int columnIndex) {
         if (columnIndex == 0) {
@@ -164,7 +171,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value being displayed in a cell, either a variable name or a Double.
+     * {@inheritDoc}
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex == 0) {

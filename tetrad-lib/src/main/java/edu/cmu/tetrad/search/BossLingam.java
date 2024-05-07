@@ -39,8 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables and then uses a non-Gaussian
- * orientation method to orient the undirected edges. The reference is as follows:
+ * Implements an algorithm which first finds a CPDAG for the variables and then uses a non-Gaussian orientation method
+ * to orient the undirected edges. The reference is as follows:
  * <p>
  * Hoyer et al., "Causal discovery of linear acyclic models with arbitrary distributions," UAI 2008.
  * <p>
@@ -54,10 +54,14 @@ import java.util.List;
  * non-Gaussian orientation method.
  * <p>
  * This class is not configured to respect knowledge of forbidden and required edges.
+ * <p>
+ * We may replace this class in the future by one which allows the user to specify an arbitrary CPDAG algorithm and an
+ * arbitrary method for orienting the undirected edges.
  *
  * @author peterspirtes
  * @author patrickhoyer
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BossLingam {
     // The CPDAG whose unoriented edges are to be oriented.
@@ -72,6 +76,7 @@ public class BossLingam {
      *
      * @param cpdag   The CPDAG whose unoriented edges are to be oriented.
      * @param dataSet Teh dataset to use.
+     * @throws java.lang.IllegalArgumentException if any.
      */
     public BossLingam(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {
@@ -123,7 +128,7 @@ public class BossLingam {
             }
         }
 
-        TetradLogger.getInstance().log("graph", "Returning: " + toOrient);
+        TetradLogger.getInstance().forceLogMessage("Returning: " + toOrient);
         return toOrient;
     }
 

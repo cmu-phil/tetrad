@@ -12,8 +12,8 @@ import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.search.work_in_progress.FasLofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,61 +25,63 @@ import java.util.List;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The rule to use.
+     */
     private final Lofs.Rule rule;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for FaskLofsConcatenated.</p>
+     *
+     * @param rule a {@link edu.cmu.tetrad.search.Lofs.Rule} object
+     */
     public FaskLofsConcatenated(Lofs.Rule rule) {
         this.rule = rule;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
-                dataSets.add((DataSet) dataModel);
-            }
-
-            DataSet dataSet = DataTransforms.concatenate(dataSets);
-
-            FasLofs search = new FasLofs(dataSet, this.rule);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            search.setKnowledge(this.knowledge);
-            return getGraph(search);
-        } else {
-            FaskLofsConcatenated algorithm = new FaskLofsConcatenated(this.rule);
-
-            List<DataSet> datasets = new ArrayList<>();
-
-            for (DataModel dataModel : dataModels) {
-                datasets.add((DataSet) dataModel);
-            }
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets,
-                    algorithm,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-            search.setScoreWrapper(null);
-
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
         }
+
+        DataSet dataSet = DataTransforms.concatenate(dataSets);
+
+        FasLofs search = new FasLofs(dataSet, this.rule);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        search.setKnowledge(this.knowledge);
+        return getGraph(search);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
@@ -89,43 +91,41 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         return search.search();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
-        } else {
-            FaskLofsConcatenated algorithm = new FaskLofsConcatenated(this.rule);
-
-            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    algorithm,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-            search.setScoreWrapper(null);
-
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
-        }
+        return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "FAS followed by " + this.rule;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -140,13 +140,19 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }

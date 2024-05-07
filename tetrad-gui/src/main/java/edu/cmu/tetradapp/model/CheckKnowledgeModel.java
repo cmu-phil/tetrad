@@ -25,11 +25,12 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.CheckKnowledge;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 
@@ -39,19 +40,45 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class CheckKnowledgeModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph to be checked.
+     */
     private final Graph graph;
+
+    /**
+     * The knowledge to be checked against.
+     */
     private final Knowledge knowledge;
+
+    /**
+     * The parameters for the check.
+     */
     private final Parameters params;
+
+    /**
+     * The name of the model.
+     */
     private final String modelName;
+
+    /**
+     * The name of the model.
+     */
     private String name = "Check Knowledge";
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     *
+     * @param model             a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CheckKnowledgeModel(GraphSource model, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         if (params == null) {
@@ -73,6 +100,11 @@ public final class CheckKnowledgeModel implements SessionModel {
     }
 
 
+    /**
+     * <p>getComparisonString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getComparisonString() {
         List<Edge> forbiddenViolations = CheckKnowledge.forbiddenViolations(graph, knowledge);
         List<Edge> requiredViolations = CheckKnowledge.requiredViolations(graph, knowledge);
@@ -112,21 +144,37 @@ public final class CheckKnowledgeModel implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

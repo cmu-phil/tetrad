@@ -20,9 +20,11 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -34,25 +36,42 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 import java.net.URL;
 
 /**
  * Apr 15, 2019 4:49:15 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class GraphCard extends JPanel {
-
+    @Serial
     private static final long serialVersionUID = -7654484444146823298L;
 
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The workbench.
+     */
     private GraphWorkbench workbench;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for GraphCard.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
-
         initComponents();
     }
 
@@ -61,6 +80,9 @@ public class GraphCard extends JPanel {
         setPreferredSize(new Dimension(50, 406));
     }
 
+    /**
+     * <p>refresh.</p>
+     */
     public void refresh() {
         removeAll();
 
@@ -104,13 +126,14 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.addSeparator();
 
-        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectTrianglesAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagColorer(this.workbench));
+        graph.add(GraphUtils.getHighlightMenu(this.workbench));
+        graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+//        addGraphManipItems(graph, this.workbench);
+        graph.addSeparator();
+
+        graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
 
@@ -130,18 +153,25 @@ public class GraphCard extends JPanel {
         graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
+        // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG edge specialization markups.
+        // This is to show the edge types in the graph. - jdramsey 2024/03/13
+        graphWorkbench.markPagEdgeSpecializations(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
+
         this.workbench = graphWorkbench;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
-        mainPanel.add(createInstructionBox(), BorderLayout.SOUTH);
+
+        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
+            mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
+        }
 
         return mainPanel;
     }
 
-    private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types and colorings");
+    private Box createLatentVariableInstructionBox() {
+        JLabel label = new JLabel("More information on FCI graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types

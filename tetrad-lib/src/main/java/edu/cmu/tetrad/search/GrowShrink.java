@@ -44,7 +44,7 @@ import java.util.Set;
  * learned; other algorithms are available to do that (see, e.g., FgesMb, PcMb).
  * <p>
  * We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm (see the above reference). Markov
- * blanket search has been explored in some detail in the literature and several algorithms are available. See for
+ * blanket search has been explored in some detail in the literature, and several algorithms are available. See for
  * instance the BNLEARN package in R:
  *
  * <a href="https://www.bnlearn.com/">https://www.bnlearn.com</a>
@@ -52,6 +52,7 @@ import java.util.Set;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see FgesMb
  * @see PcMb
  */
@@ -76,10 +77,10 @@ public class GrowShrink implements IMbSearch {
     }
 
     /**
-     * Finds the Markov blanket of the given target.
+     * Finds the Markov blanket (MB) for a given target node.
      *
-     * @param target the target
-     * @return the set of node in the Markov blanket.
+     * @param target the target node for which the MB is to be found
+     * @return the set of nodes that form the Markov blanket for the target node
      */
     public Set<Node> findMb(Node target) {
         Set<Node> blanket = new HashSet<>();
@@ -114,7 +115,10 @@ public class GrowShrink implements IMbSearch {
     }
 
     /**
-     * @throws UnsupportedOperationException Since independence tests are not counted.
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @return a int
+     * @throws java.lang.UnsupportedOperationException Since independence tests are not counted.
      */
     public int getNumIndependenceTests() {
         throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");

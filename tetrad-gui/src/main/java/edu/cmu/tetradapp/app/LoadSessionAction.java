@@ -21,17 +21,16 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -40,9 +39,7 @@ import java.util.prefs.Preferences;
 
 
 /**
- * Opens a session from a file.
- *
- * @author josephramsey
+ * Represents an action to load a session from a file. Extends AbstractAction class.
  */
 final class LoadSessionAction extends AbstractAction {
 
@@ -54,12 +51,11 @@ final class LoadSessionAction extends AbstractAction {
     }
 
     /**
-     * Performs the action of opening a session from a file.
+     * Opens a session file and loads it into Tetrad.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
-
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
 
         // select a file to open using the file chooser
         JFileChooser chooser = new JFileChooser();
@@ -81,7 +77,6 @@ final class LoadSessionAction extends AbstractAction {
         }
 
         File file = chooser.getSelectedFile();
-//        final File file = EditorUtils.ensureSuffix(file0, "tet");
 
         if (file == null) {
             return;
@@ -124,9 +119,10 @@ final class LoadSessionAction extends AbstractAction {
                         try {
                             sessionWrapper = (SessionWrapper) objIn.readObject();
                         } catch (ClassNotFoundException e1) {
+
                             throw e1;
                         } catch (Exception e2) {
-                            e2.printStackTrace();
+                            TetradLogger.getInstance().forceLogMessage("Exception: " + e2.getMessage());
                         }
                     } else if (o instanceof SessionWrapper) {
                         sessionWrapper = (SessionWrapper) o;
@@ -145,7 +141,7 @@ final class LoadSessionAction extends AbstractAction {
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
-                                        "The session was saved by Tetrad " + version + " on " + df.format(date));
+                                "The session was saved by Tetrad " + version + " on " + df.format(date));
 
                         return;
                     }
@@ -164,7 +160,6 @@ final class LoadSessionAction extends AbstractAction {
                 } catch (FileNotFoundException ex) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
@@ -173,32 +168,29 @@ final class LoadSessionAction extends AbstractAction {
         new MyWatchedProcess();
     }
 
-
+    /**
+     * Represents a decompressible input stream for deserializing objects.
+     */
     public static class DecompressibleInputStream extends ObjectInputStream {
 
         public DecompressibleInputStream(InputStream in) throws IOException {
             super(in);
         }
 
-        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
-            ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-            Class localClass; // the class in the local JVM that this descriptor represents.
-            try {
-                localClass = Class.forName(resultClassDescriptor.getName());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                TetradLogger.getInstance().forceLogMessage("No local class for " + resultClassDescriptor.getName());
-                return resultClassDescriptor;
-            }
-            ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
-            if (localClassDescriptor != null) { // only if class implements serializable
-                long localSUID = localClassDescriptor.getSerialVersionUID();
-                long streamSUID = resultClassDescriptor.getSerialVersionUID();
-                if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-                    resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
-                }
-            }
-            return resultClassDescriptor;
+        public Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
+            String remappedClassName = mapToCurrentPackageName(desc.getName());
+            return Class.forName(remappedClassName);
+        }
+
+        private String mapToCurrentPackageName(String originalClassName) {
+
+            // Implement this function to correctly map obsolete class names to their current counterparts
+            // The following lines are just examples, should be adapted according to the actual class name changes in your codebase
+            if (originalClassName.contains("tetrad.session"))
+                return originalClassName.replace("tetrad.session", "tetradapp.session");
+
+            // If no special mapping is needed, return the original class name
+            return originalClassName;
         }
     }
 }

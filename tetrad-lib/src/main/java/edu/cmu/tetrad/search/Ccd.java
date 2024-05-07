@@ -32,28 +32,35 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson. A reference for this is here:
+ * Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson. A reference to this is here:
  * <p>
  * Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv preprint arXiv:1302.3599.
  * <p>
  * See also Chapter 7 of:
  * <p>
- * Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and discovery. Aaai Press.
+ * Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and discovery. AAAI Press.
  * <p>
  * The graph takes continuous data from a cyclic model as input and returns a cyclic PAG graphs, with various types of
  * underlining, that represents a Markov equivalence of the true DAG.
  * <p>
- * This class is not configured to respect knowledge of forbidden and required edges.
+ * This class is not configured to respect knowledge of forbidden and required edges (nor will be).
  *
  * @author Frank C. Wimberly
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Ccd implements IGraphSearch {
-    // The independence test to be used.
+    /**
+     * The independence test to be used.
+     */
     private final IndependenceTest independenceTest;
-    // The nodes in the graph.
+    /**
+     * The nodes in the graph.
+     */
     private final List<Node> nodes;
-    // Whether the R1 rule should be applied.
+    /**
+     * Whether the R1 rule should be applied.
+     */
     private boolean applyR1;
 
     /**
@@ -118,7 +125,11 @@ public final class Ccd implements IGraphSearch {
         this.applyR1 = applyR1;
     }
 
-
+    /**
+     * Orients the edges of the graph away from the arrow direction.
+     *
+     * @param graph The graph to orient.
+     */
     private void orientAwayFromArrow(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             Node n1 = edge.getNode1();
@@ -134,6 +145,11 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Perform step B of the CCD algorithm on the given graph.
+     *
+     * @param graph The graph on which step B is performed.
+     */
     private void stepB(Graph graph) {
         Map<Triple, Double> colliders = new HashMap<>();
         Map<Triple, Double> noncolliders = new HashMap<>();
@@ -165,6 +181,14 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs the node collider algorithm on a given graph.
+     *
+     * @param graph        The graph on which to perform the algorithm.
+     * @param colliders    The map to store the colliders and their scores.
+     * @param noncolliders The map to store the non-colliders and their scores.
+     * @param b            The node to consider as the collider node.
+     */
     private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
@@ -231,8 +255,14 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs step C of the CCD algorithm on the given graph.
+     *
+     * @param psi     The graph on which step C is performed.
+     * @param sepsets The sepsets used for conditional independence tests.
+     */
     private void stepC(Graph psi, SepsetProducer sepsets) {
-        TetradLogger.getInstance().log("info", "\nStep C");
+        TetradLogger.getInstance().forceLogMessage("\nStep C");
 
         EDGE:
         for (Edge edge : psi.getEdges()) {
@@ -246,7 +276,7 @@ public final class Ccd implements IGraphSearch {
 
             for (Node node : adjx) {
                 if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                        && psi.isUnderlineTriple(y, x, node)) {
+                    && psi.isUnderlineTriple(y, x, node)) {
                     continue EDGE;
                 }
             }
@@ -262,7 +292,7 @@ public final class Ccd implements IGraphSearch {
 
                 // Orientable...
                 if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                        (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                      (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
                     continue;
                 }
 
@@ -285,6 +315,13 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs step D of the CCD algorithm on the given graph.
+     *
+     * @param psi        The graph on which step D is performed.
+     * @param sepsets    The sepsets used for conditional independence tests.
+     * @param supSepsets The map of sepsets.
+     */
     private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
         Map<Node, List<Node>> local = new HashMap<>();
 
@@ -297,6 +334,15 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs step D of the CCD algorithm on the given graph.
+     *
+     * @param psi        The graph on which step D is performed.
+     * @param sepsets    The sepsets used for conditional independence tests.
+     * @param supSepsets The map of sepsets.
+     * @param local      The map of local nodes.
+     * @param b          The node to consider.
+     */
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                              Map<Node, List<Node>> local, Node b) {
         List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
@@ -340,8 +386,14 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs step E of the CCD algorithm on the given graph.
+     *
+     * @param supSepset The map containing the sepsets.
+     * @param psi       The graph on which step E is performed.
+     */
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
-        TetradLogger.getInstance().log("info", "\nStep E");
+        TetradLogger.getInstance().forceLogMessage("\nStep E");
 
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
@@ -400,6 +452,13 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs step F of the CCD algorithm on the given graph.
+     *
+     * @param psi        The graph on which step F is performed.
+     * @param sepsets    The sepsets used for conditional independence tests.
+     * @param supSepsets The map of sepsets.
+     */
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
@@ -434,7 +493,7 @@ public final class Ccd implements IGraphSearch {
                 Set<Node> listSupSepUnionD = new HashSet<>(supSepUnionD);
 
                 //If A and C are a pair of vertices d-connected given
-                //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
+                //SupSepset<A, B, C> union {D} then orient Bo-oD or B-oD
                 //as B->D in psi.
                 if (!sepsets.isIndependent(a, c, listSupSepUnionD)) {
                     psi.removeEdge(b, d);
@@ -445,6 +504,13 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Performs the local algorithm for finding the nodes adjacent to a given node in a graph.
+     *
+     * @param psi The graph in which to perform the local algorithm.
+     * @param x   The node for which to find the adjacent nodes.
+     * @return The list of adjacent nodes to the given node.
+     */
     private List<Node> local(Graph psi, Node x) {
         Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
 
@@ -461,6 +527,13 @@ public final class Ccd implements IGraphSearch {
         return new ArrayList<>(nodes);
     }
 
+    /**
+     * Orients the edges of the graph away from the arrow direction.
+     *
+     * @param a     The node A.
+     * @param b     The node B.
+     * @param graph The graph to orient.
+     */
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
         if (!isApplyR1()) return;
 
@@ -470,6 +543,15 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
+    /**
+     * Orients the edges of the graph away from the arrow direction.
+     *
+     * @param a     The node A.
+     * @param b     The node B.
+     * @param c     The node C.
+     * @param graph The graph to orient.
+     * @return True if the edges are successfully oriented away from the arrow direction, otherwise false.
+     */
     private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
         if (!Edges.isNondirectedEdge(graph.getEdge(b, c))) {
             return false;

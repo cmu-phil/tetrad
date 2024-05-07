@@ -30,6 +30,7 @@ package edu.cmu.tetrad.util;
  * integers i, 0 &lt;= i &lt; a, such that x[j] &lt; x[j + 1] for each j from 0 to b - 1.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CombinationGenerator {
 
@@ -57,7 +58,7 @@ public final class CombinationGenerator {
      * Constructs a new combination of objects, choosing one object from each dimension.
      *
      * @param dims the number of objects in each dimension. Each member must be &gt;= 0.
-     * @throws NullPointerException if dims is null.
+     * @throws java.lang.NullPointerException if dims is null.
      */
     public CombinationGenerator(int[] dims) {
         this.dims = dims;
@@ -117,6 +118,8 @@ public final class CombinationGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next combination in the series, or null if the series is finished.
      */
     public int[] next() {

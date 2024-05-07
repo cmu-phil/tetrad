@@ -40,6 +40,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -49,25 +50,67 @@ import java.util.List;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @author Zhou Yuan (zhy19@pitt.edu)
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
-
-//    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralAlgorithmEditor.class);
-
+    @Serial
     private static final long serialVersionUID = -5719467682865706447L;
 
+    /**
+     * The buttons for the cards.
+     */
     private final JButton algoFwdBtn = new JButton("Set Parameters   >");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton paramBkBtn = new JButton("<   Choose Algorithm");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton paramFwdBtn = new JButton("Run Search & Generate Graph   >");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton graphBkBtn = new JButton("<   Set Parameters");
 
+    /**
+     * The algorithm card.
+     */
     private final AlgorithmCard algorithmCard;
+
+    /**
+     * The parameter card.
+     */
     private final ParameterCard parameterCard;
+
+    /**
+     * The graph card.
+     */
     private final GraphCard graphCard;
+
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The desktop.
+     */
     private final TetradDesktop desktop;
+
+    /**
+     * The JSON result.
+     */
     private String jsonResult;
 
+    /**
+     * <p>Constructor for GeneralAlgorithmEditor.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -79,7 +122,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         initListeners();
 
         // repopulate all the previous selections if reopen the search box
-        if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
+        if (algorithmRunner.getGraphs() != null && !algorithmRunner.getGraphs().isEmpty()) {
             this.algorithmCard.refresh();
             this.parameterCard.refresh();
             this.graphCard.refresh();
@@ -112,6 +155,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.graphCard.addPropertyChangeListener(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("algoFwdBtn".equals(evt.getPropertyName())) {
@@ -119,6 +165,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object obj = evt.getSource();
@@ -136,6 +185,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * <p>setAlgorithmResult.</p>
+     *
+     * @param jsonResult a {@link java.lang.String} object
+     */
     public void setAlgorithmResult(String jsonResult) {
         this.jsonResult = jsonResult;
         System.out.println("json result: " + jsonResult);
@@ -151,6 +205,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         showGraphCard();
     }
 
+    /**
+     * <p>setAlgorithmErrorResult.</p>
+     *
+     * @param errorResult a {@link java.lang.String} object
+     */
     public void setAlgorithmErrorResult(String errorResult) {
         JOptionPane.showMessageDialog(this.desktop, this.jsonResult);
 
@@ -174,6 +233,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     private void doSearch() {
         class MyWatchedProcess extends WatchedProcess {
+
             @Override
             public void watch() {
                 AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
@@ -184,16 +244,22 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                         firePropertyChange("modelChanged", null, null);
                         GeneralAlgorithmEditor.this.graphCard.refresh();
-                        showGraphCard();
+
+                        if (!isInterrupted()) {
+                            showGraphCard();
+                        }
                     } catch (Exception exception) {
                         exception.printStackTrace(System.err);
+
+                        disposeStopDialog();
+
+                        disposeStopDialog();
 
                         JOptionPane.showMessageDialog(
                                 getTopLevelAncestor(),
                                 "Stopped with error:\n"
-                                        + exception.getMessage());
+                                + exception.getMessage());
                     }
-
                 }
             }
         }
@@ -201,6 +267,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         new MyWatchedProcess();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean finalizeEditor() {
         List<Graph> graphs = this.algorithmRunner.getGraphs();
@@ -215,6 +284,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     private static class SingleButtonCard extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = 7154917933096522203L;
 
         private final JComponent component;
@@ -240,6 +310,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
         private class SouthPanel extends JPanel {
 
+            @Serial
             private static final long serialVersionUID = -126249189388443046L;
 
             public SouthPanel() {
@@ -270,6 +341,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     private static class DualButtonCard extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = 7995297102462362969L;
 
         private final JComponent component;
@@ -303,6 +375,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
         private class SouthPanel extends JPanel {
 
+            @Serial
             private static final long serialVersionUID = 3980233325015220843L;
 
             public SouthPanel() {

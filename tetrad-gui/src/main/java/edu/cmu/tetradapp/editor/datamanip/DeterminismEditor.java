@@ -16,6 +16,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 
@@ -23,17 +24,31 @@ import java.util.*;
  * Feb 11, 2019 4:17:17 PM
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class DeterminismEditor extends JPanel implements FinalizingParameterEditor {
 
+    @Serial
     private static final long serialVersionUID = 6513664419620810219L;
 
+    /**
+     * The source dataset
+     */
     private DataSet sourceDataSet;
 
+    /**
+     *
+     */
     private DataSet sourceDataSetCopy;
 
+    /**
+     * The merged dataset
+     */
     private DataSet mergedDataSet;
 
+    /**
+     * The parameters
+     */
     private Parameters parameters;
 
     //==========================CONSTUCTORS===============================//
@@ -48,6 +63,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     //============================= Public Methods ===================================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets up the GUI.
      */
     @Override
@@ -109,11 +126,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tells the editor to commit any final details before it is closed (only called when the user selects "Ok" or
      * something of that nature). If false is returned the edit is considered invalid and it will be treated as if the
      * user selected "cancelAll".
-     *
-     * @return - true if the edit was committed.
      */
     @Override
     public boolean finalizeEdit() {
@@ -124,6 +141,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     @Override
@@ -132,6 +151,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * The parent model should be a <code>DataWrapper</code>.
      */
     @Override
@@ -153,7 +174,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         }
 
         DataModel model = dataWrapper.getSelectedDataModel();
-        if (!(model instanceof DataSet)) {
+        if (!(model instanceof DataSet dataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
 
@@ -162,7 +183,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         }
 
         // Get the source dataset, keep it untouched
-        DataSet dataSet = (DataSet) model;
 
         this.sourceDataSet = dataSet;
 
@@ -170,6 +190,9 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         this.sourceDataSetCopy = SerializationUtils.clone(dataSet);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean mustBeShown() {
         return true;

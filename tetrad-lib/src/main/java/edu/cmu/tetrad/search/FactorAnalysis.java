@@ -44,17 +44,28 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author Mike Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysis {
-    // the covariance matrix
+    /**
+     * the covariance matrix
+     */
     private final CovarianceMatrix covariance;
-    // method-specific fields that get used
+    /**
+     * method-specific fields that get used
+     */
     private LinkedList<Matrix> factorLoadingVectors;
-    // the threshold for the algorithm
+    /**
+     * the threshold for the algorithm
+     */
     private double threshold = 0.001;
-    // the number of factors to find
+    /**
+     * the number of factors to find
+     */
     private int numFactors = 2;
-    // the residual matrix
+    /**
+     * the residual matrix
+     */
     private Matrix residual;
 
     /**
@@ -73,6 +84,59 @@ public class FactorAnalysis {
      */
     public FactorAnalysis(DataSet dataSet) {
         this.covariance = new CovarianceMatrix(dataSet);
+    }
+
+    /**
+     * designed for normalizing a vector. as usual, vectors are treated as matrices to simplify operations elsewhere
+     */
+    private static Matrix normalizeRows(Matrix matrix) {
+        LinkedList<Matrix> normalizedRows = new LinkedList<>();
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            Vector vector = matrix.getRow(i);
+            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
+            for (int j = 0; j < matrix.getNumColumns(); j++)
+                colVector.set(j, 0, vector.get(j));
+
+            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
+        }
+
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            Matrix normalizedRow = normalizedRows.get(i);
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
+                result.set(i, j, normalizedRow.get(j, 0));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Normalizes a vector.
+     *
+     * @param vector The vector to be normalized.
+     * @return The normalized vector.
+     */
+    private static Matrix normalizeVector(Matrix vector) {
+        double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
+        return vector.scalarMult(1.0 / scalar);
+    }
+
+    /**
+     * Calculates the matrix exponentiation of a given matrix with the specified exponent.
+     *
+     * @param matrix   The matrix to be exponentiated.
+     * @param exponent The exponent to raise the matrix to.
+     * @return The result of the matrix exponentiation.
+     */
+    private static Matrix matrixExp(Matrix matrix, double exponent) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
+                result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
+            }
+        }
+        return result;
     }
 
     /**
@@ -264,46 +328,6 @@ public class FactorAnalysis {
      */
     public Matrix getResidual() {
         return this.residual;
-    }
-
-
-    //designed for normalizing a vector.
-    //as usual, vectors are treated as matrices to simplify operations elsewhere
-    private static Matrix normalizeRows(Matrix matrix) {
-        LinkedList<Matrix> normalizedRows = new LinkedList<>();
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            Vector vector = matrix.getRow(i);
-            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
-            for (int j = 0; j < matrix.getNumColumns(); j++)
-                colVector.set(j, 0, vector.get(j));
-
-            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
-        }
-
-        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            Matrix normalizedRow = normalizedRows.get(i);
-            for (int j = 0; j < matrix.getNumColumns(); j++) {
-                result.set(i, j, normalizedRow.get(j, 0));
-            }
-        }
-
-        return result;
-    }
-
-    private static Matrix normalizeVector(Matrix vector) {
-        double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
-        return vector.scalarMult(1.0 / scalar);
-    }
-
-    private static Matrix matrixExp(Matrix matrix, double exponent) {
-        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            for (int j = 0; j < matrix.getNumColumns(); j++) {
-                result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
-            }
-        }
-        return result;
     }
 
     /**

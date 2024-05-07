@@ -33,6 +33,7 @@ import java.awt.event.FocusEvent;
  * be within a certain range; see the <code>setFilter</code> method.
  *
  * @author Kevin Bui
+ * @version $Id: $Id
  */
 public final class LongTextField extends JTextField {
 
@@ -105,11 +106,18 @@ public final class LongTextField extends JTextField {
         });
     }
 
+    /**
+     * <p>setUnfilteredValue.</p>
+     *
+     * @param value a long
+     */
     public void setUnfilteredValue(long value) {
         setText(String.valueOf(value));
     }
 
     /**
+     * <p>Getter for the field <code>value</code>.</p>
+     *
      * @return the long value currently displayed.
      */
     public long getValue() {
@@ -118,6 +126,8 @@ public final class LongTextField extends JTextField {
 
     /**
      * Sets the value of the text field to the given long value.
+     *
+     * @param value a long
      */
     public void setValue(long value) {
         if (value == this.value) {
@@ -137,6 +147,8 @@ public final class LongTextField extends JTextField {
 
     /**
      * Sets whether the given value should be accepted.
+     *
+     * @param filter a {@link edu.cmu.tetradapp.util.LongTextField.Filter} object
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -187,6 +199,7 @@ public final class LongTextField extends JTextField {
          *
          * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
+         * @return The value that should be displayed.
          */
         long filter(long value, long oldValue);
     }

@@ -23,9 +23,9 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -67,6 +67,8 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * Constucts an action for adding a new template to the frontmost session.
+     *
+     * @param templateName a {@link java.lang.String} object
      */
     public ConstructTemplateAction(String templateName) {
         super(templateName);
@@ -80,6 +82,8 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
+     * <p>getTemplateNames.</p>
+     *
      * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
@@ -157,7 +161,7 @@ final class ConstructTemplateAction extends AbstractAction {
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
+        Class<?>[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
         SessionNode newNode
                 = new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
@@ -169,7 +173,7 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
+    private static Class<?>[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
         SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
         if (config == null) {
@@ -180,8 +184,10 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
-     * Performs the action of adding the specified templatew into the frontmost session. It is assumed that all example
-     * sessions will be located in directory "example_sessions".
+     * This method is called when an action event is generated. It processes the event by performing different actions
+     * based on the template name.
+     *
+     * @param e the event to be processed
      */
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -207,6 +213,12 @@ final class ConstructTemplateAction extends AbstractAction {
         }
     }
 
+    /**
+     * <p>addParent.</p>
+     *
+     * @param thisNode a {@link edu.cmu.tetradapp.app.SessionEditorNode} object
+     * @param type     a {@link java.lang.String} object
+     */
     public void addParent(SessionEditorNode thisNode, String type) {
         String name = ConstructTemplateAction.nextName(type);
         addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
@@ -417,6 +429,12 @@ final class ConstructTemplateAction extends AbstractAction {
         return node;
     }
 
+    /**
+     * <p>addEdge.</p>
+     *
+     * @param nodeName1 a {@link java.lang.String} object
+     * @param nodeName2 a {@link java.lang.String} object
+     */
     public void addEdge(String nodeName1, String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.
@@ -427,13 +445,13 @@ final class ConstructTemplateAction extends AbstractAction {
         if (node1 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName1 in "
-                            + "the session wrapper: " + nodeName1);
+                    + "the session wrapper: " + nodeName1);
         }
 
         if (node2 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName2 in "
-                            + "the session wrapper: " + nodeName2);
+                    + "the session wrapper: " + nodeName2);
         }
 
         // Construct an edge.

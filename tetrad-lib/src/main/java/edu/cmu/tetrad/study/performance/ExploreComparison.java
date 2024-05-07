@@ -9,9 +9,21 @@ import java.util.List;
  * Runs algorithm on data set (simulation is OK), printing out error statistics.
  *
  * @author josephramsey 2016.03.24
+ * @version $Id: $Id
  */
 public class ExploreComparison {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExploreComparison() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         new ExploreComparison().runFromSimulation();
     }
@@ -19,7 +31,7 @@ public class ExploreComparison {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous);
-        params.setAlgorithm(ComparisonParameters.Algorithm.FGES2);
+        params.setAlgorithm(ComparisonParameters.Algorithm.FGES);
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
         params.setScore(ScoreType.SemBic);
 //        params.setOneEdgeFaithfulnessAssumed(false);

@@ -51,6 +51,8 @@ import org.apache.commons.math3.util.Precision;
  * Handbook for automatic computation, vol. 2, Linear algebra, Springer-Verlag,
  * New-York
  *
+ * @author josephramsey
+ * @version $Id: $Id
  * @see <a href="http://mathworld.wolfram.com/EigenDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">Wikipedia</a>
  * @since 2.0 (changed to concrete class in 3.0)
@@ -109,8 +111,8 @@ public class EigenDecomposition {
      * Supports decomposition of a general matrix since 3.1.
      *
      * @param matrix Matrix to decompose.
-     * @throws MaxCountExceededException if the algorithm fails to converge.
-     * @throws MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
+     * @throws org.apache.commons.math3.exception.MathArithmeticException if the decomposition of a general matrix
+     *                                                                    results in a matrix with zero norm
      * @since 3.1
      */
     public EigenDecomposition(RealMatrix matrix)
@@ -131,8 +133,8 @@ public class EigenDecomposition {
      *
      * @param matrix         Matrix to decompose.
      * @param splitTolerance Dummy parameter (present for backward compatibility only).
-     * @throws MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
-     * @throws MaxCountExceededException if the algorithm fails to converge.
+     * @throws org.apache.commons.math3.exception.MathArithmeticException if the decomposition of a general matrix
+     *                                                                    results in a matrix with zero norm
      * @deprecated in 3.1 (to be removed in 4.0) due to unused parameter
      */
     @Deprecated
@@ -148,7 +150,6 @@ public class EigenDecomposition {
      *
      * @param main      Main diagonal of the symmetric tridiagonal form.
      * @param secondary Secondary of the tridiagonal form.
-     * @throws MaxCountExceededException if the algorithm fails to converge.
      * @since 3.1
      */
     public EigenDecomposition(double[] main, double[] secondary) {
@@ -171,7 +172,6 @@ public class EigenDecomposition {
      * @param main           Main diagonal of the symmetric tridiagonal form.
      * @param secondary      Secondary of the tridiagonal form.
      * @param splitTolerance Dummy parameter (present for backward compatibility only).
-     * @throws MaxCountExceededException if the algorithm fails to converge.
      * @deprecated in 3.1 (to be removed in 4.0) due to unused parameter
      */
     @Deprecated
@@ -343,7 +343,6 @@ public class EigenDecomposition {
      * definite.
      *
      * @return the square-root of the matrix.
-     * @throws MathUnsupportedOperationException if the matrix is not symmetric or not positive definite.
      * @since 3.1
      */
     public RealMatrix getSquareRoot() {
@@ -369,11 +368,10 @@ public class EigenDecomposition {
     /**
      * Gets a solver for finding the A &times; X = B solution in exact linear sense.
      * <p>
-     * Since 3.1, eigen decomposition of a general matrix is supported, but the {@link DecompositionSolver} only
-     * supports real eigenvalues.
+     * Since 3.1, eigen decomposition of a general matrix is supported, but the
+     * {@link org.apache.commons.math3.linear.DecompositionSolver} only supports real eigenvalues.
      *
      * @return a solver
-     * @throws MathUnsupportedOperationException if the decomposition resulted in complex eigenvalues
      */
     public DecompositionSolver getSolver() {
         if (hasComplexEigenvalues()) {
@@ -440,7 +438,7 @@ public class EigenDecomposition {
             do {
                 for (m = j; m < n - 1; m++) {
                     double delta = FastMath.abs(this.realEigenvalues[m]) +
-                            FastMath.abs(this.realEigenvalues[m + 1]);
+                                   FastMath.abs(this.realEigenvalues[m + 1]);
                     if (FastMath.abs(e[m]) + delta == delta) {
                         break;
                     }
@@ -569,7 +567,7 @@ public class EigenDecomposition {
 
         for (int i = 0; i < this.realEigenvalues.length; i++) {
             if (i == (this.realEigenvalues.length - 1) ||
-                    Precision.equals(matT[i + 1][i], 0.0, EigenDecomposition.EPSILON)) {
+                Precision.equals(matT[i + 1][i], 0.0, EigenDecomposition.EPSILON)) {
                 this.realEigenvalues[i] = matT[i][i];
             } else {
                 double x = matT[i + 1][i + 1];
@@ -661,7 +659,7 @@ public class EigenDecomposition {
                             double x = matrixT[i][i + 1];
                             double y = matrixT[i + 1][i];
                             q = (this.realEigenvalues[i] - p) * (this.realEigenvalues[i] - p) +
-                                    this.imagEigenvalues[i] * this.imagEigenvalues[i];
+                                this.imagEigenvalues[i] * this.imagEigenvalues[i];
                             double t = (x * s - z * r) / q;
                             matrixT[i][idx] = t;
                             if (FastMath.abs(x) > FastMath.abs(z)) {
@@ -722,12 +720,12 @@ public class EigenDecomposition {
                             double x = matrixT[i][i + 1];
                             double y = matrixT[i + 1][i];
                             double vr = (this.realEigenvalues[i] - p) * (this.realEigenvalues[i] - p) +
-                                    this.imagEigenvalues[i] * this.imagEigenvalues[i] - q * q;
+                                        this.imagEigenvalues[i] * this.imagEigenvalues[i] - q * q;
                             double vi = (this.realEigenvalues[i] - p) * 2.0 * q;
                             if (Precision.equals(vr, 0.0) && Precision.equals(vi, 0.0)) {
                                 vr = Precision.EPSILON * norm *
-                                        (FastMath.abs(w) + FastMath.abs(q) + FastMath.abs(x) +
-                                                FastMath.abs(y) + FastMath.abs(z));
+                                     (FastMath.abs(w) + FastMath.abs(q) + FastMath.abs(x) +
+                                      FastMath.abs(y) + FastMath.abs(z));
                             }
                             Complex c = cdiv(x * r - z * ra + q * sa,
                                     x * s - z * sa - q * ra, vr, vi);
@@ -736,9 +734,9 @@ public class EigenDecomposition {
 
                             if (FastMath.abs(x) > (FastMath.abs(z) + FastMath.abs(q))) {
                                 matrixT[i + 1][idx - 1] = (-ra - w * matrixT[i][idx - 1] +
-                                        q * matrixT[i][idx]) / x;
+                                                           q * matrixT[i][idx]) / x;
                                 matrixT[i + 1][idx] = (-sa - w * matrixT[i][idx] -
-                                        q * matrixT[i][idx - 1]) / x;
+                                                       q * matrixT[i][idx - 1]) / x;
                             } else {
                                 Complex c2 = cdiv(-r - y * matrixT[i][idx - 1],
                                         -s - y * matrixT[i][idx], z, q);

@@ -52,6 +52,8 @@ class DiscDetIndepParamsEditor extends JComponent {
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DiscDetIndepParamsEditor(Parameters params) {
         this.params = params;

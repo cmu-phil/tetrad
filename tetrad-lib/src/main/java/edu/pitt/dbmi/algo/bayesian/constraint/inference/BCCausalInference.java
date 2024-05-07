@@ -28,6 +28,7 @@ import java.util.Arrays;
  * Jan 30, 2019 5:42:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class BCCausalInference {
 

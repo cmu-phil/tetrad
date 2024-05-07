@@ -39,17 +39,20 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNodeError extends DisplayNode {
 
     /**
      * Constructs a display node for an error term.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeError(Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.ERROR) {
             throw new IllegalArgumentException("GraphNodeError requires " +
-                    "a GraphNode of type NodeType.ERROR.");
+                                               "a GraphNode of type NodeType.ERROR.");
         }
 
         setDisplayComp(new ErrorDisplayComp(modelNode.getName()));
@@ -59,6 +62,8 @@ public class GraphNodeError extends DisplayNode {
     //===========================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Launches a dialog that lets the user change the name of the variable, making sure the user doesn't pick a name
      * that's already being used. That's what the given graph is used for--to provide a list of variables whose names
      * should not be picked by the user as the new name for any variable.
@@ -72,6 +77,9 @@ public class GraphNodeError extends DisplayNode {
         }
     }
 
+    /**
+     * <p>doDoubleClickAction.</p>
+     */
     public void doDoubleClickAction() {
         doDoubleClickAction(new EdgeListGraph());
     }
@@ -126,11 +134,11 @@ public class GraphNodeError extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(this.getModelNode().getName())) {
+                        !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                        newName + "' is already being used." +
-                                        "\nPlease choose another name.");
+                                                              newName + "' is already being used." +
+                                                              "\nPlease choose another name.");
                         continue loop;
                     }
                 }

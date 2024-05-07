@@ -37,6 +37,11 @@ import java.io.IOException;
 class SaveBayesImXmlAction extends AbstractAction {
     private final BayesImEditor bayesImEditor;
 
+    /**
+     * <p>Constructor for SaveBayesImXmlAction.</p>
+     *
+     * @param bayesImEditor a {@link edu.cmu.tetradapp.editor.BayesImEditor} object
+     */
     public SaveBayesImXmlAction(BayesImEditor bayesImEditor) {
         super("Save Bayes IM as XML");
         if (bayesImEditor == null) {
@@ -46,6 +51,9 @@ class SaveBayesImXmlAction extends AbstractAction {
         this.bayesImEditor = bayesImEditor;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         try {
 

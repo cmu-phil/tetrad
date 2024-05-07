@@ -17,10 +17,33 @@ import java.util.List;
  * resimulated and hsim data compare errors across all data sets. which simulated data errors are closest to original?
  * <p>
  * Created by Erich on 6/19/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimRobustCompare {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HsimRobustCompare() {
+
+    }
+
     //*************Public Methods*****************8//
+
+    /**
+     * <p>run.</p>
+     *
+     * @param numVars         a int
+     * @param edgesPerNode    a double
+     * @param numCases        a int
+     * @param penaltyDiscount a double
+     * @param resimSize       a int
+     * @param repeat          a int
+     * @param verbose         a boolean
+     * @return a {@link java.util.List} object
+     */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
                                      int resimSize, int repeat, boolean verbose) {
         //public static void main(String[] args) {
@@ -42,7 +65,7 @@ public class HsimRobustCompare {
         Graph odag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm bayesPm = new BayesPm(odag, 2, 2);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
         //oData is the original data set, and odag is the original dag.
         DataSet oData = bayesIm.simulateData(numCases, false);
         //System.out.println(oData);
@@ -59,7 +82,7 @@ public class HsimRobustCompare {
         oErrors = new double[5];
         oErrors = HsimUtils.errorEval(oGraphOut, odag);
         if (verbose) System.out.println(oErrors[0] + " " + oErrors[1] + " " + oErrors[2] +
-                " " + oErrors[3] + " " + oErrors[4]);
+                                        " " + oErrors[3] + " " + oErrors[4]);
 
         //create various simulated data sets
 
@@ -90,11 +113,11 @@ public class HsimRobustCompare {
         //compare errors. perhaps report differences between original and simulated errors.
         //first, let's just see what the errors are.
         if (verbose) System.out.println("Original erors are: " + oErrors[0] + " " + oErrors[1] +
-                " " + oErrors[2] + " " + oErrors[3] + " " + oErrors[4]);
+                                        " " + oErrors[2] + " " + oErrors[3] + " " + oErrors[4]);
         if (verbose) System.out.println("Full resim errors are: " + simErrors[0] + " " + simErrors[1] +
-                " " + simErrors[2] + " " + simErrors[3] + " " + simErrors[4]);
+                                        " " + simErrors[2] + " " + simErrors[3] + " " + simErrors[4]);
         if (verbose) System.out.println("HSim errors are: " + hsimErrors[0] + " " + hsimErrors[1] +
-                " " + hsimErrors[2] + " " + hsimErrors[3] + " " + hsimErrors[4]);
+                                        " " + hsimErrors[2] + " " + hsimErrors[3] + " " + hsimErrors[4]);
 
         //then, let's try to squeeze these numbers down into something more tractable.
 

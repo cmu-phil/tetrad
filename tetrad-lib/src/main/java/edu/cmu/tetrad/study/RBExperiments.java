@@ -33,12 +33,55 @@ import java.util.regex.Pattern;
 import static org.apache.commons.math3.util.FastMath.exp;
 import static org.apache.commons.math3.util.FastMath.log;
 
+/**
+ * <p>RBExperiments class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class RBExperiments {
 
+    /**
+     * The minimum exponent value used in floating-point calculations. This constant represents the smallest exponent
+     * value that can be used without resulting in underflow. It is set to -1022, which is the minimum exponent value
+     * for the IEEE 754 floating-point standard.
+     */
     private static final int MININUM_EXPONENT = -1022;
+
+    /**
+     * Represents the depth value. This value determines the maximum depth for a certain operation.
+     */
     private final int depth = 5;
+
+    /**
+     * The directory path for a file or folder.
+     */
     private String directory;
 
+    /**
+     * <p>Constructor for RBExperiments.</p>
+     */
+    public RBExperiments() {
+
+    }
+
+    /**
+     * Main method for executing the RBExperiments class and running a series of experiments.
+     *
+     * @param args the command line arguments. These arguments can be used to set various parameters for the
+     *             experiments. Possible options include: -c (ignored)              : a flag to indicate that the input
+     *             arguments are given in a compact format. -i (ignored)              : a flag to indicate that the
+     *             input arguments are given as individual arguments. -lv [value]               : the value of the
+     *             number of latent confounders. -bs [value]               : the number of bootstrap samples. -alpha
+     *             [value]            : the significance level (alpha) for statistical tests. -m [value] : the number of
+     *             models to consider. -net [value]              : the name of the model. -t1 [value] : a flag to
+     *             indicate whether threshold 1 should be used. -t2 [value]               : a flag to indicate whether
+     *             threshold 2 should be used. -low [value]              : the lower threshold value for creating a
+     *             dependency filtering dataset. -up [value]               : the upper threshold value for creating a
+     *             dependency filtering dataset. -out [value]              : the directory to save the results to. -data
+     *             [value]             : the path to the data directory.
+     * @throws IOException if there is an error reading or writing data.
+     */
     public static void main(String[] args) throws IOException {
 
         // read and process input arguments
@@ -113,6 +156,22 @@ public class RBExperiments {
         return latents;
     }
 
+    /**
+     * Performs an experiment to estimate the structure and parameters of a Bayesian network using various methods.
+     *
+     * @param modelName            the name of the model for the Bayesian network
+     * @param numCases             the number of cases to simulate
+     * @param numModels            the number of models to run the experiment for
+     * @param numBootstrapSamples  the number of bootstrap samples to use for creating empirical data
+     * @param alpha                the significance level for the chi-squared test
+     * @param numLatentConfounders the percentage of variables to be set as latent confounders
+     * @param threshold1           a flag indicating whether to use threshold 1 during the RB search
+     * @param threshold2           a flag indicating whether to use threshold 2 during the RB search
+     * @param lower                the lower threshold value for the RB search
+     * @param upper                the upper threshold value for the RB search
+     * @param filePath             the path to the directory for storing the experiment results
+     * @param round                the round of the experiment
+     */
     public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
                            double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
                            String filePath, int round) {
@@ -134,14 +193,14 @@ public class RBExperiments {
 
         // create output directory and files
         filePath = filePath + "/" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-                + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
+                   + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
         try {
             File dir = new File(filePath);
             dir.mkdirs();
             File file = new File(dir,
                     "Results-" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-                            + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
-                            + numBootstrapSamples + "-" + round + ".txt");
+                    + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
+                    + numBootstrapSamples + "-" + round + ".txt");
             if (!file.exists() || file.length() == 0) {
                 out = new PrintStream(Files.newOutputStream(file.toPath()));
             } else {
@@ -186,8 +245,8 @@ public class RBExperiments {
         System.out.println("Dep data creation done!");
 
         // learn structure of constraints using empirical data
-        Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphTransforms.dagFromCpdag(depCPDAG, null);
+        Graph depCpdag = runFGS(depData);
+        Graph estDepBN = GraphTransforms.dagFromCpdag(depCpdag, null);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -452,7 +511,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p;
 
-            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ(), false)) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -483,7 +542,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ(), false)) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -540,7 +599,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ(), false)) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -592,6 +651,13 @@ public class RBExperiments {
         }
     }
 
+    /**
+     * <p>lnXplusY.</p>
+     *
+     * @param lnX a double
+     * @param lnY a double
+     * @return a double
+     */
     protected double lnXplusY(double lnX, double lnY) {
         double lnYminusLnX;
         double temp;

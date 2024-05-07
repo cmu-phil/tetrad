@@ -46,32 +46,47 @@ import java.util.List;
  * <p>
  * The basal expression level is used in these functions as a threshold, above which a lookup value of true is used for
  * the boolean tables and below which a lookup value of false is used. A return value of true from the boolean lookup is
- * then mapped to some double value, which we call the "true value," and a return value of false is mapped to some
- * other (lesser) double value, which we call the "false value." The authors allow for the possibility of setting the
- * basal expression to 0.5 and using 0.0 as the false value and 1.0 as the true value. Generalizing, we include a
- * constructor to allow the basalExpression, true value and false value to be set by the user, with the only condition
- * being that the false value must be less than the true value.
+ * then mapped to some double value, which we call the "true value," and a return value of false is mapped to some other
+ * (lesser) double value, which we call the "false value." The authors allow for the possibility of setting the basal
+ * expression to 0.5 and using 0.0 as the false value and 1.0 as the true value. Generalizing, we include a constructor
+ * to allow the basalExpression, true value and false value to be set by the user, with the only condition being that
+ * the false value must be less than the true value.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanGlassFunction implements UpdateFunction {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // The indexed connectivity "snapshot" of the lag graph.
+    /**
+     * The indexed connectivity "snapshot" of the lag graph.
+     */
     private final IndexedLagGraph connectivity;
-    // Stores a boolean function for each factor from a preselected set of lagged factors to the given factor.
+    /**
+     * Stores a boolean function for each factor from a preselected set of lagged factors to the given factor.
+     */
     private final BooleanFunction[] booleanFunctions;
-    // Error distributions from which errors are drawn for each of the factors.
+    /**
+     * Error distributions from which errors are drawn for each of the factors.
+     */
     private final Distribution[] errorDistributions;
-    // The lower bound for expression levels. Expression levels that wander below this bound will be set to this bound.
+    /**
+     * The lower bound for expression levels. Expression levels that wander below this bound will be set to this bound.
+     */
     private double lowerBound;
-    // The basalExpression for determining whether history expression levels should be mapped to "true" or "false" for
-    // purposes of looking up output values in the Boolean function table.
+    /**
+     * The basalExpression for determining whether history expression levels should be mapped to "true" or "false" for
+     * purposes of looking up output values in the Boolean function table.
+     */
     private double basalExpression;
-    // The rate at which expression levels for a gene tend to return to basal level.
+    /**
+     * The rate at which expression levels for a gene tend to return to basal level.
+     */
     private double decayRate;
-    // The rate at which the F function (with outputs -1 and +1) affects the update for a gene.
+    /**
+     * The rate at which the F function (with outputs -1 and +1) affects the update for a gene.
+     */
     private double booleanInfluenceRate;
 
     //=============================CONSTRUCTORS=========================//
@@ -105,7 +120,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
         if (lowerBound >= basalExpression) {
             throw new IllegalArgumentException("Lower bound must be " +
-                    "less than basal " + "expression.");
+                                               "less than basal " + "expression.");
         }
 
         this.lowerBound = lowerBound;
@@ -161,12 +176,16 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BooleanGlassFunction serializableInstance() {
         return new BooleanGlassFunction(BasicLagGraph.serializableInstance());
     }
 
     /**
+     * <p>getIndexedLagGraph.</p>
+     *
      * @return the indexed connectivity.
      */
     public IndexedLagGraph getIndexedLagGraph() {
@@ -174,6 +193,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>Getter for the field <code>basalExpression</code>.</p>
+     *
      * @return the basalExpression.
      */
     public double getBasalExpression() {
@@ -263,6 +284,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getSubFunction.</p>
+     *
      * @param factor the index of the factor to calculate a new value for.
      * @return the boolean function for the given factor.
      */
@@ -271,6 +294,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>Getter for the field <code>decayRate</code>.</p>
+     *
      * @return the rate at which expression levels tend to return to equilibrium.
      */
     public double getDecayRate() {
@@ -287,13 +312,15 @@ public class BooleanGlassFunction implements UpdateFunction {
         if ((decayRate <= 0.0) || (decayRate > 1.0)) {
             throw new IllegalArgumentException(
                     "Suggested rate out of bounds (0.0 <= decayRate < 1.0): " +
-                            decayRate);
+                    decayRate);
         }
 
         this.decayRate = decayRate;
     }
 
     /**
+     * <p>Getter for the field <code>booleanInfluenceRate</code>.</p>
+     *
      * @return the rate at which Boolean Glass subfunctions tend to affect the update.
      */
     public double getBooleanInfluenceRate() {
@@ -311,7 +338,7 @@ public class BooleanGlassFunction implements UpdateFunction {
         if (booleanInfluenceRate <= 0.0) {
             throw new IllegalArgumentException(
                     "Suggested rate out of bounds (0.0 <= " +
-                            "booleanInfluenceRate): " + booleanInfluenceRate);
+                    "booleanInfluenceRate): " + booleanInfluenceRate);
         }
 
         this.booleanInfluenceRate = booleanInfluenceRate;
@@ -319,6 +346,8 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the lower bound for expression levels.
+     *
+     * @param lowerBound the new lower bound.
      */
     public void setLowerBound(double lowerBound) {
         this.lowerBound = lowerBound;
@@ -350,6 +379,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getNumFactors.</p>
+     *
      * @return the number of factors in the history. This is used to set up the initial history array.
      */
     public int getNumFactors() {
@@ -357,6 +388,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getMaxLag.</p>
+     *
      * @return the max lag of the history. This is used to set up the initial history array.
      */
     public int getMaxLag() {
@@ -379,6 +412,10 @@ public class BooleanGlassFunction implements UpdateFunction {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

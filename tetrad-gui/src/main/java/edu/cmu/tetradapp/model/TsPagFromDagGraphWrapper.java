@@ -25,23 +25,37 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.TsDagToPag;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
+ * <p>TsPagFromDagGraphWrapper class.</p>
+ *
  * @author Tyler Gibson
  * @author danielmalinsky
+ * @version $Id: $Id
  */
 public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for TsPagFromDagGraphWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public TsPagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for TsPagFromDagGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public TsPagFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
@@ -56,10 +70,15 @@ public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         Graph pag = p.convert();
         setGraph(pag);
 
-        TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");
-        TetradLogger.getInstance().log("CPDAG", pag + "");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating allow_latent_common_causes from DAG.");
+        TetradLogger.getInstance().forceLogMessage(pag + "");
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.TsPagFromDagGraphWrapper} object
+     */
     public static TsPagFromDagGraphWrapper serializableInstance() {
         return new TsPagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
     }
@@ -67,6 +86,9 @@ public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     //======================== Private Method ======================//
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

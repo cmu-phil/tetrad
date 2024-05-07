@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
  * one or more search methods of that instance.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class LTestRevealSearch {
     static int ngenes = 6;
@@ -36,6 +37,17 @@ public class LTestRevealSearch {
 
     static int[][] cases = new int[LTestRevealSearch.ntimes][LTestRevealSearch.ngenes];
 
+    /**
+     * Private constructor.
+     */
+    private LTestRevealSearch() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

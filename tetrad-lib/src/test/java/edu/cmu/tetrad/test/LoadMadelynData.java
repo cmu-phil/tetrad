@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.DataModel;
@@ -85,9 +86,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            return b.toString();
+            return "Load data sets and graphs from a directory." + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -96,6 +95,16 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
+    }
+
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
     }
 
     @Override

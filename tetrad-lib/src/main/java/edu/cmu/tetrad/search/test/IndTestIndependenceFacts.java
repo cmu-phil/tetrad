@@ -39,10 +39,21 @@ import java.util.Set;
  * Checks conditional independence against a list of conditional independence facts, manually entered.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
+    /**
+     * Represents a variable containing the independence facts.
+     * <p>
+     * This variable is used in the {@link IndTestIndependenceFacts} class to check independence by looking up facts in
+     * the list of facts supplied in the constructor.
+     * </p>
+     */
     private final IndependenceFacts facts;
+    /**
+     * Represents a boolean flag indicating whether verbose output is to be printed.
+     */
     private boolean verbose;
 
     /**
@@ -56,7 +67,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * Returns an {@link IndependenceTest} object for a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return The IndependenceTest object for the given sublist of variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
@@ -65,7 +79,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     /**
      * Checks independence by looking up facts in the list of facts supplied in the constructor.
      *
-     * @return the independence result.
+     * @param x   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param __z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
@@ -109,10 +126,11 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Returns the node with the given name.
+     * Retrieves a variable node based on its name.
      *
-     * @param name The name of the node,
-     * @return The node.
+     * @param name The name of the variable.
+     * @return The variable node with the specified name, or null if not found.
+     * @throws NullPointerException If the name is null.
      */
     public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
@@ -129,21 +147,29 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * Determines if the given list of nodes (z) determines the specified node (y).
+     *
+     * @param z The list of nodes to check for determination.
+     * @param y The node to check if it is determined.
+     * @return True if the list of nodes (z) determines the node (y), false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implmeented.");
     }
 
     /**
-     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * Returns the alpha value used for checking independence.
+     *
+     * @return The alpha value.
      */
     public double getAlpha() {
         throw new java.lang.UnsupportedOperationException("Method not implemented");
     }
 
     /**
-     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * Sets the alpha value used for checking independence.
+     *
+     * @param alpha The alpha value.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
@@ -170,7 +196,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     /**
      * Sets whether verbose output is to be printed.
      *
-     * @param verbose True, if so.
+     * @param verbose True if verbose output should be printed, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

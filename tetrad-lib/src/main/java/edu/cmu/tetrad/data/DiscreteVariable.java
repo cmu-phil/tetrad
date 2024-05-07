@@ -28,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -46,6 +47,7 @@ import java.util.*;
  * The index value used to indicate missing data is -99.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DiscreteVariable extends AbstractVariable implements Node {
 
@@ -53,6 +55,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      * This is the index in the data which represents missing data internally for this variable.
      */
     public static final int MISSING_VALUE = -99;
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The string displayed for missing values.
@@ -133,12 +136,17 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      */
     private transient PropertyChangeSupport pcs;
 
+    /**
+     * Attributes of the node.
+     */
     private Map<String, Object> attributes = new HashMap<>();
 
     /**
      * Builds a discrete variable with the given name and an empty list of categories. Use this constructor if a
      * variable is needed to represent just a list of integer categories with no categories associated with the
      * categories.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public DiscreteVariable(String name) {
         super(name);
@@ -147,6 +155,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     /**
      * Builds a qualitative variable with the given name and number of categories. The categories have the form
      * 'category'.
+     *
+     * @param name          a {@link java.lang.String} object
+     * @param numCategories a int
      */
     public DiscreteVariable(String name, int numCategories) {
         super(name);
@@ -168,6 +179,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * Copy constructor.
+     *
+     * @param variable a {@link edu.cmu.tetrad.data.DiscreteVariable} object
      */
     public DiscreteVariable(DiscreteVariable variable) {
         super(variable.getName());
@@ -185,6 +198,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscreteVariable} object
      */
     public static DiscreteVariable serializableInstance() {
         return new DiscreteVariable("X");
@@ -214,6 +229,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>getIndex.</p>
+     *
+     * @param category a {@link java.lang.String} object
      * @return the index of the given String category, or -1 if the category is not a category for this variable.
      */
     public int getIndex(String category) {
@@ -221,6 +239,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>getNumCategories.</p>
+     *
      * @return the number of possible categories for this variable. If categories are associated, this is just the
      * number of string categories. If no categories are associated, this is the maximum integer in the column.
      */
@@ -229,6 +249,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>getMissingValueMarker.</p>
+     *
      * @return the missing value marker as an Integer.
      */
     public Object getMissingValueMarker() {
@@ -236,6 +258,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>getCategory.</p>
+     *
+     * @param category a int
      * @return the variable category specified by the given category.
      */
     public String getCategory(int category) {
@@ -247,6 +272,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>categories</code>.</p>
+     *
      * @return a copy of the array containing the categories for this variable. The string at index i is the category
      * for index i.
      */
@@ -294,6 +321,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>checkValue.</p>
+     *
      * @param category a category to be checked
      * @return true if the given category is legal.
      */
@@ -304,13 +333,12 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether the given value is the missing value marker.
-     *
-     * @param value the value to test; should be an Integer or a String.
      */
     public boolean isMissingValue(Object value) {
-        if (value instanceof Integer) {
-            Integer ivalue = (Integer) value;
+        if (value instanceof Integer ivalue) {
             return ivalue == DiscreteVariable.MISSING_VALUE;
         } else if (value instanceof String) {
             return DiscreteVariable.MISSING_VALUE_STRING.equals(value);
@@ -320,6 +348,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>isCategoryNamesDisplayed.</p>
+     *
      * @return true iff categories for this variable should be displayed.
      */
     public boolean isCategoryNamesDisplayed() {
@@ -328,26 +358,30 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * Sets whether categories for this variable should be displayed.
+     *
+     * @param categoryNamesDisplayed a boolean
      */
     public void setCategoryNamesDisplayed(
             boolean categoryNamesDisplayed) {
         this.categoryNamesDisplayed = categoryNamesDisplayed;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return this.getName().hashCode();
     }
 
     /**
-     * @return true iff the given object is a discrete variable with the same number of categories and the same
-     * categories.
+     * {@inheritDoc}
      */
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof DiscreteVariable)) return false;
+        if (!(o instanceof DiscreteVariable variable)) return false;
         if (!getName().equals(((Node) o).getName())) return false;
-
-        DiscreteVariable variable = (DiscreteVariable) o;
 
         if (!(getNumCategories() == variable.getNumCategories())) {
             return false;
@@ -362,19 +396,34 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         return getNodeType() == variable.getNodeType();
     }
 
+    /**
+     * <p>Getter for the field <code>nodeType</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.NodeType} object
+     */
     public NodeType getNodeType() {
         return this.nodeType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
+    /**
+     * <p>isAccommodateNewCategories.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAccommodateNewCategories() {
         return this.accommodateNewCategories;
     }
 
     /**
+     * <p>Getter for the field <code>centerX</code>.</p>
+     *
      * @return the x coordinate of the center of the node.
      */
     public int getCenterX() {
@@ -382,6 +431,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public void setCenterX(int centerX) {
@@ -389,6 +440,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>centerY</code>.</p>
+     *
      * @return the y coordinate of the center of the node.
      */
     public int getCenterY() {
@@ -396,6 +449,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public void setCenterY(int centerY) {
@@ -403,6 +458,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public void setCenter(int centerX, int centerY) {
@@ -411,6 +468,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a property change listener.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -418,12 +477,17 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return the name of the variable followed by its list of categories.
      */
     public String toString() {
         return getName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         DiscreteVariable variable = new DiscreteVariable(name);
         variable.setNodeType(getNodeType());
@@ -445,7 +509,12 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -463,31 +532,49 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

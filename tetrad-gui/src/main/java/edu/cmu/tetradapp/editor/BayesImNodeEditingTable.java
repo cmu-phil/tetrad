@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -54,6 +55,9 @@ class BayesImNodeEditingTable extends JTable {
 
     /**
      * Constructs a new editing table from a given editing table model.
+     *
+     * @param node    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImNodeEditingTable(Node node, BayesIm bayesIm) {
         if (node == null) {
@@ -66,7 +70,7 @@ class BayesImNodeEditingTable extends JTable {
 
         if (bayesIm.getNodeIndex(node) < 0) {
             throw new IllegalArgumentException("Node " + node +
-                    " is not a node" + " for BayesIm " + bayesIm + ".");
+                                               " is not a node" + " for BayesIm " + bayesIm + ".");
         }
 
         Model model = new Model(node, bayesIm, this);
@@ -113,12 +117,14 @@ class BayesImNodeEditingTable extends JTable {
         setFocusColumn(0);
     }
 
+    /**
+     * <p>createDefaultColumnsFromModel.</p>
+     */
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
-        if (getModel() instanceof Model) {
+        if (getModel() instanceof Model model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
-            Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
                 TableColumn column = getColumnModel().getColumn(i);
@@ -201,7 +207,7 @@ class BayesImNodeEditingTable extends JTable {
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will modify all values in the table. " +
-                                "Continue?", "Warning",
+                        "Continue?", "Warning",
                         JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.NO_OPTION) {
@@ -227,7 +233,7 @@ class BayesImNodeEditingTable extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will modify all values in the entire Bayes model! " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -283,7 +289,7 @@ class BayesImNodeEditingTable extends JTable {
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will delete all values in the table. " +
-                                "Continue?", "Warning",
+                        "Continue?", "Warning",
                         JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.NO_OPTION) {
@@ -345,6 +351,9 @@ class BayesImNodeEditingTable extends JTable {
         return existsCompleteRow;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }
@@ -392,7 +401,7 @@ class BayesImNodeEditingTable extends JTable {
         this.focusCol = FastMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
-                this.focusCol < getColumnCount()) {
+            this.focusCol < getColumnCount()) {
             setColumnSelectionInterval(this.focusCol, this.focusCol);
             editCellAt(this.focusRow, this.focusCol);
         }
@@ -528,8 +537,9 @@ class BayesImNodeEditingTable extends JTable {
                 int colIndex = tableCol - parentVals.length;
 
                 if (colIndex < getBayesIm().getNumColumns(getNodeIndex())) {
-                    return getBayesIm().getProbability(getNodeIndex(), tableRow,
+                    double probability = getBayesIm().getProbability(getNodeIndex(), tableRow,
                             colIndex);
+                    return probability;
                 }
 
                 return "null";
@@ -547,10 +557,14 @@ class BayesImNodeEditingTable extends JTable {
          * Sets the value of the cell at (row, col) to 'aValue'.
          */
         public void setValueAt(Object aValue, int row, int col) {
+            if (getBayesIm().getCptMapType() == MlBayesIm.CptMapType.COUNT_MAP) {
+                return;
+            }
+
             int numParents = getBayesIm().getNumParents(getNodeIndex());
             int colIndex = col - numParents;
 
-            if ("".equals(aValue) || aValue == null) {
+            if (getBayesIm().getCptMapType() == MlBayesIm.CptMapType.PROB_MAP && ("".equals(aValue) || aValue == null)) {
                 getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                         Double.NaN);
                 fireTableRowsUpdated(row, row);
@@ -744,6 +758,8 @@ class BayesImNodeEditingTable extends JTable {
         public void resetFailedCol() {
             this.failedCol = -1;
         }
+
+
     }
 }
 

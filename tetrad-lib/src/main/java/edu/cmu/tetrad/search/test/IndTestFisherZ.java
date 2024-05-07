@@ -47,35 +47,64 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author josephramsey
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
-    // A hash from variable names to indices.
+    /**
+     * A hash from variable names to indices.
+     */
     private final Map<String, Integer> indexMap;
-    // A hash from variable names to variables.
+    /**
+     * A hash from variable names to variables.
+     */
     private final Map<String, Node> nameMap;
-    // The standard normal distribution.
+    /**
+     * The standard normal distribution.
+     */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-    // The variables of the covariance data, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance data, in order. (Unmodifiable list.)
+     */
     private final Map<Node, Integer> nodesHash;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The correlation matrix.
+    /**
+     * The correlation matrix.
+     */
     private ICovarianceMatrix cor = null;
-    // The variables of the covariance data, in order. (Unmodifiable list.)
+    /**
+     * The variables of the covariance data, in order. (Unmodifiable list.)
+     */
     private List<Node> variables;
-    // The significance level of the independence tests.
+    /**
+     * The significance level of the independence tests.
+     */
     private double alpha;
-    // Stores a reference to the data set passed in through the constructor.
+    /**
+     * Stores a reference to the data set passed in through the constructor.
+     */
     private DataSet dataSet;
-    // Matrix from of the data.
+    /**
+     * Matrix from of the data.
+     */
     private Matrix data;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose = true;
-    // The correlation coefficient for the last test.
+    /**
+     * The correlation coefficient for the last test.
+     */
     private double r = Double.NaN;
-    // The rows used in the test.
+    /**
+     * The rows used in the test.
+     */
     private List<Integer> rows = null;
-    // Use pseudoinverse instead of correlation matrix.
+    /**
+     * Use pseudoinverse instead of correlation matrix.
+     */
     private boolean usePseudoinverse = false;
 
 
@@ -130,7 +159,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Constructs a new Fisher Z independence test with  the listed arguments.
+     * Constructs a new Fisher Z independence test with the listed arguments.
      *
      * @param data      A 2D continuous data set with no missing values.
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
@@ -179,7 +208,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Creates a new independence test instance for a subset of the variables.
      *
-     * @return a new independence test.
      * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -209,8 +237,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Determines whether variable x _||_ y | z given a list of conditioning variables z.
      *
-     * @return Independence result for x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -322,14 +352,14 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
         double fisherZ = FastMath.sqrt(rows.length - z.size() - 3.0) *
-                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                         0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
 
         if (Double.isNaN(fisherZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
-                    "score for independence fact " + xVar + " _||_ " + yVar +
-                    " | " + z + " is undefined.");
+                                               "score for independence fact " + xVar + " _||_ " + yVar +
+                                               " | " + z + " is undefined.");
         }
 
 
@@ -345,10 +375,13 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Returns the p-value for x _||_ y | z.
      *
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of conditioning variables.
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */
-    private double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
+    public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
@@ -393,8 +426,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -428,8 +459,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the variable with the given name.
-     *
-     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
@@ -455,8 +484,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the (singleton) list of datasets being analyzed.
-     *
-     * @return This list (length 1).
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -467,8 +494,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the sample size.
-     *
-     * @return This size.
      */
     @Override
     public int getSampleSize() {
@@ -487,25 +512,27 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * @return A string representation of this test.
+     * Returns a string representation of the Fisher Z independence test. The string includes the value of alpha.
+     *
+     * @return A string representing the Fisher Z independence test.
      */
     public String toString() {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
     }
 
     /**
-     * Returns true in case the variable in Z jointly determine x.
+     * Determines if a given Node x is determined by a list of Nodes z.
      *
-     * @param z The contitioning variables.
-     * @param x The conditioned variable.
+     * @param z the list of Nodes
+     * @param x the Node to check if it is determined
+     * @return true if x is determined by z, false otherwise
+     * @throws UnsupportedOperationException if the operation is not supported
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         if (usePseudoinverse) {
@@ -615,7 +642,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
             System.out.println(sb);
         }
 
@@ -623,6 +650,18 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
 
+    /**
+     * Calculates the partial correlation between two nodes, given a set of conditioning variables and a list of rows.
+     * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
+     * covariance matrix from the provided rows and converts it to a correlation matrix.
+     *
+     * @param x    The first node.
+     * @param y    The second node.
+     * @param _z   The set of conditioning variables.
+     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
+     * @return The partial correlation value.
+     * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
+     */
     private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
@@ -644,6 +683,13 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         return StatUtils.partialCorrelationPrecisionMatrix(cor);
     }
 
+    /**
+     * Calculates the covariance matrix for a given list of rows and columns.
+     *
+     * @param rows The list of row indices to calculate the covariance matrix for.
+     * @param cols The array of column indices to calculate the covariance matrix for.
+     * @return The covariance matrix for the specified rows and columns.
+     */
     private Matrix getCov(List<Integer> rows, int[] cols) {
         Matrix cov = new Matrix(cols.length, cols.length);
 
@@ -674,19 +720,47 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         return cov;
     }
 
+    /**
+     * Returns the partial correlation value between two nodes, given a set of conditioning variables and a list of
+     * rows.
+     *
+     * @param x    The first node.
+     * @param y    The second node.
+     * @param z    The set of conditioning variables.
+     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
+     * @return The partial correlation value.
+     * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
+     */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
         return partialCorrelation(x, y, z, rows);
     }
 
+    /**
+     * Returns the sample size. If the dataSet is not null, it returns the number of rows in the dataSet. Otherwise, it
+     * returns the sample size from the covariance matrix.
+     *
+     * @return The sample size.
+     */
     private int sampleSize() {
         if (dataSet != null) return dataSet.getNumRows();
         else return covMatrix().getSampleSize();
     }
 
+    /**
+     * Returns the covariance matrix being analyzed.
+     *
+     * @return The covariance matrix.
+     */
     private ICovarianceMatrix covMatrix() {
         return this.cor;
     }
 
+    /**
+     * Returns a mapping of variable names to Node objects.
+     *
+     * @param variables A list of Node objects representing variables.
+     * @return A map containing variable names as keys and Node objects as values.
+     */
     private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
@@ -697,6 +771,12 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         return nameMap;
     }
 
+    /**
+     * Returns a mapping of variable names to their indices in the given list of Node objects.
+     *
+     * @param variables The list of Node objects representing variables.
+     * @return A map containing variable names as keys and their indices as values.
+     */
     private Map<String, Integer> indexMap(List<Node> variables) {
         Map<String, Integer> indexMap = new HashMap<>();
 
@@ -707,6 +787,13 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         return indexMap;
     }
 
+    /**
+     * Retrieves the rows from the dataSet that contain valid values for all variables.
+     *
+     * @param allVars   the list of variables to check
+     * @param nodesHash the map of variables to their corresponding indices in the dataSet
+     * @return a list of row indices that contain valid values for all variables
+     */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
         if (this.rows != null) {
             return this.rows;
@@ -738,8 +825,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
      * values.
-     *
-     * @param rows The rows to use.
      */
     public void setRows(List<Integer> rows) {
         if (dataSet == null) {
@@ -756,6 +841,11 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         cor = null;
     }
 
+    /**
+     * Sets whether or not to use the pseudoinverse method for determining independence.
+     *
+     * @param usePseudoinverse true to use the pseudoinverse method, false otherwise.
+     */
     public void setUsePseudoinverse(boolean usePseudoinverse) {
         this.usePseudoinverse = usePseudoinverse;
     }

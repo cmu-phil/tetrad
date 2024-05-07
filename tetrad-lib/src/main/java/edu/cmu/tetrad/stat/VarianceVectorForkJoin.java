@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.stat;
 
+import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
@@ -26,6 +27,7 @@ import java.util.concurrent.RecursiveAction;
  * Feb 9, 2016 3:19:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class VarianceVectorForkJoin implements Variance {
 
@@ -37,6 +39,12 @@ public class VarianceVectorForkJoin implements Variance {
 
     private final int numOfThreads;
 
+    /**
+     * <p>Constructor for VarianceVectorForkJoin.</p>
+     *
+     * @param data         an array of {@link float} objects
+     * @param numOfThreads a int
+     */
     public VarianceVectorForkJoin(float[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
@@ -44,6 +52,9 @@ public class VarianceVectorForkJoin implements Variance {
         this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];
@@ -100,7 +111,14 @@ public class VarianceVectorForkJoin implements Variance {
                 computeVariance();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle),
+                            new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
 
@@ -108,6 +126,7 @@ public class VarianceVectorForkJoin implements Variance {
 
     class MeanAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 2419217605658853345L;
 
         private final float[][] data;
@@ -142,7 +161,14 @@ public class VarianceVectorForkJoin implements Variance {
                 computeMean();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle),
+                            new MeanAction(this.data, this.means, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
     }

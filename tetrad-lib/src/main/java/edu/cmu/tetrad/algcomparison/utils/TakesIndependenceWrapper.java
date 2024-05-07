@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
  * Tags an algorithm as using an independence wrapper.
  *
  * @author Jeremy Espino MD Created  7/13/17 2:25 PM
+ * @version $Id: $Id
  */
 public interface TakesIndependenceWrapper {
 

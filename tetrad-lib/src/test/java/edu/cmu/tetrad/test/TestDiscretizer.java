@@ -51,14 +51,14 @@ public final class TestDiscretizer {
         double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
         double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 3);
 
-        assertTrue(breakpoints.length == 2);
+        assertEquals(2, breakpoints.length);
         assertEquals(4.5, breakpoints[0], 0.1);
         assertEquals(10.1, breakpoints[1], 0.1);
 
         Discretizer.Discretization dis = Discretizer.discretize(data, breakpoints, "after", Arrays.asList("0", "1", "2"));
 
         breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 4);
-        assertTrue(breakpoints.length == 3);
+        assertEquals(3, breakpoints.length);
 
         assertEquals(3.4, breakpoints[0], 0.1);
         assertEquals(5.5, breakpoints[1], 0.1);

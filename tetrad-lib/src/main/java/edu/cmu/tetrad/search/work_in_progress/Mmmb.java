@@ -36,6 +36,7 @@ import java.util.*;
  * Sample Efficient Discovery of Markov Blankets and Direct Causal Relations (KDD 2003).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Mmmb implements IMbSearch {
 
@@ -101,13 +102,12 @@ public final class Mmmb implements IMbSearch {
     //=============================PUBLIC METHODS=========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Searches for the Markov blanket of the node by the given name.
-     *
-     * @param target The name of the target node.
-     * @return The Markov blanket of the target.
      */
     public Set<Node> findMb(Node target) {
-        TetradLogger.getInstance().log("info", "target = " + target);
+        TetradLogger.getInstance().forceLogMessage("target = " + target);
         this.numIndTests = 0;
         long time = MillisecondTimes.timeMillis();
 
@@ -117,9 +117,9 @@ public final class Mmmb implements IMbSearch {
         Set<Node> nodes = mmmb(target);
 
         long time2 = MillisecondTimes.timeMillis() - time;
-        TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
-        TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
-                this.numIndTests);
+        TetradLogger.getInstance().forceLogMessage("Number of seconds: " + (time2 / 1000.0));
+        TetradLogger.getInstance().forceLogMessage("Number of independence tests performed: " +
+                                                   this.numIndTests);
         //        System.out.println("Number of calls to mmpc = " + pc.size());
 
         return nodes;
@@ -237,13 +237,16 @@ public final class Mmmb implements IMbSearch {
         // Phase 2.
         backwardsConditioning(pc, t);
 
-        TetradLogger.getInstance().log("details", "PC(" + t + ") = " + pc);
+        TetradLogger.getInstance().forceLogMessage("PC(" + t + ") = " + pc);
         //        System.out.println("PC(" + t + ") = " + pc);
 
         return pc;
     }
 
     /**
+     * <p>Getter for the field <code>pc</code>.</p>
+     *
+     * @param t a {@link edu.cmu.tetrad.graph.Node} object
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     public List<Node> getPc(Node t) {
@@ -367,10 +370,20 @@ public final class Mmmb implements IMbSearch {
         return 1.0 - result.getPValue();
     }
 
+    /**
+     * <p>getAlgorithmName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getAlgorithmName() {
         return this.symmetric ? "MMMB-SYM" : "MMMB";
     }
 
+    /**
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return this.numIndTests;
     }

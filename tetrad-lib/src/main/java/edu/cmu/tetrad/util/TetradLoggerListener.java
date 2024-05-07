@@ -25,6 +25,7 @@ package edu.cmu.tetrad.util;
  * A listener for tetrad's logger.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface TetradLoggerListener {
 
@@ -32,15 +33,19 @@ public interface TetradLoggerListener {
     /**
      * Invoked whenever a logger configuration is set on the <code>TetradLogger</code> and the logger is active (i.e.,
      * logging isn't turned off etc).
+     *
+     * @param evt a {@link edu.cmu.tetrad.util.TetradLoggerEvent} object
      */
-    void configurationActived(TetradLoggerEvent evt);
+    void configurationActivated(TetradLoggerEvent evt);
 
 
     /**
      * Invoked whenever a previously set logger config is resert or set to null and the logger is active (i.e., logging
      * isn't turned off etc).
+     *
+     * @param evt a {@link edu.cmu.tetrad.util.TetradLoggerEvent} object
      */
-    void configurationDeactived(TetradLoggerEvent evt);
+    void configurationDeactivated(TetradLoggerEvent evt);
 
 
 }

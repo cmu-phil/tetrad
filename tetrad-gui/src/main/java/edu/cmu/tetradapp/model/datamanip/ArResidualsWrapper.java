@@ -32,7 +32,10 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 /**
+ * <p>ArResidualsWrapper class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class ArResidualsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -71,6 +74,7 @@ public class ArResidualsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

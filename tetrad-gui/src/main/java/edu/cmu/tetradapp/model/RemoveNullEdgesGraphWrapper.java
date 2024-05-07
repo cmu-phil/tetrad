@@ -23,10 +23,10 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * <p>The bootstrapping API will generate graphs will "null edges"--that is, edges that aren't in the compositite graph
@@ -37,20 +37,38 @@ import edu.cmu.tetrad.util.TetradLogger;
  * <p>This graph wrapper does this stripping of null edges from the graph.</p>.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for RemoveNullEdgesGraphWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RemoveNullEdgesGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
+    /**
+     * <p>Constructor for RemoveNullEdgesGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public RemoveNullEdgesGraphWrapper(Graph graph) {
         super(GraphSampling.createGraphWithoutNullEdges(graph), "Remove Null Edges from Boostrapping");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.RemoveNullEdgesGraphWrapper} object
+     */
     public static RemoveNullEdgesGraphWrapper serializableInstance() {
         return new RemoveNullEdgesGraphWrapper(EdgeListGraph.serializableInstance());
     }

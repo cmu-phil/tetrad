@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
  * Abstract NB component.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public abstract class AbstractNbComponent implements NbComponent {
     private NbComponent[] parents;
@@ -43,11 +44,12 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Constructs a new component with the given factor, power, parents, and
-     * @param factor the factor
-     * @param power the power
-     * @param parents the parents
+     *
+     * @param factor        the factor
+     * @param power         the power
+     * @param parents       the parents
      * @param inhibitExcite the inhibit/excite
-     * @param name the namew
+     * @param name          the namew
      */
     public AbstractNbComponent(double factor, double power,
                                NbComponent[] parents, int[] inhibitExcite, String name) {
@@ -65,20 +67,34 @@ public abstract class AbstractNbComponent implements NbComponent {
         setSd(0.1);
     }
 
+    /**
+     * <p>Getter for the field <code>value</code>.</p>
+     *
+     * @return a double
+     */
     public double getValue() {
         return this.value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setValue(double level) {
         this.value = level;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
     /**
      * Sets the name.
+     *
      * @param name the name.
      */
     public void setName(String name) {
@@ -90,6 +106,9 @@ public abstract class AbstractNbComponent implements NbComponent {
         this.name = name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void addParent(NbComponent component, int ie) {
         if (getParents() == null) {
             this.setParents(new NbComponent[1]);
@@ -120,7 +139,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     public void displayParents() {
         for (int i = 0; i < getNparents(); i++) {
             System.out.println(getParents()[i].getName() + " " +
-                    getParents()[i].getValue() + " " + getInhibitExcite()[i]);
+                               getParents()[i].getValue() + " " + getInhibitExcite()[i]);
         }
     }
 
@@ -131,6 +150,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Returns the parents.
+     *
      * @return These parents.
      */
     public NbComponent[] getParents() {
@@ -139,6 +159,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the parents.
+     *
      * @param parents the parents.
      */
     public void setParents(NbComponent[] parents) {
@@ -147,6 +168,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Returns the inhibit/excite.
+     *
      * @return the inhibit/excite.
      */
     public int[] getInhibitExcite() {
@@ -155,6 +177,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the inhibit/excite.
+     *
      * @param inhibitExcite the inhibit/excite.
      */
     public void setInhibitExcite(int[] inhibitExcite) {
@@ -163,6 +186,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the number of parents.
+     *
      * @return the number of parents.
      */
     public int getNparents() {
@@ -171,6 +195,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the number of parents.
+     *
      * @param nparents the number of parents.
      */
     public void setNparents(int nparents) {
@@ -179,6 +204,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Returns the factor.
+     *
      * @return the factor.
      */
     public double getFactor() {
@@ -187,6 +213,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the factor.
+     *
      * @param factor the factor.
      */
     public void setFactor(double factor) {
@@ -195,6 +222,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Returns the power.
+     *
      * @return the power.
      */
     public double getPower() {
@@ -203,6 +231,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the power.
+     *
      * @param power the power.
      */
     public void setPower(double power) {
@@ -211,6 +240,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Returns the standard deviation.
+     *
      * @return the standard deviation.
      */
     public double getSd() {
@@ -219,6 +249,7 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     /**
      * Sets the standard deviation.
+     *
      * @param sd the standard deviation.
      */
     public void setSd(double sd) {

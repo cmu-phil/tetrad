@@ -34,12 +34,21 @@ import java.util.Set;
  * the given PAG.  See p. 300 Def. 12.1.1 of CPS for a specification.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class GraphInPag {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphInPag() {
+    }
+
+    /**
      * This method implements step (1) of the definition.
      *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
      * @return true if every vertex in gamma is in O.
      */
     public static boolean graphInPagStep0(Graph pag, Graph dag) {
@@ -61,6 +70,13 @@ public final class GraphInPag {
         return true;
     }
 
+    /**
+     * <p>graphInPagStep1.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean graphInPagStep1(Graph pag, Graph dag) {
         //If A and B are in O, there is an edge between A and B in gamma
         //iff for every W subset of O minus {A, B}, A and B are d-connected
@@ -93,6 +109,13 @@ public final class GraphInPag {
         return true;
     }
 
+    /**
+     * <p>graphInPagStep2.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean graphInPagStep2(Graph pag, Graph dag) {
         Set<Edge> pagEdges = pag.getEdges();
 
@@ -116,6 +139,13 @@ public final class GraphInPag {
         return true;
     }
 
+    /**
+     * <p>graphInPagStep3.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean graphInPagStep3(Graph pag, Graph dag) {
         Set<Edge> pagEdges = pag.getEdges();
 
@@ -136,6 +166,13 @@ public final class GraphInPag {
         return true;
     }
 
+    /**
+     * <p>graphInPagStep4.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean graphInPagStep4(Graph pag, Graph dag) {
         Set<Triple> pagUnderLines = pag.getUnderLines();
 
@@ -156,6 +193,13 @@ public final class GraphInPag {
         return true;
     }
 
+    /**
+     * <p>graphInPagStep5.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean graphInPagStep5(Graph pag, Graph dag) {
         for (Triple triple : pag.getDottedUnderlines()) {
             Node A = triple.getX();

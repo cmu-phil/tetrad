@@ -30,12 +30,14 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,30 +45,75 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesEstimatorWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
-    private final DataWrapper dataWrapper;
-    private final List<BayesIm> bayesIms = new ArrayList<>();
+
     /**
-     * @serial Cannot be null.
+     * The data wrapper.
+     */
+    private final DataWrapper dataWrapper;
+
+    /**
+     * ' The estimated Bayes IM.
+     */
+    private final List<BayesIm> bayesIms = new ArrayList<>();
+
+    /**
+     * The private final parameters variable holds the parameters for the given instance.
+     * It is of type Parameters.
+     */
+    private final Parameters parameters;
+
+    /**
+     * The name of the Bayes Pm.
      */
     private String name;
+
     /**
-     * @serial Cannot be null.
+     * The estimated Bayes IM.
      */
     private BayesIm bayesIm;
+
     /**
-     * @serial Cannot be null.
+     * The data set.
      */
     private DataSet dataSet;
-    private int numModels = 1;
+
+    /**
+     * The number of models.
+     */
+    private int numModels;
+
+    /**
+     * The model index.
+     */
     private int modelIndex;
 
     //=================================CONSTRUCTORS========================//
+
+    /**
+     * Constructs a new BayesEstimatorWrapper object.
+     *
+     * @param simulation the Simulation object
+     * @param bayesPmWrapper the BayesPmWrapper object
+     * @param parameters the Parameters object
+     */
+    public BayesEstimatorWrapper(Simulation simulation, BayesPmWrapper bayesPmWrapper, Parameters parameters) {
+        this(new DataWrapper(simulation, parameters), bayesPmWrapper, parameters);
+    }
+
+    /**
+     * <p>Constructor for BayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesPmWrapper bayesPmWrapper) {
+                                 BayesPmWrapper bayesPmWrapper, Parameters parameters) {
 
         if (dataWrapper == null) {
             throw new NullPointerException(
@@ -74,6 +121,7 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
 
         this.dataWrapper = dataWrapper;
+        this.parameters = parameters;
 
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null");
@@ -93,7 +141,7 @@ public class BayesEstimatorWrapper implements SessionModel {
             }
 
             this.bayesIm = this.bayesIms.get(0);
-            log(this.bayesIm);
+//            log(this.bayesIm);
 
         } else {
             throw new IllegalArgumentException("Data must consist of discrete data sets.");
@@ -107,14 +155,21 @@ public class BayesEstimatorWrapper implements SessionModel {
         this.dataSet = (DataSet) model;
     }
 
+    /**
+     * <p>Constructor for BayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesImWrapper bayesImWrapper) {
-        this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
+                                 BayesImWrapper bayesImWrapper, Parameters parameters) {
+        this(dataWrapper, new BayesPmWrapper(bayesImWrapper), parameters);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -122,50 +177,99 @@ public class BayesEstimatorWrapper implements SessionModel {
     }
 
     //==============================PUBLIC METHODS========================//
+
+    /**
+     * <p>getEstimatedBayesIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimatedBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>Setter for the field <code>bayesIm</code>.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIms.clear();
         this.bayesIms.add(bayesIm);
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.bayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the number of models.
+     *
+     * @return the number of models.
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * Sets the number of models.
+     *
+     * @param numModels the number of models to be set.
+     */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
+    /**
+     * Retrieves the model index.
+     *
+     * @return the model index
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * Sets the model index.
+     *
+     * @param modelIndex the index of the model to be set.
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
         this.bayesIm = this.bayesIms.get(modelIndex);
 
-        DataModel dataModel = this.dataWrapper.getDataModelList();
+        DataModelList dataModel = this.dataWrapper.getDataModelList();
 
-        this.dataSet = (DataSet) ((DataModelList) dataModel).get(modelIndex);
+        this.dataSet = (DataSet) dataModel.get(modelIndex);
 
     }
 
@@ -177,8 +281,13 @@ public class BayesEstimatorWrapper implements SessionModel {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -189,18 +298,18 @@ public class BayesEstimatorWrapper implements SessionModel {
     }
 
     private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("ML estimated Bayes IM.");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     private void estimate(DataSet dataSet, BayesPm bayesPm) {
         Graph graph = bayesPm.getDag();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
-                throw new IllegalArgumentException("Estimation of Bayes IM's "
-                        + "with latents is not supported.");
+                throw new IllegalArgumentException("Estimation of Bayes IMs "
+                                                   + "with latents is not supported.");
             }
         }
 
@@ -208,13 +317,14 @@ public class BayesEstimatorWrapper implements SessionModel {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
+        double prior = parameters.getDouble("bayesEstimatorCellPrior", 1.0);
+
         try {
-            MlBayesEstimator estimator = new MlBayesEstimator();
+            MlBayesEstimator estimator = new MlBayesEstimator(prior);
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
         } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM "
-                    + "and discrete data set do not match.");
+                                       + "and discrete data set do not match.");
         }
     }
 

@@ -116,20 +116,20 @@ public final class TestGraph {
         graph.addUnderlineTriple(y, z, w);
         graph.addUnderlineTriple(y, z, x);
 
-        assertTrue(graph.getAmbiguousTriples().size() == 1);
-        assertTrue(graph.getUnderLines().size() == 3);
-        assertTrue(graph.getDottedUnderlines().size() == 1);
+        assertEquals(1, graph.getAmbiguousTriples().size());
+        assertEquals(3, graph.getUnderLines().size());
+        assertEquals(1, graph.getDottedUnderlines().size());
 
         assertTrue(graph.isAmbiguousTriple(x, z, w));
-        assertTrue(!graph.isAmbiguousTriple(y, z, w));
+        assertFalse(graph.isAmbiguousTriple(y, z, w));
 
         graph.removeAmbiguousTriple(x, z, w);
         graph.removeUnderlineTriple(x, z, w);
         graph.removeDottedUnderlineTriple(x, z, w);
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 2);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(2, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addAmbiguousTriple(x, z, w);
         graph.addUnderlineTriple(x, z, w);
@@ -139,9 +139,9 @@ public final class TestGraph {
 
         graph.removeTriplesNotInGraph();
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 0);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(0, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addNode(z);
 
@@ -160,9 +160,9 @@ public final class TestGraph {
 
         graph.removeTriplesNotInGraph();
 
-        assertTrue(graph.getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderLines().size() == 1);
-        assertTrue(graph.getDottedUnderlines().size() == 0);
+        assertEquals(0, graph.getAmbiguousTriples().size());
+        assertEquals(1, graph.getUnderLines().size());
+        assertEquals(0, graph.getDottedUnderlines().size());
 
         graph.addDirectedEdge(z, w);
 
@@ -206,6 +206,30 @@ public final class TestGraph {
 
         assertFalse(Edges.directedEdge(x1, x2).isHighlighted());
     }
+
+    @Test
+    public void testLegalCpdag() {
+        Graph g1 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X4---X1");
+        assertFalse(g1.paths().isLegalCpdag());
+
+        Graph g2 = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        g2 = GraphTransforms.dagToCpdag(g2);
+
+        assertTrue(g2.paths().isLegalCpdag());
+
+        Graph g3 = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X5,X5-->X6,X2---X7,X7-->X8");
+        assertFalse(g3.paths().isLegalCpdag());
+
+        Graph g4 = GraphUtils.convert("X1-->X2,X2---X3,X3<--X4");
+        assertFalse(g4.paths().isLegalCpdag());
+
+        Graph g5 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X1---X4,X1--X3");
+        assertFalse(g5.paths().isLegalCpdag());
+
+        Graph g6 = GraphUtils.convert("X1-->X2,X2<--X3");
+        assertTrue(g6.paths().isLegalCpdag());
+    }
+
 
     private Triple pickRandomTriple(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -258,7 +282,7 @@ public final class TestGraph {
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 
-        assertTrue(graph.paths().isMConnectedTo(x1, x3, new HashSet<>()));
+        assertTrue(graph.paths().isMConnectedTo(x1, x3, new HashSet<>(), false));
 
 
         graph.removeNode(x2);

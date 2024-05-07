@@ -28,6 +28,7 @@ package edu.cmu.tetrad.util;
  * @author josephramsey Returns values of the given square matrix, where the indices are remapped via the given indices
  * array. If the supplied matrix is 6 x 6, for example, and the indices set are [5 4 2 1], then getValue(1, 2) will
  * return element [4][2] of the given matrix.
+ * @version $Id: $Id
  */
 public final class IndexedMatrix {
 
@@ -53,6 +54,8 @@ public final class IndexedMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>indices</code>.</p>
+     *
      * @return Ibid.
      */
     public int[] getIndices() {
@@ -77,6 +80,8 @@ public final class IndexedMatrix {
     }
 
     /**
+     * <p>getValue.</p>
+     *
      * @param i The row value in the remapped indices of the cell desired.
      * @param j The column value in teh remapped indices of the cell desired.
      * @return Ibid.

@@ -89,13 +89,13 @@ final class SessionEditorToolbar extends JPanel {
         ButtonInfo[] buttonInfos = {
                 new ButtonInfo("Select", "Select and Move", "move",
                         "<html>Select and move nodes or groups of nodes "
-                                + "<br>on the workbench.</html>"),
+                        + "<br>on the workbench.</html>"),
                 new ButtonInfo("Edge", "Draw Edge", "flow",
                         "<html>Add an edge from one node to another to declare"
-                                + "<br>that the object in the first node should be used "
-                                + "<br>to construct the object in the second node."
-                                + "<br>As a shortcut, hold down the Control key."
-                                + "</html>"),
+                        + "<br>that the object in the first node should be used "
+                        + "<br>to construct the object in the second node."
+                        + "<br>As a shortcut, hold down the Control key."
+                        + "</html>"),
                 new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
                 new ButtonInfo("Compare", "Compare", "compare",
                         "<html>Add a node to compare graphs or SEM IM's.</html>"),
@@ -244,11 +244,16 @@ final class SessionEditorToolbar extends JPanel {
 
     /**
      * Sets whether the toolbar should react to events. This may need to be turned off temporarily.
+     *
+     * @param respondingToEvents a boolean
      */
     public void setRespondingToEvents(boolean respondingToEvents) {
         this.respondingToEvents = respondingToEvents;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected void processKeyEvent(KeyEvent e) {
         System.out.println("process key event " + e);
         super.processKeyEvent(e);
@@ -291,7 +296,7 @@ final class SessionEditorToolbar extends JPanel {
         } else {
             button.setName(buttonInfo.getNodeTypeName());
             button.setText("<html><center>" + buttonInfo.getDisplayName()
-                    + "</center></html>");
+                           + "</center></html>");
         }
 
         button.setMaximumSize(new Dimension(110, 40)); // For a vertical box.

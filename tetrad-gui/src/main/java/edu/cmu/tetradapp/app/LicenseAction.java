@@ -43,7 +43,9 @@ final class LicenseAction extends AbstractAction {
     }
 
     /**
-     * Closes the frontmost session of this action's desktop.
+     * Performs an action when an event is triggered.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         String license = LicenseUtils.license();

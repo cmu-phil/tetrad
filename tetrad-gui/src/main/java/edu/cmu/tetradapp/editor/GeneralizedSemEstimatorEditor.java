@@ -24,8 +24,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -38,19 +38,20 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Edits a SEM PM model.
- *
- * @author Donald Crimbchin
- * @author josephramsey
+ * The GeneralizedSemEstimatorEditor class represents an editor for the GeneralizedSemEstimatorWrapper. It provides a
+ * graphical user interface for editing variables, graph, and generating reports.
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
+    @Serial
     private static final long serialVersionUID = 5161532456725190959L;
+
     /**
      * A reference to the error terms menu item so it can be reset.
      */
@@ -59,22 +60,34 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
      * A common map of nodes to launched editors so that they can all be closed when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+
+    /**
+     * The wrapper for the estimator.
+     */
     private final GeneralizedSemEstimatorWrapper wrapper;
+
     /**
      * The graphical editor for the SemIm.
      */
     private GeneralizedSemImGraphicalEditor graphicalEditor;
 
     //========================CONSTRUCTORS===========================//
+
+    /**
+     * Constructs a GeneralizedSemEstimatorEditor with the specified wrapper.
+     *
+     * @param wrapper the GeneralizedSemEstimatorWrapper to be used
+     */
     public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(800, 600));
 
         this.wrapper = wrapper;
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Variables", listEditor());
-        tabbedPane.add("Graph", graphicalEditor());
-        tabbedPane.add("Report", estimationReport());
+        tabbedPane.add("Variables", new JScrollPane(listEditor()));
+        tabbedPane.add("Graph", new JScrollPane(graphicalEditor()));
+        tabbedPane.add("Report", new JScrollPane(estimationReport()));
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -203,31 +216,67 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         });
     }
 
+    /**
+     * Returns the editing delegate component.
+     *
+     * @return The editing delegate component as a JComponent.
+     */
     public JComponent getEditDelegate() {
         return graphicalEditor();
     }
 
+    /**
+     * Retrieves the graph from the graphical editor's workbench.
+     *
+     * @return The graph from the workbench.
+     */
     public Graph getGraph() {
         return graphicalEditor().getWorkbench().getGraph();
     }
 
+    /**
+     * Retrieves the model edges to display from the graphical editor's workbench.
+     *
+     * @return The model edges to display as a Map, where the keys are Edges and the values are their associated
+     * objects.
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
 
+    /**
+     * Retrieves the model nodes to display from the graphical editor's workbench.
+     *
+     * @return The model nodes to display.
+     */
     public Map getModelNodesToDisplay() {
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
+    /**
+     * Retrieves the knowledge from the graphical editor's workbench.
+     *
+     * @return The knowledge from the workbench.
+     */
     public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 
+    /**
+     * Retrieves the source graph from the graphical editor's workbench.
+     *
+     * @return The source graph.
+     */
     public Graph getSourceGraph() {
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
+    /**
+     * Layouts the graph based on the provided graph object.
+     *
+     * @param graph The graph to use for layout.
+     */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
@@ -237,6 +286,9 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         this.errorTerms.setText("Show Error Terms");
     }
 
+    /**
+     * Layout the graph based on knowledge.
+     */
     public void layoutByKnowledge() {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -7,7 +8,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
@@ -15,8 +15,8 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +24,7 @@ import java.util.List;
  * FASK-PW (pairwise).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-PW",
@@ -32,73 +33,108 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class FaskPw implements Algorithm, TakesExternalGraph {
+public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesExternalGraph {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private Algorithm algorithm;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
 
+    /**
+     * <p>Constructor for FaskPw.</p>
+     */
     public FaskPw() {
     }
 
+    /**
+     * <p>Constructor for FaskPw.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public FaskPw(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /**
+     * Runs the search algorithm using the given data model and parameters.
+     *
+     * @param dataModel  the data model to be used for the search
+     * @param parameters the parameters to be used for the search
+     * @return the resulting graph
+     * @throws IllegalArgumentException if the data model is not a continuous dataset or if the algorithm requires both
+     *                                  data and a graph source as inputs
+     */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (this.externalGraph == null) {
-                this.externalGraph = this.algorithm.search(dataModel, parameters);
-            }
-
-            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-
-            if (this.externalGraph == null) {
-                throw new IllegalArgumentException(
-                        "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                                + "will orient the edges in the input graph using the data");
-            }
-
-            DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
-
-            Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
-            fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
-            fask.setExternalGraph(this.externalGraph);
-            fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
-
-            return fask.search();
-        } else {
-            FaskPw rSkew = new FaskPw(this.algorithm);
-            if (this.externalGraph != null) {
-                rSkew.setExternalGraph(this.algorithm);
-            }
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, rSkew, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
+
+        if (this.externalGraph == null) {
+            this.externalGraph = this.algorithm.search(dataSet, parameters);
+        }
+
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+
+        if (this.externalGraph == null) {
+            throw new IllegalArgumentException(
+                    "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data");
+        }
+
+        Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
+        fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+        fask.setExternalGraph(this.externalGraph);
+        fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
+
+        return fask.search();
     }
 
+    /**
+     * Returns a comparison graph based on the provided true directed graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return A comparison graph based on the provided true directed graph.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * Returns a description of the RSkew algorithm.
+     *
+     * @return A description of the RSkew algorithm.
+     */
     @Override
     public String getDescription() {
         return "RSkew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+                                                   + this.algorithm.getDescription() : "");
     }
 
+    /**
+     * Retrieves the data type of the dataset.
+     *
+     * @return the data type of the dataset
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves the list of parameters required for the algorithm.
+     *
+     * @return a list of parameter names that are used in the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -113,11 +149,17 @@ public class FaskPw implements Algorithm, TakesExternalGraph {
         return parameters;
     }
 
+    /**
+     * Sets the external graph to be used by the algorithm.
+     *
+     * @param algorithm the algorithm object representing the external graph
+     * @throws IllegalArgumentException if the algorithm parameter is null
+     */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
+                                               + "will orient the edges in the input graph using the data.");
         }
 
         this.algorithm = algorithm;

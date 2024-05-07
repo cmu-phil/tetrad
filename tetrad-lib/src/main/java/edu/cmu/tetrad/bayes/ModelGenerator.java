@@ -32,13 +32,24 @@ import java.util.Set;
  * modifications of the graph.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class ModelGenerator {
+
+    /**
+     * The ModelGenerator class is a utility class that provides methods for generating modified versions of an acyclic
+     * graph.
+     */
+    private ModelGenerator() {
+    }
 
     /**
      * This method takes an acyclic graph as input and returns a list of graphs each of which is a modification of the
      * original graph with either an edge deleted, added or reversed.  Edges are not added or reversed if a cycle would
      * result.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
      */
     public static List<Graph> generate(Graph graph) {
 
@@ -73,7 +84,7 @@ public final class ModelGenerator {
             Edge newEdge = new Edge(n1, n2, e2, e1);
 
             toAdd.removeEdge(allEdge);
-            if (!toAdd.paths().existsDirectedPathFromTo(n1, n2)) {
+            if (!toAdd.paths().existsDirectedPath(n1, n2)) {
                 toAdd.addEdge(newEdge);
                 graphs.add(toAdd);
             }
@@ -97,11 +108,11 @@ public final class ModelGenerator {
 
                 //If there is no edge between node1 and node2
                 if (!graph.isParentOf(node1, node2) &&
-                        !graph.isParentOf(node2, node1)) {
+                    !graph.isParentOf(node2, node1)) {
 
                     Graph toAdd1 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
-                    if (!toAdd1.paths().existsDirectedPathFromTo(node1, node2)) {  //
+                    if (!toAdd1.paths().existsDirectedPath(node1, node2)) {  //
                         Edge newN2N1 = new Edge(node2, node1, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd1.addEdge(newN2N1);
@@ -111,7 +122,7 @@ public final class ModelGenerator {
                     //Now create the graph with the edge added in the other direction
                     Graph toAdd2 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
-                    if (!toAdd2.paths().existsDirectedPathFromTo(node2, node1)) {
+                    if (!toAdd2.paths().existsDirectedPath(node2, node1)) {
                         Edge newN1N2 = new Edge(node1, node2, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd2.addEdge(newN1N2);

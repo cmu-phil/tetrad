@@ -31,19 +31,30 @@ import java.util.*;
  * another one and next() to get it. next() will return null if there are no more.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagInCpcagIterator {
 
-    // The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
-    // these edges have already been oriented left and/or right.
+    /**
+     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether these edges
+     * have already been oriented left and/or right.
+     */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
-    // The set of colliders in the original CPDAG.
+    /**
+     * The set of colliders in the original CPDAG.
+     */
     private final LinkedList<Triple> colliders;
-    // Whether to allow new colliders in the graphs.
+    /**
+     * Whether to allow new colliders in the graphs.
+     */
     private final boolean allowNewColliders;
-    // The graph to be returned by next() if it is not null.
+    /**
+     * The graph to be returned by next() if it is not null.
+     */
     private Graph storedGraph;
-    // Whether the first graph has been returned.
+    /**
+     * Whether the first graph has been returned.
+     */
     private boolean returnedOne;
 
     /**
@@ -51,7 +62,7 @@ public class DagInCpcagIterator {
      * not acyclic, it is rejected.
      *
      * @param CPDAG The CPDAG for which DAGS are wanted. May result in cyclic outputs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge(), false, true);
@@ -63,7 +74,7 @@ public class DagInCpcagIterator {
      *
      * @param CPDAG     The CPDAG for which DAGS are wanted. May result in cyclic outputs.
      * @param knowledge The knowledge to be used to constrain the DAGs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge) {
         this(CPDAG, knowledge, false, true);
@@ -78,7 +89,7 @@ public class DagInCpcagIterator {
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
      * @param allowNewColliders          True if new colliders are allowed in teh graphs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,
                               boolean allowNewColliders) {
@@ -110,7 +121,6 @@ public class DagInCpcagIterator {
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
-     * <p>
      *
      * @return a Graph instead of a DAG because sometimes, due to faulty CPDAGs, a cyclic graph is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graph)) and catch
@@ -125,7 +135,7 @@ public class DagInCpcagIterator {
         }
 
         if (this.decoratedGraphs.size() == 1 && this.decoratedGraphs.getLast().getEdge() == null
-                && !this.returnedOne) {
+            && !this.returnedOne) {
             this.returnedOne = true;
             return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
         }
@@ -150,7 +160,7 @@ public class DagInCpcagIterator {
                 this.decoratedGraphs.addLast(graph);
             }
         } while (this.decoratedGraphs.getLast().getEdge() == null && !this.allowNewColliders &&
-                !GraphUtils.listColliderTriples(this.decoratedGraphs.getLast().getGraph()).equals(this.colliders));
+                 !GraphUtils.listColliderTriples(this.decoratedGraphs.getLast().getGraph()).equals(this.colliders));
 
         return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
     }
@@ -221,8 +231,8 @@ public class DagInCpcagIterator {
 
             return (!this.triedLeft && !this.graph.paths().isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
-                    (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
-                            !getKnowledge().isForbidden(node1.getName(), node2.getName()));
+                   (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
+                    !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
         }
 
@@ -232,7 +242,7 @@ public class DagInCpcagIterator {
             }
 
             if (!this.triedLeft && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
-                    !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
+                !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
@@ -265,7 +275,7 @@ public class DagInCpcagIterator {
             }
 
             if (!this.triedRight && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
-                    !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
+                !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);

@@ -39,8 +39,22 @@ import edu.cmu.tetrad.util.Params;
  * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleCompareFromFiles {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExampleCompareFromFiles() {
+
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

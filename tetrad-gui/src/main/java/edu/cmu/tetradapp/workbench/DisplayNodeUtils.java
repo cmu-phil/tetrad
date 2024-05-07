@@ -26,6 +26,9 @@ import java.awt.*;
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Apr 1, 2006 Time: 5:19:32 PM To change this template use File |
  * Settings | File Templates.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class DisplayNodeUtils {
     // Note that this component must be a JComponent, since non-rectangular
@@ -40,30 +43,65 @@ public class DisplayNodeUtils {
     private static final Font FONT = new Font("Dialog", Font.BOLD, 12);
     private static final int PIXEL_GAP = 7;
 
+    /**
+     * <p>getNodeFillColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public static Color getNodeFillColor() {
         return DisplayNodeUtils.NODE_FILL_COLOR;
     }
 
+    /**
+     * <p>getNodeEdgeColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public static Color getNodeEdgeColor() {
         return DisplayNodeUtils.NODE_EDGE_COLOR;
     }
 
+    /**
+     * <p>getNodeSelectedFillColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public static Color getNodeSelectedFillColor() {
         return DisplayNodeUtils.NODE_SELECTED_FILL_COLOR;
     }
 
+    /**
+     * <p>getNodeSelectedEdgeColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public static Color getNodeSelectedEdgeColor() {
         return DisplayNodeUtils.NODE_SELECTED_EDGE_COLOR;
     }
 
+    /**
+     * <p>getNodeTextColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public static Color getNodeTextColor() {
         return DisplayNodeUtils.NODE_TEXT_COLOR;
     }
 
+    /**
+     * <p>getFont.</p>
+     *
+     * @return a {@link java.awt.Font} object
+     */
     public static Font getFont() {
         return DisplayNodeUtils.FONT;
     }
 
+    /**
+     * <p>getPixelGap.</p>
+     *
+     * @return a int
+     */
     public static int getPixelGap() {
         return DisplayNodeUtils.PIXEL_GAP;
     }

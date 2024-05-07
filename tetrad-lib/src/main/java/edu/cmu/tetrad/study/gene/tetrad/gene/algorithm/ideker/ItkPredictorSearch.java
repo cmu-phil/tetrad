@@ -30,13 +30,37 @@ import java.util.TreeSet;
  * This class contains methods which implement the algorithm described in the paper "  " by Ideker, Thorsen and Karp.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class ItkPredictorSearch {
+
+    /**
+     * The number of genes.
+     */
     int ngenes;
+
+    /**
+     * The number of rows in the expression matrix.
+     */
     int nrows;
+
+    /**
+     * The names of the genes.
+     */
     String[] names;
+
+    /**
+     * The expression matrix.
+     */
     int[][] expression;
 
+    /**
+     * <p>Constructor for ItkPredictorSearch.</p>
+     *
+     * @param ngenes     a int
+     * @param expression an array of {@link int} objects
+     * @param names      an array of {@link java.lang.String} objects
+     */
     public ItkPredictorSearch(int ngenes, int[][] expression, String[] names) {
 
         this.ngenes = ngenes;
@@ -46,6 +70,11 @@ public class ItkPredictorSearch {
 
     }
 
+    /**
+     * <p>predictor.</p>
+     *
+     * @param gene a int
+     */
     public void predictor(int gene) {
 
         SortedSet[][] S = new TreeSet[this.nrows][this.nrows];
@@ -71,9 +100,9 @@ public class ItkPredictorSearch {
 
             //Exclude row pairs in which the given gene was perturbed.
             if (this.expression[rows[0]][gene] == -1 ||
-                    this.expression[rows[0]][gene] == 2 ||
-                    this.expression[rows[1]][gene] == -1 ||
-                    this.expression[rows[1]][gene] == 2) {
+                this.expression[rows[0]][gene] == 2 ||
+                this.expression[rows[1]][gene] == -1 ||
+                this.expression[rows[1]][gene] == 2) {
                 continue;
             }
 
@@ -128,6 +157,12 @@ public class ItkPredictorSearch {
         System.out.println();
     }
 
+    /**
+     * <p>minCoveringSet.</p>
+     *
+     * @param sets an array of {@link java.util.SortedSet} objects
+     * @return an array of {@link java.util.SortedSet} objects
+     */
     public SortedSet[] minCoveringSet(SortedSet[][] sets) {
 
         SortedSet<Gene> union = new TreeSet<>();
@@ -234,6 +269,12 @@ public class ItkPredictorSearch {
         return coveringSets;
     }
 
+    /**
+     * <p>inferFunction.</p>
+     *
+     * @param g a int
+     * @param s a {@link java.util.SortedSet} object
+     */
     public void inferFunction(int g, SortedSet<Gene> s) {
 
         int n = s.size();
@@ -285,6 +326,14 @@ public class ItkPredictorSearch {
     }
 
     //Returns true of b covers a, false otherwise
+
+    /**
+     * <p>covered.</p>
+     *
+     * @param a a {@link java.util.SortedSet} object
+     * @param b a {@link java.util.SortedSet} object
+     * @return a boolean
+     */
     public boolean covered(SortedSet<Gene> a, SortedSet<Gene> b) {
         boolean result = false;
         for (Gene anA : a) {
@@ -296,6 +345,11 @@ public class ItkPredictorSearch {
         return result;
     }
 
+    /**
+     * <p>display.</p>
+     *
+     * @param s a {@link java.util.SortedSet} object
+     */
     public void display(SortedSet<Gene> s) {
         for (Gene value : s) {
             System.out.print(value.getIndex() + " ");
@@ -306,14 +360,26 @@ public class ItkPredictorSearch {
     /**
      * This method determines whether the levels for a given gene differ between two perturbations p0 and p1 (rows of
      * the perturbation matrix).  It returns true if they do differ and false otherwise.
+     *
+     * @param gene a int
+     * @param p0   a int
+     * @param p1   a int
+     * @return a boolean
      */
     public boolean differByPerturbation(int gene, int p0, int p1) {
         return !(this.expression[p0][gene] == this.expression[p1][gene] ||
-                (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
-                (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
-                (this.expression[p0][gene] * this.expression[p1][gene] == 2));
+                 (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
+                 (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
+                 (this.expression[p0][gene] * this.expression[p1][gene] == 2));
     }
 
+    /**
+     * <p>differExpressions.</p>
+     *
+     * @param e1 a int
+     * @param e2 a int
+     * @return a boolean
+     */
     public boolean differExpressions(int e1, int e2) {
         return true;
     }
@@ -321,6 +387,10 @@ public class ItkPredictorSearch {
     /**
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
      * ind=6 the vector will be (1, 1, 0).
+     *
+     * @param ind a int
+     * @param n   a int
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];
@@ -341,17 +411,37 @@ public class ItkPredictorSearch {
         return rep;
     }
 
+    /**
+     * A gene.
+     */
     public static class Gene implements Comparable {
+
+        /**
+         * The index of the gene.
+         */
         int gene;
 
+        /**
+         * <p>Constructor for Gene.</p>
+         *
+         * @param gene a int
+         */
         public Gene(int gene) {
             this.gene = gene;
         }
 
+        /**
+         * <p>getIndex.</p>
+         *
+         * @return a int
+         */
         public int getIndex() {
             return this.gene;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public int compareTo(Object o) {
             int ret;
             if (this.gene < ((Gene) o).getIndex()) {

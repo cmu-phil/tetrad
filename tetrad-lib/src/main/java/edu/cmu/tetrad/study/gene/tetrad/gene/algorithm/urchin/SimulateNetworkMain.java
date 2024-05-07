@@ -22,7 +22,25 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
+/**
+ * <p>SimulateNetworkMain class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class SimulateNetworkMain {
+
+    /**
+     * <p>Constructor for SimulateNetworkMain.</p>
+     */
+    public SimulateNetworkMain() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         double[] inputs = new double[4];

@@ -26,31 +26,34 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
  * Calculates marginals of the form P(V=v') for an updated Bayes net for purposes of the CPT Invariant Updater.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CptInvariantMarginalCalculator
         implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes net.
      */
     private final BayesIm bayesIm;
     /**
-     * @serial Cannot be null.
+     * The evidence.
      */
     private final Evidence evidence;
     /**
-     * @serial Cannot be null.
+     * The updated Bayes net.
      */
     private final UpdatedBayesIm updatedBayesIm;
     /**
-     * @serial Cannot be null.
+     * The stored marginals.
      */
     private double[][] storedMarginals;
 
@@ -60,6 +63,9 @@ public final class CptInvariantMarginalCalculator
      * Constructs a new marginal calculator for the given updated Bayes IM. It is assumed that the first BayesIm
      * encountered on calling the getParentIm() method recursively is the Bayes IM with respect to which conjunctions of
      * the form P(V1=v1' and V2=v2' and ... and Vn=vn') should be calculated.
+     *
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public CptInvariantMarginalCalculator(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -72,7 +78,7 @@ public final class CptInvariantMarginalCalculator
 
         if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
-                    "Bayes IM and evidence must be compatible.");
+                                               "Bayes IM and evidence must be compatible.");
         }
 
         this.bayesIm = bayesIm;
@@ -83,6 +89,8 @@ public final class CptInvariantMarginalCalculator
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.CptInvariantMarginalCalculator} object
      */
     public static CptInvariantMarginalCalculator serializableInstance() {
         MlBayesIm bayesIm = MlBayesIm.serializableInstance();
@@ -93,6 +101,10 @@ public final class CptInvariantMarginalCalculator
     //=============================PUBLIC METHODS========================//
 
     /**
+     * <p>getMarginal.</p>
+     *
+     * @param variable a int
+     * @param category a int
      * @return P(variable = category).
      */
     public double getMarginal(int variable, int category) {
@@ -129,6 +141,11 @@ public final class CptInvariantMarginalCalculator
         return marginal;
     }
 
+    /**
+     * <p>Getter for the field <code>updatedBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.UpdatedBayesIm} object
+     */
     public UpdatedBayesIm getUpdatedBayesIm() {
         return this.updatedBayesIm;
     }
@@ -203,7 +220,12 @@ public final class CptInvariantMarginalCalculator
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

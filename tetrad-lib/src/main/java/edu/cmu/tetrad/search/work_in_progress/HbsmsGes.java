@@ -43,17 +43,48 @@ import java.util.*;
  * <p>Improves the P value of a SEM IM by adding, removing, or reversing single edges.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class HbsmsGes implements Hbsms {
+    /**
+     * The graph to be searched.
+     */
     private final Graph graph;
+    /**
+     * The number format for printing.
+     */
     private final NumberFormat nf = new DecimalFormat("0.0#########");
+    /**
+     * The significant models.
+     */
     private final Set<GraphWithPValue> significantModels = new HashSet<>();
+    /**
+     * The scorer.
+     */
     private final Scorer scorer;
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The alpha.
+     */
     private double alpha = 0.05;
+    /**
+     * The original SEM IM.
+     */
     private SemIm originalSemIm;
+    /**
+     * The new SEM IM.
+     */
     private SemIm newSemIm;
 
+    /**
+     * <p>Constructor for HbsmsGes.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
 
@@ -62,7 +93,7 @@ public final class HbsmsGes implements Hbsms {
         DagInCpcagIterator iterator = new DagInCpcagIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
-        graph = GraphTransforms.cpdagForDag(graph);
+        graph = GraphTransforms.dagToCpdag(graph);
 
         if (GraphUtils.containsBidirectedEdge(graph)) {
             throw new IllegalArgumentException("Contains bidirected edge.");
@@ -165,6 +196,12 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
+    /**
+     * <p>scoreGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.HbsmsGes.Score} object
+     */
     public Score scoreGraph(Graph graph) {
         Graph dag = GraphTransforms.dagFromCpdag(graph, getKnowledge());
 
@@ -172,18 +209,36 @@ public final class HbsmsGes implements Hbsms {
         return new Score(this.scorer);
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Getter for the field <code>originalSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getOriginalSemIm() {
         return this.originalSemIm;
     }
 
+    /**
+     * <p>Getter for the field <code>newSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getNewSemIm() {
         return this.newSemIm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setHighPValueAlpha(double highPValueAlpha) {
     }
 
@@ -193,12 +248,23 @@ public final class HbsmsGes implements Hbsms {
      * (Definition 12 from Chickering, 2002).
      **/
 
+    /**
+     * <p>scoreDag.</p>
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.HbsmsGes.Score} object
+     */
     public Score scoreDag(Graph dag) {
 
         this.scorer.score(dag);
         return new Score(this.scorer);
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
         Score score1 = scoreGraph(getGraph());
         double score = score1.getScore();
@@ -222,9 +288,10 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private double fes(Graph graph, double score) {
-        TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        TetradLogger.getInstance().forceLogMessage("** FORWARD EQUIVALENCE SEARCH");
         double bestScore = score;
-        TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(bestScore));
+        String message = "Initial Score = " + this.nf.format(bestScore);
+        TetradLogger.getInstance().forceLogMessage(message);
 
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -270,8 +337,8 @@ public final class HbsmsGes implements Hbsms {
 
                         double evalScore = scoreGraph(graph2).getScore();
 
-                        TetradLogger.getInstance().log("edgeEvaluations", "Trying to add " + _x + "-->" + _y + " evalScore = " +
-                                evalScore);
+                        TetradLogger.getInstance().forceLogMessage("Trying to add " + _x + "-->" + _y + " evalScore = " +
+                                                                   evalScore);
 
                         if (!(evalScore > bestScore && evalScore > score)) {
                             continue;
@@ -305,8 +372,9 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private void bes(Graph graph, double initialScore) {
-        TetradLogger.getInstance().log("info", "** BACKWARD ELIMINATION SEARCH");
-        TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(initialScore));
+        TetradLogger.getInstance().forceLogMessage("** BACKWARD ELIMINATION SEARCH");
+        String message = "Initial Score = " + this.nf.format(initialScore);
+        TetradLogger.getInstance().forceLogMessage(message);
         double bestScore = initialScore;
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -394,8 +462,9 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                    graph.getEdge(t, y));
+            String message = "--- Directing " + oldEdge + " to " +
+                             graph.getEdge(t, y);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -411,8 +480,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(x, h);
 
                 Edge oldEdge = graph.getEdge(x, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(x, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                                 graph.getEdge(x, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -420,8 +490,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(y, h);
 
                 Edge oldEdge = graph.getEdge(y, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                                 graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
     }
@@ -443,8 +514,9 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                    graph.getEdge(t, y));
+            String message = "--- Directing " + oldEdge + " to " +
+                             graph.getEdge(t, y);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -456,8 +528,8 @@ public final class HbsmsGes implements Hbsms {
         {
             Edge oldEdge = graph.getEdge(x, y);
             System.out.println(graph.getNumEdges() + ". DELETE " + oldEdge +
-                    " " + subset +
-                    " (" + this.nf.format(scoreGraph(graph).getPValue()) + ")");
+                               " " + subset +
+                               " (" + this.nf.format(scoreGraph(graph).getPValue()) + ")");
         }
 
         graph.removeEdge(x, y);
@@ -468,8 +540,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(x, h);
 
                 Edge oldEdge = graph.getEdge(x, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(x, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                                 graph.getEdge(x, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -477,8 +550,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(y, h);
 
                 Edge oldEdge = graph.getEdge(y, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                                 graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
     }
@@ -556,7 +630,7 @@ public final class HbsmsGes implements Hbsms {
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 
-        TetradLogger.getInstance().log("rebuiltCPDAGs", "Rebuilt CPDAG = " + graph);
+        TetradLogger.getInstance().forceLogMessage("Rebuilt CPDAG = " + graph);
     }
 
     /**
@@ -588,105 +662,223 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
+     * @return a double
+     */
     public double getAlpha() {
         return this.alpha;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setBeamWidth(int beamWidth) {
 //        if (beamWidth < 1) throw new IllegalArgumentException();
         // Do nothing. We don't care about beam width.
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * <p>Getter for the field <code>significantModels</code>.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<GraphWithPValue> getSignificantModels() {
         return this.significantModels;
     }
 
+    /**
+     * A graph with a P value.
+     */
     public static class GraphWithPValue {
+
+        /**
+         * The graph.
+         */
         private final Graph graph;
+
+        /**
+         * The P value.
+         */
         private final double pValue;
 
+        /**
+         * <p>Constructor for GraphWithPValue.</p>
+         *
+         * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+         * @param pValue a double
+         */
         public GraphWithPValue(Graph graph, double pValue) {
             this.graph = graph;
             this.pValue = pValue;
         }
 
+        /**
+         * <p>Getter for the field <code>graph</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public Graph getGraph() {
             return this.graph;
         }
 
+        /**
+         * <p>getPValue.</p>
+         *
+         * @return a double
+         */
         public double getPValue() {
             return this.pValue;
         }
 
+        /**
+         * <p>hashCode.</p>
+         *
+         * @return a int
+         */
         public int hashCode() {
             return 17 * this.graph.hashCode();
         }
 
+        /**
+         * <p>equals.</p>
+         *
+         * @param o a {@link java.lang.Object} object
+         * @return a boolean
+         */
         public boolean equals(Object o) {
             if (o == null) return false;
-            if (!(o instanceof GraphWithPValue)) return false;
-            GraphWithPValue p = (GraphWithPValue) o;
+            if (!(o instanceof GraphWithPValue p)) return false;
             return (p.graph.equals(this.graph));
         }
     }
 
+    /**
+     * The score of a model.
+     */
     public static class Score {
+        /**
+         * The scorer.
+         */
         private final Scorer scorer;
+        /**
+         * The P value.
+         */
         private final double pValue;
+        /**
+         * The Fml.
+         */
         private final double fml;
+        /**
+         * The chi square.
+         */
         private final double chisq;
+        /**
+         * The BIC.
+         */
         private final double bic;
-        //        private double aic;
+        /**
+         * The degrees of freedom.
+         */
         private final int dof;
 
+        /**
+         * <p>Constructor for Score.</p>
+         *
+         * @param scorer a {@link edu.cmu.tetrad.sem.DagScorer} object
+         */
         public Score(Scorer scorer) {
             this.scorer = scorer;
             this.pValue = scorer.getPValue();
             this.fml = scorer.getFml();
             this.chisq = scorer.getChiSquare();
             this.bic = scorer.getBicScore();
-//            this.aic = scorer.getAicScore();
             this.dof = scorer.getDof();
         }
 
+        /**
+         * Returns the estimated SEM IM.
+         *
+         * @return the estimated SEM IM.
+         */
         public SemIm getEstimatedSem() {
             return this.scorer.getEstSem();
         }
 
+        /**
+         * Returns the P value.
+         *
+         * @return the P value.
+         */
         public double getPValue() {
             return this.pValue;
         }
 
+        /**
+         * Returns the score.
+         *
+         * @return the score.
+         */
         public double getScore() {
-
             return -this.bic;
-//            return -aic;
         }
 
+        /**
+         * Returns the Fml.
+         *
+         * @return the Fml.
+         */
         public double getFml() {
             return this.fml;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         *
+         * @return the degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
 
+        /**
+         * Returns the chi square.
+         *
+         * @return the chi square.
+         */
         public double getChiSquare() {
             return this.chisq;
         }
 
+        /**
+         * Returns the BIC.
+         *
+         * @return the BIC.
+         */
         public double getBic() {
             return this.bic;
         }

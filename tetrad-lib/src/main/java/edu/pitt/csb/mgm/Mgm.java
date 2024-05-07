@@ -50,34 +50,110 @@ import java.util.List;
 /**
  * Implementation of Lee and Hastie's (2012) pseudolikelihood method for learning Mixed Gaussian-Categorical Graphical
  * Models Created by ajsedgewick on 7/15/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Mgm extends ConvexProximal implements IGraphSearch {
+
+    /**
+     * factory2D.
+     */
     private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
+
+    /**
+     * factory1D.
+     */
     private final DoubleFactory1D factory1D = DoubleFactory1D.dense;
 
-    //Continuous Data
+    /**
+     * Continuous Data
+     */
     private final DoubleMatrix2D xDat;
 
-    //Discrete Data coded as integers, no IntMatrix2D apparently...
+    /**
+     * Discrete Data coded as integers, no IntMatrix2D apparently...
+     */
     private final DoubleMatrix2D yDat;
+
+    /**
+     * lambda.
+     */
     private final DoubleMatrix1D lambda;
+
+    /**
+     * alg.
+     */
     private final Algebra alg = new Algebra();
-    //Levels of Discrete variables
+
+    /**
+     * Levels of Discrete variables
+     */
     private final int[] l;
+
+    /**
+     * p.
+     */
     int p;
+
+    /**
+     * q.
+     */
     int q;
+
+    /**
+     * n.
+     */
     int n;
+
+    /**
+     * variables.
+     */
     private List<Node> variables;
+
+    /**
+     * initVariables.
+     */
     private List<Node> initVariables;
-    //Discrete Data coded as dummy variables
+    /**
+     * Discrete Data coded as dummy variables
+     */
     private DoubleMatrix2D dDat;
+
+    /**
+     * private long elapsedTime.
+     */
     private long elapsedTime;
+
+    /**
+     * private int lsum.
+     */
     private int lsum;
+
+    /**
+     * private int[] lcumsum.
+     */
     private int[] lcumsum;
-    //parameter weights
+
+    /**
+     * parameter weights
+     */
     private DoubleMatrix1D weights;
+
+    /**
+     * private MGMParams params.
+     */
     private MGMParams params;
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     *
+     * @param x         a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param y         a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param variables a {@link java.util.List} object
+     * @param l         an array of {@link int} objects
+     * @param lambda    an array of {@link double} objects
+     */
     public Mgm(DoubleMatrix2D x, DoubleMatrix2D y, List<Node> variables, int[] l, double[] lambda) {
 
         if (l.length != y.columns())
@@ -107,6 +183,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         makeDummy();
     }
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     *
+     * @param ds     a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param lambda an array of {@link double} objects
+     */
     public Mgm(DataSet ds, double[] lambda) {
         this.variables = ds.getVariables();
 
@@ -154,6 +236,13 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     //create column major vector from matrix (i.e. concatenate columns)
+
+    /**
+     * <p>flatten.</p>
+     *
+     * @param m a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @return a {@link cern.colt.matrix.DoubleMatrix1D} object
+     */
     public static DoubleMatrix1D flatten(DoubleMatrix2D m) {
         DoubleMatrix1D[] colArray = new DoubleMatrix1D[m.columns()];
         for (int i = 0; i < m.columns(); i++) {
@@ -202,6 +291,14 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     //zeros out everthing below di-th diagonal
+
+    /**
+     * <p>upperTri.</p>
+     *
+     * @param mat a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param di  a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D upperTri(DoubleMatrix2D mat, int di) {
         for (int i = FastMath.max(-di + 1, 0); i < mat.rows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -361,10 +458,20 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         System.out.println("adjMat:\n" + model.adjMatFromMGM());
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         Mgm.runTests1();
     }
 
+    /**
+     * <p>Setter for the field <code>params</code>.</p>
+     *
+     * @param newParams a {@link edu.pitt.csb.mgm.Mgm.MGMParams} object
+     */
     public void setParams(MGMParams newParams) {
         this.params = newParams;
     }
@@ -450,10 +557,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
+     * Calculate the smooth value of the given input vector.
      *
-     * @param parIn
-     * @return
+     * @param parIn The input vector.
+     * @return The smooth value.
      */
     public double smoothValue(DoubleMatrix1D parIn) {
         //work with copy
@@ -503,7 +610,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         }
 
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                        .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
 
         // categorical loss
@@ -532,13 +639,11 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient this overloaded version
-     * calculates both nll and the smooth gradient at the same time any value in gradOut will be replaced by the new
-     * calculations
+     * Smooth method calculates the smooth loss and gradient given input parameters.
      *
-     * @param parIn
-     * @param gradOutVec
-     * @return
+     * @param parIn      input Vector
+     * @param gradOutVec gradient of g(X)
+     * @return the smooth loss
      */
     public double smooth(DoubleMatrix1D parIn, DoubleMatrix1D gradOutVec) {
         //work with copy
@@ -597,7 +702,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         //sqloss=-n/2*sum(log(betad))+...
         //.5*norm((X-e*alpha1'-Xbeta-Dtheta)*diag(sqrt(betad)),'fro')^2;
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                        .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
         //ok now tempLoss = res
         tempLoss.assign(Functions.mult(-1));
@@ -690,7 +795,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         gradOut.betad = this.factory1D.make(this.xDat.columns());
         for (int i = 0; i < this.p; i++) {
             gradOut.betad.set(i, -this.n / (2.0 * par.betad.get(i)) + this.alg.norm2(tempLoss.viewColumn(i)) / 2.0 -
-                    this.alg.mult(tempLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
+                                 this.alg.mult(tempLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
         gradOut.alpha1.assign(Functions.div(this.n));
@@ -705,10 +810,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Calculates penalty term of objective function
+     * Calculates the non-smooth value for the given input vector.
      *
-     * @param parIn
-     * @return
+     * @param parIn the input vector
+     * @return the non-smooth value
      */
     public double nonSmoothValue(DoubleMatrix1D parIn) {
         //DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
@@ -789,10 +894,10 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Gradient of the pseudolikelihood
+     * Calculates the smooth gradient for a given input vector.
      *
-     * @param parIn
-     * @return
+     * @param parIn the input vector
+     * @return the smooth gradient
      */
     public DoubleMatrix1D smoothGradient(DoubleMatrix1D parIn) {
         int n = this.xDat.rows();
@@ -923,7 +1028,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             }
 
             grad.betad.set(i, -n / (2.0 * par.betad.get(i)) + this.alg.norm2(negLoss.viewColumn(i)) / 2.0 -
-                    this.alg.mult(negLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
+                              this.alg.mult(negLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
         grad.alpha1.assign(Functions.div(n));
@@ -937,11 +1042,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * A proximal operator for the MGM
+     * Applies proximal operator on the given input vector with a positive parameter.
      *
-     * @param t parameter for operator, must be positive
-     * @param X input vector to operator
-     * @return output vector, same dimension as X
+     * @param t the positive parameter for proximal operator
+     * @param X the input vector
+     * @return the result of applying proximal operator on the input vector
+     * @throws IllegalArgumentException if t is not positive
      */
     public DoubleMatrix1D proximalOperator(double t, DoubleMatrix1D X) {
         //System.out.println("PROX with t = " + t);
@@ -1054,12 +1160,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Calculates penalty term and proximal operator at the same time for speed
+     * Calculates the non-smooth value for a given parameter and input vectors.
      *
-     * @param t  proximal operator parameter
-     * @param X  input
-     * @param pX prox operator solution
-     * @return value of penalty term
+     * @param t  the positive parameter for the prox operator
+     * @param X  the input vector
+     * @param pX the vector solution to prox_t(X)
+     * @return the non-smooth value
      */
     public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D pX) {
 
@@ -1197,7 +1303,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care
      * about edge existence.
      *
-     * @param iterLimit
+     * @param iterLimit a int
      */
     public void learnEdges(int iterLimit) {
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
@@ -1208,8 +1314,8 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when
      * we only care about edge existence.
      *
-     * @param iterLimit
-     * @param edgeChangeTol
+     * @param iterLimit     a int
+     * @param edgeChangeTol a int
      */
     public void learnEdges(int iterLimit, int edgeChangeTol) {
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
@@ -1220,7 +1326,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Converts MGM object to Graph object with edges if edge parameters are non-zero. Loses all edge param information
      *
-     * @return
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph graphFromMGM() {
 
@@ -1295,7 +1401,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Converts MGM to matrix of doubles. uses 2-norm to combine c-d edge parameters into single value and f-norm for
      * d-d edge parameters.
      *
-     * @return
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
     public DoubleMatrix2D adjMatFromMGM() {
         //List<Node> variables = getVariable();
@@ -1350,7 +1456,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Simple search command for GraphSearch implementation. Uses default edge convergence, 1000 iter limit.
      *
-     * @return
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         long startTime = MillisecondTimes.timeMillis();
@@ -1362,26 +1468,63 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Return time of execution for learning.
      *
-     * @return
+     * @return a long
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
+    /**
+     * The parameters of the MGM model.
+     */
     public static class MGMParams {
-        //Model parameters
-        private DoubleMatrix2D beta; //continuous-continuous
-        private DoubleMatrix1D betad; //cont squared node pot
-        private DoubleMatrix2D theta; //continuous-discrete
-        private DoubleMatrix2D phi; //discrete-discrete
-        private DoubleMatrix1D alpha1; //cont linear node pot
-        private DoubleMatrix1D alpha2; //disc node pot
+        /**
+         * continuous-continuous.
+         */
+        private DoubleMatrix2D beta;
 
+        /**
+         * cont squared node pot
+         */
+        private DoubleMatrix1D betad;
+
+        /**
+         * continuous-discrete
+         */
+        private DoubleMatrix2D theta;
+
+        /**
+         * discrete-discrete
+         */
+        private DoubleMatrix2D phi;
+
+        /**
+         * cont linear node pot
+         */
+        private DoubleMatrix1D alpha1;
+
+        /**
+         * disc node pot
+         */
+        private DoubleMatrix1D alpha2;
+
+        /**
+         * Default constructor
+         */
         public MGMParams() {
 
         }
 
-        //nothing is copied here, all pointers back to inputs...
+        /**
+         * nothing is copied here, all pointers back to inputs...
+         *
+         * @param beta   a {@link cern.colt.matrix.DoubleMatrix2D} object
+         * @param betad  a {@link cern.colt.matrix.DoubleMatrix1D} object
+         * @param theta  a {@link cern.colt.matrix.DoubleMatrix2D} object
+         * @param phi    a {@link cern.colt.matrix.DoubleMatrix2D} object
+         * @param alpha1 a {@link cern.colt.matrix.DoubleMatrix1D} object
+         * @param alpha2 a {@link cern.colt.matrix.DoubleMatrix1D} object
+         */
         public MGMParams(DoubleMatrix2D beta, DoubleMatrix1D betad, DoubleMatrix2D theta,
                          DoubleMatrix2D phi, DoubleMatrix1D alpha1, DoubleMatrix1D alpha2) {
             this.beta = beta;
@@ -1392,7 +1535,11 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             this.alpha2 = alpha2;
         }
 
-        //copy from another parameter set
+        /**
+         * copy from another parameter set
+         *
+         * @param parIn a {@link MGMParams} object
+         */
         public MGMParams(MGMParams parIn) {
             this.beta = parIn.beta.copy();
             this.betad = parIn.betad.copy();
@@ -1402,7 +1549,13 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             this.alpha2 = parIn.alpha2.copy();
         }
 
-        //copy params from flattened vector
+        /**
+         * copy params from flattened vector
+         *
+         * @param vec  a {@link cern.colt.matrix.DoubleMatrix1D} object
+         * @param p    a int
+         * @param ltot a int
+         */
         public MGMParams(DoubleMatrix1D vec, int p, int ltot) {
             int[] lens = {p * p, p, p * ltot, ltot * ltot, p, ltot};
             int[] lenSums = new int[lens.length];
@@ -1422,6 +1575,11 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             this.alpha2 = vec.viewPart(lenSums[4], lens[5]).copy();
         }
 
+        /**
+         * Returns a string representation of the object
+         *
+         * @return a string representation of the object
+         */
         public String toString() {
             String outStr = "alpha1: " + this.alpha1.toString();
             outStr += "\nalpha2: " + this.alpha2.toString();
@@ -1432,58 +1590,28 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
             return outStr;
         }
 
-        public DoubleMatrix1D getAlpha1() {
-            return this.alpha1;
-        }
-
-        public void setAlpha1(DoubleMatrix1D alpha1) {
-            this.alpha1 = alpha1;
-        }
-
-        public DoubleMatrix1D getAlpha2() {
-            return this.alpha2;
-        }
-
-        public void setAlpha2(DoubleMatrix1D alpha2) {
-            this.alpha2 = alpha2;
-        }
-
-        public DoubleMatrix1D getBetad() {
-            return this.betad;
-        }
-
-        public void setBetad(DoubleMatrix1D betad) {
-            this.betad = betad;
-        }
-
+        /**
+         * Returns beta.
+         *
+         * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+         */
         public DoubleMatrix2D getBeta() {
             return this.beta;
         }
 
+        /**
+         * Sets beta.
+         *
+         * @param beta a {@link cern.colt.matrix.DoubleMatrix2D} object
+         */
         public void setBeta(DoubleMatrix2D beta) {
             this.beta = beta;
-        }
-
-        public DoubleMatrix2D getPhi() {
-            return this.phi;
-        }
-
-        public void setPhi(DoubleMatrix2D phi) {
-            this.phi = phi;
-        }
-
-        public DoubleMatrix2D getTheta() {
-            return this.theta;
-        }
-
-        public void setTheta(DoubleMatrix2D theta) {
-            this.theta = theta;
         }
 
         /**
          * Copy all params into a single vector
          *
-         * @return
+         * @return a {@link cern.colt.matrix.DoubleMatrix1D} object
          */
         public DoubleMatrix1D toMatrix1D() {
             DoubleFactory1D fac = DoubleFactory1D.dense;
@@ -1506,14 +1634,6 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
 
             return outVec;
         }
-
-        //likely depreciated
-        public double[][] toVector() {
-            double[][] outArr = new double[1][];
-            outArr[0] = toMatrix1D().toArray();
-            return outArr;
-        }
     }
-
 }
 

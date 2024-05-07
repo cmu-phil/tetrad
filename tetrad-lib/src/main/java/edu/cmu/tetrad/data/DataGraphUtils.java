@@ -29,8 +29,29 @@ import java.util.List;
 
 /**
  * Sundry graph utils that need to be located in the data package to avoid package cycles.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class DataGraphUtils {
+
+    /**
+     * Prevents instantiation.
+     */
+    private DataGraphUtils() {
+    }
+
+    /**
+     * <p>randomSingleFactorModel.</p>
+     *
+     * @param numStructuralNodes                    a int
+     * @param numStructuralEdges                    a int
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
+     * @param numMeasuredMeasuredImpureAssociations a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomSingleFactorModel(int numStructuralNodes,
                                                 int numStructuralEdges, int numMeasurementsPerLatent,
                                                 int numLatentMeasuredImpureParents,
@@ -59,6 +80,17 @@ public class DataGraphUtils {
 
     }
 
+    /**
+     * <p>randomMim.</p>
+     *
+     * @param graph                                 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
+     * @param numMeasuredMeasuredImpureAssociations a int
+     * @param arrangeGraph                          a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomMim(Graph graph, int numMeasurementsPerLatent,
                                   int numLatentMeasuredImpureParents,
                                   int numMeasuredMeasuredImpureParents,
@@ -115,7 +147,7 @@ public class DataGraphUtils {
             Node measure = nodes.get(k);
 
             if (graph1.getEdge(latent, measure) != null ||
-                    graph1.paths().isAncestorOf(measure, latent)) {
+                graph1.paths().isAncestorOf(measure, latent)) {
                 i--;
                 misses++;
                 continue;
@@ -163,7 +195,7 @@ public class DataGraphUtils {
             Node measure2 = nodes.get(k);
 
             if (graph1.getEdge(measure1, measure2) != null ||
-                    graph1.paths().isAncestorOf(measure2, measure1)) {
+                graph1.paths().isAncestorOf(measure2, measure1)) {
                 i--;
                 misses++;
                 continue;
@@ -229,6 +261,14 @@ public class DataGraphUtils {
     /**
      * First a random single factor model is created with the specified number of latent nodes and latent edges, and
      * impurity structure. Then this is converted to a bifactor model by adding new latents and edges.
+     *
+     * @param numStructuralNodes                    a int
+     * @param numStructuralEdges                    a int
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
+     * @param numMeasuredMeasuredImpureAssociations a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph randomBifactorModel(int numStructuralNodes,
                                             int numStructuralEdges, int numMeasurementsPerLatent,

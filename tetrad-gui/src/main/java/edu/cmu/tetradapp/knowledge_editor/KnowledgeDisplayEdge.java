@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
@@ -83,24 +84,20 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private static final int REQUIRED_BY_GROUPS = 6;
 
-
     /**
      * Indicates a edge forbidden by a knowledge group.
      */
     private static final int FORBIDDEN_BY_GROUPS = 7;
-
 
     /**
      * The color that forbidden edges are drawn in.
      */
     private final Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
 
-
     /**
      * The color for forbidden group edges.
      */
     private final Color forbiddenGroupsColor = Color.MAGENTA.brighter();
-
 
     /**
      * The color for required group edges.
@@ -135,6 +132,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
+
+    /**
+     * The highlighted color.
+     */
     private Color highlightedColor = Color.red.darker().darker();
     /**
      * The model edge that this display is is portraying (if known).
@@ -164,6 +165,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * If the user clicks in this region, the edge will select.
      */
     private Polygon clickRegion;
+
+    /**
+     * True if only the adjacencies of the edge should be shown.
+     */
     private boolean showAdjacenciesOnly = false;
     /**
      * The offset of this edge for multiple edges between node pairs.
@@ -173,7 +178,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * The pair of points that this edge connects, from the edge of one component to the edge of the other.
      */
     private PointPair connectedPoints;
+
+    /**
+     * True if the edge is solid, false if it's dashed.
+     */
     private boolean solid = true;
+
+    /**
+     * True if the edge is thick, false if it's thin.
+     */
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
@@ -197,7 +210,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
-                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
+              type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
@@ -219,8 +232,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
      * model edge will be needed.
      *
-     * @param node1 the 'from' component.
-     * @param node2 the 'to' component.
+     * @param node1     the 'from' component.
+     * @param node2     the 'to' component.
+     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public KnowledgeDisplayEdge(Edge modelEdge, DisplayNode node1,
                                 DisplayNode node2) {
@@ -274,6 +288,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
+     * @param type            a int
      * @see #updateTrackPoint
      */
     public KnowledgeDisplayEdge(DisplayNode node1, Point mouseTrackPoint,
@@ -288,7 +303,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
-                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
+              type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
@@ -425,6 +440,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -493,13 +510,11 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Overrides the parent's contains() method using the click region, so that points not in the click region are
      * passed through to components lying beneath this one in the z-order. (Equates the effective shape of this edge to
      * its click region.)
-     *
-     * @param x the x value of the point to be tested.
-     * @param y the y value of the point to be tested.
-     * @return true of (x, y) is in the click region, false if not.
      */
     public boolean contains(int x, int y) {
         Polygon clickRegion = getClickRegion();
@@ -552,6 +567,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>getComp1.</p>
+     *
      * @return the 'from' AbstractGraphNode to which this session edge is anchored.
      */
     public final DisplayNode getComp1() {
@@ -559,6 +576,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>getComp2.</p>
+     *
      * @return the 'to' AbstractGraphNode to which this session edge is anchored.
      */
     public final DisplayNode getComp2() {
@@ -566,6 +585,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>Getter for the field <code>mode</code>.</p>
+     *
      * @return the getModel mode of the component.
      */
     public final int getMode() {
@@ -573,6 +594,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>getTrackPoint.</p>
+     *
      * @return the getModel track point for the edge.  When a new edge is being created in the UI, one end is anchored
      * to a AbstractGraphNode while the other tracks the mouse point.  When the mouse is released, the latest mouse
      * track point is needed to determine which node it's closest to so that it can be anchored to that node.
@@ -582,6 +605,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>isSelected.</p>
+     *
      * @return true iff the component is selected.
      */
     public final boolean isSelected() {
@@ -589,6 +614,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether the component is selected.
      */
     public final void setSelected(boolean selected) {
@@ -612,16 +639,16 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Updates the position of the free end of the edge while it is in the HALF_ANCHORED mode.
-     *
-     * @throws IllegalStateException if this method is called when this edge is not in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(Point p) {
         if (this.mode != KnowledgeDisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
-                            "method when the edge is " +
-                            "not in HALF_ANCHORED mode.");
+                    "method when the edge is " +
+                    "not in HALF_ANCHORED mode.");
         }
 
         this.mouseTrackPoint = new Point(p);
@@ -630,6 +657,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>Getter for the field <code>node1</code>.</p>
+     *
      * @return node 1.
      */
     public final DisplayNode getNode1() {
@@ -639,6 +668,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     //==========================PROTECTED METHODS========================//
 
     /**
+     * <p>Getter for the field <code>node2</code>.</p>
+     *
      * @return node 2.
      */
     public final DisplayNode getNode2() {
@@ -646,6 +677,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>Getter for the field <code>connectedPoints</code>.</p>
+     *
      * @return the two points this edge actually connects--that is, the intersections of the edge with node 1 and node
      * 2.
      */
@@ -654,6 +687,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Allows subclasses to set what the connected points are.
      */
     public final void setConnectedPoints(PointPair connectedPoints) {
@@ -661,6 +696,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * <p>Getter for the field <code>relativeMouseTrackPoint</code>.</p>
+     *
      * @return the moure track point relative to this component. (It's usually given relative to the containing
      * component.)
      */
@@ -878,26 +915,54 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         return this.showAdjacenciesOnly;
     }
 
+    /**
+     * <p>Setter for the field <code>showAdjacenciesOnly</code>.</p>
+     *
+     * @param showAdjacenciesOnly a boolean
+     */
     public void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
         this.showAdjacenciesOnly = showAdjacenciesOnly;
     }
 
+    /**
+     * <p>Getter for the field <code>modelEdge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
+     */
     public final Edge getModelEdge() {
         return this.modelEdge;
     }
 
+    /**
+     * <p>Getter for the field <code>offset</code>.</p>
+     *
+     * @return a double
+     */
     public double getOffset() {
         return this.offset;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setOffset(double offset) {
         this.offset = offset;
     }
 
+    /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
+     * @return a int
+     */
     public int getType() {
         return this.type;
     }
 
+    /**
+     * <p>getLineColor.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public Color getLineColor() {
         // Ignore highlighting, too evil. jdramsey 3/4/2010
 
@@ -918,20 +983,33 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Unimplemented.
      */
     public void setLineColor(Color lineColor) {
 //        throw new UnsupportedOperationException();
     }
 
+    /**
+     * <p>Getter for the field <code>solid</code>.</p>
+     *
+     * @return a boolean
+     */
     public boolean getSolid() {
         return this.solid;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSolid(boolean solid) {
         this.solid = solid;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setThick(boolean thick) {
         this.thick = thick;
@@ -939,40 +1017,59 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
+     * @return a {@link java.awt.Color} object
      */
     public Color getSelectedColor() {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Unimplemented.
      */
     public void setSelectedColor(Color selectedColor) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * <p>Getter for the field <code>highlightedColor</code>.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public Color getHighlightedColor() {
         return this.highlightedColor;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlightedColor(Color highlightedColor) {
         this.highlightedColor = highlightedColor;
     }
 
     /**
      * Unimplemented.
+     *
+     * @return a float
      */
     public float getStrokeWidth() {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Unimplemented.
      */
     public void setStrokeWidth(float strokeWidth) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlighted(boolean highlighted) {
         /*
       True iff this edge is highlighted.

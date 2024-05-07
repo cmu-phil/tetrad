@@ -26,20 +26,27 @@ import java.util.List;
  * Nov 19, 2018 2:20:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface CovarianceData extends Data {
 
     /**
+     * <p>getNumberOfCases.</p>
+     *
      * @return the number of cases in the data.
      */
     int getNumberOfCases();
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the number of variables in the data.
      */
     List<String> getVariables();
 
     /**
+     * <p>getData.</p>
+     *
      * @return the data in a 2D array.
      */
     double[][] getData();

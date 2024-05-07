@@ -32,9 +32,7 @@ import java.io.File;
 import java.util.prefs.Preferences;
 
 /**
- * Saves out a PNG image for a component.
- *
- * @author josephramsey
+ * LoadGraph is an action that allows the user to load a session from a file.
  */
 class LoadGraph extends AbstractAction {
 
@@ -43,6 +41,12 @@ class LoadGraph extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
+    /**
+     * <p>Constructor for LoadGraph.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title         a {@link java.lang.String} object
+     */
     public LoadGraph(GraphEditable graphEditable, String title) {
         super(title);
 
@@ -64,7 +68,10 @@ class LoadGraph extends AbstractAction {
     }
 
     /**
-     * Performs the action of loading a session from a file.
+     * Processes the event triggered by an action. This method is called when the user interacts with a component that
+     * triggers an action event, such as a button.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraph.getJFileChooser();

@@ -26,13 +26,14 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 
 /**
@@ -41,18 +42,40 @@ import java.io.ObjectInputStream;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The target graph.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph.
+     */
     private final Graph referenceGraph;
+
+    /**
+     * The parameters.
+     */
     private final Parameters params;
+
+    /**
+     * The name of the model.
+     */
     private String name;
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     *
+     * @param model1 a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param model2 a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public EdgewiseComparisonModel(GraphSource model1, GraphSource model2, Parameters params) {
         if (params == null) {
@@ -81,13 +104,20 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             this.targetGraph = model2.getGraph();
         }
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
 
     }
 
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>getComparisonGraph.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");
 
@@ -96,7 +126,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.cpdagForDag(graph);
+            return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return GraphTransforms.dagToPag(graph);
@@ -108,18 +138,36 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>getDataSet.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return (DataSet) this.params.get("dataSet", null);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getComparisonString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getComparisonString() {
         String refName = getParams().getString("referenceGraphName", null);
         String targetName = getParams().getString("targetGraphName", null);
@@ -137,17 +185,25 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
-
-    public enum ComparisonType {DAG, CPDAG, PAG}
 }
 
 

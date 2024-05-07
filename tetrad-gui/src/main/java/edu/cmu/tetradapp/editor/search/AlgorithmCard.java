@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import javax.swing.*;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.*;
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -44,48 +45,162 @@ import java.util.*;
  * Apr 15, 2019 11:31:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmCard extends JPanel {
-
+    @Serial
     private static final long serialVersionUID = -7552068626783685630L;
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
-
+    /**
+     * The algorithm runner.
+     */
     private final String ALGO_PARAM = "algo";
+
+    /**
+     * Independent test parameter.
+     */
     private final String IND_TEST_PARAM = "ind_test";
+
+    /**
+     * Score parameter.
+     */
     private final String SCORE_PARAM = "score";
+
+    /**
+     * Algorithm type parameter.
+     */
     private final String ALGO_TYPE_PARAM = "algo_type";
+
+    /**
+     * Dataset filter parameter.
+     */
     private final String DATASET_FILTER = "dataset_filter";
+
+    /**
+     * Knowledge parameter.
+     */
     private final String KNOWLEDGE_PARAM = "knowledge";
 
+    /**
+     * Algorithm type options.
+     */
     private final List<JRadioButton> algoTypeOpts = new ArrayList<>();
 
+    /**
+     * Algorithm models.
+     */
     private final DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
 
+    /**
+     * Algorithm filter button group.
+     */
     private final ButtonGroup algoFilterBtnGrp = new ButtonGroup();
+
+    /**
+     * Dataset filter button group.
+     */
     private final ButtonGroup datasetFilterBtnGrp = new ButtonGroup();
 
+    /**
+     * Default independence test models.
+     */
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
+
+    /**
+     * Default score models.
+     */
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
+
+    /**
+     * Knowledge checkbox.
+     */
     private final JCheckBox knowledgeChkBox = new JCheckBox("accepts knowledge");
+
+    /**
+     * Linear, Gaussian radio button.
+     */
     private final JRadioButton linearGaussianRadBtn = new JRadioButton("Linear, Gaussian");
+
+    /**
+     * Mixed, discrete, Gaussian radio button.
+     */
     private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Gaussian");
+
+    /**
+     * General radio button.
+     */
     private final JRadioButton generalRadBtn = new JRadioButton("General");
+
+    /**
+     * All radio button.
+     */
     private final JRadioButton allRadBtn = new JRadioButton("All");
+
+    /**
+     * Independence test combo box.
+     */
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
+
+    /**
+     * Score combo box.
+     */
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
+
+    /**
+     * Algorithm list.
+     */
     private final JList<AlgorithmModel> algorithmList = new JList<>(this.algoModels);
 
+    /**
+     * Algorithm description text area.
+     */
     private final JTextArea algoDescTextArea = new JTextArea();
+
+    /**
+     * Score description text area.
+     */
     private final JTextArea scoreDescTextArea = new JTextArea();
+
+    /**
+     * Test description text area.
+     */
     private final JTextArea testDescTextArea = new JTextArea();
+
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The data type.
+     */
     private final DataType dataType;
+
+    /**
+     * The desktop.
+     */
     private final TetradDesktop desktop;
+
+    /**
+     * Multi-data algorithm.
+     */
     private final boolean multiDataAlgo;
+
+    /**
+     * Updating test models.
+     */
     private boolean updatingTestModels;
+
+    /**
+     * Updating score models.
+     */
     private boolean updatingScoreModels;
 
+    /**
+     * <p>Constructor for AlgorithmCard.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType(algorithmRunner);
@@ -234,10 +349,20 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    /**
+     * <p>getSelectedAlgorithm.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
+     */
     public AlgorithmModel getSelectedAlgorithm() {
         return this.algorithmList.getSelectedValue();
     }
 
+    /**
+     * <p>getSelectedIndependenceTest.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
+     */
     public IndependenceTestModel getSelectedIndependenceTest() {
         if (this.indTestComboBox.isEnabled()) {
             return this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
@@ -246,6 +371,11 @@ public class AlgorithmCard extends JPanel {
         return null;
     }
 
+    /**
+     * <p>getSelectedScore.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
+     */
     public ScoreModel getSelectedScore() {
         if (this.scoreComboBox.isEnabled()) {
             this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
@@ -275,8 +405,6 @@ public class AlgorithmCard extends JPanel {
      * This restore mechanism won't restore user selections other than selected algo name when user changes the upstream
      * (after clicking the "Execute" button), because a new algo algorithmRunner is created and we lose the stored
      * models from the old algorithmRunner - Zhou
-     * <p>
-     * //     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.DATASET_FILTER);
@@ -359,10 +487,16 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    /**
+     * <p>refresh.</p>
+     */
     public void refresh() {
         restoreUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
 
+    /**
+     * <p>saveStates.</p>
+     */
     public void saveStates() {
         rememberUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
@@ -370,9 +504,9 @@ public class AlgorithmCard extends JPanel {
     /**
      * Initialize algorithm
      *
-     * @param algoModel
-     * @param indTestModel
-     * @param scoreModel
+     * @param algoModel    a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
+     * @param indTestModel a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
+     * @param scoreModel   a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
      * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
@@ -389,7 +523,7 @@ public class AlgorithmCard extends JPanel {
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
-        if (algorithm != null && algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
+        if (algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
             Algorithm externalGraph = new SingleGraphAlg(this.algorithmRunner.getSourceGraph());
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
@@ -397,6 +531,11 @@ public class AlgorithmCard extends JPanel {
         return algorithm;
     }
 
+    /**
+     * <p>isAllValid.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAllValid() {
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         IndependenceTestModel indTestModel = this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
@@ -433,12 +572,12 @@ public class AlgorithmCard extends JPanel {
         firePropertyChange("algoFwdBtn", null, true);
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        Class algoClass = algoModel.getAlgorithm().clazz();
+        Class<?> algoClass = algoModel.getAlgorithm().clazz();
 
         if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
             String msg;
             try {
-                Object algo = algoClass.newInstance();
+                Object algo = algoClass.getDeclaredConstructor().newInstance();
                 Method m = algoClass.getDeclaredMethod("getDescription");
                 m.setAccessible(true);
                 try {
@@ -447,7 +586,7 @@ public class AlgorithmCard extends JPanel {
                     msg = "";
                 }
 
-            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
                 TetradLogger.getInstance().forceLogMessage(exception.toString());
                 msg = "";
             }
@@ -459,7 +598,7 @@ public class AlgorithmCard extends JPanel {
             if (TakesExternalGraph.class.isAssignableFrom(algoClass)) {
                 if (this.algorithmRunner.getSourceGraph() == null || this.algorithmRunner.getDataModelList().isEmpty()) {
                     try {
-                        Object algo = algoClass.newInstance();
+                        Object algo = algoClass.getDeclaredConstructor().newInstance();
                         Method m = algoClass.getDeclaredMethod("setExternalGraph", Algorithm.class);
                         m.setAccessible(true);
                         try {
@@ -469,7 +608,7 @@ public class AlgorithmCard extends JPanel {
                             firePropertyChange("algoFwdBtn", null, false);
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
-                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
                         TetradLogger.getInstance().forceLogMessage(exception.toString());
                     }
                 }
@@ -478,12 +617,12 @@ public class AlgorithmCard extends JPanel {
             // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().annotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
-                    || cmd.equalsIgnoreCase("ts-gfci")
-                    || cmd.equalsIgnoreCase("ts-imgs")) {
+                || cmd.equalsIgnoreCase("ts-gfci")
+                || cmd.equalsIgnoreCase("ts-imgs")) {
                 DataModel dataModel = this.algorithmRunner.getDataModel();
                 Knowledge knowledge = this.algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
-                        && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
+                    && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
                     firePropertyChange("algoFwdBtn", null, false);
                     JOptionPane.showMessageDialog(this.desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -503,19 +642,19 @@ public class AlgorithmCard extends JPanel {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
-                            .forEach(e -> this.algoModels.addElement(e));
+                            .forEach(this.algoModels::addElement);
                 } else {
-                    algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
-                            .forEach(e -> this.algoModels.addElement(e));
+                    algorithmModels.getModels(this.dataType, this.multiDataAlgo)
+                            .forEach(this.algoModels::addElement);
                 }
             } else {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
-                            .forEach(e -> this.algoModels.addElement(e));
+                            .forEach(this.algoModels::addElement);
                 } else {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
-                            .forEach(e -> this.algoModels.addElement(e));
+                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo)
+                            .forEach(this.algoModels::addElement);
                 }
             }
 
@@ -540,18 +679,19 @@ public class AlgorithmCard extends JPanel {
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                        .forEach(this.indTestComboBox::addItem);
             } else if (this.mixedRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                for (IndependenceTestModel e : models) {
+                    if (e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class)) {
+                        this.indTestComboBox.addItem(e);
+                    }
+                }
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(General.class))
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                        .forEach(this.indTestComboBox::addItem);
             } else if (this.allRadBtn.isSelected()) {
-                models.stream()
-                        .forEach(e -> this.indTestComboBox.addItem(e));
+                models.forEach(this.indTestComboBox::addItem);
             }
         }
         this.updatingTestModels = false;
@@ -591,18 +731,17 @@ public class AlgorithmCard extends JPanel {
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(Mixed.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
                         .filter(e -> e.getScore().clazz().isAnnotationPresent(General.class))
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                        .forEach(this.scoreComboBox::addItem);
             } else if (this.allRadBtn.isSelected()) {
-                models.stream()
-                        .forEach(e -> this.scoreComboBox.addItem(e));
+                models.forEach(this.scoreComboBox::addItem);
             }
         }
         this.updatingScoreModels = false;
@@ -686,6 +825,7 @@ public class AlgorithmCard extends JPanel {
 
     private static class DescriptionPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = 2329356999486712496L;
 
         final String borderTitle;
@@ -726,6 +866,7 @@ public class AlgorithmCard extends JPanel {
 
     private class AlgorithmListPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -7068543172769683902L;
 
         public AlgorithmListPanel() {
@@ -759,6 +900,7 @@ public class AlgorithmCard extends JPanel {
 
     private class AlgorithmFilterPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -3120503093689632462L;
 
         public AlgorithmFilterPanel() {
@@ -858,6 +1000,7 @@ public class AlgorithmCard extends JPanel {
 
     private class TestAndScorePanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -1594897454478052884L;
 
         public TestAndScorePanel() {

@@ -14,27 +14,21 @@ import java.util.concurrent.ForkJoinPool;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * Implements Best Order Score Search (BOSS). The following references are relevant:
+ * Implements Best Order Score Search (BOSS). The reference is this:
  * <p>
- * Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
- * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
- * <p>
- * Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for learning Bayesian
- * networks. arXiv preprint arXiv:1207.1429.
- * <p>
- * Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy permutation-based causal inference
- * algorithms. Biometrika, 108(4), 795-814.
+ * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast Scalable and Accurate
+ * Discovery of DAGs Using the Best Order Score Search and Grow Shrink Trees. Advances in Neural Information Processing
+ * Systems, 36.
  * <p>
  * The BOSS algorithm is based on the idea that implied DAGs for permutations are most optimal in their BIC scores when
- * the variables in the permutations are ordered causally--that is, so that that causes in the models come before
- * effects in a topological order.
+ * the variables in the permutations are ordered so that that causes in the models come before effects for some DAG in
+ * the true Markov equivalence class.
  * <p>
  * This algorithm is implemented as a "plugin-in" algorithm to a PermutationSearch object (see), which deals with
  * certain details of knowledge handling that are common to different permutation searches.
  * <p>
  * BOSS, like GRaSP (see), is characterized by high adjacency and orientation precision (especially) and recall for
- * moderate sample sizes. BOSS scales up currently further than GRaSP to larger variable sets and denser graphs and so
- * is currently preferable from a practical standpoint, though performance is essentially identical.
+ * moderate sample sizes.
  * <p>
  * The algorithm works as follows:
  * <ol>
@@ -46,7 +40,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * </ol>
  * <p>
  * The optional BES step is needed for correctness, though with large
- * models is has very little effect on the output, since nearly all edges
+ * models this has very little effect on the output, since nearly all edges
  * are already oriented, so a parameter is included to turn that step off.
  * <p>
  * Knowledge can be used with this search. If tiered knowledge is used,
@@ -56,55 +50,85 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.
  * <p>
- * A parameter is included to restart the search a certain number of time.
+ * A parameter is included to restart the search a certain number of times.
  * The idea is that the goal is to optimize a BIC score, so if several runs
  * are done of the algorithm for the same data, the model with the highest
  * BIC score should be returned and the others ignored.
- * <p>
- * This class is meant to be used in the context of the PermutationSearch
- * class (see).
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Grasp
  * @see Knowledge
  */
 public class Boss implements SuborderSearch {
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The variables.
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
-    // The parents.
+    /**
+     * The parents.
+     */
     private final Map<Node, Set<Node>> parents;
-    // The grow-shrink trees.
+    /**
+     * The grow-shrink trees.
+     */
     private Map<Node, GrowShrinkTree> gsts;
-    // The set of all variables.
+    /**
+     * The set of all variables.
+     */
     private Set<Node> all;
-    // The pool for parallelism.
+    /**
+     * The pool for parallelism.
+     */
     private ForkJoinPool pool;
-    // The knowledge.
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The BES algorithm.
+    /**
+     * The BES algorithm.
+     */
     private BesPermutation bes = null;
-    // The number of random starts to use.
+    /**
+     * The number of random starts to use.
+     */
     private int numStarts = 1;
-    // True if the order of the variables in the data should be used for an initial best-order search, false if a random
-    // permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
-    // included so that the algorithm will be capable of outputting the same results with the same data without any
-    // randomness.
+    /**
+     * True if the order of the variables in the data should be used for an initial best-order search, false if a random
+     * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+     * included so that the algorithm will be capable of outputting the same results with the same data without any
+     * randomness.
+     */
     private boolean useDataOrder = true;
-    // True if the grow-shrink trees should be reset after each best-mutation step.
+    /**
+     * True if the grow-shrink trees should be reset after each best-mutation step.
+     */
     private boolean resetAfterBM = false;
-    // True if the grow-shrink trees should be reset after each restart.
+    /**
+     * True if the grow-shrink trees should be reset after each restart.
+     */
     private boolean resetAfterRS = true;
-    // The number of threads to use.
+    /**
+     * The number of threads to use.
+     */
     private int numThreads = 1;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private List<Double> bics;
-    // The BIC scores.
+    /**
+     * The BIC scores.
+     */
     private List<Double> times;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose = false;
 
 
@@ -127,6 +151,7 @@ public class Boss implements SuborderSearch {
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
      * ordering found.
+     *
      * @param prefix   The prefix of the suborder.
      * @param suborder The suborder.
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
@@ -145,8 +170,7 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
+        this.pool = new ForkJoinPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -226,7 +250,6 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets the knowledge to be used for the search.
-     * @param knowledge This knowledge. If null, no knowledge will be used.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -248,6 +271,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each best-mutation step.
+     *
      * @param reset True if so.
      */
     public void setResetAfterBM(boolean reset) {
@@ -256,39 +280,70 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each restart.
+     *
      * @param reset True if so.
      */
     public void setResetAfterRS(boolean reset) {
         this.resetAfterRS = reset;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of threads to use.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
     public void setNumThreads(int numThreads) {
+        if (numThreads < 1) throw new IllegalArgumentException("The number of threads must be at least 1.");
         this.numThreads = numThreads;
     }
 
+    /**
+     * Returns the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns the map from nodes to the sets of their parents.
+     */
     @Override
     public Map<Node, Set<Node>> getParents() {
         return this.parents;
     }
 
+    /**
+     * Returns the score being used for the search.
+     */
     @Override
     public Score getScore() {
         return this.score;
     }
 
+    /**
+     * Returns the BIC scores.
+     *
+     * @return This list.
+     */
     public List<Double> getBics() {
         return this.bics;
     }
 
+    /**
+     * Returns the times.
+     *
+     * @return This list.
+     */
     public List<Double> getTimes() {
         return this.times;
     }
@@ -305,6 +360,16 @@ public class Boss implements SuborderSearch {
         this.useDataOrder = useDataOrder;
     }
 
+    /**
+     * This method asynchronously performs a better mutation operation on the given suborder of nodes. It takes a prefix
+     * of nodes that must precede the suborder, a suborder of nodes to be ordered, and a node to be moved in the
+     * suborder. It returns true if the suborder was modified and false otherwise.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     * @param x        The node to be moved in the suborder.
+     * @return true if the suborder was modified, false otherwise.
+     */
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
         List<Callable<Void>> tasks = new ArrayList<>();
 
@@ -318,6 +383,11 @@ public class Boss implements SuborderSearch {
         tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
 
         for (Node z : suborder) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted");
+            }
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
             if (x == z) {
                 curr = i;
@@ -333,7 +403,12 @@ public class Boss implements SuborderSearch {
         }
 
         shuffle(tasks);
-        this.pool.invokeAll(tasks);
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
         if (this.resetAfterBM) this.gsts.get(x).reset();
         double runningScore = 0;
 
@@ -363,6 +438,14 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
+    /**
+     * Reorders a suborder of nodes in a more optimal way.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     * @param x        The node to be moved in the suborder.
+     * @return true if the suborder was modified, false otherwise.
+     */
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
@@ -373,7 +456,11 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
-            if (Thread.currentThread().isInterrupted()) return false;
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted");
+            }
 
             Node z = itr.next();
 
@@ -417,6 +504,12 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
+    /**
+     * Runs the Backward Equivalence Search from GES.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     */
     private void bes(List<Node> prefix, List<Node> suborder) {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
@@ -426,6 +519,14 @@ public class Boss implements SuborderSearch {
         graph.paths().makeValidOrder(suborder);
     }
 
+    /**
+     * Updates the suborder of variables by adding each variable from the suborder to the prefix and computing the
+     * score.
+     *
+     * @param prefix   The list of variables that must precede the suborder.
+     * @param suborder The list of variables to be ordered.
+     * @return The score after updating the suborder.
+     */
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
 
@@ -441,6 +542,11 @@ public class Boss implements SuborderSearch {
         return score;
     }
 
+    /**
+     * Makes the given knowledge order valid by rearranging the elements in the order list.
+     *
+     * @param order The list of nodes representing the knowledge order.
+     */
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (this.knowledge.isEmpty()) return;
 
@@ -480,6 +586,9 @@ public class Boss implements SuborderSearch {
 
     // alter this code so that it roughly obeys tiers.
 
+    /**
+     * This class represents a callable task for computing the score for a given set of variables.
+     */
     private static class Trace implements Callable<Void> {
         private final GrowShrinkTree gst;
         private final Set<Node> all;
@@ -495,10 +604,17 @@ public class Boss implements SuborderSearch {
             this.index = index;
         }
 
+        /**
+         * Computes the score for the given set of variables.
+         *
+         * @return The score.
+         */
         @Override
         public Void call() {
-            double score = gst.trace(this.prefix, this.all);
-            this.scores[index] = score;
+            if (!Thread.currentThread().isInterrupted()) {
+                double score = gst.trace(this.prefix, this.all);
+                this.scores[index] = score;
+            }
 
             return null;
         }

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,21 +14,48 @@ import java.util.List;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PercentAmbiguous implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new instance of the statistic.
+     */
+    public PercentAmbiguous() {
+
+    }
+
+    /**
+     * Retrieves the abbreviation for the statistic.
+     *
+     * @return The abbreviation for the statistic.
+     */
     @Override
     public String getAbbreviation() {
         return "%AMB";
     }
 
 
+    /**
+     * Retrieves the description of the statistic.
+     *
+     * @return The description of the statistic.
+     */
     @Override
     public String getDescription() {
         return "Percent Ambiguous Triples";
     }
 
+    /**
+     * Calculates the percentage of ambiguous triples in the estimated graph compared to the true graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The percentage of ambiguous triples in the estimated graph.
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numAmbiguous = 0;
@@ -59,6 +87,12 @@ public class PercentAmbiguous implements Statistic {
         return numAmbiguous / (double) numTriples;
     }
 
+    /**
+     * Calculates the normalized value of a statistic given the original value.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
+     */
     @Override
     public double getNormValue(double value) {
         return 1.0 - value;

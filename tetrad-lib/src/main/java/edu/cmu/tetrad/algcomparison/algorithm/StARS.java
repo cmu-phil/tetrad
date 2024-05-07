@@ -7,28 +7,55 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * StARS
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StARS implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The low value for the parameter.
+     */
     private final double low;
+
+    /**
+     * The high value for the parameter.
+     */
     private final double high;
+
+    /**
+     * The parameter to vary.
+     */
     private final String parameter;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private final Algorithm algorithm;
 
+    /**
+     * <p>Constructor for StARS.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     * @param parameter a {@link java.lang.String} object
+     * @param low       a double
+     * @param high      a double
+     */
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) {
             throw new IllegalArgumentException("Must have low < high");
@@ -45,7 +72,8 @@ public class StARS implements Algorithm {
 
         List<Graph> graphs = new ArrayList<>();
 
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         class StabilityAction extends RecursiveAction {
 
@@ -82,7 +110,16 @@ public class StARS implements Algorithm {
 
         final int chunk = 1;
 
-        pool.invoke(new StabilityAction(chunk, 0, samples.size()));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, samples.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         int p = samples.get(0).getNumColumns();
         List<Node> nodes = graphs.get(0).getNodes();
@@ -124,6 +161,9 @@ public class StARS implements Algorithm {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet;
@@ -165,21 +205,33 @@ public class StARS implements Algorithm {
         return this.algorithm.search(dataSet, _parameters);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "StARS for " + this.algorithm.getDescription() + " parameter = " + this.parameter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

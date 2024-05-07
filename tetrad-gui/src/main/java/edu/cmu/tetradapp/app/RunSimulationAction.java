@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
@@ -41,6 +41,8 @@ class RunSimulationAction extends AbstractAction {
 
     /**
      * Constructs a new action to open sessions.
+     *
+     * @param sessionEditorNode a {@link edu.cmu.tetradapp.app.SessionEditorNode} object
      */
     public RunSimulationAction(SessionEditorNode sessionEditorNode) {
         super("Run Simulation...");
@@ -48,6 +50,9 @@ class RunSimulationAction extends AbstractAction {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         executeNode();
     }
@@ -71,11 +76,11 @@ class RunSimulationAction extends AbstractAction {
         int selection = JOptionPane.showOptionDialog(
                 centeringComp,
                 "Executing this node will erase any model for this node, " +
-                        "\nerase any models for any descendant nodes, and create " +
-                        "\nnew models with new values using the default" +
-                        "\nparameters for each node, which you may edit, and " +
-                        "\nthe repetition numbers for each node, which you " +
-                        "\nmay also edit. Continue?",
+                "\nerase any models for any descendant nodes, and create " +
+                "\nnew models with new values using the default" +
+                "\nparameters for each node, which you may edit, and " +
+                "\nthe repetition numbers for each node, which you " +
+                "\nmay also edit. Continue?",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[1]);
 
@@ -98,7 +103,7 @@ class RunSimulationAction extends AbstractAction {
 
 
     private SessionEditorWorkbench getWorkbench() {
-        final Class c = SessionEditorWorkbench.class;
+        final Class<?> c = SessionEditorWorkbench.class;
         Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
         return (SessionEditorWorkbench) container;
     }
@@ -113,7 +118,6 @@ class RunSimulationAction extends AbstractAction {
 
             }
         }
-        ;
 
         new MyWatchedProcess();
     }

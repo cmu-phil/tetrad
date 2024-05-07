@@ -46,7 +46,7 @@ public class TestIntegrator {
     public void testPdfIntegration() {
         setUp();
         assertEquals("Integrator not integrate properly under the function: " +
-                        this.function, 0.5, Integrator.getArea(this.function, 0.0, 1.0, 10000),
+                     this.function, 0.5, Integrator.getArea(this.function, 0.0, 1.0, 10000),
                 0.000000001);
     }
 }

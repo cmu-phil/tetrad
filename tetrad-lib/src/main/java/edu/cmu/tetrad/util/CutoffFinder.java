@@ -27,8 +27,16 @@ package edu.cmu.tetrad.util;
  * origin.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CutoffFinder {
+
+    /**
+     * Prevents instantiation.
+     */
+    private CutoffFinder() {
+
+    }
 
     /**
      * Assumes f is a positive symmetric function between x1 and x2 about 0. Integrates from 0 in the direction of x2 in

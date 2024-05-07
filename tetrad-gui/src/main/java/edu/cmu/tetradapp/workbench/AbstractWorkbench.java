@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 import org.apache.commons.math3.util.FastMath;
@@ -33,6 +34,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -44,6 +46,7 @@ import java.util.prefs.Preferences;
  * @author Aaron Powell
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  * @see DisplayNode
  * @see DisplayEdge
  */
@@ -63,6 +66,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * The mode in which the user is permitted to select workbench items or move nodes.
      */
     public static final int ADD_EDGE = 2;
+    @Serial
     private static final long serialVersionUID = 6718395673225983249L;
 
     // =========================PRIVATE FIELDS=============================//
@@ -86,6 +90,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Handler for PropertyChangeEvents.
      */
     private final PropertyChangeHandler propChangeHandler = new PropertyChangeHandler(this);
+    private final LinkedList<Graph> graphStack = new LinkedList<>();
+    private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
      * The workbench which this workbench displays.
      */
@@ -148,39 +154,42 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Maximum x value (for dragging).
      */
     private int maxX = 10000;
-
     /**
      * Maximum y value (for dragging).
      */
     private int maxY = 10000;
-
     /**
      * True iff node/edge adding/removing errors should be reported to the user.
      */
     private boolean nodeEdgeErrorsReported;
-
     /**
      * True iff layout is permitted using a right click popup.
      */
     private boolean rightClickPopupAllowed;
-
     /**
      * A key dispatcher to allow pressing the control key to control whether edges will be drawn in the workbench.
      */
     private KeyEventDispatcher controlDispatcher;
-
+    /**
+     * The current displayed mouseover equation label. Null if none is displayed. Used for removing the label.
+     */
     private Point currentMouseLocation;
-
     /**
      * Returns the current displayed mouseover equation label. Returns null if none is displayed. Used for removing the
      * label.
      */
     private boolean enableEditing = true;
-
-    private boolean doPagColoring = false;
-
+    /**
+     * Whether to do pag edge specialization markup.
+     */
+    private boolean pagEdgeSpecializationMarked = false;
+    /**
+     * The graph to be used for sampling.
+     */
     private Graph samplingGraph;
-
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     // ==============================CONSTRUCTOR============================//
@@ -247,18 +256,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<IDisplayEdge> graphEdges = new ArrayList<>();
 
         for (Component comp : components) {
-            if (comp instanceof DisplayNode) {
+            if (comp instanceof DisplayNode node) {
                 if (!isDeleteVariablesAllowed()) {
                     continue;
                 }
 
-                DisplayNode node = (DisplayNode) comp;
-
                 if (node.isSelected()) {
                     graphNodes.add(node);
                 }
-            } else if (comp instanceof IDisplayEdge) {
-                IDisplayEdge edge = (IDisplayEdge) comp;
+            } else if (comp instanceof IDisplayEdge edge) {
 
                 if (edge.isSelected()) {
                     graphEdges.add(edge);
@@ -268,12 +274,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         for (DisplayNode graphNode : graphNodes) {
             removeNode(graphNode);
+            modelNodesToDisplay.remove(graphNode.getModelNode());
         }
 
         for (IDisplayEdge displayEdge : graphEdges) {
             try {
                 removeEdge(displayEdge);
                 resetEdgeOffsets(displayEdge);
+                modelEdgesToDisplay.remove(displayEdge.getModelEdge());
             } catch (Exception e) {
                 if (isNodeEdgeErrorsReported()) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
@@ -339,6 +347,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return the Graph this workbench displays.
      */
     public final Graph getGraph() {
@@ -360,6 +370,71 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         registerKeys();
         firePropertyChange("graph", null, graph);
         firePropertyChange("modelChanged", null, null);
+    }
+
+    public void undo() {
+        if (graph == null) {
+            return;
+        }
+
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
+        Graph oldGraph = new EdgeListGraph(graph);
+
+        do {
+            if (graphStack.isEmpty()) {
+                break;
+            }
+
+            Graph graph = graphStack.removeLast();
+
+            if (pagEdgeSpecializationMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
+            }
+
+            setGraph(graph);
+            redoStack.add(graph);
+        } while (graph.equals(oldGraph));
+    }
+
+    public void redo() {
+        if (graph == null) {
+            return;
+        }
+
+        if (graph instanceof SemGraph) {
+            return;
+        }
+
+        Graph oldGraph = new EdgeListGraph(graph);
+
+        do {
+            if (redoStack.isEmpty()) {
+                break;
+            }
+
+            Graph graph = redoStack.removeLast();
+
+            if (pagEdgeSpecializationMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
+            }
+
+            setGraph(graph);
+        } while (graph.equals(oldGraph));
+    }
+
+    public void setToOriginal() {
+        if (graphStack.size() == 1) {
+            return;
+        }
+
+        Graph graph = graphStack.get(0);
+        for (int i = 1; i < new LinkedList<>(graphStack).size(); i++) {
+            graphStack.remove(graphStack.get(i));
+        }
+        setGraph(graph);
     }
 
     /**
@@ -396,6 +471,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>getSelectedComponents.</p>
+     *
      * @return the currently selected nodes as a vector.
      */
     public final List<Component> getSelectedComponents() {
@@ -414,6 +491,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>getModelEdge.</p>
+     *
      * @param displayEdge Ibid.
      * @return the model edge for the given display edge.
      */
@@ -512,10 +591,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.allowEdgeReorientations = allowEdgeReorientations;
     }
 
+    /**
+     * <p>Getter for the field <code>samplingGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final Graph getSamplingGraph() {
         return samplingGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>samplingGraph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final void setSamplingGraph(Graph graph) {
         samplingGraph = graph;
     }
@@ -557,6 +646,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Node tooltip to show the node attributes - Added by Kong
+     *
+     * @param modelNode   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param toolTipText a {@link java.lang.String} object
      */
     public final void setNodeToolTip(Node modelNode, String toolTipText) {
         if (modelNode == null) {
@@ -572,6 +664,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Edge tooltip to show the edge type and probabilities - Added by Zhou
+     *
+     * @param modelEdge   a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param toolTipText a {@link java.lang.String} object
      */
     public final void setEdgeToolTip(Edge modelEdge, String toolTipText) {
         if (modelEdge == null) {
@@ -589,7 +684,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Sets the label for a node to a particular JComponent. The label will be displayed slightly off to the right of
      * the node.
      *
-     * @param label Ibid.
+     * @param label     Ibid.
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x         a int
+     * @param y         a int
      */
     public final void setNodeLabel(Node modelNode, JComponent label, int x, int y) {
         if (modelNode == null) {
@@ -662,10 +760,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         getDisplayToLabels().remove(displayEdge);
     }
 
+    /**
+     * <p>Getter for the field <code>modelEdgesToDisplay</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public final Map<Edge, Object> getModelEdgesToDisplay() {
         return this.modelEdgesToDisplay;
     }
 
+    /**
+     * <p>Getter for the field <code>modelNodesToDisplay</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public final Map<Node, Object> getModelNodesToDisplay() {
         return this.modelNodesToDisplay;
     }
@@ -676,6 +784,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Selects the editor node corresponding to the given model node.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public final void selectNode(Node modelNode) {
         if (!isAllowNodeEdgeSelection()) {
@@ -691,6 +801,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Selects the editor edge corresponding to the given model edge.
+     *
+     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public final void selectEdge(Edge modelEdge) {
         IDisplayEdge graphEdge = (IDisplayEdge) getModelEdgesToDisplay().get(modelEdge);
@@ -709,8 +821,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Component[] components = getComponents();
 
         for (Component comp : components) {
-            if (comp instanceof IDisplayEdge) {
-                IDisplayEdge graphEdge = (IDisplayEdge) comp;
+            if (comp instanceof IDisplayEdge graphEdge) {
                 DisplayNode node1 = graphEdge.getComp1();
                 DisplayNode node2 = graphEdge.getComp2();
 
@@ -734,8 +845,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Component[] components = getComponents();
 
         for (Component comp : components) {
-            if (comp instanceof IDisplayEdge) {
-                IDisplayEdge graphEdge = (IDisplayEdge) comp;
+            if (comp instanceof IDisplayEdge graphEdge) {
                 DisplayNode node1 = graphEdge.getComp1();
                 DisplayNode node2 = graphEdge.getComp2();
 
@@ -756,7 +866,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Paints the background of the workbench.
+     * Paints the component with the specified graphics context.
+     *
+     * @param g the Graphics context in which to paint
      */
     public final void paint(Graphics g) {
         g.setColor(getBackground());
@@ -784,15 +896,30 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
+    /**
+     * <p>getBackground.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public Color getBackground() {
         return super.getBackground();
     }
 
+    /**
+     * Sets the background color of this component.
+     *
+     * @param color the desired background color
+     */
     public void setBackground(Color color) {
         super.setBackground(color);
         repaint();
     }
 
+    /**
+     * Layouts the graph nodes using the given layout graph.
+     *
+     * @param layoutGraph the graph used for layouting the nodes. Must not be null.
+     */
     public void layoutByGraph(Graph layoutGraph) {
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
@@ -815,14 +942,29 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // setGraphWithoutNotify(graph);
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
@@ -836,6 +978,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         repaint();
     }
 
+    /**
+     * <p>getVisibleRect.</p>
+     *
+     * @return a {@link java.awt.Rectangle} object
+     */
     public Rectangle getVisibleRect() {
         List<Node> nodes = this.graph.getNodes();
 
@@ -858,6 +1005,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // return super.getVisibleRect();
     }
 
+    /**
+     * <p>scrollNodesToVisible.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     */
     public void scrollNodesToVisible(List<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return;
@@ -875,24 +1027,67 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         scrollRectToVisible(rect);
     }
 
+    /**
+     * <p>getComponent.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link java.awt.Component} object
+     */
     public Component getComponent(Edge edge) {
         return (DisplayEdge) this.modelEdgesToDisplay.get(edge);
     }
 
+    /**
+     * <p>getComponent.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.awt.Component} object
+     */
     public Component getComponent(Node node) {
         return (DisplayNode) this.modelNodesToDisplay.get(node);
     }
 
+    /**
+     * <p>getNewModelNode.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public abstract Node getNewModelNode();
 
+    /**
+     * Returns a new DisplayNode object for the given modelNode.
+     *
+     * @param modelNode a Node object representing the model node
+     * @return a DisplayNode object for the given modelNode
+     */
     public abstract DisplayNode getNewDisplayNode(Node modelNode);
 
+    /**
+     * Retrieves a new display edge based on the given model edge.
+     *
+     * @param modelEdge the model edge to create a new display edge from
+     * @return a new {@link IDisplayEdge} object
+     */
     public abstract IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
+    /**
+     * Retrieves a new model edge between two nodes.
+     *
+     * @param node1 The first {@link Node} object in the edge.
+     * @param node2 The second {@link Node} object in the edge.
+     * @return A new model edge between the two nodes.
+     */
     public abstract Edge getNewModelEdge(Node node1, Node node2);
 
     // ============================PRIVATE METHODS=========================//
 
+    /**
+     * Returns a new tracking edge for the given display node and mouse location.
+     *
+     * @param displayNode The display node to create the tracking edge for. Must not be null.
+     * @param mouseLoc    The location of the mouse pointer. Must not be null.
+     * @return The new tracking edge for the given display node and mouse location.
+     */
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 
     /**
@@ -904,7 +1099,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
 
+        if (!graph.equals(getGraph())) {
+            this.graphStack.addLast(new EdgeListGraph(graph));
+        }
+
         this.graph = graph;
+
+        if (pagEdgeSpecializationMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
+        }
 
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
@@ -954,6 +1157,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         revalidate();
         repaint();
+    }
+
+    private void addLast(Graph graph) {
+        if (graph instanceof SessionWrapper) {
+            return;
+        }
+
+        this.graphStack.addLast(new EdgeListGraph(graph));
     }
 
     /**
@@ -1112,9 +1323,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         Map<DisplayNode, Node> trashMap = new HashMap<>();
         this.displayToModel.forEach((k, v) -> {
-            if (k instanceof DisplayNode && v instanceof Node) {
-                DisplayNode displayNode = (DisplayNode) k;
-                Node node = (Node) v;
+            if (k instanceof DisplayNode displayNode && v instanceof Node node) {
 
                 if (!this.graph.containsNode(node)) {
                     trashMap.put(displayNode, node);
@@ -1190,7 +1399,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (doPagColoring) {
+        if (pagEdgeSpecializationMarked) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
@@ -1285,8 +1494,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int index = -1;
 
         for (int i = 0; i < components.length; i++) {
-            if (components[i] instanceof DisplayNode) {
-                DisplayNode node = (DisplayNode) components[i];
+            if (components[i] instanceof DisplayNode node) {
 
                 distance = AbstractWorkbench.distance(p, node.getCenterPoint());
 
@@ -1373,8 +1581,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<Node> selection = new LinkedList<>();
 
         for (Component component : components) {
-            if (component instanceof DisplayNode) {
-                DisplayNode displayNode = (DisplayNode) component;
+            if (component instanceof DisplayNode displayNode) {
 
                 if (displayNode.isSelected()) {
                     Node modelNode = (Node) (getDisplayToModel().get(displayNode));
@@ -1601,10 +1808,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<DisplayNode> selectedNodes = new ArrayList<>();
 
         for (Component comp : components) {
-            if (comp instanceof DisplayNode) {
+            if (comp instanceof DisplayNode graphNode) {
                 Rectangle bounds = comp.getBounds();
                 bounds.translate(-rubberLoc.x, -rubberLoc.y);
-                DisplayNode graphNode = (DisplayNode) comp;
 
                 if (rubberShape.intersects(bounds)) {
                     selectedNodes.add(graphNode);
@@ -1758,10 +1964,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 graphEdge.setSelected(true);
             }
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void nodeClicked(Object source, MouseEvent e) {
@@ -1784,10 +1986,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             selectConnectingEdges();
             fireNodeSelection();
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void reorientEdge(Object source, MouseEvent e) {
@@ -1816,10 +2014,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 firePropertyChange("modelChanged", null, null);
             }
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void fireModelChanged() {
@@ -1876,10 +2070,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//           GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void launchPopup(MouseEvent e) {
@@ -1924,10 +2114,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 finishEdge();
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void handleMouseDragged(MouseEvent e) {
@@ -1953,10 +2139,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 dragNewEdge(source, newPoint);
                 break;
         }
-
-//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
-//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-//        }
     }
 
     private void handleMouseEntered(MouseEvent e) {
@@ -2015,10 +2197,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     StringBuilder text = new StringBuilder("<html>" + edge.getNode1().getName()
-                            + " " + endpoint1 + "-" + endpoint2 + " "
-                            + edge.getNode2().getName()
-                            + properties
-                            + "<br>");
+                                                           + " " + endpoint1 + "-" + endpoint2 + " "
+                                                           + edge.getNode2().getName()
+                                                           + properties
+                                                           + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();
@@ -2085,8 +2267,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (source instanceof DisplayNode) {
-            DisplayNode displayNode = (DisplayNode) source;
+        if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
@@ -2251,8 +2432,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
 
-            if (doPagColoring) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            if (pagEdgeSpecializationMarked) {
+                GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
             }
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -2272,11 +2453,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), nextEndpoint, edge.getEndpoint2());
@@ -2285,11 +2466,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Endpoint nextEndpoint;
 
             if (endpoint == Endpoint.TAIL) {
-                nextEndpoint = Endpoint.ARROW;
-            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.CIRCLE;
-            } else {
+            } else if (endpoint == Endpoint.ARROW) {
                 nextEndpoint = Endpoint.TAIL;
+            } else {
+                nextEndpoint = Endpoint.ARROW;
             }
 
             newEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint1(), nextEndpoint);
@@ -2304,8 +2485,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (!added) {
                 getGraph().addEdge(edge);
 
-                if (doPagColoring) {
-                    GraphUtils.addPagColoring(new EdgeListGraph(graph));
+                if (pagEdgeSpecializationMarked) {
+                    GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
                 }
 
                 return;
@@ -2315,8 +2496,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        if (pagEdgeSpecializationMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
 
         revalidate();
@@ -2339,49 +2520,71 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * True if the user is allowed to add measured variables.
+     * Checks whether adding measured variables is allowed.
+     *
+     * @return true if adding measured variables is allowed, false otherwise.
      */
     private boolean isAddMeasuredVarsAllowed() {
-        /**
-         * True iff the user is allowed to add measured variables.
-         */
         return true;
     }
 
     /**
-     * @return true if the user is allowed to edit existing meausred variables.
+     * Returns a boolean value indicating whether editing existing measured variables is allowed.
+     *
+     * @return <code>true</code> if editing existing measured variables is allowed, <code>false</code> otherwise.
      */
     boolean isEditExistingMeasuredVarsAllowed() {
         return true;
     }
 
     /**
-     * @return true iff the user is allowed to delete variables.
+     * Checks if deleting variables is allowed.
+     *
+     * @return {@code true} if deleting variables is allowed, {@code false} otherwise
      */
     private boolean isDeleteVariablesAllowed() {
-        /**
-         * True iff the user is allowed to delete variables.
-         */
         return true;
     }
 
+    /**
+     * Checks if editing is enabled.
+     *
+     * @return true if editing is enabled, false otherwise.
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * Enables or disables editing for the software.
+     *
+     * @param enableEditing true to enable editing, false to disable editing
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         setEnabled(enableEditing);
     }
 
-    public boolean isDoPagColoring() {
-        return this.doPagColoring;
+    /**
+     * Checks if pagEdgeSpecializationMarked is true or false.
+     *
+     * @return True if pagEdgeSpecializationsMarked is true, false otherwise.
+     */
+    public boolean isPagEdgeSpecializationMarked() {
+        return this.pagEdgeSpecializationMarked;
     }
 
-    public void setDoPagColoring(boolean doPagColoring) {
-        this.doPagColoring = doPagColoring;
-        if (doPagColoring) {
-            GraphUtils.addPagColoring(graph);
+    /**
+     * Marks the pag edge specializations based on the given flag. If the flag is set to true, the method applies
+     * special coloring to the page edges. If the flag is set to false, all special markings on page edges are removed.
+     *
+     * @param pagEdgeSpecializationsMarked a boolean value indicating whether to mark the page edge specializations or
+     *                                       not
+     */
+    public void markPagEdgeSpecializations(boolean pagEdgeSpecializationsMarked) {
+        this.pagEdgeSpecializationMarked = pagEdgeSpecializationsMarked;
+        if (pagEdgeSpecializationsMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(graph);
         } else {
             for (Edge edge : graph.getEdges()) {
                 edge.getProperties().clear();
@@ -2423,6 +2626,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return this.nodeEdgeErrorsReported;
     }
 
+    /**
+     * <p>Setter for the field <code>nodeEdgeErrorsReported</code>.</p>
+     */
     protected void setNodeEdgeErrorsReported() {
         this.nodeEdgeErrorsReported = true;
     }
@@ -2431,6 +2637,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return this.rightClickPopupAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>rightClickPopupAllowed</code>.</p>
+     *
+     * @param rightClickPopupAllowed a boolean
+     */
     protected void setRightClickPopupAllowed(boolean rightClickPopupAllowed) {
         this.rightClickPopupAllowed = rightClickPopupAllowed;
     }
@@ -2731,15 +2942,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             if ("nodeAdded".equals(propName)) {
                 this.workbench.addNode((Node) newValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("nodeRemoved".equals(propName)) {
                 this.workbench.removeNode((Node) oldValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeAdded".equals(propName)) {
                 this.workbench.addEdge((Edge) newValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeRemoved".equals(propName)) {
                 this.workbench.removeEdge((Edge) oldValue);
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("edgeLaunch".equals(propName)) {
                 System.out.println("Attempt to launch edge.");
             } else if ("deleteNode".equals(propName)) {
+                addLast(workbench.getGraph());
+
                 Object node = e.getSource();
 
                 if (node instanceof DisplayNode) {
@@ -2751,6 +2972,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     this.workbench.selectNode((GraphNode) node);
                     this.workbench.deleteSelectedObjects();
                 }
+
+                addLast(workbench.getGraph());
+                redoStack.clear();
             } else if ("cloneMe".equals(propName)) {
                 AbstractWorkbench.this.firePropertyChange("cloneMe", e.getOldValue(), e.getNewValue());
             }

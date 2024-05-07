@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * Wrapper for M-separation test. Requires a true DAG as input.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "M-Separation Test",
@@ -23,7 +25,12 @@ import java.util.List;
 )
 public class MSeparationTest implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The true graph.
+     */
     private Graph graph;
 
     /**
@@ -33,10 +40,18 @@ public class MSeparationTest implements IndependenceWrapper {
 
     }
 
+    /**
+     * <p>Constructor for MSeparationTest.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public MSeparationTest(Graph graph) {
         this.graph = graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
@@ -46,21 +61,35 @@ public class MSeparationTest implements IndependenceWrapper {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "M-Separation Test";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         return new ArrayList<>();
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.graph = graph;
     }

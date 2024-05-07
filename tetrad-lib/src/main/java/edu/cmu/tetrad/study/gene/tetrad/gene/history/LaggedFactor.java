@@ -25,24 +25,23 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Identifies a particular factor (by name) at a particular lag (integer).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The number of time steps back for the lagged factor.
-     *
-     * @serial
      */
     private final int lag;
     /**
      * The name of the factor.
-     *
-     * @serial
      */
     private String factor;
 
@@ -69,6 +68,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Copy constructor- creates a new object with the same properties as the original
+     *
+     * @param orig a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public LaggedFactor(LaggedFactor orig) {
         this.factor = orig.factor;
@@ -77,6 +78,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public static LaggedFactor serializableInstance() {
         return new LaggedFactor("X", 1);
@@ -85,15 +88,13 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     //=================================PUBLIC METHODS======================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether the given lagged factor is temporally prior to this lagged factor.
-     *
-     * @param o an Object, which should be a LaggedFactor.
-     * @return this lag minus the given lag, if the lagged factors have the same name; otherwise, 0.
      */
     public int compareTo(Object o) {
 
-        if (o instanceof LaggedFactor) {
-            LaggedFactor f = (LaggedFactor) o;
+        if (o instanceof LaggedFactor f) {
             int n = this.factor.compareTo(f.getFactor());
 
             if (n != 0) {
@@ -117,6 +118,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Sets the name of the lagged factor
+     *
+     * @param factor a {@link java.lang.String} object
      */
     public void setFactor(String factor) {
         this.factor = factor;
@@ -133,24 +136,27 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Probably should recheck this later.
+     *
+     * @return a int
      */
     public int hashCode() {
         return 127 * this.factor.hashCode() + this.lag;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Two lagged factors are equals just in case their factors are equals and their lags are equal.
      */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof LaggedFactor)) {
+        if (!(o instanceof LaggedFactor c)) {
             return false;
         }
-        LaggedFactor c = (LaggedFactor) o;
         return c.getFactor().equals(this.getFactor()) &&
-                c.getLag() == this.getLag();
+               c.getLag() == this.getLag();
     }
 
     /**
@@ -169,7 +175,12 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -181,7 +192,6 @@ public class LaggedFactor implements Comparable, TetradSerializable {
         if (this.lag < 0) {
             throw new IllegalStateException();
         }
-
     }
 }
 

@@ -19,16 +19,24 @@ import java.util.Vector;
 class ScatterplotPanel extends JPanel {
     private final NumberFormat nf;
     private final boolean removeZeroPointsPerPlot;
-    private ScatterPlot scatterPlot;
+    private final ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
 
+    /**
+     * <p>Constructor for ScatterplotPanel.</p>
+     *
+     * @param ScatterPlot a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
+     */
     public ScatterplotPanel(ScatterPlot ScatterPlot) {
         this(ScatterPlot, false);
     }
 
     /**
      * Constructor.
+     *
+     * @param ScatterPlot             a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
+     * @param removeZeroPointsPerPlot a boolean
      */
     public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeZeroPointsPerPlot) {
         this.scatterPlot = ScatterPlot;
@@ -44,6 +52,8 @@ class ScatterplotPanel extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Renders the view.
      */
     public void paintComponent(Graphics graphics) {
@@ -155,15 +165,25 @@ class ScatterplotPanel extends JPanel {
             if (drawAxes) {
                 g.setStroke(new BasicStroke(3));
                 g.drawString("Correlation coef = " + this.nf.format(r)
-                        + "  (p=" + this.nf.format(p) + ")", 70, 21);
+                             + "  (p=" + this.nf.format(p) + ")", 70, 21);
             }
         }
     }
 
+    /**
+     * <p>Setter for the field <code>drawAxes</code>.</p>
+     *
+     * @param drawAxes a boolean
+     */
     public void setDrawAxes(boolean drawAxes) {
         this.drawAxes = drawAxes;
     }
 
+    /**
+     * <p>Setter for the field <code>pointSize</code>.</p>
+     *
+     * @param pointSize a int
+     */
     public void setPointSize(int pointSize) {
         this.pointSize = pointSize;
     }

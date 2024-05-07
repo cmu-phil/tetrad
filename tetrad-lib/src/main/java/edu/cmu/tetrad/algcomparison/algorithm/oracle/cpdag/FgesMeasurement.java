@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -13,10 +14,10 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,81 +25,95 @@ import java.util.List;
  * FGES (the heuristic version).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
-public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private final ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    /**
+     * <p>Constructor for FgesMeasurement.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
-            dataSet = dataSet.copy();
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
 
-            dataSet = DataTransforms.standardizeData(dataSet);
-            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+        dataSet = dataSet.copy();
 
-            if (variance > 0) {
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        double d = dataSet.getDouble(i, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
-                        dataSet.setDouble(i, j, d + norm);
-                    }
+        dataSet = DataTransforms.standardizeData(dataSet);
+        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+
+        if (variance > 0) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(i, j);
+                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    dataSet.setDouble(i, j, d + norm);
                 }
             }
-
-            Fges search = new Fges(this.score.getScore(dataSet, parameters));
-            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            Object obj = parameters.get(Params.PRINT_STREAM);
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            return search.search();
-        } else {
-            FgesMeasurement fgesMeasurement = new FgesMeasurement(this.score);
-
-            DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Graph graph = search.search();
-            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
-            return graph;
         }
+
+        Fges search = new Fges(this.score.getScore(dataSet, parameters));
+        search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+        search.setKnowledge(this.knowledge);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        Object obj = parameters.get(Params.PRINT_STREAM);
+        if (obj instanceof PrintStream ps) {
+            search.setOut(ps);
+        }
+
+        return search.search();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
-        return GraphTransforms.cpdagForDag(dag);
+        return GraphTransforms.dagToCpdag(dag);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "FGES adding measuremnt noise using " + this.score.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -110,18 +125,20 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
-    @Override
-    public List<Graph> getBootstrapGraphs() {
-        return this.bootstrapGraphs;
-    }
 }

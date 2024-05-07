@@ -3,7 +3,10 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
@@ -24,6 +27,7 @@ import static edu.cmu.tetrad.util.Params.*;
  *
  * @author Madelyn Glymour
  * @author josephramsey 9/5/2020
+ * @version $Id: $Id
  */
 public class FaskVote {
     private final IndependenceWrapper test;
@@ -139,6 +143,8 @@ public class FaskVote {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {

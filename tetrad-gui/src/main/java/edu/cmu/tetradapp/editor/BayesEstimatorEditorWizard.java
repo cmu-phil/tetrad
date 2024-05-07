@@ -52,6 +52,12 @@ final class BayesEstimatorEditorWizard extends JPanel {
     private BayesImNodeEditingTable editingTable;
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for BayesEstimatorEditorWizard.</p>
+     *
+     * @param bayesIm   a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public BayesEstimatorEditorWizard(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -128,8 +134,7 @@ final class BayesEstimatorEditorWizard extends JPanel {
             if (evt.getPropertyName().equals("selectedNodes")) {
                 Object newValue = evt.getNewValue();
 
-                if (newValue instanceof List) {
-                    List selection = (List) newValue;
+                if (newValue instanceof List selection) {
                     if (selection.size() == 1) {
                         this.varNamesComboBox.setSelectedItem(selection.get(0));
                     }
@@ -194,10 +199,20 @@ final class BayesEstimatorEditorWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

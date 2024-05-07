@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,21 +37,18 @@ import java.util.List;
  * has been manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Evidence implements TetradSerializable {
     private static final long serialVersionUID = 23L;
 
     /**
      * A proposition stating what we know for each variable.
-     *
-     * @serial Cannot be null.
      */
     private final Proposition proposition;
 
     /**
      * A manipulation indicating how the bayes Im should be manipulated before updating.
-     *
-     * @serial
      */
     private Manipulation manipulation;
 
@@ -70,6 +68,8 @@ public final class Evidence implements TetradSerializable {
 
     /**
      * Copy constructor.
+     *
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public Evidence(Evidence evidence) {
         if (evidence == null) {
@@ -83,6 +83,8 @@ public final class Evidence implements TetradSerializable {
 
     /**
      * Wraps the proposition. The Bayes IM and manipulation will be null.
+     *
+     * @param proposition a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public Evidence(Proposition proposition) {
         if (proposition == null) {
@@ -92,6 +94,12 @@ public final class Evidence implements TetradSerializable {
         this.proposition = new Proposition(proposition);
     }
 
+    /**
+     * <p>Constructor for Evidence.</p>
+     *
+     * @param evidence       a {@link edu.cmu.tetrad.bayes.Evidence} object
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
+     */
     public Evidence(Evidence evidence, VariableSource variableSource) {
         if (variableSource == null) {
             throw new NullPointerException();
@@ -105,12 +113,20 @@ public final class Evidence implements TetradSerializable {
         this.manipulation = new Manipulation(evidence.manipulation);
     }
 
+    /**
+     * <p>tautology.</p>
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
+     * @return a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public static Evidence tautology(VariableSource variableSource) {
         return new Evidence(variableSource);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public static Evidence serializableInstance() {
         return new Evidence(MlBayesIm.serializableInstance());
@@ -119,49 +135,109 @@ public final class Evidence implements TetradSerializable {
     //===========================PUBLIC METHODS=========================//
 
     /**
+     * <p>getVariableSource.</p>
+     *
      * @return the Bayes IM that this is evidence for.
      */
     public VariableSource getVariableSource() {
         return this.proposition.getVariableSource();
     }
 
+    /**
+     * <p>getNodeIndex.</p>
+     *
+     * @param nodeName a {@link java.lang.String} object
+     * @return a int
+     */
     public int getNodeIndex(String nodeName) {
         return this.proposition.getNodeIndex(nodeName);
     }
 
+    /**
+     * <p>getCategoryIndex.</p>
+     *
+     * @param nodeName a {@link java.lang.String} object
+     * @param category a {@link java.lang.String} object
+     * @return a int
+     */
     public int getCategoryIndex(String nodeName, String category) {
         return this.proposition.getCategoryIndex(nodeName, category);
     }
 
+    /**
+     * <p>getNumNodes.</p>
+     *
+     * @return a int
+     */
     public int getNumNodes() {
         return this.proposition.getVariableSource().getVariables().size();
     }
 
+    /**
+     * <p>getNode.</p>
+     *
+     * @param nodeIndex a int
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getNode(int nodeIndex) {
         return this.proposition.getVariableSource().getVariables().get(nodeIndex);
     }
 
+    /**
+     * <p>getVariable.</p>
+     *
+     * @param nodeName a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+     */
     public DiscreteVariable getVariable(String nodeName) {
         int index = this.proposition.getVariableSource().getVariableNames().indexOf(nodeName);
         return (DiscreteVariable) this.proposition.getVariableSource().getVariables().get(index);
     }
 
+    /**
+     * <p>getNumCategories.</p>
+     *
+     * @param variable a int
+     * @return a int
+     */
     public int getNumCategories(int variable) {
         return this.proposition.getNumCategories(variable);
     }
 
+    /**
+     * <p>Getter for the field <code>proposition</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Proposition} object
+     */
     public Proposition getProposition() {
         return this.proposition;
     }
 
+    /**
+     * <p>isManipulated.</p>
+     *
+     * @param nodeIndex a int
+     * @return a boolean
+     */
     public boolean isManipulated(int nodeIndex) {
         return this.manipulation.isManipulated(nodeIndex);
     }
 
+    /**
+     * <p>setManipulated.</p>
+     *
+     * @param nodeIndex   a int
+     * @param manipulated a boolean
+     */
     public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulation.setManipulated(nodeIndex, manipulated);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
 
@@ -177,6 +253,12 @@ public final class Evidence implements TetradSerializable {
         return buf.toString();
     }
 
+    /**
+     * <p>hasNoEvidence.</p>
+     *
+     * @param variable a int
+     * @return a boolean
+     */
     public boolean hasNoEvidence(int variable) {
         for (int i = 0; i < this.proposition.getNumCategories(variable); i++) {
             if (!this.proposition.isAllowed(variable, i)) {
@@ -188,6 +270,8 @@ public final class Evidence implements TetradSerializable {
     }
 
     /**
+     * <p>getVariablesInEvidence.</p>
+     *
      * @return the variable for which there is evidence.
      */
     public List<Node> getVariablesInEvidence() {
@@ -201,6 +285,13 @@ public final class Evidence implements TetradSerializable {
         return nodes;
     }
 
+    /**
+     * <p>getCategory.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param j    a int
+     * @return a {@link java.lang.String} object
+     */
     public String getCategory(Node node, int j) {
         DiscreteVariable variable = (DiscreteVariable) node;
         return variable.getCategory(j);
@@ -208,6 +299,9 @@ public final class Evidence implements TetradSerializable {
 
     /**
      * Returna true just in case this evidence has a list of variables equal to those of the given variable source.
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
+     * @return a boolean
      */
     public boolean isIncompatibleWith(VariableSource variableSource) {
         List<Node> variables1 = getVariableSource().getVariables();
@@ -216,21 +310,27 @@ public final class Evidence implements TetradSerializable {
         return !variables1.equals(variables2);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof Evidence)) {
+        if (!(o instanceof Evidence evidence)) {
             return false;
         }
-
-        Evidence evidence = (Evidence) o;
 
         return this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
 
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + this.proposition.hashCode();
@@ -245,7 +345,12 @@ public final class Evidence implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

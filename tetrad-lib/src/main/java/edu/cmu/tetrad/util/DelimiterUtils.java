@@ -24,6 +24,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
  * Jun 20, 2017 12:09:05 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DelimiterUtils {
 
@@ -33,7 +34,7 @@ public class DelimiterUtils {
     /**
      * Get the enum delimiter corresponding to char delimiter: tab, space, comma, colon, semicolon, pipe.
      *
-     * @param delimiter
+     * @param delimiter a char
      * @return corresponding to enum delimiter, whitespace enum will be return if char does not match any listed above.
      * if
      */

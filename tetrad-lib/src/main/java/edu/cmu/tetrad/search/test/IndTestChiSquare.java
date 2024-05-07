@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * test are equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see ChiSquareTest
  */
 public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
@@ -70,8 +71,32 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * constructor.
      */
     private int df;
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     */
     private double minCountPerCell = 1.0;
+    /**
+     * This variable represents whether verbose output should be printed.
+     * <p>
+     * The default value is false.
+     */
     private boolean verbose;
+    /**
+     * Represents the list of rows to be used for a test.
+     * <p>
+     * This variable is used in the class "IndTestChiSquare" to specify which rows of data should be used in the
+     * chi-square test. If the variable "rows" is set to null, all rows of the data will be used in the test.
+     * <p>
+     * The class "IndTestChiSquare" is a subclass of the "IndependenceTest" class, which is a superclass for all
+     * independence tests in the Tetrad library. It also implements the "RowsSettable" interface, which allows for
+     * setting the rows to be used for the test.
+     *
+     * @see IndTestChiSquare
+     * @see IndependenceTest
+     * @see RowsSettable
+     */
     private List<Integer> rows = null;
 
 
@@ -103,9 +128,11 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Creates a new IndTestChiSquare for a subset of the nodes.
+     * Checks conditional independence between variables in a subset.
      *
-     * @param nodes This list of nodes.
+     * @param nodes The sublist of variables.
+     * @return An instance of IndependenceTest representing the test for conditional independence.
+     * @throws IllegalArgumentException If the subset of variables is empty or contains non-original nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
         if (nodes.isEmpty()) {
@@ -156,7 +183,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
-     * @return True iff x _||_ y | z.
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
@@ -193,7 +223,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
                 throw new IllegalArgumentException("Variable " + i +
-                        " was not used in the constructor.");
+                                                   " was not used in the constructor.");
             }
         }
 
@@ -216,11 +246,29 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns True if the variables z determining the variable z.
+     * Returns the pvalue if the fact of X _||_ Y | Z is within the cache of results for independence fact.
      *
-     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x The one variable whose determination by z we want to know.
-     * @return true if it is estimated that z determines x or z determines y.
+     * @param x the first node
+     * @param y the second node
+     * @param z the set of conditioning nodes
+     * @return the pValue result or null if not within the cache
+     */
+    public Double getPValue(Node x, Node y, Set<Node> z) {
+        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
+            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, z));
+            return result.getPValue();
+        }
+        return null;
+    }
+
+    /**
+     * Determines whether variable x is independent of variable y given a list of conditioning nodes.
+     *
+     * @param z The list of conditioning nodes.
+     * @param x The variable x.
+     * @return True if variable x is determined by the list of conditioning nodes, false otherwise.
+     * @throws NullPointerException     if z or any node in z is null.
+     * @throws IllegalArgumentException if any node in z is not used in the constructor.
      */
     public boolean determines(List<Node> z, Node x) {
         if (z == null) {
@@ -250,8 +298,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             }
         }
 
-        //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
-
         boolean countDetermined =
                 this.chiSquareTest.isDetermined(testIndices, getDeterminationP());
 
@@ -270,7 +316,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
             sb.append("}");
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
         }
 
         return countDetermined;
@@ -288,8 +334,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha the new significance level.
      */
     public void setAlpha(double alpha) {
         this.chiSquareTest.setAlpha(alpha);
@@ -325,9 +369,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns true if verbose output should be printed.
+     * Checks if the verbosity flag is enabled.
      *
-     * @return This.
+     * @return true if the verbosity flag is enabled, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -336,14 +380,18 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the lower bound of percentages of observation of some category in the data, given some particular
+     * combination of values of conditioning variables, that coefs as 'determining.'
+     *
+     * @return The lower bound of percentages of observation.
+     */
     private double getDeterminationP() {
         /*
          * The lower bound of percentages of observation of some category in the data, given some particular combination of
@@ -366,8 +414,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the rows used for the test. If null, all rows are used.
-     *
-     * @return The rows used for the test. Can be null.
      */
     @Override
     public List<Integer> getRows() {
@@ -376,8 +422,6 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Sets the rows to use for the test. If null, all rows are used.
-     *
-     * @param rows The rows to use for the test. Can be null.
      */
     @Override
     public void setRows(List<Integer> rows) {

@@ -40,14 +40,18 @@ import java.util.List;
  * parameter editor currently for BuildPureClusters parameters.
  *
  * @author Ricardo Silva rbas@cs.cmu.edu
+ * @version $Id: $Id
  */
-
 public class BuildPureClustersParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * The parameter wrapper being viewed.
      */
     private Parameters params;
+
+    /**
+     * The parent models.
+     */
     private Object[] parentModels;
 
     /**
@@ -56,6 +60,11 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     public BuildPureClustersParamsEditor() {
     }
 
+    /**
+     * <p>Setter for the field <code>parentModels</code>.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException();
@@ -64,6 +73,9 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         this.parentModels = parentModels;
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         DoubleTextField alphaField = new DoubleTextField(
                 this.params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
@@ -100,8 +112,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         DataModel dataModel = null;
 
         for (Object parentModel : this.parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel;
+            if (parentModel instanceof DataWrapper dataWrapper) {
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }
@@ -154,6 +165,11 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         add(b, BorderLayout.CENTER);
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -162,6 +178,9 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

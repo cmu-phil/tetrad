@@ -43,6 +43,7 @@ import java.util.*;
  *
  * @author Tyler Gibson
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DiscretizationParamsEditor extends JPanel implements FinalizingParameterEditor {
 
@@ -59,6 +60,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      */
     private JTabbedPane editorPane;
 
+    /**
+     * The parameters that will be returned by this editor.
+     */
     private Parameters parameters;
 
 
@@ -147,16 +151,14 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         });
         // Add entries for previously selected variables.
         for (Node node : discretizeVars) {
-            if (node instanceof ContinuousVariable) {
-                ContinuousVariable continuousVariable = (ContinuousVariable) node;
+            if (node instanceof ContinuousVariable continuousVariable) {
                 ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
                         this.sourceDataSet, continuousVariable);
                 DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
                 editor.setDiscretizationSpec(spec);
                 this.nodeEditors.put(node, editor);
-            } else if (node instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) node;
+            } else if (node instanceof DiscreteVariable variable) {
                 DiscreteDiscretizationEditor editor = new DiscreteDiscretizationEditor(variable);
                 DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
@@ -230,6 +232,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     public void setParams(Parameters params) {
@@ -239,6 +243,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     /**
      * The parant model should be a <code>DataWrapper</code>.
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
@@ -263,6 +269,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     //=============================== Private Methods ================================//
 
     /**
+     * <p>mustBeShown.</p>
+     *
      * @return true
      */
     public boolean mustBeShown() {
@@ -314,8 +322,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         ContinuousDiscretizationEditor.Method method = null;
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
-            if (editor instanceof ContinuousDiscretizationEditor) {
-                ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
+            if (editor instanceof ContinuousDiscretizationEditor _editor) {
 
                 if (method != null && method != _editor.getMethod()) {
                     return null;
@@ -338,8 +345,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
         DiscretizationEditor editor = nodeEditors.get(nodes.get(0));
 
-        if (editor instanceof ContinuousDiscretizationEditor) {
-            ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
+        if (editor instanceof ContinuousDiscretizationEditor _editor) {
 
             int value = _editor.getNumCategories();
             for (int i = 1; i < nodes.size(); i++) {
@@ -354,6 +360,11 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         return -1;
     }
 
+    /**
+     * <p>getSpecs.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Node, DiscretizationSpec> getSpecs() {
         return (Map<Node, DiscretizationSpec>) parameters.get("discretizationSpecs");
     }

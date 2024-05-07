@@ -5,7 +5,13 @@ package edu.cmu.tetradapp.util;
  * otherwise, false.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface FinalizingEditor {
+    /**
+     * <p>finalizeEditor.</p>
+     *
+     * @return a boolean
+     */
     boolean finalizeEditor();
 }

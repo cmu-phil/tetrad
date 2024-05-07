@@ -43,6 +43,12 @@ class LoadGraphTxt extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
+    /**
+     * <p>Constructor for LoadGraphTxt.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title         a {@link java.lang.String} object
+     */
     public LoadGraphTxt(GraphEditable graphEditable, String title) {
         super(title);
 
@@ -64,6 +70,8 @@ class LoadGraphTxt extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

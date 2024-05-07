@@ -26,28 +26,29 @@ import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.jetbrains.annotations.NotNull;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -57,31 +58,70 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Zhou Yuan
+ * @version $Id: $Id
  */
 public class GraphSelectionEditor extends JPanel implements GraphEditable, TripleClassifier {
 
+    @Serial
     private static final long serialVersionUID = 2754618060275627122L;
 
+    /**
+     * The graph editor options panel.
+     */
     private final GraphEditorOptionsPanel graphEditorOptionsPanel;
+
+    /**
+     * The graph type combo box.
+     */
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();
+
+    /**
+     * The help set.
+     */
     private final HelpSet helpSet;
+
     /**
      * Holds the graphs.
      */
     private final GraphSelectionWrapper wrapper;
+
+    /**
+     * The tabbed pane.
+     */
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+
+    /**
+     * The workbenches.
+     */
     private final List<GraphWorkbench> workbenches = new ArrayList<>();
 
-    // Need this initialization. Don't delete.
+    /**
+     * Workbench scrolls panel.
+     * <p>
+     * Need this initialization. Don't delete.
+     */
     private JPanel workbenchScrollsPanel = new JPanel();
+
+    /**
+     * Graph action.
+     */
     private GraphPropertiesAction graphAction;
+
+    /**
+     * Layout graph.
+     */
     private Map<String, List<Integer>> layoutGraph;
+
+    /**
+     * Previous selected.
+     */
     private int prevSelected = 0;
 
     /**
      * Constructs a graph selection editor.
      *
-     * @throws NullPointerException if <code>wrapper</code> is null.
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
+     * @throws java.lang.NullPointerException if <code>wrapper</code> is null.
      */
     public GraphSelectionEditor(GraphSelectionWrapper wrapper) {
         if (wrapper == null) {
@@ -148,7 +188,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     tabbedPaneGraphs(wrapper);
                 }
             }
-            ;
 
             new MyWatchedProcess();
         });
@@ -158,25 +197,25 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Add to buttonPanel
         buttonPanel.add(executeButton);
 
-        // Info button added by Zhou to show edge types
-        JLabel infoLabel = new JLabel("More information on graph edge types and colorings");
-        infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-        // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(e -> {
-            helpSet.setHomeID("graph_edge_types");
-            HelpBroker broker = helpSet.createHelpBroker();
-            ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-            listener.actionPerformed(e);
-        });
-
-        // Add to buttonPanel
-        buttonPanel.add(infoLabel);
-        buttonPanel.add(infoBtn);
+//        // Info button added by Zhou to show edge types
+//        JLabel infoLabel = new JLabel("More information on FCI graph edge types");
+//        infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+//
+//        // Info button added by Zhou to show edge types
+//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+//
+//        // Clock info button to show edge types instructions - Zhou
+//        infoBtn.addActionListener(e -> {
+//            helpSet.setHomeID("graph_edge_types");
+//            HelpBroker broker = helpSet.createHelpBroker();
+//            ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+//            listener.actionPerformed(e);
+//        });
+//
+//        // Add to buttonPanel
+//        buttonPanel.add(infoLabel);
+//        buttonPanel.add(infoBtn);
 
         // Add top level componments to container
         add(createTopMenuBar(), BorderLayout.NORTH);
@@ -315,8 +354,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         tabbedPane.addChangeListener(e -> {
 
-            if (e.getSource() instanceof JTabbedPane) {
-                JTabbedPane panel = (JTabbedPane) e.getSource();
+            if (e.getSource() instanceof JTabbedPane panel) {
                 int selectedIndex = panel.getSelectedIndex();
                 selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
                 graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
@@ -358,7 +396,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
             for (Node node : selected) {
                 if (wrapper.getHighlightInEditor().contains(node)
-                        && workbench.getGraph().containsNode(node)) {
+                    && workbench.getGraph().containsNode(node)) {
                     workbench.selectNode(node);
                 }
             }
@@ -371,8 +409,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private JMenu createSaveMenu(GraphEditable editable) {
         JMenu save = new JMenu("Save As");
 
-        save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Graph Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Graph Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
@@ -393,6 +431,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -402,6 +442,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         this.firePropertyChange("name", oldName, getName());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List getSelectedModelComponents() {
         List<Component> selectedComponents
@@ -422,6 +465,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return selectedModelComponents;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
@@ -438,6 +484,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         int selectedIndex = tabbedPane.getSelectedIndex();
@@ -449,6 +498,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     }
 
+    /**
+     * <p>getWorkbench.</p>
+     *
+     * @param selectionIndex a int
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench(int selectionIndex) {
         Graph layout = workbenches.get(prevSelected).getGraph();
         setLayoutGraph(layout);
@@ -473,6 +528,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return workbenches.get(selectionIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         int selectedIndex = tabbedPane.getSelectedIndex();
@@ -482,6 +540,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return wrapper.getSelectionGraph(selectedIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         wrapper.setGraphs(Collections.singletonList(graph));
@@ -489,6 +550,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         getWorkbench().setGraph(graph);
     }
 
+    /**
+     * <p>replace.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     */
     public void replace(List<Graph> graphs) {
         for (Graph graph : graphs) {
             for (Node node : graph.getNodes()) {
@@ -517,8 +583,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
-     * @return the names of the triple classifications. Coordinates with
-     * <code>getTriplesList</code>
+     * {@inheritDoc}
      */
     @Override
     public List<String> getTriplesClassificationTypes() {
@@ -529,8 +594,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
-     * @return the list of triples corresponding to
-     * <code>getTripleClassificationNames</code> for the given node.
+     * {@inheritDoc}
      */
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
@@ -548,16 +612,41 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
      */
     public static class GraphSelectionTextInputAction extends AbstractAction implements ClipboardOwner {
 
+        @Serial
         private static final long serialVersionUID = 8126264917739434042L;
 
+        /**
+         * The graph selection wrapper.
+         */
         private final GraphSelectionWrapper wrapper;
+
+        /**
+         * The source list.
+         */
         private final JList<Node> sourceList;
+
+        /**
+         * The selected list.
+         */
         private final JList<Node> selectedList;
+
+        /**
+         * The component.
+         */
         private final JComponent component;
+
+        /**
+         * The text area.
+         */
         private JTextArea textArea;
 
         /**
          * Creates a new copy subsession action for the given LayoutEditable and clipboard.
+         *
+         * @param component    a {@link javax.swing.JComponent} object
+         * @param wrapper      a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
+         * @param sourceList   a {@link javax.swing.JList} object
+         * @param selectedList a {@link javax.swing.JList} object
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
                                              JList<Node> sourceList, JList<Node> selectedList) {
@@ -620,6 +709,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             });
         }
 
+        /**
+         * Returns the list of selected variables.
+         *
+         * @return a {@link java.util.List} object
+         */
         public List<Node> selectedVars() {
             List<Node> nodes = new ArrayList<>();
 
@@ -660,31 +754,59 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
      */
     public class GraphEditorOptionsPanel extends JPanel {
 
+        @Serial
         private static final long serialVersionUID = -991342933507624509L;
 
-        // Stores the length of a path or the degree of a node, depending.
+        /**
+         * Stores the length of a path or the degree of a node, depending.
+         */
         private final JLabel nLabel;
 
-        // Selected if one wants to know that the length of a path is equal to n, etc.
+        /**
+         * Selected if one wants to know that the length of a path is equal to n, etc.
+         */
         private final JRadioButton equals;
 
-        // Selected if one wants to know that the length of a path is at most n.
+        /**
+         * Selected if one wants to know that the length of a path is at most n.
+         */
         private final JRadioButton atMost;
 
-        // Selected if one wants to know that the length of a path is at most n.
+        /**
+         * Selected if one wants to know that the length of a path is at most n.
+         */
         private final JRadioButton atLeast;
+
+        /**
+         * The field for the length of a path or the degree of a node, depending.
+         */
         private final IntTextField nField;
-        // The list of selected.
+
+        /**
+         * The list of selected.
+         */
         private final JList<Node> selectedList;
+
+        /**
+         * The dual list panel.
+         */
         private final DualListPanel dualListPanel;
-        // The font to render fields in.
+
+        /**
+         * The font to render fields in.
+         */
         private final Font _font = new Font("Dialog", Font.PLAIN, 12);
-        //The list of source variables.
+
+        /**
+         * The list of source variables.
+         */
         private final JList<Node> sourceList;
 
         /**
          * Constructs the editor given the <code>Parameters</code> and the
          * <code>DataModel</code> that should be used.
+         *
+         * @param graphSelectionWrapper a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
          */
         public GraphEditorOptionsPanel(GraphSelectionWrapper graphSelectionWrapper) {
             if (graphSelectionWrapper == null) {
@@ -851,10 +973,20 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             list.setVisibleRowCount(8);
         }
 
+        /**
+         * Returns the font to render fields in.
+         *
+         * @return a {@link java.awt.Font} object
+         */
         public Font getFONT() {
             return _font;
         }
 
+        /**
+         * Returns the source list.
+         *
+         * @param label a {@link java.lang.String} object
+         */
         public void setNLabel(String label) {
             if (label.equals("")) {
                 nLabel.setEnabled(false);
@@ -883,6 +1015,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             return selected;
         }
 
+        /**
+         * Returns the source list.
+         *
+         * @param selected a {@link java.util.List} object
+         */
         public void setSelected(List<Node> selected) {
             VariableListModel selectedModel = (VariableListModel) selectedList.getModel();
             VariableListModel sourceModel = (VariableListModel) sourceList.getModel();
@@ -905,6 +1042,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             return selectedList;
         }
 
+        /**
+         * Resets the editor.
+         */
         public void reset() {
             VariableListModel selectedModel = (VariableListModel) getSelectedList().getModel();
             VariableListModel variableModel = (VariableListModel) getSourceList().getModel();
@@ -939,18 +1079,193 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             }
         }
 
+        private static class VariableManipulationPanel extends JPanel {
+
+            @Serial
+            private static final long serialVersionUID = 4538277448583296121L;
+
+            /**
+             * The sort button.
+             */
+            private final JButton sortBnt;
+
+            /**
+             * The text input button.
+             */
+            private final JButton textInputBnt;
+
+            public VariableManipulationPanel(JButton sortBnt, JButton textInputBnt) {
+                this.sortBnt = sortBnt;
+                this.textInputBnt = textInputBnt;
+
+                initComponents();
+            }
+
+            private void initComponents() {
+                GroupLayout layout = new GroupLayout(this);
+                this.setLayout(layout);
+                layout.setHorizontalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(sortBnt)
+                                        .addGap(30, 30, 30)
+                                        .addComponent(textInputBnt))
+                );
+
+                layout.linkSize(SwingConstants.HORIZONTAL, sortBnt, textInputBnt);
+
+                layout.setVerticalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(sortBnt)
+                                        .addComponent(textInputBnt))
+                );
+            }
+
+        }
+
+        /**
+         * A basic model for the list (needed an addAll feature, which the detault model didn't have)
+         */
+        public static class VariableListModel extends AbstractListModel {
+
+            @Serial
+            private static final long serialVersionUID = 8014422476634156667L;
+
+            /**
+             * The delegate.
+             */
+            private final List<Node> delegate = new ArrayList<>();
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public int getSize() {
+                return this.delegate.size();
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public Object getElementAt(int index) {
+                return this.delegate.get(index);
+            }
+
+            /**
+             * Removes the elements to the list.
+             *
+             * @param element a {@link java.util.List} object
+             */
+            public void remove(Node element) {
+                int index = this.delegate.indexOf(element);
+                if (0 <= index) {
+                    this.delegate.remove(index);
+                    this.fireIntervalRemoved(this, index, index);
+                }
+            }
+
+            /**
+             * Adds the elements to the list.
+             *
+             * @param element a {@link java.util.List} object
+             */
+            public void add(Node element) {
+                this.delegate.add(element);
+                this.fireIntervalAdded(this, this.delegate.size(), this.delegate.size());
+            }
+
+            /**
+             * Removes the first element from the list.
+             *
+             * @param element a {@link java.util.List} object
+             */
+            public void removeFirst(Node element) {
+                this.delegate.remove(element);
+                this.fireContentsChanged(this, 0, this.delegate.size());
+            }
+
+            /**
+             * Removes the elements from the list.
+             *
+             * @param elements a {@link java.util.List} object
+             */
+            public void removeAll(List<? extends Node> elements) {
+                this.delegate.removeAll(elements);
+                this.fireContentsChanged(this, 0, this.delegate.size());
+            }
+
+            /**
+             * Adds the elements to the list.
+             *
+             * @param elements a {@link java.util.List} object
+             */
+            public void addAll(List<? extends Node> elements) {
+                this.delegate.addAll(elements);
+                this.fireContentsChanged(this, 0, this.delegate.size());
+            }
+
+            /**
+             * Removes all elements from the list.
+             */
+            public void removeAll() {
+                this.delegate.clear();
+                this.fireContentsChanged(this, 0, 0);
+            }
+
+            /**
+             * Sorts the elements in the list.
+             */
+            public void sort() {
+                Collections.sort(this.delegate);
+                this.fireContentsChanged(this, 0, this.delegate.size());
+            }
+        }
+
         private class GraphTypePanel extends JPanel {
 
+            @Serial
             private static final long serialVersionUID = -1341212423361787517L;
 
+            /**
+             * At most radio button.
+             */
             private final JRadioButton atMost;
+
+            /**
+             * Equals radio button.
+             */
             private final JRadioButton equals;
+
+            /**
+             * The field for the length of a path or the degree of a node, depending.
+             */
             private final IntTextField nField;
+
+            /**
+             * The label for the length of a path or the degree of a node, depending.
+             */
             private final JLabel nLabel;
+
+            /**
+             * The button group for the path length radio buttons.
+             */
             private final ButtonGroup pathLengthBtnGrp;
+
+            /**
+             * The label for the graph type.
+             */
             private final JLabel selectGraphTypeLbl;
+
+            /**
+             * The combo box for the graph type.
+             */
             private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo;
 
+            /**
+             * Constructs the panel.
+             */
             public GraphTypePanel(JRadioButton atMost, JRadioButton equals, IntTextField nField, JLabel nLabel, JComboBox<GraphSelectionWrapper.Type> graphTypeCombo) {
                 this.atMost = atMost;
                 this.equals = equals;
@@ -998,43 +1313,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                                                 .addComponent(atMost)
                                                 .addComponent(atLeast)
                                                 .addComponent(nField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                );
-            }
-
-        }
-
-        private class VariableManipulationPanel extends JPanel {
-
-            private static final long serialVersionUID = 4538277448583296121L;
-
-            private final JButton sortBnt;
-            private final JButton textInputBnt;
-
-            public VariableManipulationPanel(JButton sortBnt, JButton textInputBnt) {
-                this.sortBnt = sortBnt;
-                this.textInputBnt = textInputBnt;
-
-                initComponents();
-            }
-
-            private void initComponents() {
-                GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
-                layout.setHorizontalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addComponent(sortBnt)
-                                        .addGap(30, 30, 30)
-                                        .addComponent(textInputBnt))
-                );
-
-                layout.linkSize(SwingConstants.HORIZONTAL, sortBnt, textInputBnt);
-
-                layout.setVerticalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(sortBnt)
-                                        .addComponent(textInputBnt))
                 );
             }
 
@@ -1143,72 +1421,25 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         /**
-         * A basic model for the list (needed an addAll feature, which the detault model didn't have)
-         */
-        public class VariableListModel extends AbstractListModel {
-
-            private static final long serialVersionUID = 8014422476634156667L;
-
-            private final List<Node> delegate = new ArrayList<>();
-
-            @Override
-            public int getSize() {
-                return this.delegate.size();
-            }
-
-            @Override
-            public Object getElementAt(int index) {
-                return this.delegate.get(index);
-            }
-
-            public void remove(Node element) {
-                int index = this.delegate.indexOf(element);
-                if (0 <= index) {
-                    this.delegate.remove(index);
-                    this.fireIntervalRemoved(this, index, index);
-                }
-            }
-
-            public void add(Node element) {
-                this.delegate.add(element);
-                this.fireIntervalAdded(this, this.delegate.size(), this.delegate.size());
-            }
-
-            public void removeFirst(Node element) {
-                this.delegate.remove(element);
-                this.fireContentsChanged(this, 0, this.delegate.size());
-            }
-
-            public void removeAll(List<? extends Node> elements) {
-                this.delegate.removeAll(elements);
-                this.fireContentsChanged(this, 0, this.delegate.size());
-            }
-
-            public void addAll(List<? extends Node> elements) {
-                this.delegate.addAll(elements);
-                this.fireContentsChanged(this, 0, this.delegate.size());
-            }
-
-            public void removeAll() {
-                this.delegate.clear();
-                this.fireContentsChanged(this, 0, 0);
-            }
-
-            public void sort() {
-                Collections.sort(this.delegate);
-                this.fireContentsChanged(this, 0, this.delegate.size());
-            }
-        }
-
-        /**
          * A basic transferable.
          */
         private class ListTransferable implements Transferable {
 
+            /**
+             * The flavor.
+             */
             private final DataFlavor FLAVOR = getListDataFlavor();
 
+            /**
+             * The nodes.
+             */
             private final List<Node> nodes;
 
+            /**
+             * Constructs a new list transferable.
+             *
+             * @param nodes a {@link java.util.List} object
+             */
             public ListTransferable(List<Node> nodes) {
                 if (nodes == null) {
                     throw new NullPointerException();
@@ -1216,22 +1447,34 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 this.nodes = nodes;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             public DataFlavor getDataFlavor() {
                 return FLAVOR;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public DataFlavor[] getTransferDataFlavors() {
                 return new DataFlavor[]{FLAVOR};
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public boolean isDataFlavorSupported(DataFlavor flavor) {
                 return flavor == FLAVOR;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
-            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            public @NotNull Object getTransferData(DataFlavor flavor) {
                 return this.nodes;
             }
         }

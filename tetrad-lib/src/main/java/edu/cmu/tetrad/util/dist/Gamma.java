@@ -23,16 +23,27 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
  * be manipulated in an interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Gamma implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The shape parameter.
+     */
     private double alpha;
+
+    /**
+     * The rate parameter.
+     */
     private double lambda;
 
     private Gamma() {
@@ -49,14 +60,27 @@ public class Gamma implements Distribution {
         return new Gamma();
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 2;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Gamma";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.alpha = value;
@@ -67,6 +91,9 @@ public class Gamma implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.alpha;
@@ -77,6 +104,9 @@ public class Gamma implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
@@ -87,10 +117,20 @@ public class Gamma implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         return RandomUtil.getInstance().nextGamma(this.alpha, this.lambda);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Gamma(" + this.alpha + ", " + this.lambda + ")";
     }

@@ -13,6 +13,7 @@ import java.util.prefs.Preferences;
  * Nov 30, 2016 5:54:33 PM
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @version $Id: $Id
  */
 public class LoadGraphJson extends AbstractAction {
 
@@ -23,6 +24,12 @@ public class LoadGraphJson extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
+    /**
+     * <p>Constructor for LoadGraphJson.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title         a {@link java.lang.String} object
+     */
     public LoadGraphJson(GraphEditable graphEditable, String title) {
         super(title);
 
@@ -43,6 +50,9 @@ public class LoadGraphJson extends AbstractAction {
         return chooser;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraphJson.getJFileChooser();

@@ -37,6 +37,9 @@ import java.util.Set;
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 26, 2006 Time: 10:29:07 PM To change this template use File |
  * Settings | File Templates.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class IambnPc implements IMbSearch {
 
@@ -64,6 +67,9 @@ public class IambnPc implements IMbSearch {
         this.variables = test.getVariables();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Set<Node> findMb(Node target) {
         Set<Node> cmb = new HashSet<>();
         Pc pc = new Pc(this.independenceTest);
@@ -120,10 +126,20 @@ public class IambnPc implements IMbSearch {
         return 1.0 - result.getPValue();
     }
 
+    /**
+     * <p>getAlgorithmName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getAlgorithmName() {
         return "IAMBnPC";
     }
 
+    /**
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return 0;
     }

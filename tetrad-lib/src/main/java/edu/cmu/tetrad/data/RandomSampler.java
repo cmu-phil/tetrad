@@ -31,12 +31,23 @@ import java.util.List;
  * supplied by the user.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class RandomSampler {
 
     /**
+     * Constructs a new instance of the RandomSampler.
+     */
+    public RandomSampler() {
+    }
+
+    /**
      * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
      * drawing with replacement from the original dataset.
+     *
+     * @param dataSet       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param newSampleSize a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet sample(DataSet dataSet,
                                  int newSampleSize) {
@@ -50,7 +61,7 @@ public final class RandomSampler {
 
         if (dataSet.getNumRows() < newSampleSize) {
             throw new IllegalArgumentException("Not enough cases in data to " +
-                    "generate " + newSampleSize + " samples without replacement.");
+                                               "generate " + newSampleSize + " samples without replacement.");
         }
 
         List<Integer> indices = new ArrayList<>(dataSet.getNumRows());

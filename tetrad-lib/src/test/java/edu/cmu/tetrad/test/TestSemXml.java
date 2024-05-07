@@ -55,14 +55,6 @@ public final class TestSemXml extends TestCase {
         super(name);
     }
 
-    public static void testRosemIm2undtrip() {
-        SemIm semIm = TestSemXml.sampleSemIm1();
-        Element element = SemXmlRenderer.getElement(semIm);
-
-        SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = SemXmlParser.getSemIm(element);
-    }
-
     private static SemIm sampleSemIm1() {
         List<Node> nodes = new ArrayList<>();
 

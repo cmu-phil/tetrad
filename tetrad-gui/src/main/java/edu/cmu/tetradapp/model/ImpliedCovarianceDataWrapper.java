@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.List;
 
 
@@ -38,13 +39,25 @@ import java.util.List;
  * variables only.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ImpliedCovarianceDataWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The SEM IM.
+     */
     private SemIm semIm;
 
     //==============================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for ImpliedCovarianceDataWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ImpliedCovarianceDataWrapper(SemEstimatorWrapper wrapper, Parameters params) {
         SemEstimator semEstimator = wrapper.getSemEstimator();
         SemIm semIm1 = semEstimator.getEstimatedSem();
@@ -66,12 +79,18 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
+    /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIm;
     }

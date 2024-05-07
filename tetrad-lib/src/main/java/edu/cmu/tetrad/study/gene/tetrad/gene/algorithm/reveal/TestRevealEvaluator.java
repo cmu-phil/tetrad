@@ -30,6 +30,7 @@ import junit.framework.TestSuite;
  *
  * @author Frank Wimberly
  * @author josephramsey (translation to unit test)
+ * @version $Id: $Id
  */
 public class TestRevealEvaluator extends TestCase {
     private static final int ngenes = 6;
@@ -39,6 +40,8 @@ public class TestRevealEvaluator extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestRevealEvaluator(String name) {
         super(name);
@@ -47,6 +50,8 @@ public class TestRevealEvaluator extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 

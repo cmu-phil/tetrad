@@ -44,19 +44,65 @@ import java.util.Map;
  *
  * @author Adrian Tang
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PlotMatrix extends JPanel {
-    private JPanel charts;
-    private JList<Node> rowSelector;
-    private JList<Node> colSelector;
+
+    /**
+     * Charts
+     */
+    private final JPanel charts;
+
+    /**
+     * Row selector
+     */
+    private final JList<Node> rowSelector;
+
+    /**
+     * Column selector
+     */
+    private final JList<Node> colSelector;
+
+    /**
+     * Number of bins
+     */
     private int numBins = 9;
+
+    /**
+     * Add regression lines
+     */
     private boolean addRegressionLines = false;
+
+    /**
+     * Remove zero points per plot
+     */
     private boolean removeZeroPointsPerPlot = false;
+
+    /**
+     * Last rows
+     */
     private int[] lastRows = new int[]{0};
+
+    /**
+     * Last columns
+     */
     private int[] lastCols = new int[]{0};
+
+    /**
+     * Conditioning panel map
+     */
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
+
+    /**
+     * Jitter style
+     */
     private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
 
+    /**
+     * <p>Constructor for PlotMatrix.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public PlotMatrix(DataSet dataSet) {
         setLayout(new BorderLayout());
 
@@ -217,14 +263,12 @@ public class PlotMatrix extends JPanel {
 //                    histogram.setTarget(nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
-                        if (node instanceof ContinuousVariable) {
-                            ContinuousVariable var = (ContinuousVariable) node;
+                        if (node instanceof ContinuousVariable var) {
                             VariableConditioningEditor.ContinuousConditioningPanel panel
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
                                     conditioningPanelMap.get(var);
                             histogram.addConditioningVariable(var.getName(), panel.getLow(), panel.getHigh());
-                        } else if (node instanceof DiscreteVariable) {
-                            DiscreteVariable var = (DiscreteVariable) node;
+                        } else if (node instanceof DiscreteVariable var) {
                             VariableConditioningEditor.DiscreteConditioningPanel panel
                                     = (VariableConditioningEditor.DiscreteConditioningPanel)
                                     conditioningPanelMap.get(var);
@@ -248,14 +292,12 @@ public class PlotMatrix extends JPanel {
                             nodes.get(rowIndex).getName(), removeZeroPointsPerPlot);
 
                     for (Node node : conditioningPanelMap.keySet()) {
-                        if (node instanceof ContinuousVariable) {
-                            ContinuousVariable var = (ContinuousVariable) node;
+                        if (node instanceof ContinuousVariable var) {
                             VariableConditioningEditor.ContinuousConditioningPanel panel
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
                                     conditioningPanelMap.get(var);
                             scatterPlot.addConditioningVariable(var.getName(), panel.getLow(), panel.getHigh());
-                        } else if (node instanceof DiscreteVariable) {
-                            DiscreteVariable var = (DiscreteVariable) node;
+                        } else if (node instanceof DiscreteVariable var) {
                             VariableConditioningEditor.DiscreteConditioningPanel panel
                                     = (VariableConditioningEditor.DiscreteConditioningPanel)
                                     conditioningPanelMap.get(var);
@@ -291,7 +333,7 @@ public class PlotMatrix extends JPanel {
             public void mouseClicked(MouseEvent e) {
 //                if (e.getClickCount() == 1) {
                 if (rowSelector.getSelectedIndices().length == 1
-                        && colSelector.getSelectedIndices().length == 1) {
+                    && colSelector.getSelectedIndices().length == 1) {
                     rowSelector.setSelectedIndices(lastRows);
                     colSelector.setSelectedIndices(lastCols);
                     lastRows = new int[]{rowIndex};
@@ -309,22 +351,47 @@ public class PlotMatrix extends JPanel {
         });
     }
 
+    /**
+     * <p>Getter for the field <code>numBins</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumBins() {
         return numBins;
     }
 
+    /**
+     * <p>Setter for the field <code>numBins</code>.</p>
+     *
+     * @param numBins a int
+     */
     public void setNumBins(int numBins) {
         this.numBins = numBins;
     }
 
+    /**
+     * <p>isAddRegressionLines.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAddRegressionLines() {
         return addRegressionLines;
     }
 
+    /**
+     * <p>Setter for the field <code>addRegressionLines</code>.</p>
+     *
+     * @param addRegressionLines a boolean
+     */
     public void setAddRegressionLines(boolean addRegressionLines) {
         this.addRegressionLines = addRegressionLines;
     }
 
+    /**
+     * <p>isRemoveTrendLinesPerPlot.</p>
+     *
+     * @return a boolean
+     */
     public boolean isRemoveTrendLinesPerPlot() {
         return removeZeroPointsPerPlot;
     }

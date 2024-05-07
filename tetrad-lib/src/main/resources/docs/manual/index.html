@@ -299,17 +299,18 @@
         </li>
     </ul>
 
-    <h3>Choose DAG in CPDAG</h3>
+    <h3>Choose Random DAG in CPDAG</h3>
 
     <p>If given a CPDAG as input, this chooses a random DAG from the
         Markov equivalence class of the CPDAG to display. The resulting DAG
         functions as a normal graph box.</p>
 
-    <h3>Choose MAG in PAG</h3>
+    <h3>Choose Zhang MAG in PAG</h3>
 
     <p>If given a partial ancestral graph (PAG) as input, this chooses a
-        random mixed ancestral graph (MAG) from the equivalence class of the PAG
-        to display. The resulting MAG functions as a normal graph box.</p>
+        mixed ancestral graph (MAG) from the equivalence class of the PAG
+        to display using Zhang's method. The resulting MAG functions as a
+        normal graph box.</p>
 
     <h3>Show DAGs in CPDAG</h3>
 
@@ -593,6 +594,65 @@
         and functions identically to the estimator box, but unlike the estimator
         box, it takes the search box directly as a parent, without needing to
         isolate and parameterize the graph output by the search.</p>
+
+    <h2>Markov Check</h2>
+
+    <p>
+        The Markov Checker checks to see whether the Markov Condition is satisfied
+        for a given graph. A simple version of the Markov Condition states that
+        for any variable X, X is independent of all non-descendants of X given
+        X’s parents. The Markov Checker will output all such implied independences
+        and their p-values; these p-values should be distributed as U(0, 1) if the
+        Markov Condition is satisfied, so violations can often be detected by
+        plotting a histogram of these p-values or doing an Anderson-Darling test
+        or a Kolmogorov-Smirnov test to see if the hypothesis that they are drawn
+        from a U(0, 1) distribution can be rejected. This sort of check is actually
+        more general, since graphical implicaitons of separation are not limited to
+        directect acyclic graphs (DAGs) but can be inferred from many types of
+        graphs, including CPDAGs, MAGs, ADMGs, and PAGs.
+    </p>
+
+    <p>
+        Instructions for using the Markov Checker are included in the box itself,
+        in the "Help" tab.
+    </p>
+
+    <h2>IDA Check</h2>
+
+    <p>
+        The IDA Checker check loops through all pairs of variable (X, Y) and
+        calculates the IDA minimum effect for each X on Y, for a linear CPDAG
+        model. The IDA minimum effect is the minimum effect of X on Y, regressing
+        Y on S U {X} for all possible parent sets of X in the CPDAG. This gives
+        a range of effects, and one then see whether the true effect of X on Y
+        (as calculated from the true SEM IM) falls within this range. If it does
+        not, then the IDA minimum effect is not consistent with the true effect.
+    </p>
+
+    <p>
+        The IDA check table gives information to help the user assess these results
+        along with several summary statistics. Further instructions for using the
+        IDA Checker are included in the box itself, in the "Help" tab.
+    </p>
+
+    <h2>Algcomparison</h2>
+
+    <p>
+        The Algcomparison (Algorithm comparison) tool allows the user to compare the
+        results of multiple searches. The user can select one or more simulations,
+        one or more algorithm (with selected test and/or score), and one or more
+        table columns representing columns of parameter values or else statistics
+        that are calculated based on the comparisons done. For most of these values,
+        the use can specify multiple options for values, and the tool will iterate
+        over all sensible combinations of these values and output a table of results.
+        Full results, including all simulated dataset, all true graphs, all estimated
+        graphs, and all timing results, are saved to the hard drive.
+    </p>
+
+    <p>
+        Further instructions for using the Algcomparison tool are included in the
+        box itself, in the "Help" tab.
+    </p>
 
 
     <h1 id="parametric_model_box"><span
@@ -4189,10 +4249,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h3>Mixed Variable Polynomial Likelihood Ratio Test</h3>
 
     <div id="mvplr-test">
-        <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or discrete.
-        This test is valid for both ordinal and non-ordinal discrete searchVariables.</p>
-        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
-        journal of data science and analytics, 6, 3-18.</p>
+        <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or
+            discrete.
+            This test is valid for both ordinal and non-ordinal discrete searchVariables.</p>
+        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+            International
+            journal of data science and analytics, 6, 3-18.</p>
     </div>
 
     <h4>Parameters</h4>d
@@ -4554,7 +4616,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="mvp-bic-score"><p>
         <p>Implements a mixed variable polynomial BIC score. The reference is here:</p>
         <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
-        International journal of data science and analytics, 6, 3-18.</p>
+            International journal of data science and analytics, 6, 3-18.</p>
     </div>
 
     <h3>Poisson Prior Score</h3>
@@ -4596,6 +4658,29 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="numThreads_upper_bound">1000000</span></li>
             <li>Value Type:
                 <span id="numThreads_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="bootstrappingNumThreads">bootstrappingNumThreads</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="bootstrappingNumThreads_short_desc">The number of threads (>= 1) to use for the bootstrapping</span>
+            </li>
+            <li>Long Description: <span
+                    id="bootstrappingNumThreads_long_desc">
+                    This is the number of threads for the bootstrapping itself. The number
+                    of threads that each algorithm uses is set by the individual algorithm.
+                    </span>
+            </li>
+            <li>Default Value: <span
+                    id="bootstrappingNumThreads_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="bootstrappingNumThreads_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="bootstrappingNumThreads_upper_bound">1000000</span></li>
+            <li>Value Type:
+                <span id="bootstrappingNumThreads_value_type">Integer</span></li>
         </ul>
 
         <p>Note: You must specify the "Value Type" of each parameter, and
@@ -4780,6 +4865,25 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="thresholdLvLite">thresholdLvLite</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="thresholdLvLite_short_desc">Score threshold for judging model score equality</span></li>
+            <li>Long Description: <span
+                    id="thresholdLvLite_long_desc">Score threshold for judging model score equality</span>
+            </li>
+            <li>Default Value: <span
+                    id="thresholdLvLite_default_value">0.01</span></li>
+            <li>Lower
+                Bound: <span id="thresholdLvLite_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="thresholdLvLite_upper_bound">Infinity</span></li>
+            <li>Value Type:
+                <span id="thresholdLvLite_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="addOriginalDataset">addOriginalDataset</h3>
         <ul
                 class="parameter_description_list">
@@ -4791,7 +4895,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         extra run using the original dataset for improved accuracy.</span>
             </li>
             <li>Default Value: <span
-                    id="addOriginalDataset_default_value">true</span></li>
+                    id="addOriginalDataset_default_value">false</span></li>
             <li>Lower
                 Bound: <span id="addOriginalDataset_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5080,6 +5184,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="resolveAlmostCyclicPaths">resolveAlmostCyclicPaths</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="resolveAlmostCyclicPaths_short_desc">
+                    True just in case almost cyclic paths should be resolved in the
+                    direction of the cycle.
+                </span></li>
+            <li>Long Description: <span
+                    id="resolveAlmostCyclicPaths_long_desc">
+                    If true we resolved <-> edges as --> if there is a directed path x~~>y.
+                    </span>
+            </li>
+            <li>Default Value: <span
+                    id="resolveAlmostCyclicPaths_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="resolveAlmostCyclicPaths_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="resolveAlmostCyclicPaths_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="resolveAlmostCyclicPaths_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="doDiscriminatingPathColliderRule">doDiscriminatingPathColliderRule</h3>
         <ul
                 class="parameter_description_list">
@@ -5213,7 +5341,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Long
                 Description: <span id="topBracket_long_desc">Top bracket, 'q'</span></li>
             <li>Default
-                Value: <span id="topBracket_default_value">1</span></li>
+                Value: <span id="topBracket_default_value">5</span></li>
             <li>Lower Bound:
                 <span id="topBracket_lower_bound">1</span></li>
             <li>Upper Bound: <span
@@ -5275,6 +5403,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="selectionMinEffect_upper_bound">1.0</span></li>
             <li>Value Type:
                 <span id="selectionMinEffect_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="numSubsamples">numSubsamples</h3>
+        <ul class="numSubsamples_list">
+            <li>Short Description: <span id="numSubsamples_short_desc">
+                The number of subsamples to generate.
+            </span></li>
+            <li>Long Description: <span id="numSubsamples_long_desc">
+           		CStaR works by generating subsamples and summarizing across them; this
+           		specified the number of subsamples to generate. Must be >= 1.
+                effects in the CStaR table </span></li>
+            <li>Default Value: <span
+                    id="numSubsamples_default_value">10</span></li>
+            <li>Lower
+                Bound: <span id="numSubsamples_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="numSubsamples_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="numSubsamples_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5986,25 +6134,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="thresholdSpine">thresholdSpine</h3>
+            id="thresholdW">thresholdW</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="thresholdSpine_short_desc">Threshold on the diagonal of the W matrix.
+                    id="thresholdW_short_desc">Threshold on the W matrix.
         </span></li>
             <li>Long Description: <span
-                    id="thresholdSpine_long_desc">The diagonal of the estimated W matrix
+                    id="thresholdW_long_desc">The estimated W matrix
                     is thresholded by setting small entries less than this threshold
-                    to zero. Should be >= W threshold.</span>
+                    to zero.
+                    </span>
             </li>
             <li>Default Value: <span
-                    id="thresholdSpine_default_value">0.8</span></li>
+                    id="thresholdW_default_value">0.1</span></li>
             <li>Lower Bound:
-                <span id="thresholdSpine_lower_bound">0.0</span></li>
+                <span id="thresholdW_lower_bound">0.0</span></li>
             <li>Upper
-                Bound: <span id="thresholdSpine_upper_bound">Infinity</span></li>
+                Bound: <span id="thresholdW_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="thresholdSpine_value_type">Double</span></li>
+                    id="thresholdW_value_type">Double</span></li>
         </ul>
 
 
@@ -7256,7 +7405,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Default Value: <span
                     id="probRemoveColumn_default_value">0.0</span></li>
             <li>Lower Bound: <span
-                    id="probRemoveColumn_lower_bound">0.00</span></li>
+                    id="probRemoveColumn_lower_bound">0.0</span></li>
             <li>Upper Bound: <span
                     id="probRemoveColumn_upper_bound">1.0</span></li>
             <li>Value Type: <span
@@ -7821,7 +7970,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="precomputeCovariances_short_desc">True if covariance matrix should
-                	be precomputed for tubular continuous data</span></li>
+                	be precomputed for tabular continuous data</span></li>
             <li>Long Description:
                 <span id="precomputeCovariances_long_desc">
                 For more than 5000 variables or so, set this to false in order to calculate covariances
@@ -8166,13 +8315,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="guaranteeIid_short_desc">Yes if the Fisher simulation should
-        guarantee that the sample is i.i.d.; No if standard Fisher model</span></li>
+                    id="guaranteeIid_short_desc">Recursive simulation is used for acyclic models; if not should i.i.d. be assumed?</span>
+            </li>
             <li>Long Description:
-                <span id="guaranteeIid_long_desc"> The standard model applies a shock every
-        so often to the simulation, so is effectively a time series. Yes here
-        guarantees that a new data point starts from a new shock without influence
-        from the previous time step.</span></li>
+                <span id="guaranteeIid_long_desc">For cyclic models, the Fisher simulation model is used, which is a time series. Selecting 'Yes' here
+        guarantees that a new data point starts from a new shock without influence from the previous time step.</span>
+            </li>
             <li>Default Value:
                 <span id="guaranteeIid_default_value">true</span></li>
             <li>Lower

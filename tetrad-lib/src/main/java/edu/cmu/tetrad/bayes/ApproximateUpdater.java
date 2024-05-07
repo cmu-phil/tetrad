@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,8 +39,10 @@ import java.util.List;
  * condition B. Then the maximum likelihood estimate of condition A is calculated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ApproximateUpdater implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -74,6 +77,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
      * @param bayesIm the Bayes net to be updated.
      */
     public ApproximateUpdater(BayesIm bayesIm) {
@@ -87,7 +91,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
-     * @param bayesIm the Bayes net to be updated.
+     *
+     * @param bayesIm  the Bayes net to be updated.
      * @param evidence the evidence for the update.
      */
     public ApproximateUpdater(BayesIm bayesIm, Evidence evidence) {
@@ -101,6 +106,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Returns a simple exemplar of this class to test serialization.
+     *
      * @return a simple exemplar of this class to test serialization.
      */
     public static ApproximateUpdater serializableInstance() {
@@ -130,8 +136,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
                 if (Double.isNaN(probability)) {
                     throw new IllegalStateException("Some probability " +
-                            "values in the BayesIm are not filled in; " +
-                            "cannot simulate data to do approximate updating.");
+                                                    "values in the BayesIm are not filled in; " +
+                                                    "cannot simulate data to do approximate updating.");
                 }
 
                 sum += probability;
@@ -147,6 +153,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
      * @return the Bayes instantiated model that is being updated.
      */
     public BayesIm getBayesIm() {
@@ -154,6 +162,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>Getter for the field <code>manipulatedBayesIm</code>.</p>
+     *
      * @return the Bayes instantiated model after manipulations have been applied.
      */
     public BayesIm getManipulatedBayesIm() {
@@ -161,6 +171,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>getManipulatedGraph.</p>
+     *
      * @return the graph for getManipulatedBayesIm().
      */
     public Graph getManipulatedGraph() {
@@ -168,6 +180,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>getUpdatedBayesIm.</p>
+     *
      * @return the updated Bayes IM, or null if there is no updated Bayes IM.
      */
     public BayesIm getUpdatedBayesIm() {
@@ -175,6 +189,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
      * @return a copy of the getModel evidence.
      */
     public Evidence getEvidence() {
@@ -182,6 +198,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets new evidence for the next update operation.
      */
     public void setEvidence(Evidence evidence) {
@@ -191,7 +209,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
-                    "evidence must be compatible with the Bayes IM being updated.");
+                                               "evidence must be compatible with the Bayes IM being updated.");
         }
 
         this.evidence = new Evidence(evidence);
@@ -204,6 +222,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         this.counts = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         doUpdate();
         int sum = 0;
@@ -215,17 +236,29 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return this.counts[variable][value] / (double) sum;
     }
 
+    /**
+     * <p>isJointMarginalSupported.</p>
+     *
+     * @return a boolean
+     */
     public boolean isJointMarginalSupported() {
         return false;
     }
 
     /**
+     * <p>getJointMarginal.</p>
+     *
+     * @param variables an array of {@link int} objects
+     * @param values    an array of {@link int} objects
      * @return the joint marginal.
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -241,6 +274,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -256,6 +292,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Prints out the most recent marginal.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "Approximate updater, evidence = " + this.evidence;
@@ -306,7 +344,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
@@ -339,7 +377,12 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

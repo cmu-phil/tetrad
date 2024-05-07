@@ -176,7 +176,7 @@ public final class TestCptInvariantUpdater {
         graph.addDirectedEdge(x2Node, x3Node);
 
         BayesPm bayesPm = new BayesPm(graph, 2, 2);
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
@@ -220,7 +220,7 @@ public final class TestCptInvariantUpdater {
         graph.addDirectedEdge(x4Node, x2Node);
 
         BayesPm bayesPm = new BayesPm(graph);
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         int x1 = bayesIm.getNodeIndex(x1Node);
         int x2 = bayesIm.getNodeIndex(x2Node);

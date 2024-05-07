@@ -35,6 +35,7 @@ import java.util.List;
  * scores indicate independence.</p>
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class MnlrScore implements Score {
 
@@ -70,6 +71,10 @@ public class MnlrScore implements Score {
 
     /**
      * The local score of the child given its parents.
+     *
+     * @param i       a int
+     * @param parents a int
+     * @return a double
      */
     public double localScore(int i, int... parents) {
 
@@ -88,6 +93,11 @@ public class MnlrScore implements Score {
 
     /**
      * localScore(y | z, x) - localScore(y | z).
+     *
+     * @param x a int
+     * @param y a int
+     * @param z an array of {@link int} objects
+     * @return a double
      */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -103,10 +113,10 @@ public class MnlrScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
      *
-     * @param bump The bump.
-     * @return True, if so.
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -115,9 +125,9 @@ public class MnlrScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables.
-     *
-     * @return This lsit.
      */
     @Override
     public List<Node> getVariables() {
@@ -125,9 +135,9 @@ public class MnlrScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a maximum degree used by some algorithms.
-     *
-     * @return This maximum.
      */
     @Override
     public int getMaxDegree() {

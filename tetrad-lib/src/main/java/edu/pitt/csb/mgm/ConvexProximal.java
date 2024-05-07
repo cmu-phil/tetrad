@@ -30,8 +30,15 @@ import cern.colt.matrix.DoubleMatrix1D;
  * solution for any t &gt; 0. Typically g(x) will be a likelihood, and h(x) is a penalty term (as in l_1 in the lasso)
  *
  * @author asedgewick 8/4/15
+ * @version $Id: $Id
  */
 public abstract class ConvexProximal {
+
+    /**
+     * <p>Constructor for ConvexProximal.</p>
+     */
+    public ConvexProximal() {
+    }
 
     /**
      * Calculate value of smooth function g(X)

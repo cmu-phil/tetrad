@@ -51,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * acceptance, and rerunning using the specified cutoff.
  *
  * @author josephramsey.
+ * @version $Id: $Id
  */
 public class FasFdr implements IFas {
     private final Matrix cov;
@@ -96,7 +97,7 @@ public class FasFdr implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
         this.sepset = new SepsetMap();
@@ -149,7 +150,7 @@ public class FasFdr implements IFas {
             }
         }
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
 
         return this.graph;
     }
@@ -173,39 +174,51 @@ public class FasFdr implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output will be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getNodes() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
      * independence test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -217,12 +230,12 @@ public class FasFdr implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge to be used in the search.
-     *
-     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {
@@ -288,7 +301,7 @@ public class FasFdr implements IFas {
                 double r = -inv.get(i, j) / sqrt(inv.get(i, i) * inv.get(j, j));
 
                 double fisherZ = sqrt(sampleSize - (nodes.size() - 2) - 3.0) *
-                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
                 double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
 
                 boolean independent = pvalue > test.getAlpha();
@@ -327,7 +340,7 @@ public class FasFdr implements IFas {
                         if (this.verbose) {
                             IndependenceResult result = this.test.checkIndependence(x, y, theRest);
                             this.out.println(x + " _||_ " + y + " | the rest" + " p = " +
-                                    this.nf.format(result.getPValue()));
+                                             this.nf.format(result.getPValue()));
                         }
 
                         removed = true;
@@ -363,9 +376,10 @@ public class FasFdr implements IFas {
         String name2 = y.getName();
 
         if (this.knowledge.isForbidden(name1, name2) &&
-                this.knowledge.isForbidden(name2, name1)) {
-            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.");
+            this.knowledge.isForbidden(name2, name1)) {
+            String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+                             "forbidden by background knowledge.";
+            TetradLogger.getInstance().forceLogMessage(message);
 
             return true;
         }
@@ -413,7 +427,7 @@ public class FasFdr implements IFas {
 
                             if (this.verbose) {
                                 this.out.println(LogUtilsSearch.independenceFact(x, y, condSet) + " p = " +
-                                        this.nf.format(result.getPValue()));
+                                                 this.nf.format(result.getPValue()));
                             }
                             continue EDGE;
                         }

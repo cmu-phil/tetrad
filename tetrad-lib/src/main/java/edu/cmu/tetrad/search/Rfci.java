@@ -23,9 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -49,33 +47,58 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
  */
 public final class Rfci implements IGraphSearch {
-    // The variables to search over (optional)
+    /**
+     * The variables to search over (optional)
+     */
     private final List<Node> variables = new ArrayList<>();
-    // The independence test to use.
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The RFCI-PAG being constructed.
+    /**
+     * The RFCI-PAG being constructed.
+     */
     private Graph graph;
-    // The SepsetMap being constructed.
+    /**
+     * The SepsetMap being constructed.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // The depth for the fast adjacency search.
+    /**
+     * The depth for the fast adjacency search.
+     */
     private int depth = -1;
-    // Elapsed time of last search.
+    /**
+     * Elapsed time of last search.
+     */
     private long elapsedTime;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * Flag to indicate whether to resolve almost cyclic paths during the search.
+     * If true, the search algorithm will attempt to resolve paths that are almost cyclic, meaning that they have a single
+     * bidirected edge that is causing the cycle. If false, these paths will not be resolved.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public Rfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -89,6 +112,9 @@ public final class Rfci implements IGraphSearch {
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param searchVars       a {@link java.util.List} object
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {
@@ -112,7 +138,6 @@ public final class Rfci implements IGraphSearch {
         }
         this.variables.removeAll(remVars);
     }
-
 
     /**
      * Runs the search and returns the RFCI PAG.
@@ -146,8 +171,10 @@ public final class Rfci implements IGraphSearch {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting RFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         setMaxPathLength(this.maxPathLength);
 
@@ -165,7 +192,8 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+//        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+        FciOrient orient = new FciOrient(new SepsetsMaxP(graph, this.independenceTest, null, this.maxPathLength));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
@@ -175,14 +203,29 @@ public final class Rfci implements IGraphSearch {
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
         orient.doFinalOrientation(this.graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
-        this.logger.log("graph", "Returning graph: " + this.graph);
+        TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         long stop2 = MillisecondTimes.timeMillis();
 
-        this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-        this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+        TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
         return this.graph;
     }
@@ -236,7 +279,6 @@ public final class Rfci implements IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
 
     /**
      * Returns the maximum length of any discriminating path, or -1 of unlimited.
@@ -293,16 +335,14 @@ public final class Rfci implements IGraphSearch {
         return this.sepsets.get(i, k);
     }
 
-    ////////////////////////////////////////////
-    // RFCI Algorithm 4.4 (Colombo et al, 2012)
-    // Orient colliders
-    ////////////////////////////////////////////
+    /**
+     * RFCI Algorithm 4.4 (Colombo et al, 2012) Orient colliders
+     */
     private void ruleR0_RFCI(List<Node[]> rTuples) {
         List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = this.graph.getNodes();
 
-        ///////////////////////////////
         // process tuples in rTuples
         while (!rTuples.isEmpty()) {
             Node[] thisTuple = rTuples.remove(0);
@@ -376,16 +416,16 @@ public final class Rfci implements IGraphSearch {
                 while (iter.hasNext()) {
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
-                            ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent2 && (curTuple[1] == k) &&
-                                    ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent1 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == i) || (curTuple[2] == i)))
-                            ||
-                            (independent2 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent2 && (curTuple[1] == k) &&
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent1 && (curTuple[1] == j) &&
+                         ((curTuple[0] == i) || (curTuple[2] == i)))
+                        ||
+                        (independent2 && (curTuple[1] == j) &&
+                         ((curTuple[0] == k) || (curTuple[2] == k)))) {
                         iter.remove();
                     }
                 }
@@ -396,23 +436,22 @@ public final class Rfci implements IGraphSearch {
                 while (iter.hasNext()) {
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
-                            ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent2 && (curTuple[1] == k) &&
-                                    ((curTuple[0] == j) || (curTuple[2] == j)))
-                            ||
-                            (independent1 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == i) || (curTuple[2] == i)))
-                            ||
-                            (independent2 && (curTuple[1] == j) &&
-                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent2 && (curTuple[1] == k) &&
+                         ((curTuple[0] == j) || (curTuple[2] == j)))
+                        ||
+                        (independent1 && (curTuple[1] == j) &&
+                         ((curTuple[0] == i) || (curTuple[2] == i)))
+                        ||
+                        (independent2 && (curTuple[1] == j) &&
+                         ((curTuple[0] == k) || (curTuple[2] == k)))) {
                         iter.remove();
                     }
                 }
             }
         }
 
-        ///////////////////////////////////////////////////////
         // orient colliders (similar to original FCI ruleR0)
         for (Node[] thisTuple : lTuples) {
             Node i = thisTuple[0];
@@ -426,7 +465,7 @@ public final class Rfci implements IGraphSearch {
             }
 
             if (!sepset.contains(j)
-                    && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
+                && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
                 if (!FciOrient.isArrowheadAllowed(i, j, graph, knowledge)) {
                     continue;
@@ -443,9 +482,9 @@ public final class Rfci implements IGraphSearch {
 
     }
 
-    ////////////////////////////////////////////////
-    // collect in rTupleList all unshielded tuples
-    ////////////////////////////////////////////////
+    /**
+     * collect in rTupleList all unshielded tuples
+     */
     private List<Node[]> getRTuples() {
         List<Node[]> rTuples = new ArrayList<>();
         List<Node> nodes = this.graph.getNodes();
@@ -476,10 +515,10 @@ public final class Rfci implements IGraphSearch {
         return (rTuples);
     }
 
-    /////////////////////////////////////////////////////////////////////////////
-    // set the sepSet of x and y to the minimal such subset of the given sepSet
-    // and remove the edge <x, y> if background knowledge allows
-    /////////////////////////////////////////////////////////////////////////////
+    /**
+     * set the sepSet of x and y to the minimal such subset of the given sepSet and remove the edge <x, y> if background
+     * knowledge allows
+     */
     private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
         Set<Node> empty = Collections.emptySet();
         boolean independent;
@@ -514,6 +553,15 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the flag to resolve almost cyclic paths in the RFCI search.
+     *
+     * @param resolveAlmostCyclicPaths the flag to resolve almost cyclic paths
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

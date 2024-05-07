@@ -32,20 +32,23 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class InverseMatrixWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public InverseMatrixWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
         DataModel model = wrapper.getSelectedDataModel();
-        if (model instanceof DataSet) {
-            DataSet dataSet = (DataSet) model;
+        if (model instanceof DataSet dataSet) {
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("The data must be continuous");
             }
@@ -55,8 +58,7 @@ public class InverseMatrixWrapper extends DataWrapper {
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());
-        } else if (model instanceof ICovarianceMatrix) {
-            ICovarianceMatrix cov = (ICovarianceMatrix) model;
+        } else if (model instanceof ICovarianceMatrix cov) {
             Matrix _data = cov.getMatrix();
             Matrix _data2 = _data.inverse();
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());
@@ -74,6 +76,7 @@ public class InverseMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

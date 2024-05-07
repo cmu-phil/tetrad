@@ -15,6 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,15 +23,41 @@ import java.util.List;
  * Bayes net simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesNetSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The Bayes PM.
+     */
     private BayesPm pm;
+
+    /**
+     * The Bayes IM.
+     */
     private BayesIm im;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The Bayes IMs.
+     */
     private List<BayesIm> ims = new ArrayList<>();
 
     /**
@@ -66,10 +93,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates the data.
-     *
-     * @param parameters The parameters to use in the simulation.
-     * @param newModel   If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -107,10 +133,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the simulated data set.
-     *
-     * @param index The index of the desired simulated data set.
-     * @return Ibid.
      */
     @Override
     public DataModel getDataModel(int index) {
@@ -118,10 +143,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the true graph.
-     *
-     * @param index The index of the desired true graph.
-     * @return Ibid.
      */
     @Override
     public Graph getTrueGraph(int index) {
@@ -133,9 +157,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the description.
-     *
-     * @return Ibid.
      */
     @Override
     public String getDescription() {
@@ -143,9 +167,19 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the short name.
+     */
+    @Override
+    public String getShortName() {
+        return "Bayes Net Simulation";
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters.
-     *
-     * @return Ibid.
      */
     @Override
     public List<String> getParameters() {
@@ -174,10 +208,20 @@ public class BayesNetSimulation implements Simulation {
         return parameters;
     }
 
+    @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the number of data sets.
-     *
-     * @return Ibid.
      */
     @Override
     public int getNumDataModels() {
@@ -185,9 +229,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the data type.
-     *
-     * @return Ibid.
      */
     @Override
     public DataType getDataType() {
@@ -214,9 +258,9 @@ public class BayesNetSimulation implements Simulation {
                     int minCategories = parameters.getInt(Params.MIN_CATEGORIES);
                     int maxCategories = parameters.getInt(Params.MAX_CATEGORIES);
                     pm = new BayesPm(graph, minCategories, maxCategories);
-                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                 } else {
-                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);
                     this.im = im;
                 }
             }
@@ -225,12 +269,13 @@ public class BayesNetSimulation implements Simulation {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"
-                    + "the parameters have been specified.");
+                                               + "the parameters have been specified.");
         }
     }
 
     /**
      * Returns the list of Bayes IMs.
+     *
      * @return Ibid.
      */
     public List<BayesIm> getBayesIms() {

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  * Jan 29, 2023 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 public final class GraphSampling {
 
@@ -39,9 +40,9 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph
-     * @param ensemble
-     * @return
+     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
         Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
@@ -71,6 +72,13 @@ public final class GraphSampling {
         return ensembleGraph;
     }
 
+    /**
+     * <p>createGraphWithHighProbabilityEdges.</p>
+     *
+     * @param graphs   a {@link java.util.List} object
+     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
         Graph graph = createGraphWithHighProbabilityEdges(graphs);
 
@@ -85,10 +93,10 @@ public final class GraphSampling {
      * @return graph containing edges with edge type of the highest probability
      */
     public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs) {
-        // filter out null graphs and add PAG coloring
+        // filter out null graphs and add PAG edge specializstion markup
         graphs = graphs.stream()
-                .filter(graph -> graph != null)
-                .map(graph -> addPagColorings(graph))
+                .filter(Objects::nonNull)
+                .map(GraphSampling::addEdgeSpecializationMarkups)
                 .collect(Collectors.toList());
 
         if (graphs.isEmpty()) {
@@ -103,6 +111,11 @@ public final class GraphSampling {
 
             List<EdgeTypeProbability> edgeTypeProbabilities = getEdgeTypeProbabilities(node1, node2, graphs);
             EdgeTypeProbability highestEdgeTypeProbability = getHighestEdgeTypeProbability(edgeTypeProbabilities);
+
+            if (graph.getNode(node1) == null || graph.getNode(node2) == null) {
+                continue;
+            }
+
             Edge highestProbEdge = createEdge(highestEdgeTypeProbability, graph.getNode(node1), graph.getNode(node2));
             if (highestProbEdge != null) {
                 // copy over edge-type probabilities
@@ -127,7 +140,7 @@ public final class GraphSampling {
     private static void setEdgeProbabilitiesOfNonNullEdges(Graph graph) {
         graph.getEdges().forEach(edge -> {
             List<EdgeTypeProbability> etps = edge.getEdgeTypeProbabilities();
-            if (!(etps == null && etps.isEmpty())) {
+            if (!(etps != null && etps.isEmpty())) {
                 // add up all the probabilities of non-null edges
                 double probability = edge.getEdgeTypeProbabilities().stream()
                         .filter(etp -> etp.getEdgeType() != EdgeTypeProbability.EdgeType.nil)
@@ -144,24 +157,16 @@ public final class GraphSampling {
             return null;
         }
 
-        switch (edgeTypeProbability.getEdgeType()) {
-            case ta:
-                return new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-            case at:
-                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-            case ca:
-                return new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-            case ac:
-                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-            case cc:
-                return new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-            case aa:
-                return new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-            case tt:
-                return new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-            default:
-                return new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
-        }
+        return switch (edgeTypeProbability.getEdgeType()) {
+            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
+            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
+            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
+            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
+            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
+            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
+            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
+            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
+        };
     }
 
     private static EdgeTypeProbability getHighestEdgeTypeProbability(List<EdgeTypeProbability> edgeTypeProbabilities, ResamplingEdgeEnsemble edgeEnsemble) {
@@ -213,15 +218,9 @@ public final class GraphSampling {
         }
 
         // sort by edge probabilities in descending order
-        EdgeTypeProbability[] etps = edgeTypeProbabilities.stream().toArray(EdgeTypeProbability[]::new);
+        EdgeTypeProbability[] etps = edgeTypeProbabilities.toArray(EdgeTypeProbability[]::new);
         Arrays.sort(etps, (etp1, etp2) -> {
-            if (etp1.getProbability() > etp2.getProbability()) {
-                return -1;
-            } else if (etp1.getProbability() < etp2.getProbability()) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return Double.compare(etp2.getProbability(), etp1.getProbability());
         });
 
         return etps[0];
@@ -267,33 +266,20 @@ public final class GraphSampling {
         }
 
         // sort by edge probabilities in descending order
-        EdgeTypeProbability[] etps = edgeTypeProbabilities.stream().toArray(EdgeTypeProbability[]::new);
-        Arrays.sort(etps, (etp1, etp2) -> {
-            if (etp1.getProbability() > etp2.getProbability()) {
-                return -1;
-            } else if (etp1.getProbability() < etp2.getProbability()) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
+        EdgeTypeProbability[] etps = edgeTypeProbabilities.toArray(EdgeTypeProbability[]::new);
+        Arrays.sort(etps, (etp1, etp2) -> Double.compare(etp2.getProbability(), etp1.getProbability()));
 
         return Arrays.asList(etps);
     }
 
     private static EdgeType getReversed(EdgeType edgeType) {
-        switch (edgeType) {
-            case ac:
-                return EdgeType.ca;
-            case at:
-                return EdgeType.ta;
-            case ca:
-                return EdgeType.ac;
-            case ta:
-                return EdgeType.at;
-            default:
-                return edgeType;
-        }
+        return switch (edgeType) {
+            case ac -> EdgeType.ca;
+            case at -> EdgeType.ta;
+            case ca -> EdgeType.ac;
+            case ta -> EdgeType.at;
+            default -> edgeType;
+        };
     }
 
     private static EdgeType getEdgeType(Edge edge, Node node1, Node node2) {
@@ -319,8 +305,14 @@ public final class GraphSampling {
         }
     }
 
-    public static Set<NodePair> getEdgeNodePairs(List<Graph> graphs) {
-        Set<NodePair> nodePairs = new HashSet<>();
+    /**
+     * <p>getEdgeNodePairs.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     * @return a {@link java.util.Set} object
+     */
+    private static Set<NodePair> getEdgeNodePairs(List<Graph> graphs) {
+        HashSet<NodePair> nodePairs = new HashSet<>();
 
         graphs.forEach(graph -> {
             graph.getEdges().forEach(edge -> {
@@ -334,14 +326,14 @@ public final class GraphSampling {
     }
 
     private static Graph createNewGraph(List<Node> graphNodes) {
-        Node[] nodes = graphNodes.stream().toArray(Node[]::new);
+        Node[] nodes = graphNodes.toArray(Node[]::new);
         Arrays.sort(nodes);
 
         return new EdgeListGraph(Arrays.asList(nodes));
     }
 
-    private static Graph addPagColorings(Graph graph) {
-        GraphUtils.addPagColoring(graph);
+    private static Graph addEdgeSpecializationMarkups(Graph graph) {
+        GraphUtils.addEdgeSpecializationMarkup(graph);
 
         return graph;
     }

@@ -31,8 +31,12 @@ import java.util.List;
  * Calculates a ROC curve and AUC (area under curve) for a list of scored cases whose inclusion in category C is known.
  *
  * @author josephramsey and Frank Wimberly
+ * @version $Id: $Id
  */
 public class RocCalculator {
+    /**
+     * Constant <code>ASCENDING=0</code>
+     */
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
@@ -59,7 +63,7 @@ public class RocCalculator {
 
         if (scores.length != inCategory.length) {
             throw new IllegalArgumentException("Scores array must have same " +
-                    "number of items as inCategory array.");
+                                               "number of items as inCategory array.");
         }
 
         if (direction != RocCalculator.ASCENDING && direction != RocCalculator.DESCENDING) {
@@ -139,6 +143,11 @@ public class RocCalculator {
         }
     }
 
+    /**
+     * <p>getScaledRocPlot.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getScaledRocPlot() {
         if (this.points == null) {
             getUnscaledRocPlot();
@@ -150,9 +159,9 @@ public class RocCalculator {
         for (int i = 0; i < numPoints; i++) {
             //System.out.println(plot[i][0] + " " + plot[i][1]);
             pointsDouble[i][0] = ((double) this.points[i][0]) /
-                    ((double) this.points[numPoints - 1][0]);
+                                 ((double) this.points[numPoints - 1][0]);
             pointsDouble[i][1] = ((double) this.points[i][1]) /
-                    ((double) this.points[numPoints - 1][1]);
+                                 ((double) this.points[numPoints - 1][1]);
         }
 
         return pointsDouble;

@@ -46,6 +46,7 @@ import java.util.Map;
  * scores indicate independence.</p>
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class MnlrLikelihood {
 
@@ -259,6 +260,9 @@ public class MnlrLikelihood {
 
     /**
      * Returns the structur prior for k parents.
+     *
+     * @param k a int
+     * @return a double
      */
     public double getStructurePrior(int k) {
 
@@ -276,6 +280,11 @@ public class MnlrLikelihood {
 
     }
 
+    /**
+     * <p>getEBICprior.</p>
+     *
+     * @return a double
+     */
     public double getEBICprior() {
 
         double n = this.dataSet.getNumColumns();

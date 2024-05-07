@@ -21,14 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -54,6 +50,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  *
  * @author josephramsey
  * @author bryanandrews
+ * @version $Id: $Id
  * @see Grasp
  * @see GFci
  * @see FciOrient
@@ -61,46 +58,87 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class GraspFci implements IGraphSearch {
 
-    // The conditional independence test.
+    /**
+     * The conditional independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
+    /**
+     * The logger to use.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+    /**
+     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed = true;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
-    // The number of starts for GRaSP.
+    /**
+     * The number of starts for GRaSP.
+     */
     private int numStarts = 1;
-
-    // Whether to use Raskutti and Uhler's modification of GRaSP.
+    /**
+     * Whether to use Raskutti and Uhler's modification of GRaSP.
+     */
     private boolean useRaskuttiUhler = false;
-    // Whether to use data order.
+    /**
+     * Whether to use data order.
+     */
     private boolean useDataOrder = true;
-    // Whether to use score.
+    /**
+     * Whether to use score.
+     */
     private boolean useScore = true;
-    // Whether to use the discriminating path rule.
+    /**
+     * Whether to use the discriminating path rule.
+     */
     private boolean doDiscriminatingPathRule = true;
-    // Whether to use the ordered version of GRaSP.
+    /**
+     * Whether to use the ordered version of GRaSP.
+     */
     private boolean ordered = false;
-    // The depth for GRaSP.
+    /**
+     * The depth for GRaSP.
+     */
     private int depth = -1;
-    // The depth for singular variables.
+    /**
+     * The depth for singular variables.
+     */
     private int uncoveredDepth = 1;
-    // The depth for non-singular variables.
+    /**
+     * The depth for non-singular variables.
+     */
     private int nonSingularDepth = 1;
+    /**
+     * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
+     * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
+     *
+     * @see GraspFci#setSeed(long)
+     */
     private long seed = -1;
+    /**
+     * Indicates whether almost cyclic paths should be resolved during the search.
+     */
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new GraspFci object.
      *
      * @param test  The independence test.
-     * @param score
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public GraspFci(IndependenceTest test, Score score) {
         if (score == null) {
@@ -123,8 +161,10 @@ public final class GraspFci implements IGraphSearch {
             throw new NullPointerException("Nodes from test were null.");
         }
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting Grasp-FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+        }
 
         // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
@@ -147,25 +187,47 @@ public final class GraspFci implements IGraphSearch {
         alg.bestOrder(variables);
         Graph graph = alg.getGraph(true); // Get the DAG
 
-//        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets;
+
+        if (independenceTest instanceof MsepTest) {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        }
+
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-
         fciOrient.doFinalOrientation(graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+//        graph = GraphTransforms.dagToPag(graph);
 
         return graph;
     }
@@ -294,7 +356,21 @@ public final class GraspFci implements IGraphSearch {
         this.ordered = ordered;
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets whether to resolve almost cyclic paths in the search.
+     *
+     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

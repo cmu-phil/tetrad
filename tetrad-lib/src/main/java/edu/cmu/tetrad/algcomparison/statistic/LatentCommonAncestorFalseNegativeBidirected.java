@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
@@ -11,20 +12,38 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for LatentCommonAncestorFalseNegativeBidirected.</p>
+     */
+    public LatentCommonAncestorFalseNegativeBidirected() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "LCAFNB";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Latent Common Ancestor False Negative Bidirected";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -45,7 +64,7 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
                         if (edge2 == null) continue;
 
                         if (!(edge2 != null && Edges.isBidirectedEdge(edge2)
-                                && existsLatentCommonAncestor(trueGraph, edge2))) {
+                              && existsLatentCommonAncestor(trueGraph, edge2))) {
                             fn++;
                         }
                     }
@@ -56,6 +75,9 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
         return fn;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

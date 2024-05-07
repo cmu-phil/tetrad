@@ -25,10 +25,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.SemPmWrapper;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.StringTextField;
@@ -56,11 +56,16 @@ import java.util.Map;
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {
 
+    /**
+     * The SemIm being edited.
+     */
     private final SemPmWrapper semPmWrapper;
+
     /**
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
+
     /**
      * The graphical editor for the SemPm.
      */
@@ -70,6 +75,8 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
     /**
      * Constructs an editor for the given SemIm.
+     *
+     * @param wrapper the SemIm to edit.
      */
     public SemPmEditor(SemPmWrapper wrapper) {
         this.semPmWrapper = wrapper;
@@ -115,7 +122,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         fixOneLoadingPerLatent.addActionListener(e -> {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "This will fix one measurement for each latent to 1.0 "
-                            + "and cannot be undone. Proceed?", "Confirm",
+                    + "and cannot be undone. Proceed?", "Confirm",
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (ret == JOptionPane.YES_OPTION) {
@@ -143,7 +150,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         startFactorLoadingsAtOne.addActionListener(e -> {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "This will start all factor loadings at 1.0 "
-                            + "for purposes of estimation. Proceed?", "Confirm",
+                    + "for purposes of estimation. Proceed?", "Confirm",
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (ret == JOptionPane.YES_OPTION) {
@@ -157,14 +164,14 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
                     if (edge.pointsTowards(x)) {
                         if (!(x.getNodeType() == NodeType.MEASURED
-                                && y.getNodeType() == NodeType.LATENT)) {
+                              && y.getNodeType() == NodeType.LATENT)) {
                             continue;
                         }
 
                         p = getSemPm().getParameter(y, x);
                     } else {
                         if (!(y.getNodeType() == NodeType.MEASURED
-                                && x.getNodeType() == NodeType.LATENT)) {
+                              && x.getNodeType() == NodeType.LATENT)) {
                             continue;
                         }
 
@@ -375,7 +382,7 @@ class SemPmGraphicalEditor extends JPanel {
         if (parameter == null) {
             throw new IllegalStateException(
                     "There is no variance parameter in " + "model for node "
-                            + node + ".");
+                    + node + ".");
         }
 
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
@@ -655,7 +662,7 @@ class SemPmGraphicalEditor extends JPanel {
 
                     // Ignore if paramName already exists.
                     if (paramForName == null
-                            && !value.equals(getParamName())) {
+                        && !value.equals(getParamName())) {
                         setParamName(value);
                     }
 

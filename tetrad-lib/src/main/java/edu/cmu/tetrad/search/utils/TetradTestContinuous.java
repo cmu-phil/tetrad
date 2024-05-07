@@ -52,8 +52,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
-
 public final class TetradTestContinuous implements TetradTest {
     private final DataSet dataSet;
     DeltaTetradTest deltaTest;
@@ -70,6 +70,13 @@ public final class TetradTestContinuous implements TetradTest {
     //    private Map<Tetrad, Double> tetradDifference;
     private List<Node> variables;
 
+    /**
+     * <p>Constructor for TetradTestContinuous.</p>
+     *
+     * @param dataSet     a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param sig         a double
+     */
     public TetradTestContinuous(DataSet dataSet, BpcTestType sigTestType,
                                 double sig) {
         if (sigTestType == BpcTestType.TETRAD_BOLLEN || sigTestType == null) {
@@ -77,8 +84,8 @@ public final class TetradTestContinuous implements TetradTest {
         }
 
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -98,11 +105,18 @@ public final class TetradTestContinuous implements TetradTest {
         initialization();
     }
 
+    /**
+     * <p>Constructor for TetradTestContinuous.</p>
+     *
+     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param sig         a double
+     */
     public TetradTestContinuous(ICovarianceMatrix covMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
         this.dataSet = null;
@@ -119,11 +133,18 @@ public final class TetradTestContinuous implements TetradTest {
         this.variables = covMatrix.getVariables();
     }
 
+    /**
+     * <p>Constructor for TetradTestContinuous.</p>
+     *
+     * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
+     * @param sigTestType       a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param sig               a double
+     */
     public TetradTestContinuous(CorrelationMatrix correlationMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-                sigTestType == BpcTestType.TETRAD_DELTA ||
-                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+              sigTestType == BpcTestType.TETRAD_DELTA ||
+              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -142,18 +163,34 @@ public final class TetradTestContinuous implements TetradTest {
         this.variables = correlationMatrix.getVariables();
     }
 
+    /**
+     * <p>getSignificance.</p>
+     *
+     * @return a double
+     */
     public double getSignificance() {
         return this.sig;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSignificance(double sig) {
         this.sig = sig;
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ICovarianceMatrix getCovMatrix() {
         if (this.covMatrix != null) {
@@ -167,14 +204,29 @@ public final class TetradTestContinuous implements TetradTest {
 //        return corrMatrix;
     }
 
+    /**
+     * <p>Setter for the field <code>covMatrix</code>.</p>
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public void setCovMatrix(ICovarianceMatrix covMatrix) {
         this.covMatrix = covMatrix;
     }
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return an array of {@link java.lang.String} objects
+     */
     public String[] getVarNames() {
         return this.covMatrix.getVariableNames().toArray(new String[0]);
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         if (this.variables == null) {
             if (this.dataSet != null) {
@@ -187,10 +239,20 @@ public final class TetradTestContinuous implements TetradTest {
         return this.variables;
     }
 
+    /**
+     * <p>getTestType.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     */
     public BpcTestType getTestType() {
         return this.sigTestType;
     }
 
+    /**
+     * <p>setTestType.</p>
+     *
+     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     */
     public void setTestType(BpcTestType sigTestType) {
         this.sigTestType = sigTestType;
     }
@@ -209,6 +271,9 @@ public final class TetradTestContinuous implements TetradTest {
         this.rho = this.covMatrix.getMatrix();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int tetradScore(int v1, int v2, int v3, int v4) {
         boolean holds = wishartEvalTetradDifferences2(v1, v2, v3, v4, this.sig);
         if (!holds) return 1;
@@ -216,18 +281,20 @@ public final class TetradTestContinuous implements TetradTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3)
      */
-
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
         return tetradHolds(v1, v3, v4, v2) && !tetradHolds(v1, v3, v2, v4) &&
-                !tetradHolds(v1, v4, v2, v3);
+               !tetradHolds(v1, v4, v2, v3);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests if all tetrad constraints hold
      */
-
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         if (this.sigTestType != BpcTestType.GAUSSIAN_FACTOR) {
             return tetradScore(v1, v2, v3, v4) == 3;
@@ -236,11 +303,17 @@ public final class TetradTestContinuous implements TetradTest {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradHolds(int v1, int v2, int v3, int v4) {
         evalTetradDifference(v1, v2, v3, v4);
         return this.prob[0] >= this.sig;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         evalTetradDifference(v1, v2, v3, v4);
         return this.prob[0];
@@ -299,7 +372,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, k) * this.rho.get(j, l);
+                  this.rho.get(i, k) * this.rho.get(j, l);
 
         double SD = wishartTestTetradDifference(i, j, k, l);
 
@@ -309,7 +382,7 @@ public final class TetradTestContinuous implements TetradTest {
         this.prob[0] = 2.0 * ProbUtils.normalCdf(abs(ratio));
 
         TAUijlk = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, j, l, k);
 
@@ -319,7 +392,7 @@ public final class TetradTestContinuous implements TetradTest {
         this.prob[1] = 2.0 * ProbUtils.normalCdf(abs(ratio));
 
         TAUiklj = this.rho.get(i, k) * this.rho.get(j, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, k, l, j);   // A C D B
 
@@ -335,7 +408,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, k) * this.rho.get(j, l);
+                  this.rho.get(i, k) * this.rho.get(j, l);
 
         double SD = wishartTestTetradDifference(i, j, k, l);
 
@@ -345,7 +418,7 @@ public final class TetradTestContinuous implements TetradTest {
         boolean holds1 = 2.0 * ProbUtils.normalCdf(abs(ratio)) > alpha;
 
         TAUijlk = this.rho.get(i, j) * this.rho.get(k, l) -
-                this.rho.get(i, l) * this.rho.get(j, k);
+                  this.rho.get(i, l) * this.rho.get(j, k);
 
         SD = wishartTestTetradDifference(i, j, l, k);
 
@@ -382,7 +455,7 @@ public final class TetradTestContinuous implements TetradTest {
         double ratio;
 
         TAUijkl = this.rho.get(i1, j1) * this.rho.get(k1, l1) -
-                this.rho.get(i2, j2) * this.rho.get(k2, l2);
+                  this.rho.get(i2, j2) * this.rho.get(k2, l2);
 
         double SD = wishartTestTetradDifference(i1, j2, k2, l2);
 
@@ -444,13 +517,13 @@ public final class TetradTestContinuous implements TetradTest {
         double a44 = m.get(3, 3);
 
         return a14 * a23 * a32 * a41 - a13 * a24 * a32 * a41 - a14 * a22 * a33 * a41 +
-                a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 - a12 * a23 * a34 * a41 -
-                a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 + a14 * a21 * a33 * a42 -
-                a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 + a11 * a23 * a34 * a42 +
-                a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 - a14 * a21 * a32 * a43 +
-                a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 - a11 * a22 * a34 * a43 -
-                a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 + a13 * a21 * a32 * a44 -
-                a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 + a11 * a22 * a33 * a44;
+               a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 - a12 * a23 * a34 * a41 -
+               a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 + a14 * a21 * a33 * a42 -
+               a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 + a11 * a23 * a34 * a42 +
+               a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 - a14 * a21 * a32 * a43 +
+               a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 - a11 * a22 * a34 * a43 -
+               a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 + a13 * a21 * a32 * a44 -
+               a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 + a11 * a22 * a33 * a44;
     }
 
     /**
@@ -500,13 +573,18 @@ public final class TetradTestContinuous implements TetradTest {
         this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
         this.prob[0] = this.deltaTest.getPValue();
 
-        TetradLogger.getInstance().log("tetrads", new Tetrad(this.variables.get(i),
+        TetradLogger.getInstance().forceLogMessage(new Tetrad(this.variables.get(i),
                 this.variables.get(j), this.variables.get(k), this.variables.get(l))
-                + " = 0, p = " + this.prob[0]);
+                                                   + " = 0, p = " + this.prob[0]);
 
 
     }
 
+    /**
+     * <p>setBollenTest.</p>
+     *
+     * @param deltaTest a {@link edu.cmu.tetrad.search.utils.DeltaTetradTest} object
+     */
     public void setBollenTest(DeltaTetradTest deltaTest) {
         this.deltaTest = deltaTest;
     }
@@ -516,30 +594,45 @@ public final class TetradTestContinuous implements TetradTest {
      * significance testing
      */
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int v1, int v2, int v3, int v4) {
         int[] indices = {v1, v2, v3, v4};
         this.oneFactorEst4.init(indices);
         return this.oneFactorEst4.isSignificant();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int v1, int v2, int v3, int v4, int v5) {
         int[] indices = {v1, v2, v3, v4, v5};
         this.oneFactorEst5.init(indices);
         return this.oneFactorEst5.isSignificant();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4) {
         int[] indices = {v1, v2, v3, v4};
         this.twoFactorsEst4.init(indices, 2);
         return this.twoFactorsEst4.isSignificant();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5) {
         int[] indices = {v1, v2, v3, v4, v5};
         this.twoFactorsEst5.init(indices, 3);
         return this.twoFactorsEst5.isSignificant();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5,
                                  int v6) {
         int[] indices = {v1, v2, v3, v4, v5, v6};

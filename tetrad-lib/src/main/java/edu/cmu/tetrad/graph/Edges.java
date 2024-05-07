@@ -36,11 +36,23 @@ import java.util.List;
  * uniform way of testing whether an edge is in fact, e.g., a directed edge (or any of the other types).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Edges {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private Edges() {
+
+    }
+
+    /**
      * Constructs a new bidirected edge from nodeA to nodeB (&lt;-&gt;).
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge bidirectedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.ARROW, Endpoint.ARROW);
@@ -48,6 +60,10 @@ public final class Edges {
 
     /**
      * Constructs a new directed edge from nodeA to nodeB (--&gt;).
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge directedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.ARROW);
@@ -55,6 +71,10 @@ public final class Edges {
 
     /**
      * Constructs a new partially oriented edge from nodeA to nodeB (o-&gt;).
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge partiallyOrientedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.ARROW);
@@ -62,6 +82,10 @@ public final class Edges {
 
     /**
      * Constructs a new nondirected edge from nodeA to nodeB (o-o).
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge nondirectedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.CIRCLE);
@@ -69,20 +93,30 @@ public final class Edges {
 
     /**
      * Constructs a new undirected edge from nodeA to nodeB (--).
+     *
+     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeB a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge undirectedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.TAIL);
     }
 
     /**
+     * <p>isBidirectedEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff an edge is a bidirected edge (&lt;-&gt;).
      */
     public static boolean isBidirectedEdge(Edge edge) {
         return (edge.getEndpoint1() == Endpoint.ARROW) &&
-                (edge.getEndpoint2() == Endpoint.ARROW);
+               (edge.getEndpoint2() == Endpoint.ARROW);
     }
 
     /**
+     * <p>isDirectedEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff the given edge is a directed edge (--&gt;).
      */
     public static boolean isDirectedEdge(Edge edge) {
@@ -96,6 +130,9 @@ public final class Edges {
     }
 
     /**
+     * <p>isPartiallyOrientedEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff the given edge is a partially oriented edge (o-&gt;)
      */
     public static boolean isPartiallyOrientedEdge(Edge edge) {
@@ -109,6 +146,9 @@ public final class Edges {
     }
 
     /**
+     * <p>isNondirectedEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff some edge is an nondirected edge (o-o).
      */
     public static boolean isNondirectedEdge(Edge edge) {
@@ -117,6 +157,9 @@ public final class Edges {
     }
 
     /**
+     * <p>isUndirectedEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff some edge is an undirected edge (-).
      */
     public static boolean isUndirectedEdge(Edge edge) {
@@ -125,7 +168,11 @@ public final class Edges {
     }
 
     /**
-     * @return the node opposite the given node along the given edge.
+     * If node is one endpoint of edge, returns the other endpoint.
+     *
+     * @param node The one endpoint.
+     * @param edge The edge
+     * @return The other endpoint.
      */
     public static Node traverse(Node node, Edge edge) {
         if (node == null) {
@@ -143,16 +190,20 @@ public final class Edges {
 
     /**
      * For A -&gt; B, given A, returns B; otherwise returns null.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static Node traverseDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if ((edge.getEndpoint1() == Endpoint.TAIL) &&
-                    (edge.getEndpoint2() == Endpoint.ARROW)) {
+                (edge.getEndpoint2() == Endpoint.ARROW)) {
                 return edge.getNode2();
             }
         } else if (node == edge.getNode2()) {
             if ((edge.getEndpoint2() == Endpoint.TAIL) &&
-                    (edge.getEndpoint1() == Endpoint.ARROW)) {
+                (edge.getEndpoint1() == Endpoint.ARROW)) {
                 return edge.getNode1();
             }
         }
@@ -162,6 +213,10 @@ public final class Edges {
 
     /**
      * For A -&gt; B, given B, returns A; otherwise returns null.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static Node traverseReverseDirected(Node node, Edge edge) {
         if (edge == null) {
@@ -170,12 +225,12 @@ public final class Edges {
 
         if (node == edge.getNode1()) {
             if ((edge.getEndpoint1() == Endpoint.ARROW) &&
-                    (edge.getEndpoint2() == Endpoint.TAIL)) {
+                (edge.getEndpoint2() == Endpoint.TAIL)) {
                 return edge.getNode2();
             }
         } else if (node == edge.getNode2()) {
             if ((edge.getEndpoint2() == Endpoint.ARROW) &&
-                    (edge.getEndpoint1() == Endpoint.TAIL)) {
+                (edge.getEndpoint1() == Endpoint.TAIL)) {
                 return edge.getNode1();
             }
         }
@@ -185,6 +240,10 @@ public final class Edges {
 
     /**
      * For A --* B or A o-* B, given A, returns B. For A &lt;-* B, returns null. Added by ekorber, 2004/06/12.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
@@ -202,14 +261,16 @@ public final class Edges {
     /**
      * For a directed edge, returns the node adjacent to the arrow endpoint.
      *
-     * @throws IllegalArgumentException if the given edge is not a directed edge.
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge.
      */
     public static Node getDirectedEdgeHead(Edge edge) {
         if ((edge.getEndpoint1() == Endpoint.ARROW) &&
-                (edge.getEndpoint2() == Endpoint.TAIL)) {
+            (edge.getEndpoint2() == Endpoint.TAIL)) {
             return edge.getNode1();
         } else if ((edge.getEndpoint2() == Endpoint.ARROW) &&
-                (edge.getEndpoint1() == Endpoint.TAIL)) {
+                   (edge.getEndpoint1() == Endpoint.TAIL)) {
             return edge.getNode2();
         } else {
             throw new IllegalArgumentException("Not a directed edge: " + edge);
@@ -219,20 +280,27 @@ public final class Edges {
     /**
      * For a directed edge, returns the node adjacent to the null endpoint.
      *
-     * @throws IllegalArgumentException if the given edge is not a directed edge.
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge.
      */
     public static Node getDirectedEdgeTail(Edge edge) {
         if ((edge.getEndpoint2() == Endpoint.ARROW) &&
-                (edge.getEndpoint1() == Endpoint.TAIL)) {
+            (edge.getEndpoint1() == Endpoint.TAIL)) {
             return edge.getNode1();
         } else if ((edge.getEndpoint1() == Endpoint.ARROW) &&
-                (edge.getEndpoint2() == Endpoint.TAIL)) {
+                   (edge.getEndpoint2() == Endpoint.TAIL)) {
             return edge.getNode2();
         } else {
             throw new IllegalArgumentException("Not a directed edge: " + edge);
         }
     }
 
+    /**
+     * <p>sortEdges.</p>
+     *
+     * @param edges a {@link java.util.List} object
+     */
     public static void sortEdges(List<Edge> edges) {
         edges.sort((edge1, edge2) -> {
             if (edge1 == null || edge2 == null) {

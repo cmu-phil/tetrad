@@ -14,6 +14,9 @@ import java.util.Set;
 
 /**
  * Created by Erich on 4/29/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimRepeatAC {
 
@@ -24,11 +27,23 @@ public class HsimRepeatAC {
     private char delimiter = ',';
 
     //*********Constructors*************//
+
+    /**
+     * <p>Constructor for HsimRepeatAC.</p>
+     *
+     * @param indata a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public HsimRepeatAC(DataSet indata) {
         this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
+    /**
+     * <p>Constructor for HsimRepeatAC.</p>
+     *
+     * @param readfilename a {@link java.lang.String} object
+     * @param delim        a char
+     */
     public HsimRepeatAC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
@@ -45,6 +60,14 @@ public class HsimRepeatAC {
     }
 
     //***************PUBLIC METHODS********************//
+
+    /**
+     * <p>run.</p>
+     *
+     * @param resimSize a int
+     * @param repeat    a int
+     * @return an array of {@link double} objects
+     */
     public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
         List<Integer> schedule = new ArrayList<>();
@@ -115,24 +138,45 @@ public class HsimRepeatAC {
 
         if (this.verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
-                    + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
+                               + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
         return evalTotal;
     }
 
     //*************************Methods for setting private variables***********//
+
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbosity a boolean
+     */
     public void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
+    /**
+     * <p>Setter for the field <code>write</code>.</p>
+     *
+     * @param setwrite a boolean
+     */
     public void setWrite(boolean setwrite) {
         this.write = setwrite;
     }
 
+    /**
+     * <p>Setter for the field <code>filenameOut</code>.</p>
+     *
+     * @param filename a {@link java.lang.String} object
+     */
     public void setFilenameOut(String filename) {
         this.filenameOut = filename;
     }
 
+    /**
+     * <p>Setter for the field <code>delimiter</code>.</p>
+     *
+     * @param delim a char
+     */
     public void setDelimiter(char delim) {
         this.delimiter = delim;
     }

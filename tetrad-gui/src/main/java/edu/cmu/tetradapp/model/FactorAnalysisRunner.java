@@ -28,21 +28,35 @@ import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 /**
+ * <p>FactorAnalysisRunner class.</p>
+ *
  * @author Michael Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The output of the algorithm.
+     */
     private String output;
 
+    /**
+     * The rotated solution.
+     */
     private Matrix rotatedSolution;
 
+    /**
+     * The threshold for the rotated solution.
+     */
     private double threshold;
 
     //============================CONSTRUCTORS============================//
@@ -58,6 +72,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -66,6 +81,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
+    /**
+     * <p>execute.</p>
+     */
     public void execute() {
         DataSet selectedModel = (DataSet) getDataModel();
 
@@ -142,11 +160,18 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
@@ -154,21 +179,34 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
+     * {@inheritDoc}
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "Factor Analysis";
     }
 
+    /**
+     * <p>Getter for the field <code>output</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getOutput() {
         return this.output;
     }

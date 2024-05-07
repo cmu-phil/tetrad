@@ -20,8 +20,8 @@ package edu.cmu.tetradapp.editor.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.data.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -38,12 +39,11 @@ import java.util.Set;
  * May 23, 2019 3:59:42 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ParameterTab extends JPanel {
 
-    private static final long serialVersionUID = 7074205549192562786L;
-
-    private static final String[] GRAPH_ITEMS = {
+    public static final String[] GRAPH_TYPE_ITEMS = {
             GraphTypes.RANDOM_FOWARD_DAG,
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
@@ -51,8 +51,7 @@ public class ParameterTab extends JPanel {
             GraphTypes.RANDOM_ONE_FACTOR_MIM,
             GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
-
-    private static final String[] SOURCE_GRAPH_ITEMS = {
+    public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
@@ -61,17 +60,40 @@ public class ParameterTab extends JPanel {
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
     };
-
+    @Serial
+    private static final long serialVersionUID = 7074205549192562786L;
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
 
+    /**
+     * The graph type dropdown.
+     */
     private final JComboBox<String> graphsDropdown = new JComboBox<>();
+
+    /**
+     * The simulation type dropdown.
+     */
     private final JComboBox<String> simulationsDropdown = new JComboBox<>();
 
+    /**
+     * The parameter box.
+     */
     private final Box parameterBox = Box.createVerticalBox();
 
+    /**
+     * The simulation.
+     */
     private final Simulation simulation;
+
+    /**
+     * The initial flag.
+     */
     private boolean initial = true;
 
+    /**
+     * <p>Constructor for ParameterTab.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public ParameterTab(Simulation simulation) {
         this.simulation = simulation;
 
@@ -92,6 +114,10 @@ public class ParameterTab extends JPanel {
         } else {
             showParameters();
         }
+    }
+
+    public static String[] getSimulationItems() {
+        return ParameterTab.MODEL_TYPE_ITEMS;
     }
 
     private Component getPanel() {
@@ -124,28 +150,15 @@ public class ParameterTab extends JPanel {
             String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
             this.simulation.getParams().set("graphsDropdownPreference", graphItem);
 
-            switch (graphItem) {
-                case GraphTypes.RANDOM_FOWARD_DAG:
-                    randomGraph = new RandomForward();
-                    break;
-                case GraphTypes.ERDOS_RENYI_DAG:
-                    randomGraph = new ErdosRenyi();
-                    break;
-                case GraphTypes.SCALE_FREE_DAG:
-                    randomGraph = new ScaleFree();
-                    break;
-                case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS:
-                    randomGraph = new Cyclic();
-                    break;
-                case GraphTypes.RANDOM_ONE_FACTOR_MIM:
-                    randomGraph = new RandomSingleFactorMim();
-                    break;
-                case GraphTypes.RANDOM_TWO_FACTOR_MIM:
-                    randomGraph = new RandomTwoFactorMim();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
-            }
+            randomGraph = switch (graphItem) {
+                case GraphTypes.RANDOM_FOWARD_DAG -> new RandomForward();
+                case GraphTypes.ERDOS_RENYI_DAG -> new ErdosRenyi();
+                case GraphTypes.SCALE_FREE_DAG -> new ScaleFree();
+                case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS -> new Cyclic();
+                case GraphTypes.RANDOM_ONE_FACTOR_MIM -> new RandomSingleFactorMim();
+                case GraphTypes.RANDOM_TWO_FACTOR_MIM -> new RandomTwoFactorMim();
+                default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
+            };
         }
         return randomGraph;
     }
@@ -226,7 +239,9 @@ public class ParameterTab extends JPanel {
             Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
 
             if (params.isEmpty()) {
-                this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
+                JLabel noParamLbl = ParameterTab.NO_PARAM_LBL;
+                noParamLbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                this.parameterBox.add(noParamLbl, BorderLayout.NORTH);
             } else {
                 Box parameters = Box.createVerticalBox();
                 Box[] paramBoxes = ParameterComponents.toArray(
@@ -276,16 +291,16 @@ public class ParameterTab extends JPanel {
 
         // type of graph options
         if (!this.simulation.isFixedGraph()) {
-            Arrays.stream(ParameterTab.GRAPH_ITEMS).forEach(this.graphsDropdown::addItem);
+            Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(this.graphsDropdown::addItem);
             this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
-            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_ITEMS[0]));
+            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
             this.graphsDropdown.addActionListener(e -> refreshParameters());
 
             simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        String[] simulationItems = getSimulationItems(this.simulation);
+        String[] simulationItems = getSimulationItems();
         Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
         this.simulationsDropdown.setSelectedItem(
@@ -350,45 +365,11 @@ public class ParameterTab extends JPanel {
         return box;
     }
 
-    private String[] getSimulationItems(Simulation simulation) {
-        String[] items;
-
-        if (simulation.isFixedSimulation()) {
-            if (simulation.getSimulation() instanceof BayesNetSimulation) {
-                items = new String[]{
-                        SimulationTypes.BAYS_NET
-                };
-            } else if (simulation.getSimulation() instanceof SemSimulation) {
-                items = new String[]{
-                        SimulationTypes.STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof LinearFisherModel) {
-                items = new String[]{
-                        SimulationTypes.LINEAR_FISHER_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
-                items = new String[]{
-                        SimulationTypes.STANDARDIZED_STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
-                items = new String[]{
-                        SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL
-                };
-            } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
-                items = new String[]{
-                        SimulationTypes.LOADED_FROM_FILES
-                };
-            } else {
-                throw new IllegalStateException("Not expecting that model type: "
-                        + simulation.getSimulation().getClass());
-            }
-        } else {
-            items = ParameterTab.SOURCE_GRAPH_ITEMS;
-        }
-
-        return items;
-    }
-
+    /**
+     * <p>isInitial.</p>
+     *
+     * @return a boolean
+     */
     public boolean isInitial() {
         return initial;
     }

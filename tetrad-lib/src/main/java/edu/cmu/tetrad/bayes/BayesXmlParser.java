@@ -35,9 +35,20 @@ import java.util.*;
  * Parses Bayes elements back to objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesXmlParser {
+
+    /**
+     * The names of the variables in the Bayes net.
+     */
     private Map<String, Node> namesToVars;
+
+    /**
+     * A parser for Bayes XML files.
+     */
+    public BayesXmlParser() {
+    }
 
     private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {
         if (!"cpts".equals(element2.getQualifiedName())) {
@@ -65,8 +76,8 @@ public final class BayesXmlParser {
 
             if (e1Elements.size() != numRows) {
                 throw new IllegalArgumentException("Element cpt claimed " +
-                        numRows + " rows, but there are only " +
-                        e1Elements.size() + " rows in the file.");
+                                                   numRows + " rows, but there are only " +
+                                                   e1Elements.size() + " rows in the file.");
             }
 
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -96,9 +107,9 @@ public final class BayesXmlParser {
 
                 if (t.hasMoreTokens()) {
                     throw new IllegalArgumentException("Element cpt claimed " +
-                            numCols +
-                            " columnns , but there are more that that " +
-                            "in the file.");
+                                                       numCols +
+                                                       " columnns , but there are more that that " +
+                                                       "in the file.");
                 }
             }
         }

@@ -41,6 +41,8 @@ class RandomMimParamsEditor extends JPanel {
 
     /**
      * Constructs a dialog to edit the given workbench randomization parameters.
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RandomMimParamsEditor(Parameters parameters) {
         JComboBox<String> numFactors = new JComboBox<>();
@@ -88,7 +90,7 @@ class RandomMimParamsEditor extends JPanel {
                 if (value < 1) {
                     throw new IllegalArgumentException(
                             "Number of structural "
-                                    + "nodes Must be greater than 0: " + value);
+                            + "nodes Must be greater than 0: " + value);
                 }
 
                 parameters.set("numStructuralNodes", value);

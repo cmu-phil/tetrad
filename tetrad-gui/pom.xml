@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.6.3</version>
+        <version>7.6.4</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
@@ -151,10 +151,20 @@
             <version>4.13.2</version>
         </dependency>
         <!-- Used for deep copy dataset during determinism - Zhou -->
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.commons</groupId>-->
+        <!--            <artifactId>commons-lang3</artifactId>-->
+        <!--            <version>3.12.0</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <artifactId>commons-text</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jdepend</groupId>
+            <artifactId>jdepend</artifactId>
+            <version>2.9.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
         <!--        <dependency>-->
@@ -163,12 +173,12 @@
         <!--            <version>3.2.1</version>-->
         <!--        </dependency>-->
 
-<!--         https://mvnrepository.com/artifact/javafx/javafx-->
-<!--        <dependency>-->
-<!--            <groupId>javafx</groupId>-->
-<!--            <artifactId>javafx</artifactId>-->
-<!--            <version>2.2.7</version>-->
-<!--        </dependency>-->
+        <!--         https://mvnrepository.com/artifact/javafx/javafx-->
+        <!--        <dependency>-->
+        <!--            <groupId>javafx</groupId>-->
+        <!--            <artifactId>javafx</artifactId>-->
+        <!--            <version>2.2.7</version>-->
+        <!--        </dependency>-->
 
 
     </dependencies>

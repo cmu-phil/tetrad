@@ -32,6 +32,7 @@ import java.awt.geom.RoundRectangle2D;
  * Appearance of session nodes for standard nodes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
@@ -70,6 +71,11 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     private boolean selected;
 
 
+    /**
+     * <p>Constructor for StdDisplayComp.</p>
+     *
+     * @param imagePath a {@link java.lang.String} object
+     */
     public StdDisplayComp(String imagePath) {
         this.nameLabel = new JLabel(" ");
         this.acronymLabel = new JLabel("No model");
@@ -82,9 +88,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the selection status of the node.
-     *
-     * @param selected the selection status of the node (true or false).
      */
     public void setSelected(boolean selected) {
         this.selected = selected;
@@ -92,11 +98,17 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         repaint();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         this.nameLabel.setText(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setAcronym(String acronym) {
         this.acronymLabel.setText(acronym);
         layoutComponents();
@@ -107,10 +119,16 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
                 getSize().height - 1, 10, 10);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setHasModel(boolean hasModel) {
         if (hasModel) {
             this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
@@ -121,6 +139,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the background of the component (since it has to be a JComponent).
      */
     public void paint(Graphics g) {

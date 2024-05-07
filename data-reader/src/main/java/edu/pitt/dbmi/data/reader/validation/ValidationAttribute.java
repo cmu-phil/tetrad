@@ -22,6 +22,7 @@ package edu.pitt.dbmi.data.reader.validation;
  * Feb 16, 2017 1:49:30 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public enum ValidationAttribute {
 

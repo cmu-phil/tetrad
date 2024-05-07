@@ -37,8 +37,23 @@ import edu.cmu.tetrad.util.Parameters;
  * Test the degenerate Gaussian score.
  *
  * @author bandrews
+ * @version $Id: $Id
  */
 public class TestDegenerateGaussian {
+
+    /**
+     * Initializes a new instance of the TestDegenerateGaussian class.
+     */
+    public TestDegenerateGaussian() {
+    }
+
+    /**
+     * The main method initializes various parameters, statistics, algorithms, simulations, and a comparison object. It
+     * sets the values for the parameters and adds statistics, algorithms, and simulations to the respective objects.
+     * Lastly, it calls the compareFromSimulations method of the comparison object to perform a comparison.
+     *
+     * @param args the command-line arguments
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         parameters.set("numRuns", 3);

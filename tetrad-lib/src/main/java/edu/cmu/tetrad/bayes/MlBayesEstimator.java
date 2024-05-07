@@ -22,20 +22,37 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
  *
  * @author Shane Harwood, Joseph Ramsey
+ * @version $Id: $Id
  */
 public final class MlBayesEstimator {
 
+    private final double prior;
+
     /**
-     * 33 Estimates a Bayes IM using the variables, graph, and parameters in the given Bayes PM and the data columns in
-     * the given data set. Each variable in the given Bayes PM must be equal to a variable in the given data set.
+     * Create an instance of MlBayesEstimator with the given prior.
+     *
+     * @param prior the prior value used in the ML estimation
+     */
+    public MlBayesEstimator(double prior) {
+        this.prior = prior;
+    }
+
+    /**
+     * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
+     *
+     * @param bayesPm The BayesPm object representing the Bayes net.
+     * @param dataSet The DataSet object containing the data.
+     * @return A BayesIm object representing the estimated Bayes Information Matrix (Bayes IM).
+     * @throws NullPointerException if either bayesPm or dataSet is null.
      */
     public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {
@@ -46,75 +63,65 @@ public final class MlBayesEstimator {
             throw new NullPointerException();
         }
 
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
-//        }
+        MlBayesIm im = new MlBayesIm(bayesPm, true);
 
-        // Make sure all of the variables in the PM are in the data set;
-        // otherwise, estimation is impossible.
-        BayesUtils.ensureVarsInData(bayesPm.getVariables(), dataSet);
+        // Get the nodes from the BayesPm. This fixes the order of the nodes
+        // in the BayesIm, independently of any change to the BayesPm.
+        // (This order must be maintained.)
+        Graph graph = bayesPm.getDag();
 
-        // Create a new Bayes IM to store the estimated values.
-        BayesIm estimatedIm = new MlBayesIm(bayesPm);
+        for (int nodeIndex = 0; nodeIndex < im.getNumNodes(); nodeIndex++) {
+            Node node = im.getNode(nodeIndex);
 
-        // Create a subset of the data set with the variables of the IM, in
-        // the order of the IM.
-        List<Node> variables = estimatedIm.getVariables();
-        DataSet columnDataSet2 = dataSet.subsetColumns(variables);
-        DiscreteProbs discreteProbs = new DataSetProbs(columnDataSet2);
+            // Set up parents array.  Should store the parents of
+            // each node as ints in a particular order.
+            List<Node> parentList = new ArrayList<>(graph.getParents(node));
+            Collections.sort(parentList);
+            int[] parentArray = new int[parentList.size()];
 
-        // We will use the same estimation methods as the updaters, to ensure
-        // compatibility.
-        Proposition assertion = Proposition.tautology(estimatedIm);
-        Proposition condition = Proposition.tautology(estimatedIm);
-        Evidence evidence2 = Evidence.tautology(estimatedIm);
-
-        int numNodes = estimatedIm.getNumNodes();
-
-        for (int node = 0; node < numNodes; node++) {
-            int numRows = estimatedIm.getNumRows(node);
-            int numCols = estimatedIm.getNumColumns(node);
-            int[] parents = estimatedIm.getParents(node);
-
-            for (int row = 0; row < numRows; row++) {
-                int[] parentValues = estimatedIm.getParentValues(node, row);
-
-                for (int col = 0; col < numCols; col++) {
-
-                    // Remove values from the proposition in various ways; if
-                    // a combination exists in the end, calculate a conditional
-                    // probability.
-                    assertion.setToTautology();
-                    condition.setToTautology();
-
-                    for (int i = 0; i < numNodes; i++) {
-                        for (int j = 0; j < evidence2.getNumCategories(i); j++) {
-                            if (!evidence2.getProposition().isAllowed(i, j)) {
-                                condition.removeCategory(i, j);
-                            }
-                        }
-                    }
-
-                    assertion.disallowComplement(node, col);
-
-                    for (int k = 0; k < parents.length; k++) {
-                        condition.disallowComplement(parents[k], parentValues[k]);
-                    }
-
-                    if (condition.existsCombination()) {
-                        double p = discreteProbs.getConditionalProb(assertion, condition);
-//                        if (Double.isNaN(p)) p = 1.0 / numCols;
-                        estimatedIm.setProbability(node, row, col, p);
-                    } else {
-                        estimatedIm.setProbability(node, row, col, Double.NaN);
-                    }
-                }
+            for (int i = 0; i < parentList.size(); i++) {
+                parentArray[i] = im.getNodeIndex(parentList.get(i));
             }
+
+            // Sort the parent array.
+//            Arrays.sort(parentArray);
+
+            // Setup dimensions array for parents.
+            int[] dims = new int[parentArray.length];
+
+            for (int i = 0; i < dims.length; i++) {
+                Node parNode = im.getNode(parentArray[i]);
+                dims[i] = bayesPm.getNumCategories(parNode);
+            }
+
+            // Calculate dimensions of table.
+            int numRows = 1;
+
+            for (int dim : dims) {
+                numRows *= dim;
+            }
+
+            int numCols = bayesPm.getNumCategories(node);
+
+            CptMapCounts counts = new CptMapCounts(numRows, numCols);
+            counts.setPriorCount(prior);
+
+            for (int row = 0; row < dataSet.getNumRows(); row++) {
+                int[] parentValues = new int[parentArray.length];
+
+                for (int i = 0; i < parentValues.length; i++) {
+                    parentValues[i] = dataSet.getInt(row, parentArray[i]);
+                }
+
+                int value = dataSet.getInt(row, nodeIndex);
+
+                counts.addCounts(im.getRowIndex(nodeIndex, parentValues), value, 1);
+            }
+
+            im.setCountMap(nodeIndex, counts);
         }
 
-//        System.out.println(estimatedIm);
-
-        return estimatedIm;
+        return im;
     }
 }
 

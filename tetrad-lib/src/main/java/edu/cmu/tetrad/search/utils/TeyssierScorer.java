@@ -24,6 +24,7 @@ import static org.apache.commons.math3.util.FastMath.floor;
  *
  * @author josephramsey
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class TeyssierScorer {
     private final List<Node> variables;
@@ -74,6 +75,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>Setter for the field <code>useScore</code>.</p>
+     *
      * @param useScore True if the score should be used; false if the test should be used.
      */
     public void setUseScore(boolean useScore) {
@@ -82,6 +85,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden edges.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -100,6 +105,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>Setter for the field <code>useRaskuttiUhler</code>.</p>
+     *
      * @param useRaskuttiUhler True if Pearl's method for building a DAG should be used.
      */
     public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
@@ -128,6 +135,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>score.</p>
+     *
      * @return The score of the current permutation.
      */
     public double score() {
@@ -136,6 +145,9 @@ public class TeyssierScorer {
 
     /**
      * Performs a tuck operation.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
      */
     public void swaptuck(Node x, Node y) {
         if (index(y) < index(x)) {
@@ -143,14 +155,27 @@ public class TeyssierScorer {
         }
     }
 
-    public boolean tuck(Node k, int j) {
-        if (adjacent(k, get(j))) return false;
-        if (j >= index(k)) return false;
+    /**
+     * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
+     *
+     * @param j The node to tuck.
+     * @param k The node to tuck j before.
+     * @return true if the tuck made a change.
+     */
+    public boolean tuck(Node j, Node k) {
+        int jIndex = index(j);
+        int kIndex = index(k);
 
-        Set<Node> ancestors = getAncestors(k);
-        for (int i = j + 1; i <= index(k); i++) {
+        if (jIndex < kIndex) {
+            return false;
+        }
+
+        Set<Node> ancestors = getAncestors(j);
+        int _kIndex = kIndex;
+
+        for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
-                moveTo(get(i), j++);
+                moveTo(get(i), _kIndex++);
             }
         }
 
@@ -225,6 +250,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>Getter for the field <code>pi</code>.</p>
+     *
      * @return A copy of the current permutation.
      */
     public List<Node> getPi() {
@@ -251,7 +278,7 @@ public class TeyssierScorer {
 
         if (integer == null)
             throw new IllegalArgumentException("First 'evaluate' a permutation containing variable "
-                    + v + ".");
+                                               + v + ".");
 
         return integer;
     }
@@ -363,6 +390,12 @@ public class TeyssierScorer {
         return new ArrayList<>(pairs);
     }
 
+    /**
+     * <p>getAncestors.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getAncestors(Node node) {
         Set<Node> ancestors = new HashSet<>();
         collectAncestorsVisit(node, ancestors);
@@ -389,6 +422,8 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>getNumEdges.</p>
+     *
      * @return The number of edges in the current graph.
      */
     public int getNumEdges() {
@@ -469,12 +504,19 @@ public class TeyssierScorer {
     }
 
     /**
+     * <p>size.</p>
+     *
      * @return The size of pi, the current permutation.
      */
     public int size() {
         return this.pi.size();
     }
 
+    /**
+     * <p>getShuffledVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getShuffledVariables() {
         List<Node> variables = getPi();
         shuffle(variables);
@@ -535,6 +577,12 @@ public class TeyssierScorer {
         return true;
     }
 
+    /**
+     * <p>getPrefix.</p>
+     *
+     * @param i a int
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getPrefix(int i) {
         Set<Node> prefix = new HashSet<>();
 
@@ -545,6 +593,11 @@ public class TeyssierScorer {
         return prefix;
     }
 
+    /**
+     * <p>getSkeleton.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Set<Node>> getSkeleton() {
         List<Node> order = getPi();
         Set<Set<Node>> skeleton = new HashSet<>();
@@ -561,6 +614,13 @@ public class TeyssierScorer {
         return skeleton;
     }
 
+    /**
+     * <p>parent.</p>
+     *
+     * @param k a {@link edu.cmu.tetrad.graph.Node} object
+     * @param j a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean parent(Node k, Node j) {
         return getParents(j).contains(k);
     }
@@ -765,8 +825,7 @@ public class TeyssierScorer {
 
         public boolean equals(Object o) {
             if (o == null) return false;
-            if (!(o instanceof Pair)) return false;
-            Pair thatPair = (Pair) o;
+            if (!(o instanceof Pair thatPair)) return false;
             return this.parents.equals(thatPair.parents) && this.score == thatPair.score;
         }
     }

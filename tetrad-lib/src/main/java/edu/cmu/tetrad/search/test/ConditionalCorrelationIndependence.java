@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.*;
@@ -50,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ConditionalCorrelationIndependence {
 
@@ -115,6 +117,9 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
      *
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
      * @return This p-value.
      */
     public double isIndependent(Node x, Node y, Set<Node> _z) {
@@ -144,7 +149,7 @@ public final class ConditionalCorrelationIndependence {
 
             return score;
         } catch (Exception e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
             return 0;
         }
     }
@@ -153,6 +158,9 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
      *
+     * @param x    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z    a {@link java.util.List} object
+     * @param rows a {@link java.util.List} object
      * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
      * contains the residuals for y.
      */
@@ -377,6 +385,12 @@ public final class ConditionalCorrelationIndependence {
         return maxScore;
     }
 
+    /**
+     * Scales the values in a specific column of a given DataSet.
+     *
+     * @param dataSet The DataSet containing the values to be scaled.
+     * @param col     The column index of the values to be scaled.
+     */
     private void scale(DataSet dataSet, int col) {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
@@ -396,6 +410,13 @@ public final class ConditionalCorrelationIndependence {
     }
 
 
+    /**
+     * Calculates the nonparametric Fisher Z test for the given arrays.
+     *
+     * @param _x An array of double values.
+     * @param _y An array of double values.
+     * @return The nonparametric Fisher Z test statistic.
+     */
     private double nonparametricFisherZ(double[] _x, double[] _y) {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
@@ -412,6 +433,13 @@ public final class ConditionalCorrelationIndependence {
         return z / (sqrt((moment22(__x, __y))));
     }
 
+    /**
+     * Calculates the moment22 value for the given arrays x and y.
+     *
+     * @param x An array of double values.
+     * @param y An array of double values.
+     * @return The moment22 value.
+     */
     private double moment22(double[] x, double[] y) {
         int N = x.length;
         double sum = 0.0;
@@ -423,6 +451,13 @@ public final class ConditionalCorrelationIndependence {
         return sum / N;
     }
 
+    /**
+     * Calculates a basis function value based on the given index and input value.
+     *
+     * @param index The index of the basis function.
+     * @param x     The input value.
+     * @return The basis function value.
+     */
     private double function(int index, double x) {
         if (this.basis == Basis.Polynomial) {
             double g = 1.0;
@@ -447,8 +482,9 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    // Optimal bandwidth suggested by Bowman and Bowman and Azzalini (1997) q.31,
-    // using MAD.
+    /**
+     * Optimal bandwidth suggested by Bowman and Bowman and Azzalini (1997) q.31, using MAD.
+     */
     private double h(double[] xCol) {
         double[] g = new double[xCol.length];
         double median = median(xCol);
@@ -457,18 +493,41 @@ public final class ConditionalCorrelationIndependence {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
+    /**
+     * Calculates the Epinechnikov kernel value for a given input and kernel width.
+     *
+     * @param z The input value to evaluate the kernel at.
+     * @param h The kernel width.
+     * @return The kernel value at the given input.
+     */
     private double kernelEpinechnikov(double z, double h) {
         z /= getWidth() * h;
         if (abs(z) > 1) return 0.0;
         else return (/*0.75 **/ (1.0 - z * z));
     }
 
+    /**
+     * Calculates the Gaussian kernel value for a given input and kernel width.
+     *
+     * @param z The input value to evaluate the kernel at, which is divided by the product of the width and the current
+     *          width of the data set.
+     * @param h The kernel width.
+     * @return The Gaussian kernel value at the given input.
+     */
     private double kernelGaussian(double z, double h) {
         z /= getWidth() * h;
         return exp(-z * z);
     }
 
-    // Euclidean distance.
+    /**
+     * Calculates the Euclidean distance between two data points based on the given data and indices.
+     *
+     * @param data The data matrix.
+     * @param z    The array of indices to consider in the calculation.
+     * @param i    The index of the first data point.
+     * @param j    The index of the second data point.
+     * @return The Euclidean distance between the two data points.
+     */
     private double distance(double[][] data, int[] z, int i, int j) {
         double sum = 0.0;
 
@@ -483,7 +542,12 @@ public final class ConditionalCorrelationIndependence {
         return sqrt(sum);
     }
 
-    // Standardizes the given data array. No need to make a copy here.
+    /**
+     * Standardizes the given data array. No need to make a copy here.
+     *
+     * @param data The data array to be standardized.
+     * @return The standardized data array.
+     */
     private double[] standardize(double[] data) {
         double sum = 0.0;
 
@@ -513,6 +577,18 @@ public final class ConditionalCorrelationIndependence {
         return data;
     }
 
+    /**
+     * Returns a set of indices for data points that are close to the given data point <code>i</code> based on the
+     * specified sample size and neighborhood information.
+     *
+     * @param _data         The data matrix.
+     * @param _z            The indices of the variables used to calculate the distance.
+     * @param i             The index of the data point for which close indices are calculated.
+     * @param sampleSize    The desired sample size of close indices.
+     * @param reverseLookup A list of maps containing the reverse lookup information for the variables used.
+     * @param sortedIndices A list of lists containing the sorted indices information for the variables used.
+     * @return A set of indices for data points that are close to the given data point i.
+     */
     private Set<Integer> getCloseZs(double[][] _data, int[] _z, int i, int sampleSize,
                                     List<Map<Integer, Integer>> reverseLookup,
                                     List<List<Integer>> sortedIndices) {
@@ -544,6 +620,14 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
+    /**
+     * Retrieves the list of row indices in the dataSet that have no NaN values for all variables in allVars.
+     *
+     * @param dataSet   The DataSet containing the data values.
+     * @param allVars   The list of variables to check for NaN values.
+     * @param nodesHash The map containing the mapping of nodes to their corresponding column indices in the dataSet.
+     * @return The list of row indices that have no NaN values for all variables in allVars.
+     */
     private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
@@ -564,15 +648,39 @@ public final class ConditionalCorrelationIndependence {
      *
      * @see ConditionalCorrelationIndependence
      */
-    public enum Kernel {Epinechnikov, Gaussian}
+    public enum Kernel {
+
+        /**
+         * The Epinechnikov kernel.
+         */
+        Epinechnikov,
+
+        /**
+         * The Gaussian kernel.
+         */
+        Gaussian
+    }
 
     /**
      * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
      *
      * @see ConditionalCorrelationIndependence
      */
-    public enum Basis {Polynomial, Cosine}
+    public enum Basis {
+
+        /**
+         * Polynomial basis.
+         */
+        Polynomial,
+
+        /**
+         * Cosine basis.
+         */
+        Cosine
+    }
 }
+
+
 
 
 

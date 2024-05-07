@@ -27,7 +27,26 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
+/**
+ * <p>ReadIdeker class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class ReadIdeker {
+
+    /**
+     * <p>Constructor for ReadIdeker.</p>
+     */
+    public ReadIdeker() {
+
+    }
+
+    /**
+     * The main method processes input data and performs various calculations and predictions.
+     *
+     * @param argv The command line arguments, expected to contain the name of the input file.
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

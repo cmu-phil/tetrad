@@ -4,6 +4,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,21 @@ import java.util.List;
  * Creates a random graph by the Erdos-Renyi method (probabiliy of edge fixed, # edges not).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ErdosRenyi implements RandomGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Initializes a new instance of the ErdosRenyi class.
+     */
+    public ErdosRenyi() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         double p = parameters.getDouble(Params.PROBABILITY_OF_EDGE);
@@ -28,17 +40,24 @@ public class ErdosRenyi implements RandomGraph {
                 m + l, l, e, max, max, max, false);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Graph constructed the Erdos-Renyi method (p fixed, # edges not)";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.NUM_MEASURES);
         parameters.add(Params.NUM_LATENTS);
         parameters.add(Params.PROBABILITY_OF_EDGE);
+        parameters.add(Params.COMPARE_GRAPH_ALGCOMP);
         return parameters;
     }
 }

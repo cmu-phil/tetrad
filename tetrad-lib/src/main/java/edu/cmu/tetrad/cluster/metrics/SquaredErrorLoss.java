@@ -27,8 +27,24 @@ import edu.cmu.tetrad.util.Vector;
  * Euclidean dissimilarity metric--i.e., the sum of the differences in corresponding variable values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SquaredErrorLoss implements Dissimilarity {
+
+    /**
+     * Calculates the squared error dissimilarity between two vectors using the Euclidean dissimilarity metric.
+     */
+    public SquaredErrorLoss() {
+    }
+
+    /**
+     * Calculates the dissimilarity between two vectors using the Euclidean dissimilarity metric.
+     *
+     * @param v1 the first vector
+     * @param v2 the second vector
+     * @return the dissimilarity between the two vectors
+     * @throws IllegalArgumentException if the vectors are not the same length
+     */
     public double dissimilarity(Vector v1, Vector v2) {
         if (v1.size() != v2.size()) {
             throw new IllegalArgumentException("Vectors not the same length.");

@@ -32,26 +32,31 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * Converts a continuous data set to a correlation matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CorrMatrixConverter extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
+    /**
+     * <p>Constructor for CorrMatrixConverter.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CorrMatrixConverter(DataWrapper wrapper, Parameters params) {
         ICovarianceMatrix covMatrix;
 
-        if (wrapper.getSelectedDataModel() instanceof DataSet) {
-            DataSet dataSet = (DataSet) wrapper.getSelectedDataModel();
+        if (wrapper.getSelectedDataModel() instanceof DataSet dataSet) {
 
             if (!(dataSet.isContinuous())) {
                 throw new RuntimeException("Only continuous data sets can be " +
-                        "converted to correlation matrices.");
+                                           "converted to correlation matrices.");
             }
 
             covMatrix = new CorrelationMatrix(dataSet);
-        } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
-            ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
+        } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix covOrig) {
             covMatrix = new CorrelationMatrix(covOrig);
         } else {
             throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");
@@ -67,6 +72,7 @@ public class CorrMatrixConverter extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

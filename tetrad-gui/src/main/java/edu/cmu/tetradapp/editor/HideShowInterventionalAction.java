@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
  * Jan 8, 2019 11:26:23 AM
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class HideShowInterventionalAction extends AbstractAction implements ClipboardOwner {
 
@@ -34,6 +35,8 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
 
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public HideShowInterventionalAction(GraphWorkbench workbench) {
         super("Hide/Show Interventional Nodes");
@@ -46,6 +49,8 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     @Override
@@ -61,7 +66,7 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
             if (comp instanceof DisplayEdge) {
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if ((edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
-                        || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
+                    || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                     comp.setVisible(!comp.isVisible());
                 }
             }
@@ -70,6 +75,8 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     @Override

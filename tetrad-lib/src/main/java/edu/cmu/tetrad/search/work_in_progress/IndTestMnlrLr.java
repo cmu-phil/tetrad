@@ -42,15 +42,36 @@ import java.util.Set;
  * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class IndTestMnlrLr implements IndependenceTest {
+    /**
+     * The data set.
+     */
     private final DataSet data;
+    /**
+     * A map from searchVariables to their indices in the data set.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Likelihood function
+    /**
+     * The likelihood function.
+     */
     private final MnlrLikelihood likelihood;
+    /**
+     * The significance level of the test.
+     */
     private double alpha;
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
 
+    /**
+     * Constructs a new independence test for the given data set and significance level.
+     *
+     * @param data  the data set.
+     * @param alpha the significance level.
+     */
     public IndTestMnlrLr(DataSet data, double alpha) {
         this.data = data;
         this.likelihood = new MnlrLikelihood(data, -1, 1);
@@ -67,16 +88,23 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * This method returns an independence test for a sublist of variables.
+     *
+     * @param vars The sublist of variables.
+     * @return An object of type IndependenceTest.
+     * @throws UnsupportedOperationException If this feature is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return True if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * Checks the independence between two nodes given a set of conditioning nodes.
+     *
+     * @param x  the first node
+     * @param y  the second node
+     * @param _z the set of conditioning nodes
+     * @return the result of the independence test
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
 
@@ -131,7 +159,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
+                                       LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         boolean independent = pValue > this.alpha;
@@ -148,6 +176,8 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
      */
@@ -157,40 +187,47 @@ public class IndTestMnlrLr implements IndependenceTest {
 
 
     /**
-     * @return true if y is determined the variable in z.
+     * Determines the independence relation between a list of conditioning nodes and a target node.
+     *
+     * @param z The list of conditioning nodes.
+     * @param y The target node.
+     * @return true if the target node is independent of the conditioning nodes; false otherwise.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * Returns the significance level of the independence test.
+     *
+     * @return The significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * Sets the significance level.
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha The significance level to set.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * Returns the data.
+     * Returns the dataset.
      *
-     * @return This.
+     * @return The dataset.
      */
     public DataSet getData() {
         return this.data;
     }
 
     /**
-     * Returns whether verbose output should be printed.
+     * Determines if the test prints verbose output.
      *
-     * @return True is so.
+     * @return True if the test prints verbose output, false otherwise.
      */
     @Override
     public boolean isVerbose() {
@@ -207,6 +244,11 @@ public class IndTestMnlrLr implements IndependenceTest {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return the string representation of this object.
+     */
     public String toString() {
         return "IndTestMnlrLr";
     }

@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * Stores a 2D array of int data. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class VerticalIntDataBox implements DataBox {
     private static final long serialVersionUID = 23L;
@@ -50,6 +53,9 @@ public class VerticalIntDataBox implements DataBox {
 
     /**
      * Constructs an 2D int array consisting entirely of missing values (int.NaN).
+     *
+     * @param rows a int
+     * @param cols a int
      */
     public VerticalIntDataBox(int rows, int cols) {
         this.data = new int[cols][rows];
@@ -66,6 +72,8 @@ public class VerticalIntDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D int data array as data.
+     *
+     * @param data an array of {@link int} objects
      */
     public VerticalIntDataBox(int[][] data) {
         int length = data[0].length;
@@ -82,6 +90,11 @@ public class VerticalIntDataBox implements DataBox {
         this.data = data;
     }
 
+    /**
+     * <p>Constructor for VerticalIntDataBox.</p>
+     *
+     * @param dataBox a {@link edu.cmu.tetrad.data.DataBox} object
+     */
     public VerticalIntDataBox(DataBox dataBox) {
         this.data = new int[dataBox.numCols()][dataBox.numRows()];
 
@@ -97,6 +110,8 @@ public class VerticalIntDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -105,6 +120,8 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -112,6 +129,8 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.
      */
     public int numCols() {
@@ -119,6 +138,8 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.intValue().
      */
     public void set(int row, int col, Number value) {
@@ -132,7 +153,7 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
+     * {@inheritDoc}
      */
     public Number get(int row, int col) {
         int datum = this.data[col][row];
@@ -144,11 +165,18 @@ public class VerticalIntDataBox implements DataBox {
         }
     }
 
+    /**
+     * <p>getVariableVectors.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[][] getVariableVectors() {
         return this.data;
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -164,12 +192,17 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type intDataBox, but with the given dimensions.
      */
     public DataBox like() {
         return new VerticalIntDataBox(this.numRows, this.numCols);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new VerticalIntDataBox(rows.length, cols.length);

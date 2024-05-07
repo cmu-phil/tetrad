@@ -33,6 +33,7 @@ import java.awt.*;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
+ * @version $Id: $Id
  */
 public class MissingDataInjectorParamsEditor extends JPanel implements ParameterEditor {
 
@@ -43,18 +44,34 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
 
     //========================= Public Methods =======================================//
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         buildGui();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
 
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }
@@ -84,9 +101,9 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
-                "The input dataset will have missing data values inserted " +
-                "<br>independently for each variable in each case with the" +
-                "<br>probability specified." + "</html>"));
+                          "The input dataset will have missing data values inserted " +
+                          "<br>independently for each variable in each case with the" +
+                          "<br>probability specified." + "</html>"));
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());

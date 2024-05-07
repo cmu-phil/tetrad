@@ -31,6 +31,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.akutsu;
  * Symposium on Biocomputing (2000).
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class BoolSearch {
     private final int[][] cases;
@@ -38,6 +39,15 @@ public class BoolSearch {
     private final int ntimes;
     String[] names;
 
+    /**
+     * Constructor
+     *
+     * @param cases The time series data stored in an int array of microarray measurements.  The values are assumed to
+     *              have been binarized.  The columns of the array correspond to genes and the rows correspond to times.
+     *              The class contains methods for conducting searches for causal links where a genes expression is
+     *              regulated by a set of parent genes.
+     * @param names The names of the genes.
+     */
     public BoolSearch(int[][] cases, String[] names) {
         this.cases = cases;
         this.names = names;
@@ -49,6 +59,9 @@ public class BoolSearch {
      * Implements the BOOL-2 algorithm of Akutsu, et al, found in section 2.2 of their paper "Algorithms for Inferring
      * Qualitative Models of Biological Networks". The int k is the number of number of regulators of a given gene and
      * corresponds to K in the paper.
+     *
+     * @param k The number of regulators of a given gene.
+     * @return A RevealOutputGraph object.
      */
     public RevealOutputGraph bool2(int k) {
 
@@ -78,7 +91,7 @@ public class BoolSearch {
         }
 
         System.out.println("nrows = " + numberInputCombinations +
-                " number functions = " + numberBooleanFunctions);
+                           " number functions = " + numberBooleanFunctions);
 
         //for i = 1 to n do...
         for (int gchild = 0; gchild < this.ngenes; gchild++) {
@@ -186,6 +199,10 @@ public class BoolSearch {
     /**
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
      * ind=6 the vector will be (1, 1, 0).
+     *
+     * @param ind The integer to be converted to a byte vector.
+     * @param n   The length of the byte vector.
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];
@@ -206,6 +223,12 @@ public class BoolSearch {
         return rep;
     }
 
+    /**
+     * Returns the sum of the bits in the byte array b.
+     *
+     * @param b The byte array.
+     * @return The sum of the bits in the byte array b.
+     */
     public int sumBits(byte[] b) {
         int sum = 0;
 

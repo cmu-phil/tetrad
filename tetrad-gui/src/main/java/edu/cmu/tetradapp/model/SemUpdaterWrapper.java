@@ -22,18 +22,21 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemUpdater;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemUpdaterWrapper implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -48,6 +51,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for SemUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public SemUpdaterWrapper(SemEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -56,6 +64,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     }
 
+    /**
+     * <p>Constructor for SemUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public SemUpdaterWrapper(SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -66,6 +79,7 @@ public class SemUpdaterWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -75,6 +89,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>semUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemUpdater} object
+     */
     public SemUpdater getSemUpdater() {
         return this.semUpdater;
     }
@@ -86,6 +105,10 @@ public class SemUpdaterWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -96,10 +119,18 @@ public class SemUpdaterWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

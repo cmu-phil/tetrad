@@ -26,6 +26,7 @@ package edu.cmu.tetrad.util;
  * Stores a (x, y) point without having to use awt classes. Immutable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PointXy implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -80,6 +81,8 @@ public class PointXy implements TetradSerializable {
     //=============================PUBLIC METHODS====================//
 
     /**
+     * <p>Getter for the field <code>x</code>.</p>
+     *
      * @return Ibid.
      */
     public int getX() {
@@ -87,6 +90,8 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>y</code>.</p>
+     *
      * @return Ibid.
      */
     public int getY() {
@@ -94,10 +99,10 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
-     * @return true just in case o is a Point with the same x and y coordinates.
+     * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        if (!(o instanceof PointXy)) {
+        if (!(o instanceof PointXy c)) {
             throw new IllegalArgumentException("Not a Point object.");
         }
 
@@ -105,11 +110,12 @@ public class PointXy implements TetradSerializable {
             return true;
         }
 
-        PointXy c = (PointXy) o;
         return c.x == this.x && c.y == this.y;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of a point.
      */
     public String toString() {

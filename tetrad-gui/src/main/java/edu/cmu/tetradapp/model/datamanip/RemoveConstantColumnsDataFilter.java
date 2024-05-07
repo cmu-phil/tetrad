@@ -37,6 +37,12 @@ import java.util.List;
 class RemoveConstantColumnsDataFilter implements DataFilter {
 
 
+    /**
+     * <p>getNodes.</p>
+     *
+     * @param wrappers a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> getNodes(List<NodeWrapper> wrappers) {
         List<Node> nodes = new ArrayList<>(wrappers.size());
         for (NodeWrapper wrapper : wrappers) {
@@ -48,9 +54,9 @@ class RemoveConstantColumnsDataFilter implements DataFilter {
     //==================== Private Methods ========================================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes any constant columns from the given dataset.
-     *
-     * @return - new dataset with constant columns removed.
      */
     public DataSet filter(DataSet dataSet) {
         return DataTransforms.removeConstantColumns(dataSet);

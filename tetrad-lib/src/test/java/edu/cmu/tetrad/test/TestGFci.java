@@ -48,11 +48,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author josephramsey
@@ -127,7 +126,7 @@ public class TestGFci {
                 {0, 0, 0, 0, 0, 0},};
 
         for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+            assertArrayEquals(counts[i], expectedCounts[i]);
         }
 
     }
@@ -153,6 +152,8 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
+        System.out.println(g1);
+
         GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = gfci.search();
@@ -168,10 +169,10 @@ public class TestGFci {
         truePag.addBidirectedEdge(x2, x3);
         truePag.addPartiallyOrientedEdge(x4, x3);
 
-        assertEquals(pag, truePag);
+        assertEquals(truePag, pag);
     }
 
-//    @Test
+    //    @Test
     // Not sure why this fails for GFCI. Other similar algorithms pass.
     public void testFromGraph() {
 //        RandomUtil.getInstance().setSeed(new Date().getTime());
@@ -248,7 +249,7 @@ public class TestGFci {
         Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(g);
         BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);
 
         DataSet data = bayesIm.simulateData(sampleSize, false);
 

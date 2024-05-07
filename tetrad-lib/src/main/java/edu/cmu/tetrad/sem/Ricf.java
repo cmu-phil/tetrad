@@ -47,12 +47,25 @@ import java.util.*;
  * library.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Ricf {
 
+    /**
+     * Represents the Ricf class. This class provides methods for calculating the Restricted Information Criterion
+     * Fusion (RICF) for a given SemGraph.
+     */
     public Ricf() {
     }
 
+    /**
+     * Calculates the Restricted Information Criterion Fusion (RICF) for a given SemGraph.
+     *
+     * @param mag       The SemGraph object representing the graph to calculate RICF for.
+     * @param covMatrix The ICovarianceMatrix object representing the covariance matrix.
+     * @param tolerance The tolerance value for convergence.
+     * @return The RicfResult object containing the results of the RICF calculation.
+     */
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
         mag.setShowErrorTerms(false);
 
@@ -213,24 +226,16 @@ public class Ricf {
                         DoubleMatrix2D a3 = algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
-//                        System.out.println("O.inv = " + oInv);
-
                         DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
                         DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
                         DoubleMatrix2D Z = algebra.mult(a4, a5);
 
-//                        System.out.println("Z = " + Z);
-
                         // Build XX
                         DoubleMatrix2D XX = algebra.mult(algebra.mult(Z, S), Z.viewDice());
-
-//                        System.out.println("XX = " + XX);
 
                         // Build XY
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
                         DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
-
-//                        System.out.println("YX = " + YX);
 
                         // Temp
                         DoubleMatrix2D a22 = algebra.inverse(XX);
@@ -241,8 +246,6 @@ public class Ricf {
                         a24.assign(a23);
                         DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
                         a25.assign(a23);
-
-//                        System.out.println("Omega 2 " + omega);
 
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
@@ -293,8 +296,13 @@ public class Ricf {
     }
 
     /**
-     * same as above but takes a Graph instead of a SemGraph
-     **/
+     * Same as above but takes a Graph instead of a SemGraph
+     *
+     * @param mag       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     */
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
 //        mag.setShowErrorTerms(false);
 
@@ -461,18 +469,12 @@ public class Ricf {
                         DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
                         DoubleMatrix2D Z = algebra.mult(a4, a5);
 
-//                        System.out.println("Z = " + Z);
-
                         // Build XX
                         DoubleMatrix2D XX = algebra.mult(algebra.mult(Z, S), Z.viewDice());
-
-//                        System.out.println("XX = " + XX);
 
                         // Build XY
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
                         DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
-
-//                        System.out.println("YX = " + YX);
 
                         // Temp
                         DoubleMatrix2D a22 = algebra.inverse(XX);
@@ -484,12 +486,8 @@ public class Ricf {
                         DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
                         a25.assign(a23);
 
-//                        System.out.println("Omega 2 " + omega);
-
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
-
-//                        System.out.println("tempVar = " + tempVar);
 
                         DoubleMatrix2D a27 = omega.viewSelection(v, spov);
                         DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
@@ -497,8 +495,6 @@ public class Ricf {
                         DoubleMatrix2D a30 = algebra.mult(a27, a28);
                         DoubleMatrix2D a31 = algebra.mult(a30, a29);
                         omega.set(_v, _v, tempVar + a31.get(0, 0));
-
-//                        System.out.println("Omega final " + omega);
                     }
                 }
             }
@@ -535,6 +531,9 @@ public class Ricf {
     }
 
     /**
+     * <p>cliques.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return an enumeration of the cliques of the given graph considered as undirected.
      */
     public List<List<Node>> cliques(Graph graph) {
@@ -633,8 +632,6 @@ public class Ricf {
             a32.assign(KOld, PlusMult.plusMult(-1));
             double diff = algebra.norm1(a32);
 
-//            System.out.println(diff);
-
             if (diff < tol) break;
         }
 
@@ -710,7 +707,7 @@ public class Ricf {
         List<Node> ugNodes = new LinkedList<>();
 
         for (Node node : nodes) {
-            if (mag.getNodesInTo(node, Endpoint.ARROW).size() == 0) {
+            if (mag.getNodesInTo(node, Endpoint.ARROW).isEmpty()) {
                 ugNodes.add(node);
             }
         }
@@ -823,7 +820,14 @@ public class Ricf {
     }
 
     /**
-     * @return true if j is adjacent to all the nodes in l1.
+     * Determines if a node j can be added to a set L1 while maintaining adjacency with all nodes in L1.
+     *
+     * @param j     The index of the node to be added.
+     * @param L1    The set of indices representing the current set of nodes.
+     * @param graph The graph containing the nodes.
+     * @param nodes The list of nodes.
+     * @return Returns true if node j can be added to L1 while maintaining adjacency with all nodes in L1, false
+     * otherwise.
      */
     private boolean addable(int j, SortedSet<Integer> L1, Graph graph, List<Node> nodes) {
         for (int k : L1) {
@@ -835,15 +839,57 @@ public class Ricf {
         return true;
     }
 
+    /**
+     * RICF result.
+     */
     public static class RicfResult {
+
+        /**
+         * The covariance matrix.
+         */
         private final ICovarianceMatrix covMatrix;
+
+        /**
+         * The shat matrix.
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The lhat matrix.
+         */
         private final DoubleMatrix2D lhat;
+
+        /**
+         * The bhat matrix.
+         */
         private final DoubleMatrix2D bhat;
+
+        /**
+         * The ohat matrix.
+         */
         private final DoubleMatrix2D ohat;
+
+        /**
+         * The number of iterations.
+         */
         private final int iterations;
+
+        /**
+         * The diff.
+         */
         private final double diff;
 
+        /**
+         * The result.
+         *
+         * @param shat       The shat matrix.
+         * @param lhat       The laht matrix.
+         * @param bhat       The bhat matrix.
+         * @param ohat       The ohat matrix.
+         * @param iterations The number of iterations.
+         * @param diff       The diff.
+         * @param covMatrix  The covariance matrix.
+         */
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,
                           DoubleMatrix2D ohat, int iterations, double diff, ICovarianceMatrix covMatrix) {
             this.shat = shat;
@@ -855,48 +901,105 @@ public class Ricf {
             this.covMatrix = covMatrix;
         }
 
+        /**
+         * Returns a string representation of the RicfResult object.
+         *
+         * @return The string representation of the RicfResult object.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +
-                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nLambda hat\n" +
-                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nBeta hat\n" +
-                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nOmega hat\n" +
-                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                    "\n\nIterations\n" +
-                    getIterations() +
-                    "\n\ndiff = " + this.diff;
+                   MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nLambda hat\n" +
+                   MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nBeta hat\n" +
+                   MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nOmega hat\n" +
+                   MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                   "\n\nIterations\n" +
+                   getIterations() +
+                   "\n\ndiff = " + this.diff;
         }
 
+        /**
+         * Retrieves the shat matrix.
+         *
+         * @return The shat matrix.
+         */
         public DoubleMatrix2D getShat() {
             return this.shat;
         }
 
+        /**
+         * Returns the "lhat" matrix.
+         *
+         * @return The "lhat" matrix.
+         */
         public DoubleMatrix2D getLhat() {
             return this.lhat;
         }
 
+        /**
+         * Returns the bhat matrix.
+         *
+         * @return The bhat matrix.
+         */
         public DoubleMatrix2D getBhat() {
             return this.bhat;
         }
 
+        /**
+         * Returns the ohat matrix.
+         *
+         * @return The ohat matrix.
+         */
         public DoubleMatrix2D getOhat() {
             return this.ohat;
         }
 
+        /**
+         * Returns the number of iterations.
+         *
+         * @return The number of iterations.
+         */
         public int getIterations() {
             return this.iterations;
         }
     }
 
+    /**
+     * The fit con graph result.
+     */
     public static class FitConGraphResult {
+
+        /**
+         * The shat matrix
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The deviance
+         */
         double deviance;
+
+        /**
+         * The degrees of freedom.
+         */
         int df;
+
+        /**
+         * The number of iterations.
+         */
         int iterations;
 
+        /**
+         * The result.
+         *
+         * @param shat       The shat matrix.
+         * @param deviance   The deviance.
+         * @param df         The degrees of freedom.
+         * @param iterations The iterations.
+         */
         public FitConGraphResult(DoubleMatrix2D shat, double deviance,
                                  int df, int iterations) {
             this.shat = shat;
@@ -905,16 +1008,22 @@ public class Ricf {
             this.iterations = iterations;
         }
 
+        /**
+         * Returns a string representation of the FitConGraphResult object. The string includes the Sigma hat matrix,
+         * deviance value, degrees of freedom, and number of iterations.
+         *
+         * @return a string representation of the FitConGraphResult object.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +
-                    this.shat +
-                    "\nDeviance\n" +
-                    this.deviance +
-                    "\nDf\n" +
-                    this.df +
-                    "\nIterations\n" +
-                    this.iterations;
+                   this.shat +
+                   "\nDeviance\n" +
+                   this.deviance +
+                   "\nDf\n" +
+                   this.df +
+                   "\nIterations\n" +
+                   this.iterations;
         }
     }
 }

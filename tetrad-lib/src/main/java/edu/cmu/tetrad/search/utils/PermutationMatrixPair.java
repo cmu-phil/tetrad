@@ -32,6 +32,7 @@ import java.util.Arrays;
  * identity permtuation will be used. Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see IcaLingam
  * @see IcaLingD
  */
@@ -73,6 +74,8 @@ public class PermutationMatrixPair {
     }
 
     /**
+     * <p>Getter for the field <code>rowPerm</code>.</p>
+     *
      * @return The row permutation.
      */
     public int[] getRowPerm() {
@@ -80,6 +83,8 @@ public class PermutationMatrixPair {
     }
 
     /**
+     * <p>Getter for the field <code>colPerm</code>.</p>
+     *
      * @return The column permutation.
      */
     public int[] getColPerm() {
@@ -93,8 +98,8 @@ public class PermutationMatrixPair {
      */
     public String toString() {
         return "Row perm " + Arrays.toString(this.rowPerm)
-                + "\nCol perm = " + Arrays.toString(this.colPerm)
-                + "\nPermuted matrix : " + getPermutedMatrix();
+               + "\nCol perm = " + Arrays.toString(this.colPerm)
+               + "\nPermuted matrix : " + getPermutedMatrix();
     }
 }
 

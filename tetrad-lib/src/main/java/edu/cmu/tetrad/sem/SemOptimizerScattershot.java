@@ -28,15 +28,22 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Optimizes a SEM by randomly selecting points in cubes of decreasing size about a given point.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemOptimizerScattershot implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts;
 
     /**
@@ -47,12 +54,16 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerScattershot} object
      */
     public static SemOptimizerScattershot serializableInstance() {
         return new SemOptimizerScattershot();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
      * freeParameters of the Sem.
      */
@@ -73,8 +84,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
         if (this.numRestarts < 1) this.numRestarts = 1;
 
-        TetradLogger.getInstance().log("info", "Trying EM...");
-        TetradLogger.getInstance().log("info", "Trying scattershot...");
+        TetradLogger.getInstance().forceLogMessage("Trying EM...");
+        TetradLogger.getInstance().forceLogMessage("Trying scattershot...");
 
         double min = Double.POSITIVE_INFINITY;
         SemIm _sem = null;
@@ -82,8 +93,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
         // With local search on points in the width 1 iteration, multiple iterations of the whole search
         // doesn't seem necessary.
         for (int i = 0; i < this.numRestarts + 1; i++) {
-            TetradLogger.getInstance().log("details", "Trial " + (i + 1));
-//            System.out.println("Trial " + (i + 1));
+            TetradLogger.getInstance().forceLogMessage("Trial " + (i + 1));
+            //            System.out.println("Trial " + (i + 1));
             SemIm _sem2 = new SemIm(semIm);
             optimize2(_sem2);
             double chisq = _sem2.getChiSquare();
@@ -115,16 +126,27 @@ public class SemOptimizerScattershot implements SemOptimizer {
 //        optimize2(semIm);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer Scattershot";
     }
@@ -208,7 +230,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + width + " FML = " + f);
+                TetradLogger.getInstance().forceLogMessage("Cube width = " + width + " FML = " + f);
                 return true;
             }
         }
@@ -243,7 +265,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + 0.2 + " FML = " + f);
+                TetradLogger.getInstance().forceLogMessage("Cube width = " + 0.2 + " FML = " + f);
                 return true;
             }
         }

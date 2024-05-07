@@ -33,15 +33,19 @@ import java.util.Map;
  * of rows, the length of each column being constant.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DataSet extends DataModel {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
      * Adds the given variable to the data set.
      *
      * @param variable The variable to add.
-     * @throws IllegalArgumentException if the variable is neither continuous nor discrete.
+     * @throws java.lang.IllegalArgumentException if the variable is neither continuous nor discrete.
      */
     void addVariable(Node variable);
 
@@ -59,7 +63,7 @@ public interface DataSet extends DataModel {
      *
      * @param from The variable to change.
      * @param to   The variable to change to.
-     * @throws IllegalArgumentException if the given change is not supported.
+     * @throws java.lang.IllegalArgumentException if the given change is not supported.
      */
     void changeVariable(Node from, Node to);
 
@@ -79,6 +83,8 @@ public interface DataSet extends DataModel {
     void ensureColumns(int columns, List<String> excludedVariableNames);
 
     /**
+     * <p>existsMissingValue.</p>
+     *
      * @return true if and only if this data set contains at least one missing value.
      */
     boolean existsMissingValue();
@@ -91,6 +97,8 @@ public interface DataSet extends DataModel {
     void ensureRows(int rows);
 
     /**
+     * <p>getColumn.</p>
+     *
      * @param variable The variable to check.
      * @return the column index of the given variable.
      */
@@ -99,18 +107,22 @@ public interface DataSet extends DataModel {
     /**
      * If this is a continuous data set, returns the correlation matrix.
      *
-     * @throws IllegalStateException if this is not a continuous data set.
+     * @return the correlation matrix.
+     * @throws java.lang.IllegalStateException if this is not a continuous data set.
      */
     Matrix getCorrelationMatrix();
 
     /**
      * If this is a continuous data set, returns the covariance matrix.
      *
-     * @throws IllegalStateException if this is not a continuous data set.
+     * @return the covariance matrix.
+     * @throws java.lang.IllegalStateException if this is not a continuous data set.
      */
     Matrix getCovarianceMatrix();
 
     /**
+     * <p>getDouble.</p>
+     *
      * @param row    The index of the case.
      * @param column The index of the variable.
      * @return the value at the given row and column as a double. For discrete data, returns the integer value cast to a
@@ -119,12 +131,18 @@ public interface DataSet extends DataModel {
     double getDouble(int row, int column);
 
     /**
+     * <p>getDoubleData.</p>
+     *
      * @return the underlying data matrix as a TetradMatrix.
-     * @throws IllegalStateException if this is not a continuous data set.
+     * @throws java.lang.IllegalStateException if this is not a continuous data set.
      */
     Matrix getDoubleData();
 
     /**
+     * <p>getInt.</p>
+     *
+     * @param row    The index of the case.
+     * @param column The index of the variable.
      * @return the value at the given row and column as an int, rounding if necessary. For discrete variables, this
      * returns the category index of the datum for the variable at that column. Returns DiscreteVariable.MISSING_VALUE
      * for missing values.
@@ -132,21 +150,29 @@ public interface DataSet extends DataModel {
     int getInt(int row, int column);
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the data set.
      */
     String getName();
 
     /**
+     * <p>getNumColumns.</p>
+     *
      * @return the number of columns in the data set.
      */
     int getNumColumns();
 
     /**
+     * <p>getNumRows.</p>
+     *
      * @return the number of rows in the data set.
      */
     int getNumRows();
 
     /**
+     * <p>getObject.</p>
+     *
      * @param row The index of the case.
      * @param col The index of the variable.
      * @return the value at the given row and column as an Object. The type returned is deliberately vague, allowing for
@@ -156,51 +182,66 @@ public interface DataSet extends DataModel {
     Object getObject(int row, int col);
 
     /**
+     * <p>getSelectedIndices.</p>
+     *
      * @return the currently selected variables.
      */
     int[] getSelectedIndices();
 
     /**
+     * <p>getVariable.</p>
+     *
      * @param column The index of the variable.
      * @return the variable at the given column.
      */
     Node getVariable(int column);
 
     /**
-     * @param name The name of the variable.
-     * @return the variable with the given name.
+     * {@inheritDoc}
      */
     Node getVariable(String name);
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     List<String> getVariableNames();
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     List<Node> getVariables();
 
     /**
+     * <p>isContinuous.</p>
+     *
      * @return true if this is a continuous data set--that is, if it contains at least one column and all the columns
      * are continuous.
      */
     boolean isContinuous();
 
     /**
+     * <p>isDiscrete.</p>
+     *
      * @return true if this is a discrete data set--that is, if it contains at least one column and all the columns are
      * discrete.
      */
     boolean isDiscrete();
 
     /**
+     * <p>isMixed.</p>
+     *
      * @return true if this is a continuous data set--that is, if it contains at least one continuous column and one
      * discrete column.
      */
     boolean isMixed();
 
     /**
+     * <p>isSelected.</p>
+     *
      * @param variable The variable to check.
      * @return true iff the given column has been marked as selected.
      */
@@ -257,16 +298,27 @@ public interface DataSet extends DataModel {
     /**
      * Sets the value at the given (row, column) to the given value.
      *
-     * @param row The index of the case.
-     * @param col The index of the variable.
+     * @param row   The index of the case.
+     * @param col   The index of the variable.
+     * @param value The value to set.
      */
     void setObject(int row, int col, Object value);
 
     /**
      * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
+     *
+     * @param variable The variable to select or deselect.
+     * @param selected True to select the variable, false to deselect it.
      */
     void setSelected(Node variable, boolean selected);
 
+    /**
+     * <p>subsetRowsColumns.</p>
+     *
+     * @param rows    an array of {@link int} objects
+     * @param columns an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     DataSet subsetRowsColumns(int[] rows, int[] columns);
 
     /**
@@ -274,11 +326,14 @@ public interface DataSet extends DataModel {
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
      *
+     * @param vars The variables to include in the new data set.
      * @return a new data set consisting of the variables in the list vars.
      */
     DataSet subsetColumns(List<Node> vars);
 
     /**
+     * <p>subsetColumns.</p>
+     *
      * @param columns The indices of the columns to include in the new data set.
      * @return a new data set in which the column at indices[i] is placed at index i, for i = 0 to indices.length - 1.
      * (View instead?)
@@ -286,6 +341,8 @@ public interface DataSet extends DataModel {
     DataSet subsetColumns(int[] columns);
 
     /**
+     * <p>subsetRows.</p>
+     *
      * @param rows The indices of the rows to include in the new data set.
      * @return a new data set in which the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
      * (View instead?)
@@ -293,6 +350,8 @@ public interface DataSet extends DataModel {
     DataSet subsetRows(int[] rows);
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this dataset.
      */
     String toString();

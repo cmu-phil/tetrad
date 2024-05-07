@@ -29,6 +29,7 @@ import static edu.pitt.dbmi.data.reader.DatasetReader.DISCRETE_MISSING_VALUE;
  * Dec 31, 2018 1:50:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MixedTabularDataColumn implements DiscreteDataColumn {
 
@@ -47,9 +48,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string representation of the object.
-     *
-     * @return a string representation of the object.
      */
     @Override
     public String toString() {
@@ -57,10 +58,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the encode value of the given value.
-     *
-     * @param value The value.
-     * @return the encode value of the given value.
      */
     @Override
     public Integer getEncodeValue(String value) {
@@ -70,6 +70,8 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Does a recategorization of the data column.
      */
     @Override
@@ -86,9 +88,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value.
-     *
-     * @param value The value.
      */
     @Override
     public void setValue(String value) {
@@ -98,9 +100,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the data column.
-     *
-     * @return the data column.
      */
     @Override
     public DataColumn getDataColumn() {
@@ -117,9 +119,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the categories.
-     *
-     * @return the categories.
      */
     @Override
     public List<String> getCategories() {

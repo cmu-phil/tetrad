@@ -20,9 +20,23 @@ import java.util.regex.Pattern;
  * Methods to load or save graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphSaveLoadUtils {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphSaveLoadUtils() {
+
+    }
+
+    /**
+     * <p>loadGraph.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraph(File file) {
 
         Element root;
@@ -40,6 +54,12 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
+    /**
+     * <p>loadGraphTxt.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphTxt(File file) {
         try {
             Reader in1 = new FileReader(file);
@@ -51,6 +71,12 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>loadGraphRuben.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphRuben(File file) {
         try {
             final String commentMarker = "//";
@@ -80,6 +106,12 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>loadGraphJson.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphJson(File file) {
         try {
             Reader in1 = new FileReader(file);
@@ -122,6 +154,14 @@ public class GraphSaveLoadUtils {
 
 
     // Bayes net toolbox.
+
+    /**
+     * <p>loadGraphBNTPcMatrix.</p>
+     *
+     * @param vars    a {@link java.util.List} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {
         Graph graph = new EdgeListGraph(vars);
 
@@ -141,6 +181,13 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
+    /**
+     * <p>graphRMatrixTxt.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     public static String graphRMatrixTxt(Graph graph) throws IllegalArgumentException {
         int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
@@ -166,6 +213,12 @@ public class GraphSaveLoadUtils {
 
     }
 
+    /**
+     * <p>loadRSpecial.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadRSpecial(File file) {
         DataSet eg = null;
 
@@ -175,7 +228,7 @@ public class GraphSaveLoadUtils {
             Data data = reader.readInData();
             eg = (DataSet) DataConvertUtils.toDataModel(data);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            throw new RuntimeException("Error reading from file.", ioException);
         }
 
         if (eg == null) throw new NullPointerException();
@@ -200,74 +253,216 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
-    public static Graph loadGraphPcalg(File file) {
+    /**
+     * Loads a CPDAG in the "amat.cpdag" format of PCALG. We will assume here that the graph in R has been saved to disk
+     * using the write.table(mat, path) method. For the amat.cpdag format, for a matrix m, there are two cases where
+     * edges occur in the graph: (1) m[i][j] = 0 and m[j][i] = 1, in which case an edge i->j exists; or, (2) m[i][j] = 1
+     * and m[j][i] = 1, in which case an undirected edge i--j exists. In all other cases, there is no edge between i and
+     * j.
+     *
+     * @param file a file in the "amat.cpdag" format of PCALG.
+     * @return a graph.
+     */
+    public static Graph loadGraphAmatCpdag(File file) {
         try {
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.COMMA, false);
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String varNames = reader.readLine();
+                String[] tokens = varNames.split("[ \t\"]+");
 
-            List<Node> nodes = dataSet.getVariables();
-            Graph graph = new EdgeListGraph(nodes);
-
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
-                    Node n1 = nodes.get(i);
-                    Node n2 = nodes.get(j);
-
-                    int e1 = dataSet.getInt(j, i);
-                    int e2 = dataSet.getInt(i, j);
-
-                    Endpoint e1a;
-
-                    switch (e1) {
-                        case 0:
-                            e1a = Endpoint.NULL;
-                            break;
-                        case 1:
-                            e1a = Endpoint.CIRCLE;
-                            break;
-                        case 2:
-                            e1a = Endpoint.ARROW;
-                            break;
-                        case 3:
-                            e1a = Endpoint.TAIL;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                    }
-
-                    Endpoint e2a;
-
-                    switch (e2) {
-                        case 0:
-                            e2a = Endpoint.NULL;
-                            break;
-                        case 1:
-                            e2a = Endpoint.CIRCLE;
-                            break;
-                        case 2:
-                            e2a = Endpoint.ARROW;
-                            break;
-                        case 3:
-                            e2a = Endpoint.TAIL;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                    }
-
-                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
-                        Edge edge = new Edge(n1, n2, e1a, e2a);
-                        graph.addEdge(edge);
+                List<Node> nodes = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!token.isBlank()) {
+                        nodes.add(new GraphNode(token));
                     }
                 }
-            }
 
-            return graph;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
+                Graph graph = new EdgeListGraph(nodes);
+                int[][] m = new int[nodes.size()][nodes.size()];
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    String line = reader.readLine();
+                    tokens = line.split("[ \t]+");
+
+                    for (int j = 1; j <= nodes.size(); j++) {
+                        m[i][j - 1] = Integer.parseInt(tokens[j]);
+                    }
+                }
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    for (int j = 0; j < nodes.size(); j++) {
+                        Node n1 = nodes.get(i);
+                        Node n2 = nodes.get(j);
+
+                        int e1 = m[i][j];
+                        int e2 = m[j][i];
+
+                        if (e1 == 0 && e2 == 1) {
+                            graph.addDirectedEdge(n1, n2);
+                        } else if (e1 == 1 && e2 == 1) {
+                            graph.addUndirectedEdge(n1, n2);
+                        }
+                    }
+                }
+
+                return graph;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from file.", e);
         }
     }
 
+    /**
+     * Loads a PAG in the "amat.pag" format of PCALG. We will assume here that the graph in R has been saved to disk
+     * using the write.table(mat, path) method. For the amat.pag format, for a matrix m, endpoints are explicitly
+     * represented, as follows. 1 is a circle endpoint, 2 is an arrow endpoint, 3 is a tail endpoint, and 0 is a null
+     * endpoint (i.e., no edge). For an edge i->j, m[i][j] = 2 and m[j][i] = 3.
+     *
+     * @param file a file in the "amat.cpdag" format of PCALG.
+     * @return a graph.
+     */
+    public static Graph loadGraphAmatPag(File file) {
+        try {
+            String fileName = "example.txt";
+
+            // Use try-with-resources to ensure that the file is closed after reading
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String varNames = reader.readLine();
+                String[] tokens = varNames.split("[ \t\"]+");
+
+                List<Node> nodes = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!token.isBlank()) {
+                        nodes.add(new GraphNode(token));
+                    }
+                }
+
+                Graph graph = new EdgeListGraph(nodes);
+                int[][] m = new int[nodes.size()][nodes.size()];
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    String line = reader.readLine();
+                    tokens = line.split("[ \t]+");
+
+                    for (int j = 1; j <= nodes.size(); j++) {
+                        m[i][j - 1] = Integer.parseInt(tokens[j]);
+                    }
+                }
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    for (int j = i + 1; j < nodes.size(); j++) {
+                        Node n1 = nodes.get(i);
+                        Node n2 = nodes.get(j);
+
+                        int e1 = m[i][j];
+                        int e2 = m[j][i];
+
+                        Endpoint e1a = switch (e1) {
+                            case 0 -> Endpoint.NULL;
+                            case 1 -> Endpoint.CIRCLE;
+                            case 2 -> Endpoint.ARROW;
+                            case 3 -> Endpoint.TAIL;
+                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                        };
+
+                        Endpoint e2a = switch (e2) {
+                            case 0 -> Endpoint.NULL;
+                            case 1 -> Endpoint.CIRCLE;
+                            case 2 -> Endpoint.ARROW;
+                            case 3 -> Endpoint.TAIL;
+                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                        };
+
+                        if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+                            Edge edge = new Edge(n1, n2, e1a, e2a);
+                            graph.addEdge(edge);
+                        } else if (e1a != Endpoint.NULL || e2a != Endpoint.NULL) {
+                            throw new IllegalArgumentException("Invalid endpoint combination: " + e1a + " " + e2a);
+                        }
+                    }
+                }
+
+                return graph;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from file.", e);
+        }
+    }
+
+//    public static Graph loadGraphPcalg(File file) {
+//        try {
+//            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
+//                    "*", true, Delimiter.COMMA, false);
+//
+//            List<Node> nodes = dataSet.getVariables();
+//            Graph graph = new EdgeListGraph(nodes);
+//
+//            for (int i = 0; i < nodes.size(); i++) {
+//                for (int j = i + 1; j < nodes.size(); j++) {
+//                    Node n1 = nodes.get(i);
+//                    Node n2 = nodes.get(j);
+//
+//                    int e1 = dataSet.getInt(j, i);
+//                    int e2 = dataSet.getInt(i, j);
+//
+//                    Endpoint e1a;
+//
+//                    switch (e1) {
+//                        case 0:
+//                            e1a = Endpoint.NULL;
+//                            break;
+//                        case 1:
+//                            e1a = Endpoint.CIRCLE;
+//                            break;
+//                        case 2:
+//                            e1a = Endpoint.ARROW;
+//                            break;
+//                        case 3:
+//                            e1a = Endpoint.TAIL;
+//                            break;
+//                        default:
+//                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+//                    }
+//
+//                    Endpoint e2a;
+//
+//                    switch (e2) {
+//                        case 0:
+//                            e2a = Endpoint.NULL;
+//                            break;
+//                        case 1:
+//                            e2a = Endpoint.CIRCLE;
+//                            break;
+//                        case 2:
+//                            e2a = Endpoint.ARROW;
+//                            break;
+//                        case 3:
+//                            e2a = Endpoint.TAIL;
+//                            break;
+//                        default:
+//                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+//                    }
+//
+//                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+//                        Edge edge = new Edge(n1, n2, e1a, e2a);
+//                        graph.addEdge(edge);
+//                    }
+//                }
+//            }
+//
+//            return graph;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new IllegalStateException();
+//        }
+//    }
+
+    /**
+     * <p>loadGraphRMatrix.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     public static String loadGraphRMatrix(Graph graph) throws IllegalArgumentException {
         int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
@@ -293,10 +488,24 @@ public class GraphSaveLoadUtils {
     }
 
 
+    /**
+     * <p>readerToGraphTxt.</p>
+     *
+     * @param graphString a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphTxt(String graphString) throws IOException {
         return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
     }
 
+    /**
+     * <p>readerToGraphTxt.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphTxt(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
         try (BufferedReader in = new BufferedReader(reader)) {
@@ -317,12 +526,13 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>saveGraph.</p>
+     *
      * @param graph The graph to be saved.
      * @param file  The file to save it in.
      * @param xml   True if to be saved in XML, false if in text.
-     * @return I have no idea whey I'm returning this; it's already closed...
      */
-    public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
+    public static void saveGraph(Graph graph, File file, boolean xml) {
         PrintWriter out;
 
         try {
@@ -336,11 +546,17 @@ public class GraphSaveLoadUtils {
             out.flush();
             out.close();
         } catch (IOException e1) {
-            throw new IllegalArgumentException("Output file could not " + "be opened: " + file);
+            throw new IllegalArgumentException("Output file could not be opened: " + file);
         }
-        return out;
     }
 
+    /**
+     * <p>readerToGraphRuben.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphRuben(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
         try (BufferedReader in = new BufferedReader(reader)) {
@@ -494,6 +710,13 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>readerToGraphJson.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphJson(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
 
@@ -510,6 +733,9 @@ public class GraphSaveLoadUtils {
 
     /**
      * Converts a graph to a Graphviz .dot file
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
      */
     public static String graphToDot(Graph graph) {
         StringBuilder builder = new StringBuilder();
@@ -613,6 +839,12 @@ public class GraphSaveLoadUtils {
         return builder.toString();
     }
 
+    /**
+     * <p>graphToDot.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param file  a {@link java.io.File} object
+     */
     public static void graphToDot(Graph graph, File file) {
         try {
             Writer writer = new FileWriter(file);
@@ -624,6 +856,9 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>convertToXml.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return an XML element representing the given graph. (Well, only a basic graph for now...)
      */
     public static Element convertToXml(Graph graph) {
@@ -698,6 +933,12 @@ public class GraphSaveLoadUtils {
         return triple.getX() + ", " + triple.getY() + ", " + triple.getZ();
     }
 
+    /**
+     * <p>graphToXml.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToXml(Graph graph) {
         Document document = new Document(convertToXml(graph));
         OutputStream out = new ByteArrayOutputStream();
@@ -714,6 +955,12 @@ public class GraphSaveLoadUtils {
         return out.toString();
     }
 
+    /**
+     * <p>graphToLavaan.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToLavaan(Graph g) {
         boolean includeIntercepts = true;
         boolean includeErrors = true;
@@ -767,6 +1014,12 @@ public class GraphSaveLoadUtils {
         return lavaan.toString();
     }
 
+    /**
+     * <p>graphToPcalg.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToPcalg(Graph g) {
         Map<Endpoint, Integer> mark2Int = new HashMap<>();
         mark2Int.put(Endpoint.NULL, 0);
@@ -801,6 +1054,152 @@ public class GraphSaveLoadUtils {
         return table.toString();
     }
 
+    /**
+     * Converts a given graph into an adjacency matrix in CPAG format.
+     *
+     * @param g the input graph to be converted
+     * @return the adjacency matrix representation of the graph in CPAG format
+     * @throws IllegalArgumentException if the graph is not a MPDAG (including CPDAG or DAG)
+     */
+    public static String graphToAmatCpag(Graph g) {
+//        if (!(g.paths().isLegalMpdag())) {
+//            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
+//        }
+
+        List<Node> vars = g.getNodes();
+
+        int[][] m = new int[vars.size()][vars.size()];
+
+        for (int i = 0; i < vars.size(); i++) {
+            for (int j = 0; j < vars.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                Node node1 = vars.get(i);
+                Node node2 = vars.get(j);
+
+                if (g.isAdjacentTo(node1, node2)) {
+                    Edge edge = g.getEdge(node1, node2);
+
+                    if (Edges.isDirectedEdge(edge)) {
+                        if (edge.pointsTowards(node2)) {
+                            m[j][i] = 1;
+                        }
+                    } else if (Edges.isUndirectedEdge(edge)) {
+                        m[i][j] = 1;
+                        m[j][i] = 1;
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Node node : vars) {
+            sb.append("\"").append(node.getName()).append("\" ");
+        }
+
+        sb.append("\n");
+
+        for (int i = 0; i < vars.size(); i++) {
+            sb.append("\"").append(vars.get(i).getName()).append("\" ");
+
+            for (int j = 0; j < vars.size(); j++) {
+                sb.append(m[i][j]).append(" ");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Saves a PAG in the "amat.pag" format of PCALG. We will save it in the form that R would print the matrix to file
+     * using write.matrix(mat, path). For the amat.pag format, for a matrix m, endpoints are explicitly represented, as
+     * follows. 1 is a circle endpoint, 2 is an arrow endpoint, 3 is a tail endpoint, and 0 is a null endpoint (i.e., no
+     * edge)
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
+    public static String graphToAmatPag(Graph g) {
+//        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
+//        }
+
+        List<Node> vars = g.getNodes();
+
+        int[][] m = new int[vars.size()][vars.size()];
+
+        for (int i = 0; i < vars.size(); i++) {
+
+            for (int j = 0; j < vars.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                Node node1 = vars.get(i);
+                Node node2 = vars.get(j);
+
+                if (g.isAdjacentTo(node1, node2)) {
+                    Edge edge = g.getEdge(node1, node2);
+
+                    Endpoint endpoint1 = edge.getEndpoint1();
+
+                    if (endpoint1 == Endpoint.CIRCLE) {
+                        m[j][i] = 1;
+                    } else if (endpoint1 == Endpoint.ARROW) {
+                        m[j][i] = 2;
+                    } else if (endpoint1 == Endpoint.TAIL) {
+                        m[j][i] = 3;
+                    } else {
+                        m[j][i] = 0;
+                    }
+
+                    Endpoint endpoint2 = edge.getEndpoint2();
+
+                    if (endpoint2 == Endpoint.CIRCLE) {
+                        m[i][j] = 1;
+                    } else if (endpoint2 == Endpoint.ARROW) {
+                        m[i][j] = 2;
+                    } else if (endpoint2 == Endpoint.TAIL) {
+                        m[i][j] = 3;
+                    } else {
+                        m[i][j] = 0;
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Node node : vars) {
+            sb.append("\"").append(node.getName()).append("\" ");
+        }
+
+        sb.append("\n");
+
+        for (int i = 0; i < vars.size(); i++) {
+            sb.append("\"").append(vars.get(i).getName()).append("\" ");
+
+            for (int j = 0; j < vars.size(); j++) {
+                sb.append(m[i][j]).append(" ");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * <p>parseGraphXml.</p>
+     *
+     * @param graphElement a {@link nu.xom.Element} object
+     * @param nodes        a {@link java.util.Map} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws nu.xom.ParsingException if any.
+     */
     public static Graph parseGraphXml(Element graphElement, Map<String, Node> nodes) throws ParsingException {
         if (!"graph".equals(graphElement.getLocalName())) {
             throw new IllegalArgumentException("Expecting graph element: " + graphElement.getLocalName());
@@ -980,6 +1379,14 @@ public class GraphSaveLoadUtils {
         return null;
     }
 
+    /**
+     * <p>getRootElement.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link nu.xom.Element} object
+     * @throws nu.xom.ParsingException if any.
+     * @throws java.io.IOException     if any.
+     */
     public static Element getRootElement(File file) throws ParsingException, IOException {
         Builder builder = new Builder();
         Document document = builder.build(file);
@@ -1020,6 +1427,12 @@ public class GraphSaveLoadUtils {
     }
 
 
+    /**
+     * <p>grabLayout.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.HashMap} object
+     */
     public static HashMap<String, PointXy> grabLayout(List<Node> nodes) {
         HashMap<String, PointXy> layout = new HashMap<>();
 
@@ -1031,6 +1444,10 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>getCollidersFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of triples of the form X*-&gt;Y&lt;-*Z.
      */
     public static List<Triple> getCollidersFromGraph(Node node, Graph graph) {

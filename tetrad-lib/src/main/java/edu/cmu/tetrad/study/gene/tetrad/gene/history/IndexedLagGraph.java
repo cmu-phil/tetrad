@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -36,21 +37,19 @@ import java.util.SortedSet;
  * be static, so this optimization is useful.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndexedLagGraph implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The factors in the graph, in the order that they are used.
-     *
-     * @serial
      */
     private final List<String> factors;
 
     /**
      * The graph that this "snapshot" of indexedLagGraph was taken from.
-     *
-     * @serial
      */
     private final IndexedParent[][] parents;
 
@@ -58,6 +57,8 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Constructs an indexed lag graph for the getModel state of the given lag graph, including all edges.
+     *
+     * @param lagGraph a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
      */
     public IndexedLagGraph(LagGraph lagGraph) {
         this(lagGraph, false);
@@ -68,6 +69,7 @@ public class IndexedLagGraph implements TetradSerializable {
      *
      * @param excludeSelfOneBack excludes from the lag graph any edge from a gene one time step back to the same gene in
      *                           the getModel time step.
+     * @param lagGraph           a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
      */
     public IndexedLagGraph(LagGraph lagGraph, boolean excludeSelfOneBack) {
         if (lagGraph == null) {
@@ -107,6 +109,8 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedLagGraph} object
      */
     public static IndexedLagGraph serializableInstance() {
         return new IndexedLagGraph(BasicLagGraph.serializableInstance());
@@ -116,6 +120,8 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the number of factors.
+     *
+     * @return a int
      */
     public int getNumFactors() {
         return this.factors.size();
@@ -123,6 +129,9 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the (string name of) the factor at the given index.
+     *
+     * @param factor a int
+     * @return a {@link java.lang.String} object
      */
     public String getFactor(int factor) {
         return this.factors.get(factor);
@@ -130,6 +139,9 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the index of the given String factor.
+     *
+     * @param factor a {@link java.lang.String} object
+     * @return a int
      */
     public int getIndex(String factor) {
         return this.factors.indexOf(factor);
@@ -137,6 +149,10 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the index of the given parent for the given factor.
+     *
+     * @param factor a {@link java.lang.String} object
+     * @param parent a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     * @return a int
      */
     public int getIndex(String factor, LaggedFactor parent) {
         int factorIndex = this.factors.indexOf(factor);
@@ -149,6 +165,10 @@ public class IndexedLagGraph implements TetradSerializable {
     /**
      * Returns the index of the parent of the given factor that is equal to the given IndexedParent, or -1 if the given
      * IndexedParent is not equal to any parent.
+     *
+     * @param factor a int
+     * @param parent a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedParent} object
+     * @return a int
      */
     public int getIndex(int factor, IndexedParent parent) {
         for (int i = 0; i < this.parents[factor].length; i++) {
@@ -161,6 +181,9 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the number of parents of the given factor. Each parent is a factor at a given lag.
+     *
+     * @param factor a int
+     * @return a int
      */
     public int getNumParents(int factor) {
         return this.parents[factor].length;
@@ -168,6 +191,10 @@ public class IndexedLagGraph implements TetradSerializable {
 
     /**
      * Returns the given parent as an IndexedParent.
+     *
+     * @param factor a int
+     * @param parent a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedParent} object
      */
     public IndexedParent getParent(int factor, int parent) {
         return this.parents[factor][parent];
@@ -212,7 +239,12 @@ public class IndexedLagGraph implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

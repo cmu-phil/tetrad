@@ -41,6 +41,7 @@ import java.util.Set;
  * i or k, or null if none is found.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
  */
@@ -53,6 +54,15 @@ public class SepsetsGreedy implements SepsetProducer {
     private IndependenceResult result;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for SepsetsGreedy.</p>
+     *
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param depth            a int
+     * @param knowledge        a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
         this.independenceTest = independenceTest;
@@ -65,44 +75,101 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
+     * Retrieves the sepset (separating set) between two nodes, or null if no such sepset is found.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return getSepsetGreedy(i, k);
+        return getSepsetGreedyContaining(i, k, null);
     }
 
+    /**
+     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, or null if no such sepset is
+     * found. If there is no required set of nodes, pass null for the set.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @param s The set of nodes that must be contained in the sepset, or null if no such set is required.
+     * @return The sepset between the two nodes
+     */
+    @Override
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
+        return getSepsetGreedyContaining(i, k, s);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = getSepsetGreedy(i, k);
+        Set<Node> set = getSepsetGreedyContaining(i, k, null);
         return set != null && !set.contains(j);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
     }
 
+    /**
+     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     *
+     * @param a      the first node
+     * @param b      the second node
+     * @param sepset the set of separator nodes
+     * @return the p-value for the independence test
+     */
+    @Override
+    public double getPValue(Node a, Node b, Set<Node> sepset) {
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
+        return result.getPValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(result.getPValue() - this.independenceTest.getAlpha());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.independenceTest.getVariables();
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         independenceTest.setVerbose(verbose);
         this.verbose = verbose;
     }
 
+    /**
+     * <p>getDag.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {
             return ((MsepTest) this.independenceTest).getGraph();
@@ -111,11 +178,16 @@ public class SepsetsGreedy implements SepsetProducer {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    private Set<Node> getSepsetGreedy(Node i, Node k) {
+    private Set<Node> getSepsetGreedyContaining(Node i, Node k, Set<Node> s) {
         if (this.extraSepsets != null) {
             Set<Node> v = this.extraSepsets.get(i, k);
 
@@ -137,6 +209,10 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
+
                     v = possibleParents(i, v, this.knowledge, k);
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
@@ -151,6 +227,10 @@ public class SepsetsGreedy implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    if (s != null && !v.containsAll(s)) {
+                        continue;
+                    }
 
                     v = possibleParents(k, v, this.knowledge, i);
 

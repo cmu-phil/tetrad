@@ -106,6 +106,16 @@ public class SpecialDataClark implements Simulation {
     }
 
     @Override
+    public Class<? extends RandomGraph> getRandomGraphClass() {
+        return randomGraph.getClass();
+    }
+
+    @Override
+    public Class<? extends Simulation> getSimulationClass() {
+        return getClass();
+    }
+
+    @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
@@ -159,7 +169,7 @@ public class SpecialDataClark implements Simulation {
             return im.simulateData(N, false);
         } catch (Exception e) {
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
-                    "the parameters have been specified.");
+                                               "the parameters have been specified.");
         }
     }
 

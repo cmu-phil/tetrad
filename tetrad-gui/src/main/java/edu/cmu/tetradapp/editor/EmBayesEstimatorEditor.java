@@ -41,6 +41,7 @@ import java.text.NumberFormat;
  * @author Aaron Powers
  * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class EmBayesEstimatorEditor extends JPanel {
 
@@ -133,6 +134,8 @@ public class EmBayesEstimatorEditor extends JPanel {
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
+     *
+     * @param emBayesEstWrapper a {@link edu.cmu.tetradapp.model.EmBayesEstimatorWrapper} object
      */
     public EmBayesEstimatorEditor(EmBayesEstimatorWrapper emBayesEstWrapper) {
         this(emBayesEstWrapper.getEstimateBayesIm(),
@@ -141,6 +144,8 @@ public class EmBayesEstimatorEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {

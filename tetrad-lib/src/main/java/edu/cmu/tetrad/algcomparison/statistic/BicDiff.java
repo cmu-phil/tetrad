@@ -1,9 +1,12 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.SemBicScorer;
+
+import java.io.Serial;
 
 import static org.apache.commons.math3.util.FastMath.tanh;
 
@@ -11,15 +14,27 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Difference between the true and estiamted BIC scores.  The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BicDiff implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Whether to precompute covariances.
+     */
     private boolean precomputeCovariances = true;
 
     /**
+     * Constructs a new instance of the statistic.
+     */
+    public BicDiff() {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * Returns the name of the statistic.
-     *
-     * @return the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -27,9 +42,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the description of the statistic.
-     *
-     * @return the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -37,12 +52,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the value of the statistic.
-     *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The value of the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -52,10 +64,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the normalized value of the statistic.
-     *
-     * @param value The value of the statistic.
-     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

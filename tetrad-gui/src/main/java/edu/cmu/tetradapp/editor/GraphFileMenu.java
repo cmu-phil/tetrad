@@ -29,11 +29,19 @@ import javax.swing.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
+    /**
+     * <p>Constructor for GraphFileMenu.</p>
+     *
+     * @param editable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param comp     a {@link javax.swing.JComponent} object
+     * @param saveOnly a boolean
+     */
     public GraphFileMenu(GraphEditable editable, JComponent comp, boolean saveOnly) {
         super("File");
 
@@ -41,21 +49,24 @@ public final class GraphFileMenu extends JMenu {
             JMenu load = new JMenu("Load...");
             add(load);
 
-            load.add(new LoadGraph(editable, "XML..."));
             load.add(new LoadGraphTxt(editable, "Text..."));
+            load.add(new LoadGraph(editable, "XML..."));
             load.add(new LoadGraphJson(editable, "Json..."));
-            load.add(new LoadGraphPcalg(editable, "PCALG..."));
+            load.add(new LoadGraphAmatCpdag(editable, "amat.cpdag..."));
+            load.add(new LoadGraphAmatPag(editable, "amat.pag..."));
         }
 
         JMenu save = new JMenu("Save...");
         add(save);
 
-        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
-        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
+        save.add(new SaveGraph(editable, "amat.cpdag...", SaveGraph.Type.amatCpdag));
+        save.add(new SaveGraph(editable, "amat.pag...", SaveGraph.Type.amatPag));
+//        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
         save.add(new SaveGraph(editable, "lavaan...", SaveGraph.Type.lavaan));
 
         addSeparator();

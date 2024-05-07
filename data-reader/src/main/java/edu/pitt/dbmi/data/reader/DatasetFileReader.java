@@ -24,6 +24,7 @@ import java.nio.file.Path;
  * Dec 7, 2018 3:43:12 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class DatasetFileReader extends DataFileReader implements DatasetReader {
 
@@ -45,9 +46,9 @@ public abstract class DatasetFileReader extends DataFileReader implements Datase
     }
 
     /**
-     * Get the missing data marker.
+     * Sets the missing data marker.
      *
-     * @param missingDataMarker the missing data marker
+     * @param missingDataMarker the missing data marker to be set
      */
     @Override
     public void setMissingDataMarker(String missingDataMarker) {

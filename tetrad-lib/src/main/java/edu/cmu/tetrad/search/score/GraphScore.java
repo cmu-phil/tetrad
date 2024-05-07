@@ -53,6 +53,7 @@ import java.util.Set;
  * dependence measure. In Uncertainty in Artificial Intelligence (pp. 1782-1791). PMLR.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  */
 public class GraphScore implements Score {
@@ -90,6 +91,8 @@ public class GraphScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model.
      *
+     * @param y a int
+     * @param z an array of {@link int} objects
      * @return this score.
      */
     public double localScore(int y, int[] z) {
@@ -97,10 +100,10 @@ public class GraphScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
      * methods is implemented, since the other methods don't make sense here.
-     *
-     * @return The "difference".
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -108,9 +111,10 @@ public class GraphScore implements Score {
     }
 
     /**
-     * The "unconditional difference." Only difference methods is implemented, since the other methods don't make sense here.
-     *
-     * @return The "difference".
+     * {@inheritDoc}
+     * <p>
+     * The "unconditional difference." Only difference methods is implemented, since the other methods don't make sense
+     * here.
      */
     @Override
     public double localScoreDiff(int x, int y) {
@@ -118,24 +122,29 @@ public class GraphScore implements Score {
     }
 
     /**
-     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     * <p>localScore.</p>
+     *
+     * @param i      a int
+     * @param parent a int
+     * @return a double
+     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
      */
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     * {@inheritDoc}
      */
     public double localScore(int i) {
         throw new UnsupportedOperationException("The 'local score' method is not supported here.");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a judgment for FGES whether a score with the bump is for an effect edge.
      *
-     * @param bump The bump
-     * @return True, if so.
      * @see Fges
      */
     @Override
@@ -144,9 +153,9 @@ public class GraphScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the list of variables.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -154,9 +163,9 @@ public class GraphScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the maximum degree, which is set to 1000.
-     *
-     * @return 1000.
      */
     @Override
     public int getMaxDegree() {
@@ -164,7 +173,10 @@ public class GraphScore implements Score {
     }
 
     /**
-     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     * <p>getSampleSize.</p>
+     *
+     * @return a int
+     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
      */
     public int getSampleSize() {
         throw new UnsupportedOperationException("This score does not use data, so no sample size is available.");
@@ -187,7 +199,7 @@ public class GraphScore implements Score {
         boolean dSeparatedFrom;
 
         if (dag != null) {
-            dSeparatedFrom = dag.paths().isMSeparatedFrom(_x, _y, _z);
+            dSeparatedFrom = dag.paths().isMSeparatedFrom(_x, _y, _z, false);
         } else if (facts != null) {
             dSeparatedFrom = facts.isIndependent(_x, _y, _z);
         } else {
@@ -199,7 +211,7 @@ public class GraphScore implements Score {
 
     private boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
         if (dag != null) {
-            return dag.paths().isMSeparatedFrom(x, y, z);
+            return dag.paths().isMSeparatedFrom(x, y, z, false);
         } else if (facts != null) {
             return facts.isIndependent(x, y, z);
         }

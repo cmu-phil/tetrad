@@ -51,17 +51,18 @@ final class PasteSubsessionAction extends AbstractAction
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
-        if (!(transferable instanceof SubsessionSelection)) {
+        if (!(transferable instanceof SubsessionSelection selection)) {
             return;
         }
 
-        SubsessionSelection selection = (SubsessionSelection) transferable;
         DataFlavor flavor = new DataFlavor(SubsessionSelection.class,
                 "Subsession Selection");
 
@@ -86,10 +87,9 @@ final class PasteSubsessionAction extends AbstractAction
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Notifies this object that it is no longer the owner of the contents of the clipboard.
-     *
-     * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.session.ModificationRegistery;
+import edu.cmu.tetradapp.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import org.apache.commons.math3.util.FastMath;
@@ -35,6 +35,7 @@ import java.awt.event.ActionListener;
  * Launches a dialog to display an editor component.
  *
  * @author Gregory Li, Joseph Ramsey
+ * @version $Id: $Id
  */
 public class EditorWindow extends JInternalFrame
         implements EditorWindowIndirectRef, Comparable {
@@ -47,6 +48,10 @@ public class EditorWindow extends JInternalFrame
      * The bounds of the source component.
      */
     private final Component centeringComp;
+
+    /**
+     * The editor component.
+     */
     private JComponent editor;
     /**
      * Set to true if the dialog was canceled.
@@ -59,6 +64,12 @@ public class EditorWindow extends JInternalFrame
 
     /**
      * Pops a new editor window up from a dialog.
+     *
+     * @param editor        a {@link javax.swing.JComponent} object
+     * @param title         a {@link java.lang.String} object
+     * @param buttonName    a {@link java.lang.String} object
+     * @param cancellable   a boolean
+     * @param centeringComp a {@link java.awt.Component} object
      */
     public EditorWindow(JComponent editor, String title, String buttonName,
                         boolean cancellable, Component centeringComp) {
@@ -76,6 +87,14 @@ public class EditorWindow extends JInternalFrame
         setClosable(false);
     }
 
+    /**
+     * Compares this EditorWindow object with the specified object for order. Returns a negative integer, zero, or a
+     * positive integer as this object is less than, equal to, or greater than the specified object.
+     *
+     * @param o the object to be compared.
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than
+     * the specified object.
+     */
     @Override
     public int compareTo(@NotNull Object o) {
         EditorWindow to = (EditorWindow) o;
@@ -154,6 +173,11 @@ public class EditorWindow extends JInternalFrame
         doDefaultCloseAction();
     }
 
+    /**
+     * <p>isCanceled.</p>
+     *
+     * @return a boolean
+     */
     public boolean isCanceled() {
         return this.canceled;
     }
@@ -162,12 +186,19 @@ public class EditorWindow extends JInternalFrame
         return this.editor;
     }
 
+    /**
+     * <p>Getter for the field <code>centeringComp</code>.</p>
+     *
+     * @return a {@link java.awt.Component} object
+     */
     public Component getCenteringComp() {
         return this.centeringComp;
     }
 
     /**
      * Adds the action listener to the OK button if it's not null.
+     *
+     * @param l a {@link java.awt.event.ActionListener} object
      */
     public void addActionListener(ActionListener l) {
         if (this.okButton != null) {

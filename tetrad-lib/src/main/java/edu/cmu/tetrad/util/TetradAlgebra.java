@@ -29,21 +29,50 @@ import cern.colt.matrix.linalg.Algebra;
 
 /**
  * Some algebra methods.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class TetradAlgebra {
 
+    /**
+     * Initializes a new instance of the TetradAlgebra class.
+     */
+    public TetradAlgebra() {
+    }
+
+    /**
+     * <p>multOuter.</p>
+     *
+     * @param v1 a {@link edu.cmu.tetrad.util.Vector} object
+     * @param v2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix multOuter(Vector v1, Vector v2) {
         DoubleMatrix2D m = new Algebra().multOuter(new DenseDoubleMatrix1D(v1.toArray()),
                 new DenseDoubleMatrix1D(v2.toArray()), null);
         return new Matrix(m.toArray());
     }
 
+    /**
+     * <p>solve.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param b a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix solve(Matrix a, Matrix b) {
         DoubleMatrix2D _a = new DenseDoubleMatrix2D(a.toArray());
         DoubleMatrix2D _b = new DenseDoubleMatrix2D(b.toArray());
         return new Matrix(new Algebra().solve(_a, _b).toArray());
     }
 
+    /**
+     * <p>identity.</p>
+     *
+     * @param rows a int
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix identity(int rows) {
         return new Matrix(DoubleFactory2D.dense.identity(rows).toArray());
     }

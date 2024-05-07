@@ -53,12 +53,18 @@ import java.util.ArrayList;
 // display and edit a JPD
 ////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////
+// display and edit a JPD
+////////////////////////////////////////////////////////
 class BayesImNodeEditingTableObs extends JTable {
     private int focusRow;
     private int focusCol;
 
     /**
      * Constructs a new editing table from a given editing table model.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImNodeEditingTableObs(BayesIm bayesIm) {
         if (bayesIm == null) {
@@ -107,12 +113,14 @@ class BayesImNodeEditingTableObs extends JTable {
         setFocusColumn();
     }
 
+    /**
+     * <p>createDefaultColumnsFromModel.</p>
+     */
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
-        if (getModel() instanceof Model) {
+        if (getModel() instanceof Model model) {
             FontMetrics fontMetrics = getFontMetrics(getFont());
-            Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
                 TableColumn column = getColumnModel().getColumn(i);
@@ -142,7 +150,7 @@ class BayesImNodeEditingTableObs extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will modify all values in the table. " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -171,7 +179,7 @@ class BayesImNodeEditingTableObs extends JTable {
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "This will delete all values in the table. " +
-                            "Continue?", "Warning",
+                    "Continue?", "Warning",
                     JOptionPane.YES_NO_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -200,6 +208,9 @@ class BayesImNodeEditingTableObs extends JTable {
         popup.show((Component) e.getSource(), e.getX(), e.getY());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }
@@ -418,7 +429,7 @@ class BayesImNodeEditingTableObs extends JTable {
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Probabilities in the column must sum up to 1.0.\n"
-                                            + "Leave one row (or two) blank while working.");
+                                    + "Leave one row (or two) blank while working.");
                             this.failedRow = row;
                             this.failedCol = col;
                         }

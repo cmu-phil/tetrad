@@ -12,9 +12,23 @@ import java.util.List;
 
 /**
  * Created by Erich on 8/6/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceRandomApply {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private GdistanceRandomApply() {
+    }
+
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         //thresholds are the barriers between histogram buckets.
         double[] thresholds;

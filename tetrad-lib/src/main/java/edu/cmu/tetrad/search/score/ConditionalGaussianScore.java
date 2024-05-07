@@ -44,6 +44,7 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
  */
@@ -122,6 +123,7 @@ public class ConditionalGaussianScore implements Score {
      *
      * @param x The index of the child.
      * @param z The indices of the parents.
+     * @param y a int
      * @return The score difference.
      */
     public double localScoreDiff(int x, int y, int[] z) {
@@ -138,10 +140,10 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * A method for FGES for determining whether an edge counts as an effect edges for this score bump.
      *
-     * @param bump The bump in score.
-     * @return True iff so.
      * @see Fges
      */
     @Override
@@ -150,9 +152,9 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables of the data.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -160,9 +162,10 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the max degree recommended for the search form the MagSemBicScore and Fges.
      *
-     * @return This max degree.
      * @see MagSemBicScore
      * @see Fges
      */
@@ -198,12 +201,20 @@ public class ConditionalGaussianScore implements Score {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
+    /**
+     * <p>Setter for the field <code>structurePrior</code>.</p>
+     *
+     * @param structurePrior a double
+     */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }

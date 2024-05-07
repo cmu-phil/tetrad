@@ -29,22 +29,38 @@ import java.awt.geom.Rectangle2D;
  * The display component for error nodes, which is a transparent ellipse.
  *
  * @author Joseph Ramsmey
+ * @version $Id: $Id
  */
 public class ErrorDisplayComp extends JComponent
         implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
+    /**
+     * <p>Constructor for ErrorDisplayComp.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public ErrorDisplayComp(String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
         setName(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -58,6 +74,8 @@ public class ErrorDisplayComp extends JComponent
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -73,6 +91,8 @@ public class ErrorDisplayComp extends JComponent
 
     /**
      * Calculates the size of the component based on its name.
+     *
+     * @return a {@link java.awt.Dimension} object
      */
     public Dimension getPreferredSize() {
         FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
@@ -82,10 +102,18 @@ public class ErrorDisplayComp extends JComponent
         return new Dimension(width, height);
     }
 
+    /**
+     * <p>isSelected.</p>
+     *
+     * @return a boolean
+     */
     public boolean isSelected() {
         return this.selected;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

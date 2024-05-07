@@ -41,6 +41,7 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Cpc
  * @see #getAmbiguousTriples()
@@ -54,13 +55,11 @@ public final class Cfci implements IGraphSearch {
     private final List<Node> variables = new ArrayList<>();
     // The independence test.
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
     // The PAG being constructed.
     private Graph graph;
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
+    // Flag for the complete rule set, true if you should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // True iff the possible msep search is done.
     private boolean possibleMsepSearchDone = true;
@@ -76,6 +75,8 @@ public final class Cfci implements IGraphSearch {
     private boolean verbose;
     // Whether to do the discriminating path rule.
     private boolean doDiscriminatingPathRule;
+    // Whether to resolve almost cyclic paths.
+    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -98,9 +99,10 @@ public final class Cfci implements IGraphSearch {
      */
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
+
         if (this.verbose) {
-            this.logger.log("info", "Starting FCI algorithm.");
-            this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().forceLogMessage("Starting CFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
         setMaxReachablePathLength(this.maxReachablePathLength);
@@ -130,7 +132,7 @@ public final class Cfci implements IGraphSearch {
             long time2 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                this.logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+                TetradLogger.getInstance().forceLogMessage("Step C: " + (time2 - time1) / 1000. + "s");
             }
 
             // Step FCI D.
@@ -146,7 +148,7 @@ public final class Cfci implements IGraphSearch {
             long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                this.logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+                TetradLogger.getInstance().forceLogMessage("Step D: " + (time4 - time3) / 1000. + "s");
             }
 
             // Reorient all edges as o-o.
@@ -161,12 +163,12 @@ public final class Cfci implements IGraphSearch {
         long time6 = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+            TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
         }
 
         // Step CI D. (Zhang's step F4.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsConservative(this.graph, this.independenceTest,
+        FciOrient fciOrient = new FciOrient(new SepsetsMaxP(this.graph, this.independenceTest,
                 new SepsetMap(), this.depth));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
@@ -177,11 +179,26 @@ public final class Cfci implements IGraphSearch {
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
 
+        if (resolveAlmostCyclicPaths) {
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (graph.paths().existsDirectedPath(x, y)) {
+                        graph.setEndpoint(y, x, Endpoint.TAIL);
+                    } else if (graph.paths().existsDirectedPath(y, x)) {
+                        graph.setEndpoint(x, y, Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
         if (this.verbose) {
-            this.logger.log("graph", "Returning graph: " + this.graph);
+            TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         }
 
         return this.graph;
@@ -202,7 +219,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the elapsed time ot the search.
+     * Returns the elapsed time to the search.
      *
      * @return This time.
      */
@@ -211,7 +228,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,..,zn}.
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,...,zn}.
      *
      * @return This map.
      */
@@ -266,7 +283,7 @@ public final class Cfci implements IGraphSearch {
 
     private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+            TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -294,12 +311,13 @@ public final class Cfci implements IGraphSearch {
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
                     if (FciOrient.isArrowheadAllowed(x, y, graph, knowledge) &&
-                            FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
+                        FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
                         if (this.verbose) {
-                            TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(this.graph, x, y, z));
+                            String message = "Collider: " + Triple.pathString(this.graph, x, y, z);
+                            TetradLogger.getInstance().forceLogMessage(message);
                         }
                     }
 
@@ -308,14 +326,15 @@ public final class Cfci implements IGraphSearch {
                     this.ambiguousTriples.add(triple);
                     getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z));
+                        String message = "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
             }
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
         }
     }
 
@@ -404,6 +423,8 @@ public final class Cfci implements IGraphSearch {
 
     /**
      * Whether verbose output (about independencies) is output.
+     *
+     * @return True iff verbose output (about independencies) is output.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -421,7 +442,7 @@ public final class Cfci implements IGraphSearch {
     /**
      * Whether to do the discriminating path rule.
      *
-     * @return True iff the discriminating path rule is done.
+     * @return True, iff the discriminating path rule is done.
      */
     public boolean isPossibleMsepSearchDone() {
         return this.possibleMsepSearchDone;
@@ -430,7 +451,7 @@ public final class Cfci implements IGraphSearch {
     /**
      * Whether to do the discriminating path rule.
      *
-     * @param possibleMsepSearchDone True iff the discriminating path rule is done.
+     * @param possibleMsepSearchDone True, iff the discriminating path rule is done.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
@@ -472,7 +493,7 @@ public final class Cfci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (this.verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -495,7 +516,8 @@ public final class Cfci implements IGraphSearch {
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
@@ -526,13 +548,24 @@ public final class Cfci implements IGraphSearch {
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
         if (this.verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
+    }
+
+    /**
+     * Sets the flag indicating whether to resolve almost cyclic paths.
+     *
+     * @param resolveAlmostCyclicPaths If true, almost cyclic paths will be resolved. If false, they will not be
+     *                                 resolved.
+     */
+    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
+        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 
     private enum TripleType {

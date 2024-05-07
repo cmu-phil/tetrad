@@ -26,6 +26,7 @@ package edu.cmu.tetrad.sem;
  * estimation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ParamComparison {
 
@@ -63,6 +64,8 @@ public class ParamComparison {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;

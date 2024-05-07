@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -10,8 +9,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
@@ -26,94 +25,81 @@ import static org.apache.commons.math3.util.FastMath.min;
  * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
  * <p>
  * The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding
- * lower-bounded effects on Y.
+ * lower-bounded effects on Y. It regresses Y on X &cup; S, where X is a possible parent of Y and S is a set of possible
+ * parents of X, and reports the regression coefficient. The set of such regressions is then sorted in ascending order
+ * to give the total effects of X on Y. The absolute total effects are calculated as the absolute values of the total
+ * effects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Cstar
  * @see NodeEffects
  */
 public class Ida {
-    // The dataset being searched over.
-    private final DataSet dataSet;
-    // The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+    /**
+     * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm)
+     */
     private final Graph cpdag;
-    // The possible causes to be considered.
+    /**
+     * The possible causes to be considered.
+     */
     private final List<Node> possibleCauses;
-    // A map from node names to indices in the covariance matrix.
+    /**
+     * A map from node names to indices in the covariance matrix.
+     */
     private final Map<String, Integer> nodeIndices;
-    // The covariance matrix for the dataset.
+    /**
+     * The covariance matrix for the dataset.
+     */
     private final ICovarianceMatrix allCovariances;
 
     /**
      * Constructor.
      *
      * @param dataSet        The dataset being searched over.
-     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+     * @param graph          The graph model. Should be a DAG or a CPDAG.
      * @param possibleCauses The possible causes to be considered.
      */
-    public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
-        this.dataSet = DataTransforms.convertNumericalDiscreteToContinuous(dataSet);
-        this.cpdag = cpdag;
+    public Ida(DataSet dataSet, Graph graph, List<Node> possibleCauses) {
+        // Check nullity
+        if (dataSet == null) {
+            throw new NullPointerException("Data set must not be null.");
+        }
+
+        if (graph == null) {
+            throw new NullPointerException("Graph must not be null.");
+        }
+
+        if (possibleCauses == null) {
+            throw new NullPointerException("Possible causes must not be null.");
+        }
+
+        // Check tha the graph is either a DAG or a CPDAG.
+        if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
+            throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
+        }
+
+        // Check that the dataset is continuous.
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("Expecting a continuous dataset.");
+        }
+
+        this.cpdag = graph;
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
-
-        this.allCovariances = new CovarianceMatrix(this.dataSet);
-
+        this.allCovariances = new CovarianceMatrix(dataSet);
         this.nodeIndices = new HashMap<>();
 
-        for (int i = 0; i < cpdag.getNodes().size(); i++) {
-            this.nodeIndices.put(cpdag.getNodes().get(i).getName(), i);
+        for (int i = 0; i < graph.getNodes().size(); i++) {
+            this.nodeIndices.put(graph.getNodes().get(i).getName(), i);
         }
-    }
-
-    /**
-     * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
-     *
-     * @param y The child variable.
-     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects, sorted downward by
-     * minimum effect size.
-     * @see Ida
-     */
-    public NodeEffects getSortedMinEffects(Node y) {
-        Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
-
-        List<Node> nodes = new ArrayList<>(allEffects.keySet());
-        RandomUtil.shuffle(nodes);
-
-        nodes.sort((o1, o2) -> Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1))));
-
-        LinkedList<Double> effects = new LinkedList<>();
-
-        for (Node node : nodes) {
-            effects.add(allEffects.get(node));
-        }
-
-        return new NodeEffects(nodes, effects);
-    }
-
-    /**
-     * Calculates the true effect of (x, y) given the true DAG (which must be provided).
-     *
-     * @param trueDag The true DAG.
-     * @return The true effect of (x, y).
-     */
-    public double trueEffect(Node x, Node y, Graph trueDag) {
-        if (x == y) throw new IllegalArgumentException("x == y");
-
-        if (!trueDag.paths().isAncestorOf(x, y)) return 0.0;
-
-        trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
-
-        List<Node> regressors = new ArrayList<>();
-        regressors.add(x);
-        regressors.addAll(trueDag.getParents(x));
-
-        return abs(getBeta(regressors, y));
     }
 
     /**
      * Returns the distance between the effects and the true effect.
      *
+     * @param effects    a {@link java.util.LinkedList} object
+     * @param trueEffect a double
      * @return This difference.
      */
     public double distance(LinkedList<Double> effects, double trueEffect) {
@@ -139,18 +125,14 @@ public class Ida {
     }
 
     /**
-     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern), sorted low
-     * to high in absolute value.
-     * <p>
-     * 1. First, estimate a pattern P from the data. 2. Then, consider all combinations C of siblings Z of X (Z--X) that
-     * include all the parents of X in P. 3. For each such C, regress Y onto {X} U C and record the coefficient beta for
-     * X in the regression. 4. Report the list of such betas, sorted low to high.
+     * Calculates the total effects of node x on node y.
      *
-     * @param x The first variable.
-     * @param y The second variable
-     * @return a list of the possible effects of X on Y.
+     * @param x The node whose total effects are to be calculated.
+     * @param y The node for which the total effects are calculated.
+     * @return A LinkedList of Double values representing the total effects of node x on node y. The LinkedList is
+     * sorted in ascending order.
      */
-    private LinkedList<Double> getEffects(Node x, Node y) {
+    public LinkedList<Double> getTotalEffects(Node x, Node y) {
         List<Node> parents = this.cpdag.getParents(x);
         List<Node> children = this.cpdag.getChildren(x);
 
@@ -158,52 +140,78 @@ public class Ida {
         siblings.removeAll(parents);
         siblings.removeAll(children);
 
-        SublistGenerator gen = new SublistGenerator(siblings.size(), siblings.size());
+        int size = siblings.size();
+        SublistGenerator gen = new SublistGenerator(size, size);
         int[] choice;
 
-        LinkedList<Double> effects = new LinkedList<>();
+        LinkedList<Double> totalEffects = new LinkedList<>();
 
         CHOICE:
         while ((choice = gen.next()) != null) {
             try {
-                List<Node> sibbled = GraphUtils.asList(choice, siblings);
+                List<Node> siblingsChoice = GraphUtils.asList(choice, siblings);
 
-                if (sibbled.size() > 1) {
-                    ChoiceGenerator gen2 = new ChoiceGenerator(sibbled.size(), 2);
+                if (siblingsChoice.size() > 1) {
+                    ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
                     int[] choice2;
 
                     while ((choice2 = gen2.next()) != null) {
-                        List<Node> adj = GraphUtils.asList(choice2, sibbled);
-                        if (!this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                        List<Node> adj = GraphUtils.asList(choice2, siblingsChoice);
+                        if (this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
                     }
                 }
 
-                if (!sibbled.isEmpty()) {
+                if (!siblingsChoice.isEmpty()) {
                     for (Node p : parents) {
-                        for (Node s : sibbled) {
-                            if (!this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
+                        for (Node s : siblingsChoice) {
+                            if (this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
                         }
                     }
                 }
 
-                List<Node> regressors = new ArrayList<>();
-                regressors.add(x);
-                for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
-                for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+                Set<Node> _regressors = new HashSet<>();
+                _regressors.add(x);
+                _regressors.addAll(parents);
+                _regressors.addAll(siblingsChoice);
+                List<Node> regressors = new ArrayList<>(_regressors);
+
+                System.out.println(x + " to " + y + " regressors: " + regressors);
+
+                double beta;
 
                 if (regressors.contains(y)) {
-                    effects.add(0.0);
+                    beta = 0.0;
                 } else {
-                    effects.add(abs(getBeta(regressors, y)));
+                    beta = getBeta(regressors, x, y);
                 }
+
+                totalEffects.add(beta);
             } catch (Exception e) {
-                e.printStackTrace();
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
         }
 
-        Collections.sort(effects);
+        Collections.sort(totalEffects);
+        return totalEffects;
+    }
 
-        return effects;
+    /**
+     * This method calculates the absolute total effects of node x on node y.
+     *
+     * @param x The node for which the total effects are calculated.
+     * @param y The node whose total effects are obtained.
+     * @return A LinkedList of Double values representing the absolute total effects of node x on node y. The LinkedList
+     * is sorted in ascending order.
+     */
+    public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
+        LinkedList<Double> totalEffects = getTotalEffects(x, y);
+        LinkedList<Double> absTotalEffects = new LinkedList<>();
+        for (double d : totalEffects) {
+            absTotalEffects.add(Math.abs(d));
+        }
+
+        Collections.sort(absTotalEffects);
+        return absTotalEffects;
     }
 
     /**
@@ -212,22 +220,35 @@ public class Ida {
      * @param y The child variable
      * @return Thia map.
      */
-    public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
+    public Map<Node, Double> calculateMinimumTotalEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
             if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
-
-            LinkedList<Double> effects = getEffects(x, y);
+            LinkedList<Double> effects = getTotalEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
 
         return minEffects;
     }
 
-    // x must be the first regressor.
-    private double getBeta(List<Node> regressors, Node child) {
+    /**
+     * Calculates the beta coefficient for a given set of regressors and a child node.
+     * <p>
+     * Note that x must be the first regressor.
+     *
+     * @param regressors The list of regressor nodes.
+     * @param parent     The parent node for which the beta coefficient is calculated.
+     * @param child      The child node for which the beta coefficient is calculated.
+     * @return The beta coefficient for the parent->child regression.
+     * @throws RuntimeException If a singularity is encountered during the regression process.
+     */
+    private double getBeta(List<Node> regressors, Node parent, Node child) {
+        if (!regressors.contains(parent))
+            throw new IllegalArgumentException("The regressors must contain the parent node.");
+
         try {
+            int xIndex = regressors.indexOf(parent);
             int yIndex = this.nodeIndices.get(child.getName());
             int[] xIndices = new int[regressors.size()];
             for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
@@ -240,13 +261,13 @@ public class Ida {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
                 System.out.println("Singularity encountered when regressing " +
-                        LogUtilsSearch.getScoreFact(child, regressors));
+                                   LogUtilsSearch.getScoreFact(child, regressors));
             }
 
-            return bStar != null ? bStar.get(0, 0) : 0.0;
+            return bStar != null ? bStar.get(xIndex, 0) : 0.0;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
-                    LogUtilsSearch.getScoreFact(child, regressors));
+                                       LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 
@@ -256,9 +277,13 @@ public class Ida {
      * @author josephramsey
      */
     public static class NodeEffects {
-        // The nodes.
+        /**
+         * The nodes.
+         */
         private List<Node> nodes;
-        // The effects.
+        /**
+         * The effects.
+         */
         private LinkedList<Double> effects;
 
         /**

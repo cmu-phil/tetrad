@@ -44,6 +44,7 @@ import java.util.*;
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author dmalinsky
+ * @version $Id: $Id
  * @see Knowledge
  * @see SvarFci
  */
@@ -77,15 +78,26 @@ public final class SvarFciOrient {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param sepsets          a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SvarFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest) {
         this.sepsets = sepsets;
         this.independenceTest = independenceTest;
     }
 
+    /**
+     * <p>orient.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph orient(Graph graph) {
 
-        this.logger.log("info", "Starting FCI algorithm.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI orientation.");
+        }
 
         ruleR0(graph);
 
@@ -98,23 +110,35 @@ public final class SvarFciOrient {
         doFinalOrientation(graph);
 
         if (this.verbose) {
-            this.logger.log("graph", "Returning graph: " + graph);
+            TetradLogger.getInstance().forceLogMessage("Returning graph: " + graph);
         }
 
         return graph;
     }
 
+    /**
+     * <p>Getter for the field <code>sepsets</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
+     */
     public SepsetProducer getSepsets() {
         return this.sepsets;
     }
 
     /**
      * The background knowledge.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -124,6 +148,8 @@ public final class SvarFciOrient {
     }
 
     /**
+     * <p>isCompleteRuleSetUsed.</p>
+     *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
@@ -132,6 +158,8 @@ public final class SvarFciOrient {
     }
 
     /**
+     * <p>Setter for the field <code>completeRuleSetUsed</code>.</p>
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -144,6 +172,8 @@ public final class SvarFciOrient {
      * Orients colliders in the graph.  (FCI Step C)
      * <p>
      * Zhang's step F3, rule R0.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR0(Graph graph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -189,7 +219,8 @@ public final class SvarFciOrient {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     if (this.verbose) {
-                        this.logger.log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c));
+                        String message = LogUtilsSearch.colliderOrientedMsg(a, b, c);
+                        TetradLogger.getInstance().forceLogMessage(message);
                         System.out.println(LogUtilsSearch.colliderOrientedMsg(a, b, c));
                         printWrongColliderMessage(a, b, c, graph);
                     }
@@ -204,6 +235,8 @@ public final class SvarFciOrient {
      * Orients the graph according to rules in the graph (FCI step D).
      * <p>
      * Zhang's step F4, rules R1-R10.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void doFinalOrientation(Graph graph) {
         if (this.completeRuleSetUsed) {
@@ -288,6 +321,11 @@ public final class SvarFciOrient {
     //Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
 
+    /**
+     * <p>rulesR1R2cycle.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void rulesR1R2cycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
@@ -331,7 +369,8 @@ public final class SvarFciOrient {
             this.changeFlag = true;
 
             if (this.verbose) {
-                this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Away from collider", graph.getEdge(b, c));
+                TetradLogger.getInstance().forceLogMessage(message);
                 System.out.println(LogUtilsSearch.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
             }
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
@@ -343,12 +382,12 @@ public final class SvarFciOrient {
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+            (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+                (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
+                        (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
+                        (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
                 if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
@@ -357,7 +396,8 @@ public final class SvarFciOrient {
                 graph.setEndpoint(a, c, Endpoint.ARROW);
                 this.orientSimilarPairs(graph, this.getKnowledge(), a, c, Endpoint.ARROW);
                 if (this.verbose) {
-                    this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                    String message = LogUtilsSearch.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c));
+                    TetradLogger.getInstance().forceLogMessage(message);
                     System.out.println(LogUtilsSearch.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
                 }
 
@@ -371,6 +411,8 @@ public final class SvarFciOrient {
      * D*-&gt;B.
      * <p>
      * This is Zhang's rule R3.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR3(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -397,7 +439,7 @@ public final class SvarFciOrient {
                     }
 
                     if (!graph.isAdjacentTo(A, D) ||
-                            !graph.isAdjacentTo(C, D)) {
+                        !graph.isAdjacentTo(C, D)) {
                         continue;
                     }
 
@@ -416,7 +458,8 @@ public final class SvarFciOrient {
                     graph.setEndpoint(D, B, Endpoint.ARROW);
                     this.orientSimilarPairs(graph, this.getKnowledge(), D, B, Endpoint.ARROW);
                     if (this.verbose) {
-                        this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                        String message = LogUtilsSearch.edgeOrientedMsg("Double triangle", graph.getEdge(D, B));
+                        TetradLogger.getInstance().forceLogMessage(message);
                         System.out.println(LogUtilsSearch.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
                     }
 
@@ -439,6 +482,8 @@ public final class SvarFciOrient {
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4B(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -470,6 +515,11 @@ public final class SvarFciOrient {
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
+     *
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>();
@@ -564,7 +614,8 @@ public final class SvarFciOrient {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
             if (this.verbose) {
-                this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c));
+                TetradLogger.getInstance().forceLogMessage(message);
                 System.out.println(LogUtilsSearch.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
@@ -582,7 +633,8 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
             if (this.verbose) {
-                this.logger.log("impliedOrientations", LogUtilsSearch.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+                String message = LogUtilsSearch.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c);
+                TetradLogger.getInstance().forceLogMessage(message);
                 System.out.println(LogUtilsSearch.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
@@ -610,6 +662,8 @@ public final class SvarFciOrient {
     /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
      * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -633,7 +687,8 @@ public final class SvarFciOrient {
                     if (graph.isAdjacentTo(b, c)) continue;
                     // We know u is as required: R5 applies!
 
-                    this.logger.log("colliderOrientations", LogUtilsSearch.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
+                    String message = LogUtilsSearch.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b));
+                    TetradLogger.getInstance().forceLogMessage(message);
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.TAIL);
@@ -649,6 +704,8 @@ public final class SvarFciOrient {
     /**
      * Implements Zhang's rules R6 and R7, applies them over the graph once. Orient single tails. R6: If A---Bo-*C then
      * A---B--*C. R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR6R7(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -675,7 +732,8 @@ public final class SvarFciOrient {
                     // We know A---Bo-*C: R6 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-                    this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    String message = LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b));
+                    TetradLogger.getInstance().forceLogMessage(message);
 
                     this.changeFlag = true;
                 }
@@ -683,7 +741,8 @@ public final class SvarFciOrient {
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE) {
 //                    if (graph.isAdjacentTo(a, c)) continue;
 
-                    this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    String message = LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b));
+                    TetradLogger.getInstance().forceLogMessage(message);
 
                     // We know A--oBo-*C and A,C nonadjacent: R7 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -698,6 +757,8 @@ public final class SvarFciOrient {
     /**
      * Implements Zhang's rules R8, R9, R10, applies them over the graph once. Orient arrow tails. I.e., tries R8, R9,
      * and R10 in that sequence on each Ao-&gt;C in the graph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void rulesR8R9R10(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -741,7 +802,8 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), n2, n1, Endpoint.TAIL);
             this.changeFlag = true;
 
-            this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -772,7 +834,8 @@ public final class SvarFciOrient {
             if (graph.getEndpoint(a, b) == Endpoint.TAIL) continue;
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
-            this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("R8", graph.getEdge(c, a)));
+            String message = LogUtilsSearch.edgeOrientedMsg("R8", graph.getEdge(c, a));
+            TetradLogger.getInstance().forceLogMessage(message);
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
@@ -803,7 +866,8 @@ public final class SvarFciOrient {
             if (b == c) continue;
             // We know u is as required: R9 applies!
 
-            this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("R9", graph.getEdge(c, a)));
+            String message = LogUtilsSearch.edgeOrientedMsg("R9", graph.getEdge(c, a));
+            TetradLogger.getInstance().forceLogMessage(message);
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
@@ -851,7 +915,8 @@ public final class SvarFciOrient {
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 
-                        this.logger.log("impliedOrientations", LogUtilsSearch.edgeOrientedMsg("R10", graph.getEdge(c, a)));
+                        String message = LogUtilsSearch.edgeOrientedMsg("R10", graph.getEdge(c, a));
+                        TetradLogger.getInstance().forceLogMessage(message);
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         this.changeFlag = true;
@@ -869,7 +934,7 @@ public final class SvarFciOrient {
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -893,7 +958,8 @@ public final class SvarFciOrient {
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -915,16 +981,19 @@ public final class SvarFciOrient {
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
             this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         if (verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
     }
 
 
     /**
+     * <p>Getter for the field <code>maxPathLength</code>.</p>
+     *
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
@@ -932,6 +1001,8 @@ public final class SvarFciOrient {
     }
 
     /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -944,22 +1015,36 @@ public final class SvarFciOrient {
 
     /**
      * True iff verbose output should be printed.
+     *
+     * @return a boolean
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
      * The true PAG if available. Can be null.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getTruePag() {
         return this.truePag;
     }
 
+    /**
+     * <p>Setter for the field <code>truePag</code>.</p>
+     *
+     * @param truePag a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
@@ -1028,6 +1113,12 @@ public final class SvarFciOrient {
     }
 
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
