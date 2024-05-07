@@ -521,18 +521,40 @@ public final class LvLite implements IGraphSearch {
 
         scorer.goToBookmark();
 
-        scorer.tuck(e, b);
-
-        for (Node node : colliderPath) {
-            scorer.tuck(node, e);
-        }
-
         boolean collider;
 
-        if (scorer.index(b) < scorer.index(e)) {
-            collider = false;
-        } else {
+        if (false) {
+
+            // Joe's tucking scheme:
+            for (Node node : colliderPath) {
+                scorer.tuck(node, e);
+            }
+
+            scorer.moveTo(b, scorer.index(e) + 1);
             collider = !scorer.adjacent(e, c);
+        } else {
+
+            // Bryan's alternative:
+//            tuck C before B
+//            if (E does not precede C)
+//            {
+//                if (B precedes E)
+//                {
+//                    tuck E before B
+//                }
+//                tuck E before C
+//            }
+
+            scorer.tuck(c, b);
+
+            if (!(scorer.index(e) < scorer.index(c))) {
+                if (scorer.index(b) < scorer.index(e)) {
+                    scorer.tuck(e, b);
+                }
+                scorer.tuck(e, c);
+            }
+
+            collider = !scorer.parent(e, c);
         }
 
         if (collider) {
