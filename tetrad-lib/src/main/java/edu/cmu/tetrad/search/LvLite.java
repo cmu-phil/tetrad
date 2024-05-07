@@ -547,7 +547,7 @@ public final class LvLite implements IGraphSearch {
 
             scorer.tuck(c, b);
 
-            if (!(scorer.index(e) < scorer.index(c))) {
+            if (!(scorer.index(e) > scorer.index(c))) {
                 if (scorer.index(b) < scorer.index(e)) {
                     scorer.tuck(e, b);
                 }
