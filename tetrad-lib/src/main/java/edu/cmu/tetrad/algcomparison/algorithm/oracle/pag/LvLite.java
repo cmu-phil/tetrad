@@ -4,10 +4,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -18,7 +16,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -30,9 +27,9 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the LV algorithm for learning causal structures
- * from observational data. It uses a combination of independence tests and scores to search for the best graph structure given
- * a data set and parameters.
+ * This class represents the LV-Lite algorithm, which is an implementation of the LV algorithm for learning causal
+ * structures from observational data. It uses a combination of independence tests and scores to search for the best
+ * graph structure given a data set and parameters.
  *
  * @author josephramsey
  */
@@ -63,8 +60,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * This class represents a LvLite algorithm.
      *
      * <p>
-     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a given data set and parameters. It is a subclass of the Abstract
-     * BootstrapAlgorithm class and implements the Algorithm interface.
+     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
+     * Algorithm interface.
      * </p>
      *
      * @see AbstractBootstrapAlgorithm
@@ -78,10 +76,12 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * LvLite is a class that represents a LvLite algorithm.
      *
      * <p>
-     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a given data set and parameters.
-     * It is a subclass of the AbstractBootstrapAlgorithm class and implements the Algorithm interface.
+     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
+     * Algorithm interface.
      * </p>
      *
+     * @param score The score to use.
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
@@ -92,10 +92,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     /**
      * Runs the search algorithm to find a graph structure based on a given data model and parameters.
      *
-     * @param dataModel   The data model to use for the search algorithm.
-     * @param parameters  The parameters to configure the search algorithm.
+     * @param dataModel  The data model to use for the search algorithm.
+     * @param parameters The parameters to configure the search algorithm.
      * @return The resulting graph structure.
-     * @throws IllegalArgumentException if the time lag is greater than 0 and the data model is not an instance of DataSet.
+     * @throws IllegalArgumentException if the time lag is greater than 0 and the data model is not an instance of
+     *                                  DataSet.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
