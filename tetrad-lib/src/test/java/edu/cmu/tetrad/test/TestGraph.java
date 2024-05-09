@@ -289,6 +289,65 @@ public final class TestGraph {
 
     }
 
+    /**
+     * Tests the adjustment set method.
+     */
+    @Test
+    public void testAdjustmentSet1() {
+        Graph graph = new EdgeListGraph();
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
+
+        graph.addNode(x1);
+        graph.addNode(x2);
+        graph.addNode(x3);
+        graph.addNode(x4);
+        graph.addNode(x5);
+
+        graph.addDirectedEdge(x1, x3);
+        graph.addDirectedEdge(x2, x1);
+        graph.addDirectedEdge(x4, x2);
+        graph.addDirectedEdge(x4, x3);
+
+        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2);
+
+        System.out.println(adjustmentSets);
+    }
+
+
+    /**
+     * Tests the adjustment set method.
+     */
+    @Test
+    public void testAdjustmentSet12() {
+        Graph graph = RandomGraph.randomGraph(20, 0, 60, 30, 15, 15, false);
+
+        System.out.println(graph);
+
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                Node x = graph.getNodes().get(i);
+                Node y = graph.getNodes().get(j);
+
+                List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x, y, 4, 4);
+
+                System.out.println("x " + x + " y " + y + " adjustmentSets " + adjustmentSets);
+            }
+        }
+
+
+
+        Node x1 = graph.getNodes().get(0);
+        Node x3 = graph.getNodes().get(graph.getNumNodes() - 1);
+
+        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2);
+
+        System.out.println(adjustmentSets);
+    }
+
 
     private void checkCopy(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph);

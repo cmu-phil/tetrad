@@ -2100,8 +2100,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Y).
-     *
+     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Yma
      * @param G                the input graph
      * @param x                the source node
      * @param y                the target node

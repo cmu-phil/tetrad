@@ -1676,6 +1676,51 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Checks if the given path is an m-connecting path.
+     *
+     * @param path               The path to check.
+     * @param z                  The set of nodes to check reachability against.
+     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> z, boolean allowSelectionBias) {
+        Edge edge1, edge2;
+
+        edge2 = graph.getEdge(path.get(0), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+            // algorithm can eventually find any colliders along the path that may be implied.
+            // jdramsey 2024-04-14
+            if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                if (Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                } else if (Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), z)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Detemrmines whether x and y are d-connected given z.
      *
      * @param x                  a {@link Node} object
@@ -2187,6 +2232,113 @@ public class Paths implements TetradSerializable {
      */
     public Set<Node> anteriority(Node... X) {
         return GraphUtils.anteriority(graph, X);
+    }
+
+    /**
+     * An adjustment set for a pair of nodes &lt;source, target&gt; is a set of nodes that blocks all paths from the
+     * source to the target that cannot contribute to a calculation of the total effect of the source on the target. In
+     * typical causal graphs, multiple adjustment sets may exist for a given pair of nodes. This method returns up to
+     * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt;.
+     *
+     * @param source                  The source node whose sets will be used for adjustment.
+     * @param target                  The target node whose sets will be adjusted to match the source node.
+     * @param maxNumSets              The maximum number of sets to be adjusted. If this value is less than or equal to
+     *                                0, all sets in the target node will be adjusted to match the source node.
+     * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
+     */
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint) {
+        List<List<Node>> semidirected = semidirectedPaths(source, target, -1);
+
+        if (semidirected.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<List<Node>> treks = treks(source, target, -1);
+        treks.removeAll(semidirected);
+
+        List<Set<Node>> adjustmentSets = new ArrayList<>();
+        Set<Set<Node>> tried = new HashSet<>();
+        Set<Node> lastNear = new HashSet<>();
+        boolean same = false;
+
+        for (int i = 1; i <= maxDistanceFromEndpoint; i++) {
+            Set<Node> _nearEndpoints = new HashSet<>();
+
+            // Add nodes a distance of at most i from one end or the other of each trek, along the trek.
+            // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
+            // If i = 1, we would add a, b, d, and e to the list. And so on.
+            for (int j = 1; j <= i; j++) {
+                for (List<Node> trek : treks) {
+                    if (j >= trek.size()) continue;
+
+                    Node e1 = trek.get(j);
+                    Node e2 = trek.get(trek.size() - 1 - j);
+
+                    if (e1 == source || e1 == target || e2 == source || e2 == target) {
+                        continue;
+                    }
+
+                    _nearEndpoints.add(e1);
+                    _nearEndpoints.add(e2);
+                }
+
+                if (_nearEndpoints.equals(lastNear)) {
+                    same = true;
+                }
+
+                lastNear = _nearEndpoints;
+            }
+
+            if (same) return adjustmentSets;
+            List<Node> nearEndpoints = new ArrayList<>(_nearEndpoints);
+
+            List<Set<Node>> possibleAdjustmentSets = new ArrayList<>();
+
+            // Now, using SublistGenerator, we generate all possible subsets of the nodes we just added.
+            SublistGenerator generator = new SublistGenerator(nearEndpoints.size(), nearEndpoints.size());
+            int[] choice;
+
+            while ((choice = generator.next()) != null) {
+                Set<Node> possibleAdjustmentSet = new HashSet<>();
+                for (int j : choice) {
+                    possibleAdjustmentSet.add(nearEndpoints.get(j));
+                }
+                possibleAdjustmentSets.add(possibleAdjustmentSet);
+            }
+
+            // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
+            // That is, we check if it blocks all treks from source to target that are not semi-directed
+            // without blocking any treks that are semi-directed.
+            int count = 0;
+
+            ADJ:
+            for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
+                if (tried.contains(possibleAdjustmentSet)) {
+                    continue;
+                }
+                tried.add(possibleAdjustmentSet);
+
+                for (List<Node> semi : semidirected) {
+                    if (!isMConnectingPath(semi, possibleAdjustmentSet, false)) {
+                        continue ADJ;
+                    }
+                }
+
+                for (List<Node> trek : treks) {
+                    if (isMConnectingPath(trek, possibleAdjustmentSet, false)) {
+                        continue ADJ;
+                    }
+                }
+
+                adjustmentSets.add(possibleAdjustmentSet);
+
+                if (++count >= maxNumSets) {
+                    return adjustmentSets;
+                }
+            }
+        }
+
+        return adjustmentSets;
     }
 
     /**
