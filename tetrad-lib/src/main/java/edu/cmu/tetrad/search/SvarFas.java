@@ -231,7 +231,7 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException since not implementedd.
+     * @throws UnsupportedOperationException since not implementedd.
      */
     @Override
     public long getElapsedTime() {
