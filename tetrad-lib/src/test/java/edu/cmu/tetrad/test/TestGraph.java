@@ -23,11 +23,15 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Element;
 import nu.xom.ParsingException;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -312,7 +316,7 @@ public final class TestGraph {
         graph.addDirectedEdge(x4, x2);
         graph.addDirectedEdge(x4, x3);
 
-        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2);
+        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2, 1);
 
         System.out.println(adjustmentSets);
     }
@@ -322,8 +326,10 @@ public final class TestGraph {
      * Tests the adjustment set method.
      */
     @Test
-    public void testAdjustmentSet12() {
-        Graph graph = RandomGraph.randomGraph(20, 0, 60, 30, 15, 15, false);
+    public void testAdjustmentSet2() {
+        RandomUtil.getInstance().setSeed(3848234422L);
+
+        Graph graph = RandomGraph.randomGraph(20, 0, 80, 30, 15, 15, false);
 
         System.out.println(graph);
 
@@ -332,20 +338,42 @@ public final class TestGraph {
                 Node x = graph.getNodes().get(i);
                 Node y = graph.getNodes().get(j);
 
-                List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x, y, 4, 4);
+                List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 2, 1);
+                List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 2, 2);
 
-                System.out.println("x " + x + " y " + y + " adjustmentSets " + adjustmentSets);
+                System.out.println("x " + x + " y " + y);
+                System.out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
+                System.out.println("    AdjustmentSets near target: " + adjustmentSetsNearTarget);
             }
         }
+    }
 
+    @Test
+    public void testAdjustmentSet3() {
+        Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph6 (1).txt"));
+        File _file = new File("/Users/josephramsey/Downloads/adjustment_mike_out.txt");
 
+        try (PrintWriter out = new PrintWriter(_file)) {
+            out.println(graph);
 
-        Node x1 = graph.getNodes().get(0);
-        Node x3 = graph.getNodes().get(graph.getNumNodes() - 1);
+            List<Node> graphNodes = graph.getNodes();
 
-        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2);
+            for (int i = 0; i < graphNodes.size(); i++) {
+                for (int j = 0; j < graphNodes.size(); j++) {
+                    Node x = graph.getNodes().get(i);
+                    Node y = graph.getNodes().get(j);
 
-        System.out.println(adjustmentSets);
+                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 3, 1);
+                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 3, 2);
+
+                    out.println("source = " + x + " target = " + y);
+                    out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
+                    out.println("    AdjustmentSets near target: " + adjustmentSetsNearTarget);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

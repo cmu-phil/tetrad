@@ -2245,8 +2245,10 @@ public class Paths implements TetradSerializable {
      * @param maxNumSets              The maximum number of sets to be adjusted. If this value is less than or equal to
      *                                0, all sets in the target node will be adjusted to match the source node.
      * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
+     * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
+     *                                target, 3 = near either.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint) {
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint) {
         List<List<Node>> semidirected = semidirectedPaths(source, target, -1);
 
         if (semidirected.isEmpty()) {
@@ -2258,10 +2260,10 @@ public class Paths implements TetradSerializable {
 
         List<Set<Node>> adjustmentSets = new ArrayList<>();
         Set<Set<Node>> tried = new HashSet<>();
-        Set<Node> lastNear = new HashSet<>();
-        boolean same = false;
 
-        for (int i = 1; i <= maxDistanceFromEndpoint; i++) {
+        int i = 1;
+
+        while (i <= maxDistanceFromEndpoint) {
             Set<Node> _nearEndpoints = new HashSet<>();
 
             // Add nodes a distance of at most i from one end or the other of each trek, along the trek.
@@ -2269,27 +2271,28 @@ public class Paths implements TetradSerializable {
             // If i = 1, we would add a, b, d, and e to the list. And so on.
             for (int j = 1; j <= i; j++) {
                 for (List<Node> trek : treks) {
-                    if (j >= trek.size()) continue;
-
-                    Node e1 = trek.get(j);
-                    Node e2 = trek.get(trek.size() - 1 - j);
-
-                    if (e1 == source || e1 == target || e2 == source || e2 == target) {
+                    if (j >= trek.size()) {
                         continue;
                     }
 
-                    _nearEndpoints.add(e1);
-                    _nearEndpoints.add(e2);
-                }
+                    if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
+                        Node e1 = trek.get(j);
 
-                if (_nearEndpoints.equals(lastNear)) {
-                    same = true;
-                }
+                        if (!(e1 == source || e1 == target)) {
+                            _nearEndpoints.add(e1);
+                        }
+                    }
 
-                lastNear = _nearEndpoints;
+                    if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
+                        Node e2 = trek.get(trek.size() - 1 - j);
+
+                        if (!(e2 == source || e2 == target)) {
+                            _nearEndpoints.add(e2);
+                        }
+                    }
+                }
             }
 
-            if (same) return adjustmentSets;
             List<Node> nearEndpoints = new ArrayList<>(_nearEndpoints);
 
             List<Set<Node>> possibleAdjustmentSets = new ArrayList<>();
@@ -2314,18 +2317,22 @@ public class Paths implements TetradSerializable {
             ADJ:
             for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
                 if (tried.contains(possibleAdjustmentSet)) {
+                    i++;
                     continue;
                 }
+
                 tried.add(possibleAdjustmentSet);
 
                 for (List<Node> semi : semidirected) {
                     if (!isMConnectingPath(semi, possibleAdjustmentSet, false)) {
+                        i++;
                         continue ADJ;
                     }
                 }
 
                 for (List<Node> trek : treks) {
                     if (isMConnectingPath(trek, possibleAdjustmentSet, false)) {
+                        i++;
                         continue ADJ;
                     }
                 }
@@ -2336,6 +2343,8 @@ public class Paths implements TetradSerializable {
                     return adjustmentSets;
                 }
             }
+
+            i++;
         }
 
         return adjustmentSets;

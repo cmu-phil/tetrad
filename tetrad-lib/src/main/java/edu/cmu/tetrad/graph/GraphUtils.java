@@ -1845,22 +1845,22 @@ public final class GraphUtils {
     }
 
     /**
-     * The extra-edge removal step for GFCI. This removed edges in triangles in the reference graph by looking for
-     * sepsets for edge a--b among the adjacents of a or the adjacents of b.
+     * The extra-edge removal step for GFCI. This removes edges in triangles in the CPDAG from a score search like FGES
+     * or BOSS. We look for sepsets S for edge a--c, among the adjacents of b, such that a _||_ c | S.
      *
-     * @param graph          The graph being operated on and changed.
-     * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
-     * @param nodes          The nodes in the graph.
-     * @param sepsets        A SepsetProducer that will do the sepset search operation described.
-     * @param verbose        Whether to print verbose output.
+     * @param graph   The graph being operated on and changed.
+     * @param cpdag   The reference graph, a CPDAG obtained using such an algorithm.
+     * @param nodes   The nodes in the graph.
+     * @param sepsets A SepsetProducer that will do the sepset search operation described.
+     * @param verbose Whether to print verbose output.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> adjacentNodes = new ArrayList<>(referenceCpdag.getAdjacentNodes(b));
+            List<Node> adjacentNodes = new ArrayList<>(cpdag.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -1877,8 +1877,9 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c)) {// && referenceCpdag.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
+
                     if (sepset != null) {
                         graph.removeEdge(a, c);
 
@@ -2101,6 +2102,7 @@ public final class GraphUtils {
 
     /**
      * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Yma
+     *
      * @param G                the input graph
      * @param x                the source node
      * @param y                the target node

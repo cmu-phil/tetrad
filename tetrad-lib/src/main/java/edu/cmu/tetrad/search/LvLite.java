@@ -190,9 +190,9 @@ public final class LvLite implements IGraphSearch {
                     Edge _ac = pag.getEdge(a, c);
 
                     if ((bc != null && bc.pointsTowards(c)) && ab != null && ac != null
-                        && (_bc != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ab != null && _ac != null) {
+                        && (_bc != null && _ab != null && _ac != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ab != null && _ac != null) {
                         teyssierScorer.goToBookmark();
-                        teyssierScorer.tuck(c, b);
+                        teyssierScorer.tuck(c,  b);
 
                         if (!teyssierScorer.adjacent(a, c)) {
                             toRemove.add(new Triple(a, b, c));
@@ -202,34 +202,70 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
+        List<Triple> toRemove2 = new ArrayList<>(toRemove);
+
         for (Triple triple : toRemove) {
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (pag.isAdjacentTo(a, c) && pag.isAdjacentTo(c, b)) {
-                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                    pag.removeEdge(a, c);
-                    pag.setEndpoint(c, b, Endpoint.ARROW);
+            if (pag.isAdjacentTo(a, c) && pag.isAdjacentTo(c, b) && pag.isAdjacentTo(a, b)) {
+                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+                    toRemove2.add(triple);
+                }
+            }
+        }
 
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
+        for (Triple triple : toRemove2) {
+            Node a = triple.getX();
+            Node c = triple.getZ();
+
+            pag.removeEdge(a, c);
+
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage("Removing " + a + " *-* " + c + " from PAG.");
+            }
+        }
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
+        // Copy unshielded colliders from DAG to PAG
+        for (int i = 0; i < best.size(); i++) {
+            for (int j = i + 1; j < best.size(); j++) {
+                for (int k = j + 1; k < best.size(); k++) {
+                    Node a = best.get(i);
+                    Node b = best.get(j);
+                    Node c = best.get(k);
+
+                    if (dag.isAdjacentTo(a, c) && dag.isAdjacentTo(b, c) && !dag.isAdjacentTo(a, b)
+                        && pag.isAdjacentTo(a, c) && pag.isAdjacentTo(b, c) && !pag.isAdjacentTo(a, b)
+                        && dag.getEdge(a, c).pointsTowards(c) && dag.getEdge(b, c).pointsTowards(c)) {
+                        if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
+                            pag.setEndpoint(a, c, Endpoint.ARROW);
+                            pag.setEndpoint(b, c, Endpoint.ARROW);
+
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + c + " <- " + b
+                                                                           + " from CPDAG to PAG");
+                            }
+                        }
                     }
                 }
             }
         }
 
-        for (Triple triple : toRemove) {
+        for (Triple triple : toRemove2) {
+            Node a = triple.getX();
             Node b = triple.getY();
+            Node c = triple.getZ();
 
-            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
-
-            if (nodesInTo.size() == 1) {
-                for (Node node : nodesInTo) {
-                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
+            if (pag.isAdjacentTo(c, b) && pag.isAdjacentTo(a, b)) {
+                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+                    pag.setEndpoint(c, b, Endpoint.ARROW);
+                    pag.setEndpoint(a, b, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG.");
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG.");
                     }
                 }
             }
