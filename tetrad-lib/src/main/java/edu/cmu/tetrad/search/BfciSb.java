@@ -30,15 +30,15 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
- * structure of a graphical model from observational data.
+ * The BFCI-SB (BFCI Score based) algorithm implements the IGraphSearch interface and represents a search algorithm for
+ * learning the structure of a graphical model from observational data.
  * <p>
  * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
  * Annotated Graph).
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class BfciSb implements IGraphSearch {
     /**
      * The score.
      */
@@ -94,7 +94,7 @@ public final class LvLite implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvLite(Score score) {
+    public BfciSb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -131,7 +131,6 @@ public final class LvLite implements IGraphSearch {
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(null, score);
         teyssierScorer.score(best);
-        Graph dag = teyssierScorer.getGraph(false);
         Graph cpdag = teyssierScorer.getGraph(true);
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -145,7 +144,7 @@ public final class LvLite implements IGraphSearch {
 
         fciOrient.fciOrientbk(knowledge, pag, best);
 
-        // Copy unshielded colliders from DAG to PAG
+        // Copy unshielded colliders from CPDAG to PAG
         for (int i = 0; i < best.size(); i++) {
             for (int j = i + 1; j < best.size(); j++) {
                 for (int k = j + 1; k < best.size(); k++) {
@@ -153,8 +152,11 @@ public final class LvLite implements IGraphSearch {
                     Node b = best.get(j);
                     Node c = best.get(k);
 
-                    if (dag.isAdjacentTo(a, c) && dag.isAdjacentTo(b, c) && !dag.isAdjacentTo(a, b)
-                        && dag.getEdge(a, c).pointsTowards(c) && dag.getEdge(b, c).pointsTowards(c)) {
+                    Edge ab = cpdag.getEdge(a, b);
+                    Edge bc = cpdag.getEdge(b, c);
+                    Edge ac = cpdag.getEdge(a, c);
+
+                    if (ac != null && bc != null && ab == null && ac.pointsTowards(c) && bc.pointsTowards(c)) {
                         if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
                             pag.setEndpoint(a, c, Endpoint.ARROW);
                             pag.setEndpoint(b, c, Endpoint.ARROW);
@@ -170,12 +172,44 @@ public final class LvLite implements IGraphSearch {
         }
 
         teyssierScorer.bookmark();
-
         Set<Triple> toRemove = new HashSet<>();
 
-        // Our extra collider orientation step to orient <-> edges:
+        // Do edge removal step based on triangle reasoning.
         for (int i = 0; i < best.size(); i++) {
             for (int j = 0; j < best.size(); j++) {
+                for (int k = j + 1; k < best.size(); k++) {
+                    if (i == j || i == k) continue;
+
+                    Node a = best.get(i);
+                    Node b = best.get(j);
+                    Node c = best.get(k);
+
+                    Edge ab = cpdag.getEdge(a, b);
+                    Edge bc = cpdag.getEdge(b, c);
+                    Edge ac = cpdag.getEdge(a, c);
+
+                    if ((bc != null && bc.pointsTowards(c)) && ab != null && ac != null) {
+                        teyssierScorer.goToBookmark();
+                        teyssierScorer.tuck(c, b);
+
+                        if (!teyssierScorer.adjacent(a, c)) {
+                            toRemove.add(new Triple(a, b, c));
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Triple triple : toRemove) {
+            Node a = triple.getX();
+            Node c = triple.getZ();
+            pag.removeEdge(a, c);
+        }
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
+        for (int i = 0; i < best.size(); i++) {
+            for (int j = i + 1; j < best.size(); j++) {
                 for (int k = j + 1; k < best.size(); k++) {
                     Node a = best.get(i);
                     Node b = best.get(j);
@@ -189,57 +223,8 @@ public final class LvLite implements IGraphSearch {
                     Edge _bc = pag.getEdge(b, c);
                     Edge _ac = pag.getEdge(a, c);
 
-                    if ((bc != null && bc.pointsTowards(c)) && ab != null && ac != null
-                        && (_bc != null && _ab != null && _ac != null && pag.getEndpoint(b, c) == Endpoint.ARROW) && _ab != null && _ac != null) {
-                        teyssierScorer.goToBookmark();
-                        teyssierScorer.tuck(c,  b);
-
-                        if (!teyssierScorer.adjacent(a, c)) {
-                            toRemove.add(new Triple(a, b, c));
-                        }
-                    }
-                }
-            }
-        }
-
-        List<Triple> toRemove2 = new ArrayList<>(toRemove);
-
-        for (Triple triple : toRemove) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (pag.isAdjacentTo(a, c) && pag.isAdjacentTo(c, b) && pag.isAdjacentTo(a, b)) {
-                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                    toRemove2.add(triple);
-                }
-            }
-        }
-
-        for (Triple triple : toRemove2) {
-            Node a = triple.getX();
-            Node c = triple.getZ();
-
-            pag.removeEdge(a, c);
-
-            if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("Removing " + a + " *-* " + c + " from PAG.");
-            }
-        }
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        // Copy unshielded colliders from DAG to PAG
-        for (int i = 0; i < best.size(); i++) {
-            for (int j = i + 1; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
-                    Node a = best.get(i);
-                    Node b = best.get(j);
-                    Node c = best.get(k);
-
-                    if (dag.isAdjacentTo(a, c) && dag.isAdjacentTo(b, c) && !dag.isAdjacentTo(a, b)
-                        && pag.isAdjacentTo(a, c) && pag.isAdjacentTo(b, c) && !pag.isAdjacentTo(a, b)
-                        && dag.getEdge(a, c).pointsTowards(c) && dag.getEdge(b, c).pointsTowards(c)) {
+                    if (ac != null && bc != null && ab == null && ac.pointsTowards(c) && bc.pointsTowards(c)
+                        && _ac != null && _bc != null && _ab == null) {
                         if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
                             pag.setEndpoint(a, c, Endpoint.ARROW);
                             pag.setEndpoint(b, c, Endpoint.ARROW);
@@ -249,23 +234,50 @@ public final class LvLite implements IGraphSearch {
                                                                            + " from CPDAG to PAG");
                             }
                         }
+                    } else if (ac != null && _ac == null) {
+                        boolean remove = false;
+
+                        if (toRemove.contains(new Triple(a, b, c))) {
+                            remove = true;
+                        } else if ((bc != null && bc.pointsTowards(c)) && ab != null) {
+                            teyssierScorer.goToBookmark();
+                            teyssierScorer.tuck(c, b);
+
+                            if (!teyssierScorer.adjacent(a, c)) {
+                                remove = true;
+                            }
+                        }
+
+                        if (remove) {
+                            pag.removeEdge(a, c); // just in case...
+
+                            if (_bc == null && _ab != null) {
+                                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                                    pag.setEndpoint(c, b, Endpoint.ARROW);
+                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        for (Triple triple : toRemove2) {
-            Node a = triple.getX();
+        for (Triple triple : toRemove) {
             Node b = triple.getY();
-            Node c = triple.getZ();
 
-            if (pag.isAdjacentTo(c, b) && pag.isAdjacentTo(a, b)) {
-                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                    pag.setEndpoint(c, b, Endpoint.ARROW);
-                    pag.setEndpoint(a, b, Endpoint.ARROW);
+            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
+
+            if (nodesInTo.size() == 1) {
+                for (Node node : nodesInTo) {
+                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG.");
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG.");
                     }
                 }
             }
@@ -277,9 +289,7 @@ public final class LvLite implements IGraphSearch {
             } else {
                 fciOrient.spirtesFinalOrientation(pag);
             }
-
-            fciOrient.zhangFinalOrientation(pag);
-        } while (discriminatingPathRule(pag, teyssierScorer));
+        } while (discriminatingPathRule(pag, teyssierScorer)); // score-based discriminating path rule
 
         // Optional.
         if (resolveAlmostCyclicPaths) {
@@ -305,7 +315,7 @@ public final class LvLite implements IGraphSearch {
             } while (discriminatingPathRule(pag, teyssierScorer));
         }
 
-        GraphUtils.replaceNodes(pag, this.score.getVariables());
+        pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
         return pag;
     }
 
@@ -550,9 +560,14 @@ public final class LvLite implements IGraphSearch {
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph graph, Set<Node> colliderPath, TeyssierScorer scorer) {
+    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph
+            graph, Set<Node> colliderPath, TeyssierScorer scorer) {
         if (graph.isAdjacentTo(e, c)) {
             throw new IllegalArgumentException();
+        }
+
+        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+            return false;
         }
 
         scorer.goToBookmark();
@@ -568,16 +583,17 @@ public final class LvLite implements IGraphSearch {
 //            tuck E before C
 //        }
 
+//        scorer.tuck(e, b);
+//
+//        for (Node node : colliderPath) {
+//            scorer.tuck(node, e);
+//        }
+
         scorer.tuck(c, b);
+        scorer.tuck(e, b);
+        scorer.tuck(e, c);
 
-        if (!(scorer.index(e) < scorer.index(c))) {
-            if (scorer.index(b) < scorer.index(e)) {
-                scorer.tuck(e, b);
-            }
-            scorer.tuck(e, c);
-        }
-
-        boolean collider = !scorer.parent(e, c);
+        boolean collider = !scorer.adjacent(e, c);
 
         if (collider) {
             if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
