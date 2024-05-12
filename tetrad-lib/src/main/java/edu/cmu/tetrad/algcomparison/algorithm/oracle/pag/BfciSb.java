@@ -123,10 +123,9 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        boolean aBoolean = parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE);
-        search.setDoDiscriminatingPathRule(aBoolean);
 
         // BFCI-SB
+        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
         search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
 
         // General

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * The BFCI-SB (BFCI Score based) algorithm implements the IGraphSearch interface and represents a search algorithm for
+ * The BFCI-SB (BFCI Score-based) algorithm implements the IGraphSearch interface and represents a search algorithm for
  * learning the structure of a graphical model from observational data.
  * <p>
  * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
@@ -146,23 +146,23 @@ public final class BfciSb implements IGraphSearch {
 
         // Copy unshielded colliders from CPDAG to PAG
         for (int i = 0; i < best.size(); i++) {
-            for (int j = i + 1; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
+            for (int j = 0; j < best.size(); j++) {
+                for (int k = 0; k < best.size(); k++) {
                     Node a = best.get(i);
-                    Node b = best.get(j);
-                    Node c = best.get(k);
+                    Node c = best.get(j);
+                    Node b = best.get(k);
 
                     Edge ab = cpdag.getEdge(a, b);
-                    Edge bc = cpdag.getEdge(b, c);
+                    Edge cb = cpdag.getEdge(c, b);
                     Edge ac = cpdag.getEdge(a, c);
 
-                    if (ac != null && bc != null && ab == null && ac.pointsTowards(c) && bc.pointsTowards(c)) {
-                        if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
-                            pag.setEndpoint(a, c, Endpoint.ARROW);
-                            pag.setEndpoint(b, c, Endpoint.ARROW);
+                    if (ab != null && cb != null && ac == null && ab.pointsTowards(b) && cb.pointsTowards(b)) {
+                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                            pag.setEndpoint(a, b, Endpoint.ARROW);
+                            pag.setEndpoint(c, b, Endpoint.ARROW);
 
                             if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + c + " <- " + b
+                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + b + " <- " + c
                                                                            + " from CPDAG to PAG");
                             }
                         }
@@ -172,93 +172,132 @@ public final class BfciSb implements IGraphSearch {
         }
 
         teyssierScorer.bookmark();
-        Set<Triple> toRemove = new HashSet<>();
 
-        // Do edge removal step based on triangle reasoning.
+        // Do the edge removal step based on triangle reasoning. This is the "tucking" step.
+        // We will try here to make a collider at a->b<-c and see if edge a--c goes away.
+        // If we do, we've made an unshielded collider at b and should orient it as such.
         for (int i = 0; i < best.size(); i++) {
             for (int j = 0; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
-                    if (i == j || i == k) continue;
+                for (int k = 0; k < best.size(); k++) {
+                    if (i == j || i == k || j == k) {
+                        continue;
+                    }
 
                     Node a = best.get(i);
                     Node b = best.get(j);
                     Node c = best.get(k);
 
                     Edge ab = cpdag.getEdge(a, b);
-                    Edge bc = cpdag.getEdge(b, c);
+                    Edge cb = cpdag.getEdge(c, b);
                     Edge ac = cpdag.getEdge(a, c);
 
-                    if ((bc != null && bc.pointsTowards(c)) && ab != null && ac != null) {
-                        teyssierScorer.goToBookmark();
-                        teyssierScorer.tuck(c, b);
+                    if  ((ab != null && cb != null && ac != null)) {
+                        if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) break;
 
-                        if (!teyssierScorer.adjacent(a, c)) {
-                            toRemove.add(new Triple(a, b, c));
+                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                            teyssierScorer.goToBookmark();
+
+                            boolean changed = teyssierScorer.tuck(a, b);
+                            changed = changed || teyssierScorer.tuck(c, b);
+
+                            if (!changed) {
+                                continue;
+                            }
+
+                            Edge edge = pag.getEdge(a, c);
+
+                            if (pag.removeEdge(edge)) {
+                                if (verbose) {
+                                    TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
+                                }
+                            }
+
+                            if (!pag.isDefCollider(a, b, c)) {
+                                pag.setEndpoint(a, b, Endpoint.ARROW);
+                                pag.setEndpoint(c, b, Endpoint.ARROW);
+
+                                if (verbose) {
+                                    TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG");
+                                }
+                            }
+
+                            break;
                         }
                     }
                 }
             }
         }
 
-        for (Triple triple : toRemove) {
-            Node a = triple.getX();
-            Node c = triple.getZ();
-            pag.removeEdge(a, c);
-        }
-
         pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.fciOrientbk(knowledge, pag, best);
 
+        // Copy unshielded colliders from CPDAG to PAG, for PAG adjacencies
         for (int i = 0; i < best.size(); i++) {
-            for (int j = i + 1; j < best.size(); j++) {
-                for (int k = j + 1; k < best.size(); k++) {
+            for (int j = 0; j < best.size(); j++) {
+                for (int k = 0; k < best.size(); k++) {
+                    if (i == k || j == k) {
+                        continue;
+                    }
+
                     Node a = best.get(i);
-                    Node b = best.get(j);
-                    Node c = best.get(k);
+                    Node c = best.get(j);
+                    Node b = best.get(k);
 
                     Edge ab = cpdag.getEdge(a, b);
-                    Edge bc = cpdag.getEdge(b, c);
+                    Edge cb = cpdag.getEdge(c, b);
                     Edge ac = cpdag.getEdge(a, c);
 
                     Edge _ab = pag.getEdge(a, b);
-                    Edge _bc = pag.getEdge(b, c);
+                    Edge _cb = pag.getEdge(c, b);
                     Edge _ac = pag.getEdge(a, c);
 
-                    if (ac != null && bc != null && ab == null && ac.pointsTowards(c) && bc.pointsTowards(c)
-                        && _ac != null && _bc != null && _ab == null) {
-                        if (FciOrient.isArrowheadAllowed(a, c, pag, knowledge) && FciOrient.isArrowheadAllowed(b, c, pag, knowledge)) {
-                            pag.setEndpoint(a, c, Endpoint.ARROW);
-                            pag.setEndpoint(b, c, Endpoint.ARROW);
+                    if (ab != null && cb != null && ac == null && ab.pointsTowards(b) && cb.pointsTowards(b)
+                        && _ab != null && _cb != null && _ac == null) {
+                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                            pag.setEndpoint(a, b, Endpoint.ARROW);
+                            pag.setEndpoint(c, b, Endpoint.ARROW);
 
                             if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + c + " <- " + b
+                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + b + " <- " + c
                                                                            + " from CPDAG to PAG");
                             }
                         }
-                    } else if (ac != null && _ac == null) {
-                        boolean remove = false;
 
-                        if (toRemove.contains(new Triple(a, b, c))) {
-                            remove = true;
-                        } else if ((bc != null && bc.pointsTowards(c)) && ab != null) {
-                            teyssierScorer.goToBookmark();
-                            teyssierScorer.tuck(c, b);
+                        break;
+                    } else if (_ac != null && ac != null) {
+                        if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) break;
 
-                            if (!teyssierScorer.adjacent(a, c)) {
-                                remove = true;
-                            }
-                        }
+                        // Again, we will try to make a collider at a->b<-c and see if edge a--c goes away.
+                        if (ab != null && cb != null) {
+                            if (teyssierScorer.adjacent(a, b) && teyssierScorer.adjacent(c, b) && !teyssierScorer.adjacent(a, c)) {
+                                if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                                    teyssierScorer.goToBookmark();
 
-                        if (remove) {
-                            pag.removeEdge(a, c); // just in case...
+                                    boolean changed = teyssierScorer.tuck(a, b);
+                                    changed = changed || teyssierScorer.tuck(c, b);
 
-                            if (_bc == null && _ab != null) {
-                                if (FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                                    pag.setEndpoint(c, b, Endpoint.ARROW);
-                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-* " + c + " in PAG and removing " + a + " *-* " + c + " from PAG.");
+                                    if (!changed) {
+                                        continue;
                                     }
+
+                                    Edge edge = pag.getEdge(a, c);
+
+                                    if (pag.removeEdge(edge)) {
+                                        if (verbose) {
+                                            TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
+                                        }
+                                    }
+
+                                    if (!pag.isDefCollider(a, b, c)) {
+                                        pag.setEndpoint(a, b, Endpoint.ARROW);
+                                        pag.setEndpoint(c, b, Endpoint.ARROW);
+
+                                        if (verbose) {
+                                            TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG");
+                                        }
+                                    }
+
+                                    break;
                                 }
                             }
                         }
@@ -267,9 +306,7 @@ public final class BfciSb implements IGraphSearch {
             }
         }
 
-        for (Triple triple : toRemove) {
-            Node b = triple.getY();
-
+        for (Node b : pag.getNodes()) {
             List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
 
             if (nodesInTo.size() == 1) {
