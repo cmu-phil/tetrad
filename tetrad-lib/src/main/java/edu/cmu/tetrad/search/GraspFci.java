@@ -327,6 +327,11 @@ public final class GraspFci implements IGraphSearch {
         this.seed = seed;
     }
 
+    /**
+     * Sets the depth for the search algorithm.
+     *
+     * @param depth The depth value to set for the search algorithm.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }

@@ -2247,6 +2247,7 @@ public class Paths implements TetradSerializable {
      * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
      * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
      *                                target, 3 = near either.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint) {
         List<List<Node>> semidirected = semidirectedPaths(source, target, -1);
