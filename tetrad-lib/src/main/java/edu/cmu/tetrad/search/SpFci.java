@@ -100,11 +100,7 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-    /**
-     * Represents the depth of the search. The depth indicates the maximum number of variables that can be conditioned
+     * Indicates the maximum number of variables that can be conditioned
      * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
      */
     private int depth = -1;
@@ -116,6 +112,10 @@ public final class SpFci implements IGraphSearch {
      * Setting this variable to false disables the application of the discriminating path rule.
      */
     private boolean doDiscriminatingPathRule = true;
+    /**
+     * True iff verbose output should be printed.
+     */
+    private boolean verbose;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.

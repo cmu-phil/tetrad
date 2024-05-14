@@ -75,10 +75,6 @@ public final class BFci implements IGraphSearch {
      */
     private final Score score;
     /**
-     * The sample size.
-     */
-    int sampleSize;
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -90,10 +86,6 @@ public final class BFci implements IGraphSearch {
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
     /**
      * The number of times to restart the search.
      * <p>
@@ -108,19 +100,6 @@ public final class BFci implements IGraphSearch {
     private int numStarts = 1;
     /**
      * Represents the depth of the search for the constraint-based step.
-     *
-     * <p>
-     * The depth determines how deep the search will go in exploring the possible graph structures during the
-     * constraint-based step. A depth of -1 indicates unlimited depth, meaning that the search will explore all possible
-     * structures.
-     * </p>
-     *
-     * <p>
-     * The default value for depth is -1.
-     * </p>
-     *
-     * @see BFci
-     * @see BFci#setDepth(int)
      */
     private int depth = -1;
     /**
@@ -146,6 +125,10 @@ public final class BFci implements IGraphSearch {
      * used for processing.
      */
     private int numThreads = 1;
+    /**
+     * True iff verbose output should be printed.
+     */
+    private boolean verbose;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -159,11 +142,9 @@ public final class BFci implements IGraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
-
 
     /**
      * Does the search and returns a PAG.

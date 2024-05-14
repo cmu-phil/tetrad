@@ -114,7 +114,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));
-        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
@@ -196,9 +195,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // General
         params.add(Params.TIME_LAG);
-
         params.add(Params.SEED);
-
         params.add(Params.VERBOSE);
 
         return params;

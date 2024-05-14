@@ -91,10 +91,6 @@ public final class GFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * Whether verbose output should be printed.
-     */
-    private boolean verbose;
-    /**
      * The print stream used for output.
      */
     private PrintStream out = System.out;
@@ -114,7 +110,10 @@ public final class GFci implements IGraphSearch {
      * The number of threads to use in the search. Must be at least 1.
      */
     private int numThreads = 1;
-
+    /**
+     * Whether verbose output should be printed.
+     */
+    private boolean verbose;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -129,7 +128,6 @@ public final class GFci implements IGraphSearch {
         this.score = score;
         this.independenceTest = test;
     }
-
 
     /**
      * Runs the graph and returns the search PAG.

@@ -79,10 +79,6 @@ public final class GraspFci implements IGraphSearch {
      */
     private int maxPathLength = -1;
     /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-    /**
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
@@ -107,10 +103,6 @@ public final class GraspFci implements IGraphSearch {
      */
     private boolean ordered = false;
     /**
-     * The depth for GRaSP.
-     */
-    private int depth = -1;
-    /**
      * The depth for singular variables.
      */
     private int uncoveredDepth = 1;
@@ -119,12 +111,20 @@ public final class GraspFci implements IGraphSearch {
      */
     private int nonSingularDepth = 1;
     /**
+     * The depth for sepsets.
+     */
+    private int depth = -1;
+    /**
      * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
      * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
      *
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
+    /**
+     * True iff verbose output should be printed.
+     */
+    private boolean verbose;
 
     /**
      * Constructs a new GraspFci object.
@@ -165,8 +165,7 @@ public final class GraspFci implements IGraphSearch {
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
-        int graspDepth = 3;
-        alg.setDepth(graspDepth);
+        alg.setDepth(3);
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
@@ -185,7 +184,7 @@ public final class GraspFci implements IGraphSearch {
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
@@ -252,15 +251,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
-    }
-
-    /**
-     * Sets the depth for GRaSP.
-     *
-     * @param depth The depth.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 
     /**
@@ -335,5 +325,9 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }
