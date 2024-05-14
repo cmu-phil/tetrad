@@ -71,10 +71,6 @@ public final class GFci implements IGraphSearch {
      */
     private final IndependenceTest independenceTest;
     /**
-     * The logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
      * The score used in search.
      */
     private final Score score;
@@ -111,20 +107,13 @@ public final class GFci implements IGraphSearch {
      */
     private boolean doDiscriminatingPathRule = true;
     /**
-     * The depth of the search for the possible m-sep search.
+     * The depth for independence testing.
      */
     private int depth = -1;
     /**
      * The number of threads to use in the search. Must be at least 1.
      */
     private int numThreads = 1;
-    /**
-     * Determines whether almost cyclic paths should be resolved.
-     * If true, the algorithm will attempt to break almost cyclic paths by removing one edge.
-     * If false, almost cyclic paths will be treated as genuine causal relationships.
-     * The default value is false.
-     */
-    private boolean resolveAlmostCyclicPaths;
 
 
     /**
@@ -168,8 +157,6 @@ public final class GFci implements IGraphSearch {
         graph = fges.search();
 
         Graph referenceDag = new EdgeListGraph(graph);
-
-        // GFCI extra edge removal step...
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
@@ -178,8 +165,6 @@ public final class GFci implements IGraphSearch {
             sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         }
 
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
@@ -187,24 +172,10 @@ public final class GFci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
-
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-        }
 
         return graph;
     }
@@ -315,14 +286,6 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the possible m-sep search should be done.
-     *
-     * @param possibleMsepSearchDone True, if so.
-     */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-    }
-
-    /**
      * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
@@ -341,14 +304,5 @@ public final class GFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
-    }
-
-    /**
-     * Sets the flag to resolve almost cyclic paths.
-     *
-     * @param resolveAlmostCyclicPaths true if almost cyclic paths should be resolved, false otherwise
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

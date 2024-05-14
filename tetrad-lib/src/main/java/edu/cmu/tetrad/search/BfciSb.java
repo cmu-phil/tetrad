@@ -82,10 +82,6 @@ public final class BfciSb implements IGraphSearch {
      * {@link #setDoDiscriminatingPathRule(boolean)} method.
      */
     private boolean doDiscriminatingPathRule = false;
-    /**
-     * Determines whether the search algorithm should resolve almost cyclic paths.
-     */
-    private boolean resolveAlmostCyclicPaths = true;
 
     /**
      * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
@@ -144,53 +140,63 @@ public final class BfciSb implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
 
-        TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
+        doRequiredOrientations(fciOrient, pag, best);
+        copyUnshieldedColliders(best, pag, cpdag);
+        tryRemovingEdgesAndOrienting(best, pag, cpdag, teyssierScorer);
+        reorientWithCircles(pag);
+        doRequiredOrientations(fciOrient, pag, best);
+        scoreBasedGfciR0(best, cpdag, pag, teyssierScorer);
+        removeNonRequiredSingleArrows(pag);
 
-        fciOrient.fciOrientbk(knowledge, pag, best);
+        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
 
-        TetradLogger.getInstance().forceLogMessage("\nCopy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG:\n");
+        do {
+            if (completeRuleSetUsed) {
+                fciOrient.zhangFinalOrientation(pag);
+            } else {
+                fciOrient.spirtesFinalOrientation(pag);
+            }
+        } while (discriminatingPathRule(pag, teyssierScorer)); // score-based discriminating path rule
 
-        for (Node b : best) {
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = 0; j < best.size(); j++) {
-                    if (i == j) {
+        pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
+        return pag;
+    }
+
+    private void removeNonRequiredSingleArrows(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
+
+        for (Node b : pag.getNodes()) {
+            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
+
+            if (nodesInTo.size() == 1) {
+                for (Node node : nodesInTo) {
+                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
                         continue;
                     }
 
-                    Node a = best.get(i);
-                    Node c = best.get(j);
+                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
 
-                    if (a == b || b == c) {
-                        continue;
-                    }
-
-                    if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) continue;
-
-                    Edge ab = cpdag.getEdge(a, b);
-                    Edge cb = cpdag.getEdge(c, b);
-                    Edge ac = cpdag.getEdge(a, c);
-
-                    Edge _ab = pag.getEdge(a, b);
-                    Edge _cb = pag.getEdge(c, b);
-                    Edge _ac = pag.getEdge(a, c);
-
-                    if (ab != null && cb != null && ac == null && ab.pointsTowards(b) && cb.pointsTowards(b)
-                        && _ab != null && _cb != null && _ac == null) {
-                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                            pag.setEndpoint(a, b, Endpoint.ARROW);
-                            pag.setEndpoint(c, b, Endpoint.ARROW);
-
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(
-                                        "Copying unshielded collider " + a + " -> " + b + " <- " + c + " from CPDAG to PAG");
-                            }
-                        }
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
                     }
                 }
             }
         }
+    }
 
-        TetradLogger.getInstance().forceLogMessage("\nTry orienting a bidirected edge b <-> c and removing an edge a*-*c:\n");
+    private static void reorientWithCircles(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+        pag.reorientAllWith(Endpoint.CIRCLE);
+    }
+
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
+    }
+
+    private void tryRemovingEdgesAndOrienting(List<Node> best, Graph pag, Graph cpdag, TeyssierScorer teyssierScorer) {
+        TetradLogger.getInstance().forceLogMessage("\nTry removing an edge a*-*c and orienting a bidirected edge b <-> c:\n");
 
         for (Node b : best) {
             for (int i = 0; i < best.size(); i++) {
@@ -233,10 +239,10 @@ public final class BfciSb implements IGraphSearch {
                                 }
 
                                 if (!pag.isDefCollider(a, b, c)) {
-                                    pag.setEndpoint(c, b, Endpoint.ARROW);
+                                    pag.setEndpoint(a, b, Endpoint.ARROW);
 
                                     if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG");
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
                                     }
                                 }
                             }
@@ -245,19 +251,57 @@ public final class BfciSb implements IGraphSearch {
                 }
             }
         }
+    }
 
-        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+    private void copyUnshieldedColliders(List<Node> best, Graph pag, Graph cpdag) {
+        TetradLogger.getInstance().forceLogMessage("\nCopy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG:\n");
 
-        pag.reorientAllWith(Endpoint.CIRCLE);
+        for (Node b : best) {
+            for (int i = 0; i < best.size(); i++) {
+                for (int j = 0; j < best.size(); j++) {
+                    if (i == j) {
+                        continue;
+                    }
 
-        TetradLogger.getInstance().forceLogMessage("\nOrient required edges again in PAG:\n");
+                    Node a = best.get(i);
+                    Node c = best.get(j);
 
-        fciOrient.fciOrientbk(knowledge, pag, best);
+                    if (a == b || b == c) {
+                        continue;
+                    }
 
+                    if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) continue;
+
+                    Edge ab = cpdag.getEdge(a, b);
+                    Edge cb = cpdag.getEdge(c, b);
+                    Edge ac = cpdag.getEdge(a, c);
+
+                    Edge _ab = pag.getEdge(a, b);
+                    Edge _cb = pag.getEdge(c, b);
+                    Edge _ac = pag.getEdge(a, c);
+
+                    if (ab != null && cb != null && ac == null && ab.pointsTowards(b) && cb.pointsTowards(b)
+                        && _ab != null && _cb != null && _ac == null) {
+                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                            pag.setEndpoint(a, b, Endpoint.ARROW);
+                            pag.setEndpoint(c, b, Endpoint.ARROW);
+
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage(
+                                        "Copying unshielded collider " + a + " -> " + b + " <- " + c + " from CPDAG to PAG");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void scoreBasedGfciR0(List<Node> best, Graph cpdag, Graph pag, TeyssierScorer teyssierScorer) {
         TetradLogger.getInstance().forceLogMessage("\nGFCI R0 step (score-based):");
         TetradLogger.getInstance().forceLogMessage("\tIn tandem now:");
-        TetradLogger.getInstance().forceLogMessage("\t\t* Copying unshielded colliders a *-> b <-* c from CPDAG to PAG");
-        TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try orienting a bidirected edge b <-> c and removing an edge a*-*c\n");
+        TetradLogger.getInstance().forceLogMessage("\t\t* Try copying unshielded colliders a *-> b <-* c from CPDAG to PAG");
+        TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try removing an edge a*-*c and orienting a bidirected edge b <-> c\n");
 
         for (Node b : best) {
             for (int i = 0; i < best.size(); i++) {
@@ -318,10 +362,10 @@ public final class BfciSb implements IGraphSearch {
                                     }
 
                                     if (!pag.isDefCollider(a, b, c)) {
-                                        pag.setEndpoint(c, b, Endpoint.ARROW);
+                                        pag.setEndpoint(a, b, Endpoint.ARROW);
 
                                         if (verbose) {
-                                            TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " <-* " + c + " in PAG");
+                                            TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
                                         }
                                     }
                                 }
@@ -331,61 +375,6 @@ public final class BfciSb implements IGraphSearch {
                 }
             }
         }
-
-        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
-
-        for (Node b : pag.getNodes()) {
-            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
-
-            if (nodesInTo.size() == 1) {
-                for (Node node : nodesInTo) {
-                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
-                    }
-                }
-            }
-        }
-
-        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
-
-        do {
-            if (completeRuleSetUsed) {
-                fciOrient.zhangFinalOrientation(pag);
-            } else {
-                fciOrient.spirtesFinalOrientation(pag);
-            }
-        } while (discriminatingPathRule(pag, teyssierScorer)); // score-based discriminating path rule
-
-        // Optional.
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : pag.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (pag.paths().existsDirectedPath(x, y)) {
-                        pag.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (pag.paths().existsDirectedPath(y, x)) {
-                        pag.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-
-            TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
-
-            do {
-                if (completeRuleSetUsed) {
-                    fciOrient.zhangFinalOrientation(pag);
-                } else {
-                    fciOrient.spirtesFinalOrientation(pag);
-                }
-            } while (discriminatingPathRule(pag, teyssierScorer));
-        }
-
-        pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
-        return pag;
     }
 
 
@@ -451,15 +440,6 @@ public final class BfciSb implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
-     * Sets whether the search algorithm should resolve almost cyclic paths.
-     *
-     * @param resolveAlmostCyclicPaths true to resolve almost cyclic paths, false otherwise
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 
     /**
@@ -632,9 +612,6 @@ public final class BfciSb implements IGraphSearch {
      */
     private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph
             graph, Set<Node> colliderPath, TeyssierScorer scorer) {
-        if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException();
-        }
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
             return false;
@@ -653,17 +630,11 @@ public final class BfciSb implements IGraphSearch {
 //            tuck E before C
 //        }
 
-//        scorer.tuck(e, b);
-//
-//        for (Node node : colliderPath) {
-//            scorer.tuck(node, e);
-//        }
-
         scorer.tuck(c, b);
         scorer.tuck(e, b);
         scorer.tuck(e, c);
 
-        boolean collider = !scorer.adjacent(e, c);
+        boolean collider = !scorer.parent(e, c);
 
         if (collider) {
             if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {

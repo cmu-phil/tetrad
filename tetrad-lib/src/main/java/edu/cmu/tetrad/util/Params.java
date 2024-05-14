@@ -887,11 +887,6 @@ public final class Params {
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
 
-    /**
-     * Constant <code>THRESHOLD_LV_LITE = "thresholdLvLite"</code>
-     */
-    public static final String THRESHOLD_LV_LITE = "thresholdLvLite";
-
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
@@ -947,10 +942,6 @@ public final class Params {
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";
-    /**
-     * Constant <code>RESOLVE_ALMOST_CYCLIC_PATHS="resolveAlmostCyclicPaths"</code>
-     */
-    public static String RESOLVE_ALMOST_CYCLIC_PATHS = "resolveAlmostCyclicPaths";
 
     private Params() {
     }

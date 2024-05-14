@@ -27,9 +27,9 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the LV algorithm for learning causal
- * structures from observational data. It uses a combination of independence tests and scores to search for the best
- * graph structure given a data set and parameters.
+ * This class represents the BFCI-SB algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
+ * afterward.
  *
  * @author josephramsey
  */
@@ -126,7 +126,6 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // BFCI-SB
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -186,10 +185,6 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DEPTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-
-        // LV-Lite
-        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
-
 
         // General
         params.add(Params.TIME_LAG);

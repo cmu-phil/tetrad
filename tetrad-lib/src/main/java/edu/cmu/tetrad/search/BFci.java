@@ -146,14 +146,6 @@ public final class BFci implements IGraphSearch {
      * used for processing.
      */
     private int numThreads = 1;
-    /**
-     * Determines whether or not almost cyclic paths should be resolved during the graph search.
-     *
-     * Almost cyclic paths are paths that are almost cycles but have a single additional edge
-     * that prevents them from being cycles. Resolving these paths involves determining if the
-     * additional edge should be included or not.
-     */
-    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -192,7 +184,6 @@ public final class BFci implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
         }
 
-        // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
@@ -203,9 +194,6 @@ public final class BFci implements IGraphSearch {
         Graph graph = alg.search();
 
         Graph referenceDag = new EdgeListGraph(graph);
-
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
@@ -221,29 +209,11 @@ public final class BFci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
-
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-        }
-
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-
-//        graph = GraphTransforms.dagToPag(graph);
-
         return graph;
     }
 
@@ -352,14 +322,5 @@ public final class BFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
-    }
-
-    /**
-     * Sets whether almost cyclic paths should be resolved during the search.
-     *
-     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

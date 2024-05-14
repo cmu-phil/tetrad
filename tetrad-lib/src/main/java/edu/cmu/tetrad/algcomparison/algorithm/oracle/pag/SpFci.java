@@ -112,7 +112,6 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Object obj = parameters.get(Params.PRINT_STREAM);
@@ -169,7 +168,6 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);

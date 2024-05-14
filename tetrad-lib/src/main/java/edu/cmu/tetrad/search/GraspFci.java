@@ -63,10 +63,6 @@ public final class GraspFci implements IGraphSearch {
      */
     private final IndependenceTest independenceTest;
     /**
-     * The logger to use.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
      * The score.
      */
     private final Score score;
@@ -129,10 +125,6 @@ public final class GraspFci implements IGraphSearch {
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
-    /**
-     * Indicates whether almost cyclic paths should be resolved during the search.
-     */
-    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructs a new GraspFci object.
@@ -166,7 +158,6 @@ public final class GraspFci implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
-        // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
         alg.setSeed(seed);
@@ -189,8 +180,6 @@ public final class GraspFci implements IGraphSearch {
 
         Graph referenceDag = new EdgeListGraph(graph);
 
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
@@ -206,29 +195,12 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-        }
-
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-
-//        graph = GraphTransforms.dagToPag(graph);
-
         return graph;
     }
 
@@ -363,14 +335,5 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
-    }
-
-    /**
-     * Sets whether to resolve almost cyclic paths in the search.
-     *
-     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
