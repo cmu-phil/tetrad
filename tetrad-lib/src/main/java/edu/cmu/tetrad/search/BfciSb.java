@@ -98,6 +98,11 @@ public final class BfciSb implements IGraphSearch {
         this.score = score;
     }
 
+    private static void reorientWithCircles(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+        pag.reorientAllWith(Endpoint.CIRCLE);
+    }
+
     /**
      * Run the search and return s a PAG.
      *
@@ -184,11 +189,6 @@ public final class BfciSb implements IGraphSearch {
         }
     }
 
-    private static void reorientWithCircles(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
         TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
 
@@ -212,7 +212,7 @@ public final class BfciSb implements IGraphSearch {
                         continue;
                     }
 
-                    if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(c, b) == Endpoint.ARROW) continue;
+                    if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
 
                     Edge ab = cpdag.getEdge(a, b);
                     Edge cb = cpdag.getEdge(c, b);
@@ -220,8 +220,10 @@ public final class BfciSb implements IGraphSearch {
 
                     Edge _cb = pag.getEdge(c, b);
 
-                    if (ab != null && cb != null && ac != null && _cb != null && _cb.pointsTowards(c)) {
-                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
+                    if (ab != null && cb != null && ac != null) {
+                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
+
+                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
                             teyssierScorer.goToBookmark();
                             boolean changed = teyssierScorer.tuck(c, b);
 
@@ -339,34 +341,31 @@ public final class BfciSb implements IGraphSearch {
                                                                            + " from CPDAG to PAG");
                             }
                         }
-                    } else if (_ac != null && ac != null) {
-                        if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(c, b) == Endpoint.ARROW) continue;
+                    } else if (ac != null && ab != null && cb != null) {
+                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
 
-                        // Again, we will try to make a collider at a->b<-c and see if edge a--c goes away.
-                        if (ab != null && cb != null && _cb != null && _cb.pointsTowards(c)) {
-                            if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                                teyssierScorer.goToBookmark();
-                                boolean changed = teyssierScorer.tuck(c, b);
+                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+                            teyssierScorer.goToBookmark();
+                            boolean changed = teyssierScorer.tuck(c, b);
 
-                                if (!changed) {
-                                    continue;
+                            if (!changed) {
+                                continue;
+                            }
+
+                            if (!teyssierScorer.adjacent(a, c)) {
+                                Edge edge = pag.getEdge(a, c);
+
+                                if (pag.removeEdge(edge)) {
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
+                                    }
                                 }
 
-                                if (!teyssierScorer.adjacent(a, c)) {
-                                    Edge edge = pag.getEdge(a, c);
+                                if (!pag.isDefCollider(a, b, c)) {
+                                    pag.setEndpoint(a, b, Endpoint.ARROW);
 
-                                    if (pag.removeEdge(edge)) {
-                                        if (verbose) {
-                                            TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
-                                        }
-                                    }
-
-                                    if (!pag.isDefCollider(a, b, c)) {
-                                        pag.setEndpoint(a, b, Endpoint.ARROW);
-
-                                        if (verbose) {
-                                            TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
-                                        }
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
                                     }
                                 }
                             }
