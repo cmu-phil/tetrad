@@ -37,6 +37,7 @@ import java.util.*;
  * Annotated Graph).
  *
  * @author josephramsey
+ * @author bryanandrews
  */
 public final class BfciSb implements IGraphSearch {
     /**
@@ -51,10 +52,6 @@ public final class BfciSb implements IGraphSearch {
      * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
     /**
      * The number of starts for GRaSP.
      */
@@ -72,7 +69,7 @@ public final class BfciSb implements IGraphSearch {
      */
     private boolean useBes;
     /**
-     * This variable represents whether the discriminating path rule is used in the LvLite class.
+     * This variable represents whether the discriminating path rule is used in the BFCI-SB class.
      * <p>
      * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
      * considers discriminating paths when searching for patterns in the data.
@@ -81,10 +78,14 @@ public final class BfciSb implements IGraphSearch {
      * To enable the use of the discriminating path rule, set the value of this variable to true using the
      * {@link #setDoDiscriminatingPathRule(boolean)} method.
      */
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathRule = true;
+    /**
+     * True iff verbose output should be printed.
+     */
+    private boolean verbose;
 
     /**
-     * LvLite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
+     * BFCI-SB constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
      * object.
      *
      * @param score The Score object to be used for scoring DAGs.
@@ -96,11 +97,6 @@ public final class BfciSb implements IGraphSearch {
         }
 
         this.score = score;
-    }
-
-    private static void reorientWithCircles(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
-        pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
     /**
@@ -134,7 +130,6 @@ public final class BfciSb implements IGraphSearch {
         teyssierScorer.score(best);
         Graph cpdag = teyssierScorer.getGraph(true);
         Graph pag = new EdgeListGraph(cpdag);
-        pag.reorientAllWith(Endpoint.CIRCLE);
 
         teyssierScorer.bookmark();
 
@@ -142,9 +137,11 @@ public final class BfciSb implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
-        fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setVerbose(verbose);
 
+        // The following steps constitute the algorithm.
+        reorientWithCircles(pag);
         doRequiredOrientations(fciOrient, pag, best);
         copyUnshieldedColliders(best, pag, cpdag);
         tryRemovingEdgesAndOrienting(best, pag, cpdag, teyssierScorer);
@@ -152,109 +149,43 @@ public final class BfciSb implements IGraphSearch {
         doRequiredOrientations(fciOrient, pag, best);
         scoreBasedGfciR0(best, cpdag, pag, teyssierScorer);
         removeNonRequiredSingleArrows(pag);
-
-        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
-
-        do {
-            if (completeRuleSetUsed) {
-                fciOrient.zhangFinalOrientation(pag);
-            } else {
-                fciOrient.spirtesFinalOrientation(pag);
-            }
-        } while (discriminatingPathRule(pag, teyssierScorer)); // score-based discriminating path rule
+        finalOrientation(fciOrient, pag, teyssierScorer);
 
         pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
         return pag;
     }
 
-    private void removeNonRequiredSingleArrows(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
-
-        for (Node b : pag.getNodes()) {
-            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
-
-            if (nodesInTo.size() == 1) {
-                for (Node node : nodesInTo) {
-                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
-                        continue;
-                    }
-
-                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
-                    }
-                }
-            }
-        }
+    /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in
+     * the given Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag The Graph to be reoriented.
+     */
+    private static void reorientWithCircles(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+        pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
+    /**
+     * Orient required edges in PAG.
+     *
+     * @param fciOrient The FciOrient object used for orienting the edges.
+     * @param pag The Graph representing the PAG.
+     * @param best The list of Node objects representing the best nodes.
+     */
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
         TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
 
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
-    private void tryRemovingEdgesAndOrienting(List<Node> best, Graph pag, Graph cpdag, TeyssierScorer teyssierScorer) {
-        TetradLogger.getInstance().forceLogMessage("\nTry removing an edge a*-*c and orienting a bidirected edge b <-> c:\n");
-
-        for (Node b : best) {
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = 0; j < best.size(); j++) {
-                    if (i == j) {
-                        continue;
-                    }
-
-                    Node a = best.get(i);
-                    Node c = best.get(j);
-
-                    if (a == b || b == c) {
-                        continue;
-                    }
-
-                    if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
-
-                    Edge ab = cpdag.getEdge(a, b);
-                    Edge cb = cpdag.getEdge(c, b);
-                    Edge ac = cpdag.getEdge(a, c);
-
-                    Edge _cb = pag.getEdge(c, b);
-
-                    if (ab != null && cb != null && ac != null) {
-                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
-
-                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                            teyssierScorer.goToBookmark();
-                            boolean changed = teyssierScorer.tuck(c, b);
-
-                            if (!changed) {
-                                continue;
-                            }
-
-                            if (!teyssierScorer.adjacent(a, c)) {
-                                Edge edge = pag.getEdge(a, c);
-
-                                if (pag.removeEdge(edge)) {
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
-                                    }
-                                }
-
-                                if (!pag.isDefCollider(a, b, c)) {
-                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * Copy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG.
+     *
+     * @param best The list of nodes containing the best nodes.
+     * @param pag The PAG graph.
+     * @param cpdag The CPDAG graph.
+     */
     private void copyUnshieldedColliders(List<Node> best, Graph pag, Graph cpdag) {
         TetradLogger.getInstance().forceLogMessage("\nCopy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG:\n");
 
@@ -299,9 +230,86 @@ public final class BfciSb implements IGraphSearch {
         }
     }
 
+    /**
+     * Tries removing an edge a*-*c and orient a *-> b.
+     *
+     * @param best List of nodes representing the "best" nodes.
+     * @param pag The graph representing the Partial Ancestral Graph (PAG).
+     * @param cpdag The graph representing the Completed Partially Directed Acyclic Graph (CPDAG).
+     * @param teyssierScorer The TeyssierScorer instance used for scoring.
+     */
+    private void tryRemovingEdgesAndOrienting(List<Node> best, Graph pag, Graph cpdag, TeyssierScorer teyssierScorer) {
+        TetradLogger.getInstance().forceLogMessage("\nTry removing an edge a*-*c and orient a *-> b:\n");
+
+        for (Node b : best) {
+            for (int i = 0; i < best.size(); i++) {
+                for (int j = 0; j < best.size(); j++) {
+                    if (i == j) {
+                        continue;
+                    }
+
+                    Node a = best.get(i);
+                    Node c = best.get(j);
+
+                    if (a == b || b == c) {
+                        continue;
+                    }
+
+                    if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
+
+                    Edge ab = cpdag.getEdge(a, b);
+                    Edge cb = cpdag.getEdge(c, b);
+                    Edge ac = cpdag.getEdge(a, c);
+
+                    Edge _cb = pag.getEdge(c, b);
+
+                    if (ab != null && cb != null && ac != null) {
+                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW)
+                            continue;
+
+                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
+                            teyssierScorer.goToBookmark();
+                            boolean changed = teyssierScorer.tuck(c, b);
+
+                            if (!changed) {
+                                continue;
+                            }
+
+                            if (!teyssierScorer.adjacent(a, c)) {
+                                Edge edge = pag.getEdge(a, c);
+
+                                if (pag.removeEdge(edge)) {
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
+                                    }
+                                }
+
+                                if (pag.getEndpoint(a, b) != Endpoint.ARROW) {
+                                    pag.setEndpoint(a, b, Endpoint.ARROW);
+
+                                    if (verbose) {
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Performs the score-based GFCI R0 step.
+     *
+     * @param best the list of nodes to consider
+     * @param cpdag the CPDAG graph
+     * @param pag the PAG graph
+     * @param teyssierScorer the TeyssierScorer object
+     */
     private void scoreBasedGfciR0(List<Node> best, Graph cpdag, Graph pag, TeyssierScorer teyssierScorer) {
         TetradLogger.getInstance().forceLogMessage("\nGFCI R0 step (score-based):");
-        TetradLogger.getInstance().forceLogMessage("\tIn tandem now:");
+        TetradLogger.getInstance().forceLogMessage("\tIn tandem:");
         TetradLogger.getInstance().forceLogMessage("\t\t* Try copying unshielded colliders a *-> b <-* c from CPDAG to PAG");
         TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try removing an edge a*-*c and orienting a bidirected edge b <-> c\n");
 
@@ -342,7 +350,8 @@ public final class BfciSb implements IGraphSearch {
                             }
                         }
                     } else if (ac != null && ab != null && cb != null) {
-                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
+                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW)
+                            continue;
 
                         if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
                             teyssierScorer.goToBookmark();
@@ -361,7 +370,7 @@ public final class BfciSb implements IGraphSearch {
                                     }
                                 }
 
-                                if (!pag.isDefCollider(a, b, c)) {
+                                if (pag.getEndpoint(a, b) != Endpoint.ARROW) {
                                     pag.setEndpoint(a, b, Endpoint.ARROW);
 
                                     if (verbose) {
@@ -376,6 +385,53 @@ public final class BfciSb implements IGraphSearch {
         }
     }
 
+    /**
+     * Removes non-required single arrows in a graph. For each node b, if there is only
+     * one directed edge *-> b, it reorients the edge as *-o b. Uses the knowledge object
+     * to determine if the reorientation is required or forbidden.
+     *
+     * @param pag The graph to remove non-required single arrows from.
+     */
+    private void removeNonRequiredSingleArrows(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
+
+        for (Node b : pag.getNodes()) {
+            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
+
+            if (nodesInTo.size() == 1) {
+                for (Node node : nodesInTo) {
+                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
+                        continue;
+                    }
+
+                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and TeyssierScorer object.
+     *
+     * @param fciOrient       The FciOrient object used to determine the final orientation.
+     * @param pag             The Graph object for which the final orientation is determined.
+     * @param teyssierScorer  The TeyssierScorer object used in the score-based discriminating path rule.
+     */
+    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer teyssierScorer) {
+        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
+
+        do {
+            if (completeRuleSetUsed) {
+                fciOrient.zhangFinalOrientation(pag);
+            } else {
+                fciOrient.spirtesFinalOrientation(pag);
+            }
+        } while (discriminatingPathRule(pag, teyssierScorer)); // Score-based discriminating path rule
+    }
 
     /**
      * Sets the knowledge used in search.
@@ -617,18 +673,6 @@ public final class BfciSb implements IGraphSearch {
         }
 
         scorer.goToBookmark();
-
-        // Bryan's tucking scheme:
-//        tuck C before B
-//        if (E does not precede C)
-//        {
-//            if (B precedes E)
-//            {
-//                tuck E before B
-//            }
-//            tuck E before C
-//        }
-
         scorer.tuck(c, b);
         scorer.tuck(e, b);
         scorer.tuck(e, c);
