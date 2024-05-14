@@ -288,7 +288,7 @@ public final class BfciSb implements IGraphSearch {
                                     pag.setEndpoint(a, b, Endpoint.ARROW);
 
                                     if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " in PAG");
                                     }
                                 }
                             }
@@ -311,7 +311,7 @@ public final class BfciSb implements IGraphSearch {
         TetradLogger.getInstance().forceLogMessage("\nGFCI R0 step (score-based):");
         TetradLogger.getInstance().forceLogMessage("\tIn tandem:");
         TetradLogger.getInstance().forceLogMessage("\t\t* Try copying unshielded colliders a *-> b <-* c from CPDAG to PAG");
-        TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try removing an edge a*-*c and orienting a bidirected edge b <-> c\n");
+        TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try removing an edge a*-*c and orienting a *-> b\n");
 
         for (Node b : best) {
             for (int i = 0; i < best.size(); i++) {
@@ -374,7 +374,7 @@ public final class BfciSb implements IGraphSearch {
                                     pag.setEndpoint(a, b, Endpoint.ARROW);
 
                                     if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + b + " <-> " + c + " in PAG");
+                                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " in PAG");
                                     }
                                 }
                             }
