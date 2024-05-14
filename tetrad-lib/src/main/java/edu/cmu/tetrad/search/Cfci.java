@@ -166,8 +166,8 @@ public final class Cfci implements IGraphSearch {
 
         // Step CI D. (Zhang's step F4.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsMaxP(this.graph, this.independenceTest,
-                new SepsetMap(), this.depth));
+        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(this.graph, this.independenceTest,
+                new SepsetMap(), this.depth, knowledge));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);

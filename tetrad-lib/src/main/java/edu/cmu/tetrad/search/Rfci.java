@@ -186,8 +186,7 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-//        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-        FciOrient orient = new FciOrient(new SepsetsMaxP(graph, this.independenceTest, null, this.maxPathLength));
+        FciOrient orient = new FciOrient(new SepsetsGreedy(graph, this.independenceTest, null, this.maxPathLength, knowledge));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
