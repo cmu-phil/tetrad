@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Element;
 import nu.xom.ParsingException;
@@ -316,7 +315,7 @@ public final class TestGraph {
         graph.addDirectedEdge(x4, x2);
         graph.addDirectedEdge(x4, x3);
 
-        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2, 1);
+        List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2, 1, 6);
 
         System.out.println(adjustmentSets);
     }
@@ -338,8 +337,8 @@ public final class TestGraph {
                 Node x = graph.getNodes().get(i);
                 Node y = graph.getNodes().get(j);
 
-                List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 2, 1);
-                List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 2, 2);
+                List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 2, 1, 6);
+                List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 2, 2, 6);
 
                 System.out.println("x " + x + " y " + y);
                 System.out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
@@ -354,6 +353,10 @@ public final class TestGraph {
         File _file = new File("/Users/josephramsey/Downloads/adjustment_mike_out.txt");
 
         try (PrintWriter out = new PrintWriter(_file)) {
+            long start = System.currentTimeMillis();
+
+            out.println(new Date());
+            out.println();
             out.println(graph);
 
             List<Node> graphNodes = graph.getNodes();
@@ -363,14 +366,17 @@ public final class TestGraph {
                     Node x = graph.getNodes().get(i);
                     Node y = graph.getNodes().get(j);
 
-                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 3, 1);
-                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 3, 2);
+                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 4, 4, 1, 8);
+                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 4, 4, 2, 8);
 
                     out.println("source = " + x + " target = " + y);
                     out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
                     out.println("    AdjustmentSets near target: " + adjustmentSetsNearTarget);
                 }
             }
+
+            long stop = System.currentTimeMillis();
+            out.println("Time: " + (stop - start) / 1000.0 + " seconds");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

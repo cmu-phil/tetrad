@@ -540,11 +540,11 @@ public class Paths implements TetradSerializable {
     }
 
     private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        path.addLast(node1);
-
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
+
+        path.addLast(node1);
 
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverse(node1, edge);
@@ -2235,10 +2235,23 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * An adjustment set for a pair of nodes &lt;source, target&gt; is a set of nodes that blocks all paths from the
-     * source to the target that cannot contribute to a calculation of the total effect of the source on the target. In
+     * An adjustment set for a pair of nodes &lt;source, target&gt; for a CPDAG is a set of nodes that blocks all paths
+     * from the source to the target that cannot contribute to a calculation for the total effect of the source on the
+     * target in any DAG in a CPDAG while not blocking any path from the source to the target that could be causal. In
      * typical causal graphs, multiple adjustment sets may exist for a given pair of nodes. This method returns up to
-     * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt;.
+     * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt; fitting a certain description.
+     * <p>
+     * The description is as follows. We look for adjustment sets of varaibles that are close to either the source or
+     * the target (or either) in the graph. We take all possibly causal paths from the source to the target into
+     * account but only consider other paths up to a certain specified length. (This maximum length can be unlimited
+     * for small graphs.)
+     * <p>
+     * Within this description, we list adjustment sets in order or increasing size.
+     * <p>
+     * Hopefully, these parameters along with the size ordering can help to give guidance for the user to choose the
+     * best adjustment set for their purposes when multiple adjustment sets are possible.
+     * <p>
+     * This currently will only work for DAGs and CPDAGs.
      *
      * @param source                  The source node whose sets will be used for adjustment.
      * @param target                  The target node whose sets will be adjusted to match the source node.
@@ -2247,17 +2260,32 @@ public class Paths implements TetradSerializable {
      * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
      * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
      *                                target, 3 = near either.
+     * @param maxPathLength           The maximum length of the path to consider for non-amenable paths. If a value
+     *                                of -1 is given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint) {
-        List<List<Node>> semidirected = semidirectedPaths(source, target, -1);
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
+                                          int nearWhichEndpoint, int maxPathLength) {
+        List<List<Node>> amenable = semidirectedPaths(source, target, -1);
 
-        if (semidirected.isEmpty()) {
+        // Remove any amenable path that does not start with a visible edge in the CPDAG case.
+        // (The PAG case will be handled later.)
+        for (List<Node> path : new ArrayList<>(amenable)) {
+            Node a = path.get(0);
+            Node b = path.get(1);
+            Edge e = graph.getEdge(a, b);
+
+            if (!e.pointsTowards(b)) {
+                amenable.remove(path);
+            }
+        }
+
+        if (amenable.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<List<Node>> treks = treks(source, target, -1);
-        treks.removeAll(semidirected);
+        List<List<Node>> treks = allPaths(source, target, maxPathLength);
+        treks.removeAll(amenable);
 
         List<Set<Node>> adjustmentSets = new ArrayList<>();
         Set<Set<Node>> tried = new HashSet<>();
@@ -2324,7 +2352,7 @@ public class Paths implements TetradSerializable {
 
                 tried.add(possibleAdjustmentSet);
 
-                for (List<Node> semi : semidirected) {
+                for (List<Node> semi : amenable) {
                     if (!isMConnectingPath(semi, possibleAdjustmentSet, false)) {
                         i++;
                         continue ADJ;
