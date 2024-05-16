@@ -430,23 +430,10 @@ public class Paths implements TetradSerializable {
             return;
         }
 
-//        int witnessed = 0;
-//
-//        for (Node node : path) {
-//            if (node == node1) {
-//                witnessed++;
-//            }
-//        }
-//
-//        if (witnessed > 1) {
-//            return;
-//        }
-
         path.addLast(node1);
 
         if (node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-//            _path.add(node2);
             paths.add(_path);
         }
 
@@ -460,13 +447,6 @@ public class Paths implements TetradSerializable {
             if (path.contains(child)) {
                 continue;
             }
-
-//            if (child == node2) {
-//                LinkedList<Node> _path = new LinkedList<>(path);
-//                _path.add(child);
-//                paths.add(_path);
-//                continue;
-//            }
 
             directedPaths(child, node2, path, paths, maxLength);
         }
