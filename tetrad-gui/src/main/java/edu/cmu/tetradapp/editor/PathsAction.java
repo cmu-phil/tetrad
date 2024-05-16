@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -152,8 +149,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         node2Box.setSelectedItem(this.nodes2.get(0));
 
-        JComboBox methodBox = new JComboBox(new String[]{"Directed Paths", "Semidirected Paths", "Treks",
-                "Adjacents"});
+        JComboBox methodBox = new JComboBox(new String[]{"Directed Paths", "Semidirected Paths",
+                "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
+                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)",
+                "Treks", "Confounder Paths", "Latent Confounder Paths",
+                "All Paths", "Adjacents"});
         this.method = Preferences.userRoot().get("pathMethod", "Directed Paths");
 
         methodBox.addActionListener(e13 -> {
@@ -165,12 +165,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         methodBox.setSelectedItem(this.method);
 
-        IntTextField maxField = new IntTextField(Preferences.userRoot().getInt("pathMaxLength", 3), 2);
+        IntTextField maxField = new IntTextField(Preferences.userRoot().getInt("pathMaxLength", 8), 2);
 
         maxField.setFilter((value, oldValue) -> {
             try {
-                setMaxLength(value);
-                return value;
+
+                // Disallow unlimited path option. Also insist the max path length be at least 1.
+                if (value >= 2) setMaxLength(value);
+                return Preferences.userRoot().getInt("pathMaxLength", 8);
             } catch (Exception e14) {
                 return oldValue;
             }
@@ -220,9 +222,24 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else if ("Semidirected Paths".equals(method)) {
             textArea.setText("");
             allSemidirectedPaths(graph, textArea, nodes1, nodes2);
+        } else if ("Amenable paths (DAG, CPDAG, MPDAG, MAG)".equals(method)) {
+            textArea.setText("");
+            allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+        } else if ("Non-amenable paths (DAG, CPDAG, MPDAG, MAG)".equals(method)) {
+            textArea.setText("");
+            allNonamenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+        } else if ("All Paths".equals(method)) {
+            textArea.setText("");
+            allPaths(graph, textArea, nodes1, nodes2);
         } else if ("Treks".equals(method)) {
             textArea.setText("");
             allTreks(graph, textArea, nodes1, nodes2);
+        } else if ("Confounder Paths".equals(method)) {
+            textArea.setText("");
+            confounderPaths(graph, textArea, nodes1, nodes2);
+        } else if ("Latent Confounder Paths".equals(method)) {
+            textArea.setText("");
+            latentConfounderPaths(graph, textArea, nodes1, nodes2);
         } else if ("Adjacents".equals(method)) {
             textArea.setText("");
             adjacentNodes(graph, textArea, nodes1, nodes2);
@@ -230,12 +247,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are paths that are causal from X to Y--i.e. paths of the form X ~~> Y.\n");
+
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> paths = graph.paths().directedPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 3));
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
 
                 if (paths.isEmpty()) {
                     continue;
@@ -252,17 +271,19 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("No directedPaths listed.");
+            textArea.append("\nNo directed paths listed.");
         }
     }
 
     private void allSemidirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are paths that properly directed with additional knowledge could be causal from source to target.\n");
+
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 3));
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
 
                 if (paths.isEmpty()) {
                     continue;
@@ -279,16 +300,108 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("No semidirected paths listed.");
+            textArea.append("\nNo semidirected paths listed.");
         }
     }
 
-    private void allTreks(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are semidirected paths from X to Y that start with a directed edge out of X.\n");
+
+       boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
+
+                if (amenable.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                for (List<Node> path : amenable) {
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                }
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo amenable paths listed.");
+        }
+    }
+
+    private void allNonamenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are paths that are not amenable paths.\n");
+
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> treks = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 3));
+                List<List<Node>> nonamenable = graph.paths().allPaths(node1, node2,
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                nonamenable.removeAll(amenable);
+
+                if (amenable.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                for (List<Node> path : nonamenable) {
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                }
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo non-amenable paths listed.");
+        }
+    }
+
+    private void allPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are all paths from the source to the target, however oriented.\n");
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> paths = graph.paths().allPaths(node1, node2,
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
+
+                if (paths.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                for (List<Node> path : paths) {
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                }
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo paths listed.");
+        }
+    }
+
+    private void allTreks(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.\n");
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> treks = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
 
                 if (treks.isEmpty()) {
                     continue;
@@ -305,9 +418,101 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("No treks listed.");
+            textArea.append("\nNo treks listed.");
         }
     }
+
+    private void confounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("These are paths of the form X <~~ S ~~> Y for source S.\n");
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> confounderPaths = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, Preferences.userRoot().getInt("pathMaxLength", 8));
+
+                confounderPaths.removeAll(directPaths1);
+
+                for (List<Node> _path : directPaths2) {
+                    Collections.reverse(_path);
+                    confounderPaths.remove(_path);
+                }
+
+                confounderPaths.removeIf(path -> path.get(0).getNodeType() != NodeType.MEASURED
+                                                 || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
+
+                if (confounderPaths.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                for (List<Node> confounderPath : confounderPaths) {
+                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath));
+                }
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo confounder paths listed.");
+        }
+    }
+
+    private void latentConfounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        boolean pathListed = false;
+
+        textArea.append("These are confounder paths along which all nodes except for endpoints are latent.\n");
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, Preferences.userRoot().getInt("pathMaxLength", 8));
+                latentConfounderPaths.removeAll(directPaths1);
+
+                for (List<Node> _path : directPaths2) {
+                    Collections.reverse(_path);
+                    latentConfounderPaths.remove(_path);
+                }
+
+                for (List<Node> path : new ArrayList<>(latentConfounderPaths)) {
+                    for (int i = 1; i < path.size() - 1; i++) {
+                        Node node = path.get(i);
+
+                        if (node.getNodeType() != NodeType.LATENT) {
+                            latentConfounderPaths.remove(path);
+                        }
+                    }
+
+                    if (path.get(0).getNodeType() != NodeType.MEASURED
+                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
+                        latentConfounderPaths.remove(path);
+                    }
+                }
+
+                if (latentConfounderPaths.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                for (List<Node> latentConfounderPath : latentConfounderPaths) {
+                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath));
+                }
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo latent confounder paths listed.");
+        }
+    }
+
 
     private void adjacentNodes(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         for (Node node1 : nodes1) {

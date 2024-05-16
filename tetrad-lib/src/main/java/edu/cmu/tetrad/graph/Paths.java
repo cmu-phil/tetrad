@@ -430,19 +430,25 @@ public class Paths implements TetradSerializable {
             return;
         }
 
-        int witnessed = 0;
-
-        for (Node node : path) {
-            if (node == node1) {
-                witnessed++;
-            }
-        }
-
-        if (witnessed > 1) {
-            return;
-        }
+//        int witnessed = 0;
+//
+//        for (Node node : path) {
+//            if (node == node1) {
+//                witnessed++;
+//            }
+//        }
+//
+//        if (witnessed > 1) {
+//            return;
+//        }
 
         path.addLast(node1);
+
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+//            _path.add(node2);
+            paths.add(_path);
+        }
 
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseDirected(node1, edge);
@@ -455,12 +461,12 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (child == node2) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(child);
-                paths.add(_path);
-                continue;
-            }
+//            if (child == node2) {
+//                LinkedList<Node> _path = new LinkedList<>(path);
+//                _path.add(child);
+//                paths.add(_path);
+//                continue;
+//            }
 
             directedPaths(child, node2, path, paths, maxLength);
         }
@@ -482,36 +488,41 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
+    public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
+        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+
+        for (List<Node> path : amenablePaths) {
+            Node a = path.get(0);
+            Node b = path.get(1);
+
+            if (!graph.getEdge(a, b).pointsTowards(b)) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
     private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
 
-        int witnessed = 0;
-
-        for (Node node : path) {
-            if (node == node1) {
-                witnessed++;
-            }
-        }
-
-        if (witnessed > 1) {
+        if (path.contains(node1)) {
             return;
         }
 
         path.addLast(node1);
 
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            paths.add(_path);
+        }
+
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseSemiDirected(node1, edge);
 
             if (child == null) {
-                continue;
-            }
-
-            if (child == node2) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(child);
-                paths.add(_path);
                 continue;
             }
 
@@ -585,7 +596,16 @@ public class Paths implements TetradSerializable {
     }
 
     private void allDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+        if (path.contains(node1)) {
+            return;
+        }
+
         path.addLast(node1);
+
+        if (node1 == node2) {
+            List<Node> _path = new ArrayList<>(path);
+            paths.add(_path);
+        }
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
             path.removeLast();
@@ -600,13 +620,6 @@ public class Paths implements TetradSerializable {
             }
 
             if (path.contains(child)) {
-                continue;
-            }
-
-            if (child == node2) {
-                List<Node> _path = new ArrayList<>(path);
-                _path.add(child);
-                paths.add(_path);
                 continue;
             }
 
