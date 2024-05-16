@@ -367,7 +367,7 @@ public final class GraphUtils {
                         Set<Node> descendants = graph.paths().getDescendants(n1);
                         descendants.retainAll(conditioningVars);
                         if (!descendants.isEmpty()) {
-                            buf.append("(~~>(").append(descendants.iterator().next()).append("))");
+                            buf.append("[~~>").append(descendants.iterator().next()).append("(C)]");
                         }
                     }
                 }

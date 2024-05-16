@@ -94,7 +94,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         this.textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(this.textArea);
-        scroll.setPreferredSize(new Dimension(600, 400));
+//        scroll.setPreferredSize(new Dimension(600, 400));
 
         List<Node> allNodes = graph.getNodes();
         allNodes.sort(Comparator.naturalOrder());
@@ -198,11 +198,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b1.add(methodBox);
         b1.add(new JLabel("Max length"));
         b1.add(maxField);
+
+        b1.setMaximumSize(new Dimension(800, 25));
+
         b.setBorder(new EmptyBorder(2, 3, 2, 2));
         b.add(b1);
 
         JTextFieldWithPrompt comp = new JTextFieldWithPrompt("Enter conditioning variables...");
         comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
+        comp.setPreferredSize(new Dimension(600, 20));
+        comp.setMaximumSize(new Dimension(600, 20));
 
         comp.addActionListener(e16 -> {
             String text = comp.getText();
@@ -227,7 +232,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b1a.add(new JLabel("Enter conditioning variables:"));
         b1a.add(comp);
         b1a.setBorder(new EmptyBorder(2, 3, 2, 2));
+        b1a.add(Box.createHorizontalGlue());
+
+        b1a.setMaximumSize(new Dimension(800, 25));
+
         b.add(b1a);
+
+        scroll.setPreferredSize(new Dimension(700, 400));
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
@@ -250,11 +261,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Updates the text area based on the selected method.
      *
-     * @param graph     The graph object.
-     * @param textArea  The text area object.
-     * @param nodes1    The first list of nodes.
-     * @param nodes2    The second list of nodes.
-     * @param method    The selected method.
+     * @param graph    The graph object.
+     * @param textArea The text area object.
+     * @param nodes1   The first list of nodes.
+     * @param nodes2   The second list of nodes.
+     * @param method   The selected method.
      * @throws IllegalArgumentException If the method is unknown.
      */
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
@@ -291,18 +302,22 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else {
             throw new IllegalArgumentException("Unknown method: " + method);
         }
+
+        this.textArea.setCaretPosition(0);
     }
 
     /**
      * Appends all directed paths from nodes in list nodes1 to nodes in list nodes2 to a given text area.
      *
-     * @param graph      The Graph object representing the graph.
-     * @param textArea   The JTextArea object to append the paths to.
-     * @param nodes1     The list of starting nodes.
-     * @param nodes2     The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are paths that are causal from X to Y--i.e. paths of the form X ~~> Y.\n");
+        textArea.append("""
+                These are causal paths--i.e. paths that are directed from X to Y, of the form X ~~> Y.
+                """);
 
         boolean pathListed = false;
 
@@ -318,10 +333,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+                listPaths(graph, textArea, paths);
 
-                for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-                }
+//                for (List<Node> path : paths) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+//                }
             }
         }
 
@@ -331,16 +347,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area.
-     * A semidirected path is a path that, with additional knowledge, could be causal from source to target.
+     * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
+     * semidirected path is a path that, with additional knowledge, could be causal from source to target.
      *
-     * @param graph     The Graph object representing the graph.
-     * @param textArea  The JTextArea object to append the paths to.
-     * @param nodes1    The list of starting nodes.
-     * @param nodes2    The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void allSemidirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are paths that properly directed with additional knowledge could be causal from source to target.\n");
+        textArea.append("""
+                These are paths that with additional knowledge could be causal from source to target.
+                """);
 
         boolean pathListed = false;
 
@@ -357,9 +375,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-                }
+                listPaths(graph, textArea, paths);
+
+//                for (List<Node> path : paths) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+//                }
             }
         }
 
@@ -369,17 +389,19 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area.
-     * An amenable path starts with a directed edge out of the starting node and does not block any of these paths.
+     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area. An
+     * amenable path starts with a directed edge out of the starting node and does not block any of these paths.
      *
-     * @param graph     The Graph object representing the graph.
-     * @param textArea  The JTextArea object to append the paths to.
-     * @param nodes1    The list of starting nodes.
-     * @param nodes2    The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are semidirected paths from X to Y that start with a directed edge out of X.\n" +
-                        "And adjustmentt set should not block any of these paths");
+        textArea.append("""
+                These are semidirected paths from X to Y that start with a directed edge out of X. An 
+                adjustment set should not block any of these paths.
+                """);
 
         boolean pathListed = false;
 
@@ -396,9 +418,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                for (List<Node> path : amenable) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-                }
+                listPaths(graph, textArea, amenable);
+
+//                for (List<Node> path : amenable) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+//                }
             }
         }
 
@@ -408,16 +432,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area.
-     * A non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
+     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area. A
+     * non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
      *
-     * @param graph The Graph object representing the graph.
+     * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
-     * @param nodes1 The list of starting nodes.
-     * @param nodes2 The list of ending nodes.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void allNonamenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are paths that are not amenable paths. An adjustment set should block all of these paths.\n");
+        textArea.append("""
+                These are paths that are not amenable paths. An adjustment set should block all of these paths.
+                """);
 
         boolean pathListed = false;
 
@@ -437,9 +463,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                for (List<Node> path : nonamenable) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-                }
+                listPaths(graph, textArea, nonamenable);
+
+//                for (List<Node> path : nonamenable) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+//                }
             }
         }
 
@@ -451,13 +479,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Appends all paths from the source nodes to the target nodes to a given text area.
      *
-     * @param graph The Graph object representing the graph.
+     * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
-     * @param nodes1 The list of source nodes.
-     * @param nodes2 The list of target nodes.
+     * @param nodes1   The list of source nodes.
+     * @param nodes2   The list of target nodes.
      */
     private void allPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are all paths from the source to the target, however oriented.\n");
+        textArea.append("""
+                These are paths from the source to the target, however oriented. Not all paths may be listed, as a bound
+                is placed on their length.
+                """);
 
         boolean pathListed = false;
 
@@ -473,10 +504,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-
-                for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet,true));
-                }
+                listPaths(graph, textArea, paths);
             }
         }
 
@@ -485,16 +513,50 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    private void listPaths(Graph graph, JTextArea textArea, List<List<Node>> paths) {
+        textArea.append("\n\n    Not Blocked:\n");
+
+        boolean found1 = false;
+
+        for (List<Node> path : paths) {
+            if (path.size() > 1 && graph.paths().isMConnectingPath(path, conditioningSet, false)) {
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+                found1 = true;
+            }
+        }
+
+        if (!found1) {
+            textArea.append("\n    --NONE--");
+        }
+
+        textArea.append("\n\n    Blocked:\n");
+
+        boolean found2 = false;
+
+        for (List<Node> path : paths) {
+            if (path.size() > 1 && !graph.paths().isMConnectingPath(path, conditioningSet, false)) {
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+                found2 = true;
+            }
+        }
+
+        if (!found2) {
+            textArea.append("\n    --NONE--");
+        }
+    }
+
     /**
      * Appends all treks of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S
      *
-     * @param graph       The Graph object representing the graph.
-     * @param textArea    The JTextArea object to append the treks to.
-     * @param nodes1      The list of starting nodes.
-     * @param nodes2      The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the treks to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void allTreks(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.\n");
+        textArea.append("""
+                These are paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.
+                """);
 
         boolean pathListed = false;
 
@@ -509,10 +571,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+                listPaths(graph, textArea, treks);
 
-                for (List<Node> trek : treks) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, trek, conditioningSet, true));
-                }
+//                for (List<Node> trek : treks) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, trek, conditioningSet, true));
+//                }
             }
         }
 
@@ -524,13 +587,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Appends all confounder paths of the form X <~~ S ~~> Y, where S is the source, to the given text area.
      *
-     * @param graph     The Graph object representing the graph.
-     * @param textArea  The JTextArea object to append the paths to.
-     * @param nodes1    The list of starting nodes.
-     * @param nodes2    The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void confounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are paths of the form X <~~ S ~~> Y for source S.\n");
+        textArea.append("""
+                These are paths of the form X <~~ S ~~> Y for some source S. The source S would be the confounder.
+                """);
 
         boolean pathListed = false;
 
@@ -557,10 +622,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+                listPaths(graph, textArea, confounderPaths);
 
-                for (List<Node> confounderPath : confounderPaths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath, conditioningSet, true));
-                }
+//                for (List<Node> confounderPath : confounderPaths) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath, conditioningSet, true));
+//                }
             }
         }
 
@@ -572,15 +638,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Appends all confounder paths along which all nodes except for endpoints are latent to the given text area.
      *
-     * @param graph     The Graph object representing the graph.
-     * @param textArea  The JTextArea object to append the paths to.
-     * @param nodes1    The list of starting nodes.
-     * @param nodes2    The list of ending nodes.
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
      */
     private void latentConfounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         boolean pathListed = false;
 
-        textArea.append("These are confounder paths along which all nodes except for endpoints are latent.\n");
+        textArea.append("""
+                These are confounder paths along which all nodes except for endpoints are latent. These are unmeasured nodes
+                whose influence on the measured nodes is not accounted for.
+                """);
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -616,10 +685,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+                listPaths(graph, textArea, latentConfounderPaths);
 
-                for (List<Node> latentConfounderPath : latentConfounderPaths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath, conditioningSet, true));
-                }
+//                for (List<Node> latentConfounderPath : latentConfounderPaths) {
+//                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath, conditioningSet, true));
+//                }
             }
         }
 
@@ -631,38 +701,34 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Calculates and displays the adjacent nodes for each pair of nodes in the given lists.
      *
-     * @param graph The graph object representing the graph.
+     * @param graph    The graph object representing the graph.
      * @param textArea The JTextArea object to append the results to.
-     * @param nodes1 The first list of nodes.
-     * @param nodes2 The second list of nodes.
+     * @param nodes1   The first list of nodes.
+     * @param nodes2   The second list of nodes.
      */
     private void adjacentNodes(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        for (Node node1 : nodes1) {
-            for (Node node2 : nodes2) {
-                List<Node> parents = graph.getParents(node1);
-                List<Node> children = graph.getChildren(node1);
+        List<Node> allNodes = new ArrayList<>();
 
-                List<Node> ambiguous = new ArrayList<>(graph.getAdjacentNodes(node1));
-                ambiguous.removeAll(parents);
-                ambiguous.removeAll(children);
+        for (Node node : nodes1) {
+            if (!allNodes.contains(node)) allNodes.add(node);
+        }
 
-                textArea.append("\n\nAdjacents for " + node1 + ":");
-                textArea.append("\n\nParents: " + niceList(parents));
-                textArea.append("\nChildren: " + niceList(children));
-                textArea.append("\nAmbiguous: " + niceList(ambiguous));
+        for (Node node : nodes2) {
+            if (!allNodes.contains(node)) allNodes.add(node);
+        }
 
-                List<Node> parents2 = graph.getParents(node2);
-                List<Node> children2 = graph.getChildren(node2);
+        for (Node node1 : allNodes) {
+            List<Node> parents = graph.getParents(node1);
+            List<Node> children = graph.getChildren(node1);
 
-                List<Node> ambiguous2 = new ArrayList<>(graph.getAdjacentNodes(node2));
-                ambiguous2.removeAll(parents2);
-                ambiguous2.removeAll(children2);
+            List<Node> ambiguous = new ArrayList<>(graph.getAdjacentNodes(node1));
+            ambiguous.removeAll(parents);
+            ambiguous.removeAll(children);
 
-                textArea.append("\n\nAdjacents for " + node2 + ":");
-                textArea.append("\n\nParents: " + niceList(parents2));
-                textArea.append("\nChildren: " + niceList(children2));
-                textArea.append("\nAmbiguous: " + niceList(ambiguous2));
-            }
+            textArea.append("\n\nAdjacents for " + node1 + ":");
+            textArea.append("\n\nParents: " + niceList(parents));
+            textArea.append("\nChildren: " + niceList(children));
+            textArea.append("\nAmbiguous: " + niceList(ambiguous));
         }
     }
 
@@ -675,13 +741,25 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The second set of nodes.
      */
     private void adjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
-                               \s
-                An adjustment set is a set of nodes that blocks all paths that can't be causal while\
-                               \s
-                leaving all possibly causal paths unblocked. There may be no adjustment set for a given\
-                               \s
-                source and target""");
+        textArea.append("""     
+                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+                all causal paths unblocked. In particular, all confounders of the source and target will be
+                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
+                effect of a source on a target.
+                
+                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+                into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
+                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are blocked, 
+                the set is not an adjustment set. Also select "Non-amenable paths" from the dropdown. All 
+                non-amenable paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                set is not an adjustment set.
+                
+                In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
+                find up to a maximum number of adjustment sets that are no more than a certain distance from
+                either the source or the target node, or either. Also, while all amenable paths are taken
+                into account, non-amenable paths considered are only those that with no more than a certain
+                number of nodes. These parameters can be edited.
+                """);
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -703,12 +781,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Converts a list of Nodes into a comma-separated string representation.
-     * If the list is empty, returns "--NONE--".
+     * Converts a list of Nodes into a comma-separated string representation. If the list is empty, returns "--NONE--".
      *
      * @param _nodes The list of Nodes to convert.
-     * @return The comma-separated string representation of the Nodes list,
-     *         or "--NONE--" if the list is empty.
+     * @return The comma-separated string representation of the Nodes list, or "--NONE--" if the list is empty.
      */
     private String niceList(List<Node> _nodes) {
         if (_nodes.isEmpty()) {
@@ -784,9 +860,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         /**
-         * This method is responsible for painting the component. It overrides the paintComponent method from the JTextField class.
-         * It checks if the text in the component is empty and if it does not have focus. If both conditions are true, it paints the
-         * prompt text on the component using the specified prompt color and font style.
+         * This method is responsible for painting the component. It overrides the paintComponent method from the
+         * JTextField class. It checks if the text in the component is empty and if it does not have focus. If both
+         * conditions are true, it paints the prompt text on the component using the specified prompt color and font
+         * style.
          *
          * @param g the Graphics object used for painting
          */
