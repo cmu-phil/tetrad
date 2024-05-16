@@ -334,10 +334,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
                 listPaths(graph, textArea, paths);
-
-//                for (List<Node> path : paths) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-//                }
             }
         }
 
@@ -376,10 +372,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 listPaths(graph, textArea, paths);
-
-//                for (List<Node> path : paths) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-//                }
             }
         }
 
@@ -419,10 +411,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 listPaths(graph, textArea, amenable);
-
-//                for (List<Node> path : amenable) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-//                }
             }
         }
 
@@ -462,12 +450,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-
                 listPaths(graph, textArea, nonamenable);
-
-//                for (List<Node> path : nonamenable) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
-//                }
             }
         }
 
@@ -572,10 +555,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
                 listPaths(graph, textArea, treks);
-
-//                for (List<Node> trek : treks) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, trek, conditioningSet, true));
-//                }
             }
         }
 
@@ -623,10 +602,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
                 listPaths(graph, textArea, confounderPaths);
-
-//                for (List<Node> confounderPath : confounderPaths) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath, conditioningSet, true));
-//                }
             }
         }
 
@@ -686,10 +661,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
                 listPaths(graph, textArea, latentConfounderPaths);
-
-//                for (List<Node> latentConfounderPath : latentConfounderPaths) {
-//                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath, conditioningSet, true));
-//                }
             }
         }
 
