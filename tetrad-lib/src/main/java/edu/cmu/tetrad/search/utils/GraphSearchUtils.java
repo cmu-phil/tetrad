@@ -506,13 +506,13 @@ public final class GraphSearchUtils {
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
                             + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                            + "An example path is " + GraphUtils.pathString(mag, path));
+                            + "An example path is " + GraphUtils.pathString(mag, path, false));
                 } else if (mag.paths().existsDirectedPath(y, x)) {
                     List<Node> path = mag.paths().directedPaths(y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
                             ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                            + "An example path is " + GraphUtils.pathString(mag, path));
+                            + "An example path is " + GraphUtils.pathString(mag, path, false));
                 }
             }
         }

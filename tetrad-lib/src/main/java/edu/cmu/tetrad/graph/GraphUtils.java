@@ -246,12 +246,13 @@ public final class GraphUtils {
     /**
      * <p>pathString.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param path  a {@link java.util.List} object
+     * @param graph       a {@link Graph} object
+     * @param path        a {@link List} object
+     * @param showBlocked
      * @return a {@link java.lang.String} object
      */
-    public static String pathString(Graph graph, List<Node> path) {
-        return GraphUtils.pathString(graph, path, new LinkedList<>());
+    public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
+        return GraphUtils.pathString(graph, path, new HashSet<>(), showBlocked);
     }
 
     /**
@@ -264,7 +265,11 @@ public final class GraphUtils {
     public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
-        return GraphUtils.pathString(graph, path, new LinkedList<>());
+        return GraphUtils.pathString(graph, path, new HashSet<>());
+    }
+
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars) {
+        return pathString(graph, path, conditioningVars, false);
     }
 
     /**
@@ -276,11 +281,21 @@ public final class GraphUtils {
      * @param conditioningVars the list of nodes representing the conditioning variables
      * @return a string representation of the path with conditioning information
      */
-    private static String pathString(Graph graph, List<Node> path, List<Node> conditioningVars) {
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
+        }
+
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, false);
+
+        if (showBlocked) {
+            if (!mConnecting) {
+                buf.append("BLOCKED: ");
+            } else {
+                buf.append("not blocked: ");
+            }
         }
 
         if (path.get(0).getNodeType() == NodeType.LATENT) {
@@ -289,7 +304,6 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
-
         if (conditioningVars.contains(path.get(0))) {
             buf.append("(C)");
         }
@@ -297,6 +311,11 @@ public final class GraphUtils {
         for (int m = 1; m < path.size(); m++) {
             Node n0 = path.get(m - 1);
             Node n1 = path.get(m);
+            Node n2 = null;
+
+            if (m < path.size() - 1) {
+                n2 = path.get(m + 1);
+            }
 
             Edge edge = graph.getEdge(n0, n1);
 
@@ -333,6 +352,16 @@ public final class GraphUtils {
 
             if (conditioningVars.contains(n1)) {
                 buf.append("(C)");
+            } else {
+                if (n2 != null) {
+                    if (graph.isDefCollider(n0, n1, n2)) {
+                        Set<Node> descendants = graph.paths().getDescendants(n1);
+                        descendants.retainAll(conditioningVars);
+                        if (!descendants.isEmpty()) {
+                            buf.append("(~~>(").append(descendants.iterator().next()).append("))");
+                        }
+                    }
+                }
             }
         }
         return buf.toString();

@@ -27,15 +27,18 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -72,6 +75,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private String method;
 
     /**
+     * The conditioning set.
+     */
+    private Set<Node> conditioningSet = new HashSet<>();
+
+    /**
      * <p>Constructor for PathsAction.</p>
      *
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
@@ -96,14 +104,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         allNodes.add(new GraphNode("SELECT_ALL"));
         Node[] array = allNodes.toArray(new Node[0]);
 
-        Node pathFrom = graph.getNode(Preferences.userRoot().get("pathFrom", ""));
-
-        if (pathFrom == null) {
-            this.nodes1 = Collections.singletonList(graph.getNodes().get(0));
-        } else {
-            this.nodes1 = Collections.singletonList(pathFrom);
-        }
-
         JComboBox node1Box = new JComboBox(array);
 
         node1Box.addActionListener(e1 -> {
@@ -119,17 +119,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             Preferences.userRoot().put("pathFrom", node.getName());
+
+            update(graph, textArea, nodes1, nodes2, method);
         });
 
-        node1Box.setSelectedItem(this.nodes1.get(0));
-
-        Node pathTo = graph.getNode(Preferences.userRoot().get("pathTo", ""));
-
-        if (pathTo == null) {
-            this.nodes2 = Collections.singletonList(graph.getNodes().get(0));
-        } else {
-            this.nodes2 = Collections.singletonList(pathTo);
+        node1Box.setSelectedItem(Preferences.userRoot().get("pathFrom", null));
+        if (node1Box.getSelectedItem() == null) {
+            node1Box.setSelectedItem(node1Box.getItemAt(0));
         }
+        nodes1 = Collections.singletonList((Node) node1Box.getSelectedItem());
 
         JComboBox node2Box = new JComboBox(array);
 
@@ -144,23 +142,34 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 PathsAction.this.nodes2 = Collections.singletonList(node);
             }
 
-            Preferences.userRoot().put("pathTo", node.getName());
+            Preferences.userRoot().put("pathMethod", PathsAction.this.method);
+
+            update(graph, textArea, nodes1, nodes2, method);
         });
 
-        node2Box.setSelectedItem(this.nodes2.get(0));
+        node2Box.setSelectedItem(Preferences.userRoot().get("pathFrom", null));
+        if (node2Box.getSelectedItem() == null) {
+            node2Box.setSelectedItem(node1Box.getItemAt(0));
+        }
+        nodes2 = Collections.singletonList((Node) node2Box.getSelectedItem());
 
         JComboBox methodBox = new JComboBox(new String[]{"Directed Paths", "Semidirected Paths",
-                "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
-                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)",
                 "Treks", "Confounder Paths", "Latent Confounder Paths",
-                "All Paths", "Adjacents"});
-        this.method = Preferences.userRoot().get("pathMethod", "Directed Paths");
+                "All Paths", "Adjacents", "Adjustment Sets",
+                "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
+                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)"});
+
+        methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", null));
+        if (methodBox.getSelectedItem() == null) {
+            methodBox.setSelectedItem(node1Box.getItemAt(0));
+        }
+        method = (String) methodBox.getSelectedItem();
 
         methodBox.addActionListener(e13 -> {
             JComboBox box = (JComboBox) e13.getSource();
             PathsAction.this.method = (String) box.getSelectedItem();
             Preferences.userRoot().put("pathMethod", PathsAction.this.method);
-//                update(graph, textArea, nodes1, nodes2, method);
+            update(graph, textArea, nodes1, nodes2, method);
         });
 
         methodBox.setSelectedItem(this.method);
@@ -172,6 +181,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 // Disallow unlimited path option. Also insist the max path length be at least 1.
                 if (value >= 2) setMaxLength(value);
+                update(graph, textArea, nodes1, nodes2, method);
                 return Preferences.userRoot().getInt("pathMaxLength", 8);
             } catch (Exception e14) {
                 return oldValue;
@@ -195,12 +205,43 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b1.add(methodBox);
         b1.add(new JLabel("Max length"));
         b1.add(maxField);
-        b1.add(updateButton);
+        b.setBorder(new EmptyBorder(2, 3, 2, 2));
+//        b1.add(updateButton);
         b.add(b1);
+
+        JTextFieldWithPrompt comp = new JTextFieldWithPrompt("Enter conditioning variables...");
+        comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
+//        comp.setBorder(new LineBorder(Color.BLACK, 1));
+
+        comp.addActionListener(e16 -> {
+            String text = comp.getText();
+            String[] parts = text.split("[\\s,\\[\\]]");
+
+            Set<Node> conditioningSet = new HashSet<>();
+
+            for (String part : parts) {
+                Node node = graph.getNode(part);
+
+                if (node != null) {
+                    conditioningSet.add(node);
+                }
+            }
+
+            PathsAction.this.conditioningSet = conditioningSet;
+            update(graph, textArea, nodes1, nodes2, method);
+        });
+
+
+        Box b1a = Box.createHorizontalBox();
+        b1a.add(new JLabel("Enter conditioning variables:"));
+        b1a.add(comp);
+        b1a.setBorder(new EmptyBorder(2, 3, 2, 2));
+        b.add(b1a);
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         this.textArea.setCaretPosition(0);
+        b2.setBorder(new EmptyBorder(2, 3, 2, 2));
         b.add(b2);
 
         JPanel panel = new JPanel();
@@ -243,6 +284,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else if ("Adjacents".equals(method)) {
             textArea.setText("");
             adjacentNodes(graph, textArea, nodes1, nodes2);
+        } else if ("Adjustment Sets".equals(method)) {
+            textArea.setText("");
+            adjustmentSets(graph, textArea, nodes1, nodes2);
+        } else {
+            throw new IllegalArgumentException("Unknown method: " + method);
         }
     }
 
@@ -265,7 +311,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 }
             }
         }
@@ -294,7 +340,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 }
             }
         }
@@ -305,9 +351,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are semidirected paths from X to Y that start with a directed edge out of X.\n");
+        textArea.append("These are semidirected paths from X to Y that start with a directed edge out of X.\n" +
+                        "And adjustmentt set should not block any of these paths");
 
-       boolean pathListed = false;
+        boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -323,7 +370,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> path : amenable) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 }
             }
         }
@@ -334,7 +381,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void allNonamenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("These are paths that are not amenable paths.\n");
+        textArea.append("These are paths that are not amenable paths. An adjustment set should block all of these paths.\n");
 
         boolean pathListed = false;
 
@@ -355,7 +402,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> path : nonamenable) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 }
             }
         }
@@ -384,7 +431,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> path : paths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, path));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet,true));
                 }
             }
         }
@@ -412,7 +459,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> trek : treks) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, trek));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, trek, conditioningSet, true));
                 }
             }
         }
@@ -452,7 +499,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> confounderPath : confounderPaths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, confounderPath, conditioningSet, true));
                 }
             }
         }
@@ -503,7 +550,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> latentConfounderPath : latentConfounderPaths) {
-                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, latentConfounderPath, conditioningSet, true));
                 }
             }
         }
@@ -512,7 +559,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\nNo latent confounder paths listed.");
         }
     }
-
 
     private void adjacentNodes(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         for (Node node1 : nodes1) {
@@ -529,7 +575,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\nChildren: " + niceList(children));
                 textArea.append("\nAmbiguous: " + niceList(ambiguous));
 
-
                 List<Node> parents2 = graph.getParents(node2);
                 List<Node> children2 = graph.getChildren(node2);
 
@@ -544,6 +589,53 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
         }
     }
+
+
+    /**
+     * Calculates some adjustment sets for a given set of nodes in a graph.
+     *
+     * @param graph    The graph to calculate the adjustment sets in.
+     * @param textArea The text area to display the results in.
+     * @param nodes1   The first set of nodes.
+     * @param nodes2   The second set of nodes.
+     */
+    private void adjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("""
+                               \s
+                An adjustment set is a set of nodes that blocks all paths that can't be causal while\
+                               \s
+                leaving all possibly causal paths unblocked. There may be no adjustment set for a given\
+                               \s
+                source and target""");
+
+//        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<Set<Node>> adjustments = graph.paths().adjustmentSets(node1, node2, 8, 4, 3,
+                        Preferences.userRoot().getInt("pathMaxLength", 8));
+
+                textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
+
+                if (adjustments.isEmpty()) {
+                    textArea.append("\n    --NONE--");
+                    continue;
+                }
+//                else {
+//                    pathListed = true;
+//                }
+
+                for (Set<Node> adjustment : adjustments) {
+                    textArea.append("\n    " + adjustment);
+                }
+            }
+        }
+
+//        if (!pathListed) {
+//            textArea.append("\nNo adjustment sets listed.");
+//        }
+    }
+
 
     private String niceList(List<Node> _nodes) {
         if (_nodes.isEmpty()) {
@@ -580,6 +672,81 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (!(maxLength >= -1)) throw new IllegalArgumentException();
         Preferences.userRoot().putInt("pathMaxLength", maxLength);
     }
+
+    private static class JTextFieldWithPrompt extends JTextField {
+        private String promptText;
+        private Color promptColor;
+
+        public JTextFieldWithPrompt(String promptText) {
+            this(promptText, Color.GRAY);
+        }
+
+        public JTextFieldWithPrompt(String promptText, Color promptColor) {
+            this.promptText = promptText;
+            this.promptColor = promptColor;
+
+            // Set focus listener to repaint the component when focus is gained or lost
+            this.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    repaint();
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    repaint();
+                }
+            });
+
+
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            if (getText().isEmpty() && !isFocusOwner()) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setColor(promptColor);
+                g2d.setFont(getFont().deriveFont(Font.ITALIC));
+                int padding = (getHeight() - getFont().getSize()) / 2;
+                g2d.drawString(promptText, getInsets().left, getHeight() - padding - 1);
+                g2d.dispose();
+            }
+        }
+
+        public String getPromptText() {
+            return promptText;
+        }
+
+        public void setPromptText(String promptText) {
+            this.promptText = promptText;
+            repaint();
+        }
+
+        public Color getPromptColor() {
+            return promptColor;
+        }
+
+        public void setPromptColor(Color promptColor) {
+            this.promptColor = promptColor;
+            repaint();
+        }
+
+//        public static void main(String[] args) {
+//            JFrame frame = new JFrame("JTextField with Prompt Example");
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            frame.setLayout(new FlowLayout());
+//
+//            JTextFieldWithPrompt textField = new JTextFieldWithPrompt("Using empty conditioning set...");
+//            textField.setColumns(20);
+//
+//            frame.add(textField);
+//            frame.pack();
+//            frame.setVisible(true);
+//        }
+    }
+
 }
 
 

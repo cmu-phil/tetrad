@@ -543,7 +543,7 @@ public class Paths implements TetradSerializable {
             return;
         }
 
-        if (path.size() > 1 && node1 == node2) {
+        if (node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
             paths.add(_path);
         }
