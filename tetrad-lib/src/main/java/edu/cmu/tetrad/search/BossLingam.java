@@ -116,7 +116,7 @@ public class BossLingam {
                 int i = nodes.indexOf(X);
                 int j = nodes.indexOf(Y);
 
-                double lr = Fask.faskLeftRightV2(_data[i], _data[j], true, 0);
+                double lr = FaskOrig.faskLeftRightV2(_data[i], _data[j], true, 0);
 
                 if (lr > 0.0) {
                     toOrient.removeEdge(edge);

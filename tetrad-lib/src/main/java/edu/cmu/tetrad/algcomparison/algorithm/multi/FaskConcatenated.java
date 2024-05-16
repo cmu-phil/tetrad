@@ -9,7 +9,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.FaskOrig;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -87,7 +87,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
         dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-        Fask search = new Fask(dataSet,
+        FaskOrig search = new FaskOrig(dataSet,
                 this.score.getScore(dataSet, parameters),
                 this.test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));

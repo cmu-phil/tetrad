@@ -11,6 +11,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.FaskOrig;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
@@ -90,8 +91,8 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
                     + "will orient the edges in the input graph using the data");
         }
 
-        Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
-        fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+        FaskOrig fask = new FaskOrig(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
+        fask.setAdjacencyMethod(FaskOrig.AdjacencyMethod.EXTERNAL_GRAPH);
         fask.setExternalGraph(this.externalGraph);
         fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
 

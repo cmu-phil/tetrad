@@ -2,13 +2,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -24,22 +25,26 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
- * Wraps the original FASK algorithm for continuous variables.
+ * Wraps the FASK algorithm for continuous variables.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FASK",
-        command = "fask",
+        name = "FASK-Orig",
+        command = "fask-orig",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-@Experimental
-public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph {
+public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
+    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -66,17 +71,23 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * <p>Constructor for Fask.</p>
      */
-    public Fask() {
+    public FaskOrig() {
 
     }
 
     /**
      * <p>Constructor for Fask.</p>
      *
-     * @param score a {@link ScoreWrapper} object
+     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
-    public Fask(ScoreWrapper score) {
+    public FaskOrig(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
+    }
+
+    private Graph getGraph(edu.cmu.tetrad.search.FaskOrig search) {
+        return search.search();
     }
 
     /**
@@ -102,22 +113,58 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             }
         }
 
-        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.FaskOrig search;
 
+        search = new edu.cmu.tetrad.search.FaskOrig(dataSet, this.score.getScore(dataSet, parameters),
+                this.test.getTest(dataSet, parameters));
 
         search.setDepth(parameters.getInt(DEPTH));
-        search.setAlpha(parameters.getDouble(ALPHA));
-        search.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+        search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+        search.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
+        search.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
         search.setDelta(parameters.getDouble(FASK_DELTA));
-        search.setUseFasAdjacencies(true);
-        search.setUseSkewAdjacencies(true);
+        search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
         if (this.externalGraph != null) {
             this.externalGraph = algorithm.search(dataSet, parameters);
         }
 
+        if (this.externalGraph != null) {
+            search.setExternalGraph(this.externalGraph);
+        }
+
+        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+
+        if (lrRule == 1) {
+            search.setLeftRight(edu.cmu.tetrad.search.FaskOrig.LeftRight.FASK1);
+        } else if (lrRule == 2) {
+            search.setLeftRight(edu.cmu.tetrad.search.FaskOrig.LeftRight.FASK2);
+        } else if (lrRule == 3) {
+            search.setLeftRight(edu.cmu.tetrad.search.FaskOrig.LeftRight.RSKEW);
+        } else if (lrRule == 4) {
+            search.setLeftRight(edu.cmu.tetrad.search.FaskOrig.LeftRight.SKEW);
+        } else if (lrRule == 5) {
+            search.setLeftRight(edu.cmu.tetrad.search.FaskOrig.LeftRight.TANH);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
+
+        int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
+
+        if (adjacencyMethod == 1) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskOrig.AdjacencyMethod.FAS_STABLE);
+        } else if (adjacencyMethod == 2) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskOrig.AdjacencyMethod.FGES);
+        } else if (adjacencyMethod == 3) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskOrig.AdjacencyMethod.EXTERNAL_GRAPH);
+        } else if (adjacencyMethod == 4) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskOrig.AdjacencyMethod.NONE);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
+
         search.setKnowledge(this.knowledge);
-        return search.search();
+        return getGraph(search);
     }
 
     /**
@@ -139,7 +186,13 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public String getDescription() {
-        return "FASK using " + this.score.getDescription();
+        if (this.test != null) {
+            return "FASK-Orig using " + this.test.getDescription();
+        } else if (this.algorithm != null) {
+            return "FASK-Orig using " + this.algorithm.getDescription();
+        } else {
+            throw new IllegalStateException("Need to initialize with either a test or an algorithm.");
+        }
     }
 
     /**
@@ -196,6 +249,27 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Retrieves the IndependenceWrapper associated with this object.
+     *
+     * @return The IndependenceWrapper object.
+     */
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
+    }
+
+    /**
+     * Sets the independence wrapper for the object.
+     *
+     * @param independenceWrapper the independence wrapper to be set. Must implement the {@link IndependenceWrapper}
+     *                            interface.
+     */
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     /**
