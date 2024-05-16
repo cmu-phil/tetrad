@@ -42,10 +42,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * Puts up a panel letting the user show undirectedPaths about some node in the graph.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Represents an action that performs calculations on paths in a graph.
  */
 public class PathsAction extends AbstractAction implements ClipboardOwner {
 
@@ -80,9 +77,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private Set<Node> conditioningSet = new HashSet<>();
 
     /**
-     * <p>Constructor for PathsAction.</p>
-     *
-     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * Represents an action that performs calculations on paths in a graph.
      */
     public PathsAction(GraphWorkbench workbench) {
         super("Paths");
@@ -90,7 +85,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * {@inheritDoc}
+     * Performs the action when an event occurs.
+     *
+     * @param e The action event.
      */
     public void actionPerformed(ActionEvent e) {
         Graph graph = this.workbench.getGraph();
@@ -104,14 +101,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         allNodes.add(new GraphNode("SELECT_ALL"));
         Node[] array = allNodes.toArray(new Node[0]);
 
-        JComboBox node1Box = new JComboBox(array);
+        JComboBox<Node> node1Box = new JComboBox<>(array);
 
         node1Box.addActionListener(e1 -> {
-            JComboBox box = (JComboBox) e1.getSource();
+            JComboBox<Node> box = (JComboBox) e1.getSource();
             Node node = (Node) box.getSelectedItem();
-            System.out.println(node);
 
-            assert node != null;
+            if (node == null) return;
+
             if ("SELECT_ALL".equals(node.getName())) {
                 PathsAction.this.nodes1 = new ArrayList<>(graph.getNodes());
             } else {
@@ -129,12 +126,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
         nodes1 = Collections.singletonList((Node) node1Box.getSelectedItem());
 
-        JComboBox node2Box = new JComboBox(array);
+        JComboBox<Node> node2Box = new JComboBox<>(array);
 
         node2Box.addActionListener(e12 -> {
-            JComboBox box = (JComboBox) e12.getSource();
+            JComboBox<Node> box = (JComboBox) e12.getSource();
             Node node = (Node) box.getSelectedItem();
-            System.out.println(node);
+
+            if (node == null) return;
 
             if ("SELECT_ALL".equals(node.getName())) {
                 PathsAction.this.nodes2 = new ArrayList<>(graph.getNodes());
@@ -153,7 +151,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
         nodes2 = Collections.singletonList((Node) node2Box.getSelectedItem());
 
-        JComboBox methodBox = new JComboBox(new String[]{"Directed Paths", "Semidirected Paths",
+        JComboBox<String> methodBox = new JComboBox<>(new String[]{"Directed Paths", "Semidirected Paths",
                 "Treks", "Confounder Paths", "Latent Confounder Paths",
                 "All Paths", "Adjacents", "Adjustment Sets",
                 "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
@@ -166,7 +164,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         method = (String) methodBox.getSelectedItem();
 
         methodBox.addActionListener(e13 -> {
-            JComboBox box = (JComboBox) e13.getSource();
+            JComboBox<String> box = (JComboBox) e13.getSource();
             PathsAction.this.method = (String) box.getSelectedItem();
             Preferences.userRoot().put("pathMethod", PathsAction.this.method);
             update(graph, textArea, nodes1, nodes2, method);
@@ -188,11 +186,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
         });
 
-        JButton updateButton = new JButton(("Update"));
-
-        updateButton.addActionListener(e15 -> update(graph, PathsAction.this.textArea,
-                PathsAction.this.nodes1, PathsAction.this.nodes2, PathsAction.this.method));
-
         Box b = Box.createVerticalBox();
 
         Box b1 = Box.createHorizontalBox();
@@ -206,12 +199,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b1.add(new JLabel("Max length"));
         b1.add(maxField);
         b.setBorder(new EmptyBorder(2, 3, 2, 2));
-//        b1.add(updateButton);
         b.add(b1);
 
         JTextFieldWithPrompt comp = new JTextFieldWithPrompt("Enter conditioning variables...");
         comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
-//        comp.setBorder(new LineBorder(Color.BLACK, 1));
 
         comp.addActionListener(e16 -> {
             String text = comp.getText();
@@ -256,6 +247,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         update(graph, this.textArea, this.nodes1, this.nodes2, this.method);
     }
 
+    /**
+     * Updates the text area based on the selected method.
+     *
+     * @param graph     The graph object.
+     * @param textArea  The text area object.
+     * @param nodes1    The first list of nodes.
+     * @param nodes2    The second list of nodes.
+     * @param method    The selected method.
+     * @throws IllegalArgumentException If the method is unknown.
+     */
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
         if ("Directed Paths".equals(method)) {
             textArea.setText("");
@@ -292,6 +293,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all directed paths from nodes in list nodes1 to nodes in list nodes2 to a given text area.
+     *
+     * @param graph      The Graph object representing the graph.
+     * @param textArea   The JTextArea object to append the paths to.
+     * @param nodes1     The list of starting nodes.
+     * @param nodes2     The list of ending nodes.
+     */
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are paths that are causal from X to Y--i.e. paths of the form X ~~> Y.\n");
 
@@ -321,6 +330,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area.
+     * A semidirected path is a path that, with additional knowledge, could be causal from source to target.
+     *
+     * @param graph     The Graph object representing the graph.
+     * @param textArea  The JTextArea object to append the paths to.
+     * @param nodes1    The list of starting nodes.
+     * @param nodes2    The list of ending nodes.
+     */
     private void allSemidirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are paths that properly directed with additional knowledge could be causal from source to target.\n");
 
@@ -350,6 +368,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area.
+     * An amenable path starts with a directed edge out of the starting node and does not block any of these paths.
+     *
+     * @param graph     The Graph object representing the graph.
+     * @param textArea  The JTextArea object to append the paths to.
+     * @param nodes1    The list of starting nodes.
+     * @param nodes2    The list of ending nodes.
+     */
     private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are semidirected paths from X to Y that start with a directed edge out of X.\n" +
                         "And adjustmentt set should not block any of these paths");
@@ -380,6 +407,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area.
+     * A non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
+     *
+     * @param graph The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1 The list of starting nodes.
+     * @param nodes2 The list of ending nodes.
+     */
     private void allNonamenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are paths that are not amenable paths. An adjustment set should block all of these paths.\n");
 
@@ -412,6 +448,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all paths from the source nodes to the target nodes to a given text area.
+     *
+     * @param graph The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1 The list of source nodes.
+     * @param nodes2 The list of target nodes.
+     */
     private void allPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are all paths from the source to the target, however oriented.\n");
 
@@ -441,6 +485,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all treks of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S
+     *
+     * @param graph       The Graph object representing the graph.
+     * @param textArea    The JTextArea object to append the treks to.
+     * @param nodes1      The list of starting nodes.
+     * @param nodes2      The list of ending nodes.
+     */
     private void allTreks(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.\n");
 
@@ -469,6 +521,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all confounder paths of the form X <~~ S ~~> Y, where S is the source, to the given text area.
+     *
+     * @param graph     The Graph object representing the graph.
+     * @param textArea  The JTextArea object to append the paths to.
+     * @param nodes1    The list of starting nodes.
+     * @param nodes2    The list of ending nodes.
+     */
     private void confounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("These are paths of the form X <~~ S ~~> Y for source S.\n");
 
@@ -509,6 +569,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Appends all confounder paths along which all nodes except for endpoints are latent to the given text area.
+     *
+     * @param graph     The Graph object representing the graph.
+     * @param textArea  The JTextArea object to append the paths to.
+     * @param nodes1    The list of starting nodes.
+     * @param nodes2    The list of ending nodes.
+     */
     private void latentConfounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         boolean pathListed = false;
 
@@ -560,6 +628,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    /**
+     * Calculates and displays the adjacent nodes for each pair of nodes in the given lists.
+     *
+     * @param graph The graph object representing the graph.
+     * @param textArea The JTextArea object to append the results to.
+     * @param nodes1 The first list of nodes.
+     * @param nodes2 The second list of nodes.
+     */
     private void adjacentNodes(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -590,7 +666,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-
     /**
      * Calculates some adjustment sets for a given set of nodes in a graph.
      *
@@ -608,8 +683,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                                \s
                 source and target""");
 
-//        boolean pathListed = false;
-
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<Set<Node>> adjustments = graph.paths().adjustmentSets(node1, node2, 8, 4, 3,
@@ -621,22 +694,22 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     textArea.append("\n    --NONE--");
                     continue;
                 }
-//                else {
-//                    pathListed = true;
-//                }
 
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
                 }
             }
         }
-
-//        if (!pathListed) {
-//            textArea.append("\nNo adjustment sets listed.");
-//        }
     }
 
-
+    /**
+     * Converts a list of Nodes into a comma-separated string representation.
+     * If the list is empty, returns "--NONE--".
+     *
+     * @param _nodes The list of Nodes to convert.
+     * @return The comma-separated string representation of the Nodes list,
+     *         or "--NONE--" if the list is empty.
+     */
     private String niceList(List<Node> _nodes) {
         if (_nodes.isEmpty()) {
             return "--NONE--";
@@ -659,23 +732,33 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return buf.toString();
     }
 
-
     /**
-     * {@inheritDoc}
-     * <p>
-     * Required by the AbstractAction interface; does nothing.
+     * Notifies that the ownership of the specified clipboard contents has been lost.
+     *
+     * @param clipboard The clipboard object that lost ownership of the contents.
+     * @param contents  The contents that were lost by the clipboard.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
+    /**
+     * Sets the maximum length for a path.
+     *
+     * @param maxLength The maximum length of the path. It must be greater than or equal to -1.
+     * @throws IllegalArgumentException If the maxLength is less than -1.
+     */
     private void setMaxLength(int maxLength) {
         if (!(maxLength >= -1)) throw new IllegalArgumentException();
         Preferences.userRoot().putInt("pathMaxLength", maxLength);
     }
 
+    /**
+     * A JTextFieldWithPrompt is a custom JTextField that displays a prompt text when no text has been entered and the
+     * component does not have focus.
+     */
     private static class JTextFieldWithPrompt extends JTextField {
-        private String promptText;
-        private Color promptColor;
+        private final String promptText;
+        private final Color promptColor;
 
         public JTextFieldWithPrompt(String promptText) {
             this(promptText, Color.GRAY);
@@ -687,6 +770,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
             // Set focus listener to repaint the component when focus is gained or lost
             this.addFocusListener(new FocusListener() {
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     repaint();
@@ -697,10 +781,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     repaint();
                 }
             });
-
-
         }
 
+        /**
+         * This method is responsible for painting the component. It overrides the paintComponent method from the JTextField class.
+         * It checks if the text in the component is empty and if it does not have focus. If both conditions are true, it paints the
+         * prompt text on the component using the specified prompt color and font style.
+         *
+         * @param g the Graphics object used for painting
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -714,39 +803,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 g2d.dispose();
             }
         }
-
-        public String getPromptText() {
-            return promptText;
-        }
-
-        public void setPromptText(String promptText) {
-            this.promptText = promptText;
-            repaint();
-        }
-
-        public Color getPromptColor() {
-            return promptColor;
-        }
-
-        public void setPromptColor(Color promptColor) {
-            this.promptColor = promptColor;
-            repaint();
-        }
-
-//        public static void main(String[] args) {
-//            JFrame frame = new JFrame("JTextField with Prompt Example");
-//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            frame.setLayout(new FlowLayout());
-//
-//            JTextFieldWithPrompt textField = new JTextFieldWithPrompt("Using empty conditioning set...");
-//            textField.setColumns(20);
-//
-//            frame.add(textField);
-//            frame.pack();
-//            frame.setVisible(true);
-//        }
     }
-
 }
 
 

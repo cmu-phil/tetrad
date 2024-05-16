@@ -468,6 +468,14 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
+    /**
+     * Finds amenable paths from the given source node to the given destination node with a maximum length.
+     *
+     * @param node1 the source node
+     * @param node2 the destination node
+     * @param maxLength the maximum length of the paths
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of nodes
+     */
     public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 

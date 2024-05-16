@@ -244,23 +244,23 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>pathString.</p>
+     * Constructs a string representation of a path in a graph.
      *
-     * @param graph       a {@link Graph} object
-     * @param path        a {@link List} object
-     * @param showBlocked
-     * @return a {@link java.lang.String} object
+     * @param graph        the graph in which the path exists
+     * @param path         the list of nodes representing the path
+     * @param showBlocked  determines whether blocked nodes should be included in the string representation
+     * @return the string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
         return GraphUtils.pathString(graph, path, new HashSet<>(), showBlocked);
     }
 
     /**
-     * <p>pathString.</p>
+     * Generates a string representation of a path in a given graph, starting from the specified nodes.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.lang.String} object
+     * @param graph the graph in which the path is located
+     * @param x the starting nodes of the path
+     * @return a string representation of the path
      */
     public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
@@ -268,6 +268,14 @@ public final class GraphUtils {
         return GraphUtils.pathString(graph, path, new HashSet<>());
     }
 
+    /**
+     * Returns a string representation of the given path in the graph, considering the conditioning variables.
+     *
+     * @param graph            the graph to find the path in
+     * @param path             the list of nodes representing the path
+     * @param conditioningVars the set of conditioning variables to consider
+     * @return a string representation of the path
+     */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars) {
         return pathString(graph, path, conditioningVars, false);
     }
@@ -279,6 +287,7 @@ public final class GraphUtils {
      * @param graph            the graph containing the path
      * @param path             the list of nodes representing the path
      * @param conditioningVars the list of nodes representing the conditioning variables
+     * @param showBlocked      whether to show information about blocked paths
      * @return a string representation of the path with conditioning information
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked) {
