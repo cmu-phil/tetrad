@@ -488,13 +488,14 @@ public class Paths implements TetradSerializable {
             return;
         }
 
-        if (path.contains(node1)) {
+        path.addLast(node1);
+
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
             return;
         }
 
-        path.addLast(node1);
-
-        if (node1 == node2) {
+        if (path.size() > 1 && node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
             paths.add(_path);
         }
@@ -537,6 +538,16 @@ public class Paths implements TetradSerializable {
 
         path.addLast(node1);
 
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
+        }
+
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            paths.add(_path);
+        }
+
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverse(node1, edge);
 
@@ -545,13 +556,6 @@ public class Paths implements TetradSerializable {
             }
 
             if (path.contains(child)) {
-                continue;
-            }
-
-            if (child == node2) {
-                List<Node> _path = new ArrayList<>(path);
-                _path.add(child);
-                paths.add(_path);
                 continue;
             }
 
@@ -576,20 +580,20 @@ public class Paths implements TetradSerializable {
     }
 
     private void allDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (path.contains(node1)) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
 
         path.addLast(node1);
 
-        if (node1 == node2) {
-            List<Node> _path = new ArrayList<>(path);
-            paths.add(_path);
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
         }
 
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
-            path.removeLast();
-            return;
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            paths.add(_path);
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -2264,6 +2268,10 @@ public class Paths implements TetradSerializable {
         // Remove any amenable path that does not start with a visible edge in the CPDAG case.
         // (The PAG case will be handled later.)
         for (List<Node> path : new ArrayList<>(amenable)) {
+            if (path.size() < 2) {
+                throw new IllegalArgumentException("Path is too short: " + path);
+            }
+
             Node a = path.get(0);
             Node b = path.get(1);
             Edge e = graph.getEdge(a, b);
