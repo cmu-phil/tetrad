@@ -446,4 +446,42 @@ public class TestCheckMarkov {
         }
     }
 
+    @Test
+    public void testDAGPrecisionRecall2ForLocalOnMarkovBlanket() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
 }
