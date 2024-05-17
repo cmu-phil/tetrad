@@ -24,10 +24,7 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
- * Wraps the original FASK algorithm for continuous variables.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * FASK algorithm.
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -61,21 +58,18 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     private Algorithm algorithm;
 
-    // Don't delete.
-
     /**
      * <p>Constructor for Fask.</p>
      */
     public Fask() {
-
+        // Don't delete.
     }
 
     /**
-     * <p>Constructor for Fask.</p>
+     * Constructs a new Fask object with the given ScoreWrapper.
      *
-     * @param score a {@link ScoreWrapper} object
-     */
-    public Fask(ScoreWrapper score) {
+     * @param score the ScoreWrapper object to use
+     */    public Fask(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -104,6 +98,21 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
+        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+
+        if (lrRule == 1) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+        } else if (lrRule == 2) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+        } else if (lrRule == 3) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+        } else if (lrRule == 4) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+        } else if (lrRule == 5) {
+            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
 
         search.setDepth(parameters.getInt(DEPTH));
         search.setAlpha(parameters.getDouble(ALPHA));
@@ -111,6 +120,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setDelta(parameters.getDouble(FASK_DELTA));
         search.setUseFasAdjacencies(true);
         search.setUseSkewAdjacencies(true);
+        search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
         if (this.externalGraph != null) {
             this.externalGraph = algorithm.search(dataSet, parameters);
@@ -168,13 +178,11 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
-        parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
-        parameters.add(ORIENTATION_ALPHA);
+        parameters.add(ALPHA);
         parameters.add(FASK_DELTA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
-        parameters.add(FASK_ADJACENCY_METHOD);
         parameters.add(FASK_NONEMPIRICAL);
-        parameters.add(VERBOSE);
+
         return parameters;
     }
 
