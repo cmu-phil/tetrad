@@ -191,6 +191,126 @@ public final class Fask {
     }
 
     /**
+     * Calculates the expected correlation between two arrays of double values where the condition is greater than 0.
+     *
+     * @param x         The data for the first variable.
+     * @param y         The data for the second variable.
+     * @param condition The condition array indicating whether the correlation should be calculated or not.
+     * @return The expected correlation between the two arrays of double values.
+     */
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    /**
+     * Calculates a left-right judgment using the robust skewness between two arrays of double values.
+     *
+     * @param x The data for the first variable.
+     * @param y The data for the second variable.
+     * @return The robust skewness between the two arrays.
+     */
+    private static boolean robustSkew(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
+        double[] lr = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            lr[i] = g(x[i]) * y[i] - x[i] * g(y[i]);
+        }
+
+        return correlation(x, y) * mean(lr) > 0;
+    }
+
+    /**
+     * Calculates a left-right judgment using the skewness of two arrays for double values.
+     *
+     * @param x the first array of double values
+     * @param y the second array of double values
+     * @return the skewness of the two arrays
+     */
+    private static boolean skew(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
+        double[] lr = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            lr[i] = x[i] * x[i] * y[i] - x[i] * y[i] * y[i];
+        }
+
+        return correlation(x, y) * mean(lr) > 0;
+    }
+
+    /**
+     * Calculates the logarithm of the hyperbolic cosine of the maximum for x and 0.
+     *
+     * @param x The input value.
+     * @return The result of the calculation.
+     */
+    private static double g(double x) {
+        return log(cosh(FastMath.max(x, 0)));
+    }
+
+    /**
+     * Calculates the expected correlation between two arrays of double values where z is positive.
+     *
+     * @param x The data for the first variable.
+     * @param y The data for the second variable.
+     * @param z The data for the third variable used in the correlation calculation.
+     * @return The correlation exponent between the two arrays of double values.
+     */
+    private static double corrExp(double[] x, double[] y, double[] z) {
+        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
+    }
+
+    /**
+     * Calculates E(xy) for positive values of z.
+     *
+     * @param x The data for the first variable.
+     * @param y The data for the second variable.
+     * @param z The data for the third variable used in the correlation calculation.
+     * @return The correlation exponent between the two arrays of double values.
+     */
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    /**
+     * Corrects the skewness of the given data using the provided skewness value.
+     *
+     * @param data The array of data to be corrected.
+     * @param sk   The skewness value to be used for correction.
+     * @return The corrected data array.
+     */
+    private static double[] correctSkewness(double[] data, double sk) {
+        double[] data2 = new double[data.length];
+        for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
+        return data2;
+    }
+
+    /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with two-cycles. Runs the
      * fast adjacency search (FAS, Spirtes et al., 2000) followed by a modification of the robust skew rule (Pairwise
      * Likelihood Ratios for Estimation of Non-Gaussian Structural Equation Models, Smith and Hyvarinen), together with
@@ -362,126 +482,6 @@ public final class Fask {
      */
     public void setDelta(double delta) {
         this.delta = delta;
-    }
-
-    /**
-     * Calculates the expected correlation between two arrays of double values where the condition is greater than 0.
-     *
-     * @param x         The data for the first variable.
-     * @param y         The data for the second variable.
-     * @param condition The condition array indicating whether the correlation should be calculated or not.
-     * @return The expected correlation between the two arrays of double values.
-     */
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    /**
-     * Calculates a left-right judgment using the robust skewness between two arrays of double values.
-     *
-     * @param x The data for the first variable.
-     * @param y The data for the second variable.
-     * @return The robust skewness between the two arrays.
-     */
-    private static boolean robustSkew(double[] x, double[] y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
-
-        double[] lr = new double[x.length];
-
-        for (int i = 0; i < x.length; i++) {
-            lr[i] = g(x[i]) * y[i] - x[i] * g(y[i]);
-        }
-
-        return correlation(x, y) * mean(lr) > 0;
-    }
-
-    /**
-     * Calculates a left-right judgment using the skewness of two arrays for double values.
-     *
-     * @param x the first array of double values
-     * @param y the second array of double values
-     * @return the skewness of the two arrays
-     */
-    private static boolean skew(double[] x, double[] y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
-
-        double[] lr = new double[x.length];
-
-        for (int i = 0; i < x.length; i++) {
-            lr[i] = x[i] * x[i] * y[i] - x[i] * y[i] * y[i];
-        }
-
-        return correlation(x, y) * mean(lr) > 0;
-    }
-
-    /**
-     * Calculates the logarithm of the hyperbolic cosine of the maximum for x and 0.
-     *
-     * @param x The input value.
-     * @return The result of the calculation.
-     */
-    private static double g(double x) {
-        return log(cosh(FastMath.max(x, 0)));
-    }
-
-    /**
-     * Calculates the expected correlation between two arrays of double values where z is positive.
-     *
-     * @param x The data for the first variable.
-     * @param y The data for the second variable.
-     * @param z The data for the third variable used in the correlation calculation.
-     * @return The correlation exponent between the two arrays of double values.
-     */
-    private static double corrExp(double[] x, double[] y, double[] z) {
-        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
-    }
-
-    /**
-     * Calculates E(xy) for positive values of z.
-     *
-     * @param x The data for the first variable.
-     * @param y The data for the second variable.
-     * @param z The data for the third variable used in the correlation calculation.
-     * @return The correlation exponent between the two arrays of double values.
-     */
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    /**
-     * Corrects the skewness of the given data using the provided skewness value.
-     *
-     * @param data The array of data to be corrected.
-     * @param sk   The skewness value to be used for correction.
-     * @return The corrected data array.
-     */
-    private static double[] correctSkewness(double[] data, double sk) {
-        double[] data2 = new double[data.length];
-        for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
-        return data2;
     }
 
     /**
