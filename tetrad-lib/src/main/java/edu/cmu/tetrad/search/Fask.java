@@ -311,6 +311,18 @@ public final class Fask {
     }
 
     /**
+     * Calculates a left-right judgment using the difference of corrExp values between two arrays of double values.
+     *
+     * @param x The data for the first variable.
+     * @param y The data for the second variable.
+     * @return True if the corrExp value of the first variable is greater than the corrExp value of the second variable,
+     * false otherwise.
+     */
+    public static boolean leftRightV2(double[] x, double[] y) {
+        return corrExp(x, y, x) - corrExp(x, y, y) > 0;
+    }
+
+    /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with two-cycles. Runs the
      * fast adjacency search (FAS, Spirtes et al., 2000) followed by a modification of the robust skew rule (Pairwise
      * Likelihood Ratios for Estimation of Non-Gaussian Structural Equation Models, Smith and Hyvarinen), together with
@@ -402,6 +414,8 @@ public final class Fask {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
+     *
+     * @param alpha The significance level.
      */
     public void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -596,18 +610,6 @@ public final class Fask {
         if (r < delta) lr *= -1;
 
         return lr > 0;
-    }
-
-    /**
-     * Calculates a left-right judgment using the difference of corrExp values between two arrays of double values.
-     *
-     * @param x The data for the first variable.
-     * @param y The data for the second variable.
-     * @return True if the corrExp value of the first variable is greater than the corrExp value of the second variable,
-     * false otherwise.
-     */
-    public static boolean leftRightV2(double[] x, double[] y) {
-        return corrExp(x, y, x) - corrExp(x, y, y) > 0;
     }
 
     /**

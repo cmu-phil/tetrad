@@ -1231,9 +1231,8 @@ public class AlgcomparisonEditor extends JPanel {
 
         JButton runComparison = runComparisonButton();
 
-        // todo work on this later.
         JButton setComparisonParameters = new JButton("Edit Parameters");
-//
+
         setComparisonParameters.addActionListener(e -> {
             model.getParameters().set("algcomparisonSaveData", saveData);
             model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);

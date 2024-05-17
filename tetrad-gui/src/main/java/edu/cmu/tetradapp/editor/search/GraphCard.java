@@ -67,7 +67,7 @@ public class GraphCard extends JPanel {
     /**
      * <p>Constructor for GraphCard.</p>
      *
-     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param algorithmRunner a {@link GeneralAlgorithmRunner} object
      */
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -124,7 +124,7 @@ public class GraphCard extends JPanel {
         JMenu graph = new JMenu("Graph");
 
         graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
+        graph.add(new PathsAction(this.workbench, algorithmRunner.getParameters()));
         graph.add(new UnderliningsAction(this.workbench));
         graph.addSeparator();
 

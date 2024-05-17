@@ -246,9 +246,9 @@ public final class GraphUtils {
     /**
      * Constructs a string representation of a path in a graph.
      *
-     * @param graph        the graph in which the path exists
-     * @param path         the list of nodes representing the path
-     * @param showBlocked  determines whether blocked nodes should be included in the string representation
+     * @param graph       the graph in which the path exists
+     * @param path        the list of nodes representing the path
+     * @param showBlocked determines whether blocked nodes should be included in the string representation
      * @return the string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
@@ -259,7 +259,7 @@ public final class GraphUtils {
      * Generates a string representation of a path in a given graph, starting from the specified nodes.
      *
      * @param graph the graph in which the path is located
-     * @param x the starting nodes of the path
+     * @param x     the starting nodes of the path
      * @return a string representation of the path
      */
     public static String pathString(Graph graph, Node... x) {
@@ -330,6 +330,8 @@ public final class GraphUtils {
 
             if (edge == null) {
                 buf.append("(-)");
+            } else if (graph.getEdges(n0, n1).size() == 2) {
+                buf.append("<=>");
             } else {
                 Endpoint endpoint0 = edge.getProximalEndpoint(n0);
                 Endpoint endpoint1 = edge.getProximalEndpoint(n1);

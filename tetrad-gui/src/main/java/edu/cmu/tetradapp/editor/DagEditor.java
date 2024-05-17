@@ -492,7 +492,7 @@ public final class DagEditor extends JPanel
         graph.addSeparator();
 
         graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
+        graph.add(new PathsAction(this.workbench, parameters));
         graph.add(new UnderliningsAction(this.workbench));
         graph.addSeparator();
 

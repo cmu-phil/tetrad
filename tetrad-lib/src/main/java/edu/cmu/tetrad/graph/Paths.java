@@ -444,7 +444,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (path.contains(child)) {
+            if (child != node2 && path.contains(child)) {
                 continue;
             }
 
@@ -515,7 +515,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (path.contains(child)) {
+            if (child != node2 && path.contains(child)) {
                 continue;
             }
 
@@ -2350,7 +2350,6 @@ public class Paths implements TetradSerializable {
             // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
             // That is, we check if it blocks all treks from source to target that are not semi-directed
             // without blocking any treks that are semi-directed.
-            int count = 0;
 
             ADJ:
             for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
@@ -2377,7 +2376,7 @@ public class Paths implements TetradSerializable {
 
                 adjustmentSets.add(possibleAdjustmentSet);
 
-                if (++count >= maxNumSets) {
+                if (adjustmentSets.size() >= maxNumSets) {
                     return adjustmentSets;
                 }
             }

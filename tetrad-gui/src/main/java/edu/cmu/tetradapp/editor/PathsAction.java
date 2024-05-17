@@ -21,10 +21,15 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetrad.util.ParamDescription;
+import edu.cmu.tetrad.util.ParamDescriptions;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -37,9 +42,12 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 /**
  * Represents an action that performs calculations on paths in a graph.
@@ -47,30 +55,33 @@ import java.util.prefs.Preferences;
 public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     /**
+     * JLabel representing a message indicating that there are no parameters to edit.
+     */
+    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+    /**
      * The workbench.
      */
     private final GraphWorkbench workbench;
-
+    /**
+     * The parameters.
+     */
+    private final Parameters parameters;
     /**
      * The nodes to show paths from.
      */
     private List<Node> nodes1;
-
     /**
      * The nodes to show paths to.
      */
     private List<Node> nodes2;
-
     /**
      * The text area for the paths.
      */
     private JTextArea textArea;
-
     /**
      * The method for showing paths.
      */
     private String method;
-
     /**
      * The conditioning set.
      */
@@ -79,9 +90,483 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Represents an action that performs calculations on paths in a graph.
      */
-    public PathsAction(GraphWorkbench workbench) {
+    public PathsAction(GraphWorkbench workbench, Parameters parameters) {
         super("Paths");
         this.workbench = workbench;
+        this.parameters = parameters;
+    }
+
+    /**
+     * Creates a map of parameter components for the given set of parameters and a Parameters object.
+     *
+     * @param params     the set of parameter names
+     * @param parameters the Parameters object containing the parameter values
+     * @return a map of parameter names to corresponding Box components
+     */
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
+                                                             boolean listOptionAllowed, boolean bothOptionAllowed) {
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, false),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    /**
+     * Creates a component for a specific parameter based on its type and default value.
+     *
+     * @param parameter  the name of the parameter
+     * @param parameters the Parameters object containing the parameter values
+     * @param paramDesc  the ParamDescription object containing information about the parameter
+     * @return a Box component representing the parameter
+     */
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc,
+                                                boolean listOptionAllowed, boolean bothOptionAllowed) {
+        JComponent component;
+        Object defaultValue = parameters.get(parameter);
+
+        Object[] defaultValues = parameters.getValues(parameter);
+
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            Double[] defValues = new Double[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Double) defaultValues[i];
+            }
+
+            if (listOptionAllowed) {
+                component = getListDoubleTextField(parameter, parameters, defValues, lowerBoundDouble, upperBoundDouble);
+            } else {
+                component = getDoubleTextField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+            }
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            Integer[] defValues = new Integer[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Integer) defaultValues[i];
+            }
+
+            if (listOptionAllowed) {
+                component = getListIntTextField(parameter, parameters, defValues, lowerBoundInt, upperBoundInt);
+            } else {
+                component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+            }
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            Long[] defValues = new Long[defaultValues.length];
+            for (int i = 0; i < defaultValues.length; i++) {
+                defValues[i] = (Long) defaultValues[i];
+            }
+            if (listOptionAllowed) {
+                component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
+            } else {
+                component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
+            }
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    /**
+     * Returns a customized DoubleTextField with specified parameters.
+     *
+     * @param parameter    the name of the parameter to be set in the Parameters object
+     * @param parameters   the Parameters object to store the parameter values
+     * @param defaultValue the default value to set in the DoubleTextField
+     * @param lowerBound   the lowerbound limit for valid input values in the DoubleTextField
+     * @param upperBound   the upperbound limit for valid input values in the DoubleTextField
+     * @return a DoubleTextField with the specified parameters
+     */
+    public static DoubleTextField getDoubleTextField(String parameter, Parameters parameters,
+                                                     double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(defaultValue,
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+        field.setFilter((value, oldValues) -> {
+            if (Double.isNaN(value)) {
+                return oldValues;
+            }
+
+            if (value < lowerBound) {
+                return oldValues;
+            }
+
+            if (value > upperBound) {
+                return oldValues;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Creates a ListDoubleTextField component with the given parameters.
+     *
+     * @param parameter     the name of the parameter
+     * @param parameters    the Parameters object containing the parameter values
+     * @param defaultValues the default values for the component
+     * @param lowerBound    the lower bound for the values
+     * @param upperBound    the upper bound for the values
+     * @return a ListDoubleTextField component with the specified parameters
+     */
+    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters,
+                                                             Double[] defaultValues, double lowerBound, double upperBound) {
+        ListDoubleTextField field = new ListDoubleTextField(defaultValues,
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+        field.setFilter((values, oldValues) -> {
+            if (values.length == 0) {
+                return oldValues;
+            }
+
+            List<Double> valuesList = new ArrayList<>();
+
+            for (Double value : values) {
+                if (Double.isNaN(value)) {
+                    continue;
+                }
+
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Double[] newValues = valuesList.toArray(new Double[0]);
+
+            try {
+                parameters.set(parameter, (Object[]) newValues);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return newValues;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns an IntTextField with the specified parameters.
+     *
+     * @param parameter    the name of the parameter
+     * @param parameters   the Parameters object to update with the new value
+     * @param defaultValue the default value for the IntTextField
+     * @param lowerBound   the lower bound for valid values
+     * @param upperBound   the upper bound for valid values
+     * @return an IntTextField with the specified parameters
+     */
+    public static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                               int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(defaultValue, 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a ListIntTextField component with the specified parameters.
+     *
+     * @param parameter     the name of the parameter
+     * @param parameters    the Parameters object containing the parameter values
+     * @param defaultValues the default values for the component
+     * @param lowerBound    the lower bound for the values
+     * @param upperBound    the upper bound for the values
+     * @return a ListIntTextField component with the specified parameters
+     */
+    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters,
+                                                       Integer[] defaultValues, double lowerBound, double upperBound) {
+        ListIntTextField field = new ListIntTextField(defaultValues, 8);
+
+        field.setFilter((values, oldValues) -> {
+            if (values.length == 0) {
+                return oldValues;
+            }
+
+            List<Integer> valuesList = new ArrayList<>();
+
+            for (Integer value : values) {
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Integer[] newValues = valuesList.toArray(new Integer[0]);
+
+            try {
+                parameters.set(parameter, (Object[]) newValues);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return newValues;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a LongTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter to set in the Parameters object.
+     * @param parameters   The Parameters object to set the parameter in.
+     * @param defaultValue The default value to use for the LongTextField.
+     * @param lowerBound   The lower bound for the LongTextField value.
+     * @param upperBound   The upper bound for the LongTextField value.
+     * @return A LongTextField object with the specified parameters.
+     */
+    public static LongTextField getLongTextField(String parameter, Parameters parameters,
+                                                 long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(defaultValue, 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
+                                                         Long[] defaultValues, long lowerBound, long upperBound) {
+        ListLongTextField field = new ListLongTextField(defaultValues, 8);
+
+        field.setFilter((values, oldValues) -> {
+            if (values.length == 0) {
+                return oldValues;
+            }
+
+            List<Long> valuesList = new ArrayList<>();
+
+            for (Long value : values) {
+                if (value < lowerBound) {
+                    continue;
+                }
+
+                if (value > upperBound) {
+                    continue;
+                }
+
+                valuesList.add(value);
+            }
+
+            if (valuesList.isEmpty()) {
+                return oldValues;
+            }
+
+            Long[] newValues = valuesList.toArray(new Long[0]);
+
+            try {
+                parameters.set(parameter, (Object[]) newValues);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return newValues;
+        });
+
+        return field;
+    }
+
+    /**
+     * Creates a StringTextField component with the specified parameters.
+     *
+     * @param parameter    the name of the parameter
+     * @param parameters   the Parameters object containing the parameter values
+     * @param defaultValue the default value for the component
+     * @return a StringTextField component with the specified parameters
+     */
+    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+
+        field.setFilter((value, oldValue) -> {
+            if (value.equals(field.getValue().trim())) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Returns a Box component representing a boolean selection box.
+     *
+     * @param parameter         the name of the parameter
+     * @param parameters        the Parameters object containing the parameter values
+     * @param bothOptionAllowed whether the option allows one to select both true and false
+     * @return a Box component representing the boolean selection box
+     */
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean bothOptionAllowed) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        JRadioButton bothButton = null;
+
+        if (bothOptionAllowed) {
+            bothButton = new JRadioButton("Both");
+        }
+
+        // Button group to ensure only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        if (bothOptionAllowed) {
+            selectionBtnGrp.add(bothButton);
+        }
+
+        Object[] values = parameters.getValues(parameter);
+        Boolean[] booleans = new Boolean[values.length];
+
+        try {
+            for (int i = 0; i < values.length; i++) {
+                booleans[i] = (Boolean) values[i];
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // Set default selection
+        if (booleans.length == 1 && booleans[0]) {
+            yesButton.setSelected(true);
+        } else if (booleans.length == 1) {
+            noButton.setSelected(true);
+        } else if (booleans.length == 2 && bothOptionAllowed) {
+            bothButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        if (bothOptionAllowed) {
+            selectionBox.add(bothButton);
+        }
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                Object[] objects = new Object[1];
+                objects[0] = Boolean.TRUE;
+                parameters.set(parameter, objects);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                Object[] objects = new Object[1];
+                objects[0] = Boolean.FALSE;
+                parameters.set(parameter, objects);
+            }
+        });
+
+        if (bothOptionAllowed) {
+            bothButton.addActionListener((e) -> {
+                JRadioButton button = (JRadioButton) e.getSource();
+                if (button.isSelected()) {
+                    Object[] objects = new Object[2];
+                    objects[0] = Boolean.TRUE;
+                    objects[1] = Boolean.FALSE;
+                    parameters.set(parameter, objects);
+                }
+            });
+        }
+
+        return selectionBox;
     }
 
     /**
@@ -172,19 +657,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         methodBox.setSelectedItem(this.method);
 
-        IntTextField maxField = new IntTextField(Preferences.userRoot().getInt("pathMaxLength", 8), 2);
-
-        maxField.setFilter((value, oldValue) -> {
-            try {
-
-                // Disallow unlimited path option. Also insist the max path length be at least 1.
-                if (value >= 2) setMaxLength(value);
-                update(graph, textArea, nodes1, nodes2, method);
-                return Preferences.userRoot().getInt("pathMaxLength", 8);
-            } catch (Exception e14) {
-                return oldValue;
-            }
-        });
+        JButton editParameters = new JButton("Edit Parameters");
 
         Box b = Box.createVerticalBox();
 
@@ -196,18 +669,20 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b1.add(node2Box);
         b1.add(Box.createHorizontalGlue());
         b1.add(methodBox);
-        b1.add(new JLabel("Max length"));
-        b1.add(maxField);
+        b1.add(editParameters);
 
-        b1.setMaximumSize(new Dimension(800, 25));
+//        b1.add(new JLabel("Max length"));
+//        b1.add(maxField);
+
+        b1.setMaximumSize(new Dimension(1000, 25));
 
         b.setBorder(new EmptyBorder(2, 3, 2, 2));
         b.add(b1);
 
         JTextFieldWithPrompt comp = new JTextFieldWithPrompt("Enter conditioning variables...");
         comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
-        comp.setPreferredSize(new Dimension(600, 20));
-        comp.setMaximumSize(new Dimension(600, 20));
+        comp.setPreferredSize(new Dimension(750, 20));
+        comp.setMaximumSize(new Dimension(1000, 20));
 
         comp.addActionListener(e16 -> {
             String text = comp.getText();
@@ -229,12 +704,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
 
         Box b1a = Box.createHorizontalBox();
-        b1a.add(new JLabel("Enter conditioning variables:"));
+        b1a.add(new JLabel("Condition on:"));
         b1a.add(comp);
         b1a.setBorder(new EmptyBorder(2, 3, 2, 2));
         b1a.add(Box.createHorizontalGlue());
 
-        b1a.setMaximumSize(new Dimension(800, 25));
+        b1a.setMaximumSize(new Dimension(1000, 25));
 
         b.add(b1a);
 
@@ -251,12 +726,55 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         panel.add(b);
 
         EditorWindow window = new EditorWindow(panel,
-                "Directed Paths", "Close", false, this.workbench);
+                "Paths", "Close", false, this.workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
         update(graph, this.textArea, this.nodes1, this.nodes2, this.method);
+
+        editParameters.addActionListener(e2 -> {
+            Set<String> params = new HashSet<>();
+            params.add("pathsMaxLength");
+            params.add("pathsMaxNumSets");
+            params.add("pathsMaxDistanceFromEndpoint");
+            params.add("pathsNearWhichEndpoint");
+            params.add("pathsMaxLengthAdjustment");
+
+            Box parameterBox = getParameterBox(params, false, false, parameters);
+            new PaddingPanel(parameterBox);
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(window), "Edit Parameters", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            // Add your panel to the center of the dialog
+            dialog.add(parameterBox, BorderLayout.CENTER);
+
+//            // Create a panel for the buttons
+            JPanel buttonPanel = betButtonPanel(dialog, graph);
+//
+//            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(window); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
     }
+
+    @NotNull
+    private JPanel betButtonPanel(JDialog dialog, Graph graph) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton doneButton = new JButton("Done");
+
+        doneButton.addActionListener(e1 -> {
+            dialog.dispose();
+            update(graph, textArea, nodes1, nodes2, method);
+        });
+
+        buttonPanel.add(doneButton);
+        return buttonPanel;
+    }
+
 
     /**
      * Updates the text area based on the selected method.
@@ -324,7 +842,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> paths = graph.paths().directedPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                        parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
                     continue;
@@ -361,7 +879,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                        parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
                     continue;
@@ -400,7 +918,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                        parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
                     continue;
@@ -438,9 +956,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> nonamenable = graph.paths().allPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
-                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                        parameters.getInt("pathsMaxLengthAdjustment"));
+
+                // Amenable paths of any length are considered.
+                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
                 nonamenable.removeAll(amenable);
 
                 if (amenable.isEmpty()) {
@@ -478,7 +997,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 List<List<Node>> paths = graph.paths().allPaths(node1, node2,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                        parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
                     continue;
@@ -545,7 +1064,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> treks = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> treks = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
 
                 if (treks.isEmpty()) {
                     continue;
@@ -580,9 +1099,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> confounderPaths = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> confounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
 
                 confounderPaths.removeAll(directPaths1);
 
@@ -628,9 +1147,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 8));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, Preferences.userRoot().getInt("pathMaxLength", 8));
+                List<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
                 latentConfounderPaths.removeAll(directPaths1);
 
                 for (List<Node> _path : directPaths2) {
@@ -717,14 +1236,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 all causal paths unblocked. In particular, all confounders of the source and target will be
                 blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
                 effect of a source on a target.
-                
+                                
                 To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
                 into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
                 dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are blocked, 
                 the set is not an adjustment set. Also select "Non-amenable paths" from the dropdown. All 
                 non-amenable paths (paths that can't be causal) should be blocked. If any are unblocked, the 
                 set is not an adjustment set.
-                
+                                
                 In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
                 find up to a maximum number of adjustment sets that are no more than a certain distance from
                 either the source or the target node, or either. Also, while all amenable paths are taken
@@ -734,8 +1253,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<Set<Node>> adjustments = graph.paths().adjustmentSets(node1, node2, 8, 4, 3,
-                        Preferences.userRoot().getInt("pathMaxLength", 8));
+                int maxNumSet = parameters.getInt("pathsMaxNumSets");
+                int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+                int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+                int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+
+                List<Set<Node>> adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
+                        maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
 
                 textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
 
@@ -788,15 +1312,42 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
-    /**
-     * Sets the maximum length for a path.
-     *
-     * @param maxLength The maximum length of the path. It must be greater than or equal to -1.
-     * @throws IllegalArgumentException If the maxLength is less than -1.
-     */
-    private void setMaxLength(int maxLength) {
-        if (!(maxLength >= -1)) throw new IllegalArgumentException();
-        Preferences.userRoot().putInt("pathMaxLength", maxLength);
+    @NotNull
+    private Box getParameterBox(Set<String> params, boolean listOptionAllowed, boolean bothOptionAllowed, Parameters _parameters) {
+        Box parameterBox = Box.createVerticalBox();
+        parameterBox.removeAll();
+
+        if (params.isEmpty()) {
+            JLabel noParamLbl = NO_PARAM_LBL;
+            noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
+            parameterBox.add(noParamLbl, BorderLayout.NORTH);
+        } else {
+            Box parameters = Box.createVerticalBox();
+            Box[] paramBoxes = ParameterComponents.toArray(
+                    createParameterComponents(params, _parameters, listOptionAllowed, false));
+            int lastIndex = paramBoxes.length - 1;
+            for (int i = 0; i < lastIndex; i++) {
+                parameters.add(paramBoxes[i]);
+                parameters.add(Box.createVerticalStrut(10));
+            }
+            parameters.add(paramBoxes[lastIndex]);
+
+            Box horiz = Box.createHorizontalBox();
+
+            if (listOptionAllowed) {
+                horiz.add(new JLabel("Please type comma-separated lists of values, thus: 10, 100, 1000"));
+            } else {
+                horiz.add(new JLabel("Please type a single value."));
+            }
+
+            horiz.add(Box.createHorizontalGlue());
+            horiz.setBorder(new EmptyBorder(0, 0, 10, 0));
+            parameterBox.add(horiz, BorderLayout.NORTH);
+            parameterBox.add(new JScrollPane(new PaddingPanel(parameters)), BorderLayout.CENTER);
+            parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+            parameterBox.setPreferredSize(new Dimension(800, 400));
+        }
+        return parameterBox;
     }
 
     /**
