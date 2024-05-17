@@ -77,8 +77,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * rule is used, and there is a threshold for this test. A good default for this threshold (the "skew edge threshold")
  * is 0.3. For more of these edges, set this threshold to a lower number.
  * <p>
- * It is assumed that the data are arranged so each variable forms a column and that there are no missing values.
- * The data matrix is assumed to be rectangular. To this end, the Tetrad DataSet class is used, which enforces this.
+ * It is assumed that the data are arranged so each variable forms a column and that there are no missing values. The
+ * data matrix is assumed to be rectangular. To this end, the Tetrad DataSet class is used, which enforces this.
  * <p>
  * Note that orienting a DAG for a linear, non-Gaussian model using the Hyvarinen and Smith pairwise rules is
  * alternatively known in the literature as Pairwise LiNGAM--see Hyvärinen, A., and Smith, S. M. (2013). Pairwise
@@ -126,6 +126,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
+ * <p>
+ * This is the code before cleaning it up on 2024-5-16.
  *
  * @author josephramsey
  * @author rubensanchez
@@ -368,7 +370,7 @@ public final class FaskOrig implements IGraphSearch {
      * @param sk   The skewness value to be used for correction.
      * @return The corrected data array.
      */
-    public static double[] correctSkewness(double[] data, double sk) {
+    private static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;

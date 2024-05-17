@@ -33,8 +33,8 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-@Experimental
-public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph {
+public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
+        TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -120,7 +120,6 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setDelta(parameters.getDouble(FASK_DELTA));
         search.setUseFasAdjacencies(true);
         search.setUseSkewAdjacencies(true);
-        search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
         if (this.externalGraph != null) {
             this.externalGraph = algorithm.search(dataSet, parameters);
@@ -181,7 +180,6 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(ALPHA);
         parameters.add(FASK_DELTA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
-        parameters.add(FASK_NONEMPIRICAL);
 
         return parameters;
     }

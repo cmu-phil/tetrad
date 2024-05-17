@@ -10,6 +10,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -25,10 +26,10 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
- * Wraps the FASK algorithm for continuous variables.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The FaskOrig class is an implementation of the FASK-Orig algorithm for causal discovery. It searches for causal
+ * relationships among variables in a dataset using the given independence test and score functions.
+ * <p>
+ * This is the code before cleaning it up on 2024-5-16.
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -37,6 +38,7 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
+@Experimental
 public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
