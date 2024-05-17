@@ -9,7 +9,6 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.FaskOrig;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -77,18 +76,13 @@ public class FaskVote {
         List<Node> nodes = G0.getNodes();
 
         for (DataSet dataSet : this.dataSets) {
-            FaskOrig fask = new FaskOrig(dataSet,
-                    this.score.getScore(dataSet, parameters),
-                    this.test.getTest(dataSet, parameters));
+            Fask fask = new Fask(dataSet, this.score.getScore(dataSet, parameters));
             fask.setExternalGraph(GraphUtils.undirectedGraph(G0));
-            fask.setAdjacencyMethod(FaskOrig.AdjacencyMethod.EXTERNAL_GRAPH);
-            fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-            fask.setLeftRight(FaskOrig.LeftRight.FASK2);
-            fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+            fask.setLeftRight(Fask.LeftRight.FASK2);
+            fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             fask.setDepth(parameters.getInt(DEPTH));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
-            fask.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            fask.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
+            fask.setAlpha(parameters.getDouble(ORIENTATION_ALPHA));
             fask.setKnowledge(this.knowledge);
 
 

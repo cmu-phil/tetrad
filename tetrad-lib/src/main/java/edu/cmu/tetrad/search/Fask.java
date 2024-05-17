@@ -198,7 +198,7 @@ public final class Fask {
      * @param condition The condition array indicating whether the correlation should be calculated or not.
      * @return The expected correlation between the two arrays of double values.
      */
-    private static double cu(double[] x, double[] y, double[] condition) {
+    public static double cu(double[] x, double[] y, double[] condition) {
         double exy = 0.0;
 
         int n = 0;
@@ -271,7 +271,7 @@ public final class Fask {
      * @param z The data for the third variable used in the correlation calculation.
      * @return The correlation exponent between the two arrays of double values.
      */
-    private static double corrExp(double[] x, double[] y, double[] z) {
+    public static double corrExp(double[] x, double[] y, double[] z) {
         return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
     }
 
@@ -283,7 +283,7 @@ public final class Fask {
      * @param z The data for the third variable used in the correlation calculation.
      * @return The correlation exponent between the two arrays of double values.
      */
-    private static double E(double[] x, double[] y, double[] z) {
+    public static double E(double[] x, double[] y, double[] z) {
         double exy = 0.0;
         int n = 0;
 
@@ -606,7 +606,7 @@ public final class Fask {
      * @return True if the corrExp value of the first variable is greater than the corrExp value of the second variable,
      * false otherwise.
      */
-    private boolean leftRightV2(double[] x, double[] y) {
+    public static boolean leftRightV2(double[] x, double[] y) {
         return corrExp(x, y, x) - corrExp(x, y, y) > 0;
     }
 
