@@ -434,7 +434,9 @@ public class Paths implements TetradSerializable {
 
         if (node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-            paths.add(_path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -505,7 +507,9 @@ public class Paths implements TetradSerializable {
 
         if (path.size() > 1 && node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-            paths.add(_path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -553,7 +557,9 @@ public class Paths implements TetradSerializable {
 
         if (node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-            paths.add(_path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -601,7 +607,9 @@ public class Paths implements TetradSerializable {
 
         if (path.size() > 1 && node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-            paths.add(_path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -636,19 +644,23 @@ public class Paths implements TetradSerializable {
     }
 
     private void treks(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength - 2)) {
-            return;
-        }
-
-        if (path.contains(node1)) {
-            return;
-        }
-
-        if (node1 == node2) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
 
         path.addLast(node1);
+
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
+        }
+
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
+        }
 
         for (Edge edge : graph.getEdges(node1)) {
             Node next = Edges.traverse(node1, edge);
@@ -671,13 +683,13 @@ public class Paths implements TetradSerializable {
                 }
             }
 
-            // Found a path.
-            if (next == node2 && !path.isEmpty()) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(next);
-                paths.add(_path);
-                continue;
-            }
+//            // Found a path.
+//            if (next == node2 && !path.isEmpty()) {
+//                LinkedList<Node> _path = new LinkedList<>(path);
+//                _path.add(next);
+//                paths.add(_path);
+//                continue;
+//            }
 
             // Nodes may only appear on the path once.
             if (path.contains(next)) {
@@ -747,7 +759,9 @@ public class Paths implements TetradSerializable {
             if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
-                paths.add(_path);
+                if (!paths.contains(path)) {
+                    paths.add(_path);
+                }
                 continue;
             }
 
