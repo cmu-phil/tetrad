@@ -44,11 +44,6 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     private ScoreWrapper score;
 
     /**
-     * The external graph.
-     */
-    private Graph externalGraph;
-
-    /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -121,8 +116,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setUseFasAdjacencies(true);
         search.setUseSkewAdjacencies(true);
 
-        if (this.externalGraph != null) {
-            this.externalGraph = algorithm.search(dataSet, parameters);
+        if (algorithm != null) {
+            search.setExternalGraph(algorithm.search(dataSet, parameters));
         }
 
         search.setKnowledge(this.knowledge);

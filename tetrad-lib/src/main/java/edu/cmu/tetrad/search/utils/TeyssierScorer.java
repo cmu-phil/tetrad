@@ -290,7 +290,11 @@ public class TeyssierScorer {
      * @return Its parents.
      */
     public Set<Node> getParents(int p) {
-        if (this.scores.get(p) == null) recalculate(p);
+        try {
+            if (this.scores.get(p) == null) recalculate(p);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return new HashSet<>(this.scores.get(p).getParents());
     }
 

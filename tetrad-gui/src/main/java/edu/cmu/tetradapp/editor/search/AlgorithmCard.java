@@ -523,7 +523,7 @@ public class AlgorithmCard extends JPanel {
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
-        if (algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
+        if (algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null /*&& !this.algorithmRunner.getDataModelList().isEmpty()*/) {
             Algorithm externalGraph = new SingleGraphAlg(this.algorithmRunner.getSourceGraph());
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
