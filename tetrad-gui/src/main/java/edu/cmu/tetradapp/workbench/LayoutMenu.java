@@ -133,7 +133,7 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem squareLayout = new JMenuItem("Squiare");
+        JMenuItem squareLayout = new JMenuItem("Square");
         this.add(squareLayout);
 
         squareLayout.addActionListener(e -> {

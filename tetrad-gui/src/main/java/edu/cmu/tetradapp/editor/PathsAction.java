@@ -637,7 +637,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         nodes2 = Collections.singletonList((Node) node2Box.getSelectedItem());
 
         JComboBox<String> methodBox = new JComboBox<>(new String[]{"Directed Paths", "Semidirected Paths",
-                "Treks", "Confounder Paths", "Latent Confounder Paths",
+                "Treks", "Confounder Paths", "Latent Confounder Paths", "Cycles",
                 "All Paths", "Adjacents", "Adjustment Sets",
                 "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
                 "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)"});
@@ -817,6 +817,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else if ("Adjustment Sets".equals(method)) {
             textArea.setText("");
             adjustmentSets(graph, textArea, nodes1, nodes2);
+        } else if ("Cycles".equals(method)) {
+            textArea.setText("");
+            allCyclicPaths(graph, textArea, nodes1, nodes2);
         } else {
             throw new IllegalArgumentException("Unknown method: " + method);
         }
@@ -856,9 +859,45 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
+            textArea.append("\nNo cycles listed.");
+        }
+    }
+
+    /**
+     * Appends all directed paths from nodes in list nodes1 to nodes in list nodes2 to a given text area.
+     *
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
+     */
+    private void allCyclicPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("""
+                These are nodes in cyclic paths--i.e. paths that are directed from X to X, of the form X ~~> X. Note
+                that only the nodes selected in the From box above are considered.
+                """);
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            List<List<Node>> paths = graph.paths().directedPaths(node1, node1,
+                    parameters.getInt("pathsMaxLength"));
+
+            if (paths.isEmpty()) {
+                continue;
+            } else {
+                pathListed = true;
+            }
+
+            textArea.append("\n\nBetween " + node1 + " and " + node1 + ":");
+            listPaths(graph, textArea, paths);
+        }
+
+        if (!pathListed) {
             textArea.append("\nNo directed paths listed.");
         }
     }
+
 
     /**
      * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
