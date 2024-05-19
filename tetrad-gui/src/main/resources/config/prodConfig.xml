@@ -1027,6 +1027,16 @@
                 <editor-class>edu.cmu.tetradapp.editor.LogisticRegressionEditor
                 </editor-class>
             </model>
+            <model name="Adjustment" acronym="Adjustment"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>
+            </model>
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Regression"/>
@@ -1223,6 +1233,14 @@
                 <model-class>edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
+<!--            <model name="FASK Forbidden Graph" acronym="FASK-Forb-Graph" help="forb.graph">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="knowledge" description="Knowledge" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.FaskForbiddenGraphModel</model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>-->
+<!--            </model>-->
             <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
             <!--                <logger>-->
             <!--                    <event id="info" description="Information" default="on"/>-->

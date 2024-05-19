@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -1297,8 +1298,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
                 int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
-                List<Set<Node>> adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
-                        maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
+                List<Set<Node>> adjustments = null;
+                try {
+                    adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
+                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
+                } catch (Exception e) {
+
+                    // A message is returned, which we are not printing.
+                    continue;
+                }
 
                 textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
 

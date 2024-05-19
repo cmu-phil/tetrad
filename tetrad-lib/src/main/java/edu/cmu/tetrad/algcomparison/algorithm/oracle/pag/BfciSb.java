@@ -176,13 +176,11 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.DEPTH);
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
         // FCI-ORIENT
-        params.add(Params.DEPTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
 

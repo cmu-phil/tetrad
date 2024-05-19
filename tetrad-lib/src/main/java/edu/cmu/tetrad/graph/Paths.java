@@ -2282,10 +2282,15 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength           The maximum length of the path to consider for non-amenable paths. If a value
      *                                of -1 is given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
+     * @throws IllegalArgumentException if no amenable paths are found or if no non-amenable paths are found.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         List<List<Node>> amenable = semidirectedPaths(source, target, -1);
+
+        if (amenable.isEmpty()) {
+            throw new IllegalArgumentException("No amenable paths found; nothing to adjust.");
+        }
 
         // Remove any amenable path that does not start with a visible edge in the CPDAG case.
         // (The PAG case will be handled later.)
@@ -2307,8 +2312,12 @@ public class Paths implements TetradSerializable {
             return Collections.emptyList();
         }
 
-        List<List<Node>> treks = allPaths(source, target, maxPathLength);
-        treks.removeAll(amenable);
+        List<List<Node>> nonAmenable = allPaths(source, target, maxPathLength);
+        nonAmenable.removeAll(amenable);
+
+        if (nonAmenable.isEmpty()) {
+            throw new IllegalArgumentException("No non-amenable paths found; nothing to adjust.");
+        }
 
         List<Set<Node>> adjustmentSets = new ArrayList<>();
         Set<Set<Node>> tried = new HashSet<>();
@@ -2322,7 +2331,7 @@ public class Paths implements TetradSerializable {
             // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
             // If i = 1, we would add a, b, d, and e to the list. And so on.
             for (int j = 1; j <= i; j++) {
-                for (List<Node> trek : treks) {
+                for (List<Node> trek : nonAmenable) {
                     if (j >= trek.size()) {
                         continue;
                     }
@@ -2362,8 +2371,8 @@ public class Paths implements TetradSerializable {
             }
 
             // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
-            // That is, we check if it blocks all treks from source to target that are not semi-directed
-            // without blocking any treks that are semi-directed.
+            // That is, we check if it blocks all nonAmenable from source to target that are not semi-directed
+            // without blocking any nonAmenable that are semi-directed.
 
             ADJ:
             for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
@@ -2381,14 +2390,17 @@ public class Paths implements TetradSerializable {
                     }
                 }
 
-                for (List<Node> trek : treks) {
+                for (List<Node> trek : nonAmenable) {
                     if (isMConnectingPath(trek, possibleAdjustmentSet, false)) {
                         i++;
                         continue ADJ;
                     }
                 }
 
-                adjustmentSets.add(possibleAdjustmentSet);
+                if (!adjustmentSets.contains(possibleAdjustmentSet)) {
+                    adjustmentSets.add(possibleAdjustmentSet);
+                }
+//                adjustmentSets.add(possibleAdjustmentSet);
 
                 if (adjustmentSets.size() >= maxNumSets) {
                     return adjustmentSets;
