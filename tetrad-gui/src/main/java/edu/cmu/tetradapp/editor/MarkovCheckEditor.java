@@ -690,12 +690,12 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(true).size()) {
-                    return null;
-                }
-
                 if (columnIndex == 0) {
                     return rowIndex + 1;
+                }
+
+                if (rowIndex >= model.getResults(true).size()) {
+                    return null;
                 }
 
                 IndependenceResult result = model.getResults(true).get(rowIndex);
@@ -781,8 +781,22 @@ public class MarkovCheckEditor extends JPanel {
 
         addFilterPanel(model, tableModelIndep, tableIndep, tableBox, flipEscapesIndep);
 
+        Box b10 = Box.createHorizontalBox();
+        b10.add(Box.createHorizontalGlue());
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        tableBox.add(label, BorderLayout.SOUTH);
+        b10.add(label);
+        b10.add(Box.createHorizontalStrut(20));
+
+        JLabel label1 = new JLabel("# independencies = " + model.getResults(true).size());
+        b10.add(label1);
+        b10.add(Box.createHorizontalGlue());
+
+        // Setup a Timer to call update every 5 seconds
+        javax.swing.Timer timer = new javax.swing.Timer(1000,
+                e -> label1.setText("# independencies = " + model.getResults(true).size()));
+        timer.start();
+
+        tableBox.add(b10, BorderLayout.SOUTH);
 
         setLabelTexts();
 
@@ -1094,11 +1108,28 @@ public class MarkovCheckEditor extends JPanel {
         JScrollPane scroll = new JScrollPane(tableDep);
         tableBox.add(scroll);
 
-        Box a3 = Box.createHorizontalBox();
+//        Box a3 = Box.createHorizontalBox();
+//        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
+//        a3.add(label);
+//        a3.add(Box.createHorizontalGlue());
+//        tableBox.add(label);
+
+        Box b10 = Box.createHorizontalBox();
+        b10.add(Box.createHorizontalGlue());
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        a3.add(label);
-        a3.add(Box.createHorizontalGlue());
-        tableBox.add(label);
+        b10.add(label);
+        b10.add(Box.createHorizontalStrut(20));
+
+        JLabel label1 = new JLabel("# dependencies = " + model.getResults(true).size());
+        b10.add(label1);
+        b10.add(Box.createHorizontalGlue());
+
+        // Setup a Timer to call update every 5 seconds
+        javax.swing.Timer timer = new javax.swing.Timer(1000,
+                e -> label1.setText("# dependencies = " + model.getResults(true).size()));
+        timer.start();
+
+        tableBox.add(b10, BorderLayout.SOUTH);
 
         setLabelTexts();
 

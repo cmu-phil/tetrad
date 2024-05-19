@@ -1077,9 +1077,9 @@ public class MarkovCheck {
      */
     private List<IndependenceResult> getResultsLocal(boolean indep) {
         if (indep) {
-            return this.resultsIndep;
+            return new ArrayList<>(this.resultsIndep);
         } else {
-            return this.resultsDep;
+            return new ArrayList<>(this.resultsDep);
         }
     }
 
@@ -1154,6 +1154,22 @@ public class MarkovCheck {
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+    }
+
+    private List<ModelObserver> observers = new ArrayList<>();
+
+    public void addObserver(ModelObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(ModelObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void notifyObservers() {
+        for (ModelObserver observer : observers) {
+            observer.update();
+        }
     }
 
     /**
