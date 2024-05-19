@@ -611,6 +611,11 @@ public class MarkovCheckEditor extends JPanel {
                                DoubleTextField percent, boolean clear) {
         SwingUtilities.invokeLater(() -> {
             setTest();
+
+            model.getMarkovCheck().clear();
+            tableModelIndep.fireTableDataChanged();
+            tableModelDep.fireTableDataChanged();
+
             model.getMarkovCheck().setPercentResample(percent.getValue());
             model.getMarkovCheck().generateResults(clear);
             tableModelIndep.fireTableDataChanged();
@@ -1120,13 +1125,13 @@ public class MarkovCheckEditor extends JPanel {
         b10.add(label);
         b10.add(Box.createHorizontalStrut(20));
 
-        JLabel label1 = new JLabel("# dependencies = " + model.getResults(true).size());
+        JLabel label1 = new JLabel("# dependencies = " + model.getResults(false).size());
         b10.add(label1);
         b10.add(Box.createHorizontalGlue());
 
         // Setup a Timer to call update every 5 seconds
         javax.swing.Timer timer = new javax.swing.Timer(1000,
-                e -> label1.setText("# dependencies = " + model.getResults(true).size()));
+                e -> label1.setText("# dependencies = " + model.getResults(false).size()));
         timer.start();
 
         tableBox.add(b10, BorderLayout.SOUTH);

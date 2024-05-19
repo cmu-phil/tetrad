@@ -348,6 +348,11 @@ public class MarkovCheck {
         return vars;
     }
 
+    public void clear() {
+        resultsIndep.clear();
+        resultsDep.clear();
+    }
+
     /**
      * Generates all results, for both the Markov and dependency checks, for each node in the graph given the parents of
      * that node. These results are stored in the resultsIndep and resultsDep lists. This should be called before any of
@@ -360,8 +365,7 @@ public class MarkovCheck {
      */
     public void generateResults(boolean clear) {
         if (clear) {
-            resultsIndep.clear();
-            resultsDep.clear();
+            clear();
         }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
