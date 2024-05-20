@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -641,7 +640,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Treks", "Confounder Paths", "Latent Confounder Paths", "Cycles",
                 "All Paths", "Adjacents", "Adjustment Sets",
                 "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
-                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)"});
+                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)",
+                "Amenable paths (PAG)",
+                "Non-amenable paths (PAG)"});
 
         methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", null));
         if (methodBox.getSelectedItem() == null) {
@@ -800,6 +801,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else if ("Non-amenable paths (DAG, CPDAG, MPDAG, MAG)".equals(method)) {
             textArea.setText("");
             allNonamenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+        } else if ("Amenable paths (PAG)".equals(method)) {
+            textArea.setText("");
+            allAmenablePathsPag(graph, textArea, nodes1, nodes2);
+        } else if ("Non-amenable paths (PAG)".equals(method)) {
+            textArea.setText("");
+            allNonamenablePathsPag(graph, textArea, nodes1, nodes2);
         } else if ("All Paths".equals(method)) {
             textArea.setText("");
             allPaths(graph, textArea, nodes1, nodes2);
@@ -977,6 +984,46 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+
+    /**
+     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area for a PAG. An
+     * amenable path starts with a visible edge out of the starting node and does not block any of these paths.
+     *
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
+     */
+    private void allAmenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("""
+                These are semidirected paths from X to Y that start with a directed edge out of X. An 
+                adjustment set should not block any of these paths.
+                """);
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> amenable = graph.paths().amenablePathsPag(node1, node2,
+                        parameters.getInt("pathsMaxLengthAdjustment"));
+
+                if (amenable.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+
+                listPaths(graph, textArea, amenable);
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo amenable paths listed.");
+        }
+    }
+
     /**
      * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area. A
      * non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
@@ -1000,6 +1047,48 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 // Amenable paths of any length are considered.
                 List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
+                nonamenable.removeAll(amenable);
+
+                if (amenable.isEmpty()) {
+                    continue;
+                } else {
+                    pathListed = true;
+                }
+
+                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
+                listPaths(graph, textArea, nonamenable);
+            }
+        }
+
+        if (!pathListed) {
+            textArea.append("\nNo non-amenable paths listed.");
+        }
+    }
+
+
+    /**
+     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area. A
+     * non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
+     *
+     * @param graph    The Graph object representing the graph.
+     * @param textArea The JTextArea object to append the paths to.
+     * @param nodes1   The list of starting nodes.
+     * @param nodes2   The list of ending nodes.
+     */
+    private void allNonamenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.append("""
+                These are paths that are not amenable paths. An adjustment set should block all of these paths.
+                """);
+
+        boolean pathListed = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                List<List<Node>> nonamenable = graph.paths().allPaths(node1, node2,
+                        parameters.getInt("pathsMaxLengthAdjustment"));
+
+                // Amenable paths of any length are considered.
+                List<List<Node>> amenable = graph.paths().amenablePathsPag(node1, node2, -1);
                 nonamenable.removeAll(amenable);
 
                 if (amenable.isEmpty()) {
@@ -1151,7 +1240,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 confounderPaths.removeIf(path -> path.get(0).getNodeType() != NodeType.MEASURED
-                                                 || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
+                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
 
                 if (confounderPaths.isEmpty()) {
                     continue;
@@ -1207,7 +1296,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     }
 
                     if (path.get(0).getNodeType() != NodeType.MEASURED
-                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
+                            || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
                         latentConfounderPaths.remove(path);
                     }
                 }

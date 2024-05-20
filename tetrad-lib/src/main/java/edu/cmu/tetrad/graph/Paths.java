@@ -481,11 +481,38 @@ public class Paths implements TetradSerializable {
     public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
-        for (List<Node> path : amenablePaths) {
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.get(0);
             Node b = path.get(1);
 
             if (!graph.getEdge(a, b).pointsTowards(b)) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
+
+    /**
+     * Finds amenable paths from the given source node to the given destination node with a maximum length, for
+     * a PAG. These are semidirected paths that start with a visible edge out of node1.
+     *
+     * @param node1 the source node
+     * @param node2 the destination node
+     * @param maxLength the maximum length of the paths
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of nodes
+     */
+    public List<List<Node>> amenablePathsPag(Node node1, Node node2, int maxLength) {
+        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+            Node a = path.get(0);
+            Node b = path.get(1);
+
+            boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
+
+            if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
                 amenablePaths.remove(path);
             }
         }
