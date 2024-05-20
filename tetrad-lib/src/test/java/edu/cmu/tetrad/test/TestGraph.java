@@ -356,7 +356,11 @@ public final class TestGraph {
 
     @Test
     public void testAdjustmentSet3() {
-        Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph6 (1).txt"));
+        File file = new File("/Users/josephramsey/Downloads/graph6 (1).txt");
+
+        if (!file.exists()) return;
+
+        Graph graph = GraphSaveLoadUtils.loadGraphTxt(file);
         File _file = new File("/Users/josephramsey/Downloads/adjustment_mike_out.txt");
 
         try (PrintWriter out = new PrintWriter(_file)) {
