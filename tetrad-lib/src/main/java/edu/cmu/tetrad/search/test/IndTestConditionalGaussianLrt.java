@@ -75,6 +75,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * The number of categories to discretize continuous variables into.
      */
     private int numCategoriesToDiscretize = 3;
+    /**
+     * The minimum sample size per cell for discretization.
+     */
+    private int minSampleSizePerCell = 4;
 
     /**
      * Constructor.
@@ -125,6 +129,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         }
 
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
+        this.likelihood.setMinSampleSizePerCell(this.minSampleSizePerCell);
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
@@ -292,5 +297,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             rows.add(k);
         }
         return rows;
+    }
+
+    public void setMinSampleSizePerCell(int minSampleSizePerCell) {
+        this.minSampleSizePerCell = minSampleSizePerCell;
     }
 }

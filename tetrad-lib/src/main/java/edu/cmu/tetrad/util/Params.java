@@ -886,6 +886,10 @@ public final class Params {
      * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
+    /**
+     * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
+     */
+    public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

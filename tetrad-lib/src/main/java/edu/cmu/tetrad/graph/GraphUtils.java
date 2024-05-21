@@ -313,8 +313,10 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
+        String conditioningSymbol = "(\u2714)";
+
         if (conditioningVars.contains(path.get(0))) {
-            buf.append("(C)");
+            buf.append(conditioningSymbol);
         }
 
         for (int m = 1; m < path.size(); m++) {
@@ -362,14 +364,14 @@ public final class GraphUtils {
             }
 
             if (conditioningVars.contains(n1)) {
-                buf.append("(C)");
+                buf.append(conditioningSymbol);
             } else {
                 if (n2 != null) {
                     if (graph.isDefCollider(n0, n1, n2)) {
                         Set<Node> descendants = graph.paths().getDescendants(n1);
                         descendants.retainAll(conditioningVars);
                         if (!descendants.isEmpty()) {
-                            buf.append("[~~>").append(descendants.iterator().next()).append("(C)]");
+                            buf.append("[~~>").append(descendants.iterator().next()).append(conditioningSymbol + "]");
                         }
                     }
                 }
