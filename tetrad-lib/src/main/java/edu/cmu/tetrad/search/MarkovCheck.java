@@ -231,7 +231,8 @@ public class MarkovCheck {
             // Make a new MsepTest based on the true graph.
             MsepTest msepTest = new MsepTest(graph);
             IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
-            if (testRes.isValid()) factList.add(testRes.getFact());
+//            if (testRes.isValid()) factList.add(testRes.getFact());
+            if (testRes.isIndependent()) factList.add(testRes.getFact());
         }
         return factList;
     }
