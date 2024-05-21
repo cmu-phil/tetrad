@@ -85,8 +85,8 @@ public final class BfciSb implements IGraphSearch {
     private boolean verbose;
 
     /**
-     * BFCI-SB constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and Score
-     * object.
+     * BFCI-SB constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
+     * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
@@ -97,6 +97,17 @@ public final class BfciSb implements IGraphSearch {
         }
 
         this.score = score;
+    }
+
+    /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
+     * Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag The Graph to be reoriented.
+     */
+    private static void reorientWithCircles(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+        pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
     /**
@@ -111,27 +122,52 @@ public final class BfciSb implements IGraphSearch {
             throw new NullPointerException("Nodes from test were null.");
         }
 
-        Boss suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
-        suborderSearch.setResetAfterBM(true);
-        suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(verbose);
-        suborderSearch.setUseBes(useBes);
-        suborderSearch.setUseDataOrder(useDataOrder);
-        suborderSearch.setNumStarts(numStarts);
-        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        List<Node> best = permutationSearch.getOrder();
+        List<Node> best;
 
-        TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+        if (false) {
+            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+            Grasp alg = new Grasp(score);
+            alg.setUseScore(true);
+            alg.setUseRaskuttiUhler(false);
+            alg.setUseDataOrder(useDataOrder);
+            alg.setDepth(3);
+            alg.setUncoveredDepth(1);
+            alg.setNonSingularDepth(1);
+            alg.setNumStarts(numStarts);
+            alg.setVerbose(verbose);
+
+            List<Node> variables = this.score.getVariables();
+            assert variables != null;
+
+            best = alg.bestOrder(variables);
+
+            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+        } else {
+
+            Boss suborderSearch = new Boss(score);
+            suborderSearch.setKnowledge(knowledge);
+            suborderSearch.setResetAfterBM(true);
+            suborderSearch.setResetAfterRS(true);
+            suborderSearch.setVerbose(verbose);
+            suborderSearch.setUseBes(useBes);
+            suborderSearch.setUseDataOrder(useDataOrder);
+            suborderSearch.setNumStarts(numStarts);
+            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+            permutationSearch.setKnowledge(knowledge);
+            permutationSearch.search();
+            best = permutationSearch.getOrder();
+
+            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+        }
 
         TeyssierScorer teyssierScorer = new TeyssierScorer(null, score);
         teyssierScorer.score(best);
-        Graph cpdag = teyssierScorer.getGraph(true);
-        Graph pag = new EdgeListGraph(cpdag);
-
         teyssierScorer.bookmark();
+
+        Graph cpdag = teyssierScorer.getGraph(true);
+
+        Graph pag = new EdgeListGraph(cpdag);
+        teyssierScorer.score(best);
 
         FciOrient fciOrient = new FciOrient(null);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -156,22 +192,11 @@ public final class BfciSb implements IGraphSearch {
     }
 
     /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in
-     * the given Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag The Graph to be reoriented.
-     */
-    private static void reorientWithCircles(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
-    /**
      * Orient required edges in PAG.
      *
      * @param fciOrient The FciOrient object used for orienting the edges.
-     * @param pag The Graph representing the PAG.
-     * @param best The list of Node objects representing the best nodes.
+     * @param pag       The Graph representing the PAG.
+     * @param best      The list of Node objects representing the best nodes.
      */
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
         TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
@@ -182,8 +207,8 @@ public final class BfciSb implements IGraphSearch {
     /**
      * Copy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG.
      *
-     * @param best The list of nodes containing the best nodes.
-     * @param pag The PAG graph.
+     * @param best  The list of nodes containing the best nodes.
+     * @param pag   The PAG graph.
      * @param cpdag The CPDAG graph.
      */
     private void copyUnshieldedColliders(List<Node> best, Graph pag, Graph cpdag) {
@@ -233,9 +258,9 @@ public final class BfciSb implements IGraphSearch {
     /**
      * Tries removing an edge a*-*c and orient a *-> b.
      *
-     * @param best List of nodes representing the "best" nodes.
-     * @param pag The graph representing the Partial Ancestral Graph (PAG).
-     * @param cpdag The graph representing the Completed Partially Directed Acyclic Graph (CPDAG).
+     * @param best           List of nodes representing the "best" nodes.
+     * @param pag            The graph representing the Partial Ancestral Graph (PAG).
+     * @param cpdag          The graph representing the Completed Partially Directed Acyclic Graph (CPDAG).
      * @param teyssierScorer The TeyssierScorer instance used for scoring.
      */
     private void tryRemovingEdgesAndOrienting(List<Node> best, Graph pag, Graph cpdag, TeyssierScorer teyssierScorer) {
@@ -302,9 +327,9 @@ public final class BfciSb implements IGraphSearch {
     /**
      * Performs the score-based GFCI R0 step.
      *
-     * @param best the list of nodes to consider
-     * @param cpdag the CPDAG graph
-     * @param pag the PAG graph
+     * @param best           the list of nodes to consider
+     * @param cpdag          the CPDAG graph
+     * @param pag            the PAG graph
      * @param teyssierScorer the TeyssierScorer object
      */
     private void scoreBasedGfciR0(List<Node> best, Graph cpdag, Graph pag, TeyssierScorer teyssierScorer) {
@@ -386,9 +411,9 @@ public final class BfciSb implements IGraphSearch {
     }
 
     /**
-     * Removes non-required single arrows in a graph. For each node b, if there is only
-     * one directed edge *-> b, it reorients the edge as *-o b. Uses the knowledge object
-     * to determine if the reorientation is required or forbidden.
+     * Removes non-required single arrows in a graph. For each node b, if there is only one directed edge *-> b, it
+     * reorients the edge as *-o b. Uses the knowledge object to determine if the reorientation is required or
+     * forbidden.
      *
      * @param pag The graph to remove non-required single arrows from.
      */
@@ -415,11 +440,12 @@ public final class BfciSb implements IGraphSearch {
     }
 
     /**
-     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and TeyssierScorer object.
+     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and TeyssierScorer
+     * object.
      *
-     * @param fciOrient       The FciOrient object used to determine the final orientation.
-     * @param pag             The Graph object for which the final orientation is determined.
-     * @param teyssierScorer  The TeyssierScorer object used in the score-based discriminating path rule.
+     * @param fciOrient      The FciOrient object used to determine the final orientation.
+     * @param pag            The Graph object for which the final orientation is determined.
+     * @param teyssierScorer The TeyssierScorer object used in the score-based discriminating path rule.
      */
     private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer teyssierScorer) {
         TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
