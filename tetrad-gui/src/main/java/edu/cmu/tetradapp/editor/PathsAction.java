@@ -636,13 +636,19 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
         nodes2 = Collections.singletonList((Node) node2Box.getSelectedItem());
 
-        JComboBox<String> methodBox = new JComboBox<>(new String[]{"Directed Paths", "Semidirected Paths",
-                "Treks", "Confounder Paths", "Latent Confounder Paths", "Cycles",
-                "All Paths", "Adjacents", "Adjustment Sets",
-                "Amenable paths (DAG, CPDAG, MPDAG, MAG)",
-                "Non-amenable paths (DAG, CPDAG, MPDAG, MAG)",
-                "Amenable paths (PAG)",
-                "Non-amenable paths (PAG)"});
+        JComboBox<String> methodBox = new JComboBox<>(new String[]{
+                "Directed Paths",
+                "Semidirected Paths",
+                "Treks",
+                "Confounder Paths",
+                "Latent Confounder Paths",
+                "Cycles",
+                "All Paths",
+                "Adjacents",
+                "Adjustment Sets",
+                "Amenable paths",
+                "Backdoor paths"
+        });
 
         methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", null));
         if (methodBox.getSelectedItem() == null) {
@@ -795,18 +801,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         } else if ("Semidirected Paths".equals(method)) {
             textArea.setText("");
             allSemidirectedPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Amenable paths (DAG, CPDAG, MPDAG, MAG)".equals(method)) {
+        } else if ("Amenable paths".equals(method)) {
             textArea.setText("");
             allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
-        } else if ("Non-amenable paths (DAG, CPDAG, MPDAG, MAG)".equals(method)) {
+        } else if ("Backdoor paths".equals(method)) {
             textArea.setText("");
-            allNonamenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
-        } else if ("Amenable paths (PAG)".equals(method)) {
-            textArea.setText("");
-            allAmenablePathsPag(graph, textArea, nodes1, nodes2);
-        } else if ("Non-amenable paths (PAG)".equals(method)) {
-            textArea.setText("");
-            allNonamenablePathsPag(graph, textArea, nodes1, nodes2);
+            allBackdoorPaths(graph, textArea, nodes1, nodes2);
         } else if ("All Paths".equals(method)) {
             textArea.setText("");
             allPaths(graph, textArea, nodes1, nodes2);
@@ -867,7 +867,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo cycles listed.");
+            textArea.append("\nNo cycles found.");
         }
     }
 
@@ -902,7 +902,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo directed paths listed.");
+            textArea.append("\nNo directed paths found.");
         }
     }
 
@@ -941,7 +941,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo semidirected paths listed.");
+            textArea.append("\nNo semidirected paths found.");
         }
     }
 
@@ -959,6 +959,25 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
+
+        boolean mpdag = false;
+        boolean mag = false;
+        boolean pag = false;
+
+        if (graph.paths().isLegalMpdag()) {
+            mpdag = true;
+        } else if (graph.paths().isLegalMag()) {
+            mag = true;
+        } else if (!graph.paths().isLegalPag()) {
+            pag = true;
+        }
+
+        if (pag) {
+            allAmenablePathsPag(graph, textArea, nodes1, nodes2);
+        } else if (!mpdag && !mag) {
+            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
+            return;
+        }
 
         boolean pathListed = false;
 
@@ -980,14 +999,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo amenable paths listed.");
+            textArea.append("\nNo amenable paths found.");
         }
     }
 
-
     /**
-     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area for a PAG. An
-     * amenable path starts with a visible edge out of the starting node and does not block any of these paths.
+     * Appends all amenable paths from nodes in the first list to nodes in the second list to the given text area for a
+     * PAG. An amenable path starts with a visible edge out of the starting node and does not block any of these paths.
      *
      * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
@@ -1020,64 +1038,93 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo amenable paths listed.");
+            textArea.append("\nNo amenable paths found.");
         }
     }
 
     /**
-     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area. A
-     * non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
+     * Appends all backdoor paths from nodes in the first list to nodes in the second list to the given text area. A
+     * backdoor path is a path from x to y that begins with z -> x. An adjustment set should block all of these paths.
      *
      * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
      * @param nodes1   The list of starting nodes.
      * @param nodes2   The list of ending nodes.
      */
-    private void allNonamenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allBackdoorPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("""
-                These are paths that are not amenable paths. An adjustment set should block all of these paths.
+                These are paths between x and y that start with z -> x for some z.
                 """);
+
+        boolean mpdag = false;
+        boolean mag = false;
+
+        if (graph.paths().isLegalMpdag()) {
+            mpdag = true;
+        } else if (graph.paths().isLegalMag()) {
+            mag = true;
+        } else if (!graph.paths().isLegalPag()) {
+            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
+            return;
+        }
 
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> nonamenable = graph.paths().allPaths(node1, node2,
+                List<List<Node>> backdoor = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
-                // Amenable paths of any length are considered.
-                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
-                nonamenable.removeAll(amenable);
+                if (mpdag || mag) {
+                    backdoor.removeIf(path -> path.size() < 2 ||
+                                              !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                } else {
+                    backdoor.removeIf(path -> {
+                        if (path.size() < 2) {
+                            return false;
+                        }
+                        Node x = path.get(0);
+                        Node w = path.get(1);
+                        Node y = node2;
+                        return !(graph.getEdge(x, w).pointsTowards(x)
+                                 || Edges.isUndirectedEdge(graph.getEdge(x, w))
+                                 || (Edges.isBidirectedEdge(graph.getEdge(x, w))
+                                    && (graph.paths().existsDirectedPath(w, x)
+                                    || (graph.paths().existsDirectedPath(w, x)
+                                        && graph.paths().existsDirectedPath(w, y)))));
+                    });
+                }
 
-                if (amenable.isEmpty()) {
+                if (backdoor.isEmpty()) {
                     continue;
                 } else {
                     pathListed = true;
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-                listPaths(graph, textArea, nonamenable);
+                listPaths(graph, textArea, backdoor);
             }
         }
 
         if (!pathListed) {
-            textArea.append("\nNo non-amenable paths listed.");
+            textArea.append("\nNo backdoor paths found.");
         }
     }
 
 
     /**
-     * Appends all non-amenable paths from nodes in the first list to nodes in the second list to the given text area. A
-     * non-amenable path is a path that is not amenable. An adjustment set should block all of these paths.
+     * Appends all backdoor paths from nodes in the first list to nodes in the second list to the given text area. A
+     * backdoor path is from x to y that begins with z -> x for some z. An adjustment set should block all of these
+     * paths.
      *
      * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
      * @param nodes1   The list of starting nodes.
      * @param nodes2   The list of ending nodes.
      */
-    private void allNonamenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allBackdoorPathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.append("""
-                These are paths that are not amenable paths. An adjustment set should block all of these paths.
+                These are backdoor paths in a PAG. An adjustment set should block all of these paths.
                 """);
 
         boolean pathListed = false;
@@ -1103,7 +1150,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo non-amenable paths listed.");
+            textArea.append("\nNo backdoor paths found.");
         }
     }
 
@@ -1140,7 +1187,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo paths listed.");
+            textArea.append("\nNo paths found.");
         }
     }
 
@@ -1149,9 +1196,21 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found1 = false;
 
+        boolean mpdag = false;
+        boolean mag = false;
+        boolean pag = false;
+
+        if (graph.paths().isLegalMpdag()) {
+            mpdag = true;
+        } else if (graph.paths().isLegalMag()) {
+            mag = true;
+        } else if (!graph.paths().isLegalPag()) {
+            pag = true;
+        }
+
         for (List<Node> path : paths) {
-            if (path.size() > 1 && graph.paths().isMConnectingPath(path, conditioningSet, false)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+            if (path.size() > 1 && graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, !mpdag));
                 found1 = true;
             }
         }
@@ -1165,7 +1224,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean found2 = false;
 
         for (List<Node> path : paths) {
-            if (path.size() > 1 && !graph.paths().isMConnectingPath(path, conditioningSet, false)) {
+            if (path.size() > 1 && !graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
                 textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 found2 = true;
             }
@@ -1207,7 +1266,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo treks listed.");
+            textArea.append("\nNo treks found.");
         }
     }
 
@@ -1240,7 +1299,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 confounderPaths.removeIf(path -> path.get(0).getNodeType() != NodeType.MEASURED
-                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
+                                                 || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
 
                 if (confounderPaths.isEmpty()) {
                     continue;
@@ -1254,7 +1313,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo confounder paths listed.");
+            textArea.append("\nNo confounder paths found.");
         }
     }
 
@@ -1296,7 +1355,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     }
 
                     if (path.get(0).getNodeType() != NodeType.MEASURED
-                            || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
+                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
                         latentConfounderPaths.remove(path);
                     }
                 }
@@ -1313,7 +1372,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo latent confounder paths listed.");
+            textArea.append("\nNo latent confounder paths found.");
         }
     }
 
@@ -1369,16 +1428,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
                 into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
                 dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are blocked, 
-                the set is not an adjustment set. Also select "Non-amenable paths" from the dropdown. All 
-                non-amenable paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. All 
+                backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
                 set is not an adjustment set.
                                 
                 In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
                 find up to a maximum number of adjustment sets that are no more than a certain distance from
                 either the source or the target node, or either. Also, while all amenable paths are taken
-                into account, non-amenable paths considered are only those that with no more than a certain
+                into account, backdoor paths considered are only those that with no more than a certain
                 number of nodes. These parameters can be edited.
                 """);
+
+        boolean found = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -1407,8 +1468,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
                 }
+
+                found = true;
             }
         }
+
+        textArea.append("\n\nNo adjustment sets found.");
+
     }
 
     /**

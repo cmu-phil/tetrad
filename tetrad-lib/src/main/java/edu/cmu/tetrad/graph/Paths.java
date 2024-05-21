@@ -564,6 +564,56 @@ public class Paths implements TetradSerializable {
      * @param maxLength The maximum length of the paths.
      * @return A list of paths, where each path is a list of nodes.
      */
+    public List<List<Node>> allBlockablePaths(Node node1, Node node2, int maxLength) {
+        List<List<Node>> paths = new LinkedList<>();
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        return paths;
+    }
+
+    private void allBlockablePathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
+            return;
+        }
+
+        path.addLast(node1);
+
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
+        }
+
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
+        }
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node child = Edges.traverse(node1, edge);
+
+            if (child == null) {
+                continue;
+            }
+
+            if (path.contains(child)) {
+                continue;
+            }
+
+            allPathsVisit(child, node2, path, paths, maxLength);
+        }
+
+        path.removeLast();
+    }
+
+    /**
+     * Finds all paths from node1 to node2 within a specified maximum length.
+     *
+     * @param node1     The starting node.
+     * @param node2     The target node.
+     * @param maxLength The maximum length of the paths.
+     * @return A list of paths, where each path is a list of nodes.
+     */
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -2313,6 +2363,18 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
+        boolean mpdag = false;
+        boolean mag = false;
+        boolean pag = false;
+
+        if (graph.paths().isLegalMpdag()) {
+            mpdag = true;
+        } else if (graph.paths().isLegalMag()) {
+            mag = true;
+        } else if (!graph.paths().isLegalPag()) {
+            pag = true;
+        }
+
         List<List<Node>> amenable = semidirectedPaths(source, target, -1);
 
         if (amenable.isEmpty()) {
@@ -2339,10 +2401,28 @@ public class Paths implements TetradSerializable {
             return Collections.emptyList();
         }
 
-        List<List<Node>> nonAmenable = allPaths(source, target, maxPathLength);
-        nonAmenable.removeAll(amenable);
+        List<List<Node>> backdoor = allPaths(source, target, maxPathLength);
 
-        if (nonAmenable.isEmpty()) {
+        if (mpdag || mag) {
+            backdoor.removeIf(path -> path.size() < 2 ||
+                                      !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+        } else {
+            backdoor.removeIf(path -> {
+                if (path.size() < 2) {
+                    return false;
+                }
+                Node x = path.get(0);
+                Node w = path.get(1);
+                Node y = target;
+                return !(graph.getEdge(x, w).pointsTowards(x)
+                         || Edges.isUndirectedEdge(graph.getEdge(x, w))
+                         || Edges.isBidirectedEdge(graph.getEdge(x, w))
+                            && (graph.paths().existsDirectedPath(w, x)
+                                || (graph.paths().existsDirectedPath(w, x)
+                                    && graph.paths().existsDirectedPath(w, y))));
+            });
+        }
+        if (backdoor.isEmpty()) {
             throw new IllegalArgumentException("No non-amenable paths found; nothing to adjust.");
         }
 
@@ -2358,7 +2438,7 @@ public class Paths implements TetradSerializable {
             // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
             // If i = 1, we would add a, b, d, and e to the list. And so on.
             for (int j = 1; j <= i; j++) {
-                for (List<Node> trek : nonAmenable) {
+                for (List<Node> trek : backdoor) {
                     if (j >= trek.size()) {
                         continue;
                     }
@@ -2398,8 +2478,8 @@ public class Paths implements TetradSerializable {
             }
 
             // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
-            // That is, we check if it blocks all nonAmenable from source to target that are not semi-directed
-            // without blocking any nonAmenable that are semi-directed.
+            // That is, we check if it blocks all backdoor from source to target that are not semi-directed
+            // without blocking any backdoor that are semi-directed.
 
             ADJ:
             for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
@@ -2411,14 +2491,14 @@ public class Paths implements TetradSerializable {
                 tried.add(possibleAdjustmentSet);
 
                 for (List<Node> semi : amenable) {
-                    if (!isMConnectingPath(semi, possibleAdjustmentSet, false)) {
+                    if (!isMConnectingPath(semi, possibleAdjustmentSet, !mpdag)) {
                         i++;
                         continue ADJ;
                     }
                 }
 
-                for (List<Node> trek : nonAmenable) {
-                    if (isMConnectingPath(trek, possibleAdjustmentSet, false)) {
+                for (List<Node> trek : backdoor) {
+                    if (isMConnectingPath(trek, possibleAdjustmentSet, !mpdag)) {
                         i++;
                         continue ADJ;
                     }
