@@ -30,8 +30,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * The BFCI-SB (BFCI Score-based) algorithm implements the IGraphSearch interface and represents a search algorithm for
- * learning the structure of a graphical model from observational data.
+ * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
+ * structure of a graphical model from observational data.
  * <p>
  * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
  * Annotated Graph).
@@ -39,7 +39,7 @@ import java.util.*;
  * @author josephramsey
  * @author bryanandrews
  */
-public final class BfciSb implements IGraphSearch {
+public final class LvLite implements IGraphSearch {
     /**
      * The score.
      */
@@ -69,7 +69,7 @@ public final class BfciSb implements IGraphSearch {
      */
     private boolean useBes;
     /**
-     * This variable represents whether the discriminating path rule is used in the BFCI-SB class.
+     * This variable represents whether the discriminating path rule is used in the LV-Lite class.
      * <p>
      * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
      * considers discriminating paths when searching for patterns in the data.
@@ -85,13 +85,13 @@ public final class BfciSb implements IGraphSearch {
     private boolean verbose;
 
     /**
-     * BFCI-SB constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
+     * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public BfciSb(Score score) {
+    public LvLite(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }

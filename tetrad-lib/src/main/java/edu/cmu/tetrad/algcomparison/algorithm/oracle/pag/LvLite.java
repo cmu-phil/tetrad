@@ -27,20 +27,20 @@ import java.util.List;
 
 
 /**
- * This class represents the BFCI-SB algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-SB",
-        command = "bfci-sb",
+        name = "LV-Lite",
+        command = "lv-lite",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -57,10 +57,10 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a BfciSb algorithm.
+     * This class represents a LV-Lite algorithm.
      *
      * <p>
-     * The BfciSb algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -68,15 +68,15 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BfciSb() {
+    public LvLite() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * BfciSb is a class that represents a BfciSb algorithm.
+     * LV-Lite is a class that represents a LV-Lite algorithm.
      *
      * <p>
-     * The BfciSb algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -85,7 +85,7 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BfciSb(ScoreWrapper score) {
+    public LvLite(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -114,7 +114,7 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BfciSb search = new edu.cmu.tetrad.search.BfciSb(score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -124,7 +124,7 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // BFCI-SB
+        // LV-Lite
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
 
         // General
@@ -153,7 +153,7 @@ public class BfciSb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "BFCI-SB (BFCI Score-based) using " + this.score.getDescription();
+        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
     }
 
     /**

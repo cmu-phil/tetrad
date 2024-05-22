@@ -93,7 +93,7 @@ public class TestJoeMarkovCheckExploration {
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        if (ad < 0.05 && !override) return;
+//        if (ad < 0.001) return;
 
         double bicDiffValue = new BicDiff().getValue(trueGraph, cpdag, dataSet);
 
