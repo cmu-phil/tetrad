@@ -5,11 +5,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -24,10 +23,10 @@ import org.junit.Test;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class TestMarkovFractionRejected {
+public class JoeMarkovCheckExploration {
 
     public static void main(String... args) {
-        new TestMarkovFractionRejected().test1();
+        new JoeMarkovCheckExploration().test1();
     }
 
     private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
@@ -77,7 +76,8 @@ public class TestMarkovFractionRejected {
 
     @Test
     public void test1() {
-        Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100, 100, 100, false);
+        Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100,
+                100, 100, false);
 
         SemPm pm = new SemPm(trueGraph);
 
@@ -89,16 +89,17 @@ public class TestMarkovFractionRejected {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penalty);
 
-//            Graph cpdag = new Pc(test).search();
+            IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.01);
+
+            Graph cpdag = new Pc(test).search();
 //            Graph cpdag = new Fges(score).search();
-            Graph cpdag = new PermutationSearch(new Boss(score)).search();
+//            Graph cpdag = new PermutationSearch(new Boss(score)).search();
 
             for (int i = 0; i < 10; i++) {
                 cpdag = new PermutationSearch(new Boss(score)).search();
             }
 
             printLine(cpdag, dataSet, penalty, false);
-
         }
 
         System.out.println("\n\nTrue CPDAG\n");
