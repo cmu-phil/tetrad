@@ -1165,15 +1165,15 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
-            <model name="Algcomparison" acronym="Algcomparison"
+            <model name="Grid Search" acronym="Grid Search"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.AlgcomparisonModel
+                <model-class>edu.cmu.tetradapp.model.GridSearchModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.AlgcomparisonEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>
             </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">

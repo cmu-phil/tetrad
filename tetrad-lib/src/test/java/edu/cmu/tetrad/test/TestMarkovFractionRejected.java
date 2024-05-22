@@ -90,8 +90,8 @@ public class TestMarkovFractionRejected {
             score.setPenaltyDiscount(penalty);
 
 //            Graph cpdag = new Pc(test).search();
-            Graph cpdag = new Fges(score).search();
-//            Graph cpdag = new PermutationSearch(new Boss(score)).search();
+//            Graph cpdag = new Fges(score).search();
+            Graph cpdag = new PermutationSearch(new Boss(score)).search();
 
             for (int i = 0; i < 10; i++) {
                 cpdag = new PermutationSearch(new Boss(score)).search();

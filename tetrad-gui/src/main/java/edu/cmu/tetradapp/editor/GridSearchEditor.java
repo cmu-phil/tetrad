@@ -15,7 +15,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
-import edu.cmu.tetradapp.model.AlgcomparisonModel;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
@@ -46,7 +46,7 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
+import static edu.cmu.tetradapp.model.GridSearchModel.getAllSimulationParameters;
 
 /**
  * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm, table
@@ -59,7 +59,7 @@ import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParamet
  *
  * @author josephramsey
  */
-public class AlgcomparisonEditor extends JPanel {
+public class GridSearchEditor extends JPanel {
     /**
      * JLabel representing a message indicating that there are no parameters to edit.
      */
@@ -76,7 +76,7 @@ public class AlgcomparisonEditor extends JPanel {
      * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
      */
-    private final AlgcomparisonModel model;
+    private final GridSearchModel model;
     /**
      * JTextArea used for displaying verbose output.
      */
@@ -167,7 +167,7 @@ public class AlgcomparisonEditor extends JPanel {
      *
      * @param model the AlgcomparisonModel to use for the editor
      */
-    public AlgcomparisonEditor(AlgcomparisonModel model) {
+    public GridSearchEditor(GridSearchModel model) {
         this.model = model;
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -1034,10 +1034,10 @@ public class AlgcomparisonEditor extends JPanel {
             JTabbedPane tabbedPane1 = new JTabbedPane();
             tabbedPane1.setTabPlacement(JTabbedPane.TOP);
 
-            Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
-            Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithms);
-            Set<String> allBootstrapParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithms);
-            Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithms);
+            Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithms);
+            Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithms);
+            Set<String> allBootstrapParameters = GridSearchModel.getAllBootstrapParameters(algorithms);
+            Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
             if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
                     && allScoreParameters.isEmpty()) {
@@ -1330,7 +1330,7 @@ public class AlgcomparisonEditor extends JPanel {
                 showAlgorithmIndices = model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices");
                 showSimulationIndices = model.getParameters().getBoolean("algcomparisonShowSimulationIndices");
                 parallelism = model.getParameters().getInt("algcomparisonParallelism");
-                comparisonGraphType = (AlgcomparisonEditor.ComparisonGraphType) model.getParameters().get("algcomparisonGraphType");
+                comparisonGraphType = (GridSearchEditor.ComparisonGraphType) model.getParameters().get("algcomparisonGraphType");
                 setComparisonText();
             });
 
@@ -1746,8 +1746,8 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private void addAddTableColumnsListener(JTabbedPane tabbedPane) {
         addTableColumns.addActionListener(e -> {
-            java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
-            List<AlgcomparisonModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
+            java.util.Set<GridSearchModel.MyTableColumn> selectedColumns = new HashSet<>();
+            List<GridSearchModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
 
             // Create a table idaCheckEst for the results of the IDA check
             TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
@@ -1881,9 +1881,9 @@ public class AlgcomparisonEditor extends JPanel {
 
             selectUsedParameters.addActionListener(e1 -> {
                 for (int i = 0; i < table.getRowCount(); i++) {
-                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+                    GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
 
-                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.PARAMETER
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER
                         && myTableColumn.isSetByUser()) {
                         columnSelectionTableModel.selectRow(i);
                     }
@@ -1892,10 +1892,10 @@ public class AlgcomparisonEditor extends JPanel {
 
             selectLastStatisticsUsed.addActionListener(e1 -> {
                 for (int i = 0; i < table.getRowCount(); i++) {
-                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+                    GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
                     List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
 
-                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.STATISTIC
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
                         && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
                         columnSelectionTableModel.selectRow(i);
                     }
@@ -1935,10 +1935,10 @@ public class AlgcomparisonEditor extends JPanel {
             columnSelectionTableModel.setTableRef(null);
             SwingUtilities.invokeLater(dialog::dispose);
 
-            List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
+            List<GridSearchModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
                     columnSelectionTableModel.getSelectedTableColumns());
 
-            for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
+            for (GridSearchModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
             }
 
@@ -2144,7 +2144,7 @@ public class AlgcomparisonEditor extends JPanel {
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
 
-        List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = model.getSelectedTableColumns();
+        List<GridSearchModel.MyTableColumn> selectedTableColumns = model.getSelectedTableColumns();
 
         if (selectedTableColumns.isEmpty()) {
             tableColumnsChoiceTextArea.append("""
@@ -2160,7 +2160,7 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         for (int i = 0; i < selectedTableColumns.size(); i++) {
-            AlgcomparisonModel.MyTableColumn tableColumn = selectedTableColumns.get(i);
+            GridSearchModel.MyTableColumn tableColumn = selectedTableColumns.get(i);
             tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + tableColumn.getColumnName() + " (" + tableColumn.getDescription() + ")");
         }
 
@@ -2194,7 +2194,7 @@ public class AlgcomparisonEditor extends JPanel {
         helpChoiceTextArea.setText("""
                 This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, algorithms, table columns, and parameter settings.
 
-                To run a comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
+                To run a Grid Search comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
 
                 The comparison will be displayed in the "comparison" tab.
 
@@ -2256,10 +2256,10 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private String getAlgorithmParameterText() {
         List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-        Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
-        Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithm);
-        Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithm);
-        Set<String> allBootstrappingParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithm);
+        Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithm);
+        Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithm);
+        Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithm);
+        Set<String> allBootstrappingParameters = GridSearchModel.getAllBootstrapParameters(algorithm);
         StringBuilder paramText = new StringBuilder();
 
         if (algorithm.size() == 1) {
@@ -2382,14 +2382,14 @@ public class AlgcomparisonEditor extends JPanel {
          * The data for the table.
          */
         private final Object[][] data;
-        private final List<AlgcomparisonModel.MyTableColumn> allTableColumns;
-        private final Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns;
+        private final List<GridSearchModel.MyTableColumn> allTableColumns;
+        private final Set<GridSearchModel.MyTableColumn> selectedTableColumns;
         private JTable tableRef;
 
         /**
          * Constructs a new table estModel for the results of the IDA check.
          */
-        public TableColumnSelectionModel(List<AlgcomparisonModel.MyTableColumn> allTableColumns, Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns) {
+        public TableColumnSelectionModel(List<GridSearchModel.MyTableColumn> allTableColumns, Set<GridSearchModel.MyTableColumn> selectedTableColumns) {
             if (allTableColumns == null) {
                 throw new IllegalArgumentException("allTableColumns is null");
             }
@@ -2408,7 +2408,7 @@ public class AlgcomparisonEditor extends JPanel {
             this.selectedTableColumns = new HashSet<>(selectedTableColumns);
 
             for (int i = 0; i < allTableColumns.size(); i++) {
-                AlgcomparisonModel.MyTableColumn tableColumn = allTableColumns.get(i);
+                GridSearchModel.MyTableColumn tableColumn = allTableColumns.get(i);
                 this.data[i][0] = i + 1; // 1-based index (not 0-based index)
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
@@ -2491,7 +2491,7 @@ public class AlgcomparisonEditor extends JPanel {
             return getValueAt(0, c).getClass();
         }
 
-        public Set<AlgcomparisonModel.MyTableColumn> getSelectedTableColumns() {
+        public Set<GridSearchModel.MyTableColumn> getSelectedTableColumns() {
             return selectedTableColumns;
         }
 
@@ -2499,7 +2499,7 @@ public class AlgcomparisonEditor extends JPanel {
             this.tableRef = tableRef;
         }
 
-        public AlgcomparisonModel.MyTableColumn getMyTableColumn(int row) {
+        public GridSearchModel.MyTableColumn getMyTableColumn(int row) {
             return allTableColumns.get(row);
         }
 

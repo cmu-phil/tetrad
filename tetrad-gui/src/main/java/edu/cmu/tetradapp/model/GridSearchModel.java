@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.editor.AlgcomparisonEditor;
+import edu.cmu.tetradapp.editor.GridSearchEditor;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +62,7 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  */
-public class AlgcomparisonModel implements SessionModel {
+public class GridSearchModel implements SessionModel {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
@@ -123,7 +123,7 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * The name of the AlgcomparisonModel.
      */
-    private String name = "Algcomparison";
+    private String name = "Grid Search";
     private LinkedList<AlgorithmModel> selectedAlgorithmModels;
 
     /**
@@ -131,12 +131,12 @@ public class AlgcomparisonModel implements SessionModel {
      *
      * @param parameters The parameters to be set.
      */
-    public AlgcomparisonModel(Parameters parameters) {
+    public GridSearchModel(Parameters parameters) {
         this.parameters = parameters;
         initializeIfNull();
     }
 
-    public AlgcomparisonModel(GraphSource graphSource, Parameters parameters) {
+    public GridSearchModel(GraphSource graphSource, Parameters parameters) {
         this.parameters = new Parameters();
         this.suppliedGraph = graphSource.getGraph();
         initializeIfNull();
@@ -277,7 +277,7 @@ public class AlgcomparisonModel implements SessionModel {
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
 
-        AlgcomparisonEditor.ComparisonGraphType type = (AlgcomparisonEditor.ComparisonGraphType) parameters.get("algcomparisonGraphType");
+        GridSearchEditor.ComparisonGraphType type = (GridSearchEditor.ComparisonGraphType) parameters.get("algcomparisonGraphType");
         switch (type) {
             case DAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
             case CPDAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
@@ -388,7 +388,7 @@ public class AlgcomparisonModel implements SessionModel {
         if (selectedTableColumns.contains(tableColumn)) return;
         initializeIfNull();
         selectedTableColumns.add(tableColumn);
-        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
+        GridSearchModel.sortTableColumns(selectedTableColumns);
     }
 
     /**
@@ -459,7 +459,7 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public List<MyTableColumn> getSelectedTableColumns() {
-        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
+        GridSearchModel.sortTableColumns(selectedTableColumns);
         return new ArrayList<>(selectedTableColumns);
     }
 
@@ -654,8 +654,8 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     @NotNull
-    public List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
-        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
+    public List<GridSearchModel.MyTableColumn> getAllTableColumns() {
+        List<GridSearchModel.MyTableColumn> allTableColumns = new ArrayList<>();
 
         List<Simulation> simulations = getSelectedSimulations().getSimulations();
         List<Algorithm> algorithms = getSelectedAlgorithms().getAlgorithms();
@@ -664,7 +664,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -673,7 +673,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -682,7 +682,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -691,7 +691,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -700,7 +700,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -710,7 +710,7 @@ public class AlgcomparisonModel implements SessionModel {
         for (Class<? extends Statistic> statisticClass : statisticClasses) {
             try {
                 Statistic statistic = statisticClass.getConstructor().newInstance();
-                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
                 allTableColumns.add(column);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
