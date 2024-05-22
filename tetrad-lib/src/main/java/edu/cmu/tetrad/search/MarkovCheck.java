@@ -901,6 +901,7 @@ public class MarkovCheck {
                     List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
                 }
+
                 addResults(resultsIndep, resultsDep, fact, x, y, z);
 
                 return new Pair<>(resultsIndep, resultsDep);

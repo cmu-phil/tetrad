@@ -166,7 +166,15 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         String yN1 = this.y.getName();
         String yN2 = fact.y.getName();
 
-        return zString1.equals(zString2) && ((xN1.equals(xN2) && yN1.equals(yN2)) || xN1.equals(yN2) && yN1.equals(xN2));
+        Set<String> a1 = new HashSet<>();
+        a1.add(xN1);
+        a1.add(yN1);
+
+        Set<String> a2 = new HashSet<>();
+        a2.add(xN2);
+        a2.add(yN2);
+
+        return a1.equals(a2) && zString1.equals(zString2);
 
 //        return _z.equals(fact._z) && ((x.equals(fact.x) && (y.equals(fact.y))) || (x.equals(fact.y) && (y.equals(fact.x))));
     }

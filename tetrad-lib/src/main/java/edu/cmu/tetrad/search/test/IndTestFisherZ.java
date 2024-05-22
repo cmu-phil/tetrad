@@ -93,7 +93,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * The correlation coefficient for the last test.
      */
@@ -642,8 +642,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
 
-            TetradLogger.getInstance().forceLogMessage(sb.toString());
-            System.out.println(sb);
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage(sb.toString());
+            }
         }
 
         return determined;
@@ -831,13 +832,24 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             return;
         }
 
-        for (Integer row : rows) {
+        List<Integer> all = new ArrayList<>();
+        for (int i = 0; i < sampleSize(); i++) all.add(i);
+        Collections.shuffle(all);
+
+        List<Integer> _rows = new ArrayList<>();
+        for (int i = 0; i < sampleSize() / 2; i++) {
+            _rows.add(all.get(i));
+        }
+
+
+
+        for (Integer row : _rows) {
             if (row < 0 || row >= sampleSize()) {
                 throw new IllegalArgumentException("Row index out of bounds.");
             }
         }
 
-        this.rows = rows;
+        this.rows = _rows;
         cor = null;
     }
 

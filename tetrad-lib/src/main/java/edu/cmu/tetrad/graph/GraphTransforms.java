@@ -65,8 +65,6 @@ public class GraphTransforms {
 
         Collections.shuffle(undirectedEdges);
 
-        System.out.println(undirectedEdges);
-
         MeekRules rules = new MeekRules();
 
         if (knowledge != null) {
