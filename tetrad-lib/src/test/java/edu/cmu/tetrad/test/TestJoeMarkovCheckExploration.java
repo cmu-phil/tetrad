@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.statistic.BicDiff;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -23,10 +25,82 @@ import org.junit.Test;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class JoeMarkovCheckExploration {
+public class TestJoeMarkovCheckExploration {
 
     public static void main(String... args) {
-        new JoeMarkovCheckExploration().test1();
+        new TestJoeMarkovCheckExploration().test1();
+    }
+
+    public void test1() {
+        Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100,
+                100, 100, false);
+
+        SemPm pm = new SemPm(trueGraph);
+
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
+
+//        for (double penalty = 0.01; penalty <= .2; penalty += 0.1) {
+            for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
+                penalty = Math.round(penalty * 10) / 10.0;
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+            score.setPenaltyDiscount(penalty);
+
+//            IndTestFisherZ test = new IndTestFisherZ(dataSet, penalty);
+
+            for (int i = 0; i < 10; i++) {
+                Graph cpdag = new PermutationSearch(new Boss(score)).search();
+//                Graph cpdag = new Fges(score).search();
+//                Graph cpdag = new Pc(test).search();
+                printLine(trueGraph, cpdag, dataSet, penalty, false);
+            }
+        }
+
+        System.out.println("\n\nTrue CPDAG\n");
+
+        Graph trueCpdag = GraphTransforms.dagToCpdag(trueGraph);
+
+        for (int i = 0; i < 30; i++) {
+            printLine(trueCpdag, trueCpdag, dataSet, 1, true);
+        }
+    }
+
+    private void printLine(Graph trueGraph, Graph cpdag, DataSet dataSet, double penalty, boolean override) {
+        Pair<List<Pair<IndependenceFact, Double>>, Graph> ret = getPValues(cpdag, dataSet);
+
+        List<Pair<IndependenceFact, Double>> pValues = ret.getLeft();
+
+        // Sort pValues low to high.
+        pValues.sort(Comparator.comparingDouble(Pair::getRight));
+
+        List<Double> pValuesArray = new ArrayList<>();
+        for (Pair<IndependenceFact, Double> pValue : pValues) {
+            pValuesArray.add(pValue.getRight());
+        }
+
+        int fdr = StatUtils.fdr(0.05, pValuesArray);
+        double _pValue;
+
+        if (fdr == -1) {
+            _pValue = 0;
+        } else {
+            Pair<IndependenceFact, Double> independenceFactDoublePair = pValues.get(fdr);
+            _pValue = independenceFactDoublePair.getRight();
+        }
+
+        double ad = checkAgainstAndersonDarlingTest(pValuesArray);
+        double ks = getKsPValue(pValuesArray);
+
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+        if (ad < 0.05 && !override) return;
+
+        double bicDiffValue = new BicDiff().getValue(trueGraph, cpdag, dataSet);
+
+        System.out.println("penalty " + penalty + " p-value = " + nf.format(_pValue)
+                           + " FDR = " + fdr + " AD = " + nf.format(ad) + " KS = "
+                           + nf.format(ks) + " # tests = " + pValues.size() + " # edges = "
+                           + cpdag.getNumEdges() + " bicDiff = " + nf.format(bicDiffValue));
     }
 
     private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
@@ -59,7 +133,7 @@ public class JoeMarkovCheckExploration {
                     if (msep) {
                         Collections.shuffle(all);
 
-                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.5));
+                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.8));
                         test.setRows(rows);
 
                         double pValue = test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).getPValue();
@@ -72,76 +146,6 @@ public class JoeMarkovCheckExploration {
         }
 
         return Pair.of(pValues, cpdag);
-    }
-
-    @Test
-    public void test1() {
-        Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100,
-                100, 100, false);
-
-        SemPm pm = new SemPm(trueGraph);
-
-        SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
-
-        for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
-            penalty = Math.round(penalty * 10) / 10.0;
-            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-            score.setPenaltyDiscount(penalty);
-
-            IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.01);
-
-            Graph cpdag = new Pc(test).search();
-//            Graph cpdag = new Fges(score).search();
-//            Graph cpdag = new PermutationSearch(new Boss(score)).search();
-
-            for (int i = 0; i < 10; i++) {
-                cpdag = new PermutationSearch(new Boss(score)).search();
-            }
-
-            printLine(cpdag, dataSet, penalty, false);
-        }
-
-        System.out.println("\n\nTrue CPDAG\n");
-
-        Graph trueCpdag = GraphTransforms.dagToCpdag(trueGraph);
-
-        for (int i = 0; i < 10; i++) {
-            printLine(trueCpdag, dataSet, 1, true);
-        }
-    }
-
-    private void printLine(Graph cpdag, DataSet dataSet, double penalty, boolean override) {
-        Pair<List<Pair<IndependenceFact, Double>>, Graph> ret = getPValues(cpdag, dataSet);
-
-        List<Pair<IndependenceFact, Double>> pValues = ret.getLeft();
-
-        // Sort pValues low to high by p-value.
-        pValues.sort(Comparator.comparingDouble(Pair::getRight));
-
-        List<Double> pValuesArray = new ArrayList<>();
-        for (Pair<IndependenceFact, Double> pValue : pValues) {
-            pValuesArray.add(pValue.getRight());
-        }
-
-        int fdr = StatUtils.fdr(0.05, pValuesArray);
-        double _pValue;
-
-        if (fdr == -1) {
-            _pValue = 0;
-        } else {
-            Pair<IndependenceFact, Double> independenceFactDoublePair = pValues.get(fdr);
-            _pValue = independenceFactDoublePair.getRight();
-        }
-
-        double ad = checkAgainstAndersonDarlingTest(pValuesArray);
-        double ks = getKsPValue(pValuesArray);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-        if (ad < 0.05 && !override) return;
-
-        System.out.println("penalty " + penalty + " p-value = " + nf.format(_pValue) + " FDR = " + fdr + " AD = " + nf.format(ad) + " KS = " + nf.format(ks) + " # tests = " + pValues.size() + " # edges = " + cpdag.getNumEdges());
     }
 
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
