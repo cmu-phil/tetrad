@@ -444,7 +444,7 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testDAGPrecisionRecall2ForLocalOnMarkovBlanket() {
+    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket2() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
@@ -461,25 +461,27 @@ public class TestCheckMarkov {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
         // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
+        // List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.3);
+
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        List<Double> acceptsPrecision = new ArrayList<>();
-        List<Double> acceptsRecall = new ArrayList<>();
-        for(Node a: accepts) {
-            System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
-            System.out.println("=====================");
-
-        }
-        for (Node a: rejects) {
-            System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
-            System.out.println("=====================");
-        }
+//        List<Double> acceptsPrecision = new ArrayList<>();
+//        List<Double> acceptsRecall = new ArrayList<>();
+//        for(Node a: accepts) {
+//            System.out.println("=====================");
+//            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+//            System.out.println("=====================");
+//
+//        }
+//        for (Node a: rejects) {
+//            System.out.println("=====================");
+//            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+//            System.out.println("=====================");
+//        }
     }
 
 }
