@@ -340,6 +340,17 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
+    /**
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion statistics.
+     *
+     * Confusion statistics were calculated using Adjacency (AdjacencyPrecision, AdjacencyRecall) and Arrowhead (ArrowheadPrecision, ArrowheadRecall)
+     * @param independenceTest
+     * @param estimatedCpdag
+     * @param trueGraph
+     * @param threshold
+     * @param shuffleThreshold
+     * @return
+     */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
         // When calling, default reject null as <=0.05
         List<List<Node>> accepts_rejects = new ArrayList<>();
@@ -479,6 +490,17 @@ public class MarkovCheck {
         return accepts_rejects;
     }
 
+    /**
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion statistics.
+     *
+     * Confusion statistics were calculated using Local Graph Precision and Recall (LocalGraphPrecision, LocalGraphRecall).
+     * @param independenceTest
+     * @param estimatedCpdag
+     * @param trueGraph
+     * @param threshold
+     * @param shuffleThreshold
+     * @return
+     */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
         // When calling, default reject null as <=0.05
         List<List<Node>> accepts_rejects = new ArrayList<>();

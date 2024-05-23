@@ -468,20 +468,6 @@ public class TestCheckMarkov {
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
-
-//        List<Double> acceptsPrecision = new ArrayList<>();
-//        List<Double> acceptsRecall = new ArrayList<>();
-//        for(Node a: accepts) {
-//            System.out.println("=====================");
-//            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
-//            System.out.println("=====================");
-//
-//        }
-//        for (Node a: rejects) {
-//            System.out.println("=====================");
-//            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
-//            System.out.println("=====================");
-//        }
     }
 
 }
