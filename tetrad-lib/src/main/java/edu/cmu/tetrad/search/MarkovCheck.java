@@ -261,6 +261,39 @@ public class MarkovCheck {
     }
 
     /**
+     * Get Local P values with shuffle threshold provided.
+     * @param independenceTest
+     * @param facts
+     * @param shuffleThreshold
+     * @return
+     */
+    public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
+        // Call pvalue function on each item, only include the non-null ones.
+        // pVals is a list of lists of the p values for each shuffled results.
+        List<List<Double>> pVals_list = new ArrayList<>();
+        for (IndependenceFact f : facts) {
+            Double pV;
+            // For now, check if the test is FisherZ test.
+            if (independenceTest instanceof IndTestFisherZ) {
+                // Shuffle to generate more data from the same graph.
+                int shuffleTimes = (int) Math.ceil(1 / shuffleThreshold);
+                List<Double> pVals = new ArrayList<>();
+                for (int i = 0; i < shuffleTimes; i++) {
+                    List<Integer> rows = getSubsampleRows(shuffleThreshold); // Default as 0.5
+                    ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
+                    pV = ((IndTestFisherZ) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                    pVals.add(pV);
+                }
+                pVals_list.add(pVals);
+            } else if (independenceTest instanceof IndTestChiSquare) {
+                pV = ((IndTestChiSquare) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                if (pV != null) pVals_list.add(Arrays.asList(pV));
+            }
+        }
+        return pVals_list;
+    }
+
+    /**
      * Tests a list of p-values against the Anderson-Darling Test.
      *
      * @param pValues the list of p-values to be tested
