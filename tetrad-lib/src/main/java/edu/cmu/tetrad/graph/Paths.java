@@ -434,7 +434,7 @@ public class Paths implements TetradSerializable {
 
         if (node1 == node2) {
             LinkedList<Node> _path = new LinkedList<>(path);
-            if (!paths.contains(path)) {
+            if (_path.size() > 1 && !paths.contains(_path)) {
                 paths.add(_path);
             }
         }
@@ -2359,8 +2359,7 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength           The maximum length of the path to consider for non-amenable paths. If a value
      *                                of -1 is given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
-     * @throws IllegalArgumentException if no amenable paths are found or if no non-amenable paths are found.
-     */
+
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         boolean mpdag = false;
@@ -2381,7 +2380,7 @@ public class Paths implements TetradSerializable {
         // (The PAG case will be handled later.)
         for (List<Node> path : new ArrayList<>(amenable)) {
             if (path.size() < 2) {
-                throw new IllegalArgumentException("Path is too short: " + path);
+                amenable.remove(path);
             }
 
             Node a = path.get(0);
@@ -2397,13 +2396,13 @@ public class Paths implements TetradSerializable {
             return Collections.emptyList();
         }
 
-        List<List<Node>> backdoor = allPaths(source, target, maxPathLength);
+        List<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
-            backdoor.removeIf(path -> path.size() < 2 ||
+            backdoorPaths.removeIf(path -> path.size() < 2 ||
                                       !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
         } else {
-            backdoor.removeIf(path -> {
+            backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
                     return false;
                 }
@@ -2418,9 +2417,6 @@ public class Paths implements TetradSerializable {
                                     && graph.paths().existsDirectedPath(w, y))));
             });
         }
-        if (backdoor.isEmpty()) {
-            throw new IllegalArgumentException("No non-amenable paths found; nothing to adjust.");
-        }
 
         List<Set<Node>> adjustmentSets = new ArrayList<>();
         Set<Set<Node>> tried = new HashSet<>();
@@ -2434,7 +2430,7 @@ public class Paths implements TetradSerializable {
             // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
             // If i = 1, we would add a, b, d, and e to the list. And so on.
             for (int j = 1; j <= i; j++) {
-                for (List<Node> trek : backdoor) {
+                for (List<Node> trek : backdoorPaths) {
                     if (j >= trek.size()) {
                         continue;
                     }
@@ -2474,8 +2470,8 @@ public class Paths implements TetradSerializable {
             }
 
             // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
-            // That is, we check if it blocks all backdoor from source to target that are not semi-directed
-            // without blocking any backdoor that are semi-directed.
+            // That is, we check if it blocks all backdoorPaths from source to target that are not semi-directed
+            // without blocking any backdoorPaths that are semi-directed.
 
             ADJ:
             for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
@@ -2493,8 +2489,8 @@ public class Paths implements TetradSerializable {
                     }
                 }
 
-                for (List<Node> trek : backdoor) {
-                    if (isMConnectingPath(trek, possibleAdjustmentSet, !mpdag)) {
+                for (List<Node> _backdoor : backdoorPaths) {
+                    if (isMConnectingPath(_backdoor, possibleAdjustmentSet, !mpdag)) {
                         i++;
                         continue ADJ;
                     }
@@ -2503,7 +2499,6 @@ public class Paths implements TetradSerializable {
                 if (!adjustmentSets.contains(possibleAdjustmentSet)) {
                     adjustmentSets.add(possibleAdjustmentSet);
                 }
-//                adjustmentSets.add(possibleAdjustmentSet);
 
                 if (adjustmentSets.size() >= maxNumSets) {
                     return adjustmentSets;

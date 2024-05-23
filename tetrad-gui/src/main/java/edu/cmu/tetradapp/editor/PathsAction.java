@@ -845,7 +845,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private void addConditionNote(JTextArea textArea) {
         String conditioningSymbol = "\u2714";
-        textArea.append("\n" + conditioningSymbol + " indicates that marked variable is in the conditioning set.");
+        textArea.append("\n" + conditioningSymbol + " indicates that the marked variable is in the conditioning set; (L) that L is latent.");
     }
 
     /**
@@ -1238,7 +1238,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         for (List<Node> path : paths) {
-            if (path.size() > 1 && graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
+            if (graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
                 textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, !mpdag));
                 found1 = true;
             }
@@ -1253,7 +1253,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean found2 = false;
 
         for (List<Node> path : paths) {
-            if (path.size() > 1 && !graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
+            if (!graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
                 textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 found2 = true;
             }
