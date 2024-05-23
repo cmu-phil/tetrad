@@ -734,7 +734,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         panel.add(b);
 
         EditorWindow window = new EditorWindow(panel,
-                "Paths", "Close", false, this.workbench);
+                "Paths", null, false, this.workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -795,44 +795,57 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @throws IllegalArgumentException If the method is unknown.
      */
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
-        if ("Directed Paths".equals(method)) {
-            textArea.setText("");
-            allDirectedPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Semidirected Paths".equals(method)) {
-            textArea.setText("");
-            allSemidirectedPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Amenable paths".equals(method)) {
-            textArea.setText("");
-            allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
-        } else if ("Backdoor paths".equals(method)) {
-            textArea.setText("");
-            allBackdoorPaths(graph, textArea, nodes1, nodes2);
-        } else if ("All Paths".equals(method)) {
-            textArea.setText("");
-            allPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Treks".equals(method)) {
-            textArea.setText("");
-            allTreks(graph, textArea, nodes1, nodes2);
-        } else if ("Confounder Paths".equals(method)) {
-            textArea.setText("");
-            confounderPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Latent Confounder Paths".equals(method)) {
-            textArea.setText("");
-            latentConfounderPaths(graph, textArea, nodes1, nodes2);
-        } else if ("Adjacents".equals(method)) {
-            textArea.setText("");
-            adjacentNodes(graph, textArea, nodes1, nodes2);
-        } else if ("Adjustment Sets".equals(method)) {
-            textArea.setText("");
-            adjustmentSets(graph, textArea, nodes1, nodes2);
-        } else if ("Cycles".equals(method)) {
-            textArea.setText("");
-            allCyclicPaths(graph, textArea, nodes1, nodes2);
-        } else {
-            throw new IllegalArgumentException("Unknown method: " + method);
-        }
+        class MyWatchedProcess extends WatchedProcess {
+            @Override
+            public void watch() {
+                if ("Directed Paths".equals(method)) {
+                    textArea.setText("");
+                    allDirectedPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Semidirected Paths".equals(method)) {
+                    textArea.setText("");
+                    allSemidirectedPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Amenable paths".equals(method)) {
+                    textArea.setText("");
+                    allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+                } else if ("Backdoor paths".equals(method)) {
+                    textArea.setText("");
+                    allBackdoorPaths(graph, textArea, nodes1, nodes2);
+                } else if ("All Paths".equals(method)) {
+                    textArea.setText("");
+                    allPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Treks".equals(method)) {
+                    textArea.setText("");
+                    allTreks(graph, textArea, nodes1, nodes2);
+                } else if ("Confounder Paths".equals(method)) {
+                    textArea.setText("");
+                    confounderPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Latent Confounder Paths".equals(method)) {
+                    textArea.setText("");
+                    latentConfounderPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Adjacents".equals(method)) {
+                    textArea.setText("");
+                    adjacentNodes(graph, textArea, nodes1, nodes2);
+                } else if ("Adjustment Sets".equals(method)) {
+                    textArea.setText("");
+                    adjustmentSets(graph, textArea, nodes1, nodes2);
+                } else if ("Cycles".equals(method)) {
+                    textArea.setText("");
+                    allCyclicPaths(graph, textArea, nodes1, nodes2);
+                } else {
+                    throw new IllegalArgumentException("Unknown method: " + method);
+                }
 
-        this.textArea.setCaretPosition(0);
+                textArea.setCaretPosition(0);
+            }
+        };
+
+        new MyWatchedProcess();
+    }
+
+
+    private void addConditionNote(JTextArea textArea) {
+        String conditioningSymbol = "\u2714";
+        textArea.append("\n" + conditioningSymbol + " indicates that marked variable is in the conditioning set.");
     }
 
     /**
@@ -847,6 +860,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("""
                 These are causal paths--i.e. paths that are directed from X to Y, of the form X ~~> Y.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -867,7 +882,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo cycles found.");
+            textArea.append("\n\nNo cycles found.");
         }
     }
 
@@ -884,6 +899,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are nodes in cyclic paths--i.e. paths that are directed from X to X, of the form X ~~> X. Note
                 that only the nodes selected in the From box above are considered.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -902,7 +919,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo directed paths found.");
+            textArea.append("\n\nNo directed paths found.");
         }
     }
 
@@ -920,6 +937,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("""
                 These are paths that with additional knowledge could be causal from source to target.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -941,7 +960,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo semidirected paths found.");
+            textArea.append("\n\nNo semidirected paths found.");
         }
     }
 
@@ -959,6 +978,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
+
+        addConditionNote(textArea);
 
         boolean mpdag = false;
         boolean mag = false;
@@ -999,7 +1020,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo amenable paths found.");
+            textArea.append("\n\nNo amenable paths found.");
         }
     }
 
@@ -1017,6 +1038,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -1038,7 +1061,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo amenable paths found.");
+            textArea.append("\n\nNo amenable paths found.");
         }
     }
 
@@ -1055,6 +1078,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("""
                 These are paths between x and y that start with z -> x for some z.
                 """);
+
+        addConditionNote(textArea);
 
         boolean mpdag = false;
         boolean mag = false;
@@ -1107,7 +1132,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo backdoor paths found.");
+            textArea.append("\n\nNo backdoor paths found.");
         }
     }
 
@@ -1126,6 +1151,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("""
                 These are backdoor paths in a PAG. An adjustment set should block all of these paths.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -1150,7 +1177,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo backdoor paths found.");
+            textArea.append("\n\nNo backdoor paths found.");
         }
     }
 
@@ -1167,6 +1194,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are paths from the source to the target, however oriented. Not all paths may be listed, as a bound
                 is placed on their length.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -1187,7 +1216,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo paths found.");
+            textArea.append("\n\nNo paths found.");
         }
     }
 
@@ -1248,6 +1277,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 These are paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.
                 """);
 
+        addConditionNote(textArea);
+
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
@@ -1266,7 +1297,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo treks found.");
+            textArea.append("\n\nNo treks found.");
         }
     }
 
@@ -1282,6 +1313,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("""
                 These are paths of the form X <~~ S ~~> Y for some source S. The source S would be the confounder.
                 """);
+
+        addConditionNote(textArea);
 
         boolean pathListed = false;
 
@@ -1313,7 +1346,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo confounder paths found.");
+            textArea.append("\n\nNo confounder paths found.");
         }
     }
 
@@ -1327,6 +1360,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void latentConfounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         boolean pathListed = false;
+
+        addConditionNote(textArea);
 
         textArea.append("""
                 These are confounder paths along which all nodes except for endpoints are latent. These are unmeasured nodes
@@ -1372,7 +1407,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\nNo latent confounder paths found.");
+            textArea.append("\n\nNo latent confounder paths found.");
         }
     }
 
@@ -1594,6 +1629,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+            setDoubleBuffered(true);
 
             if (getText().isEmpty() && !isFocusOwner()) {
                 Graphics2D g2d = (Graphics2D) g.create();

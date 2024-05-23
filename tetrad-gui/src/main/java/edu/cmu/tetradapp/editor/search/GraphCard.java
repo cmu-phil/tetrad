@@ -151,7 +151,8 @@ public class GraphCard extends JPanel {
     private JPanel createGraphPanel(Graph graph) {
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.setKnowledge(knowledge);
-        graphWorkbench.enableEditing(false);
+//        graphWorkbench.setEnableEditing(false);
+        graphWorkbench.setEnableEditing(true);
 
         // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG edge specialization markups.
         // This is to show the edge types in the graph. - jdramsey 2024/03/13

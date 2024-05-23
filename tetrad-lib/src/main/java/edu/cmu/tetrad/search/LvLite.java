@@ -295,12 +295,14 @@ public final class LvLite implements IGraphSearch {
                         if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
                             teyssierScorer.goToBookmark();
                             boolean changed = teyssierScorer.tuck(c, b);
+//                            changed = changed || teyssierScorer.tuck(c, b);
+                            changed = changed || teyssierScorer.tuck(a, b);
 
                             if (!changed) {
                                 continue;
                             }
 
-                            if (!teyssierScorer.adjacent(a, c)) {
+                            if (!teyssierScorer.adjacent(a, c) && teyssierScorer.adjacent(a, b) && pag.isAdjacentTo(a, b)) {
                                 Edge edge = pag.getEdge(a, c);
 
                                 if (pag.removeEdge(edge)) {

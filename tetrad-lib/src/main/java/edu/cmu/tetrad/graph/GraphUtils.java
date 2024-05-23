@@ -313,7 +313,7 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
-        String conditioningSymbol = "(\u2714)";
+        String conditioningSymbol = "\u2714";
 
         if (conditioningVars.contains(path.get(0))) {
             buf.append(conditioningSymbol);
@@ -371,7 +371,7 @@ public final class GraphUtils {
                         Set<Node> descendants = graph.paths().getDescendants(n1);
                         descendants.retainAll(conditioningVars);
                         if (!descendants.isEmpty()) {
-                            buf.append("[~~>").append(descendants.iterator().next()).append(conditioningSymbol + "]");
+                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol + "}");
                         }
                     }
                 }

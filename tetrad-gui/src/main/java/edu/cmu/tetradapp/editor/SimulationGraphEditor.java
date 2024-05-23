@@ -164,7 +164,7 @@ public final class SimulationGraphEditor extends JPanel {
      */
     private JComponent graphDisplay(Graph graph) {
         GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
-        graphEditor.enableEditing(false);
+        graphEditor.setEnableEditing(false);
 
         return graphEditor.getWorkbench();
     }
