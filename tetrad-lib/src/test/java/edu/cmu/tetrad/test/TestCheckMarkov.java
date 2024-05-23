@@ -113,7 +113,9 @@ public class TestCheckMarkov {
 
     @Test
     public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
-        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+//       TODO VBC: Also check different dense graph.
+//        Graph trueGraph = RandomGraph.randomDag(20, 0, 40, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
@@ -124,30 +126,18 @@ public class TestCheckMarkov {
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+//        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+//        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.3);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
-
-        List<Double> acceptsPrecision = new ArrayList<>();
-        List<Double> acceptsRecall = new ArrayList<>();
-        for(Node a: accepts) {
-            System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
-            System.out.println("=====================");
-
-        }
-        for (Node a: rejects) {
-            System.out.println("=====================");
-            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
-            System.out.println("=====================");
-        }
     }
 
     @Test
@@ -170,7 +160,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -213,7 +204,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -259,7 +251,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -300,7 +293,8 @@ public class TestCheckMarkov {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         // TODO VBC: confirm on the choice of ConditioningSetType.
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -339,7 +333,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -382,7 +377,8 @@ public class TestCheckMarkov {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         // TODO VBC: confirm on the choice of ConditioningSetType.
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -426,7 +422,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -463,7 +460,8 @@ public class TestCheckMarkov {
 
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
