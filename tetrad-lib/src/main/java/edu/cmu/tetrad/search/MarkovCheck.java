@@ -381,35 +381,35 @@ public class MarkovCheck {
             List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
             for (List<Double> localPValues: shuffledlocalPValues) {
                 // P value obtained from AD test
-                Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(localPValues);
                 // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-                if (ADTest <= threshold) {
+                if (ADTestPValue <= threshold) {
                     rejects.add(x);
                     if (!Double.isNaN(ap)) {
-                        rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTest));
+                        rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ar)) {
-                        rejects_AdjR_ADTestP.add(Arrays.asList(ap, ADTest));
+                        rejects_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ahp)) {
-                        rejects_AHP_ADTestP.add(Arrays.asList(ap, ADTest));
+                        rejects_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ahr)) {
-                        rejects_AHR_ADTestP.add(Arrays.asList(ap, ADTest));
+                        rejects_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                 } else {
                     accepts.add(x);
                     if (!Double.isNaN(ap)) {
-                        accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTest));
+                        accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ar)) {
-                        accepts_AdjR_ADTestP.add(Arrays.asList(ap, ADTest));
+                        accepts_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ahp)) {
-                        accepts_AHP_ADTestP.add(Arrays.asList(ap, ADTest));
+                        accepts_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                     if (!Double.isNaN(ahr)) {
-                        accepts_AHR_ADTestP.add(Arrays.asList(ap, ADTest));
+                        accepts_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                     }
                 }
             }
@@ -421,7 +421,7 @@ public class MarkovCheck {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
                 writer.write(entry.getValue());
                 switch (entry.getKey()) {
-                    case "acceptsAdjP_ADTestP_data.csv":
+                    case "accepts_AdjP_ADTestP_data.csv":
                         for (List<Double> AdjP_ADTestP_pair : accepts_AdjP_ADTestP) {
                             writer.write(nf.format(AdjP_ADTestP_pair.get(0)) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
                         }
@@ -489,7 +489,7 @@ public class MarkovCheck {
         // Confusion stats lists for data processing.
         Map<String, String> fileContentMap = new HashMap<>();
 
-        // Local Graph Precision and Recall
+        // Using Local Graph Precision and Recall to calculate Confusion statistics.
         List<List<Double>> accepts_LGP_ADTestP = new ArrayList<>();
         List<List<Double>> accepts_LGR_ADTestP = new ArrayList<>();
         fileContentMap.put("accepts_LGP_ADTestP_data.csv", "");
@@ -511,23 +511,23 @@ public class MarkovCheck {
             List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
             for (List<Double> localPValues: shuffledlocalPValues) {
                 // P value obtained from AD test
-                Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(localPValues);
                 // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-                if (ADTest <= threshold) {
+                if (ADTestPValue <= threshold) {
                     rejects.add(x);
                     if (!Double.isNaN(lgp)) {
-                        rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTest));
+                        rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
                     }
                     if (!Double.isNaN(lgr)) {
-                        rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTest));
+                        rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
                     }
                 } else {
                     accepts.add(x);
                     if (!Double.isNaN(lgp)) {
-                        accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTest));
+                        accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
                     }
                     if (!Double.isNaN(lgr)) {
-                        accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTest));
+                        accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
                     }
                 }
             }
