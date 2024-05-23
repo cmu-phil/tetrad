@@ -2359,7 +2359,7 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength           The maximum length of the path to consider for non-amenable paths. If a value
      *                                of -1 is given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
-
+     */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         boolean mpdag = false;
