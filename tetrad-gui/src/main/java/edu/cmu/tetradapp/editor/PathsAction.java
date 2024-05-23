@@ -882,7 +882,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\n\nNo cycles found.");
+            textArea.append("\n\nNo directed paths found.");
         }
     }
 

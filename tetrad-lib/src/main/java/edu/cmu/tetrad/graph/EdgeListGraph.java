@@ -1222,18 +1222,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.nodes == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.edgesSet == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.edgeLists == null) {
-            throw new NullPointerException();
-        }
     }
 
     /**

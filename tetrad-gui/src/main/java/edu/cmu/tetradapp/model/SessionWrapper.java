@@ -751,18 +751,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.session == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.sessionNodeWrappers == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.sessionEdges == null) {
-            throw new NullPointerException();
-        }
     }
 
     /**

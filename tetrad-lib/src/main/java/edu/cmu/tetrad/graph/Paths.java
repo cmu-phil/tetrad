@@ -2377,10 +2377,6 @@ public class Paths implements TetradSerializable {
 
         List<List<Node>> amenable = semidirectedPaths(source, target, -1);
 
-        if (amenable.isEmpty()) {
-            throw new IllegalArgumentException("No amenable paths found; nothing to adjust.");
-        }
-
         // Remove any amenable path that does not start with a visible edge in the CPDAG case.
         // (The PAG case will be handled later.)
         for (List<Node> path : new ArrayList<>(amenable)) {
