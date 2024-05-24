@@ -833,7 +833,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
 
     private void addConditionNote(JTextArea textArea) {
-        String conditioningSymbol = "\u2714";
+        String conditioningSymbol = "✔";
         textArea.append("\n" + conditioningSymbol + " indicates that the marked variable is in the conditioning set; (L) that L is latent.");
     }
 
@@ -1103,9 +1103,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                         return !(graph.getEdge(x, w).pointsTowards(x)
                                  || Edges.isUndirectedEdge(graph.getEdge(x, w))
                                  || (Edges.isBidirectedEdge(graph.getEdge(x, w))
-                                    && (graph.paths().existsDirectedPath(w, x)
-                                    || (graph.paths().existsDirectedPath(w, x)
-                                        && graph.paths().existsDirectedPath(w, y)))));
+                                     && (graph.paths().existsDirectedPath(w, x)
+                                         || (graph.paths().existsDirectedPath(w, x)
+                                             && graph.paths().existsDirectedPath(w, y)))));
                     });
                 }
 
@@ -1117,51 +1117,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
                 listPaths(graph, textArea, backdoor);
-            }
-        }
-
-        if (!pathListed) {
-            textArea.append("\n\nNo backdoor paths found.");
-        }
-    }
-
-
-    /**
-     * Appends all backdoor paths from nodes in the first list to nodes in the second list to the given text area. A
-     * backdoor path is from x to y that begins with z -> x for some z. An adjustment set should block all of these
-     * paths.
-     *
-     * @param graph    The Graph object representing the graph.
-     * @param textArea The JTextArea object to append the paths to.
-     * @param nodes1   The list of starting nodes.
-     * @param nodes2   The list of ending nodes.
-     */
-    private void allBackdoorPathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.setText("""
-                These are backdoor paths in a PAG. An adjustment set should block all of these paths.
-                """);
-
-        addConditionNote(textArea);
-
-        boolean pathListed = false;
-
-        for (Node node1 : nodes1) {
-            for (Node node2 : nodes2) {
-                List<List<Node>> nonamenable = graph.paths().allPaths(node1, node2,
-                        parameters.getInt("pathsMaxLengthAdjustment"));
-
-                // Amenable paths of any length are considered.
-                List<List<Node>> amenable = graph.paths().amenablePathsPag(node1, node2, -1);
-                nonamenable.removeAll(amenable);
-
-                if (amenable.isEmpty()) {
-                    continue;
-                } else {
-                    pathListed = true;
-                }
-
-                textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-                listPaths(graph, textArea, nonamenable);
             }
         }
 
