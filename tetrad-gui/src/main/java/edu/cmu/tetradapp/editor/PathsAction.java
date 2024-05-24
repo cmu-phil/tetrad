@@ -1435,7 +1435,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
                 int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
-                List<Set<Node>> adjustments = null;
+                List<Set<Node>> adjustments;
+
                 try {
                     adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
                             maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
