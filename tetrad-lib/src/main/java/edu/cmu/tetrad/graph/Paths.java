@@ -473,10 +473,11 @@ public class Paths implements TetradSerializable {
     /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length.
      *
-     * @param node1 the source node
-     * @param node2 the destination node
+     * @param node1     the source node
+     * @param node2     the destination node
      * @param maxLength the maximum length of the paths
-     * @return a list of amenable paths from the source node to the destination node, each represented as a list of nodes
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * nodes
      */
     public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
@@ -495,13 +496,14 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * Finds amenable paths from the given source node to the given destination node with a maximum length, for
-     * a PAG. These are semidirected paths that start with a visible edge out of node1.
+     * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
+     * These are semidirected paths that start with a visible edge out of node1.
      *
-     * @param node1 the source node
-     * @param node2 the destination node
+     * @param node1     the source node
+     * @param node2     the destination node
      * @param maxLength the maximum length of the paths
-     * @return a list of amenable paths from the source node to the destination node, each represented as a list of nodes
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * nodes
      */
     public List<List<Node>> amenablePathsPag(Node node1, Node node2, int maxLength) {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
@@ -2338,9 +2340,9 @@ public class Paths implements TetradSerializable {
      * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt; fitting a certain description.
      * <p>
      * The description is as follows. We look for adjustment sets of varaibles that are close to either the source or
-     * the target (or either) in the graph. We take all possibly causal paths from the source to the target into
-     * account but only consider other paths up to a certain specified length. (This maximum length can be unlimited
-     * for small graphs.)
+     * the target (or either) in the graph. We take all possibly causal paths from the source to the target into account
+     * but only consider other paths up to a certain specified length. (This maximum length can be unlimited for small
+     * graphs.)
      * <p>
      * Within this description, we list adjustment sets in order or increasing size.
      * <p>
@@ -2356,12 +2358,16 @@ public class Paths implements TetradSerializable {
      * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
      * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
      *                                target, 3 = near either.
-     * @param maxPathLength           The maximum length of the path to consider for non-amenable paths. If a value
-     *                                of -1 is given, all paths will be considered.
+     * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
+     *                                given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
+        if (source == target) {
+            throw new IllegalArgumentException("Source and target nodes must be different.");
+        }
+
         boolean mpdag = false;
         boolean mag = false;
         boolean pag = false;
@@ -2393,14 +2399,14 @@ public class Paths implements TetradSerializable {
         }
 
         if (amenable.isEmpty()) {
-            return Collections.emptyList();
+            throw new IllegalArgumentException("No amenable paths found.");
         }
 
         List<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
             backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                      !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                                           !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {

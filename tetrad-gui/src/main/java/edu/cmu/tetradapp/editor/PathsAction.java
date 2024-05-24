@@ -738,7 +738,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
-        update(graph, this.textArea, this.nodes1, this.nodes2, this.method);
+//        update(graph, this.textArea, this.nodes1, this.nodes2, this.method);
 
         editParameters.addActionListener(e2 -> {
             Set<String> params = new HashSet<>();
@@ -795,41 +795,30 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @throws IllegalArgumentException If the method is unknown.
      */
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
-        class MyWatchedProcess extends WatchedProcess {
+        new WatchedProcess() {
             @Override
             public void watch() {
                 if ("Directed Paths".equals(method)) {
-                    textArea.setText("");
                     allDirectedPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Semidirected Paths".equals(method)) {
-                    textArea.setText("");
                     allSemidirectedPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Amenable paths".equals(method)) {
-                    textArea.setText("");
                     allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
                 } else if ("Backdoor paths".equals(method)) {
-                    textArea.setText("");
                     allBackdoorPaths(graph, textArea, nodes1, nodes2);
                 } else if ("All Paths".equals(method)) {
-                    textArea.setText("");
                     allPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Treks".equals(method)) {
-                    textArea.setText("");
                     allTreks(graph, textArea, nodes1, nodes2);
                 } else if ("Confounder Paths".equals(method)) {
-                    textArea.setText("");
                     confounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Latent Confounder Paths".equals(method)) {
-                    textArea.setText("");
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
-                    textArea.setText("");
                     adjacentNodes(graph, textArea, nodes1, nodes2);
                 } else if ("Adjustment Sets".equals(method)) {
-                    textArea.setText("");
                     adjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Cycles".equals(method)) {
-                    textArea.setText("");
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
                     throw new IllegalArgumentException("Unknown method: " + method);
@@ -839,7 +828,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
         };
 
-        new MyWatchedProcess();
+//        new MyWatchedProcess();
     }
 
 
@@ -857,7 +846,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are causal paths--i.e. paths that are directed from X to Y, of the form X ~~> Y.
                 """);
 
@@ -895,7 +884,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allCyclicPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are nodes in cyclic paths--i.e. paths that are directed from X to X, of the form X ~~> X. Note
                 that only the nodes selected in the From box above are considered.
                 """);
@@ -934,7 +923,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allSemidirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are paths that with additional knowledge could be causal from source to target.
                 """);
 
@@ -974,7 +963,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
@@ -1034,7 +1023,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allAmenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
@@ -1075,7 +1064,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allBackdoorPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are paths between x and y that start with z -> x for some z.
                 """);
 
@@ -1148,7 +1137,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allBackdoorPathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are backdoor paths in a PAG. An adjustment set should block all of these paths.
                 """);
 
@@ -1190,7 +1179,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of target nodes.
      */
     private void allPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are paths from the source to the target, however oriented. Not all paths may be listed, as a bound
                 is placed on their length.
                 """);
@@ -1238,6 +1227,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         for (List<Node> path : paths) {
+            if (path.size() < 2) {
+                continue;
+            }
+
             if (graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
                 textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, !mpdag));
                 found1 = true;
@@ -1253,6 +1246,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean found2 = false;
 
         for (List<Node> path : paths) {
+            if (path.size() < 2) {
+                continue;
+            }
+
             if (!graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
                 textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
                 found2 = true;
@@ -1273,7 +1270,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void allTreks(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are paths of the form X <~~ S ~~> Y, S ~~> Y or X <~~ S for some source S.
                 """);
 
@@ -1310,7 +1307,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void confounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""
+        textArea.setText("""
                 These are paths of the form X <~~ S ~~> Y for some source S. The source S would be the confounder.
                 """);
 
@@ -1359,14 +1356,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The list of ending nodes.
      */
     private void latentConfounderPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        boolean pathListed = false;
-
-        addConditionNote(textArea);
-
-        textArea.append("""
+        textArea.setText("""
                 These are confounder paths along which all nodes except for endpoints are latent. These are unmeasured nodes
                 whose influence on the measured nodes is not accounted for.
                 """);
+
+        addConditionNote(textArea);
+
+        boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -1454,7 +1451,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes2   The second set of nodes.
      */
     private void adjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.append("""     
+        textArea.setText("""     
                 An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
                 all causal paths unblocked. In particular, all confounders of the source and target will be
                 blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
@@ -1462,16 +1459,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                                 
                 To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
                 into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
-                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are blocked, 
-                the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. All 
-                backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
+                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
+                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
                 set is not an adjustment set.
                                 
                 In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
                 find up to a maximum number of adjustment sets that are no more than a certain distance from
                 either the source or the target node, or either. Also, while all amenable paths are taken
-                into account, backdoor paths considered are only those that with no more than a certain
-                number of nodes. These parameters can be edited.
+                into account, backdoor paths considered are only those that with no more than a certain number 
+                of nodes. These parameters can be edited.
                 """);
 
         boolean found = false;
@@ -1508,8 +1505,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
         }
 
-        textArea.append("\n\nNo adjustment sets found.");
-
+        if (!found) {
+            textArea.append("\n\nNo adjustment sets found.");
+        }
     }
 
     /**

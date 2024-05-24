@@ -103,7 +103,7 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
      * @param source The source node.
      * @param target The target node.
      * @return A list of sets of nodes representing the adjustment sets.
-     * @throws IllegalArgumentException if there are no amenable or non-amenable paths.
+     * @throws IllegalArgumentException if there are no amenable paths.
      */
     public List<Set<Node>> getAdjustmentSets(Node source, Node target) {
         int maxNumSets = parameters.getInt("pathsMaxNumSets");
@@ -111,7 +111,8 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
         int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
         int maxPathLength = parameters.getInt("pathsMaxLength");
 
-        return graph.paths().adjustmentSets(source, target, maxNumSets, maxDistanceFromEndpoint, nearWhichEndpoint, maxPathLength);
+        return graph.paths().adjustmentSets(source, target, maxNumSets, maxDistanceFromEndpoint, nearWhichEndpoint,
+                maxPathLength);
     }
 
     /**
