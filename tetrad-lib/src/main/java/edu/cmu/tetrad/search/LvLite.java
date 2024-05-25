@@ -118,7 +118,6 @@ public final class LvLite implements IGraphSearch {
         if (nodes == null) {
             throw new NullPointerException("Nodes from test were null.");
         }
-
         // BOSS seems to be doing better here.
         var suborderSearch = new Boss(score);
         suborderSearch.setKnowledge(knowledge);
@@ -152,7 +151,13 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setVerbose(verbose);
 
         // The main procedure.
-        orientCollidersAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
+        Graph _pag;
+
+        do {
+            _pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
+            orientCollidersAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
+        } while (!pag.equals(_pag));
+
         removeNonRequiredSingleArrows(pag);
         finalOrientation(fciOrient, pag, teyssierScorer);
 
@@ -244,40 +249,43 @@ public final class LvLite implements IGraphSearch {
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
 
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = i + 1; j < best.size(); j++) {
-                    var x = best.get(i);
-                    var y = best.get(j);
+            // Sort adj in the order of reverse
+            adj.sort(Comparator.comparingInt(reverse::indexOf));
 
-                    if (!(adj.contains(x) && adj.contains(y))) continue;
+            Graph _pag;
 
-                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and you
-                    // can form at least one bidirected edge
-                    if (unshieldedCollider(cpdag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y)) {
-                        pag.setEndpoint(x, b, Endpoint.ARROW);
-                        pag.setEndpoint(y, b, Endpoint.ARROW);
-                    } else if (pag.isAdjacentTo(x, y)
-                               && (pag.getEndpoint(x, b) == Endpoint.ARROW || pag.getEndpoint(y, b) == Endpoint.ARROW)
-                               && colliderAllowed(pag, x, b, y)) {
+            do {
+                _pag = new EdgeListGraph(pag);
 
-                        // Try to make a collider x *-> b <-* y in the scorer...
-                        teyssierScorer.goToBookmark();
-                        boolean tucked1 = teyssierScorer.tuck(b, x);
-                        boolean tucked2 = teyssierScorer.tuck(b, y);
 
-                        if (!tucked1 || !tucked2) {
-                            continue;
-                        }
+                for (int i = 0; i < adj.size(); i++) {
+                    for (int j = i + 1; j < adj.size(); j++) {
+                        var x = adj.get(i);
+                        var y = adj.get(j);
 
-                        // If you made an unshielded collider, remove x *-* y and orient x *-> b <-* y.
-                        if (teyssierScorer.unshieldedCollider(x, b, y)) {
-                            pag.removeEdge(x, y);
+                        // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and
+                        // x and y are adjacent in the CPDAG after forming the collider, orient x *-> b <-* y.
+                        if (unshieldedCollider(cpdag, x, b, y) && unshieldedTriple(pag, x, b, y) && colliderAllowed(pag, x, b, y)) {
                             pag.setEndpoint(x, b, Endpoint.ARROW);
                             pag.setEndpoint(y, b, Endpoint.ARROW);
+                        } else if (pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y)) {
+
+                            // Place x and y and the ancestors before b in the scorer.
+                            teyssierScorer.goToBookmark();
+                            teyssierScorer.tuck(b, x);
+                            teyssierScorer.tuck(b, y);
+
+                            // If you made an unshielded collider, remove x *-* y and orient x *-> b <-* y.
+                            // Note that at this point we are conditioning on variables in the anteriority of x and y.
+                            if (teyssierScorer.unshieldedCollider(x, b, y)) {
+                                pag.removeEdge(x, y);
+                                pag.setEndpoint(x, b, Endpoint.ARROW);
+                                pag.setEndpoint(y, b, Endpoint.ARROW);
+                            }
                         }
                     }
                 }
-            }
+            } while (!pag.equals(_pag));
         }
     }
 
