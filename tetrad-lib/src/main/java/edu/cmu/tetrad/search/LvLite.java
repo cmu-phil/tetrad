@@ -152,161 +152,11 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setVerbose(verbose);
 
         // The main procedure.
-        orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
-        orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
+        orientCollidersAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
         removeNonRequiredSingleArrows(pag);
         finalOrientation(fciOrient, pag, teyssierScorer);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
-    }
-
-    /**
-     * Orients and removes edges in a graph according to specified rules. Edges are removed in the course of the
-     * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
-     * possibility that the removal of an edge may allow for further removals or orientations.
-     *
-     * @param pag            The original graph.
-     * @param fciOrient      The orientation rules to be applied.
-     * @param best           The list of best nodes.
-     * @param cpdag          The CPDAG graph.
-     * @param teyssierScorer The scorer used to evaluate edge orientations.
-     */
-    private void orientAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, Graph cpdag, TeyssierScorer teyssierScorer) {
-        reorientWithCircles(pag);
-        doRequiredOrientations(fciOrient, pag, best);
-
-        for (Node b : pag.getNodes()) {
-            List<Node> adj = pag.getAdjacentNodes(b);
-
-            for (Node x : adj) {
-                for (Node y : adj) {
-
-                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and you
-                    // can form at least one bidirected edge
-                    if (unshieldedCollider(cpdag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y)) {
-                        pag.setEndpoint(x, b, Endpoint.ARROW);
-                        pag.setEndpoint(y, b, Endpoint.ARROW);
-                    } else if (pag.isAdjacentTo(x, y) && (pag.getEndpoint(x, b) == Endpoint.ARROW || pag.getEndpoint(b, y) == Endpoint.ARROW)
-                               && colliderAllowed(pag, x, b, y)) {
-
-                        // Try to make a collider x *-> b <-* y in the scorer...
-                        teyssierScorer.goToBookmark();
-                        teyssierScorer.tuck(b, x);
-                        teyssierScorer.tuck(b, y);
-
-                        // If you made an unshielded collider, remove x *-* y and orient x *-> b <-* y.
-                        if (teyssierScorer.unshieldedCollider(x, b, y)) {
-                            pag.removeEdge(x, y);
-                            pag.setEndpoint(x, b, Endpoint.ARROW);
-                            pag.setEndpoint(x, b, Endpoint.ARROW);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines if the collider is allowed.
-     *
-     * @param pag The Graph representing the PAG.
-     * @param x   The Node object representing the first node.
-     * @param b   The Node object representing the second node.
-     * @param y   The Node object representing the third node.
-     * @return true if the collider is allowed, false otherwise.
-     */
-    private boolean colliderAllowed(Graph pag, Node x, Node b, Node y) {
-        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
-               && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
-    }
-
-    /**
-     * Orient required edges in PAG.
-     *
-     * @param fciOrient The FciOrient object used for orienting the edges.
-     * @param pag       The Graph representing the PAG.
-     * @param best      The list of Node objects representing the best nodes.
-     */
-    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
-
-        fciOrient.fciOrientbk(knowledge, pag, best);
-    }
-
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if the given nodes are unshielded colliders when considering the given graph.
-     *
-     * @param graph the graph to consider
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if the nodes are unshielded colliders, false otherwise
-     */
-    private boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
-
-    /**
-     * Removes non-required single arrows in a graph. For each node b, if there is only one directed edge *-> b, it
-     * reorients the edge as *-o b. Uses the knowledge object to determine if the reorientation is required or
-     * forbidden.
-     *
-     * @param pag The graph to remove non-required single arrows from.
-     */
-    private void removeNonRequiredSingleArrows(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
-
-        for (Node b : pag.getNodes()) {
-            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
-
-            if (nodesInTo.size() == 1) {
-                for (Node node : nodesInTo) {
-                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
-                        continue;
-                    }
-
-                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and TeyssierScorer
-     * object.
-     *
-     * @param fciOrient      The FciOrient object used to determine the final orientation.
-     * @param pag            The Graph object for which the final orientation is determined.
-     * @param teyssierScorer The TeyssierScorer object used in the score-based discriminating path rule.
-     */
-    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer teyssierScorer) {
-        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
-
-        do {
-            if (completeRuleSetUsed) {
-                fciOrient.zhangFinalOrientation(pag);
-            } else {
-                fciOrient.spirtesFinalOrientation(pag);
-            }
-        } while (discriminatingPathRule(pag, teyssierScorer)); // Score-based discriminating path rule
     }
 
     /**
@@ -371,6 +221,167 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Orients and removes edges in a graph according to specified rules. Edges are removed in the course of the
+     * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
+     * possibility that the removal of an edge may allow for further removals or orientations.
+     *
+     * @param pag            The original graph.
+     * @param fciOrient      The orientation rules to be applied.
+     * @param best           The list of best nodes.
+     * @param cpdag          The CPDAG graph.
+     * @param teyssierScorer The scorer used to evaluate edge orientations.
+     */
+    private void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, Graph cpdag, TeyssierScorer teyssierScorer) {
+        reorientWithCircles(pag);
+        doRequiredOrientations(fciOrient, pag, best);
+
+        var reverse = new ArrayList<>(best);
+        Collections.reverse(reverse);
+
+        for (Node b : reverse) {
+            var adj = pag.getAdjacentNodes(b);
+
+            for (int i = 0; i < best.size(); i++) {
+                for (int j = i + 1; j < best.size(); j++) {
+                    var x = best.get(i);
+                    var y = best.get(j);
+
+                    if (!(adj.contains(x) && adj.contains(y))) continue;
+
+                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and you
+                    // can form at least one bidirected edge
+                    if (unshieldedCollider(cpdag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y)) {
+                        pag.setEndpoint(x, b, Endpoint.ARROW);
+                        pag.setEndpoint(y, b, Endpoint.ARROW);
+                    } else if (pag.isAdjacentTo(x, y)
+                               && (pag.getEndpoint(x, b) == Endpoint.ARROW || pag.getEndpoint(y, b) == Endpoint.ARROW)
+                               && colliderAllowed(pag, x, b, y)) {
+
+                        // Try to make a collider x *-> b <-* y in the scorer...
+                        teyssierScorer.goToBookmark();
+                        boolean tucked1 = teyssierScorer.tuck(b, x);
+                        boolean tucked2 = teyssierScorer.tuck(b, y);
+
+                        if (!tucked1 || !tucked2) {
+                            continue;
+                        }
+
+                        // If you made an unshielded collider, remove x *-* y and orient x *-> b <-* y.
+                        if (teyssierScorer.unshieldedCollider(x, b, y)) {
+                            pag.removeEdge(x, y);
+                            pag.setEndpoint(x, b, Endpoint.ARROW);
+                            pag.setEndpoint(y, b, Endpoint.ARROW);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if the collider is allowed.
+     *
+     * @param pag The Graph representing the PAG.
+     * @param x   The Node object representing the first node.
+     * @param b   The Node object representing the second node.
+     * @param y   The Node object representing the third node.
+     * @return true if the collider is allowed, false otherwise.
+     */
+    private boolean colliderAllowed(Graph pag, Node x, Node b, Node y) {
+        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
+               && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
+    }
+
+    /**
+     * Orient required edges in PAG.
+     *
+     * @param fciOrient The FciOrient object used for orienting the edges.
+     * @param pag       The Graph representing the PAG.
+     * @param best      The list of Node objects representing the best nodes.
+     */
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
+        TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
+    }
+
+    /**
+     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
+     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
+     *
+     * @param graph The graph in which the nodes reside.
+     * @param a     The first node in the triple.
+     * @param b     The second node in the triple.
+     * @param c     The third node in the triple.
+     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
+     */
+    private boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+    }
+
+    /**
+     * Checks if the given nodes are unshielded colliders when considering the given graph.
+     *
+     * @param graph the graph to consider
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return true if the nodes are unshielded colliders, false otherwise
+     */
+    private boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
+    }
+
+    /**
+     * Removes non-required single arrows in a graph. For each node b, if there is only one directed edge *-> b, it
+     * reorients the edge as *-o b. Uses the knowledge object to determine if the reorientation is required or
+     * forbidden.
+     *
+     * @param pag The graph to remove non-required single arrows from.
+     */
+    private void removeNonRequiredSingleArrows(Graph pag) {
+        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
+
+        for (Node b : pag.getNodes()) {
+            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
+
+            if (nodesInTo.size() == 1) {
+                for (Node node : nodesInTo) {
+                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
+                        continue;
+                    }
+
+                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and TeyssierScorer
+     * object.
+     *
+     * @param fciOrient      The FciOrient object used to determine the final orientation.
+     * @param pag            The Graph object for which the final orientation is determined.
+     * @param teyssierScorer The TeyssierScorer object used in the score-based discriminating path rule.
+     */
+    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer teyssierScorer) {
+        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
+
+        do {
+            if (completeRuleSetUsed) {
+                fciOrient.zhangFinalOrientation(pag);
+            } else {
+                fciOrient.spirtesFinalOrientation(pag);
+            }
+        } while (discriminatingPathRule(pag, teyssierScorer)); // Score-based discriminating path rule
     }
 
     /**
@@ -552,11 +563,7 @@ public final class LvLite implements IGraphSearch {
         boolean collider = !scorer.parent(e, c);
 
         if (collider) {
-            if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                return false;
-            }
-
-            if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+            if (!colliderAllowed(graph, a, b, c)) {
                 return false;
             }
 
