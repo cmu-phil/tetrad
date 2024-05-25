@@ -33,7 +33,7 @@ import java.util.*;
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
  * structure of a graphical model from observational data.
  * <p>
- * This class provides methods for running the search algorithm and obtaining the learned pattern as a PAG (Partially
+ * This class provides methods for running the search algorithm and getting the learned pattern as a PAG (Partially
  * Annotated Graph).
  *
  * @author josephramsey
@@ -151,6 +151,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
+        // The main procedure.
         orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
         orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
         removeNonRequiredSingleArrows(pag);
@@ -257,53 +258,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
         return unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
-
-    /**
-     * Checks if three nodes in a graph form a triple.
-     *
-     * @param graph the graph to check
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if a, b, and c form a triple in the graph, false otherwise
-     */
-    private boolean triple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if three nodes in a graph form a triangle.
-     *
-     * @param graph the graph in which the nodes exist
-     * @param a     the first node
-     * @param c     the second node
-     * @param b     the third node
-     * @return true if the three nodes form a triangle, otherwise false
-     */
-    private boolean triangle(Graph graph, Node a, Node c, Node b) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Determines if the given nodes form a clique in the graph.
-     * <p>
-     * A clique is a subset of nodes in a graph, where every node is adjacent to every other node in the subset.
-     *
-     * @param graph the graph to check for adjacency between nodes
-     * @param nodes the nodes to check for forming a clique
-     * @return true if the given nodes form a clique in the graph, false otherwise
-     */
-    private boolean clique(Graph graph, Node... nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = i + 1; j < nodes.length; j++) {
-                if (!graph.isAdjacentTo(nodes[i], nodes[j])) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -484,7 +438,7 @@ public final class LvLite implements IGraphSearch {
 
     /**
      * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
      * @param a     a {@link edu.cmu.tetrad.graph.Node} object
@@ -499,8 +453,6 @@ public final class LvLite implements IGraphSearch {
         Node e = null;
 
         Map<Node, Node> previous = new HashMap<>();
-        Set<Node> colliderPath = new HashSet<>();
-        colliderPath.add(a);
 
         List<Node> cParents = graph.getParents(c);
 
@@ -539,10 +491,9 @@ public final class LvLite implements IGraphSearch {
                 }
 
                 previous.put(d, t);
-                colliderPath.add(t);
 
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, graph, colliderPath, scorer)) {
+                    if (doDdpOrientation(d, a, b, c, graph, scorer)) {
                         return true;
                     }
                 }
@@ -578,17 +529,16 @@ public final class LvLite implements IGraphSearch {
      *      at B; otherwise, there should be a noncollider at B.
      * </pre>
      *
-     * @param e            the 'e' node
-     * @param a            the 'a' node
-     * @param b            the 'b' node
-     * @param c            the 'c' node
-     * @param graph        the graph representation
-     * @param colliderPath the list of nodes in the collider path
+     * @param e     the 'e' node
+     * @param a     the 'a' node
+     * @param b     the 'b' node
+     * @param c     the 'c' node
+     * @param graph the graph representation
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph
-            graph, Set<Node> colliderPath, TeyssierScorer scorer) {
+            graph, TeyssierScorer scorer) {
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
             return false;
