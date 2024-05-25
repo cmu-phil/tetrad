@@ -159,8 +159,10 @@ final class LoadSessionAction extends AbstractAction {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }

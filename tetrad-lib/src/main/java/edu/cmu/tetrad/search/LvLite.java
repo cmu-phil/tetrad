@@ -158,9 +158,7 @@ public final class LvLite implements IGraphSearch {
             orientCollidersAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
         } while (!pag.equals(_pag));
 
-        removeNonRequiredSingleArrows(pag);
         finalOrientation(fciOrient, pag, teyssierScorer);
-
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
 
@@ -341,35 +339,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
         return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
-
-    /**
-     * Removes non-required single arrows in a graph. For each node b, if there is only one directed edge *-> b, it
-     * reorients the edge as *-o b. Uses the knowledge object to determine if the reorientation is required or
-     * forbidden.
-     *
-     * @param pag The graph to remove non-required single arrows from.
-     */
-    private void removeNonRequiredSingleArrows(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nFor each b, if there on only one d *-> b, orient as d *-o b.\n");
-
-        for (Node b : pag.getNodes()) {
-            List<Node> nodesInTo = pag.getNodesInTo(b, Endpoint.ARROW);
-
-            if (nodesInTo.size() == 1) {
-                for (Node node : nodesInTo) {
-                    if (knowledge.isRequired(node.getName(), b.getName()) || knowledge.isForbidden(b.getName(), node.getName())) {
-                        continue;
-                    }
-
-                    pag.setEndpoint(node, b, Endpoint.CIRCLE);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orienting " + node + " --o " + b + " in PAG");
-                    }
-                }
-            }
-        }
     }
 
     /**
