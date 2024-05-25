@@ -37,7 +37,6 @@ import java.util.*;
  * Annotated Graph).
  *
  * @author josephramsey
- * @author bryanandrews
  */
 public final class LvLite implements IGraphSearch {
     /**
@@ -67,16 +66,14 @@ public final class LvLite implements IGraphSearch {
      * <p>
      * By default, the value of this flag is false.
      */
-    private boolean useBes;
+    private boolean useBes = false;
     /**
      * This variable represents whether the discriminating path rule is used in the LV-Lite class.
      * <p>
      * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
      * considers discriminating paths when searching for patterns in the data.
      * <p>
-     * By default, the value of this variable is set to false, indicating that the discriminating path rule is not used.
-     * To enable the use of the discriminating path rule, set the value of this variable to true using the
-     * {@link #setDoDiscriminatingPathRule(boolean)} method.
+     * By default, the value of this variable is set to true, indicating that the discriminating path rule is used.
      */
     private boolean doDiscriminatingPathRule = true;
     /**
@@ -122,73 +119,104 @@ public final class LvLite implements IGraphSearch {
             throw new NullPointerException("Nodes from test were null.");
         }
 
-        List<Node> best;
+        // BOSS seems to be doing better here.
+        var suborderSearch = new Boss(score);
+        suborderSearch.setKnowledge(knowledge);
+        suborderSearch.setResetAfterBM(true);
+        suborderSearch.setResetAfterRS(true);
+        suborderSearch.setVerbose(verbose);
+        suborderSearch.setUseBes(useBes);
+        suborderSearch.setUseDataOrder(useDataOrder);
+        suborderSearch.setNumStarts(numStarts);
+        var permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        permutationSearch.search();
+        var best = permutationSearch.getOrder();
 
-        if (false) {
-            // Run GRaSP to get a CPDAG (like GFCI with FGES)...
-            Grasp alg = new Grasp(score);
-            alg.setUseScore(true);
-            alg.setUseRaskuttiUhler(false);
-            alg.setUseDataOrder(useDataOrder);
-            alg.setDepth(3);
-            alg.setUncoveredDepth(1);
-            alg.setNonSingularDepth(1);
-            alg.setNumStarts(numStarts);
-            alg.setVerbose(verbose);
+        TetradLogger.getInstance().forceLogMessage("Best order: " + best);
 
-            List<Node> variables = this.score.getVariables();
-            assert variables != null;
-
-            best = alg.bestOrder(variables);
-
-            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
-        } else {
-
-            Boss suborderSearch = new Boss(score);
-            suborderSearch.setKnowledge(knowledge);
-            suborderSearch.setResetAfterBM(true);
-            suborderSearch.setResetAfterRS(true);
-            suborderSearch.setVerbose(verbose);
-            suborderSearch.setUseBes(useBes);
-            suborderSearch.setUseDataOrder(useDataOrder);
-            suborderSearch.setNumStarts(numStarts);
-            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-            permutationSearch.setKnowledge(knowledge);
-            permutationSearch.search();
-            best = permutationSearch.getOrder();
-
-            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
-        }
-
-        TeyssierScorer teyssierScorer = new TeyssierScorer(null, score);
+        var teyssierScorer = new TeyssierScorer(null, score);
         teyssierScorer.score(best);
         teyssierScorer.bookmark();
 
-        Graph cpdag = teyssierScorer.getGraph(true);
+        var cpdag = teyssierScorer.getGraph(true);
 
-        Graph pag = new EdgeListGraph(cpdag);
+        var pag = new EdgeListGraph(cpdag);
         teyssierScorer.score(best);
 
-        FciOrient fciOrient = new FciOrient(null);
+        var fciOrient = new FciOrient(null);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
-        // The following steps constitute the algorithm.
-        reorientWithCircles(pag);
-        doRequiredOrientations(fciOrient, pag, best);
-        copyUnshieldedColliders(best, pag, cpdag);
-        tryRemovingEdgesAndOrienting(best, pag, cpdag, teyssierScorer);
-        reorientWithCircles(pag);
-        doRequiredOrientations(fciOrient, pag, best);
-        scoreBasedGfciR0(best, cpdag, pag, teyssierScorer);
+        orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
+        orientAndRemoveEdges(pag, fciOrient, best, cpdag, teyssierScorer);
         removeNonRequiredSingleArrows(pag);
         finalOrientation(fciOrient, pag, teyssierScorer);
 
-        pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
-        return pag;
+        return GraphUtils.replaceNodes(pag, this.score.getVariables());
+    }
+
+    /**
+     * Orients and removes edges in a graph according to specified rules. Edges are removed in the course of the
+     * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
+     * possibility that the removal of an edge may allow for further removals or orientations.
+     *
+     * @param pag            The original graph.
+     * @param fciOrient      The orientation rules to be applied.
+     * @param best           The list of best nodes.
+     * @param cpdag          The CPDAG graph.
+     * @param teyssierScorer The scorer used to evaluate edge orientations.
+     */
+    private void orientAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, Graph cpdag, TeyssierScorer teyssierScorer) {
+        reorientWithCircles(pag);
+        doRequiredOrientations(fciOrient, pag, best);
+
+        for (Node b : pag.getNodes()) {
+            List<Node> adj = pag.getAdjacentNodes(b);
+
+            for (Node x : adj) {
+                for (Node y : adj) {
+
+                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and you
+                    // can form at least one bidirected edge
+                    if (unshieldedCollider(cpdag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y)) {
+                        pag.setEndpoint(x, b, Endpoint.ARROW);
+                        pag.setEndpoint(y, b, Endpoint.ARROW);
+                    } else if (pag.isAdjacentTo(x, y) && (pag.getEndpoint(x, b) == Endpoint.ARROW || pag.getEndpoint(b, y) == Endpoint.ARROW)
+                               && colliderAllowed(pag, x, b, y)) {
+
+                        // Try to make a collider x *-> b <-* y in the scorer...
+                        teyssierScorer.goToBookmark();
+                        teyssierScorer.tuck(b, x);
+                        teyssierScorer.tuck(b, y);
+
+                        // If you made an unshielded collider, remove x *-* y and orient x *-> b <-* y.
+                        if (teyssierScorer.unshieldedCollider(x, b, y)) {
+                            pag.removeEdge(x, y);
+                            pag.setEndpoint(x, b, Endpoint.ARROW);
+                            pag.setEndpoint(x, b, Endpoint.ARROW);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if the collider is allowed.
+     *
+     * @param pag The Graph representing the PAG.
+     * @param x   The Node object representing the first node.
+     * @param b   The Node object representing the second node.
+     * @param y   The Node object representing the third node.
+     * @return true if the collider is allowed, false otherwise.
+     */
+    private boolean colliderAllowed(Graph pag, Node x, Node b, Node y) {
+        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
+               && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
     }
 
     /**
@@ -205,211 +233,77 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Copy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG.
+     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
+     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
      *
-     * @param best  The list of nodes containing the best nodes.
-     * @param pag   The PAG graph.
-     * @param cpdag The CPDAG graph.
+     * @param graph The graph in which the nodes reside.
+     * @param a     The first node in the triple.
+     * @param b     The second node in the triple.
+     * @param c     The third node in the triple.
+     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
      */
-    private void copyUnshieldedColliders(List<Node> best, Graph pag, Graph cpdag) {
-        TetradLogger.getInstance().forceLogMessage("\nCopy unshielded colliders a *-> c <-* c from BOSS CPDAG to PAG:\n");
-
-        for (Node b : best) {
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = 0; j < best.size(); j++) {
-                    if (i == j) {
-                        continue;
-                    }
-
-                    Node a = best.get(i);
-                    Node c = best.get(j);
-
-                    if (a == b || b == c) {
-                        continue;
-                    }
-
-                    if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) continue;
-
-                    Edge ab = cpdag.getEdge(a, b);
-                    Edge cb = cpdag.getEdge(c, b);
-                    Edge ac = cpdag.getEdge(a, c);
-
-                    Edge _ab = pag.getEdge(a, b);
-                    Edge _cb = pag.getEdge(c, b);
-                    Edge _ac = pag.getEdge(a, c);
-
-                    if (ab != null && cb != null && ac == null && ab.pointsTowards(b) && cb.pointsTowards(b)
-                        && _ab != null && _cb != null && _ac == null) {
-                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                            pag.setEndpoint(a, b, Endpoint.ARROW);
-                            pag.setEndpoint(c, b, Endpoint.ARROW);
-
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(
-                                        "Copying unshielded collider " + a + " -> " + b + " <- " + c + " from CPDAG to PAG");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    private boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
     }
 
     /**
-     * Tries removing an edge a*-*c and orient a *-> b.
+     * Checks if the given nodes are unshielded colliders when considering the given graph.
      *
-     * @param best           List of nodes representing the "best" nodes.
-     * @param pag            The graph representing the Partial Ancestral Graph (PAG).
-     * @param cpdag          The graph representing the Completed Partially Directed Acyclic Graph (CPDAG).
-     * @param teyssierScorer The TeyssierScorer instance used for scoring.
+     * @param graph the graph to consider
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return true if the nodes are unshielded colliders, false otherwise
      */
-    private void tryRemovingEdgesAndOrienting(List<Node> best, Graph pag, Graph cpdag, TeyssierScorer teyssierScorer) {
-        TetradLogger.getInstance().forceLogMessage("\nTry removing an edge a*-*c and orient a *-> b:\n");
-
-        for (Node b : best) {
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = 0; j < best.size(); j++) {
-                    if (i == j) {
-                        continue;
-                    }
-
-                    Node a = best.get(i);
-                    Node c = best.get(j);
-
-                    if (a == b || b == c) {
-                        continue;
-                    }
-
-                    if (!pag.isAdjacentTo(a, c) && pag.getEndpoint(a, b) == Endpoint.ARROW) continue;
-
-                    Edge ab = cpdag.getEdge(a, b);
-                    Edge cb = cpdag.getEdge(c, b);
-                    Edge ac = cpdag.getEdge(a, c);
-
-                    Edge _cb = pag.getEdge(c, b);
-
-                    if (ab != null && cb != null && ac != null) {
-                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW)
-                            continue;
-
-                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                            teyssierScorer.goToBookmark();
-                            boolean changed = teyssierScorer.tuck(c, b);
-//                            changed = changed || teyssierScorer.tuck(c, b);
-                            changed = changed || teyssierScorer.tuck(a, b);
-
-                            if (!changed) {
-                                continue;
-                            }
-
-                            if (!teyssierScorer.adjacent(a, c) && teyssierScorer.adjacent(a, b) && pag.isAdjacentTo(a, b)) {
-                                Edge edge = pag.getEdge(a, c);
-
-                                if (pag.removeEdge(edge)) {
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
-                                    }
-                                }
-
-                                if (pag.getEndpoint(a, b) != Endpoint.ARROW) {
-                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " in PAG");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    private boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+        return unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
     /**
-     * Performs the score-based GFCI R0 step.
+     * Checks if three nodes in a graph form a triple.
      *
-     * @param best           the list of nodes to consider
-     * @param cpdag          the CPDAG graph
-     * @param pag            the PAG graph
-     * @param teyssierScorer the TeyssierScorer object
+     * @param graph the graph to check
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return true if a, b, and c form a triple in the graph, false otherwise
      */
-    private void scoreBasedGfciR0(List<Node> best, Graph cpdag, Graph pag, TeyssierScorer teyssierScorer) {
-        TetradLogger.getInstance().forceLogMessage("\nGFCI R0 step (score-based):");
-        TetradLogger.getInstance().forceLogMessage("\tIn tandem:");
-        TetradLogger.getInstance().forceLogMessage("\t\t* Try copying unshielded colliders a *-> b <-* c from CPDAG to PAG");
-        TetradLogger.getInstance().forceLogMessage("\t\t* If you can't, try removing an edge a*-*c and orienting a *-> b\n");
+    private boolean triple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+    }
 
-        for (Node b : best) {
-            for (int i = 0; i < best.size(); i++) {
-                for (int j = 0; j < best.size(); j++) {
-                    if (i == j) {
-                        continue;
-                    }
+    /**
+     * Checks if three nodes in a graph form a triangle.
+     *
+     * @param graph the graph in which the nodes exist
+     * @param a     the first node
+     * @param c     the second node
+     * @param b     the third node
+     * @return true if the three nodes form a triangle, otherwise false
+     */
+    private boolean triangle(Graph graph, Node a, Node c, Node b) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && graph.isAdjacentTo(a, c);
+    }
 
-                    Node a = best.get(i);
-                    Node c = best.get(j);
-
-                    if (a == b || c == b) {
-                        continue;
-                    }
-
-                    Edge ab = cpdag.getEdge(a, b);
-                    Edge cb = cpdag.getEdge(c, b);
-                    Edge ac = cpdag.getEdge(a, c);
-
-                    Edge _ab = pag.getEdge(a, b);
-                    Edge _cb = pag.getEdge(c, b);
-                    Edge _ac = pag.getEdge(a, c);
-
-                    if (_ab != null && _cb != null && _ac == null
-                        && ab != null && cb != null && ac == null
-                        && ab.pointsTowards(b) && cb.pointsTowards(b)) {
-                        if (!pag.isAdjacentTo(a, c) && pag.isDefCollider(a, b, c)) continue;
-
-                        if (FciOrient.isArrowheadAllowed(a, b, pag, knowledge) && FciOrient.isArrowheadAllowed(c, b, pag, knowledge)) {
-                            pag.setEndpoint(a, b, Endpoint.ARROW);
-                            pag.setEndpoint(c, b, Endpoint.ARROW);
-
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage("Copying unshielded collider " + a + " -> " + b + " <- " + c
-                                                                           + " from CPDAG to PAG");
-                            }
-                        }
-                    } else if (ac != null && ab != null && cb != null) {
-                        if (!pag.isAdjacentTo(a, c) && pag.isAdjacentTo(a, b) && pag.getEndpoint(a, b) == Endpoint.ARROW)
-                            continue;
-
-                        if (_cb != null && _cb.pointsTowards(c) && FciOrient.isArrowheadAllowed(a, b, pag, knowledge)) {
-                            teyssierScorer.goToBookmark();
-                            boolean changed = teyssierScorer.tuck(c, b);
-
-                            if (!changed) {
-                                continue;
-                            }
-
-                            if (!teyssierScorer.adjacent(a, c)) {
-                                Edge edge = pag.getEdge(a, c);
-
-                                if (pag.removeEdge(edge)) {
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Removing " + edge + " in PAG.");
-                                    }
-                                }
-
-                                if (pag.getEndpoint(a, b) != Endpoint.ARROW) {
-                                    pag.setEndpoint(a, b, Endpoint.ARROW);
-
-                                    if (verbose) {
-                                        TetradLogger.getInstance().forceLogMessage("Orienting " + a + " *-> " + b + " in PAG");
-                                    }
-                                }
-                            }
-                        }
-                    }
+    /**
+     * Determines if the given nodes form a clique in the graph.
+     * <p>
+     * A clique is a subset of nodes in a graph, where every node is adjacent to every other node in the subset.
+     *
+     * @param graph the graph to check for adjacency between nodes
+     * @param nodes the nodes to check for forming a clique
+     * @return true if the given nodes form a clique in the graph, false otherwise
+     */
+    private boolean clique(Graph graph, Node... nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            for (int j = i + 1; j < nodes.length; j++) {
+                if (!graph.isAdjacentTo(nodes[i], nodes[j])) {
+                    return false;
                 }
             }
         }
+
+        return true;
     }
 
     /**
@@ -701,9 +595,9 @@ public final class LvLite implements IGraphSearch {
         }
 
         scorer.goToBookmark();
-        scorer.tuck(c, b);
-        scorer.tuck(e, b);
-        scorer.tuck(e, c);
+        scorer.tuck(b, c);
+        scorer.tuck(b, e);
+        scorer.tuck(c, e);
 
         boolean collider = !scorer.parent(e, c);
 

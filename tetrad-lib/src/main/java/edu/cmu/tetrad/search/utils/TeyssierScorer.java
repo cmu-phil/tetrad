@@ -158,11 +158,11 @@ public class TeyssierScorer {
     /**
      * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param j The node to tuck.
      * @param k The node to tuck j before.
+     * @param j The node to tuck.
      * @return true if the tuck made a change.
      */
-    public boolean tuck(Node j, Node k) {
+    public boolean tuck(Node k, Node j) {
         int jIndex = index(j);
         int kIndex = index(k);
 
@@ -173,13 +173,55 @@ public class TeyssierScorer {
         Set<Node> ancestors = getAncestors(j);
         int _kIndex = kIndex;
 
+        boolean changed = false;
+
         for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
                 moveTo(get(i), _kIndex++);
+                changed = true;
             }
         }
 
-        return true;
+        return changed;
+    }
+
+    /**
+     * Moves all j's to before k and moves all the ancestors of all ji's betwween k and ji to before k.
+     * @param k The node to tuck j before.
+     * @param j The nodes to tuck.
+     * @return true if the tuck made a change.
+     */
+    public boolean tuck(Node k, Node...j) {
+        List<Integer> jIndices = new ArrayList<>();
+        int maxj = Integer.MIN_VALUE;
+        int minj = Integer.MAX_VALUE;
+        for (Node node : j) {
+            jIndices.add(index(node));
+            maxj = Math.max(maxj, index(node));
+            minj = Math.min(minj, index(node));
+        }
+
+        int kIndex = index(k);
+
+        if (maxj < kIndex) {
+            return false;
+        }
+
+        boolean changed = false;
+
+        for (int _j : jIndices) {
+            Set<Node> ancestors = getAncestors(get(_j));
+            int _kIndex = kIndex;
+
+            for (int i = minj; i > kIndex; i--) {
+                if (ancestors.contains(get(i))) {
+                    moveTo(get(i), _kIndex++);
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
     }
 
     /**
@@ -193,10 +235,18 @@ public class TeyssierScorer {
         if (vIndex == toIndex) return;
         if (lastMoveSame(vIndex, toIndex)) return;
 
+        int size = pi.size();
         this.pi.remove(v);
-        this.pi.add(toIndex, v);
 
-        if (toIndex < vIndex) {
+        if (toIndex == this.pi.size() - 1) {
+            this.pi.add(v);
+        } else {
+            this.pi.add(toIndex, v);
+        }
+
+//        this.pi.add(toIndex, v);
+
+        if (toIndex < size) {
             updateScores(toIndex, vIndex);
         } else {
             updateScores(vIndex, toIndex);
@@ -549,6 +599,30 @@ public class TeyssierScorer {
      */
     public boolean collider(Node a, Node b, Node c) {
         return getParents(b).contains(a) && getParents(b).contains(c);
+    }
+
+    /**
+     * Returns true iff [a, b, c] is an unshielded collider.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param c The third node.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
+     */
+    public boolean unshieldedCollider(Node a, Node b, Node c) {
+        return getParents(b).contains(a) && getParents(b).contains(c) && !adjacent(a, c);
+    }
+
+    /**
+     * Returns true iff [a, b, c] is an unshielded collider.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param c The third node.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
+     */
+    public boolean unshieldedTriple(Node a, Node b, Node c) {
+        return adjacent(a, b) && adjacent(b, c) && !adjacent(a, c);
     }
 
     /**
