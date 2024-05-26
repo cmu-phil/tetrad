@@ -282,7 +282,7 @@ public final class LvLite implements IGraphSearch {
                     var y = adj.get(j);
 
                     if (triple(pag, x, b, y) && unshieldedColliders.contains(new Triple(x, b, y))) {
-                        if (copyUnshieldedCollider(x, b, y, scorer, pag, null)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, null, true, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
                                         "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
@@ -306,21 +306,19 @@ public final class LvLite implements IGraphSearch {
 
                     // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
                     // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
-                    scorer.goToBookmark();
-                    double score = scorer.score();
-
                     if (unshieldedCollider(cpdag, x, b, y) && unshieldedTriple(pag, x, b, y)) {
-                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, false, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
                                         "Copied " + x + " *-> " + b + " <-* " + y + " from scorer to PAG.");
                             }
                         }
                     } else if (pag.isAdjacentTo(x, y)) {
+                        scorer.goToBookmark();
                         scorer.tuck(b, x);
                         scorer.tuck(b, y);
 
-                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, firstPass, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
                                         "TUCKING: Oriented " + x + " *-> " + b + " <-* " + y + ".");
@@ -346,12 +344,14 @@ public final class LvLite implements IGraphSearch {
      * @return <code>true</code> if the removal/orientation code was performed, <code>false</code> otherwise.
      */
     private boolean copyUnshieldedCollider(Node x, Node b, Node y, TeyssierScorer scorer, Graph pag,
-                                           Set<Triple> unshieldedColliders) {
+                                           Set<Triple> unshieldedColliders, boolean checkCpdag, Graph cpdag) {
         if (unshieldedCollider(pag, x, b, y)) {
             return false;
         }
 
-        if (scorer.unshieldedCollider(x, b, y) && triple(pag, x, b, y) && colliderAllowed(pag, x, b, y)) {
+        boolean unshieldedCollider = checkCpdag ? unshieldedCollider(cpdag, x, b, y) : scorer.unshieldedCollider(x, b, y);
+
+        if (unshieldedCollider && triple(pag, x, b, y) && colliderAllowed(pag, x, b, y)) {
             pag.setEndpoint(x, b, Endpoint.ARROW);
             pag.setEndpoint(y, b, Endpoint.ARROW);
 
