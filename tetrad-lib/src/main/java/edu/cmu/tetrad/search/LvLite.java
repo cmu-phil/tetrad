@@ -103,7 +103,7 @@ public final class LvLite implements IGraphSearch {
      * @param pag The Graph to be reoriented.
      */
     private static void reorientWithCircles(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient all edges in PAG as o-o:\n");
+        TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
@@ -118,12 +118,21 @@ public final class LvLite implements IGraphSearch {
         if (nodes == null) {
             throw new NullPointerException("Nodes from test were null.");
         }
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("===Starting LV-Lite===");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
+        }
+
         // BOSS seems to be doing better here.
         var suborderSearch = new Boss(score);
         suborderSearch.setKnowledge(knowledge);
         suborderSearch.setResetAfterBM(true);
         suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(verbose);
+        suborderSearch.setVerbose(false);
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
@@ -150,14 +159,12 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Collider orientation and edge removal.");
+        }
+
         // The main procedure.
-        Graph _pag;
-
-        do {
-            _pag = GraphUtils.replaceNodes(pag, this.score.getVariables());
-            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer);
-        } while (!pag.equals(_pag));
-
+        orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer);
         finalOrientation(fciOrient, pag, scorer);
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
@@ -249,42 +256,70 @@ public final class LvLite implements IGraphSearch {
             // Sort adj in the order of reverse
             adj.sort(Comparator.comparingInt(reverse::indexOf));
 
-            Graph _pag;
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    var x = adj.get(i);
+                    var y = adj.get(j);
 
-            do {
-                _pag = new EdgeListGraph(pag);
+                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and
+                    // x and y are adjacent in the CPDAG after forming the collider, orient x *-> b <-* y.
+                    scorer.goToBookmark();
 
-                for (int i = 0; i < adj.size(); i++) {
-                    for (int j = i + 1; j < adj.size(); j++) {
-                        var x = adj.get(i);
-                        var y = adj.get(j);
-
-                        // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and
-                        // x and y are adjacent in the CPDAG after forming the collider, orient x *-> b <-* y.
-                        scorer.goToBookmark();
-
-                        if (scorer.unshieldedCollider(x, b, y) && unshieldedTriple(pag, x, b, y)
-                            && !copyAndRemove(x, b, y, scorer, pag)) {
-                            if (pag.isAdjacentTo(x, y)) {
-
-                                // Place x and y and the ancestors before b in the scorer.
-                                scorer.tuck(b, x);
-                                scorer.tuck(b, y);
-
-                                copyAndRemove(x, b, y, scorer, pag);
+                    if (scorer.unshieldedCollider(x, b, y) & unshieldedTriple(pag, x, b, y)) {
+                        if (copyAndRemove(x, b, y, scorer, pag)) {
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage(
+                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                             }
+                        }
+                    } else if (pag.isAdjacentTo(x, y)) {
+                        scorer.tuck(b, x);
+                        scorer.tuck(b, y);
+
+                        if (copyAndRemove(x, b, y, scorer, pag)) {
+                            TetradLogger.getInstance().forceLogMessage(
+                                    "Oriented " + x + " *-> " + b + " <-* " + y + " by tucking.");
                         }
                     }
                 }
-            } while (!pag.equals(_pag));
+            }
         }
     }
 
+    /**
+     * Copies the content of node x to node b and removes the edge between node x and node y, based on the specified
+     * scorer and graph. If the triple is already an unshielded collider, the method returns false, and if the triple is
+     * not a collider in the scorer or is not a triple in the PAG, the method returns false. If orienting the triple as
+     * a collider is not allowed, the method returns false. Otherwise, true is returned.
+     *
+     * @param x      The source node to copy from.
+     * @param b      The target node to copy to.
+     * @param y      The node to remove the edge between x and y.
+     * @param scorer The scorer to evaluate the conditions for copying and removing.
+     * @param pag    The PAG to perform the copying and removing operations on.
+     * @return <code>true</code> if the removal/orientation code was performed, <code>false</code> otherwise.
+     */
     private boolean copyAndRemove(Node x, Node b, Node y, TeyssierScorer scorer, Graph pag) {
-        if (scorer.unshieldedCollider(x, b, y) && triple(pag, x, b, y) && colliderAllowed(pag, x, b, y)) {
-            pag.removeEdge(x, y);
+        if (unshieldedCollider(pag, x, b, y)) {
+            return false;
+        }
+
+        boolean b1 = scorer.unshieldedCollider(x, b, y);
+        boolean triple = triple(pag, x, b, y);
+
+        if (b1 && triple && colliderAllowed(pag, x, b, y)) {
             pag.setEndpoint(x, b, Endpoint.ARROW);
             pag.setEndpoint(y, b, Endpoint.ARROW);
+
+            boolean adj = pag.isAdjacentTo(x, y);
+
+            if (pag.removeEdge(x, y)) {
+                if (verbose && adj && !pag.isAdjacentTo(x, y)) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            "Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                }
+            }
+
             return true;
         }
 
@@ -313,7 +348,7 @@ public final class LvLite implements IGraphSearch {
      * @param best      The list of Node objects representing the best nodes.
      */
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
-        TetradLogger.getInstance().forceLogMessage("\nOrient required edges in PAG:\n");
+        TetradLogger.getInstance().forceLogMessage("Orient required edges in PAG:");
 
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
@@ -336,9 +371,9 @@ public final class LvLite implements IGraphSearch {
      * Checks if three nodes are connected in a graph.
      *
      * @param graph the graph to check for connectivity
-     * @param a the first node
-     * @param b the second node
-     * @param c the third node
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
      * @return {@code true} if all three nodes are connected, {@code false} otherwise
      */
     private boolean triple(Graph graph, Node a, Node b, Node c) {
@@ -361,12 +396,12 @@ public final class LvLite implements IGraphSearch {
     /**
      * Determines the final orientation of the graph using the given FciOrient object, Graph object, and scorer object.
      *
-     * @param fciOrient      The FciOrient object used to determine the final orientation.
-     * @param pag            The Graph object for which the final orientation is determined.
-     * @param scorer The scorer object used in the score-based discriminating path rule.
+     * @param fciOrient The FciOrient object used to determine the final orientation.
+     * @param pag       The Graph object for which the final orientation is determined.
+     * @param scorer    The scorer object used in the score-based discriminating path rule.
      */
     private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer) {
-        TetradLogger.getInstance().forceLogMessage("\nFinal Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Final Orientation:");
 
         do {
             if (completeRuleSetUsed) {

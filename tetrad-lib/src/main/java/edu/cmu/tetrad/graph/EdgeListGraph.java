@@ -992,7 +992,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean removeEdge(Edge edge) {
-        synchronized (this.edgeLists) {
+        Map<Node, Set<Edge>> edgeLists = this.edgeLists;
+
+        synchronized (edgeLists) {
             if (!this.edgesSet.contains(edge)) {
                 return false;
             }
