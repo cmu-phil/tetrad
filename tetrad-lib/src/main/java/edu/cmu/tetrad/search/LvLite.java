@@ -142,13 +142,16 @@ public final class LvLite implements IGraphSearch {
         var best = permutationSearch.getOrder();
 
         TetradLogger.getInstance().forceLogMessage("Best order: " + best);
-
         var scorer = new TeyssierScorer(null, score);
         scorer.score(best);
         scorer.bookmark();
 
-        var cpdag = scorer.getGraph(true);
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().forceLogMessage("Initializing scorer with BOSS best order.");
+        }
 
+        var cpdag = scorer.getGraph(true);
         var pag = new EdgeListGraph(cpdag);
         scorer.score(best);
 
@@ -164,7 +167,14 @@ public final class LvLite implements IGraphSearch {
         }
 
         // The main procedure.
-        orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer);
+        Set<Triple> unshieldedColliders = new HashSet<>();
+        Set<Triple> _unshieldedColliders = new HashSet<>();
+
+        do {
+            _unshieldedColliders = new HashSet<>(unshieldedColliders);
+            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders);
+        } while (!unshieldedColliders.equals(_unshieldedColliders));
+
         finalOrientation(fciOrient, pag, scorer);
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
@@ -243,7 +253,8 @@ public final class LvLite implements IGraphSearch {
      * @param best      The list of best nodes.
      * @param scorer    The scorer used to evaluate edge orientations.
      */
-    private void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer) {
+    private void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
+                                                  Set<Triple> unshieldedColliders) {
         reorientWithCircles(pag);
         doRequiredOrientations(fciOrient, pag, best);
 
@@ -261,24 +272,47 @@ public final class LvLite implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-                    // If you can copy the unshielded collider from the CPDAG, do so. Otherwise, if x *-* y, and
-                    // x and y are adjacent in the CPDAG after forming the collider, orient x *-> b <-* y.
+                    if (triple(pag, x, b, y) && unshieldedColliders.contains(new Triple(x, b, y))) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, null)) {
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage(
+                                        "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Node b : reverse) {
+            var adj = pag.getAdjacentNodes(b);
+
+            // Sort adj in the order of reverse
+            adj.sort(Comparator.comparingInt(reverse::indexOf));
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    var x = adj.get(i);
+                    var y = adj.get(j);
+
+                    // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
+                    // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
                     scorer.goToBookmark();
 
                     if (scorer.unshieldedCollider(x, b, y) & unshieldedTriple(pag, x, b, y)) {
-                        if (copyAndRemove(x, b, y, scorer, pag)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
-                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                                        "Copied " + x + " *-> " + b + " <-* " + y + " from scorer to PAG.");
                             }
                         }
                     } else if (pag.isAdjacentTo(x, y)) {
                         scorer.tuck(b, x);
                         scorer.tuck(b, y);
 
-                        if (copyAndRemove(x, b, y, scorer, pag)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
                             TetradLogger.getInstance().forceLogMessage(
-                                    "Oriented " + x + " *-> " + b + " <-* " + y + " by tucking.");
+                                    "TUCKING: Oriented " + x + " *-> " + b + " <-* " + y + ".");
                         }
                     }
                 }
@@ -299,7 +333,8 @@ public final class LvLite implements IGraphSearch {
      * @param pag    The PAG to perform the copying and removing operations on.
      * @return <code>true</code> if the removal/orientation code was performed, <code>false</code> otherwise.
      */
-    private boolean copyAndRemove(Node x, Node b, Node y, TeyssierScorer scorer, Graph pag) {
+    private boolean copyUnshieldedCollider(Node x, Node b, Node y, TeyssierScorer scorer, Graph pag,
+                                           Set<Triple> unshieldedColliders) {
         if (unshieldedCollider(pag, x, b, y)) {
             return false;
         }
@@ -316,8 +351,12 @@ public final class LvLite implements IGraphSearch {
             if (pag.removeEdge(x, y)) {
                 if (verbose && adj && !pag.isAdjacentTo(x, y)) {
                     TetradLogger.getInstance().forceLogMessage(
-                            "Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                            "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
                 }
+            }
+
+            if (unshieldedColliders != null) {
+                unshieldedColliders.add(new Triple(x, b, y));
             }
 
             return true;
