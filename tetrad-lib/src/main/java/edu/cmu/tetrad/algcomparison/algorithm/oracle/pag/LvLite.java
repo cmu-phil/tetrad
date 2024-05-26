@@ -126,6 +126,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // LV-Lite
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -183,6 +184,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+
+        // LV-Lite
+        params.add(Params.ALLOW_TUCKS);
 
         // General
         params.add(Params.TIME_LAG);

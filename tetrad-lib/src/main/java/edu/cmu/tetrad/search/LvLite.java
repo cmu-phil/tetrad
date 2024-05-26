@@ -80,6 +80,11 @@ public final class LvLite implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Represents a variable that determines whether tucks are allowed. The value of this variable determines whether
+     * tucks are enabled or disabled.
+     */
+    private boolean allowTucks = true;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -307,18 +312,18 @@ public final class LvLite implements IGraphSearch {
                     // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
                     // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
                     if (unshieldedCollider(cpdag, x, b, y) && unshieldedTriple(pag, x, b, y)) {
-                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, false, cpdag)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, true, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
                                         "Copied " + x + " *-> " + b + " <-* " + y + " from scorer to PAG.");
                             }
                         }
-                    } else if (pag.isAdjacentTo(x, y)) {
+                    } else if (allowTucks && pag.isAdjacentTo(x, y)) {
                         scorer.goToBookmark();
                         scorer.tuck(b, x);
                         scorer.tuck(b, y);
 
-                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, firstPass, cpdag)) {
+                        if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, false, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
                                         "TUCKING: Oriented " + x + " *-> " + b + " <-* " + y + ".");
@@ -666,5 +671,9 @@ public final class LvLite implements IGraphSearch {
 
             return true;
         }
+    }
+
+    public void setAllowTucks(boolean allowTucks) {
+        this.allowTucks = allowTucks;
     }
 }
