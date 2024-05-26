@@ -102,8 +102,10 @@ public final class LvLite implements IGraphSearch {
      *
      * @param pag The Graph to be reoriented.
      */
-    private static void reorientWithCircles(Graph pag) {
-        TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
+    private void reorientWithCircles(Graph pag) {
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
+        }
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
@@ -141,7 +143,10 @@ public final class LvLite implements IGraphSearch {
         permutationSearch.search();
         var best = permutationSearch.getOrder();
 
-        TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+        }
+
         var scorer = new TeyssierScorer(null, score);
         scorer.score(best);
         scorer.bookmark();
@@ -168,7 +173,7 @@ public final class LvLite implements IGraphSearch {
 
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
-        Set<Triple> _unshieldedColliders = new HashSet<>();
+        Set<Triple> _unshieldedColliders;
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
@@ -261,6 +266,7 @@ public final class LvLite implements IGraphSearch {
         var reverse = new ArrayList<>(best);
         Collections.reverse(reverse);
 
+        // Copy al the unshielded triples from the old PAG to the new PAG where adjacencies still exist.
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
 
@@ -311,8 +317,10 @@ public final class LvLite implements IGraphSearch {
                         scorer.tuck(b, y);
 
                         if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
-                            TetradLogger.getInstance().forceLogMessage(
-                                    "TUCKING: Oriented " + x + " *-> " + b + " <-* " + y + ".");
+                            if (verbose) {
+                                TetradLogger.getInstance().forceLogMessage(
+                                        "TUCKING: Oriented " + x + " *-> " + b + " <-* " + y + ".");
+                            }
                         }
                     }
                 }
@@ -339,10 +347,7 @@ public final class LvLite implements IGraphSearch {
             return false;
         }
 
-        boolean b1 = scorer.unshieldedCollider(x, b, y);
-        boolean triple = triple(pag, x, b, y);
-
-        if (b1 && triple && colliderAllowed(pag, x, b, y)) {
+        if (scorer.unshieldedCollider(x, b, y) && triple(pag, x, b, y) && colliderAllowed(pag, x, b, y)) {
             pag.setEndpoint(x, b, Endpoint.ARROW);
             pag.setEndpoint(y, b, Endpoint.ARROW);
 
@@ -387,7 +392,9 @@ public final class LvLite implements IGraphSearch {
      * @param best      The list of Node objects representing the best nodes.
      */
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
-        TetradLogger.getInstance().forceLogMessage("Orient required edges in PAG:");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Orient required edges in PAG:");
+        }
 
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
@@ -440,7 +447,9 @@ public final class LvLite implements IGraphSearch {
      * @param scorer    The scorer object used in the score-based discriminating path rule.
      */
     private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer) {
-        TetradLogger.getInstance().forceLogMessage("Final Orientation:");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Final Orientation:");
+        }
 
         do {
             if (completeRuleSetUsed) {
