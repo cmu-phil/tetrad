@@ -175,9 +175,12 @@ public final class LvLite implements IGraphSearch {
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
 
+        boolean firstPass = true;
+
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders);
+            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, firstPass, cpdag);
+            firstPass = false;
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         finalOrientation(fciOrient, pag, scorer);
@@ -259,7 +262,7 @@ public final class LvLite implements IGraphSearch {
      * @param scorer    The scorer used to evaluate edge orientations.
      */
     private void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                                  Set<Triple> unshieldedColliders) {
+                                               Set<Triple> unshieldedColliders, boolean firstPass, Graph cpdag) {
         reorientWithCircles(pag);
         doRequiredOrientations(fciOrient, pag, best);
 
@@ -304,8 +307,9 @@ public final class LvLite implements IGraphSearch {
                     // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
                     // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
                     scorer.goToBookmark();
+                    double score = scorer.score();
 
-                    if (scorer.unshieldedCollider(x, b, y) & unshieldedTriple(pag, x, b, y)) {
+                    if (unshieldedCollider(cpdag, x, b, y) && unshieldedTriple(pag, x, b, y)) {
                         if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
