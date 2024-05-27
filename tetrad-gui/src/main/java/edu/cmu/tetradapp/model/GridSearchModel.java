@@ -101,11 +101,11 @@ public class GridSearchModel implements SessionModel {
     /**
      * The list of algorithm names.
      */
-    private transient List<String> algNames;
+    private List<String> algNames;
     /**
      * The selected parameters for the AlgcomparisonModel.
      */
-    private transient List<String> selectedParameters;
+    private List<String> selectedParameters;
     /**
      * The list of selected simulations in the AlgcomparisonModel. This list holds Simulation objects, which are
      * implementations of the Simulation interface. It is a transient field, meaning it is not serialized when the
@@ -124,6 +124,10 @@ public class GridSearchModel implements SessionModel {
      * The name of the AlgcomparisonModel.
      */
     private String name = "Grid Search";
+    /**
+     * Private instance variable that holds a list of selected AlgorithmModel objects.
+     * AlgorithmModel represents the selected algorithms for comparison.
+     */
     private LinkedList<AlgorithmModel> selectedAlgorithmModels;
 
     /**

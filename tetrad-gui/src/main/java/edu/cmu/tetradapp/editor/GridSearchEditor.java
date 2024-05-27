@@ -128,38 +128,6 @@ public class GridSearchEditor extends JPanel {
      * It is a private instance variable of type JTabbedPane.
      */
     private JTabbedPane comparisonTabbedPane;
-    /**
-     * A boolean variable indicating whether or not data should be saved.
-     */
-    private boolean saveData = true;
-    /**
-     * A boolean variable indicating whether graphs should be saved or not.
-     */
-    private boolean saveGraphs = true;
-    /**
-     * A boolean variable indicating whether or not CPDAGs should be saved.
-     */
-    private boolean saveCpdags = false;
-    /**
-     * A boolean variable indicating whether or not PAGs should be saved.
-     */
-    private boolean savePags = false;
-    /**
-     * This is a private boolean variable named showAlgorithmIndices.
-     */
-    private boolean showAlgorithmIndices = true;
-    /**
-     * Determines whether to show simulation indices.
-     */
-    private boolean showSimulationIndices = true;
-    /**
-     * The parallelism variable represents the number of concurrent tasks or threads that can be executed in parallel.
-     */
-    private int parallelism = Runtime.getRuntime().availableProcessors();
-    /**
-     * The type of graph to compare results to.
-     */
-    private ComparisonGraphType comparisonGraphType = ComparisonGraphType.DAG;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -184,14 +152,14 @@ public class GridSearchEditor extends JPanel {
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
 
-        model.getParameters().set("algcomparisonSaveData", saveData);
-        model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
-        model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
-        model.getParameters().set("algcomparisonSavePAGs", savePags);
-        model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
-        model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
-        model.getParameters().set("algcomparisonParallelism", parallelism);
-        model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
+//        model.getParameters().set("algcomparisonSaveData", saveData);
+//        model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
+//        model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
+//        model.getParameters().set("algcomparisonSavePAGs", savePags);
+//        model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
+//        model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
+//        model.getParameters().set("algcomparisonParallelism", parallelism);
+//        model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
     }
 
     /**
@@ -1234,15 +1202,6 @@ public class GridSearchEditor extends JPanel {
         JButton setComparisonParameters = new JButton("Edit Parameters");
 
         setComparisonParameters.addActionListener(e -> {
-            model.getParameters().set("algcomparisonSaveData", saveData);
-            model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
-            model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
-            model.getParameters().set("algcomparisonSavePAGs", savePags);
-            model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
-            model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
-            model.getParameters().set("algcomparisonParallelism", parallelism);
-            model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
-
             Box parameterBox = Box.createVerticalBox();
 
             Box horiz1 = Box.createHorizontalBox();
@@ -1289,7 +1248,7 @@ public class GridSearchEditor extends JPanel {
                 comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
             }
 
-            comparisonGraphTypeComboBox.setSelectedItem(comparisonGraphType.toString());
+            comparisonGraphTypeComboBox.setSelectedItem(model.getParameters().getString("algcomparisonGraphType"));
 
             comparisonGraphTypeComboBox.addActionListener(e1 -> {
                 String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
@@ -1323,14 +1282,6 @@ public class GridSearchEditor extends JPanel {
 
             doneButton.addActionListener(e1 -> {
                 SwingUtilities.invokeLater(dialog::dispose);
-                saveData = model.getParameters().getBoolean("algcomparisonSaveData");
-                saveGraphs = model.getParameters().getBoolean("algcomparisonSaveGraphs");
-                saveCpdags = model.getParameters().getBoolean("algcomparisonSaveCPDAGs");
-                savePags = model.getParameters().getBoolean("algcomparisonSavePAGs");
-                showAlgorithmIndices = model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices");
-                showSimulationIndices = model.getParameters().getBoolean("algcomparisonShowSimulationIndices");
-                parallelism = model.getParameters().getInt("algcomparisonParallelism");
-                comparisonGraphType = (GridSearchEditor.ComparisonGraphType) model.getParameters().get("algcomparisonGraphType");
                 setComparisonText();
             });
 
@@ -1635,7 +1586,7 @@ public class GridSearchEditor extends JPanel {
             panel.add(vert1, BorderLayout.NORTH);
 
             // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Algorithm", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
 
