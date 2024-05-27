@@ -180,12 +180,9 @@ public final class LvLite implements IGraphSearch {
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
 
-        boolean firstPass = true;
-
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, firstPass, cpdag);
-            firstPass = false;
+            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         finalOrientation(fciOrient, pag, scorer);
@@ -267,7 +264,7 @@ public final class LvLite implements IGraphSearch {
      * @param scorer    The scorer used to evaluate edge orientations.
      */
     private void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                               Set<Triple> unshieldedColliders, boolean firstPass, Graph cpdag) {
+                                               Set<Triple> unshieldedColliders, Graph cpdag) {
         reorientWithCircles(pag);
         doRequiredOrientations(fciOrient, pag, best);
 
