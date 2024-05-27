@@ -684,6 +684,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * {@inheritDoc}
      * <p>
+     *     (
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     @Override

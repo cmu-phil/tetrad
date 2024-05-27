@@ -185,7 +185,34 @@ public final class LvLite implements IGraphSearch {
             orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        finalOrientation(fciOrient, pag, scorer);
+        finalOrientation(fciOrient, pag, scorer, false);
+        finalOrientation(fciOrient, pag, scorer, true);
+
+//        boolean changed;
+//        int count = 0;
+//
+//        do {
+//            changed = false;
+//
+//            for (int i = 0; i < nodes.size(); i++) {
+//                for (int j = i + 1; j < nodes.size(); j++) {
+//                    Node n1 = nodes.get(i);
+//                    Node n2 = nodes.get(j);
+//                    if (!pag.isAdjacentTo(n1, n2)) {
+//                        List<Node> inducingPath = pag.paths().getInducingPath(n1, n2);
+//
+//                        if (inducingPath != null) {
+//                            pag.addNondirectedEdge(n1, n2);
+//                            changed = true;
+//                        }
+//                    }
+//                }
+//            }
+//
+//        } while (changed && count++ <= 2);
+
+//        finalOrientation(fciOrient, pag, scorer);
+
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
 
@@ -452,7 +479,7 @@ public final class LvLite implements IGraphSearch {
      * @param pag       The Graph object for which the final orientation is determined.
      * @param scorer    The scorer object used in the score-based discriminating path rule.
      */
-    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer) {
+    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean doColliderRule) {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("Final Orientation:");
         }
@@ -463,7 +490,7 @@ public final class LvLite implements IGraphSearch {
             } else {
                 fciOrient.spirtesFinalOrientation(pag);
             }
-        } while (discriminatingPathRule(pag, scorer)); // Score-based discriminating path rule
+        } while (discriminatingPathRule(pag, scorer, doColliderRule)); // Score-based discriminating path rule
     }
 
     /**
@@ -481,9 +508,10 @@ public final class LvLite implements IGraphSearch {
      * <p>
      * This is Zhang's rule R4, discriminating paths.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link Graph} object
+     * @param doColliderRule
      */
-    private boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer) {
+    private boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer, boolean doColliderRule) {
         if (!doDiscriminatingPathRule) return false;
 
         List<Node> nodes = graph.getNodes();
@@ -519,7 +547,7 @@ public final class LvLite implements IGraphSearch {
                         continue;
                     }
 
-                    boolean _oriented = ddpOrient(a, b, c, graph, scorer);
+                    boolean _oriented = ddpOrient(a, b, c, graph, scorer, doColliderRule);
 
                     if (_oriented) oriented = true;
                 }
@@ -534,18 +562,21 @@ public final class LvLite implements IGraphSearch {
      * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param a          a {@link Node} object
+     * @param b          a {@link Node} object
+     * @param c          a {@link Node} object
+     * @param graph      a {@link Graph} object
+     * @param doColliderRule
      */
-    private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer) {
+    private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer, boolean doColliderRule) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
         Node e = null;
 
         Map<Node, Node> previous = new HashMap<>();
+        List<Node> path = new ArrayList<>();
+        path.add(a);
 
         List<Node> cParents = graph.getParents(c);
 
@@ -585,8 +616,12 @@ public final class LvLite implements IGraphSearch {
 
                 previous.put(d, t);
 
+                if (!path.contains(t)) {
+                    path.add(t);
+                }
+
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, graph, scorer)) {
+                    if (doDdpOrientation(d, a, b, c, path, graph, scorer, doColliderRule)) {
                         return true;
                     }
                 }
@@ -622,29 +657,48 @@ public final class LvLite implements IGraphSearch {
      *      at B; otherwise, there should be a noncollider at B.
      * </pre>
      *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
+     * @param e          the 'e' node
+     * @param a          the 'a' node
+     * @param b          the 'b' node
+     * @param c          the 'c' node
+     * @param graph      the graph representation
+     * @param doColliderRule
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, Graph
-            graph, TeyssierScorer scorer) {
+    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph
+            graph, TeyssierScorer scorer, boolean doColliderRule) {
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
             return false;
+        }
+
+        for (Node n : path) {
+            if (!graph.isParentOf(n, c)) {
+                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
+            }
+        }
+
+        if (!path.contains(a)) {
+            throw new IllegalArgumentException("Path does not contain a");
         }
 
         scorer.goToBookmark();
         scorer.tuck(b, c);
         scorer.tuck(b, e);
         scorer.tuck(c, e);
+//
+//        for (Node node : path) {
+//            scorer.tuck(e, node);
+//        }
+//
+//        scorer.tuck(a, e);
+
+//        scorer.tuck(b, e);
 
         boolean collider = !scorer.parent(e, c);
 
-        if (collider) {
+        if (collider && doColliderRule) {
             if (!colliderAllowed(graph, a, b, c)) {
                 return false;
             }

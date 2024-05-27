@@ -1753,7 +1753,7 @@ public final class GraphUtils {
             if (!edge.isDirected()) {
                 continue;
             }
-
+    
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 

@@ -7,19 +7,16 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.Serial;
 
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Represents the NumberEdgesEst statistic, which calculates the number of edges in the estimated graph.
  */
-public class AverageDegreeEst implements Statistic {
+public class NumberEdgesEst implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the statistic.
      */
-    public AverageDegreeEst() {
+    public NumberEdgesEst() {
 
     }
 
@@ -28,7 +25,7 @@ public class AverageDegreeEst implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "AvgDegEst";
+        return "#EdgesEst";
     }
 
     /**
@@ -36,7 +33,7 @@ public class AverageDegreeEst implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Average Degree of Estimated Graph";
+        return "Number of Edges in the Estimated Graph";
     }
 
     /**
@@ -44,7 +41,7 @@ public class AverageDegreeEst implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return 2.0 * estGraph.getNumEdges() / estGraph.getNumNodes();
+        return estGraph.getNumEdges();
     }
 
     /**
