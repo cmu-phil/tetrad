@@ -312,7 +312,7 @@ public final class LvLite implements IGraphSearch {
                         if (copyUnshieldedCollider(x, b, y, scorer, pag, unshieldedColliders, true, cpdag)) {
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(
-                                        "Copied " + x + " *-> " + b + " <-* " + y + " from scorer to PAG.");
+                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                             }
                         }
                     } else if (allowTucks && pag.isAdjacentTo(x, y)) {
