@@ -121,6 +121,14 @@ public class GridSearchModel implements SessionModel {
      */
     private LinkedList<MyTableColumn> selectedTableColumns;
     /**
+     * The last comparison text displayed.
+     */
+    private String lastComparisonText = "";
+    /**
+     * The last verbose output displayed.
+     */
+    private String lastVerboseOutputText = "";
+    /**
      * The name of the AlgcomparisonModel.
      */
     private String name = "Grid Search";
@@ -806,6 +814,28 @@ public class GridSearchModel implements SessionModel {
      */
     public Graph getSuppliedGraph() {
         return suppliedGraph;
+    }
+
+    /**
+     * The last comparison text displayed.
+     */
+    public String getLastComparisonText() {
+        return lastComparisonText == null ? "" : lastComparisonText;
+    }
+
+    public void setLastComparisonText(String lastComparisonText) {
+        this.lastComparisonText = lastComparisonText;
+    }
+
+    /**
+     * The last verbose output displayed.
+     */
+    public String getLastVerboseOutputText() {
+        return lastVerboseOutputText == null ? "" : lastVerboseOutputText;
+    }
+
+    public void setLastVerboseOutputText(String lastVerboseOutputText) {
+        this.lastVerboseOutputText = lastVerboseOutputText;
     }
 
     /**

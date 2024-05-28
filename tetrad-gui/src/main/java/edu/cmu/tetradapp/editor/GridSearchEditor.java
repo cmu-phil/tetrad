@@ -127,38 +127,6 @@ public class GridSearchEditor extends JPanel {
      * It is a private instance variable of type JTabbedPane.
      */
     private JTabbedPane comparisonTabbedPane;
-//    /**
-//     * A boolean variable indicating whether or not data should be saved.
-//     */
-//    private boolean saveData = true;
-//    /**
-//     * A boolean variable indicating whether graphs should be saved or not.
-//     */
-//    private boolean saveGraphs = true;
-//    /**
-//     * A boolean variable indicating whether or not CPDAGs should be saved.
-//     */
-//    private boolean saveCpdags = false;
-//    /**
-//     * A boolean variable indicating whether or not PAGs should be saved.
-//     */
-//    private boolean savePags = false;
-//    /**
-//     * This is a private boolean variable named showAlgorithmIndices.
-//     */
-//    private boolean showAlgorithmIndices = true;
-//    /**
-//     * Determines whether to show simulation indices.
-//     */
-//    private boolean showSimulationIndices = true;
-//    /**
-//     * The parallelism variable represents the number of concurrent tasks or threads that can be executed in parallel.
-//     */
-//    private int parallelism = Runtime.getRuntime().availableProcessors();
-//    /**
-//     * The type of graph to compare results to.
-//     */
-//    private GridSearchModel.ComparisonGraphType comparisonGraphType;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -191,6 +159,9 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonShowSimulationIndices", model.getParameters().getBoolean("algcomparisonShowSimulationIndices", true));
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
+
+        comparisonTextArea.setText(model.getLastComparisonText());
+        verboseOutputTextArea.setText(model.getLastVerboseOutputText());
     }
 
     /**
@@ -1391,6 +1362,14 @@ public class GridSearchEditor extends JPanel {
                     model.getParameters().remove("printStream");
 
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
+
+                    if (comparisonTextArea != null) {
+                        model.setLastComparisonText(comparisonTextArea.getText());
+                    }
+
+                    if (verboseOutputTextArea != null) {
+                        model.setLastVerboseOutputText(verboseOutputTextArea.getText());
+                    }
                 }
             }
 
