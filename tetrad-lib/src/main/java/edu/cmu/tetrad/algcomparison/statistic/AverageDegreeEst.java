@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 
@@ -52,6 +51,6 @@ public class AverageDegreeEst implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return FastMath.tanh(value);
+        return value;
     }
 }

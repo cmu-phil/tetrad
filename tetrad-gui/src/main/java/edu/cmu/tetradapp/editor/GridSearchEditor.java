@@ -1,7 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -128,6 +127,38 @@ public class GridSearchEditor extends JPanel {
      * It is a private instance variable of type JTabbedPane.
      */
     private JTabbedPane comparisonTabbedPane;
+//    /**
+//     * A boolean variable indicating whether or not data should be saved.
+//     */
+//    private boolean saveData = true;
+//    /**
+//     * A boolean variable indicating whether graphs should be saved or not.
+//     */
+//    private boolean saveGraphs = true;
+//    /**
+//     * A boolean variable indicating whether or not CPDAGs should be saved.
+//     */
+//    private boolean saveCpdags = false;
+//    /**
+//     * A boolean variable indicating whether or not PAGs should be saved.
+//     */
+//    private boolean savePags = false;
+//    /**
+//     * This is a private boolean variable named showAlgorithmIndices.
+//     */
+//    private boolean showAlgorithmIndices = true;
+//    /**
+//     * Determines whether to show simulation indices.
+//     */
+//    private boolean showSimulationIndices = true;
+//    /**
+//     * The parallelism variable represents the number of concurrent tasks or threads that can be executed in parallel.
+//     */
+//    private int parallelism = Runtime.getRuntime().availableProcessors();
+//    /**
+//     * The type of graph to compare results to.
+//     */
+//    private GridSearchModel.ComparisonGraphType comparisonGraphType;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -151,6 +182,15 @@ public class GridSearchEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+
+        model.getParameters().set("algcomparisonSaveData", model.getParameters().getBoolean("algcomparisonSaveData", true));
+        model.getParameters().set("algcomparisonSaveGraphs", model.getParameters().getBoolean("algcomparisonSaveGraphs", true));
+        model.getParameters().set("algcomparisonSaveCPDAGs", model.getParameters().getBoolean("algcomparisonSaveCPDAGs", false));
+        model.getParameters().set("algcomparisonSavePAGs", model.getParameters().getBoolean("algcomparisonSavePAGs", false));
+        model.getParameters().set("algcomparisonShowAlgorithmIndices", model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices", true));
+        model.getParameters().set("algcomparisonShowSimulationIndices", model.getParameters().getBoolean("algcomparisonShowSimulationIndices", true));
+        model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
+        model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
     }
 
     /**
@@ -705,34 +745,6 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * Retrieves a simulation object based on the provided graph and simulation classes.
-     *
-     * @param graphClazz      The class of the random graph object.
-     * @param simulationClazz The class of the simulation object.
-     * @return The simulation object.
-     * @throws NoSuchMethodException     If the constructor for the graph or simulation class cannot be found.
-     * @throws InvocationTargetException If an error occurs while invoking the graph or simulation constructor.
-     * @throws InstantiationException    If the graph or simulation class cannot be instantiated.
-     * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
-     */
-    @NotNull
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        RandomGraph randomGraph;
-
-        if (graphClazz == SingleGraph.class) {
-            if (model.getSuppliedGraph() == null) {
-                throw new IllegalArgumentException("No graph supplied.");
-            }
-
-            randomGraph = new SingleGraph(model.getSuppliedGraph());
-        } else {
-            randomGraph = graphClazz.getConstructor().newInstance();
-        }
-
-        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
-    }
-
-    /**
      * Retrieves the parameter text for the given set of parameter names and parameters.
      *
      * @param paramNamesSet the set of parameter names
@@ -788,6 +800,37 @@ public class GridSearchEditor extends JPanel {
                 textArea.scrollRectToVisible(viewRect);
             }
         }
+    }
+
+    /**
+     * Retrieves a simulation object based on the provided graph and simulation classes.
+     *
+     * @param graphClazz      The class of the random graph object.
+     * @param simulationClazz The class of the simulation object.
+     * @return The simulation object.
+     * @throws NoSuchMethodException     If the constructor for the graph or simulation class cannot be found.
+     * @throws InvocationTargetException If an error occurs while invoking the graph or simulation constructor.
+     * @throws InstantiationException    If the graph or simulation class cannot be instantiated.
+     * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
+     */
+    @NotNull
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(
+            Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz,
+            Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        RandomGraph randomGraph;
+
+        if (graphClazz == SingleGraph.class) {
+            if (model.getSuppliedGraph() == null) {
+                throw new IllegalArgumentException("No graph supplied.");
+            }
+
+            randomGraph = new SingleGraph(model.getSuppliedGraph());
+        } else {
+            randomGraph = graphClazz.getConstructor().newInstance();
+        }
+
+        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
     }
 
     @NotNull
@@ -988,7 +1031,7 @@ public class GridSearchEditor extends JPanel {
         JButton editAlgorithmParameters = new JButton("Edit Parameters");
 
         editAlgorithmParameters.addActionListener(e -> {
-            List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
+            List<GridSearchModel.AlgorithmSpec> algorithms = model.getSelectedAlgorithms();
 
             JTabbedPane tabbedPane1 = new JTabbedPane();
             tabbedPane1.setTabPlacement(JTabbedPane.TOP);
@@ -999,7 +1042,7 @@ public class GridSearchEditor extends JPanel {
             Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
             if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
-                    && allScoreParameters.isEmpty()) {
+                && allScoreParameters.isEmpty()) {
                 JLabel noParamLbl = NO_PARAM_LBL;
                 noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
                 tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
@@ -1228,14 +1271,16 @@ public class GridSearchEditor extends JPanel {
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
             horiz5.add(Box.createHorizontalGlue());
-            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), model.getParameters().getInt("algcomparisonParallelism"), 1, 1000));
+            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(),
+                    model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()),
+                    1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
             horiz6.add(new JLabel("Comparison Graph Type:"));
             horiz6.add(Box.createHorizontalGlue());
             JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
 
-            for (ComparisonGraphType comparisonGraphType : ComparisonGraphType.values()) {
+            for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
                 comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
             }
 
@@ -1243,8 +1288,8 @@ public class GridSearchEditor extends JPanel {
 
             comparisonGraphTypeComboBox.addActionListener(e1 -> {
                 String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
-                ComparisonGraphType comparisonGraphType1 = ComparisonGraphType.valueOf(selectedItem);
-                model.getParameters().set("algcomparisonGraphType", comparisonGraphType1);
+//                ComparisonGraphType comparisonGraphType1 = ComparisonGraphType.valueOf(selectedItem);
+                model.getParameters().set("algcomparisonGraphType", selectedItem);
             });
 
             horiz6.add(comparisonGraphTypeComboBox);
@@ -1508,14 +1553,10 @@ public class GridSearchEditor extends JPanel {
                     throw new IllegalArgumentException("Unexpected value: " + simulationString);
             };
 
-            try {
-                model.addSimulation(getSimulation(graphClazz, simulationClass));
-                setComparisonText();
-                setSimulationText();
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                     IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
+            model.addSimulationSpec(spec);
+            setComparisonText();
+            setSimulationText();
 
             dialog.dispose(); // Close the dialog
         });
@@ -1577,7 +1618,7 @@ public class GridSearchEditor extends JPanel {
             panel.add(vert1, BorderLayout.NORTH);
 
             // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Algorithm", Dialog.ModalityType.APPLICATION_MODAL);
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
             dialog.add(panel, BorderLayout.CENTER);
 
@@ -1660,7 +1701,7 @@ public class GridSearchEditor extends JPanel {
                     ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-                model.addAlgorithm(algorithmImpl, algorithmModel);
+                model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
                 throw new RuntimeException(ex);
@@ -1954,22 +1995,21 @@ public class GridSearchEditor extends JPanel {
     private void setAlgorithmText() {
         algorithmChoiceTextArea.setText("");
 
-        Algorithms selectedAlgorithms = model.getSelectedAlgorithms();
-        List<Algorithm> algorithms = selectedAlgorithms.getAlgorithms();
+        List<GridSearchModel.AlgorithmSpec> selectedAlgorithms = model.getSelectedAlgorithms();
 
-        if (algorithms.isEmpty()) {
+        if (selectedAlgorithms.isEmpty()) {
             algorithmChoiceTextArea.append("""
                      ** No algorithm have been selected. Please select at least one algorithm using the Add Algorithm button below. **
                     """);
             return;
-        } else if (algorithms.size() == 1) {
+        } else if (selectedAlgorithms.size() == 1) {
             algorithmChoiceTextArea.setText("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
                                         
                     """);
 
-            Algorithm algorithm = algorithms.get(0);
-            algorithmChoiceTextArea.append("Selected algorithm: " + algorithm.getDescription() + "\n");
+            GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(0);
+            algorithmChoiceTextArea.append("Selected algorithm: " + algorithm.getAlgorithmImpl().getDescription() + "\n");
 
             if (algorithm instanceof TakesIndependenceWrapper) {
                 algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
@@ -1983,9 +2023,9 @@ public class GridSearchEditor extends JPanel {
             algorithmChoiceTextArea.setText("""
                     The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
-            for (int i = 0; i < algorithms.size(); i++) {
-                Algorithm algorithm = algorithms.get(i);
-                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getDescription() + "\n");
+            for (int i = 0; i < selectedAlgorithms.size(); i++) {
+                GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(i);
+                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getAlgorithmImpl().getDescription() + "\n");
 
                 if (algorithm instanceof TakesIndependenceWrapper) {
                     algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
@@ -1998,25 +2038,25 @@ public class GridSearchEditor extends JPanel {
         }
 
         algorithmChoiceTextArea.append(getAlgorithmParameterText());
-        List<AlgorithmModel> selectedAlgorithmModels = model.getSelectedAlgorithmModels();
+        List<GridSearchModel.AlgorithmSpec> selectedAlgorithmModels = model.getSelectedAlgorithms();
         Set<String> algorithmDescriptions = new HashSet<>();
 
         if (!selectedAlgorithmModels.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
         }
 
-        for (AlgorithmModel algorithmModel1 : selectedAlgorithmModels) {
-            if (algorithmDescriptions.contains(algorithmModel1.getName())) {
+        for (GridSearchModel.AlgorithmSpec algorithmSpec : selectedAlgorithmModels) {
+            if (algorithmDescriptions.contains(algorithmSpec.getName())) {
                 continue;
             }
-            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getName());
-            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription().replace("\n", "\n\n"));
-            algorithmDescriptions.add(algorithmModel1.getName());
+            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getName());
+            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getAlgorithm().getDescription().replace("\n", "\n\n"));
+            algorithmDescriptions.add(algorithmSpec.getName());
         }
 
         Set<IndependenceWrapper> independenceWrappers = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
+        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
             if (algorithm instanceof TakesIndependenceWrapper) {
                 independenceWrappers.add(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper());
             }
@@ -2025,13 +2065,13 @@ public class GridSearchEditor extends JPanel {
         Set<ScoreWrapper> scoreWrappers = new HashSet<>();
         Set<String> scoreDescriptions = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
+        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
             if (algorithm instanceof UsesScoreWrapper) {
-                if (scoreDescriptions.contains(algorithm.getDescription())) {
+                if (scoreDescriptions.contains(algorithm.getAlgorithmImpl().getDescription())) {
                     continue;
                 }
                 scoreWrappers.add(((UsesScoreWrapper) algorithm).getScoreWrapper());
-                scoreDescriptions.add(algorithm.getDescription());
+                scoreDescriptions.add(algorithm.getAlgorithmImpl().getDescription());
             }
         }
 
@@ -2115,7 +2155,7 @@ public class GridSearchEditor extends JPanel {
      * empty. Otherwise, it sets a message indicating that a comparison has not been run for the selection.
      */
     private void setComparisonText() {
-        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
+        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty()
             || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
@@ -2163,9 +2203,9 @@ public class GridSearchEditor extends JPanel {
                 In the Comparison tab, there is a button to run the comparison and display the results.
                                 
                 Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
-                
+                                
                 The reference is here:
-                
+                                
                 Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
                 """);
     }
@@ -2197,7 +2237,7 @@ public class GridSearchEditor extends JPanel {
      * @return The algorithm parameter choices as text.
      */
     private String getAlgorithmParameterText() {
-        List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
+        List<GridSearchModel.AlgorithmSpec> algorithm = model.getSelectedAlgorithms();
         Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithm);
         Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithm);
         Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithm);
@@ -2247,29 +2287,6 @@ public class GridSearchEditor extends JPanel {
         }
 
         return paramText.toString();
-    }
-
-    /**
-     * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
-     * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
-     * Acyclic Graph), CPDAG (Completed Partially Directed Acyclic Graph), and PAG (Partially Directed Acyclic Graph).
-     */
-    public enum ComparisonGraphType {
-
-        /**
-         * Directed Acyclic Graph (DAG).
-         */
-        DAG,
-
-        /**
-         * Completed Partially Directed Acyclic Graph (CPDAG).
-         */
-        CPDAG,
-
-        /**
-         * Partially Directed Acyclic Graph (PAG).
-         */
-        PAG
     }
 
     /**
