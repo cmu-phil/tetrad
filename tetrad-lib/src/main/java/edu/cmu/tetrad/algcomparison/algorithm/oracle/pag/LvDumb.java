@@ -34,13 +34,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Lite",
-        command = "lv-lite",
+        name = "LV-Dumb",
+        command = "lv-dumb",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -68,7 +68,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite() {
+    public LvDumb() {
         // Used for reflection; do not delete.
     }
 
@@ -85,7 +85,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite(ScoreWrapper score) {
+    public LvDumb(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -114,7 +114,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
+        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -126,8 +126,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // LV-Lite
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -155,7 +153,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
+        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**
@@ -185,10 +183,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
-
-        // LV-Lite
-        params.add(Params.ALLOW_TUCKS);
 
         // General
         params.add(Params.TIME_LAG);

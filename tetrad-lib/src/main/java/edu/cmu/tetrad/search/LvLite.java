@@ -77,6 +77,13 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean doDiscriminatingPathRule = true;
     /**
+     * Indicates whether the discriminating path collider rule is turned on or off.
+     *
+     * If set to true, the discriminating path collider rule is enabled.
+     * If set to false, the discriminating path collider rule is disabled.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
+    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
@@ -185,8 +192,7 @@ public final class LvLite implements IGraphSearch {
             orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        finalOrientation(fciOrient, pag, scorer, false);
-        finalOrientation(fciOrient, pag, scorer, true);
+        finalOrientation(fciOrient, pag, scorer, doDiscriminatingPathColliderRule);
 
 //        boolean changed;
 //        int count = 0;
@@ -278,6 +284,10 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -479,7 +489,7 @@ public final class LvLite implements IGraphSearch {
      * @param pag       The Graph object for which the final orientation is determined.
      * @param scorer    The scorer object used in the score-based discriminating path rule.
      */
-    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean doColliderRule) {
+    private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean doDiscriminatingPathColliderRule) {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("Final Orientation:");
         }
@@ -490,7 +500,7 @@ public final class LvLite implements IGraphSearch {
             } else {
                 fciOrient.spirtesFinalOrientation(pag);
             }
-        } while (discriminatingPathRule(pag, scorer, doColliderRule)); // Score-based discriminating path rule
+        } while (discriminatingPathRule(pag, scorer, doDiscriminatingPathColliderRule)); // Score-based discriminating path rule
     }
 
     /**
@@ -509,9 +519,9 @@ public final class LvLite implements IGraphSearch {
      * This is Zhang's rule R4, discriminating paths.
      *
      * @param graph      a {@link Graph} object
-     * @param doColliderRule
+     * @param doDiscriminatingPathColliderRule
      */
-    private boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer, boolean doColliderRule) {
+    private boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer, boolean doDiscriminatingPathColliderRule) {
         if (!doDiscriminatingPathRule) return false;
 
         List<Node> nodes = graph.getNodes();
@@ -547,7 +557,7 @@ public final class LvLite implements IGraphSearch {
                         continue;
                     }
 
-                    boolean _oriented = ddpOrient(a, b, c, graph, scorer, doColliderRule);
+                    boolean _oriented = ddpOrient(a, b, c, graph, scorer, doDiscriminatingPathColliderRule);
 
                     if (_oriented) oriented = true;
                 }
@@ -566,9 +576,9 @@ public final class LvLite implements IGraphSearch {
      * @param b          a {@link Node} object
      * @param c          a {@link Node} object
      * @param graph      a {@link Graph} object
-     * @param doColliderRule
+     * @param doDiscriminatingPathColliderRule
      */
-    private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer, boolean doColliderRule) {
+    private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer, boolean doDiscriminatingPathColliderRule) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
@@ -621,7 +631,7 @@ public final class LvLite implements IGraphSearch {
                 }
 
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, path, graph, scorer, doColliderRule)) {
+                    if (doDdpOrientation(d, a, b, c, path, graph, scorer, doDiscriminatingPathColliderRule)) {
                         return true;
                     }
                 }
@@ -662,12 +672,12 @@ public final class LvLite implements IGraphSearch {
      * @param b          the 'b' node
      * @param c          the 'c' node
      * @param graph      the graph representation
-     * @param doColliderRule
+     * @param doDiscriminatingPathColliderRule whether to apply the collider rule.
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph
-            graph, TeyssierScorer scorer, boolean doColliderRule) {
+            graph, TeyssierScorer scorer, boolean doDiscriminatingPathColliderRule) {
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
             return false;
@@ -698,7 +708,7 @@ public final class LvLite implements IGraphSearch {
 
         boolean collider = !scorer.parent(e, c);
 
-        if (collider && doColliderRule) {
+        if (collider && doDiscriminatingPathColliderRule) {
             if (!colliderAllowed(graph, a, b, c)) {
                 return false;
             }
