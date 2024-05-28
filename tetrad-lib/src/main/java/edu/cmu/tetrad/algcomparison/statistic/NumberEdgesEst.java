@@ -49,6 +49,6 @@ public class NumberEdgesEst implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return FastMath.tanh(value);
+        return 1.0 - FastMath.tanh(value / 1000.);
     }
 }

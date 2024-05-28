@@ -230,8 +230,10 @@ public class GridSearchModel implements SessionModel {
         Set<String> paramNamesSet = new HashSet<>();
 
         for (AlgorithmSpec algorithm : algorithms) {
-            if (algorithm instanceof TakesIndependenceWrapper) {
-                paramNamesSet.addAll(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters());
+            Algorithm algorithmImpl = algorithm.getAlgorithmImpl();
+
+            if (algorithmImpl instanceof TakesIndependenceWrapper) {
+                paramNamesSet.addAll(((TakesIndependenceWrapper) algorithmImpl).getIndependenceWrapper().getParameters());
             }
         }
 
@@ -242,8 +244,10 @@ public class GridSearchModel implements SessionModel {
         Set<String> paramNamesSet = new HashSet<>();
 
         for (AlgorithmSpec algorithm : algorithms) {
-            if (algorithm instanceof UsesScoreWrapper) {
-                paramNamesSet.addAll(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters());
+            Algorithm algorithmImpl = algorithm.getAlgorithmImpl();
+
+            if (algorithmImpl instanceof UsesScoreWrapper) {
+                paramNamesSet.addAll(((UsesScoreWrapper) algorithmImpl).getScoreWrapper().getParameters());
             }
         }
 
@@ -259,6 +263,14 @@ public class GridSearchModel implements SessionModel {
         }
 
         return paramNamesSet;
+    }
+
+    private static void setWeight(Statistics selectedStatistics, String abbr, double weight) {
+        for (Statistic statistic : selectedStatistics.getStatistics()) {
+            if (statistic.getAbbreviation().equals(abbr)) {
+                selectedStatistics.setWeight(abbr, weight);
+            }
+        }
     }
 
     /**
@@ -282,6 +294,7 @@ public class GridSearchModel implements SessionModel {
         comparison.setSavePags(parameters.getBoolean("algcomparisonSavePAGs"));
         comparison.setShowAlgorithmIndices(parameters.getBoolean("algcomparisonShowAlgorithmIndices"));
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
+        comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
 
         String string = parameters.getString("algcomparisonGraphType", "DAG");
@@ -492,13 +505,13 @@ public class GridSearchModel implements SessionModel {
             this.selectedParameters = new LinkedList<>();
         }
 
-        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
-            initializeClasses();
-        }
+//        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
+        initializeClasses();
+//        }
 
-        if (algNames == null || statNames == null || simNames == null) {
-            initializeNames();
-        }
+//        if (algNames == null || statNames == null || simNames == null) {
+        initializeNames();
+//        }
     }
 
     /**
@@ -651,6 +664,10 @@ public class GridSearchModel implements SessionModel {
                 selectedStatistics.add(new ParameterColumn(parameter));
             }
         }
+
+        setWeight(selectedStatistics, "MC-ADPass", 1.0);
+        setWeight(selectedStatistics, "MC-KSPass", 1.0);
+        setWeight(selectedStatistics, "#EdgesEst", 1.0);
 
         setLastStatisticsUsed(lastStatisticsUsed);
         return selectedStatistics;

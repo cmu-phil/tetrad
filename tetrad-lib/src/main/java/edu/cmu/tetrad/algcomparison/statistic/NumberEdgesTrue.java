@@ -50,6 +50,6 @@ public class NumberEdgesTrue implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return FastMath.tanh(value);
+        return 1.0 - FastMath.tanh(value);
     }
 }
