@@ -295,6 +295,7 @@ public class GridSearchModel implements SessionModel {
         comparison.setShowAlgorithmIndices(parameters.getBoolean("algcomparisonShowAlgorithmIndices"));
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
+        comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
 
         String string = parameters.getString("algcomparisonGraphType", "DAG");

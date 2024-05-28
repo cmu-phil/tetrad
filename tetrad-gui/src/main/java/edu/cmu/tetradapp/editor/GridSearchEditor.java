@@ -158,6 +158,7 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonShowAlgorithmIndices", model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices", true));
         model.getParameters().set("algcomparisonShowSimulationIndices", model.getParameters().getBoolean("algcomparisonShowSimulationIndices", true));
         model.getParameters().set("algcomparisonSortByUtility", model.getParameters().getBoolean("algcomparisonSortByUtility", false));
+        model.getParameters().set("algcomparisonShowUtilities", model.getParameters().getBoolean("algcomparisonShowUtilities", false));
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
 
@@ -1245,6 +1246,11 @@ public class GridSearchEditor extends JPanel {
             horiz4a.add(Box.createHorizontalGlue());
             horiz4a.add(getBooleanSelectionBox("algcomparisonSortByUtility", model.getParameters(), false));
 
+            Box horiz4b = Box.createHorizontalBox();
+            horiz4b.add(new JLabel("Sort by Utility:"));
+            horiz4b.add(Box.createHorizontalGlue());
+            horiz4b.add(getBooleanSelectionBox("algcomparisonShowUtilities", model.getParameters(), false));
+
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
             horiz5.add(Box.createHorizontalGlue());
@@ -1278,6 +1284,7 @@ public class GridSearchEditor extends JPanel {
             parameterBox.add(horiz3);
             parameterBox.add(horiz4);
             parameterBox.add(horiz4a);
+            parameterBox.add(horiz4b);
             parameterBox.add(horiz5);
             parameterBox.add(horiz6);
 

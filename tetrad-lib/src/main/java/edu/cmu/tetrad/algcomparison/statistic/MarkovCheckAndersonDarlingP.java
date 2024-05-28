@@ -80,8 +80,20 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
         }
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.generateResults(true);
-        return markovCheck.getAndersonDarlingP(true);
+
+        double sum = 0.0;
+        double count = 0;
+
+        for (int i = 0; i < 2; i++) {
+            markovCheck.generateResults(true);
+            sum += markovCheck.getAndersonDarlingP(true);
+            count++;
+        }
+
+        return sum / count;
+
+//        markovCheck.generateResults(true);
+//        return markovCheck.getAndersonDarlingP(true);
     }
 
     /**

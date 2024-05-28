@@ -49,7 +49,7 @@ public class MarkovCheckKsPasses implements Statistic {
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
      * @param dataModel The data model.
-     * @return 1 if p > 0.0, 0 if not.
+     * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
