@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * A {@link Simulation} implementation that returns a single supplied data set.
+ *
  * @author josephramsey
  */
 public class SingleDatasetSimulation implements Simulation {
@@ -22,6 +23,8 @@ public class SingleDatasetSimulation implements Simulation {
 
     /**
      * A {@link Simulation} implementation that returns a single supplied data set.
+     *
+     * @param dataSet The data set to return.
      */
     public SingleDatasetSimulation(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -57,7 +60,7 @@ public class SingleDatasetSimulation implements Simulation {
     @Override
     public Graph getTrueGraph(int index) {
         if (index != 0) throw new IllegalArgumentException("This simulation is for a single supplied " +
-                "dataset only.");
+                                                           "dataset only.");
         return null;
     }
 
@@ -71,7 +74,7 @@ public class SingleDatasetSimulation implements Simulation {
     @Override
     public DataModel getDataModel(int index) {
         if (index != 0) throw new IllegalArgumentException("This simulation is for a single supplied " +
-                "dataset only.");
+                                                           "dataset only.");
         return dataSet;
     }
 
@@ -125,8 +128,8 @@ public class SingleDatasetSimulation implements Simulation {
     }
 
     /**
-     * Retrieves the class of the simulation. This method is used to retrieve the class
-     * of a simulation based on the selected simulations in the model.
+     * Retrieves the class of the simulation. This method is used to retrieve the class of a simulation based on the
+     * selected simulations in the model.
      *
      * @return The class of the simulation.
      */

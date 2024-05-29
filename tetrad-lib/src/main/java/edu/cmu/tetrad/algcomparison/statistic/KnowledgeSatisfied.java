@@ -14,6 +14,19 @@ import java.io.Serial;
 public class KnowledgeSatisfied implements Statistic, HasKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The `knowledge` variable represents a knowledge object.
+     *
+     * This variable is a private member of the `KnowledgeSatisfied` class, which implements the `Statistic` and `HasKnowledge` interfaces.
+     * It is used to measure whether the provided knowledge is satisfied for the estimated graph.
+     *
+     * It is initially set to `null`.
+     *
+     * @see KnowledgeSatisfied
+     * @see Statistic
+     * @see HasKnowledge
+     */
     private Knowledge knowledge = null;
 
     /**

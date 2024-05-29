@@ -348,6 +348,11 @@ public class MarkovCheck {
         return vars;
     }
 
+    /**
+     * Clears the results stored in the `resultsIndep` and `resultsDep` lists.
+     *
+     * @see List#clear()
+     */
     public void clear() {
         resultsIndep.clear();
         resultsDep.clear();
@@ -1161,16 +1166,32 @@ public class MarkovCheck {
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
 
-    private List<ModelObserver> observers = new ArrayList<>();
+    /**
+     * List of observers to be notified when changes are made to the model.
+     */
+    private final List<ModelObserver> observers = new ArrayList<>();
 
+    /**
+     * Adds a ModelObserver to the list of observers.
+     *
+     * @param observer the ModelObserver to be added
+     */
     public void addObserver(ModelObserver observer) {
         observers.add(observer);
     }
 
+    /**
+     * Removes the specified observer from the list of observers.
+     *
+     * @param observer the observer to be removed
+     */
     public void removeObserver(ModelObserver observer) {
         observers.remove(observer);
     }
 
+    /**
+     * Notifies all registered ModelObservers by invoking their update() method.
+     */
     public void notifyObservers() {
         for (ModelObserver observer : observers) {
             observer.update();

@@ -299,6 +299,11 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         return rows;
     }
 
+    /**
+     * Sets the minimum sample size per cell for the independence test.
+     *
+     * @param minSampleSizePerCell The minimum sample size per cell.
+     */
     public void setMinSampleSizePerCell(int minSampleSizePerCell) {
         this.minSampleSizePerCell = minSampleSizePerCell;
     }

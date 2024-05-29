@@ -1899,6 +1899,11 @@ public class Comparison implements TetradSerializable {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Sets the algorithm knowledge flag.
+     *
+     * @param setAlgorithmKnowledge the flag value to set
+     */
     public void setSetAlgorithmKnowledge(boolean setAlgorithmKnowledge) {
         this.setAlgorithmKnowledge = setAlgorithmKnowledge;
     }

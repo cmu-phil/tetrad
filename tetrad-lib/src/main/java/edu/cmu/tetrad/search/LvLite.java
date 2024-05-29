@@ -286,6 +286,11 @@ public final class LvLite implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
+    /**
+     * Sets the value of the doDiscriminatingPathColliderRule property.
+     *
+     * @param doDiscriminatingPathColliderRule the new value for the doDiscriminatingPathColliderRule property
+     */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
@@ -734,6 +739,11 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
+    /**
+     * Sets the allowTucks flag to the specified value.
+     *
+     * @param allowTucks the boolean value indicating whether tucks are allowed
+     */
     public void setAllowTucks(boolean allowTucks) {
         this.allowTucks = allowTucks;
     }

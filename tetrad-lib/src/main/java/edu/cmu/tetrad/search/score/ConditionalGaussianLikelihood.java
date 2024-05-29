@@ -391,6 +391,11 @@ public class ConditionalGaussianLikelihood {
         return cells;
     }
 
+    /**
+     * Sets the minimum sample size per cell.
+     *
+     * @param minSampleSizePerCell The minimum sample size per cell.
+     */
     public void setMinSampleSizePerCell(int minSampleSizePerCell) {
         this.minSampleSizePerCell = minSampleSizePerCell;
     }
