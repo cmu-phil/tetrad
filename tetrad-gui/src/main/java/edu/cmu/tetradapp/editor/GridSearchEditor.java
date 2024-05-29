@@ -1137,13 +1137,13 @@ public class GridSearchEditor extends JPanel {
             Set<String> params = new HashSet<>();
             for (GridSearchModel.MyTableColumn column : columns) {
                 params.add("algcomparison." + column.getColumnName());
+                double weight = model.getParameters().getDouble("algcomparison." + column.getColumnName());
 
                 ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
                         new ParamDescription("algcomparison." + column.getColumnName(),
                                 "Utility for " + column.getColumnName() + " in [0, 1]",
                                 "Utility for " + column.getColumnName(),
-                                model.getParameters().getDouble("algcomparison." + column.getColumnName()),
-                                0.0, 1.0));
+                                weight,0.0, 1.0));
 
                 model.getParameters().set("algcomparison." + column.getColumnName(), 0.0);
             }
