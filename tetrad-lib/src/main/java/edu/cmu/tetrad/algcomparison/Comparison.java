@@ -1342,7 +1342,7 @@ public class Comparison implements TetradSerializable {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
             Simulation simulation = simulationWrapper.getSimulation();
 
-            if (setAlgorithmKnowledge && algorithm instanceof HasKnowledge) {
+            if (setAlgorithmKnowledge && algorithm instanceof HasKnowledge && knowledge != null) {
                 ((HasKnowledge) algorithm).setKnowledge(knowledge);
             }
 
@@ -1381,6 +1381,7 @@ public class Comparison implements TetradSerializable {
                 graphOut = algorithm.search(data, _params);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             TetradLogger.getInstance().forceLogMessage("Could not run " + algorithmWrapper.getDescription());
             return;
         }

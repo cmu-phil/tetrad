@@ -49,12 +49,12 @@ public class DataForCalibrationRfci {
     /**
      * Constant <code>outGraph</code>
      */
-    private PrintWriter outGraph;
+    private transient PrintWriter outGraph;
 
     /**
      * Constant <code>outPag</code>
      */
-    private PrintWriter outPag;
+    private transient PrintWriter outPag;
 
     /**
      * Constant <code>NEWLINE="System.getProperty(line.separator)"</code>

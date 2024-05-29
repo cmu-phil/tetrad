@@ -769,11 +769,15 @@ public class GridSearchModel implements SessionModel {
             }
         }
 
-        setWeight(selectedStatistics, "MC-ADPass", 0.8);
-        setWeight(selectedStatistics, "MC-KSPass", 0.2);
-        setWeight(selectedStatistics, "#EdgesEst", 0.8);
-        setWeight(selectedStatistics, "KnowledgeSatisfied", 1.0);
-
+        for (Statistic statistic : selectedStatistics.getStatistics()) {
+            double weight = 0;
+            try {
+                weight = parameters.getDouble("algcomparison." + statistic.getAbbreviation());
+            } catch (Exception e) {
+                // Skip.
+            }
+            selectedStatistics.setWeight(statistic.getAbbreviation(), weight);
+        }
 
         setLastStatisticsUsed(lastStatisticsUsed);
         return selectedStatistics;

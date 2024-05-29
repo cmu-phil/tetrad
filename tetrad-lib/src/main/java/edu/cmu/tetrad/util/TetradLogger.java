@@ -81,7 +81,7 @@ public class TetradLogger {
     /**
      * The getModel file stream that is being written to, this is set in "setNextOutputStream()".s
      */
-    private OutputStream stream;
+    private transient OutputStream stream;
     /**
      * The latest file path being written to.
      */

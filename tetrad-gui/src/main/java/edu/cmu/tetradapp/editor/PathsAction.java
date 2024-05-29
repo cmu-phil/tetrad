@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -40,8 +41,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
@@ -687,7 +686,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b.setBorder(new EmptyBorder(2, 3, 2, 2));
         b.add(b1);
 
-        JTextFieldWithPrompt comp = new JTextFieldWithPrompt("Enter conditioning variables...");
+        EditorUtils.JTextFieldWithPrompt comp = new EditorUtils.JTextFieldWithPrompt("Enter conditioning variables...");
         comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
         comp.setPreferredSize(new Dimension(750, 20));
         comp.setMaximumSize(new Dimension(1000, 20));
@@ -1541,60 +1540,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return parameterBox;
     }
 
-    /**
-     * A JTextFieldWithPrompt is a custom JTextField that displays a prompt text when no text has been entered and the
-     * component does not have focus.
-     */
-    private static class JTextFieldWithPrompt extends JTextField {
-        private final String promptText;
-        private final Color promptColor;
-
-        public JTextFieldWithPrompt(String promptText) {
-            this(promptText, Color.GRAY);
-        }
-
-        public JTextFieldWithPrompt(String promptText, Color promptColor) {
-            this.promptText = promptText;
-            this.promptColor = promptColor;
-
-            // Set focus listener to repaint the component when focus is gained or lost
-            this.addFocusListener(new FocusListener() {
-
-                @Override
-                public void focusGained(FocusEvent e) {
-                    repaint();
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    repaint();
-                }
-            });
-        }
-
-        /**
-         * This method is responsible for painting the component. It overrides the paintComponent method from the
-         * JTextField class. It checks if the text in the component is empty and if it does not have focus. If both
-         * conditions are true, it paints the prompt text on the component using the specified prompt color and font
-         * style.
-         *
-         * @param g the Graphics object used for painting
-         */
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            setDoubleBuffered(true);
-
-            if (getText().isEmpty() && !isFocusOwner()) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(promptColor);
-                g2d.setFont(getFont().deriveFont(Font.ITALIC));
-                int padding = (getHeight() - getFont().getSize()) / 2;
-                g2d.drawString(promptText, getInsets().left, getHeight() - padding - 1);
-                g2d.dispose();
-            }
-        }
-    }
 }
 
 
