@@ -1112,45 +1112,6 @@ public class GridSearchEditor extends JPanel {
      * @param tabbedPane the JTabbedPane to add the table columns tab to
      */
     private void addTableColumnsTab(JTabbedPane tabbedPane) {
-
-//        Box weightsBox = Box.createHorizontalBox();
-//        List<GridSearchModel.MyTableColumn> allColumns = model.getAllTableColumns();
-//        List<String> statNames = new ArrayList<>();
-//        for (GridSearchModel.MyTableColumn column : allColumns) {
-//            statNames.add(column.getColumnName());
-//        }
-//
-//        weightsBox.add(new JLabel("Weights for Statistics:"));
-//        JTextField textField = new JTextField(80);
-//        textField.setText("E.g., AP=1.0, AR=0.8, F1=0.5");
-//        weightsBox.add(textField);
-//
-//        EditorUtils.addTabCompleteLogic(textField, statNames);
-//
-//        textField.addFocusListener(new FocusAdapter() {
-//            @Override
-//            public void focusGained(FocusEvent e) {
-//                if (textField.getText().equals("E.g., AP=1.0, AR=0.8, F1=0.5")) {
-////                    textField.setText("");
-//                }
-//            }
-//
-//            @Override
-//            public void focusLost(FocusEvent e) {
-//                if (textField.getText().isEmpty()) {
-//                    textField.setText("E.g., AP=1.0, AR=0.8, F1=0.5");
-//                }
-//            }
-//        });
-//
-//        textField.addActionListener(e -> {
-//            String text = textField.getText();
-//
-//            if (!text.equals("E.g., AP=1.0, AR=0.8, F1=0.5")) {
-//                model.getParameters().set("algcomparisonWeights", text);
-//            }
-//        });
-
         tableColumnsChoiceTextArea = new JTextArea();
         tableColumnsChoiceTextArea.setLineWrap(true);
         tableColumnsChoiceTextArea.setWrapStyleWord(true);
@@ -1171,55 +1132,45 @@ public class GridSearchEditor extends JPanel {
         });
 
         JButton editUtilities = new JButton("Edit Utilities");
-        editUtilities.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<GridSearchModel.MyTableColumn> columns = model.getSelectedTableColumns();
-                Set<String> params = new HashSet<>();
-                for (GridSearchModel.MyTableColumn column : columns) {
-                    params.add("algcomparison." + column.getColumnName());
+        editUtilities.addActionListener(e -> {
+            List<GridSearchModel.MyTableColumn> columns = model.getSelectedTableColumns();
+            Set<String> params = new HashSet<>();
+            for (GridSearchModel.MyTableColumn column : columns) {
+                params.add("algcomparison." + column.getColumnName());
 
-                    ParamDescription paramDescription = ParamDescriptions.getInstance().get("algcomparison." + column.getColumnName());
-//                    String shortDescription = paramDescription.getShortDescription();
+                ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
+                        new ParamDescription("algcomparison." + column.getColumnName(),
+                                "Utility for " + column.getColumnName() + " in [0, 1]",
+                                "Utility for " + column.getColumnName(),
+                                model.getParameters().getDouble("algcomparison." + column.getColumnName()),
+                                0.0, 1.0));
 
-//                    if (shortDescription.startsWith("Please add a description")) {
-                    ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
-                            new ParamDescription("algcomparison." + column.getColumnName(),
-                                    "Utility for " + column.getColumnName() + " in [0, 1]",
-                                    "Utility for " + column.getColumnName(),
-                                    model.getParameters().getDouble("algcomparison." + column.getColumnName()),
-                                    0.0, 1.0));
-                    model.getParameters().set("algcomparison." + column.getColumnName(), 0.0);
-//                    } else {
-//                        model.getParameters().set("algcomparison." + column.getColumnName(),
-//                                model.getParameters().getDouble("algcomparison." + column.getColumnName()));
-//                    }
-                }
-
-                Box parameterBox = getParameterBox(params, false, false);
-                new PaddingPanel(parameterBox);
-
-                JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(GridSearchEditor.this), "Edit Utilities", Dialog.ModalityType.APPLICATION_MODAL);
-                dialog.setLayout(new BorderLayout());
-
-                JLabel label = new JLabel("To sort comparison tables by utility please adjust parameters in Comparison.");
-                label.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-                dialog.add(label, BorderLayout.NORTH);
-
-                // Add your panel to the center of the dialog
-                dialog.add(parameterBox, BorderLayout.CENTER);
-
-                // Create a panel for the buttons
-                JPanel buttonPanel = betButtonPanel(dialog);
-
-                // Add the button panel to the bottom of the dialog
-                dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-                dialog.pack(); // Adjust dialog size to fit its contents
-                dialog.setLocationRelativeTo(GridSearchEditor.this); // Center dialog relative to the parent component
-                dialog.setVisible(true);
+                model.getParameters().set("algcomparison." + column.getColumnName(), 0.0);
             }
+
+            Box parameterBox = getParameterBox(params, false, false);
+            new PaddingPanel(parameterBox);
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(GridSearchEditor.this), "Edit Utilities", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            JLabel label = new JLabel("To sort comparison tables by utility please adjust parameters in Comparison.");
+            label.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            dialog.add(label, BorderLayout.NORTH);
+
+            // Add your panel to the center of the dialog
+            dialog.add(parameterBox, BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = betButtonPanel(dialog);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(GridSearchEditor.this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
         });
 
         tableColumnsSelectionBox.add(addTableColumns);
@@ -1229,7 +1180,6 @@ public class GridSearchEditor extends JPanel {
 
         JPanel tableColumnsChoice = new JPanel();
         tableColumnsChoice.setLayout(new BorderLayout());
-//        tableColumnsChoice.add(weightsBox, BorderLayout.NORTH);
         tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
         tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
