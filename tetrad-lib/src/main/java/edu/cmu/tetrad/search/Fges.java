@@ -159,7 +159,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     /**
      * Where printed output is sent.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * The graph being constructed.
      */

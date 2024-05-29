@@ -101,7 +101,7 @@ public class SvarFas implements IFas {
     /**
      * The output stream for printing.
      */
-    private PrintStream out;
+    private transient PrintStream out;
 
     /**
      * Constructs a new FastAdjacencySearch.

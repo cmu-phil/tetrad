@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -39,7 +38,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class LvDumb implements IGraphSearch {
+public final class LvBossPag implements IGraphSearch {
     /**
      * The score.
      */
@@ -89,7 +88,7 @@ public final class LvDumb implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvDumb(Score score) {
+    public LvBossPag(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -139,6 +138,7 @@ public final class LvDumb implements IGraphSearch {
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setKnowledge(knowledge);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();

@@ -52,7 +52,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class PerformanceTests {
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
 
     /**
      * This class represents a set of performance tests for a certain application. It contains various methods to test

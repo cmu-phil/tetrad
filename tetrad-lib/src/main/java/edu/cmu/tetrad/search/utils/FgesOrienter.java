@@ -123,7 +123,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
     // Where printed output is sent.
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     // A initial adjacencies graph.
     private Graph adjacencies;
     // True if it is assumed that zero effect adjacencies are not in the graph.

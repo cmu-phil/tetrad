@@ -73,7 +73,7 @@ public class TimeoutComparison {
     /**
      * The out.
      */
-    private PrintStream out;
+    private transient PrintStream out;
     /**
      * Whether to output the tables in tab-delimited format.
      */

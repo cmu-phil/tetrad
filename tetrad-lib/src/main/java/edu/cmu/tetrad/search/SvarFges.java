@@ -149,7 +149,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     /**
      * Where printed output is sent.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * An initial adjacencies graph.
      */

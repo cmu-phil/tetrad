@@ -102,7 +102,7 @@ public class Fas implements IFas {
     /**
      * Whether verbose output should be printed.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * Whether verbose output should be printed.
      */

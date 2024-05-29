@@ -49,7 +49,7 @@ import static edu.cmu.tetradapp.model.GridSearchModel.getAllSimulationParameters
 
 /**
  * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm, table
- * columns, comparison, and help. It is used for editing an AlgcomparisonModel.
+ * columns, comparison, and help. It is used for editing an GridSearchModel.
  * <p>
  * The reference is here:
  * <p>
@@ -72,7 +72,7 @@ public class GridSearchEditor extends JPanel {
      */
     private static JComboBox<ScoreModel> scoreModelComboBox;
     /**
-     * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
+     * The GridSearchModel class represents a model used in an algorithm comparison application. It contains methods
      * and properties related to the comparison of algorithms.
      */
     private final GridSearchModel model;
@@ -132,7 +132,7 @@ public class GridSearchEditor extends JPanel {
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
      * tabs for simulation, algorithm, table columns, comparison and help.
      *
-     * @param model the AlgcomparisonModel to use for the editor
+     * @param model the GridSearchModel to use for the editor
      */
     public GridSearchEditor(GridSearchModel model) {
         this.model = model;
@@ -159,6 +159,7 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonShowSimulationIndices", model.getParameters().getBoolean("algcomparisonShowSimulationIndices", true));
         model.getParameters().set("algcomparisonSortByUtility", model.getParameters().getBoolean("algcomparisonSortByUtility", false));
         model.getParameters().set("algcomparisonShowUtilities", model.getParameters().getBoolean("algcomparisonShowUtilities", false));
+        model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", false));
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
 
@@ -1247,9 +1248,14 @@ public class GridSearchEditor extends JPanel {
             horiz4a.add(getBooleanSelectionBox("algcomparisonSortByUtility", model.getParameters(), false));
 
             Box horiz4b = Box.createHorizontalBox();
-            horiz4b.add(new JLabel("Sort by Utility:"));
+            horiz4b.add(new JLabel("Show Utilities:"));
             horiz4b.add(Box.createHorizontalGlue());
             horiz4b.add(getBooleanSelectionBox("algcomparisonShowUtilities", model.getParameters(), false));
+
+            Box horiz4c = Box.createHorizontalBox();
+            horiz4c.add(new JLabel("Set Knowledge on Algorithm If Available:"));
+            horiz4c.add(Box.createHorizontalGlue());
+            horiz4c.add(getBooleanSelectionBox("algcomparisonSetAlgorithmKnowledge", model.getParameters(), false));
 
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
@@ -1285,6 +1291,7 @@ public class GridSearchEditor extends JPanel {
             parameterBox.add(horiz4);
             parameterBox.add(horiz4a);
             parameterBox.add(horiz4b);
+            parameterBox.add(horiz4c);
             parameterBox.add(horiz5);
             parameterBox.add(horiz6);
 
@@ -1757,7 +1764,7 @@ public class GridSearchEditor extends JPanel {
 //            sorter.addRowSorterListener(e2 -> {
 //
 //                if (e2.getType() == RowSorterEvent.Type.SORTED) {
-//                    List<AlgcomparisonModel.MyTableColumn> visiblePairs = new ArrayList<>();
+//                    List<GridSearchModel.MyTableColumn> visiblePairs = new ArrayList<>();
 //                    int rowCount = table.getRowCount();
 //
 //                    for (int i = 0; i < rowCount; i++) {

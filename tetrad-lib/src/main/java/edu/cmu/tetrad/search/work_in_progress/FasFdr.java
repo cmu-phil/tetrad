@@ -66,7 +66,7 @@ public class FasFdr implements IFas {
     private int depth = 1000;
     private SepsetMap sepset = new SepsetMap();
     private boolean verbose;
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//
 

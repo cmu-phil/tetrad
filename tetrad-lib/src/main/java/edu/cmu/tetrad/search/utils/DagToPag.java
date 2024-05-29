@@ -279,8 +279,10 @@ public final class DagToPag {
                             System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
 
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                            graph.setEndpoint(a, b, Endpoint.ARROW);
+                            graph.setEndpoint(c, b, Endpoint.ARROW);
+                        }
                     }
                 }
             }

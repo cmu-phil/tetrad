@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.nio.file.Files;
@@ -106,6 +107,11 @@ public final class SaveSessionAction extends AbstractAction {
                     sessionWrapper.setNewSession(false);
                     objOut.writeObject(metadata);
                     objOut.writeObject(sessionWrapper);
+                } catch (NotSerializableException exception) {
+                    exception.printStackTrace(System.err);
+                    JOptionPane.showMessageDialog(
+                            JOptionUtils.centeringComp(),
+                            "An error occurred while attempting to save the session. The session could not be saved.");
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                     JOptionPane.showMessageDialog(

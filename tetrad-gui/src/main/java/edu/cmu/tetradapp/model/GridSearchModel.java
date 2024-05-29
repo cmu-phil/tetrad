@@ -30,6 +30,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.SingleDatasetSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -38,6 +39,8 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -53,7 +56,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * The AlgcomparisonModel class is a session model that allows for running comparisons of algorithms. It provides
+ * The GridSearchModel class is a session model that allows for running comparisons of algorithms. It provides
  * methods for selecting algorithms, simulations, statistics, and parameters, and then running the comparison.
  * <p>
  * The reference is here:
@@ -71,9 +74,21 @@ public class GridSearchModel implements SessionModel {
      */
     private final Parameters parameters;
     /**
-     * The results path for the AlgcomparisonModel.
+     * The results path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
+    private final Knowledge knowledge;
+    /**
+     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis.
+     * It can be set to null if no dataset is supplied.
+     * <p>
+     * Using a supplied dataset restricts the analysis to only those statistics that do not require a true graph.
+     * <p>
+     * Example usage:
+     * DataSet dataset = new DataSet();
+     * suppliedData = dataset;
+     */
+    private DataSet suppliedData = null;
     /**
      * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
      * option in the user interface.
@@ -104,20 +119,20 @@ public class GridSearchModel implements SessionModel {
      */
     private List<String> algNames;
     /**
-     * The selected parameters for the AlgcomparisonModel.
+     * The selected parameters for the GridSearchModel.
      */
     private List<String> selectedParameters;
     /**
-     * The list of selected simulations in the AlgcomparisonModel. This list holds Simulation objects, which are
+     * The list of selected simulations in the GridSearchModel. This list holds Simulation objects, which are
      * implementations of the Simulation interface.
      */
     private LinkedList<SimulationSpec> selectedSimulations;
     /**
-     * The selected algorithms for the AlgcomparisonModel.
+     * The selected algorithms for the GridSearchModel.
      */
     private LinkedList<AlgorithmSpec> selectedAlgorithms;
     /**
-     * The selected table columns for the AlgcomparisonModel.
+     * The selected table columns for the GridSearchModel.
      */
     private LinkedList<MyTableColumn> selectedTableColumns;
     /**
@@ -129,23 +144,104 @@ public class GridSearchModel implements SessionModel {
      */
     private String lastVerboseOutputText = "";
     /**
-     * The name of the AlgcomparisonModel.
+     * The name of the GridSearchModel.
      */
     private String name = "Grid Search";
 
     /**
-     * Constructs a new AlgcomparisonModel with the specified parameters.
+     * Constructs a new GridSearchModel with the specified parameters.
      *
      * @param parameters The parameters to be set.
      */
     public GridSearchModel(Parameters parameters) {
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
         this.parameters = parameters;
+        this.knowledge = null;
+        initializeIfNull();
+    }
+
+    public GridSearchModel(KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
         initializeIfNull();
     }
 
     public GridSearchModel(GraphSource graphSource, Parameters parameters) {
-        this.parameters = new Parameters();
+        if (graphSource == null) {
+            throw new IllegalArgumentException("Graph source must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = null;
         this.suppliedGraph = graphSource.getGraph();
+        initializeIfNull();
+    }
+
+    public GridSearchModel(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (graphSource == null) {
+            throw new IllegalArgumentException("Graph source must not be null.");
+        }
+
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
+        this.suppliedGraph = graphSource.getGraph();
+        initializeIfNull();
+    }
+
+    public GridSearchModel(DataWrapper dataWrapper, Parameters parameters) {
+        if (dataWrapper == null) {
+            throw new IllegalArgumentException("Data wrapper must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = null;
+        this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
+        initializeIfNull();
+    }
+
+    public GridSearchModel(DataWrapper dataWrapper, KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (dataWrapper == null) {
+            throw new IllegalArgumentException("Data wrapper must not be null.");
+        }
+
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
+        this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
         initializeIfNull();
     }
 
@@ -180,10 +276,10 @@ public class GridSearchModel implements SessionModel {
             if (o1.equals(o2)) {
                 return 0;
             } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
-                       && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
+                    && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 return -1;
             } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
-                       && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
+                    && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 return 1;
             } else {
                 return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
@@ -282,7 +378,12 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
 
         Simulations simulations = new Simulations();
-        for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
+
+        if (suppliedData != null) {
+            simulations.add(new SingleDatasetSimulation(suppliedData));
+        } else {
+            for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
+        }
 
         Algorithms algorithms = new Algorithms();
         for (AlgorithmSpec algorithm : this.selectedAlgorithms) algorithms.add(algorithm.getAlgorithmImpl());
@@ -296,7 +397,9 @@ public class GridSearchModel implements SessionModel {
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
+        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
+        comparison.setKnowledge(knowledge);
 
         String string = parameters.getString("algcomparisonGraphType", "DAG");
         ComparisonGraphType type = ComparisonGraphType.valueOf(string);
@@ -459,14 +562,19 @@ public class GridSearchModel implements SessionModel {
     }
 
     /**
-     * The currently selected simulation in the AlgcomparisonModel. A list of size one (enforced) that contains the
+     * The currently selected simulation in the GridSearchModel. A list of size one (enforced) that contains the
      * selected simulation.
      */
     public Simulations getSelectedSimulations() {
         initializeIfNull();
         Simulations simulations = new Simulations();
-        for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
-        return simulations;
+        if (suppliedData != null) {
+            simulations.add(new SingleDatasetSimulation(suppliedData));
+            return simulations;
+        } else {
+            for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
+            return simulations;
+        }
     }
 
     /**
@@ -498,7 +606,7 @@ public class GridSearchModel implements SessionModel {
      */
     private void initializeIfNull() {
         if (selectedSimulations == null || selectedAlgorithms == null || selectedTableColumns == null
-            || selectedParameters == null) {
+                || selectedParameters == null) {
             initializeSimulationsEtc();
         }
 
@@ -506,13 +614,8 @@ public class GridSearchModel implements SessionModel {
             this.selectedParameters = new LinkedList<>();
         }
 
-//        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
         initializeClasses();
-//        }
-
-//        if (algNames == null || statNames == null || simNames == null) {
         initializeNames();
-//        }
     }
 
     /**
@@ -666,9 +769,11 @@ public class GridSearchModel implements SessionModel {
             }
         }
 
-        setWeight(selectedStatistics, "MC-ADPass", 1.0);
-        setWeight(selectedStatistics, "MC-KSPass", 1.0);
-        setWeight(selectedStatistics, "#EdgesEst", 1.0);
+        setWeight(selectedStatistics, "MC-ADPass", 0.8);
+        setWeight(selectedStatistics, "MC-KSPass", 0.2);
+        setWeight(selectedStatistics, "#EdgesEst", 0.8);
+        setWeight(selectedStatistics, "KnowledgeSatisfied", 1.0);
+
 
         setLastStatisticsUsed(lastStatisticsUsed);
         return selectedStatistics;
@@ -854,6 +959,14 @@ public class GridSearchModel implements SessionModel {
 
     public void setLastVerboseOutputText(String lastVerboseOutputText) {
         this.lastVerboseOutputText = lastVerboseOutputText;
+    }
+
+    /**
+     * If a dataset (such as an empirical dataset) is supplied, it will be used in place of simulated dataset
+     * for analysis. In this case, only statistics not requiring a true graph can be used.
+     */
+    public DataSet getSuppliedData() {
+        return suppliedData;
     }
 
     /**

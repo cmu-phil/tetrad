@@ -31,10 +31,7 @@ import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
-import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
-import edu.cmu.tetrad.algcomparison.statistic.Statistic;
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
@@ -148,6 +145,14 @@ public class Comparison implements TetradSerializable {
      * The output stream for local output. Could be null.
      */
     private transient PrintStream localOut = null;
+    /**
+     * Represents a variable for storing knowledge.
+     */
+    private Knowledge knowledge = null;
+    /**
+     * True if knowledge should be set on the algorithms (if supplied).
+     */
+    private boolean setAlgorithmKnowledge = false;
 
     /**
      * Initializes a new instance of the Comparison class.
@@ -1337,8 +1342,8 @@ public class Comparison implements TetradSerializable {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
             Simulation simulation = simulationWrapper.getSimulation();
 
-            if (algorithm instanceof HasKnowledge && simulation instanceof HasKnowledge) {
-                ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
+            if (setAlgorithmKnowledge && algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(knowledge);
             }
 
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -1442,6 +1447,10 @@ public class Comparison implements TetradSerializable {
                         continue;
                     }
 
+                    if (_stat instanceof HasKnowledge) {
+                        ((HasKnowledge) _stat).setKnowledge(knowledge);
+                    }
+
                     double stat;
 
                     if (_stat instanceof ElapsedCpuTime) {
@@ -1455,7 +1464,41 @@ public class Comparison implements TetradSerializable {
                     }
                 }
             }
+        } else {
+            int statIndex = -1;
+            this.graphTypeUsed[0] = true;
 
+//            graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
+
+            Graph[] est = new Graph[numGraphTypes];
+
+            for (Statistic _stat : statistics.getStatistics()) {
+                statIndex++;
+
+                if (_stat instanceof ParameterColumn) {
+                    continue;
+                }
+
+                if (_stat instanceof HasKnowledge) {
+                    ((HasKnowledge) _stat).setKnowledge(knowledge);
+                }
+
+                double stat;
+
+                if (_stat instanceof ElapsedCpuTime) {
+                    stat = taskCpuTime / 1000.0;
+                } else {
+                    try {
+                        stat = _stat.getValue(null, graphOut, data);
+                    } catch (Exception e) {
+                        stat = Double.NaN;
+                    }
+                }
+
+                synchronized (this) {
+                    allStats[0][run.algSimIndex()][statIndex][run.runIndex()] = stat;
+                }
+            }
         }
 
         if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
@@ -1835,6 +1878,28 @@ public class Comparison implements TetradSerializable {
      */
     public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
+    }
+
+    /**
+     * Retrieves the knowledge.
+     *
+     * @return The knowledge object.
+     */
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * Sets the knowledge for the current instance.
+     *
+     * @param knowledge the knowledge to be set
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public void setSetAlgorithmKnowledge(boolean setAlgorithmKnowledge) {
+        this.setAlgorithmKnowledge = setAlgorithmKnowledge;
     }
 
     /**

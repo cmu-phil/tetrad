@@ -93,7 +93,7 @@ public final class GFci implements IGraphSearch {
     /**
      * The print stream used for output.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * Whether one-edge faithfulness is assumed.
      */
