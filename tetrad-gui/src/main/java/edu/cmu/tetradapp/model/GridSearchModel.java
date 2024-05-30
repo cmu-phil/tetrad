@@ -51,6 +51,7 @@ import org.reflections.scanners.Scanners;
 
 import java.io.File;
 import java.io.Serial;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -401,7 +402,7 @@ public class GridSearchModel implements SessionModel {
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
-        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
+        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("`algcomparisonSetAlgorithmKnowledge`"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
         comparison.setKnowledge(knowledge);
 
@@ -713,13 +714,27 @@ public class GridSearchModel implements SessionModel {
         List<String> statisticsNames = new ArrayList<>();
 
         for (Class<? extends Statistic> statistic : algorithmClasses) {
+
             try {
-                Statistic _statistic = statistic.getConstructor().newInstance();
-                String abbreviation = _statistic.getAbbreviation();
-                statisticsNames.add(abbreviation);
+                Constructor<?>[] constructors = statistic.getDeclaredConstructors();
+
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> constructor : constructors) {
+                    if (constructor.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic _statistic = statistic.getConstructor().newInstance();
+                    String abbreviation = _statistic.getAbbreviation();
+                    statisticsNames.add(abbreviation);
+                }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                // Skip.
+                TetradLogger.getInstance().forceLogMessage("Error creating statistic: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
