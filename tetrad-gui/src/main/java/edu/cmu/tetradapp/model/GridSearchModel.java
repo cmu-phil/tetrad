@@ -77,6 +77,10 @@ public class GridSearchModel implements SessionModel {
      * The results path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
+    /**
+     * Represents the variable "knowledge" in the GridSearchModel class.
+     * This variable is of type Knowledge and is private and final.
+     */
     private final Knowledge knowledge;
     /**
      * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis.

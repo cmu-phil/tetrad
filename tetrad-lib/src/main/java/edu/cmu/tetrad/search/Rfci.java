@@ -23,7 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -199,11 +201,12 @@ public final class Rfci implements IGraphSearch {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
-        TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         long stop2 = MillisecondTimes.timeMillis();
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-        TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+            TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        }
 
         return this.graph;
     }
