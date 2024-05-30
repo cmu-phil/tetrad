@@ -401,7 +401,7 @@ public class GridSearchModel implements SessionModel {
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
-        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("`algcomparisonSetAlgorithmKnowledge`"));
+        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
         comparison.setKnowledge(knowledge);
 
