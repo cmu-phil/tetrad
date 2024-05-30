@@ -103,17 +103,6 @@ public final class NodeType implements TetradSerializable {
         return this.name;
     }
 
-    /**
-     * Returns the ordinal of this type.
-     *
-     * @return a int
-     * @throws java.io.ObjectStreamException if any.
-     */
-    @Serial
-    Object readResolve() throws ObjectStreamException {
-        return NodeType.TYPES[this.ordinal]; // Canonicalize.
-    }
-
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {

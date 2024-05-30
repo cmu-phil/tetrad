@@ -30,8 +30,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -232,7 +230,11 @@ public class GridSearchEditor extends JPanel {
             double upperBoundDouble = paramDesc.getUpperBoundDouble();
             Double[] defValues = new Double[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Double) defaultValues[i];
+                if (defaultValues[i] instanceof Number) {
+                    defValues[i] = ((Number) defaultValues[i]).doubleValue();
+                } else {
+                    throw new IllegalArgumentException("Unexpected type: " + defaultValues[i].getClass());
+                }
             }
 
             if (listOptionAllowed) {
@@ -245,7 +247,11 @@ public class GridSearchEditor extends JPanel {
             int upperBoundInt = paramDesc.getUpperBoundInt();
             Integer[] defValues = new Integer[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Integer) defaultValues[i];
+                try {
+                    defValues[i] = (int) defaultValues[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a default value that is not an integer: " + defaultValues[i]);
+                }
             }
 
             if (listOptionAllowed) {
@@ -258,7 +264,11 @@ public class GridSearchEditor extends JPanel {
             long upperBoundLong = paramDesc.getUpperBoundLong();
             Long[] defValues = new Long[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Long) defaultValues[i];
+                try {
+                    defValues[i] = (Long) defaultValues[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a default value that is not a long: " + defaultValues[i]);
+                }
             }
             if (listOptionAllowed) {
                 component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
@@ -579,7 +589,11 @@ public class GridSearchEditor extends JPanel {
 
         try {
             for (int i = 0; i < values.length; i++) {
-                booleans[i] = (Boolean) values[i];
+                try {
+                    booleans[i] = (Boolean) values[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a value that is not a boolean: " + values[i]);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1018,7 +1032,7 @@ public class GridSearchEditor extends JPanel {
             Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
             if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
-                && allScoreParameters.isEmpty()) {
+                    && allScoreParameters.isEmpty()) {
                 JLabel noParamLbl = NO_PARAM_LBL;
                 noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
                 tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
@@ -1137,15 +1151,15 @@ public class GridSearchEditor extends JPanel {
             Set<String> params = new HashSet<>();
             for (GridSearchModel.MyTableColumn column : columns) {
                 params.add("algcomparison." + column.getColumnName());
-                double weight = model.getParameters().getDouble("algcomparison." + column.getColumnName());
+                Double weight = model.getParameters().getDouble("algcomparison." + column.getColumnName());
+
+                Parameters.serializableInstance().remove("algcomparison." + column.getColumnName());
 
                 ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
                         new ParamDescription("algcomparison." + column.getColumnName(),
                                 "Utility for " + column.getColumnName() + " in [0, 1]",
                                 "Utility for " + column.getColumnName(),
-                                weight,0.0, 1.0));
-
-                model.getParameters().set("algcomparison." + column.getColumnName(), 0.0);
+                                weight, 0.0, 1.0));
             }
 
             Box parameterBox = getParameterBox(params, false, false);
@@ -1917,7 +1931,7 @@ public class GridSearchEditor extends JPanel {
                     GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
 
                     if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER
-                        && myTableColumn.isSetByUser()) {
+                            && myTableColumn.isSetByUser()) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -1929,7 +1943,7 @@ public class GridSearchEditor extends JPanel {
                     List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
 
                     if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
-                        && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
+                            && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -2206,7 +2220,7 @@ public class GridSearchEditor extends JPanel {
      */
     private void setComparisonText() {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty()
-            || model.getSelectedTableColumns().isEmpty()) {
+                || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
                             ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **
