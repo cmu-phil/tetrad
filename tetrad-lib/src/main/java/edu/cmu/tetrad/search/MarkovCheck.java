@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadRecall;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -330,6 +327,31 @@ public class MarkovCheck {
         System.out.println("Node " + x + "'s statistics: " + " \n" +
                            " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
                            " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
+    }
+
+    /**
+     * Calculates the precision and recall using LocalGraphConfusion
+     * (which calculates the combination of Adjacency and ArrowHead) on the Markov Blanket graph for a given node.
+     * Prints the statistics to the console.
+     *
+     * @param x              The target node.
+     * @param estimatedGraph The estimated graph.
+     * @param trueGraph      The true graph.
+     */
+    public void getPrecisionAndRecallOnMarkovBlanketGraph2(Node x, Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+
+        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println("Node " + x + "'s statistics: " + " \n" +
+                " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
     /**

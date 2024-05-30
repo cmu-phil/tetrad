@@ -12,6 +12,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -111,12 +112,13 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testDAGPrecisionRecallForLocalOnMarkovBlanket() {
+    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
         SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
@@ -149,7 +151,7 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
+    public void testGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
         Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
@@ -157,6 +159,7 @@ public class TestCheckMarkov {
         System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
 
         SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
@@ -188,12 +191,104 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testDAGPrecisionRecallForLocalOnParents() {
+    public void testNonGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
         SemPm pm = new SemPm(trueGraph);
+
+        Parameters params = new Parameters();
+        // Manually set non-Gaussian
+        params.set(Params.SIMULATION_ERROR_TYPE, 3);
+        params.set(Params.SIMULATION_PARAM1, 1);
+
+        SemIm im = new SemIm(pm, params);
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
+    @Test
+    public void testNonGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        // The completed partially directed acyclic graph (CPDAG) for the given DAG.
+        Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
+
+        SemPm pm = new SemPm(trueGraph);
+
+        Parameters params = new Parameters();
+        // Manually set non-Gaussian
+        params.set(Params.SIMULATION_ERROR_TYPE, 3);
+        params.set(Params.SIMULATION_PARAM1, 1);
+
+        SemIm im = new SemIm(pm, params);
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        // Compare the Est CPDAG with True graph's CPDAG.
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
+            System.out.println("=====================");
+        }
+    }
+
+
+
+    @Test
+    public void testGaussianDAGPrecisionRecallForLocalOnParents() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
@@ -225,7 +320,7 @@ public class TestCheckMarkov {
     }
 
     @Test
-    public void testCPDAGPrecisionRecallForLocalOnParents() {
+    public void testGaussianCPDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
         Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
@@ -233,6 +328,7 @@ public class TestCheckMarkov {
         System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
 
         SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
@@ -262,4 +358,130 @@ public class TestCheckMarkov {
             System.out.println("=====================");
         }
     }
+
+    @Test
+    public void testNonGaussianDAGPrecisionRecallForLocalOnParents() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        Parameters params = new Parameters();
+        // Manually set non-Gaussian
+        params.set(Params.SIMULATION_ERROR_TYPE, 3);
+        params.set(Params.SIMULATION_PARAM1, 1);
+
+        SemIm im = new SemIm(pm, params);
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        // TODO VBC: confirm on the choice of ConditioningSetType.
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.LOCAL_MARKOV);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
+    @Test
+    public void testNonGaussianCPDAGPrecisionRecallForLocalOnParents() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        // The completed partially directed acyclic graph (CPDAG) for the given DAG.
+        Graph trueGraphCPDAG = GraphTransforms.dagToCpdag(trueGraph);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph CPDAG: " + trueGraphCPDAG);
+
+        SemPm pm = new SemPm(trueGraph);
+
+        Parameters params = new Parameters();
+        // Manually set non-Gaussian
+        params.set(Params.SIMULATION_ERROR_TYPE, 3);
+        params.set(Params.SIMULATION_PARAM1, 1);
+
+        SemIm im = new SemIm(pm, params);
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        // Compare the Est CPDAG with True graph's CPDAG.
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
+            System.out.println("=====================");
+        }
+    }
+
+    @Test
+    public void testDAGPrecisionRecall2ForLocalOnMarkovBlanket() {
+        Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(1000, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+
+        List<Double> acceptsPrecision = new ArrayList<>();
+        List<Double> acceptsRecall = new ArrayList<>();
+        for(Node a: accepts) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+
+        }
+        for (Node a: rejects) {
+            System.out.println("=====================");
+            markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph2(a, estimatedCpdag, trueGraph);
+            System.out.println("=====================");
+        }
+    }
+
 }
