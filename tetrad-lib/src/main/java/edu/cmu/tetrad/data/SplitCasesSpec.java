@@ -130,6 +130,8 @@ public final class SplitCasesSpec implements TetradSerializable {
     public int getSampleSize() {
         return this.sampleSize;
     }
+
+
 }
 
 

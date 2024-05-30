@@ -210,6 +210,8 @@ public final class Manipulation implements TetradSerializable {
     private VariableSource getVariableSource() {
         return this.variableSource;
     }
+
+
 }
 
 

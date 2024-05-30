@@ -466,6 +466,8 @@ public final class Session implements TetradSerializable {
             getSessionSupport().fireSessionEvent(event, false);
         }
     }
+
+
 }
 
 

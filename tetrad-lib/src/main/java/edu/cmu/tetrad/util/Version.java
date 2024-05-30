@@ -382,6 +382,8 @@ public class Version implements TetradSerializable {
         return new Version(majorVersion, minorVersion, minorSubversion,
                 incrementalRelease);
     }
+
+
 }
 
 

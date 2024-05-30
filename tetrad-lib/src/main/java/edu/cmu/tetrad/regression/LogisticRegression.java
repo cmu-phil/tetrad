@@ -706,6 +706,8 @@ public class LogisticRegression implements TetradSerializable {
             return report.toString();
         }
     }
+
+
 }
 
 

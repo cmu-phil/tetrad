@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.io.ObjectStreamException;
-import java.io.Serial;
+import java.io.*;
 
 /**
  * Type-safe enum of discrete variable types. A nominal discrete variable is one in which the categories are in no
@@ -100,6 +100,28 @@ public final class DiscreteVariableType implements TetradSerializable {
     @Serial
     Object readResolve() throws ObjectStreamException {
         return DiscreteVariableType.TYPES[this.ordinal]; // Canonicalize.
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
     }
 }
 

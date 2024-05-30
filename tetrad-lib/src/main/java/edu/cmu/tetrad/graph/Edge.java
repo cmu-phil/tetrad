@@ -598,4 +598,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
          */
         pl
     }
+
+
 }
