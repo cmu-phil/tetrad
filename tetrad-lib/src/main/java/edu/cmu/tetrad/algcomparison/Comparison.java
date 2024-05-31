@@ -447,7 +447,12 @@ public class Comparison implements TetradSerializable {
 
         {
             int numTables = allStats.length;
-            int numStats = allStats[0][0].length - 1;
+            int numStats = 0;
+            try {
+                numStats = allStats[0][0].length - 1;
+            } catch (Exception e) {
+                throw new RuntimeException("It seems that not results were recorded. Please double-check the comparison setup.");
+            }
 
             double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, algorithmSimulationWrappers, numStats, statistics);
             double[] utilities = calcUtilities(statistics, algorithmSimulationWrappers, statTables[0]);
@@ -1382,7 +1387,8 @@ public class Comparison implements TetradSerializable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            TetradLogger.getInstance().forceLogMessage("Could not run " + algorithmWrapper.getDescription());
+            TetradLogger.getInstance().forceLogMessage("\nCould not run " + algorithmWrapper.getDescription()
+                + " on " + simulationWrapper.getDescription() + " because of " + e.getMessage());
             return;
         }
 

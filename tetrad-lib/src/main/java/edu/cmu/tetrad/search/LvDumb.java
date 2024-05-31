@@ -38,7 +38,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class LvBossPag implements IGraphSearch {
+public final class LvDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -88,7 +88,7 @@ public final class LvBossPag implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvBossPag(Score score) {
+    public LvDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }

@@ -56,8 +56,8 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * The GridSearchModel class is a session model that allows for running comparisons of algorithms. It provides
- * methods for selecting algorithms, simulations, statistics, and parameters, and then running the comparison.
+ * The GridSearchModel class is a session model that allows for running comparisons of algorithms. It provides methods
+ * for selecting algorithms, simulations, statistics, and parameters, and then running the comparison.
  * <p>
  * The reference is here:
  * <p>
@@ -74,23 +74,25 @@ public class GridSearchModel implements SessionModel {
      */
     private final Parameters parameters;
     /**
-     * The results path for the GridSearchModel.
+     * The result path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
     /**
-     * Represents the variable "knowledge" in the GridSearchModel class.
-     * This variable is of type Knowledge and is private and final.
+     * Represents the variable "knowledge" in the GridSearchModel class. This variable is of type Knowledge and is
+     * private and final.
      */
     private final Knowledge knowledge;
     /**
-     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis.
-     * It can be set to null if no dataset is supplied.
+     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis. It
+     * can be set to null if no dataset is supplied.
      * <p>
      * Using a supplied dataset restricts the analysis to only those statistics that do not require a true graph.
      * <p>
      * Example usage:
+     * <pre>
      * DataSet dataset = new DataSet();
      * suppliedData = dataset;
+     * </pre>
      */
     private DataSet suppliedData = null;
     /**
@@ -122,23 +124,23 @@ public class GridSearchModel implements SessionModel {
      * The list of algorithm names.
      */
     private List<String> algNames;
-    /**
-     * The selected parameters for the GridSearchModel.
-     */
-    private List<String> selectedParameters;
-    /**
-     * The list of selected simulations in the GridSearchModel. This list holds Simulation objects, which are
-     * implementations of the Simulation interface.
-     */
-    private LinkedList<SimulationSpec> selectedSimulations;
-    /**
-     * The selected algorithms for the GridSearchModel.
-     */
-    private LinkedList<AlgorithmSpec> selectedAlgorithms;
-    /**
-     * The selected table columns for the GridSearchModel.
-     */
-    private LinkedList<MyTableColumn> selectedTableColumns;
+//    /**
+//     * The selected parameters for the GridSearchModel.
+//     */
+//    private List<String> selectedParameters;
+//    /**
+//     * The list of selected simulations in the GridSearchModel. This list holds Simulation objects, which are
+//     * implementations of the Simulation interface.
+//     */
+//    private LinkedList<SimulationSpec> selectedSimulations;
+//    /**
+//     * The selected algorithms for the GridSearchModel.
+//     */
+//    private LinkedList<AlgorithmSpec> selectedAlgorithms;
+//    /**
+//     * The selected table columns for the GridSearchModel.
+//     */
+//    private LinkedList<MyTableColumn> selectedTableColumns;
     /**
      * The last comparison text displayed.
      */
@@ -170,10 +172,8 @@ public class GridSearchModel implements SessionModel {
     /**
      * Initializes a new GridSearchModel with the given KnowledgeBoxModel and Parameters.
      *
-     * @param knowledge  The KnowledgeBoxModel containing the knowledge to be used for grid search.
-     *                   Must not be null.
-     * @param parameters The Parameters specifying the grid search parameters.
-     *                   Must not be null.
+     * @param knowledge  The KnowledgeBoxModel containing the knowledge to be used for grid search. Must not be null.
+     * @param parameters The Parameters specifying the grid search parameters. Must not be null.
      * @throws IllegalArgumentException If either knowledge or parameters are null.
      */
     public GridSearchModel(KnowledgeBoxModel knowledge, Parameters parameters) {
@@ -218,7 +218,6 @@ public class GridSearchModel implements SessionModel {
      * @param graphSource The source of the graph.
      * @param knowledge   The knowledge box model.
      * @param parameters  The parameters for the grid search model.
-     *
      * @throws IllegalArgumentException if graphSource, knowledge, or parameters is null.
      */
     public GridSearchModel(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) {
@@ -244,8 +243,7 @@ public class GridSearchModel implements SessionModel {
      * Constructs a new GridSearchModel instance.
      *
      * @param dataWrapper the data wrapper containing the selected data model
-     * @param parameters the parameters to use for grid search
-     *
+     * @param parameters  the parameters to use for grid search
      * @throws IllegalArgumentException if either dataWrapper or parameters is null
      */
     public GridSearchModel(DataWrapper dataWrapper, Parameters parameters) {
@@ -266,8 +264,8 @@ public class GridSearchModel implements SessionModel {
     /**
      * Constructs a new instance of the GridSearchModel.
      *
-     * @param dataWrapper  the data wrapper used for selecting the data model (must not be null)
-     * @param knowledge  the knowledge box model (must not be null)
+     * @param dataWrapper the data wrapper used for selecting the data model (must not be null)
+     * @param knowledge   the knowledge box model (must not be null)
      * @param parameters  the parameters for the model (must not be null)
      * @throws IllegalArgumentException if any of the parameters is null
      */
@@ -321,10 +319,10 @@ public class GridSearchModel implements SessionModel {
             if (o1.equals(o2)) {
                 return 0;
             } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
-                    && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
+                       && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 return -1;
             } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
-                    && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
+                       && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 return 1;
             } else {
                 return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
@@ -419,11 +417,12 @@ public class GridSearchModel implements SessionModel {
         if (suppliedData != null) {
             simulations.add(new SingleDatasetSimulation(suppliedData));
         } else {
-            for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
+            for (SimulationSpec simulation : getSelectedSimulationsSpecs())
+                simulations.add(simulation.getSimulationImpl());
         }
 
         Algorithms algorithms = new Algorithms();
-        for (AlgorithmSpec algorithm : this.selectedAlgorithms) algorithms.add(algorithm.getAlgorithmImpl());
+        for (AlgorithmSpec algorithm : getSelectedAlgorithmSpecs()) algorithms.add(algorithm.getAlgorithmImpl());
 
         Comparison comparison = new Comparison();
         comparison.setSaveData(parameters.getBoolean("algcomparisonSaveData"));
@@ -469,6 +468,22 @@ public class GridSearchModel implements SessionModel {
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
     }
 
+    private LinkedList<AlgorithmSpec> getSelectedAlgorithmSpecs() {
+        if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedAlgorithms", new LinkedList<AlgorithmSpec>());
+        }
+
+        return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
+    }
+
+    private LinkedList<SimulationSpec> getSelectedSimulationsSpecs() {
+        if (!(parameters.get("algcomparison.selectedSimulations") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedSimulations", new LinkedList<SimulationSpec>());
+        }
+
+        return (LinkedList<SimulationSpec>) parameters.get("algcomparison.selectedSimulations");
+    }
+
     /**
      * A list of possible simulations.
      */
@@ -506,7 +521,7 @@ public class GridSearchModel implements SessionModel {
      */
     public void addSimulationSpec(SimulationSpec simulation) {
         initializeIfNull();
-        selectedSimulations.add(simulation);
+        getSelectedSimulationsSpecs().add(simulation);
     }
 
     /**
@@ -514,8 +529,8 @@ public class GridSearchModel implements SessionModel {
      */
     public void removeLastSimulation() {
         initializeIfNull();
-        if (!selectedSimulations.isEmpty()) {
-            selectedSimulations.removeLast();
+        if (!getSelectedSimulationsSpecs().isEmpty()) {
+            getSelectedSimulationsSpecs().removeLast();
         }
     }
 
@@ -526,7 +541,7 @@ public class GridSearchModel implements SessionModel {
      */
     public void addAlgorithm(AlgorithmSpec algorithm) {
         initializeIfNull();
-        selectedAlgorithms.add(algorithm);
+        getSelectedAlgorithmSpecs().add(algorithm);
     }
 
     /**
@@ -534,8 +549,8 @@ public class GridSearchModel implements SessionModel {
      */
     public void removeLastAlgorithm() {
         initializeIfNull();
-        if (!selectedAlgorithms.isEmpty()) {
-            selectedAlgorithms.removeLast();
+        if (!getSelectedSimulationsSpecs().isEmpty()) {
+            getSelectedAlgorithmSpecs().removeLast();
         }
     }
 
@@ -545,10 +560,10 @@ public class GridSearchModel implements SessionModel {
      * @param tableColumn The table column to add.
      */
     public void addTableColumn(MyTableColumn tableColumn) {
-        if (selectedTableColumns.contains(tableColumn)) return;
+        if (getSelectedTableColumnsPrivate().contains(tableColumn)) return;
         initializeIfNull();
-        selectedTableColumns.add(tableColumn);
-        GridSearchModel.sortTableColumns(selectedTableColumns);
+        getSelectedTableColumnsPrivate().add(tableColumn);
+        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
     }
 
     /**
@@ -556,8 +571,8 @@ public class GridSearchModel implements SessionModel {
      */
     public void removeLastTableColumn() {
         initializeIfNull();
-        if (!selectedTableColumns.isEmpty()) {
-            selectedTableColumns.removeLast();
+        if (!getSelectedTableColumnsPrivate().isEmpty()) {
+            getSelectedTableColumnsPrivate().removeLast();
         }
     }
 
@@ -608,7 +623,8 @@ public class GridSearchModel implements SessionModel {
         if (suppliedData != null) {
             simulations.add(new SingleDatasetSimulation(suppliedData));
         } else {
-            for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
+            for (SimulationSpec simulation : getSelectedSimulationsSpecs())
+                simulations.add(simulation.getSimulationImpl());
         }
         return simulations;
     }
@@ -617,12 +633,24 @@ public class GridSearchModel implements SessionModel {
      * A private instance variable that holds a list of selected Algorithm objects.
      */
     public List<AlgorithmSpec> getSelectedAlgorithms() {
-        return selectedAlgorithms;
+        if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedAlgorithms", new LinkedList<AlgorithmSpec>());
+        }
+
+        return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
     public List<MyTableColumn> getSelectedTableColumns() {
-        GridSearchModel.sortTableColumns(selectedTableColumns);
-        return new ArrayList<>(selectedTableColumns);
+        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
+        return new ArrayList<>(getSelectedTableColumnsPrivate());
+    }
+
+    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
+        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
+        }
+
+        return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
     }
 
     /**
@@ -641,30 +669,16 @@ public class GridSearchModel implements SessionModel {
      * the initializeNames() method to initialize them.
      */
     private void initializeIfNull() {
-        if (selectedSimulations == null || selectedAlgorithms == null || selectedTableColumns == null
-                || selectedParameters == null) {
-            initializeSimulationsEtc();
-        }
-
-        if (this.selectedParameters == null) {
-            this.selectedParameters = new LinkedList<>();
-        }
-
         initializeClasses();
         initializeNames();
     }
 
-    /**
-     * Initializes the necessary variables for simulations, algorithms, statistics, and parameters.
-     * <p>
-     * This method initializes the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
-     * variables as new LinkedLists if they are null.
-     */
-    private void initializeSimulationsEtc() {
-        this.selectedSimulations = new LinkedList<>();
-        this.selectedAlgorithms = new LinkedList<>();
-        this.selectedTableColumns = new LinkedList<>();
-        this.selectedParameters = new LinkedList<>();
+    private List<String> getSelectedParameters() {
+        if (!(parameters.get("algcomparison.selectedParameters") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedParameters", new LinkedList<String>());
+        }
+
+        return (LinkedList<String>) parameters.get("algcomparison.selectedParameters");
     }
 
     /**
@@ -798,7 +812,7 @@ public class GridSearchModel implements SessionModel {
     }
 
     public Statistics getSelectedStatistics() {
-        List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
+        LinkedList<MyTableColumn> selectedTableColumns = getSelectedTableColumnsPrivate();
 
         Statistics selectedStatistics = new Statistics();
         List<Statistic> lastStatisticsUsed = new ArrayList<>();
@@ -1015,6 +1029,28 @@ public class GridSearchModel implements SessionModel {
         this.lastVerboseOutputText = lastVerboseOutputText;
     }
 
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
     /**
      * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
      * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
@@ -1223,28 +1259,6 @@ public class GridSearchModel implements SessionModel {
             return name;
         }
 
-    }
-
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
-            throw e;
-        }
     }
 }
 

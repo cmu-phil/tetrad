@@ -165,6 +165,14 @@ public class GridSearchEditor extends JPanel {
 
         comparisonTextArea.setText(model.getLastComparisonText());
         verboseOutputTextArea.setText(model.getLastVerboseOutputText());
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                scrollToWord(comparisonTextArea, comparisonScroll, "AVERAGE VALUE");
+            } catch (BadLocationException ex) {
+                System.out.println("Scrolling operation failed.");
+            }
+        });
     }
 
     /**
