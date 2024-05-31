@@ -30,7 +30,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 
 /**
- * A typesafe enumeration of the types of endpoints that are permitted in Tetrad-style graphs: null (-), arrow (-&gt;),
+ * A enumeration of the endpoint types that are permitted in Tetrad-style graphs: null (-), arrow (-&gt;),
  * circle (-o), start (-*), and null (no endpoint).
  *
  * @author josephramsey

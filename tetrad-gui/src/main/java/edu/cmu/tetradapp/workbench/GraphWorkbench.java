@@ -186,13 +186,19 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode;
 
-        if (modelNode.getNodeType() == NodeType.MEASURED) {
+        NodeType nodeType = modelNode.getNodeType();
+
+        if (nodeType == null) {
+            throw new NullPointerException("Node type must not be null.");
+        }
+
+        if (nodeType == NodeType.MEASURED) {
             GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
             nodeMeasured.setEditExitingMeasuredVarsAllowed(isEditExistingMeasuredVarsAllowed());
             displayNode = nodeMeasured;
-        } else if (modelNode.getNodeType() == NodeType.LATENT) {
+        } else if (nodeType == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
-        } else if (modelNode.getNodeType() == NodeType.ERROR) {
+        } else if (nodeType == NodeType.ERROR) {
             displayNode = new GraphNodeError(modelNode);
         } else {
             throw new IllegalStateException();

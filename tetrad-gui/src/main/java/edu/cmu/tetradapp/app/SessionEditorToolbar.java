@@ -99,6 +99,8 @@ final class SessionEditorToolbar extends JPanel {
                 new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
                 new ButtonInfo("Compare", "Compare", "compare",
                         "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("GridSearch", "Grid Search", "search",
+                        "<html>Add a node to do a grid search.</html>"),
                 new ButtonInfo("PM", "Parametric Model", "pm",
                         "<html>Add a node for a parametric model.</html>"),
                 new ButtonInfo("IM", "Instantiated Model", "im",

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.beans.PropertyChangeListener;
@@ -205,6 +206,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * @return a {@link edu.cmu.tetrad.graph.NodeType} object
      */
     public NodeType getNodeType() {
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type cannot be null.");
+        }
+
         return this.nodeType;
     }
 
@@ -212,6 +217,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * {@inheritDoc}
      */
     public void setNodeType(NodeType nodeType) {
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type cannot be null.");
+        }
+
         this.nodeType = nodeType;
     }
 

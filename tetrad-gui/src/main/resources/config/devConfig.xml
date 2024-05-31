@@ -1165,16 +1165,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
-            <model name="Grid Search" acronym="Grid Search"
-                   help="indep_facts" category="Independence Facts Comparison">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.GridSearchModel
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>
-            </model>
+<!--            <model name="Grid Search" acronym="Grid Search"-->
+<!--                   help="indep_facts" category="Independence Facts Comparison">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="comparison" description="Comparison" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.GridSearchModel-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>-->
+<!--            </model>-->
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>
@@ -1212,6 +1212,35 @@
                  <br> (1) Simulation and Search
                  <br> (2) Several boxes containing graphs.
                  <br> (3) Several boxes containing independence tests.
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    <session-node id="GridSearch">
+        <models>
+            <model name="Grid Search" acronym="Grid Search"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GridSearchModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>
+            </model>
+        </models>
+        <display-component image="graphIcon.gif"/>
+        <model-chooser title="Types of Comparisons">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) No inputs
+                 <br> (2) Graph
+                 <br> (3) Data.
+                 <br> Knowledge may also be given as a parent.
                  <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
