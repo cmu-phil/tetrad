@@ -113,9 +113,9 @@ public class TestCheckMarkov {
 
     @Test
     public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
-         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+//         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
 //       TODO VBC: Also check different dense graph.
-//        Graph trueGraph = RandomGraph.randomDag(20, 0, 40, 100, 100, 100, false);
+        Graph trueGraph = RandomGraph.randomDag(20, 0, 40, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
@@ -133,7 +133,7 @@ public class TestCheckMarkov {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
 //        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.3);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.5);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
