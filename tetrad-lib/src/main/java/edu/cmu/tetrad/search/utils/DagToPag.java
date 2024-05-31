@@ -217,7 +217,7 @@ public final class DagToPag {
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
-        measured.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
 
         Graph graph = new EdgeListGraph(measured);
 

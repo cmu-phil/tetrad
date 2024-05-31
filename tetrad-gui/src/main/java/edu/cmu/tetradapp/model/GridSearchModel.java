@@ -820,9 +820,21 @@ public class GridSearchModel implements SessionModel {
         for (MyTableColumn column : selectedTableColumns) {
             if (column.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 try {
-                    Statistic statistic = column.getStatistic().getConstructor().newInstance();
-                    selectedStatistics.add(statistic);
-                    lastStatisticsUsed.add(statistic);
+                    Constructor<?>[] constructors = column.getStatistic().getDeclaredConstructors();
+
+                    boolean hasNoArgConstructor = false;
+                    for (Constructor<?> constructor : constructors) {
+                        if (constructor.getParameterCount() == 0) {
+                            hasNoArgConstructor = true;
+                            break;
+                        }
+                    }
+
+                    if (hasNoArgConstructor) {
+                        Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                        selectedStatistics.add(statistic);
+                        lastStatisticsUsed.add(statistic);
+                    }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException ex) {
                     System.out.println("Error creating statistic: " + ex.getMessage());
@@ -903,9 +915,21 @@ public class GridSearchModel implements SessionModel {
 
         for (Class<? extends Statistic> statisticClass : statisticClasses) {
             try {
-                Statistic statistic = statisticClass.getConstructor().newInstance();
-                GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
-                allTableColumns.add(column);
+                Constructor<?>[] constructors = statisticClass.getDeclaredConstructors();
+
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> constructor : constructors) {
+                    if (constructor.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic statistic = statisticClass.getConstructor().newInstance();
+                    GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                    allTableColumns.add(column);
+                }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
                 System.out.println("Error creating statistic: " + ex.getMessage());
