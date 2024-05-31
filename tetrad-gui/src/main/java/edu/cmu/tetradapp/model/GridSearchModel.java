@@ -167,6 +167,15 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Initializes a new GridSearchModel with the given KnowledgeBoxModel and Parameters.
+     *
+     * @param knowledge  The KnowledgeBoxModel containing the knowledge to be used for grid search.
+     *                   Must not be null.
+     * @param parameters The Parameters specifying the grid search parameters.
+     *                   Must not be null.
+     * @throws IllegalArgumentException If either knowledge or parameters are null.
+     */
     public GridSearchModel(KnowledgeBoxModel knowledge, Parameters parameters) {
         if (knowledge == null) {
             throw new IllegalArgumentException("Knowledge must not be null.");
@@ -181,6 +190,13 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Initializes a new instance of the GridSearchModel class.
+     *
+     * @param graphSource The graph source to be used for the model.
+     * @param parameters  The parameters to be used for the model.
+     * @throws IllegalArgumentException if graphSource or parameters is null.
+     */
     public GridSearchModel(GraphSource graphSource, Parameters parameters) {
         if (graphSource == null) {
             throw new IllegalArgumentException("Graph source must not be null.");
@@ -196,6 +212,15 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Constructs a grid search model with the given graph source, knowledge box model, and parameters.
+     *
+     * @param graphSource The source of the graph.
+     * @param knowledge   The knowledge box model.
+     * @param parameters  The parameters for the grid search model.
+     *
+     * @throws IllegalArgumentException if graphSource, knowledge, or parameters is null.
+     */
     public GridSearchModel(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) {
         if (graphSource == null) {
             throw new IllegalArgumentException("Graph source must not be null.");
@@ -215,6 +240,14 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Constructs a new GridSearchModel instance.
+     *
+     * @param dataWrapper the data wrapper containing the selected data model
+     * @param parameters the parameters to use for grid search
+     *
+     * @throws IllegalArgumentException if either dataWrapper or parameters is null
+     */
     public GridSearchModel(DataWrapper dataWrapper, Parameters parameters) {
         if (dataWrapper == null) {
             throw new IllegalArgumentException("Data wrapper must not be null.");
@@ -230,6 +263,14 @@ public class GridSearchModel implements SessionModel {
         initializeIfNull();
     }
 
+    /**
+     * Constructs a new instance of the GridSearchModel.
+     *
+     * @param dataWrapper  the data wrapper used for selecting the data model (must not be null)
+     * @param knowledge  the knowledge box model (must not be null)
+     * @param parameters  the parameters for the model (must not be null)
+     * @throws IllegalArgumentException if any of the parameters is null
+     */
     public GridSearchModel(DataWrapper dataWrapper, KnowledgeBoxModel knowledge, Parameters parameters) {
         if (dataWrapper == null) {
             throw new IllegalArgumentException("Data wrapper must not be null.");
@@ -363,14 +404,6 @@ public class GridSearchModel implements SessionModel {
         }
 
         return paramNamesSet;
-    }
-
-    private static void setWeight(Statistics selectedStatistics, String abbr, double weight) {
-        for (Statistic statistic : selectedStatistics.getStatistics()) {
-            if (statistic.getAbbreviation().equals(abbr)) {
-                selectedStatistics.setWeight(abbr, weight);
-            }
-        }
     }
 
     /**
@@ -574,11 +607,10 @@ public class GridSearchModel implements SessionModel {
         Simulations simulations = new Simulations();
         if (suppliedData != null) {
             simulations.add(new SingleDatasetSimulation(suppliedData));
-            return simulations;
         } else {
             for (SimulationSpec simulation : this.selectedSimulations) simulations.add(simulation.getSimulationImpl());
-            return simulations;
         }
+        return simulations;
     }
 
     /**
@@ -706,7 +738,7 @@ public class GridSearchModel implements SessionModel {
     /**
      * Retrieves the abbreviations of statistics from a list of implementation classes.
      *
-     * @param algorithmClasses The list of implementation classes of statistics.
+     * @param algorithmClasses The list of implementation classes for statistics.
      * @return The abbreviations of the statistics.
      */
     private List<String> getStatisticsNamesFromImplementations(List<Class<? extends Statistic>> algorithmClasses) {
@@ -743,7 +775,7 @@ public class GridSearchModel implements SessionModel {
     /**
      * Retrieves the names of simulations from a list of implementation classes.
      *
-     * @param algorithmClasses The list of implementation classes of simulations.
+     * @param algorithmClasses The list of implementation classes for simulations.
      * @return The names of the simulations.
      */
     private List<String> getSimulationNamesFromImplementations(List<Class<? extends Simulation>> algorithmClasses) {
@@ -981,14 +1013,6 @@ public class GridSearchModel implements SessionModel {
 
     public void setLastVerboseOutputText(String lastVerboseOutputText) {
         this.lastVerboseOutputText = lastVerboseOutputText;
-    }
-
-    /**
-     * If a dataset (such as an empirical dataset) is supplied, it will be used in place of simulated dataset
-     * for analysis. In this case, only statistics not requiring a true graph can be used.
-     */
-    public DataSet getSuppliedData() {
-        return suppliedData;
     }
 
     /**
