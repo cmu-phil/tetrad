@@ -51,7 +51,7 @@ public class ShiftSearch {
     private Knowledge knowledge = new Knowledge();
     private int c = 4;
     private int maxNumShifts;
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     private boolean scheduleStop;
     private boolean forwardSearch;
     private boolean precomputeCovariances = false;

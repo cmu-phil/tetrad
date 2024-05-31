@@ -75,7 +75,7 @@ public abstract class WatchedProcess {
      */
     public abstract void watch() throws InterruptedException;
 
-    private void startLongRunningThread() {
+    private synchronized void startLongRunningThread() {
         longRunningThread = new Thread(() -> {
             try {
                 watch();

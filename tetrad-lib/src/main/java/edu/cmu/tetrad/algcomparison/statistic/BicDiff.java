@@ -11,7 +11,7 @@ import java.io.Serial;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
- * Difference between the true and estiamted BIC scores.  The BIC is calculated as 2L - k ln N, so "higher is better."
+ * Difference between the true and estimated BIC scores.  The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
  * @version $Id: $Id

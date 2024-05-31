@@ -56,7 +56,7 @@ public class RfciBsc implements IGraphSearch {
      */
     private boolean verbose;
     // Where printed output is sent.
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
 
     private boolean thresholdNoRandomDataSearch;
     private double cutoffDataSearch = 0.5;

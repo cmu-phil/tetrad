@@ -28,6 +28,9 @@ import nu.xom.Element;
 import nu.xom.ParsingException;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -287,6 +290,117 @@ public final class TestGraph {
 
         graph.removeNode(x2);
 
+    }
+
+    /**
+     * Tests the adjustment set method.
+     */
+    @Test
+    public void testAdjustmentSet1() {
+        Graph graph = new EdgeListGraph();
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
+
+        graph.addNode(x1);
+        graph.addNode(x2);
+        graph.addNode(x3);
+        graph.addNode(x4);
+        graph.addNode(x5);
+
+        graph.addDirectedEdge(x1, x3);
+        graph.addDirectedEdge(x2, x1);
+        graph.addDirectedEdge(x4, x2);
+        graph.addDirectedEdge(x4, x3);
+
+        try {
+            List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, 4, 2, 1, 6);
+            System.out.println(adjustmentSets);
+        } catch (Exception e) {
+            System.out.println("No adjustment set: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Tests the adjustment set method.
+     */
+    @Test
+    public void testAdjustmentSet2() {
+        RandomUtil.getInstance().setSeed(3848234422L);
+
+        Graph graph = RandomGraph.randomGraph(20, 0, 80, 30, 15, 15, false);
+
+        System.out.println(graph);
+
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                Node x = graph.getNodes().get(i);
+                Node y = graph.getNodes().get(j);
+
+                try {
+                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 8, 2, 1, 6);
+                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 8, 2, 2, 6);
+
+                    System.out.println("x " + x + " y " + y);
+                    System.out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
+                    System.out.println("    AdjustmentSets near target: " + adjustmentSetsNearTarget);
+                } catch (Exception e) {
+                    System.out.println("No adjustment set: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testAdjustmentSet3() {
+        File file = new File("/Users/josephramsey/Downloads/graph6 (1).txt");
+
+        if (!file.exists()) return;
+
+        Graph graph = GraphSaveLoadUtils.loadGraphTxt(file);
+        File _file = new File("/Users/josephramsey/Downloads/adjustment_mike_out.txt");
+
+        try (PrintWriter out = new PrintWriter(_file)) {
+            long start = System.currentTimeMillis();
+
+            out.println(new Date());
+            out.println();
+            out.println(graph);
+
+            List<Node> graphNodes = graph.getNodes();
+
+            for (int i = 0; i < graphNodes.size(); i++) {
+                for (int j = 0; j < graphNodes.size(); j++) {
+                    Node x = graph.getNodes().get(i);
+                    Node y = graph.getNodes().get(j);
+
+                    List<Set<Node>> adjustmentSetsNearSource = new ArrayList<>();
+                    try {
+                        adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, 4, 4, 1, 8);
+                    } catch (Exception e) {
+                        System.out.println("No adjustment set new source: " + e.getMessage());
+                    }
+                    List<Set<Node>> adjustmentSetsNearTarget = new ArrayList<>();
+                    try {
+                        adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, 4, 4, 2, 8);
+                    } catch (Exception e) {
+                        System.out.println("No adjustment set new target: " + e.getMessage());
+                    }
+
+                    out.println("source = " + x + " target = " + y);
+                    out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
+                    out.println("    AdjustmentSets near target: " + adjustmentSetsNearTarget);
+                }
+            }
+
+            long stop = System.currentTimeMillis();
+            out.println("Time: " + (stop - start) / 1000.0 + " seconds");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

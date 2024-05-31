@@ -217,7 +217,7 @@ public final class DagToPag {
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
-        measured.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
 
         Graph graph = new EdgeListGraph(measured);
 
@@ -279,8 +279,10 @@ public final class DagToPag {
                             System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
 
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                            graph.setEndpoint(a, b, Endpoint.ARROW);
+                            graph.setEndpoint(c, b, Endpoint.ARROW);
+                        }
                     }
                 }
             }

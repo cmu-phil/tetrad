@@ -24,10 +24,13 @@ package edu.cmu.tetrad.sem;
 //import cern.colt.matrix.DoubleMatrix2D;
 
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 
 /**
  * <p>Maps a parameter to the matrix element where its value is stored in the
@@ -171,21 +174,26 @@ public class Mapping implements TetradSerializable {
                "[" + this.i + "][" + this.j + "]>";
     }
 
-    /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
-     *
-     * @param s The object input stream.
-     * @throws IOException            If any.
-     * @throws ClassNotFoundException If any.
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
     }
 }
 

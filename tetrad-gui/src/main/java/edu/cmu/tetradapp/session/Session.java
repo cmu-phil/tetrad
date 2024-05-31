@@ -402,11 +402,6 @@ public final class Session implements TetradSerializable {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.name == null) {
-            throw new NullPointerException();
-        }
-
         this.sessionChanged = false;
         this.newSession = false;
     }
@@ -471,6 +466,8 @@ public final class Session implements TetradSerializable {
             getSessionSupport().fireSessionEvent(event, false);
         }
     }
+
+
 }
 
 

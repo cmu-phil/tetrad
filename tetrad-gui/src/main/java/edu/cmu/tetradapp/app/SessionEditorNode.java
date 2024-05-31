@@ -260,14 +260,19 @@ public final class SessionEditorNode extends DisplayNode {
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
 
-        class MyWatchedProcess extends WatchedProcess {
-            public void watch() {
-                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-                launchEditorVisit();
-            }
-        }
+        SwingUtilities.invokeLater(() -> {
+            TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+            launchEditorVisit();
+        });
 
-        new MyWatchedProcess();
+//        class MyWatchedProcess extends WatchedProcess {
+//            public void watch() {
+//                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+//                launchEditorVisit();
+//            }
+//        }
+//
+//        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -816,42 +821,67 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(SessionNode sessionNode) {
-        class MyWatchedProcess extends WatchedProcess {
-            @Override
-            public void watch() {
-                final Class c = SessionEditorWorkbench.class;
-                Container container = SwingUtilities.getAncestorOfClass(c,
-                        SessionEditorNode.this);
-                SessionEditorWorkbench workbench
-                        = (SessionEditorWorkbench) container;
+        SwingUtilities.invokeLater(() -> {
+            final Class c = SessionEditorWorkbench.class;
+            Container container = SwingUtilities.getAncestorOfClass(c,
+                    SessionEditorNode.this);
+            SessionEditorWorkbench workbench
+                    = (SessionEditorWorkbench) container;
 
-                System.out.println("Executing " + sessionNode);
+            System.out.println("Executing " + sessionNode);
 
-                workbench.getSimulationStudy().execute(sessionNode, true);
-            }
-        }
+            workbench.getSimulationStudy().execute(sessionNode, true);
+        });
 
-        new MyWatchedProcess();
+//        class MyWatchedProcess extends WatchedProcess {
+//            @Override
+//            public void watch() {
+//                final Class c = SessionEditorWorkbench.class;
+//                Container container = SwingUtilities.getAncestorOfClass(c,
+//                        SessionEditorNode.this);
+//                SessionEditorWorkbench workbench
+//                        = (SessionEditorWorkbench) container;
+//
+//                System.out.println("Executing " + sessionNode);
+//
+//                workbench.getSimulationStudy().execute(sessionNode, true);
+//            }
+//        }
+
+//        new MyWatchedProcess();
     }
 
     private void createDescendantModels() {
-        class MyWatchedProcess extends WatchedProcess {
-            @Override
-            public void watch() {
-                final Class clazz = SessionEditorWorkbench.class;
-                Container container = SwingUtilities.getAncestorOfClass(clazz,
-                        SessionEditorNode.this);
-                SessionEditorWorkbench workbench
-                        = (SessionEditorWorkbench) container;
+        SwingUtilities.invokeLater(() -> {
+            final Class clazz = SessionEditorWorkbench.class;
+            Container container = SwingUtilities.getAncestorOfClass(clazz,
+                    SessionEditorNode.this);
+            SessionEditorWorkbench workbench
+                    = (SessionEditorWorkbench) container;
 
-                if (workbench != null) {
-                    workbench.getSimulationStudy().createDescendantModels(
-                            getSessionNode(), true);
-                }
+            if (workbench != null) {
+                workbench.getSimulationStudy().createDescendantModels(
+                        getSessionNode(), true);
             }
-        }
-
-        new MyWatchedProcess();
+        });
+//
+//        class MyWatchedProcess extends WatchedProcess {
+//            @Override
+//            public void watch() {
+//                final Class clazz = SessionEditorWorkbench.class;
+//                Container container = SwingUtilities.getAncestorOfClass(clazz,
+//                        SessionEditorNode.this);
+//                SessionEditorWorkbench workbench
+//                        = (SessionEditorWorkbench) container;
+//
+//                if (workbench != null) {
+//                    workbench.getSimulationStudy().createDescendantModels(
+//                            getSessionNode(), true);
+//                }
+//            }
+//        }
+//
+//        new MyWatchedProcess();
     }
 
     /**

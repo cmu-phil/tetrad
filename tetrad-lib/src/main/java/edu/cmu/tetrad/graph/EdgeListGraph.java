@@ -684,6 +684,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * {@inheritDoc}
      * <p>
+     *     (
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     @Override
@@ -992,7 +993,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean removeEdge(Edge edge) {
-        synchronized (this.edgeLists) {
+        Map<Node, Set<Edge>> edgeLists = this.edgeLists;
+
+        synchronized (edgeLists) {
             if (!this.edgesSet.contains(edge)) {
                 return false;
             }
@@ -1222,18 +1225,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.nodes == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.edgesSet == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.edgeLists == null) {
-            throw new NullPointerException();
-        }
     }
 
     /**

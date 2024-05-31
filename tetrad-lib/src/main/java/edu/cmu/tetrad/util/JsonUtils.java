@@ -283,7 +283,8 @@ public class JsonUtils {
         String name = jObj.getString("name");
 
         GraphNode graphNode = new GraphNode(name);
-        graphNode.setNodeType(NodeType.TYPES[ordinal]);
+        NodeType[] types = NodeType.values();
+        graphNode.setNodeType(types[ordinal]);
         graphNode.setCenter(centerX, centerY);
 
         return graphNode;

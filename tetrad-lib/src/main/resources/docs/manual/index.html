@@ -4272,7 +4272,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         may also be specified, though this is by default for these scores equal
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
-    </p>
+   L </p>
     </div>
 
     <h3>MAG SEM BIC Test</h3>
@@ -4707,6 +4707,25 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="minSampleSizePerCell">minSampleSizePerCell</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell/span></li>
+            <li>Long Description: <span
+                    id="minSampleSizePerCell_long_desc">For conditional Gaussian, the minimum sample size per cell</span>
+            </li>
+            <li>Default Value: <span
+                    id="minSampleSizePerCell_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="minSampleSizePerCell_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="minSampleSizePerCell_upper_bound">100000000</span></li>
+            <li>Value Type:
+                <span id="minSampleSizePerCell_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="removeEffectNodes">removeEffectNodes</h3>
         <ul
                 class="parameter_description_list">
@@ -4862,25 +4881,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="wThreshold_upper_bound">Infinity</span></li>
             <li>Value Type:
                 <span id="wThreshold_value_type">Double</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="thresholdLvLite">thresholdLvLite</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="thresholdLvLite_short_desc">Score threshold for judging model score equality</span></li>
-            <li>Long Description: <span
-                    id="thresholdLvLite_long_desc">Score threshold for judging model score equality</span>
-            </li>
-            <li>Default Value: <span
-                    id="thresholdLvLite_default_value">0.01</span></li>
-            <li>Lower
-                Bound: <span id="thresholdLvLite_lower_bound">0</span></li>
-            <li>Upper Bound: <span
-                    id="thresholdLvLite_upper_bound">Infinity</span></li>
-            <li>Value Type:
-                <span id="thresholdLvLite_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5198,7 +5198,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     </span>
             </li>
             <li>Default Value: <span
-                    id="resolveAlmostCyclicPaths_default_value">true</span></li>
+                    id="resolveAlmostCyclicPaths_default_value">false</span></li>
             <li>Lower
                 Bound: <span id="resolveAlmostCyclicPaths_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5851,10 +5851,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="faskDelta">faskDelta</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="faskDelta_short_desc"> For FASK v1 and v2, the bias for orienting
+                    id="faskDelta_short_desc"> For FASK v1, the bias for orienting
         with negative coefficients ('0' means no bias.)</span></li>
-            <li>Long
-                Description: <span id="faskDelta_long_desc">The bias procedure for v1
+            <li>Long Description: <span id="faskDelta_long_desc">The bias procedure for v1
         is given in the published description.</span></li>
             <li>Default
                 Value: <span id="faskDelta_default_value">0.0</span></li>
@@ -6430,6 +6429,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="usePseudoinverse_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="allowTucks">allowTucks</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="allowTucks_short_desc">
+                    Yes tucks should be allowed in the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="allowTucks_long_desc">
+                    Allowing tucks can sometimes lead to lower arrowhead accuracies,
+                    even they are theoretically correct.
+        </span></li>
+            <li>Default Value: <span
+                    id="allowTucks_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="allowTucks_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="allowTucks_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="allowTucks_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -9408,6 +9432,119 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="include_structure_model_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description"
+            id="pathsMaxNumSets">pathsMaxNumSets</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxNumSets_short_desc">
+                The maximum number of adjustment sets to output
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxNumSets_long_desc">
+                There may be too many legal adjustments to sets to output; this places
+                a bound on how many to output. These will be listed in order of
+                increasing size.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxNumSets_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxNumSets_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxNumSets_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxNumSets_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxDistanceFromEndpoint">pathsMaxDistanceFromEndpoint</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxDistanceFromEndpoint_short_desc">
+                The maximum distance of an allowable node from the endpoint of a path
+                for adjustment
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxDistanceFromEndpoint_long_desc">
+                In order to give guidance to which adjustment sets to report, this
+                parameter lets one give a maximum distance from the endpoint of a
+                path for a node to be included in an adjustment set.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxDistanceFromEndpoint_default_value">3</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxDistanceFromEndpoint_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxDistanceFromEndpoint_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxDistanceFromEndpoint_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsNearWhichEndpoint">pathsNearWhichEndpoint</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsNearWhichEndpoint_short_desc">
+                1 = near source, 2 = near target, 3 = near either
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsNearWhichEndpoint_long_desc">
+                Adjustment sets may be found near the source, near the target, or
+                near either.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsNearWhichEndpoint_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="pathsNearWhichEndpoint_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="pathsNearWhichEndpoint_upper_bound">3</span></li>
+            <li>Value Type:
+                <span id="pathsNearWhichEndpoint_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxLengthAdjustment">pathsMaxLengthAdjustment</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxLengthAdjustment_short_desc">
+                The maximum length of a backdoor path to consider for adjustment.
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxLengthAdjustment_long_desc">
+                The maximum length of a backdoor path to consider for finding an
+                adjustment set. Amenable paths of any length are considered.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxLengthAdjustment_default_value">8</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxLengthAdjustment_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxLengthAdjustment_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxLengthAdjustment_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxLength">pathsMaxLength</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxLength_short_desc">
+                The maximum length of a path to report
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxLength_long_desc">
+                Since paths may be long, especially for large graphs, this parameter
+                allows one to limit the length of a path to report. It must be at least
+                2.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxLength_default_value">8</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxLength_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxLength_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxLength_value_type">Integer</span></li>
+        </ul>
     </div> <!-- End of search parameters -->
 
 

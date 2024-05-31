@@ -25,6 +25,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -1039,6 +1042,28 @@ public class StandardizedSemIm implements Simulator {
                    "\nCurrent value = " + this.coef +
                    "\nLow end of range = " + this.low +
                    "\nHigh end of range = " + this.high;
+        }
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
         }
     }
 }

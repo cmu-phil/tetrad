@@ -66,7 +66,7 @@ public final class LargeScaleSimulation {
     private double varHigh = 3.0;
     private double meanLow;
     private double meanHigh;
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     private int[] tierIndices;
     private boolean verbose;
     private long seed = new Date().getTime();

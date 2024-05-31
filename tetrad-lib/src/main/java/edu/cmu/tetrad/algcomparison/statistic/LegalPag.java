@@ -44,7 +44,6 @@ public class LegalPag implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(estGraph);
-        System.out.println(legalPag.getReason());
 
         if (legalPag.isLegalPag()) {
             return 1.0;

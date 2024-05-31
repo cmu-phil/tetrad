@@ -7,6 +7,9 @@ import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -430,19 +433,14 @@ public class Paths implements TetradSerializable {
             return;
         }
 
-        int witnessed = 0;
+        path.addLast(node1);
 
-        for (Node node : path) {
-            if (node == node1) {
-                witnessed++;
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (_path.size() > 1 && !paths.contains(_path)) {
+                paths.add(_path);
             }
         }
-
-        if (witnessed > 1) {
-            return;
-        }
-
-        path.addLast(node1);
 
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseDirected(node1, edge);
@@ -451,14 +449,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (path.contains(child)) {
-                continue;
-            }
-
-            if (child == node2) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(child);
-                paths.add(_path);
+            if (child != node2 && path.contains(child)) {
                 continue;
             }
 
@@ -482,24 +473,76 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
+    /**
+     * Finds amenable paths from the given source node to the given destination node with a maximum length.
+     *
+     * @param node1     the source node
+     * @param node2     the destination node
+     * @param maxLength the maximum length of the paths
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * nodes
+     */
+    public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
+        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+            Node a = path.get(0);
+            Node b = path.get(1);
+
+            if (!graph.getEdge(a, b).pointsTowards(b)) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
+
+    /**
+     * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
+     * These are semidirected paths that start with a visible edge out of node1.
+     *
+     * @param node1     the source node
+     * @param node2     the destination node
+     * @param maxLength the maximum length of the paths
+     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * nodes
+     */
+    public List<List<Node>> amenablePathsPag(Node node1, Node node2, int maxLength) {
+        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+            Node a = path.get(0);
+            Node b = path.get(1);
+
+            boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
+
+            if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
     private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
 
-        int witnessed = 0;
+        path.addLast(node1);
 
-        for (Node node : path) {
-            if (node == node1) {
-                witnessed++;
-            }
-        }
-
-        if (witnessed > 1) {
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
             return;
         }
 
-        path.addLast(node1);
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
+        }
 
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseSemiDirected(node1, edge);
@@ -508,10 +551,53 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (child == node2) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(child);
+            if (child != node2 && path.contains(child)) {
+                continue;
+            }
+
+            semidirectedPathsVisit(child, node2, path, paths, maxLength);
+        }
+
+        path.removeLast();
+    }
+
+    /**
+     * Finds all paths from node1 to node2 within a specified maximum length.
+     *
+     * @param node1     The starting node.
+     * @param node2     The target node.
+     * @param maxLength The maximum length of the paths.
+     * @return A list of paths, where each path is a list of nodes.
+     */
+    public List<List<Node>> allBlockablePaths(Node node1, Node node2, int maxLength) {
+        List<List<Node>> paths = new LinkedList<>();
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        return paths;
+    }
+
+    private void allBlockablePathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
+            return;
+        }
+
+        path.addLast(node1);
+
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
+        }
+
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
                 paths.add(_path);
+            }
+        }
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node child = Edges.traverse(node1, edge);
+
+            if (child == null) {
                 continue;
             }
 
@@ -519,7 +605,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            semidirectedPathsVisit(child, node2, path, paths, maxLength);
+            allPathsVisit(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
@@ -540,10 +626,22 @@ public class Paths implements TetradSerializable {
     }
 
     private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
+            return;
+        }
+
         path.addLast(node1);
 
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
             return;
+        }
+
+        if (node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -554,13 +652,6 @@ public class Paths implements TetradSerializable {
             }
 
             if (path.contains(child)) {
-                continue;
-            }
-
-            if (child == node2) {
-                List<Node> _path = new ArrayList<>(path);
-                _path.add(child);
-                paths.add(_path);
                 continue;
             }
 
@@ -585,11 +676,22 @@ public class Paths implements TetradSerializable {
     }
 
     private void allDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
+            return;
+        }
+
         path.addLast(node1);
 
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
-            path.removeLast();
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
             return;
+        }
+
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -600,13 +702,6 @@ public class Paths implements TetradSerializable {
             }
 
             if (path.contains(child)) {
-                continue;
-            }
-
-            if (child == node2) {
-                List<Node> _path = new ArrayList<>(path);
-                _path.add(child);
-                paths.add(_path);
                 continue;
             }
 
@@ -631,19 +726,23 @@ public class Paths implements TetradSerializable {
     }
 
     private void treks(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (path.size() > (maxLength == -1 ? 1000 : maxLength - 2)) {
-            return;
-        }
-
-        if (path.contains(node1)) {
-            return;
-        }
-
-        if (node1 == node2) {
+        if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
 
         path.addLast(node1);
+
+        Set<Node> __path = new HashSet<>(path);
+        if (__path.size() < path.size()) {
+            return;
+        }
+
+        if (path.size() > 1 && node1 == node2) {
+            LinkedList<Node> _path = new LinkedList<>(path);
+            if (!paths.contains(path)) {
+                paths.add(_path);
+            }
+        }
 
         for (Edge edge : graph.getEdges(node1)) {
             Node next = Edges.traverse(node1, edge);
@@ -666,13 +765,13 @@ public class Paths implements TetradSerializable {
                 }
             }
 
-            // Found a path.
-            if (next == node2 && !path.isEmpty()) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(next);
-                paths.add(_path);
-                continue;
-            }
+//            // Found a path.
+//            if (next == node2 && !path.isEmpty()) {
+//                LinkedList<Node> _path = new LinkedList<>(path);
+//                _path.add(next);
+//                paths.add(_path);
+//                continue;
+//            }
 
             // Nodes may only appear on the path once.
             if (path.contains(next)) {
@@ -742,7 +841,9 @@ public class Paths implements TetradSerializable {
             if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
-                paths.add(_path);
+                if (!paths.contains(path)) {
+                    paths.add(_path);
+                }
                 continue;
             }
 
@@ -1676,6 +1777,51 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Checks if the given path is an m-connecting path.
+     *
+     * @param path               The path to check.
+     * @param z                  The set of nodes to check reachability against.
+     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> z, boolean allowSelectionBias) {
+        Edge edge1, edge2;
+
+        edge2 = graph.getEdge(path.get(0), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+            // algorithm can eventually find any colliders along the path that may be implied.
+            // jdramsey 2024-04-14
+            if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                if (Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                } else if (Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), z)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Detemrmines whether x and y are d-connected given z.
      *
      * @param x                  a {@link Node} object
@@ -2190,6 +2336,191 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * An adjustment set for a pair of nodes &lt;source, target&gt; for a CPDAG is a set of nodes that blocks all paths
+     * from the source to the target that cannot contribute to a calculation for the total effect of the source on the
+     * target in any DAG in a CPDAG while not blocking any path from the source to the target that could be causal. In
+     * typical causal graphs, multiple adjustment sets may exist for a given pair of nodes. This method returns up to
+     * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt; fitting a certain description.
+     * <p>
+     * The description is as follows. We look for adjustment sets of varaibles that are close to either the source or
+     * the target (or either) in the graph. We take all possibly causal paths from the source to the target into account
+     * but only consider other paths up to a certain specified length. (This maximum length can be unlimited for small
+     * graphs.)
+     * <p>
+     * Within this description, we list adjustment sets in order or increasing size.
+     * <p>
+     * Hopefully, these parameters along with the size ordering can help to give guidance for the user to choose the
+     * best adjustment set for their purposes when multiple adjustment sets are possible.
+     * <p>
+     * This currently will only work for DAGs and CPDAGs.
+     *
+     * @param source                  The source node whose sets will be used for adjustment.
+     * @param target                  The target node whose sets will be adjusted to match the source node.
+     * @param maxNumSets              The maximum number of sets to be adjusted. If this value is less than or equal to
+     *                                0, all sets in the target node will be adjusted to match the source node.
+     * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
+     * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
+     *                                target, 3 = near either.
+     * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
+     *                                given, all paths will be considered.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
+     */
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
+                                          int nearWhichEndpoint, int maxPathLength) {
+        if (source == target) {
+            throw new IllegalArgumentException("Source and target nodes must be different.");
+        }
+
+        boolean mpdag = false;
+        boolean mag = false;
+        boolean pag = false;
+
+        if (graph.paths().isLegalMpdag()) {
+            mpdag = true;
+        } else if (graph.paths().isLegalMag()) {
+            mag = true;
+        } else if (!graph.paths().isLegalPag()) {
+            pag = true;
+        }
+
+        List<List<Node>> amenable = semidirectedPaths(source, target, -1);
+
+        // Remove any amenable path that does not start with a visible edge in the CPDAG case.
+        // (The PAG case will be handled later.)
+        for (List<Node> path : new ArrayList<>(amenable)) {
+            if (path.size() < 2) {
+                amenable.remove(path);
+            }
+
+            Node a = path.get(0);
+            Node b = path.get(1);
+            Edge e = graph.getEdge(a, b);
+
+            if (!e.pointsTowards(b)) {
+                amenable.remove(path);
+            }
+        }
+
+        if (amenable.isEmpty()) {
+            throw new IllegalArgumentException("No amenable paths found.");
+        }
+
+        List<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
+
+        if (mpdag || mag) {
+            backdoorPaths.removeIf(path -> path.size() < 2 ||
+                                           !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+        } else {
+            backdoorPaths.removeIf(path -> {
+                if (path.size() < 2) {
+                    return false;
+                }
+                Node x = path.get(0);
+                Node w = path.get(1);
+                Node y = target;
+                return !(graph.getEdge(x, w).pointsTowards(x)
+                         || Edges.isUndirectedEdge(graph.getEdge(x, w))
+                         || Edges.isBidirectedEdge(graph.getEdge(x, w))
+                            && (graph.paths().existsDirectedPath(w, x)
+                                || (graph.paths().existsDirectedPath(w, x)
+                                    && graph.paths().existsDirectedPath(w, y))));
+            });
+        }
+
+        List<Set<Node>> adjustmentSets = new ArrayList<>();
+        Set<Set<Node>> tried = new HashSet<>();
+
+        int i = 1;
+
+        while (i <= maxDistanceFromEndpoint) {
+            Set<Node> _nearEndpoints = new HashSet<>();
+
+            // Add nodes a distance of at most i from one end or the other of each trek, along the trek.
+            // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
+            // If i = 1, we would add a, b, d, and e to the list. And so on.
+            for (int j = 1; j <= i; j++) {
+                for (List<Node> trek : backdoorPaths) {
+                    if (j >= trek.size()) {
+                        continue;
+                    }
+
+                    if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
+                        Node e1 = trek.get(j);
+
+                        if (!(e1 == source || e1 == target)) {
+                            _nearEndpoints.add(e1);
+                        }
+                    }
+
+                    if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
+                        Node e2 = trek.get(trek.size() - 1 - j);
+
+                        if (!(e2 == source || e2 == target)) {
+                            _nearEndpoints.add(e2);
+                        }
+                    }
+                }
+            }
+
+            List<Node> nearEndpoints = new ArrayList<>(_nearEndpoints);
+
+            List<Set<Node>> possibleAdjustmentSets = new ArrayList<>();
+
+            // Now, using SublistGenerator, we generate all possible subsets of the nodes we just added.
+            SublistGenerator generator = new SublistGenerator(nearEndpoints.size(), nearEndpoints.size());
+            int[] choice;
+
+            while ((choice = generator.next()) != null) {
+                Set<Node> possibleAdjustmentSet = new HashSet<>();
+                for (int j : choice) {
+                    possibleAdjustmentSet.add(nearEndpoints.get(j));
+                }
+                possibleAdjustmentSets.add(possibleAdjustmentSet);
+            }
+
+            // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
+            // That is, we check if it blocks all backdoorPaths from source to target that are not semi-directed
+            // without blocking any backdoorPaths that are semi-directed.
+
+            ADJ:
+            for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
+                if (tried.contains(possibleAdjustmentSet)) {
+                    i++;
+                    continue;
+                }
+
+                tried.add(possibleAdjustmentSet);
+
+                for (List<Node> semi : amenable) {
+                    if (!isMConnectingPath(semi, possibleAdjustmentSet, !mpdag)) {
+                        i++;
+                        continue ADJ;
+                    }
+                }
+
+                for (List<Node> _backdoor : backdoorPaths) {
+                    if (isMConnectingPath(_backdoor, possibleAdjustmentSet, !mpdag)) {
+                        i++;
+                        continue ADJ;
+                    }
+                }
+
+                if (!adjustmentSets.contains(possibleAdjustmentSet)) {
+                    adjustmentSets.add(possibleAdjustmentSet);
+                }
+
+                if (adjustmentSets.size() >= maxNumSets) {
+                    return adjustmentSets;
+                }
+            }
+
+            i++;
+        }
+
+        return adjustmentSets;
+    }
+
+    /**
      * An algorithm to find all cliques in a graph.
      */
     public static class AllCliquesAlgorithm {
@@ -2271,6 +2602,28 @@ public class Paths implements TetradSerializable {
             Set<Integer> result = new HashSet<>(set);
             result.add(element);
             return result;
+        }
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                    + ", " + e.getMessage());
+            throw e;
         }
     }
 }

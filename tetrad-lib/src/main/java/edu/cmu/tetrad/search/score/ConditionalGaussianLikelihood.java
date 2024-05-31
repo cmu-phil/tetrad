@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
+import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -91,6 +92,10 @@ public class ConditionalGaussianLikelihood {
      * Discretize the parents
      */
     private boolean discretize;
+    /**
+     * Minimum sample size per cell.
+     */
+    private int minSampleSizePerCell = 4;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -275,24 +280,34 @@ public class ConditionalGaussianLikelihood {
         for (List<Integer> cell : cells) {
             int a = cell.size();
 
-            if (a == 0) continue;
+            if (a < minSampleSizePerCell) continue;
 
             if (!A.isEmpty()) {
                 c1 += a * multinomialLikelihood(a, rows.size());
             }
 
             if (!X.isEmpty()) {
-                try {
+                // Determinant will be zero if data are linearly dependent.
+                Matrix subsample = getSubsample(continuousCols, cell);
 
-                    // Determinant will be zero if data are linearly dependent.
-                    double gl = gaussianLikelihood(k, cov(getSubsample(continuousCols, cell)));
+                int nRows = subsample.getNumRows();
+                int nCols = subsample.getNumColumns();
 
-                    if (!Double.isNaN(gl)) {
-                        c2 += a * gl;
-                    }
-                } catch (Exception e) {
-                    // No contribution.
+                if (nRows < minSampleSizePerCell || nCols < 1) {
+                    continue;
                 }
+
+                if (nRows < nCols) {
+                    continue;
+                }
+
+                double gl = gaussianLikelihood(k, cov(subsample));
+
+                if (Double.isNaN(gl)) {
+                    continue;
+                }
+
+                c2 += a * gl;
             }
         }
 
@@ -309,7 +324,13 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, Matrix sigma) {
-        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
+        double det = sigma.det();
+
+        if (det == 0) {
+            return Double.NaN;
+        }
+
+        return -0.5 * log(abs(det)) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
 
     private Matrix cov(Matrix x) {
@@ -368,6 +389,15 @@ public class ConditionalGaussianLikelihood {
         }
 
         return cells;
+    }
+
+    /**
+     * Sets the minimum sample size per cell.
+     *
+     * @param minSampleSizePerCell The minimum sample size per cell.
+     */
+    public void setMinSampleSizePerCell(int minSampleSizePerCell) {
+        this.minSampleSizePerCell = minSampleSizePerCell;
     }
 
     /**

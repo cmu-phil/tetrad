@@ -65,9 +65,9 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestFges {
-    private final PrintStream out = System.out;
+    private final transient PrintStream out = System.out;
     boolean precomputeCovariances = true;
-    //    private OutputStream out =
+    //    private transient OutputStream out =
     private HashMap<Node, Integer> hashIndices;
 
     public static void main(String... args) {

@@ -67,7 +67,7 @@ public class GraphCard extends JPanel {
     /**
      * <p>Constructor for GraphCard.</p>
      *
-     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param algorithmRunner a {@link GeneralAlgorithmRunner} object
      */
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -124,7 +124,7 @@ public class GraphCard extends JPanel {
         JMenu graph = new JMenu("Graph");
 
         graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench));
+        graph.add(new PathsAction(this.workbench, algorithmRunner.getParameters()));
         graph.add(new UnderliningsAction(this.workbench));
         graph.addSeparator();
 
@@ -151,7 +151,8 @@ public class GraphCard extends JPanel {
     private JPanel createGraphPanel(Graph graph) {
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.setKnowledge(knowledge);
-        graphWorkbench.enableEditing(false);
+//        graphWorkbench.setEnableEditing(false);
+        graphWorkbench.setEnableEditing(true);
 
         // If the algorithm is a latent variable algorithm, then set the graph workbench to do PAG edge specialization markups.
         // This is to show the edge types in the graph. - jdramsey 2024/03/13

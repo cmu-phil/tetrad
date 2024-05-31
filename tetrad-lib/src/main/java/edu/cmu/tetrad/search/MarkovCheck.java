@@ -698,6 +698,16 @@ public class MarkovCheck {
     }
 
     /**
+     * Clears the results stored in the `resultsIndep` and `resultsDep` lists.
+     *
+     * @see List#clear()
+     */
+    public void clear() {
+        resultsIndep.clear();
+        resultsDep.clear();
+    }
+
+    /**
      * Generates all results, for both the Markov and dependency checks, for each node in the graph given the parents of
      * that node. These results are stored in the resultsIndep and resultsDep lists. This should be called before any of
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
@@ -709,8 +719,7 @@ public class MarkovCheck {
      */
     public void generateResults(boolean clear) {
         if (clear) {
-            resultsIndep.clear();
-            resultsDep.clear();
+            clear();
         }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
@@ -1246,6 +1255,7 @@ public class MarkovCheck {
                     List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
                 }
+
                 addResults(resultsIndep, resultsDep, fact, x, y, z);
 
                 return new Pair<>(resultsIndep, resultsDep);
@@ -1426,9 +1436,9 @@ public class MarkovCheck {
      */
     private List<IndependenceResult> getResultsLocal(boolean indep) {
         if (indep) {
-            return this.resultsIndep;
+            return new ArrayList<>(this.resultsIndep);
         } else {
-            return this.resultsDep;
+            return new ArrayList<>(this.resultsDep);
         }
     }
 
@@ -1503,6 +1513,38 @@ public class MarkovCheck {
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+    }
+
+    /**
+     * List of observers to be notified when changes are made to the model.
+     */
+    private final List<ModelObserver> observers = new ArrayList<>();
+
+    /**
+     * Adds a ModelObserver to the list of observers.
+     *
+     * @param observer the ModelObserver to be added
+     */
+    public void addObserver(ModelObserver observer) {
+        observers.add(observer);
+    }
+
+    /**
+     * Removes the specified observer from the list of observers.
+     *
+     * @param observer the observer to be removed
+     */
+    public void removeObserver(ModelObserver observer) {
+        observers.remove(observer);
+    }
+
+    /**
+     * Notifies all registered ModelObservers by invoking their update() method.
+     */
+    public void notifyObservers() {
+        for (ModelObserver observer : observers) {
+            observer.update();
+        }
     }
 
     /**

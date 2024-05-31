@@ -63,6 +63,10 @@ public class IdaCheckAvgSquaredDifference implements Statistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
+        if (!estGraph.paths().isLegalMpdag()) {
+            return Double.NaN;
+        }
+
         SemPm trueSemPm = new SemPm(trueGraph);
         SemIm trueSemIm = new SemEstimator((DataSet) dataModel, trueSemPm).estimate();
 

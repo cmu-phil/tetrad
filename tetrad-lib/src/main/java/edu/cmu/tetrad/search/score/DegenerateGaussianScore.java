@@ -55,6 +55,8 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
+    // The use pseudo inverse flag.
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a dataset.
@@ -135,6 +137,7 @@ public class DegenerateGaussianScore implements Score {
 
         RealMatrix D = new BlockRealMatrix(B_);
         this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
+        this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
     }
 
@@ -245,5 +248,14 @@ public class DegenerateGaussianScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Sets the flag to indicate whether to use pseudo inverse in the score calculations.
+     *
+     * @param usePseudoInverse True if pseudo inverse should be used, false otherwise.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 }

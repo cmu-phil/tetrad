@@ -61,7 +61,7 @@ public class RandomGraph {
     /**
      * Generates a random graph based on the given parameters.
      *
-     * @param numNodes             the number of nodes in the graph
+     * @param numMeasures             the number of nodes in the graph
      * @param numLatentConfounders the number of latent confounders in the graph
      * @param numEdges             the number of edges in the graph
      * @param maxDegree            the maximum degree of each node in the graph
@@ -70,10 +70,10 @@ public class RandomGraph {
      * @param connected            indicates whether the graph should be connected or not
      * @return a randomly generated graph
      */
-    public static Graph randomGraph(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+    public static Graph randomGraph(int numMeasures, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
-        for (int i = 0; i < numNodes; i++) {
+        for (int i = 0; i < numMeasures + numLatentConfounders; i++) {
             nodes.add(new GraphNode("X" + (i + 1)));
         }
 
@@ -124,7 +124,7 @@ public class RandomGraph {
         }
 
         if (numLatentConfounders < 0 || numLatentConfounders > numNodes) {
-            throw new IllegalArgumentException("Number of additional latent confounders must be " + "at least 0 and at most the number of nodes: " + numLatentConfounders);
+            throw new IllegalArgumentException("Number of additional latent confounders must be at least 0 and at most the number of nodes: " + numLatentConfounders);
         }
 
         for (Node node : nodes) {

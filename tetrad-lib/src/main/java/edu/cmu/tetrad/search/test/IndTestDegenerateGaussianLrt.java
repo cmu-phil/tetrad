@@ -387,8 +387,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(getCov(rows, A_).det());
-        double ldetB = log(getCov(rows, B_).det());
+        double ldetA = log(abs(getCov(rows, A_).det()));
+        double ldetB = log(abs(getCov(rows, B_).det()));
 
         double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
 

@@ -886,11 +886,14 @@ public final class Params {
      * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
-
     /**
-     * Constant <code>THRESHOLD_LV_LITE = "thresholdLvLite"</code>
+     * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
-    public static final String THRESHOLD_LV_LITE = "thresholdLvLite";
+    public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
+    /**
+     * Constant <code>MIN_SAMPLE_SIZE_PER_CELL="minSampleSizePerCell"</code>
+     */
+    public static final String ALLOW_TUCKS = "allowTucks";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -947,10 +950,6 @@ public final class Params {
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";
-    /**
-     * Constant <code>RESOLVE_ALMOST_CYCLIC_PATHS="resolveAlmostCyclicPaths"</code>
-     */
-    public static String RESOLVE_ALMOST_CYCLIC_PATHS = "resolveAlmostCyclicPaths";
 
     private Params() {
     }

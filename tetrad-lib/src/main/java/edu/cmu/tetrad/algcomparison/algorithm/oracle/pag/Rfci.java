@@ -96,7 +96,6 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return search.search();
     }
@@ -139,7 +138,6 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
-        parameters.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);

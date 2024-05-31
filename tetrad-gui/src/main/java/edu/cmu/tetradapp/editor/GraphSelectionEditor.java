@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
@@ -96,6 +97,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private final List<GraphWorkbench> workbenches = new ArrayList<>();
 
     /**
+     * The parameters.
+     */
+    private final Parameters parameters;
+
+    /**
      * Workbench scrolls panel.
      * <p>
      * Need this initialization. Don't delete.
@@ -120,7 +126,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     /**
      * Constructs a graph selection editor.
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
+     * @param wrapper a {@link GraphSelectionWrapper} object
      * @throws java.lang.NullPointerException if <code>wrapper</code> is null.
      */
     public GraphSelectionEditor(GraphSelectionWrapper wrapper) {
@@ -129,6 +135,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         this.wrapper = wrapper;
+        this.parameters = new Parameters();
 
         if (layoutGraph == null) {
             layoutGraph = new HashMap<>();
@@ -423,7 +430,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(graphAction);
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench(), parameters));
         UnderliningsAction underliningsAction = new UnderliningsAction(getWorkbench());
         graph.add(underliningsAction);
 

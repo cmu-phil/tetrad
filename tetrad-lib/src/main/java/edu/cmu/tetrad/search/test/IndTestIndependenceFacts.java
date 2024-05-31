@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import javax.help.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

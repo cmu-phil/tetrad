@@ -48,11 +48,11 @@ public class TabularComparisonEditor extends JPanel {
         JTabbedPane pane3 = new JTabbedPane(SwingConstants.TOP);
 
         GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraph()));
-        graphEditor.enableEditing(false);
+        graphEditor.setEnableEditing(false);
         pane3.add("Target Graph", graphEditor.getWorkbench());
 
         graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraph()));
-        graphEditor.enableEditing(false);
+        graphEditor.setEnableEditing(false);
         pane3.add("True Graph", graphEditor.getWorkbench());
 
         pane2.add("Reference Graph", pane3);

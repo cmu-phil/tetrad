@@ -21,26 +21,23 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than GFCI
+ * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than GFCI
  * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
@@ -84,15 +81,11 @@ public final class SpFci implements IGraphSearch {
      */
     int sampleSize;
     /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
+     * Flag for complete rule set, true if you should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
     /**
@@ -104,11 +97,7 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-    /**
-     * Represents the depth of the search. The depth indicates the maximum number of variables that can be conditioned
+     * Indicates the maximum number of variables that can be conditioned
      * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
      */
     private int depth = -1;
@@ -121,9 +110,9 @@ public final class SpFci implements IGraphSearch {
      */
     private boolean doDiscriminatingPathRule = true;
     /**
-     * Whether to resolve almost cyclic paths.
+     * True iff verbose output should be printed.
      */
-    private boolean resolveAlmostCyclicPaths;
+    private boolean verbose;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -153,27 +142,17 @@ public final class SpFci implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
         }
 
-        this.graph = new EdgeListGraph(nodes);
-
-        // SP CPDAG learning step
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
-        this.graph = alg.search();
+        Graph graph = alg.search();
 
         if (score instanceof MagSemBicScore) {
             ((MagSemBicScore) score).setMag(graph);
         }
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.dagToCpdag(graph), knowledge2);
-
-        // Keep a copy of this CPDAG.
-        Graph referenceDag = new EdgeListGraph(this.graph);
-
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        Graph referenceDag = new EdgeListGraph(graph);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
@@ -189,30 +168,13 @@ public final class SpFci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-        }
-
-        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-//        graph = GraphTransforms.dagToPag(graph);
-
-        return this.graph;
+        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+        return graph;
     }
 
     /**
@@ -340,75 +302,5 @@ public final class SpFci implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
-     * Orients edges in the graph based on the knowledge.
-     *
-     * @param knowledge The knowledge containing forbidden and required edges.
-     * @param graph     The graph to orient edges in.
-     * @param variables The list of variables in the graph.
-     */
-    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
-        }
-    }
-
-    /**
-     * Sets whether almost cyclic paths should be resolved during the search.
-     * If resolveAlmostCyclicPaths is set to true, the search algorithm will perform additional steps
-     * to resolve almost cyclic paths in the graph.
-     *
-     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }

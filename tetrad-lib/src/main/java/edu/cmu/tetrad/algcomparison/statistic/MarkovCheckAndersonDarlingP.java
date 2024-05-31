@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -14,8 +13,8 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import java.io.Serial;
 
 /**
- * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph
- * are distributed as U(0, 1).
+ * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+ * distributed as U(0, 1).
  *
  * @author josephramsey
  */
@@ -24,8 +23,8 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph
-     * are distributed as U(0, 1).
+     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+     * distributed as U(0, 1).
      */
     public MarkovCheckAndersonDarlingP() {
 
@@ -52,8 +51,8 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
     }
 
     /**
-     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph
-     * are distributed as U(0, 1).
+     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+     * distributed as U(0, 1).
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
@@ -81,8 +80,20 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
         }
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.generateResults(true);
-        return markovCheck.getAndersonDarlingP(true);
+
+        double sum = 0.0;
+        double count = 0;
+
+        for (int i = 0; i < 2; i++) {
+            markovCheck.generateResults(true);
+            sum += markovCheck.getAndersonDarlingP(true);
+            count++;
+        }
+
+        return sum / count;
+
+//        markovCheck.generateResults(true);
+//        return markovCheck.getAndersonDarlingP(true);
     }
 
     /**

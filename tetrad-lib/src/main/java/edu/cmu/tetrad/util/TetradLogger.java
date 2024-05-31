@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
  */
 public class TetradLogger {
 
-
     /**
      * The singleton instance of the logger.
      */
@@ -60,32 +59,32 @@ public class TetradLogger {
     /**
      * A mapping between output streams and writers used to wrap them.
      */
-    private final Map<OutputStream, Writer> writers = new LinkedHashMap<>();
+    private final transient Map<OutputStream, Writer> writers = new LinkedHashMap<>();
     /**
      * A mapping from model classes to their configured loggers.
      */
-    private final Map<Class<?>, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<>();
+    private final transient Map<Class<?>, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<>();
     /**
      * The listeners.
      */
-    private final List<TetradLoggerListener> listeners = new ArrayList<>();
+    private final transient List<TetradLoggerListener> listeners = new ArrayList<>();
     /**
      * States whether events should be logged; this allows one to turn off all loggers at once. (Note, a field is used,
      * since fast lookups are important)
      */
-    private boolean logging = Preferences.userRoot().getBoolean("loggingActivated", true);
+    private transient boolean logging = Preferences.userRoot().getBoolean("loggingActivated", true);
     /**
      * The configuration to use to determine which events to log.
      */
-    private TetradLoggerConfig config;
+    private transient TetradLoggerConfig config;
     /**
      * The getModel file stream that is being written to, this is set in "setNextOutputStream()".s
      */
-    private OutputStream stream;
+    private transient OutputStream stream;
     /**
      * The latest file path being written to.
      */
-    private String latestFilePath;
+    private transient String latestFilePath;
 
     /**
      * Private constructor, this is a singleton.

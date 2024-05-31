@@ -59,6 +59,7 @@ import static org.junit.Assert.assertEquals;
 public class TestGFci {
     boolean precomputeCovariances = true;
 
+
     public void test1() {
         RandomUtil.getInstance().setSeed(1450189593459L);
 

@@ -244,27 +244,40 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>pathString.</p>
+     * Constructs a string representation of a path in a graph.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param path  a {@link java.util.List} object
-     * @return a {@link java.lang.String} object
+     * @param graph       the graph in which the path exists
+     * @param path        the list of nodes representing the path
+     * @param showBlocked determines whether blocked nodes should be included in the string representation
+     * @return the string representation of the path
      */
-    public static String pathString(Graph graph, List<Node> path) {
-        return GraphUtils.pathString(graph, path, new LinkedList<>());
+    public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
+        return GraphUtils.pathString(graph, path, new HashSet<>(), showBlocked);
     }
 
     /**
-     * <p>pathString.</p>
+     * Generates a string representation of a path in a given graph, starting from the specified nodes.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.lang.String} object
+     * @param graph the graph in which the path is located
+     * @param x     the starting nodes of the path
+     * @return a string representation of the path
      */
     public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
-        return GraphUtils.pathString(graph, path, new LinkedList<>());
+        return GraphUtils.pathString(graph, path, new HashSet<>());
+    }
+
+    /**
+     * Returns a string representation of the given path in the graph, considering the conditioning variables.
+     *
+     * @param graph            the graph to find the path in
+     * @param path             the list of nodes representing the path
+     * @param conditioningVars the set of conditioning variables to consider
+     * @return a string representation of the path
+     */
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars) {
+        return pathString(graph, path, conditioningVars, false);
     }
 
     /**
@@ -274,13 +287,24 @@ public final class GraphUtils {
      * @param graph            the graph containing the path
      * @param path             the list of nodes representing the path
      * @param conditioningVars the list of nodes representing the conditioning variables
+     * @param showBlocked      whether to show information about blocked paths
      * @return a string representation of the path with conditioning information
      */
-    private static String pathString(Graph graph, List<Node> path, List<Node> conditioningVars) {
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
+        }
+
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, false);
+
+        if (showBlocked) {
+            if (!mConnecting) {
+                buf.append("BLOCKED: ");
+            } else {
+                buf.append("not blocked: ");
+            }
         }
 
         if (path.get(0).getNodeType() == NodeType.LATENT) {
@@ -289,19 +313,27 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
+        String conditioningSymbol = "\u2714";
 
         if (conditioningVars.contains(path.get(0))) {
-            buf.append("(C)");
+            buf.append(conditioningSymbol);
         }
 
         for (int m = 1; m < path.size(); m++) {
             Node n0 = path.get(m - 1);
             Node n1 = path.get(m);
+            Node n2 = null;
+
+            if (m < path.size() - 1) {
+                n2 = path.get(m + 1);
+            }
 
             Edge edge = graph.getEdge(n0, n1);
 
             if (edge == null) {
                 buf.append("(-)");
+            } else if (graph.getEdges(n0, n1).size() == 2) {
+                buf.append("<=>");
             } else {
                 Endpoint endpoint0 = edge.getProximalEndpoint(n0);
                 Endpoint endpoint1 = edge.getProximalEndpoint(n1);
@@ -332,7 +364,17 @@ public final class GraphUtils {
             }
 
             if (conditioningVars.contains(n1)) {
-                buf.append("(C)");
+                buf.append(conditioningSymbol);
+            } else {
+                if (n2 != null) {
+                    if (graph.isDefCollider(n0, n1, n2)) {
+                        Set<Node> descendants = graph.paths().getDescendants(n1);
+                        descendants.retainAll(conditioningVars);
+                        if (!descendants.isEmpty()) {
+                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol + "}");
+                        }
+                    }
+                }
             }
         }
         return buf.toString();
@@ -1711,7 +1753,7 @@ public final class GraphUtils {
             if (!edge.isDirected()) {
                 continue;
             }
-
+    
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
@@ -1845,22 +1887,22 @@ public final class GraphUtils {
     }
 
     /**
-     * The extra-edge removal step for GFCI. This removed edges in triangles in the reference graph by looking for
-     * sepsets for edge a--b among the adjacents of a or the adjacents of b.
+     * The extra-edge removal step for GFCI. This removes edges in triangles in the CPDAG from a score search like FGES
+     * or BOSS. We look for sepsets S for edge a--c, among the adjacents of b, such that a _||_ c | S.
      *
-     * @param graph          The graph being operated on and changed.
-     * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
-     * @param nodes          The nodes in the graph.
-     * @param sepsets        A SepsetProducer that will do the sepset search operation described.
-     * @param verbose        Whether to print verbose output.
+     * @param graph   The graph being operated on and changed.
+     * @param cpdag   The reference graph, a CPDAG obtained using such an algorithm.
+     * @param nodes   The nodes in the graph.
+     * @param sepsets A SepsetProducer that will do the sepset search operation described.
+     * @param verbose Whether to print verbose output.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> adjacentNodes = new ArrayList<>(referenceCpdag.getAdjacentNodes(b));
+            List<Node> adjacentNodes = new ArrayList<>(cpdag.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -1877,8 +1919,9 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c)) {// && referenceCpdag.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
+
                     if (sepset != null) {
                         graph.removeEdge(a, c);
 
@@ -2100,7 +2143,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Y).
+     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Yma
      *
      * @param G                the input graph
      * @param x                the source node
@@ -2457,14 +2500,6 @@ public final class GraphUtils {
                     && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
                     && !referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
 
-                    if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
-                        continue;
-                    }
-
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
 
@@ -2479,7 +2514,7 @@ public final class GraphUtils {
                             TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
                         }
                     }
-                } else if (referenceCpdag.isAdjacentTo(a, c)) {// && !graph.isAdjacentTo(a, c)) {
+                } else if (referenceCpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (graph.isAdjacentTo(a, c)) {
@@ -2487,14 +2522,6 @@ public final class GraphUtils {
                     }
 
                     if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                        if (graph.getEndpoint(b, a) == Endpoint.ARROW && (graph.paths().existsDirectedPath(a, b) || graph.paths().existsDirectedPath(b, a))) {
-                            continue;
-                        }
-
-                        if (graph.getEndpoint(b, c) == Endpoint.ARROW && (graph.paths().existsDirectedPath(b, c) || graph.paths().existsDirectedPath(c, b))) {
-                            continue;
-                        }
-
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
 

@@ -101,7 +101,7 @@ public class SvarFas implements IFas {
     /**
      * The output stream for printing.
      */
-    private PrintStream out;
+    private transient PrintStream out;
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -231,7 +231,7 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException since not implementedd.
+     * @throws UnsupportedOperationException since not implementedd.
      */
     @Override
     public long getElapsedTime() {

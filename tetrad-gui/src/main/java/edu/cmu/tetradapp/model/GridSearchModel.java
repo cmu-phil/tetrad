@@ -26,34 +26,38 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.SingleDatasetSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.editor.AlgcomparisonEditor;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
-import java.io.File;
-import java.io.Serial;
+import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * The AlgcomparisonModel class is a session model that allows for running comparisons of algorithms. It provides
- * methods for selecting algorithms, simulations, statistics, and parameters, and then running the comparison.
+ * The GridSearchModel class is a session model that allows for running comparisons of algorithms. It provides methods
+ * for selecting algorithms, simulations, statistics, and parameters, and then running the comparison.
  * <p>
  * The reference is here:
  * <p>
@@ -62,7 +66,7 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  */
-public class AlgcomparisonModel implements SessionModel {
+public class GridSearchModel implements SessionModel {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
@@ -70,75 +74,217 @@ public class AlgcomparisonModel implements SessionModel {
      */
     private final Parameters parameters;
     /**
-     * The results path for the AlgcomparisonModel.
+     * The result path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
     /**
-     * The suppliedGraph variable represents a graph that can be supplied by the user.
-     * This graph will be given as an option in the user interface.
+     * Represents the variable "knowledge" in the GridSearchModel class. This variable is of type Knowledge and is
+     * private and final.
      */
-    private Graph suppliedGraph  = null;
+    private final Knowledge knowledge;
+    /**
+     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis. It
+     * can be set to null if no dataset is supplied.
+     * <p>
+     * Using a supplied dataset restricts the analysis to only those statistics that do not require a true graph.
+     * <p>
+     * Example usage:
+     * <pre>
+     * DataSet dataset = new DataSet();
+     * suppliedData = dataset;
+     * </pre>
+     */
+    private DataSet suppliedData = null;
+    /**
+     * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
+     * option in the user interface.
+     */
+    private Graph suppliedGraph = null;
     /**
      * The list of statistic names.
      */
-    private transient List<String> statNames;
+    private List<String> statNames;
     /**
      * The list of simulation names.
      */
-    private transient List<String> simNames;
+    private List<String> simNames;
     /**
      * The list of simulation classes.
      */
-    private transient List<Class<? extends Simulation>> simulationClasses;
+    private List<Class<? extends Simulation>> simulationClasses;
     /**
      * The list of statistic classes.
      */
-    private transient List<Class<? extends Statistic>> statisticsClasses;
+    private List<Class<? extends Statistic>> statisticsClasses;
     /**
      * The list of algorithm classes.
      */
-    private transient List<Class<? extends Algorithm>> algorithmClasses;
+    private List<Class<? extends Algorithm>> algorithmClasses;
     /**
      * The list of algorithm names.
      */
-    private transient List<String> algNames;
+    private List<String> algNames;
+//    /**
+//     * The selected parameters for the GridSearchModel.
+//     */
+//    private List<String> selectedParameters;
+//    /**
+//     * The list of selected simulations in the GridSearchModel. This list holds Simulation objects, which are
+//     * implementations of the Simulation interface.
+//     */
+//    private LinkedList<SimulationSpec> selectedSimulations;
+//    /**
+//     * The selected algorithms for the GridSearchModel.
+//     */
+//    private LinkedList<AlgorithmSpec> selectedAlgorithms;
+//    /**
+//     * The selected table columns for the GridSearchModel.
+//     */
+//    private LinkedList<MyTableColumn> selectedTableColumns;
     /**
-     * The selected parameters for the AlgcomparisonModel.
+     * The last comparison text displayed.
      */
-    private transient List<String> selectedParameters;
+    private String lastComparisonText = "";
     /**
-     * The list of selected simulations in the AlgcomparisonModel. This list holds Simulation objects, which are
-     * implementations of the Simulation interface. It is a transient field, meaning it is not serialized when the
-     * object is saved.
+     * The last verbose output displayed.
      */
-    private transient LinkedList<Simulation> selectedSimulations;
+    private String lastVerboseOutputText = "";
     /**
-     * The selected algorithms for the AlgcomparisonModel.
+     * The name of the GridSearchModel.
      */
-    private transient LinkedList<Algorithm> selectedAlgorithms;
-    /**
-     * The selected table columns for the AlgcomparisonModel.
-     */
-    private transient LinkedList<MyTableColumn> selectedTableColumns;
-    /**
-     * The name of the AlgcomparisonModel.
-     */
-    private String name = "Algcomparison";
-    private LinkedList<AlgorithmModel> selectedAlgorithmModels;
+    private String name = "Grid Search";
 
     /**
-     * Constructs a new AlgcomparisonModel with the specified parameters.
+     * Constructs a new GridSearchModel with the specified parameters.
      *
      * @param parameters The parameters to be set.
      */
-    public AlgcomparisonModel(Parameters parameters) {
+    public GridSearchModel(Parameters parameters) {
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
         this.parameters = parameters;
+        this.knowledge = null;
         initializeIfNull();
     }
 
-    public AlgcomparisonModel(GraphSource graphSource, Parameters parameters) {
-        this.parameters = new Parameters();
+    /**
+     * Initializes a new GridSearchModel with the given KnowledgeBoxModel and Parameters.
+     *
+     * @param knowledge  The KnowledgeBoxModel containing the knowledge to be used for grid search. Must not be null.
+     * @param parameters The Parameters specifying the grid search parameters. Must not be null.
+     * @throws IllegalArgumentException If either knowledge or parameters are null.
+     */
+    public GridSearchModel(KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
+        initializeIfNull();
+    }
+
+    /**
+     * Initializes a new instance of the GridSearchModel class.
+     *
+     * @param graphSource The graph source to be used for the model.
+     * @param parameters  The parameters to be used for the model.
+     * @throws IllegalArgumentException if graphSource or parameters is null.
+     */
+    public GridSearchModel(GraphSource graphSource, Parameters parameters) {
+        if (graphSource == null) {
+            throw new IllegalArgumentException("Graph source must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = null;
         this.suppliedGraph = graphSource.getGraph();
+        initializeIfNull();
+    }
+
+    /**
+     * Constructs a grid search model with the given graph source, knowledge box model, and parameters.
+     *
+     * @param graphSource The source of the graph.
+     * @param knowledge   The knowledge box model.
+     * @param parameters  The parameters for the grid search model.
+     * @throws IllegalArgumentException if graphSource, knowledge, or parameters is null.
+     */
+    public GridSearchModel(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (graphSource == null) {
+            throw new IllegalArgumentException("Graph source must not be null.");
+        }
+
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
+        this.suppliedGraph = graphSource.getGraph();
+        initializeIfNull();
+    }
+
+    /**
+     * Constructs a new GridSearchModel instance.
+     *
+     * @param dataWrapper the data wrapper containing the selected data model
+     * @param parameters  the parameters to use for grid search
+     * @throws IllegalArgumentException if either dataWrapper or parameters is null
+     */
+    public GridSearchModel(DataWrapper dataWrapper, Parameters parameters) {
+        if (dataWrapper == null) {
+            throw new IllegalArgumentException("Data wrapper must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = null;
+        this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
+        initializeIfNull();
+    }
+
+    /**
+     * Constructs a new instance of the GridSearchModel.
+     *
+     * @param dataWrapper the data wrapper used for selecting the data model (must not be null)
+     * @param knowledge   the knowledge box model (must not be null)
+     * @param parameters  the parameters for the model (must not be null)
+     * @throws IllegalArgumentException if any of the parameters is null
+     */
+    public GridSearchModel(DataWrapper dataWrapper, KnowledgeBoxModel knowledge, Parameters parameters) {
+        if (dataWrapper == null) {
+            throw new IllegalArgumentException("Data wrapper must not be null.");
+        }
+
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge must not be null.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+        this.knowledge = knowledge.getKnowledge();
+        this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
         initializeIfNull();
     }
 
@@ -208,35 +354,39 @@ public class AlgcomparisonModel implements SessionModel {
      * @return a set of all algorithms parameters
      */
     @NotNull
-    public static Set<String> getAllAlgorithmParameters(List<Algorithm> algorithms) {
+    public static Set<String> getAllAlgorithmParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
-            paramNamesSet.addAll(algorithm.getParameters());
+        for (AlgorithmSpec algorithm : algorithms) {
+            paramNamesSet.addAll(algorithm.getAlgorithmImpl().getParameters());
         }
 
         return paramNamesSet;
     }
 
     @NotNull
-    public static Set<String> getAllTestParameters(List<Algorithm> algorithms) {
+    public static Set<String> getAllTestParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
-            if (algorithm instanceof TakesIndependenceWrapper) {
-                paramNamesSet.addAll(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters());
+        for (AlgorithmSpec algorithm : algorithms) {
+            Algorithm algorithmImpl = algorithm.getAlgorithmImpl();
+
+            if (algorithmImpl instanceof TakesIndependenceWrapper) {
+                paramNamesSet.addAll(((TakesIndependenceWrapper) algorithmImpl).getIndependenceWrapper().getParameters());
             }
         }
 
         return paramNamesSet;
     }
 
-    public static Set<String> getAllScoreParameters(List<Algorithm> algorithms) {
+    public static Set<String> getAllScoreParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
-            if (algorithm instanceof UsesScoreWrapper) {
-                paramNamesSet.addAll(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters());
+        for (AlgorithmSpec algorithm : algorithms) {
+            Algorithm algorithmImpl = algorithm.getAlgorithmImpl();
+
+            if (algorithmImpl instanceof UsesScoreWrapper) {
+                paramNamesSet.addAll(((UsesScoreWrapper) algorithmImpl).getScoreWrapper().getParameters());
             }
         }
 
@@ -244,11 +394,11 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     @NotNull
-    public static Set<String> getAllBootstrapParameters(List<Algorithm> algorithms) {
+    public static Set<String> getAllBootstrapParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
-            paramNamesSet.addAll(Params.getBootstrappingParameters(algorithm));
+        for (AlgorithmSpec algorithm : algorithms) {
+            paramNamesSet.addAll(Params.getBootstrappingParameters(algorithm.getAlgorithmImpl()));
         }
 
         return paramNamesSet;
@@ -263,10 +413,16 @@ public class AlgcomparisonModel implements SessionModel {
         initializeIfNull();
 
         Simulations simulations = new Simulations();
-        for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
+
+        if (suppliedData != null) {
+            simulations.add(new SingleDatasetSimulation(suppliedData));
+        } else {
+            for (SimulationSpec simulation : getSelectedSimulationsSpecs())
+                simulations.add(simulation.getSimulationImpl());
+        }
 
         Algorithms algorithms = new Algorithms();
-        for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
+        for (AlgorithmSpec algorithm : getSelectedAlgorithmSpecs()) algorithms.add(algorithm.getAlgorithmImpl());
 
         Comparison comparison = new Comparison();
         comparison.setSaveData(parameters.getBoolean("algcomparisonSaveData"));
@@ -275,15 +431,20 @@ public class AlgcomparisonModel implements SessionModel {
         comparison.setSavePags(parameters.getBoolean("algcomparisonSavePAGs"));
         comparison.setShowAlgorithmIndices(parameters.getBoolean("algcomparisonShowAlgorithmIndices"));
         comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
+        comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
+        comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
+        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
+        comparison.setKnowledge(knowledge);
 
-        AlgcomparisonEditor.ComparisonGraphType type = (AlgcomparisonEditor.ComparisonGraphType) parameters.get("algcomparisonGraphType");
+        String string = parameters.getString("algcomparisonGraphType", "DAG");
+        ComparisonGraphType type = ComparisonGraphType.valueOf(string);
+
         switch (type) {
             case DAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
             case CPDAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
             case PAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
-            default ->
-                    throw new IllegalArgumentException("Invalid value for comparison graph: " + type);
+            default -> throw new IllegalArgumentException("Invalid value for comparison graph: " + type);
         }
 
         String resultsPath;
@@ -305,6 +466,22 @@ public class AlgcomparisonModel implements SessionModel {
         String outputFileName = "Comparison";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
+    }
+
+    private LinkedList<AlgorithmSpec> getSelectedAlgorithmSpecs() {
+        if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedAlgorithms", new LinkedList<AlgorithmSpec>());
+        }
+
+        return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
+    }
+
+    private LinkedList<SimulationSpec> getSelectedSimulationsSpecs() {
+        if (!(parameters.get("algcomparison.selectedSimulations") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedSimulations", new LinkedList<SimulationSpec>());
+        }
+
+        return (LinkedList<SimulationSpec>) parameters.get("algcomparison.selectedSimulations");
     }
 
     /**
@@ -342,9 +519,9 @@ public class AlgcomparisonModel implements SessionModel {
      *
      * @param simulation The simulation to add.
      */
-    public void addSimulation(Simulation simulation) {
+    public void addSimulationSpec(SimulationSpec simulation) {
         initializeIfNull();
-        selectedSimulations.add(simulation);
+        getSelectedSimulationsSpecs().add(simulation);
     }
 
     /**
@@ -352,8 +529,8 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public void removeLastSimulation() {
         initializeIfNull();
-        if (!selectedSimulations.isEmpty()) {
-            selectedSimulations.removeLast();
+        if (!getSelectedSimulationsSpecs().isEmpty()) {
+            getSelectedSimulationsSpecs().removeLast();
         }
     }
 
@@ -362,10 +539,9 @@ public class AlgcomparisonModel implements SessionModel {
      *
      * @param algorithm The algorithm to add.
      */
-    public void addAlgorithm(Algorithm algorithm, AlgorithmModel algorithmModel) {
+    public void addAlgorithm(AlgorithmSpec algorithm) {
         initializeIfNull();
-        selectedAlgorithms.add(algorithm);
-        selectedAlgorithmModels.add(algorithmModel);
+        getSelectedAlgorithmSpecs().add(algorithm);
     }
 
     /**
@@ -373,9 +549,8 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public void removeLastAlgorithm() {
         initializeIfNull();
-        if (!selectedAlgorithms.isEmpty()) {
-            selectedAlgorithms.removeLast();
-            selectedAlgorithmModels.removeLast();
+        if (!getSelectedSimulationsSpecs().isEmpty()) {
+            getSelectedAlgorithmSpecs().removeLast();
         }
     }
 
@@ -385,10 +560,10 @@ public class AlgcomparisonModel implements SessionModel {
      * @param tableColumn The table column to add.
      */
     public void addTableColumn(MyTableColumn tableColumn) {
-        if (selectedTableColumns.contains(tableColumn)) return;
+        if (getSelectedTableColumnsPrivate().contains(tableColumn)) return;
         initializeIfNull();
-        selectedTableColumns.add(tableColumn);
-        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
+        getSelectedTableColumnsPrivate().add(tableColumn);
+        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
     }
 
     /**
@@ -396,8 +571,8 @@ public class AlgcomparisonModel implements SessionModel {
      */
     public void removeLastTableColumn() {
         initializeIfNull();
-        if (!selectedTableColumns.isEmpty()) {
-            selectedTableColumns.removeLast();
+        if (!getSelectedTableColumnsPrivate().isEmpty()) {
+            getSelectedTableColumnsPrivate().removeLast();
         }
     }
 
@@ -439,28 +614,43 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     /**
-     * The currently selected simulation in the AlgcomparisonModel. A list of size one (enforced) that contains the
+     * The currently selected simulation in the GridSearchModel. A list of size one (enforced) that contains the
      * selected simulation.
      */
     public Simulations getSelectedSimulations() {
         initializeIfNull();
         Simulations simulations = new Simulations();
-        for (Simulation simulation : this.selectedSimulations) simulations.add(simulation);
+        if (suppliedData != null) {
+            simulations.add(new SingleDatasetSimulation(suppliedData));
+        } else {
+            for (SimulationSpec simulation : getSelectedSimulationsSpecs())
+                simulations.add(simulation.getSimulationImpl());
+        }
         return simulations;
     }
 
     /**
      * A private instance variable that holds a list of selected Algorithm objects.
      */
-    public Algorithms getSelectedAlgorithms() {
-        Algorithms algorithms = new Algorithms();
-        for (Algorithm algorithm : this.selectedAlgorithms) algorithms.add(algorithm);
-        return algorithms;
+    public List<AlgorithmSpec> getSelectedAlgorithms() {
+        if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedAlgorithms", new LinkedList<AlgorithmSpec>());
+        }
+
+        return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
     public List<MyTableColumn> getSelectedTableColumns() {
-        AlgcomparisonModel.sortTableColumns(selectedTableColumns);
-        return new ArrayList<>(selectedTableColumns);
+        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
+        return new ArrayList<>(getSelectedTableColumnsPrivate());
+    }
+
+    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
+        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
+        }
+
+        return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
     }
 
     /**
@@ -479,36 +669,16 @@ public class AlgcomparisonModel implements SessionModel {
      * the initializeNames() method to initialize them.
      */
     private void initializeIfNull() {
-        if (selectedSimulations == null || selectedAlgorithms == null || selectedTableColumns == null
-            || selectedParameters == null || selectedAlgorithmModels == null) {
-            initializeSimulationsEtc();
-        }
-
-        if (this.selectedParameters == null) {
-            this.selectedParameters = new LinkedList<>();
-        }
-
-        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
-            initializeClasses();
-        }
-
-        if (algNames == null || statNames == null || simNames == null) {
-            initializeNames();
-        }
+        initializeClasses();
+        initializeNames();
     }
 
-    /**
-     * Initializes the necessary variables for simulations, algorithms, statistics, and parameters.
-     * <p>
-     * This method initializes the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
-     * variables as new LinkedLists if they are null.
-     */
-    private void initializeSimulationsEtc() {
-        this.selectedSimulations = new LinkedList<>();
-        this.selectedAlgorithms = new LinkedList<>();
-        this.selectedAlgorithmModels = new LinkedList<>();
-        this.selectedTableColumns = new LinkedList<>();
-        this.selectedParameters = new LinkedList<>();
+    private List<String> getSelectedParameters() {
+        if (!(parameters.get("algcomparison.selectedParameters") instanceof LinkedList<?>)) {
+            parameters.set("algcomparison.selectedParameters", new LinkedList<String>());
+        }
+
+        return (LinkedList<String>) parameters.get("algcomparison.selectedParameters");
     }
 
     /**
@@ -582,20 +752,34 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * Retrieves the abbreviations of statistics from a list of implementation classes.
      *
-     * @param algorithmClasses The list of implementation classes of statistics.
+     * @param algorithmClasses The list of implementation classes for statistics.
      * @return The abbreviations of the statistics.
      */
     private List<String> getStatisticsNamesFromImplementations(List<Class<? extends Statistic>> algorithmClasses) {
         List<String> statisticsNames = new ArrayList<>();
 
         for (Class<? extends Statistic> statistic : algorithmClasses) {
+
             try {
-                Statistic _statistic = statistic.getConstructor().newInstance();
-                String abbreviation = _statistic.getAbbreviation();
-                statisticsNames.add(abbreviation);
+                Constructor<?>[] constructors = statistic.getDeclaredConstructors();
+
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> constructor : constructors) {
+                    if (constructor.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic _statistic = statistic.getConstructor().newInstance();
+                    String abbreviation = _statistic.getAbbreviation();
+                    statisticsNames.add(abbreviation);
+                }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                // Skip.
+                TetradLogger.getInstance().forceLogMessage("Error creating statistic: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -605,7 +789,7 @@ public class AlgcomparisonModel implements SessionModel {
     /**
      * Retrieves the names of simulations from a list of implementation classes.
      *
-     * @param algorithmClasses The list of implementation classes of simulations.
+     * @param algorithmClasses The list of implementation classes for simulations.
      * @return The names of the simulations.
      */
     private List<String> getSimulationNamesFromImplementations(List<Class<? extends Simulation>> algorithmClasses) {
@@ -628,7 +812,7 @@ public class AlgcomparisonModel implements SessionModel {
     }
 
     public Statistics getSelectedStatistics() {
-        List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
+        LinkedList<MyTableColumn> selectedTableColumns = getSelectedTableColumnsPrivate();
 
         Statistics selectedStatistics = new Statistics();
         List<Statistic> lastStatisticsUsed = new ArrayList<>();
@@ -636,9 +820,21 @@ public class AlgcomparisonModel implements SessionModel {
         for (MyTableColumn column : selectedTableColumns) {
             if (column.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 try {
-                    Statistic statistic = column.getStatistic().getConstructor().newInstance();
-                    selectedStatistics.add(statistic);
-                    lastStatisticsUsed.add(statistic);
+                    Constructor<?>[] constructors = column.getStatistic().getDeclaredConstructors();
+
+                    boolean hasNoArgConstructor = false;
+                    for (Constructor<?> constructor : constructors) {
+                        if (constructor.getParameterCount() == 0) {
+                            hasNoArgConstructor = true;
+                            break;
+                        }
+                    }
+
+                    if (hasNoArgConstructor) {
+                        Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                        selectedStatistics.add(statistic);
+                        lastStatisticsUsed.add(statistic);
+                    }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException ex) {
                     System.out.println("Error creating statistic: " + ex.getMessage());
@@ -649,22 +845,32 @@ public class AlgcomparisonModel implements SessionModel {
             }
         }
 
+        for (Statistic statistic : selectedStatistics.getStatistics()) {
+            double weight = 0;
+            try {
+                weight = parameters.getDouble("algcomparison." + statistic.getAbbreviation());
+            } catch (Exception e) {
+                // Skip.
+            }
+            selectedStatistics.setWeight(statistic.getAbbreviation(), weight);
+        }
+
         setLastStatisticsUsed(lastStatisticsUsed);
         return selectedStatistics;
     }
 
     @NotNull
-    public List<AlgcomparisonModel.MyTableColumn> getAllTableColumns() {
-        List<AlgcomparisonModel.MyTableColumn> allTableColumns = new ArrayList<>();
+    public List<GridSearchModel.MyTableColumn> getAllTableColumns() {
+        List<GridSearchModel.MyTableColumn> allTableColumns = new ArrayList<>();
 
         List<Simulation> simulations = getSelectedSimulations().getSimulations();
-        List<Algorithm> algorithms = getSelectedAlgorithms().getAlgorithms();
+        List<AlgorithmSpec> algorithms = getSelectedAlgorithms();
 
         for (String name : getAllSimulationParameters(simulations)) {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -673,7 +879,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -682,7 +888,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -691,7 +897,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -700,7 +906,7 @@ public class AlgcomparisonModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(shortDescriptiom, description, name);
+            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -709,9 +915,21 @@ public class AlgcomparisonModel implements SessionModel {
 
         for (Class<? extends Statistic> statisticClass : statisticClasses) {
             try {
-                Statistic statistic = statisticClass.getConstructor().newInstance();
-                AlgcomparisonModel.MyTableColumn column = new AlgcomparisonModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
-                allTableColumns.add(column);
+                Constructor<?>[] constructors = statisticClass.getDeclaredConstructors();
+
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> constructor : constructors) {
+                    if (constructor.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic statistic = statisticClass.getConstructor().newInstance();
+                    GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                    allTableColumns.add(column);
+                }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
                 System.out.println("Error creating statistic: " + ex.getMessage());
@@ -731,9 +949,7 @@ public class AlgcomparisonModel implements SessionModel {
 
     public List<String> getLastStatisticsUsed() {
         String[] lastStatisticsUsed = Preferences.userRoot().get("lastAlgcomparisonStatisticsUsed", "").split(";");
-        List<String> list = Arrays.asList(lastStatisticsUsed);
-//        System.out.println("Getting last statistics used: " + list);
-        return list;
+        return Arrays.asList(lastStatisticsUsed);
     }
 
     public void setLastStatisticsUsed(List<Statistic> lastStatisticsUsed) {
@@ -808,10 +1024,6 @@ public class AlgcomparisonModel implements SessionModel {
         Preferences.userRoot().put("lastAlgcomparisonSimulationChoice", selectedItem);
     }
 
-    public List<AlgorithmModel> getSelectedAlgorithmModels() {
-        return new ArrayList<>(selectedAlgorithmModels);
-    }
-
     /**
      * The user may supply a graph, which will be given as an option in the UI.
      */
@@ -819,7 +1031,76 @@ public class AlgcomparisonModel implements SessionModel {
         return suppliedGraph;
     }
 
-    public static class MyTableColumn {
+    /**
+     * The last comparison text displayed.
+     */
+    public String getLastComparisonText() {
+        return lastComparisonText == null ? "" : lastComparisonText;
+    }
+
+    public void setLastComparisonText(String lastComparisonText) {
+        this.lastComparisonText = lastComparisonText;
+    }
+
+    /**
+     * The last verbose output displayed.
+     */
+    public String getLastVerboseOutputText() {
+        return lastVerboseOutputText == null ? "" : lastVerboseOutputText;
+    }
+
+    public void setLastVerboseOutputText(String lastVerboseOutputText) {
+        this.lastVerboseOutputText = lastVerboseOutputText;
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
+     * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
+     * Acyclic Graph), CPDAG (Completed Partially Directed Acyclic Graph), and PAG (Partially Directed Acyclic Graph).
+     */
+    public enum ComparisonGraphType {
+
+        /**
+         * Directed Acyclic Graph (DAG).
+         */
+        DAG,
+
+        /**
+         * Completed Partially Directed Acyclic Graph (CPDAG).
+         */
+        CPDAG,
+
+        /**
+         * Partially Directed Acyclic Graph (PAG).
+         */
+        PAG
+    }
+
+    public static class MyTableColumn implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 23L;
         private final String columnName;
         private final String description;
         private final Class<? extends Statistic> statistic;
@@ -894,6 +1175,115 @@ public class AlgcomparisonModel implements SessionModel {
         }
     }
 
+    public static class AlgorithmSpec implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 23L;
+        private final String name;
+        private final AlgorithmModel algorithm;
+        private final AnnotatedClass<TestOfIndependence> test;
+        private final AnnotatedClass<Score> score;
+
+        public AlgorithmSpec(String name, AlgorithmModel algorithm,
+                             AnnotatedClass<TestOfIndependence> test, AnnotatedClass<Score> score) {
+            this.name = name;
+            this.algorithm = algorithm;
+            this.test = test;
+            this.score = score;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public AlgorithmModel getAlgorithm() {
+            return algorithm;
+        }
+
+        public AnnotatedClass<TestOfIndependence> getTest() {
+            return test;
+        }
+
+        public AnnotatedClass<Score> getScore() {
+            return score;
+        }
+
+        public Algorithm getAlgorithmImpl() {
+            try {
+                IndependenceWrapper independenceWrapper = null;
+                ScoreWrapper scoreWrapper = null;
+
+                if (test != null) {
+                    independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
+                }
+
+                if (score != null) {
+                    scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
+                }
+
+                Class<?> _algorithm = algorithm.getAlgorithm().clazz();
+                Algorithm algorithmImpl = (Algorithm) _algorithm.getConstructor().newInstance();
+
+                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
+                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
+                }
+
+                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
+                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                }
+
+                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
+                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
+                }
+
+                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
+                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                }
+
+                return algorithmImpl;
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public String toString() {
+            return name;
+        }
+    }
+
+    public static class SimulationSpec implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 23L;
+        private final String name;
+        private final Class<? extends RandomGraph> graphClass;
+        private final Class<? extends Simulation> simulationClass;
+
+        public SimulationSpec(String name, Class<? extends RandomGraph> graph,
+                              Class<? extends Simulation> simulation) {
+            this.name = name;
+            this.graphClass = graph;
+            this.simulationClass = simulation;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Simulation getSimulationImpl() {
+            try {
+                RandomGraph randomGraph = graphClass.getConstructor().newInstance();
+                return simulationClass.getConstructor(RandomGraph.class).newInstance(randomGraph);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public String toString() {
+            return name;
+        }
+
+    }
 }
 
 

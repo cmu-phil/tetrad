@@ -45,7 +45,7 @@ public class TeyssierScorer {
     private double runningScore = 0f;
 
     /**
-     * Constructor that takes both a test or a score. Only one of these is used, dependeint on how the parameters are
+     * Constructor that takes both a test or a score. Only one of these is used, dependent on how the parameters are
      * set.
      *
      * @param test  The test.
@@ -144,25 +144,13 @@ public class TeyssierScorer {
     }
 
     /**
-     * Performs a tuck operation.
-     *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     */
-    public void swaptuck(Node x, Node y) {
-        if (index(y) < index(x)) {
-            moveTo(x, index(y));
-        }
-    }
-
-    /**
      * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param j The node to tuck.
      * @param k The node to tuck j before.
+     * @param j The node to tuck.
      * @return true if the tuck made a change.
      */
-    public boolean tuck(Node j, Node k) {
+    public boolean tuck(Node k, Node j) {
         int jIndex = index(j);
         int kIndex = index(k);
 
@@ -173,13 +161,56 @@ public class TeyssierScorer {
         Set<Node> ancestors = getAncestors(j);
         int _kIndex = kIndex;
 
+        boolean changed = false;
+
         for (int i = jIndex; i > kIndex; i--) {
             if (ancestors.contains(get(i))) {
                 moveTo(get(i), _kIndex++);
+                changed = true;
             }
         }
 
-        return true;
+        return changed;
+    }
+
+    /**
+     * Moves all j's to before k and moves all the ancestors of all ji's betwween k and ji to before k.
+     *
+     * @param k The node to tuck j before.
+     * @param j The nodes to tuck.
+     * @return true if the tuck made a change.
+     */
+    public boolean tuck(Node k, Node... j) {
+        List<Integer> jIndices = new ArrayList<>();
+        int maxj = Integer.MIN_VALUE;
+        int minj = Integer.MAX_VALUE;
+        for (Node node : j) {
+            jIndices.add(index(node));
+            maxj = Math.max(maxj, index(node));
+            minj = Math.min(minj, index(node));
+        }
+
+        int kIndex = index(k);
+
+        if (maxj < kIndex) {
+            return false;
+        }
+
+        boolean changed = false;
+
+        for (int _j : jIndices) {
+            Set<Node> ancestors = getAncestors(get(_j));
+            int _kIndex = kIndex;
+
+            for (int i = minj; i > kIndex; i--) {
+                if (ancestors.contains(get(i))) {
+                    moveTo(get(i), _kIndex++);
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
     }
 
     /**
@@ -238,7 +269,7 @@ public class TeyssierScorer {
      *
      * @param x The first variable.
      * @param y The second variable.
-     * @return True iff x-&gt;y or y-&gt;x is a covered edge.
+     * @return True, iff x-&gt;y or y-&gt;x is a covered edge.
      */
     public boolean coveredEdge(Node x, Node y) {
         if (!adjacent(x, y)) return false;
@@ -290,7 +321,11 @@ public class TeyssierScorer {
      * @return Its parents.
      */
     public Set<Node> getParents(int p) {
-        if (this.scores.get(p) == null) recalculate(p);
+        try {
+            if (this.scores.get(p) == null) recalculate(p);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return new HashSet<>(this.scores.get(p).getParents());
     }
 
@@ -447,7 +482,7 @@ public class TeyssierScorer {
     }
 
     /**
-     * Bookmarks the current pi as index key.
+     * Bookmarks the current pi as the index key.
      *
      * @param key This bookmark may be retrieved using the index 'key', an integer. This bookmark will be stored until
      *            it is retrieved and then removed.
@@ -548,6 +583,18 @@ public class TeyssierScorer {
     }
 
     /**
+     * Returns true iff [a, b, c] is an unshielded collider.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param c The third node.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
+     */
+    public boolean unshieldedCollider(Node a, Node b, Node c) {
+        return getParents(b).contains(a) && getParents(b).contains(c) && !adjacent(a, c);
+    }
+
+    /**
      * Returns true iff [a, b, c] is a triangle.
      *
      * @param a The first node.
@@ -578,10 +625,10 @@ public class TeyssierScorer {
     }
 
     /**
-     * <p>getPrefix.</p>
+     * Retrieves a prefix of the size specified by the parameter.
      *
-     * @param i a int
-     * @return a {@link java.util.Set} object
+     * @param i The size of the prefix to retrieve.
+     * @return A {@code Set} containing the prefix of size {@code i}.
      */
     public Set<Node> getPrefix(int i) {
         Set<Node> prefix = new HashSet<>();
@@ -698,16 +745,14 @@ public class TeyssierScorer {
     }
 
     private boolean lastMoveSame(int i1, int i2) {
-        if (i1 <= i2) {
-            Set<Node> prefix0 = getPrefix(i1);
+        Set<Node> prefix0 = getPrefix(i1);
 
+        if (i1 <= i2) {
             for (int i = i1; i <= i2; i++) {
                 prefix0.add(get(i));
                 if (!prefix0.equals(this.prefixes.get(i))) return false;
             }
         } else {
-            Set<Node> prefix0 = getPrefix(i1);
-
             for (int i = i2; i <= i1; i++) {
                 prefix0.add(get(i));
                 if (!prefix0.equals(this.prefixes.get(i))) return false;

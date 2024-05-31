@@ -21,88 +21,27 @@
 
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.io.ObjectStreamException;
-import java.io.Serial;
+import java.io.*;
 
-/**
- * A typesafe enum of the types of the types of constraints on freeParameters for SEM models (LT, GT, EQ). For example,
- * LT constraints require that the value of a parameter in a given SemIm be less than some value.  That value may be a
- * given number (double) or the value of another parameter.
- *
- * @author Frank Wimberly following Joe Ramsey's ParamType class.
- * @version $Id: $Id
- */
-public class ParamConstraintType implements TetradSerializable {
-    /**
-     * A "less than" constraint.
-     */
-    public static final ParamConstraintType LT = new ParamConstraintType("LT");
-    /**
-     * A "greater than" constraint.
-     */
-    public static final ParamConstraintType GT = new ParamConstraintType("GT");
-    /**
-     * An "equal to" constraint.
-     */
-    public static final ParamConstraintType EQ = new ParamConstraintType("EQ");
-    /**
-     * No constraint.
-     */
-    public static final ParamConstraintType NONE =
-            new ParamConstraintType("NONE");
-    private static final long serialVersionUID = 23L;
-    private static final ParamConstraintType[] TYPES = {ParamConstraintType.LT, ParamConstraintType.GT, ParamConstraintType.EQ, ParamConstraintType.NONE};
-    // Declarations required for serialization.
-    private static int NEXT_ORDINAL;
-    /**
-     * The name of this type.
-     */
-    private final transient String name;
+public enum ParamConstraintType {
+    LT("LT"),
+    GT("GT"),
+    EQ("EQ"),
+    NONE("NONE");
 
-    /**
-     * The ordinal of this type.
-     */
-    private final int ordinal = ParamConstraintType.NEXT_ORDINAL++;
+    private final String name;
 
-    /**
-     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
-     */
-    private ParamConstraintType(String name) {
+    ParamConstraintType(String name) {
         this.name = name;
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
-     */
-    public static ParamConstraintType serializableInstance() {
-        return ParamConstraintType.LT;
-    }
-
-    /**
-     * Prints out the name of the type.
-     *
-     * @return a {@link java.lang.String} object
-     */
     public String toString() {
         return this.name;
     }
-
-    /**
-     * Returns the type of the constraint.
-     *
-     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
-     * @throws ObjectStreamException if something goes wrong
-     */
-    @Serial
-    Object readResolve() throws ObjectStreamException {
-        return ParamConstraintType.TYPES[this.ordinal]; // Canonicalize.
-    }
 }
-
 
 
 

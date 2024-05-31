@@ -30,7 +30,7 @@ public class BidirectedPrecision implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "PBP";
+        return "BP";
     }
 
     /**

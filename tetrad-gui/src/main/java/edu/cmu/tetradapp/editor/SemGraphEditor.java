@@ -469,7 +469,7 @@ public final class SemGraphEditor extends JPanel
         graph.addSeparator();
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench(), parameters));
         graph.add(new UnderliningsAction(this.workbench));
         graph.addSeparator();
 

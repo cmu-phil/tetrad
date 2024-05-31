@@ -120,11 +120,6 @@ public final class Fci implements IGraphSearch {
      * Whether the discriminating path rule should be used.
      */
     private boolean doDiscriminatingPathRule = true;
-    /**
-     * Flag indicating whether almost cyclic paths should be resolved during the search.
-     * Default value is false.
-     */
-    private boolean resolveAlmostCyclicPaths;
 
     /**
      * Constructor.
@@ -203,7 +198,6 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-//        SepsetProducer sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
         SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
 
         if (this.possibleMsepSearchDone) {
@@ -226,30 +220,10 @@ public final class Fci implements IGraphSearch {
         fciOrient.setKnowledge(this.knowledge);
 
         fciOrient.ruleR0(graph);
-
         fciOrient.doFinalOrientation(graph);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
-        }
-
         long stop = MillisecondTimes.timeMillis();
-
-//        graph = GraphTransforms.dagToPag(graph);
-
         this.elapsedTime = stop - start;
-
         return graph;
     }
 
@@ -385,15 +359,6 @@ public final class Fci implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
-     * Sets whether to resolve almost cyclic paths during the search.
-     *
-     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
-     */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 }
 

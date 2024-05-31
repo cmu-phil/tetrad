@@ -611,19 +611,16 @@ public class MarkovCheckEditor extends JPanel {
                                DoubleTextField percent, boolean clear) {
         SwingUtilities.invokeLater(() -> {
             setTest();
+
+            tableModelIndep.fireTableDataChanged();
+            tableModelDep.fireTableDataChanged();
+
             model.getMarkovCheck().setPercentResample(percent.getValue());
             model.getMarkovCheck().generateResults(clear);
             tableModelIndep.fireTableDataChanged();
             tableModelDep.fireTableDataChanged();
             updateTables(model, tableIndep, tableDep);
         });
-
-//        setTest();
-//        model.getMarkovCheck().setPercentResample(percent.getValue());
-//        model.getMarkovCheck().generateResults(clear);
-//        tableModelIndep.fireTableDataChanged();
-//        tableModelDep.fireTableDataChanged();
-//        updateTables(model, tableIndep, tableDep);
     }
 
     private void setTest() {
@@ -690,12 +687,12 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(true).size()) {
-                    return null;
-                }
-
                 if (columnIndex == 0) {
                     return rowIndex + 1;
+                }
+
+                if (rowIndex >= model.getResults(true).size()) {
+                    return null;
                 }
 
                 IndependenceResult result = model.getResults(true).get(rowIndex);
@@ -781,8 +778,22 @@ public class MarkovCheckEditor extends JPanel {
 
         addFilterPanel(model, tableModelIndep, tableIndep, tableBox, flipEscapesIndep);
 
+        Box b10 = Box.createHorizontalBox();
+        b10.add(Box.createHorizontalGlue());
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        tableBox.add(label, BorderLayout.SOUTH);
+        b10.add(label);
+        b10.add(Box.createHorizontalStrut(20));
+
+        JLabel label1 = new JLabel("# independencies = " + model.getResults(true).size());
+        b10.add(label1);
+        b10.add(Box.createHorizontalGlue());
+
+        // Setup a Timer to call update every 5 seconds
+        javax.swing.Timer timer = new javax.swing.Timer(1000,
+                e -> label1.setText("# independencies = " + model.getResults(true).size()));
+        timer.start();
+
+        tableBox.add(b10, BorderLayout.SOUTH);
 
         setLabelTexts();
 
@@ -833,7 +844,7 @@ public class MarkovCheckEditor extends JPanel {
         // Create the text field
         JLabel regexLabel = new JLabel("Regexes (semicolon separated):");
         JTextField filterText = new JTextField(15);
-        filterText.setMaximumSize(new Dimension(800, 20));
+        filterText.setMaximumSize(new Dimension(600, 20));
         regexLabel.setLabelFor(filterText);
 
         // Create a listener for the text field that will update the table's row sort
@@ -846,6 +857,7 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(550, 400));
 
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(regexLabel);
@@ -970,7 +982,7 @@ public class MarkovCheckEditor extends JPanel {
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
-        tableBox.add(conditioningLabelDep);
+        tableBox.add(conditioningLabelDep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
@@ -986,12 +998,15 @@ public class MarkovCheckEditor extends JPanel {
                 } else if (column == 3) {
                     return "P-value or Bump";
                 }
+//                else if (model.getMarkovCheck().isCpdag() && column == 4) {
+//                    return "Min Beta";
+//                }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return model.getMarkovCheck().isCpdag() ? 5 : 4;
+                return 4;
             }
 
             public int getRowCount() {
@@ -1000,12 +1015,12 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(false).size()) {
-                    return null;
-                }
-
                 if (columnIndex == 0) {
                     return rowIndex + 1;
+                }
+
+                if (rowIndex >= model.getResults(false).size()) {
+                    return null;
                 }
 
                 IndependenceResult result = model.getResults(false).get(rowIndex);
@@ -1078,27 +1093,35 @@ public class MarkovCheckEditor extends JPanel {
                 int col = header.columnAtPoint(point);
                 int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                MarkovCheckEditor.this.sortByColumn(sortCol, false);
+                MarkovCheckEditor.this.sortByColumn(sortCol, true);
             }
         });
 
         flipEscapesDep = new JCheckBox("Flip escapes ()|");
-        flipEscapesDep.setSelected(isFlipEscapes());
+        flipEscapesDep.setSelected(flipEscapes);
         flipEscapesDep.addActionListener(e -> {
             flipEscapes = flipEscapesDep.isSelected();
-            flipEscapesIndep.setSelected(isFlipEscapes());
+            flipEscapesDep.setSelected(isFlipEscapes());
         });
 
         addFilterPanel(model, tableModelDep, tableDep, tableBox, flipEscapesDep);
 
-        JScrollPane scroll = new JScrollPane(tableDep);
-        tableBox.add(scroll);
-
-        Box a3 = Box.createHorizontalBox();
+        Box b10 = Box.createHorizontalBox();
+        b10.add(Box.createHorizontalGlue());
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        a3.add(label);
-        a3.add(Box.createHorizontalGlue());
-        tableBox.add(label);
+        b10.add(label);
+        b10.add(Box.createHorizontalStrut(20));
+
+        JLabel label1 = new JLabel("# Dependencies = " + model.getResults(false).size());
+        b10.add(label1);
+        b10.add(Box.createHorizontalGlue());
+
+        // Setup a Timer to call update every 5 seconds
+        javax.swing.Timer timer = new javax.swing.Timer(1000,
+                e -> label1.setText("# Dependencies = " + model.getResults(false).size()));
+        timer.start();
+
+        tableBox.add(b10, BorderLayout.SOUTH);
 
         setLabelTexts();
 
@@ -1134,14 +1157,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelDep);
         a4.add(a9);
 
-        Box a11 = Box.createHorizontalBox();
-        a11.add(a4);
+        JPanel checkMarkovPanel = new JPanel(new BorderLayout());
+        checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
+        checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
 
-        JPanel checkDependDistributionPanel = new JPanel(new BorderLayout());
-        checkDependDistributionPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
-        checkDependDistributionPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
-
-        return checkDependDistributionPanel;
+        return checkMarkovPanel;
     }
 
     /**

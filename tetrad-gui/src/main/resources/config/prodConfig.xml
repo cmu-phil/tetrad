@@ -72,7 +72,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
             </model>
-            <model name="Choose Random Dag in CPDAG" acronym="Dag in CPDAG"
+            <model name="Choose Dag in CPDAG" acronym="Dag in CPDAG"
                    help="graph" category="Graph Manipulations">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -385,6 +385,17 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <!--<model name="Expand Case Multipliers" acronym="Expand" help="data"-->
+            <!--category="Manipulation of Data">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="data" description="Data"/>-->
+            <!--</logger>-->
+            <!--<model-class>-->
+            <!--edu.cmu.tetradapp.model.datamanip.ExpandCaseMultipliersWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
             <model name="Calculator" acronym="Calculator" help="data"
                    category="Manipulation of Data">
                 <logger>
@@ -398,6 +409,22 @@
                 <params-editor-class>edu.cmu.tetradapp.editor.CalculatorEditor
                 </params-editor-class>
             </model>
+            <!--<model-class>-->
+            <!--edu.cmu.tetradapp.model.datamanip.CopySelectedDatasetWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
+            <!--<model name="Copy All Datasets" acronym="Copy All"-->
+            <!--help="copyselecteddata" category="Manipulation of Data">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="data" description="Data"/>-->
+            <!--</logger>-->
+            <!--<model-class>-->
+            <!--edu.cmu.tetradapp.model.datamanip.CopyAllDatasetsWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
             <model name="Collect Data Sets In One Box" acronym="Collect Data Sets In One Box"
                    help="mergedatasets" category="Manipulation of Data">
                 <logger>
@@ -420,6 +447,19 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <!--<model name="Shift Data" acronym="Shift Data" help="data"-->
+            <!--category="Manipulation of Data">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="data" description="Data"/>-->
+            <!--</logger>-->
+            <!--<model-class>-->
+            <!--edu.cmu.tetradapp.model.datamanip.ShiftDataWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--<params-editor-class>edu.cmu.tetradapp.editor.datamanip.ShiftDataParamsEditor-->
+            <!--</params-editor-class>-->
+            <!--</model>-->
             <model name="Convert to Correlation Matrix" acronym="Corr Matrix"
                    help="corr" category="Conversion of Data">
                 <logger>
@@ -945,16 +985,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.SemUpdaterEditor
                 </editor-class>
             </model>
-            <model name="Junction Tree Algorithm Updater" acronym="Junction Tree" help="jta_updater">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.JunctionTreeWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
-                </editor-class>
-            </model>
             <model name="Identifiability" acronym="Ident"
                    help="ident_help">
                 <logger>
@@ -1026,6 +1056,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.LogisticRegressionEditor
                 </editor-class>
+            </model>
+            <model name="Linear Adjustment" acronym="Linear Adjustment"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>
             </model>
         </models>
         <display-component image="searchIcon.gif"/>
@@ -1125,16 +1165,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
-            <model name="Algcomparison" acronym="Algcomparison"
-                   help="indep_facts" category="Independence Facts Comparison">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.AlgcomparisonModel
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.AlgcomparisonEditor</editor-class>
-            </model>
+            <!--            <model name="Grid Search" acronym="Grid Search"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.GridSearchModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>
@@ -1172,6 +1212,35 @@
                  <br> (1) Simulation and Search
                  <br> (2) Several boxes containing graphs.
                  <br> (3) Several boxes containing independence tests.
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    <session-node id="GridSearch">
+        <models>
+            <model name="Grid Search" acronym="Grid Search"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GridSearchModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>
+            </model>
+        </models>
+        <display-component image="graphIcon.gif"/>
+        <model-chooser title="Types of Comparisons">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) No inputs
+                 <br> (2) Graph
+                 <br> (3) Data.
+                 <br> Knowledge may also be given as a parent.
                  <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
@@ -1221,6 +1290,14 @@
                     <event id="knowledge" description="Knowledge" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel</model-class>
+                <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
+            </model>
+            <model name="FASK Forbidden Graph" acronym="FASK-Forb-Graph" help="forb.graph">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="knowledge" description="Knowledge" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FaskForbiddenGraphModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
             <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->

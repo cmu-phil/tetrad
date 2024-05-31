@@ -27,9 +27,9 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the LV algorithm for learning causal
- * structures from observational data. It uses a combination of independence tests and scores to search for the best
- * graph structure given a data set and parameters.
+ * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
+ * afterward.
  *
  * @author josephramsey
  */
@@ -57,10 +57,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a LvLite algorithm.
+     * This class represents a LV-Lite algorithm.
      *
      * <p>
-     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -73,10 +73,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     }
 
     /**
-     * LvLite is a class that represents a LvLite algorithm.
+     * LV-Lite is a class that represents a LV-Lite algorithm.
      *
      * <p>
-     * The LvLite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -123,11 +123,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        boolean aBoolean = parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE);
-        search.setDoDiscriminatingPathRule(aBoolean);
 
         // LV-Lite
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
+        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+        search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -155,7 +155,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "LV-Lite using " + this.score.getDescription();
+        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
     }
 
     /**
@@ -178,19 +178,17 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.DEPTH);
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
         // FCI-ORIENT
-        params.add(Params.DEPTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
-        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
-
+        params.add(Params.ALLOW_TUCKS);
 
         // General
         params.add(Params.TIME_LAG);

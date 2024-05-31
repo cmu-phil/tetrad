@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -34,6 +35,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.List;
 import java.util.*;
@@ -304,7 +308,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        repaint();
+//        repaint();
         firePropertyChange("BackgroundClicked", null, null);
     }
 
@@ -871,8 +875,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param g the Graphics context in which to paint
      */
     public final void paint(Graphics g) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+//        g.setColor(getBackground());
+//        g.fillRect(0, 0, getWidth(), getHeight());
         super.paint(g);
     }
 
@@ -912,7 +916,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     public void setBackground(Color color) {
         super.setBackground(color);
-        repaint();
+//        repaint();
     }
 
     /**
@@ -1156,7 +1160,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         revalidate();
-        repaint();
+//        repaint();
     }
 
     private void addLast(Graph graph) {
@@ -2117,7 +2121,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void handleMouseDragged(MouseEvent e) {
-        setMouseDragging();
+//        setMouseDragging();
 
         Object source = e.getSource();
         Point newPoint = e.getPoint();
@@ -2504,20 +2508,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         repaint();
     }
 
-    private void setMouseDragging() {
-        /**
-         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
-         * (without this bug fix) groups of nodes cannot be selected, because if
-         * you click and drag, an extra mouseClicked event is fired when you
-         * release the mouse. This is a known bug, #5039416 in Sun's bug
-         * database. To get around the problem, we set this flag to true when a
-         * mouseDragged event is fired and ignore the first click (and reset
-         * this flag to false) on the first mouseClicked event after any
-         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
-         * bug fix shold be removed. jdramsey 4/15/2005
-         */
-        boolean mouseDragging = true;
-    }
+//    private void setMouseDragging() {
+//        /**
+//         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
+//         * (without this bug fix) groups of nodes cannot be selected, because if
+//         * you click and drag, an extra mouseClicked event is fired when you
+//         * release the mouse. This is a known bug, #5039416 in Sun's bug
+//         * database. To get around the problem, we set this flag to true when a
+//         * mouseDragged event is fired and ignore the first click (and reset
+//         * this flag to false) on the first mouseClicked event after any
+//         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
+//         * bug fix shold be removed. jdramsey 4/15/2005
+//         */
+//        boolean mouseDragging = true;
+//    }
 
     /**
      * Checks whether adding measured variables is allowed.
@@ -2560,7 +2564,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      *
      * @param enableEditing true to enable editing, false to disable editing
      */
-    public void enableEditing(boolean enableEditing) {
+    public void setEnableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         setEnabled(enableEditing);
     }
@@ -2981,4 +2985,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
+                                                       + ", " + e.getMessage());
+            throw e;
+        }
+    }
 }

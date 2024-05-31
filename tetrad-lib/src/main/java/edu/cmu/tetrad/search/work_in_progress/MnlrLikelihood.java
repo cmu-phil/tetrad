@@ -73,9 +73,9 @@ public class MnlrLikelihood {
     // Structure Prior
     private final double structurePrior;
 
-    private final PrintStream original = System.out;
+    private final transient PrintStream original = System.out;
 
-    private final PrintStream nullout = new PrintStream(new OutputStream() {
+    private final transient PrintStream nullout = new PrintStream(new OutputStream() {
         public void write(int b) {
             //DO NOTHING
         }

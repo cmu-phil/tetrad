@@ -2015,34 +2015,6 @@ public class SessionNode implements Node {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.boxType == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.displayName == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.modelClasses == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.paramMap == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.parents == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.children == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.repetition < 1) {
-            throw new IllegalStateException();
-        }
     }
 
     /**

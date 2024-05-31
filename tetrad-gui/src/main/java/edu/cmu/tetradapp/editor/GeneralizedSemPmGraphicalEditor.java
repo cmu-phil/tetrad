@@ -236,7 +236,7 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
-            this.workbench.enableEditing(enableEditing);
+            this.workbench.setEnableEditing(enableEditing);
         }
     }
 

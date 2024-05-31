@@ -58,7 +58,7 @@ public class Maximal implements Statistic {
                     if (inducingPath != null) {
                         TetradLogger.getInstance().forceLogMessage("Maximality check: Found an inducing path for "
                                                                    + n1 + "..." + n2 + ": "
-                                                                   + GraphUtils.pathString(estGraph, inducingPath));
+                                                                   + GraphUtils.pathString(estGraph, inducingPath, false));
                         maximal = false;
                     }
                 }
