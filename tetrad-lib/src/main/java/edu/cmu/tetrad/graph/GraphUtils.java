@@ -2495,7 +2495,7 @@ public final class GraphUtils {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (referenceCpdag.isDefCollider(a, b, c)
+                if (referenceCpdag.isDefCollider(a, b, c) && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c)
                     && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
                     && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
                     && !referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {

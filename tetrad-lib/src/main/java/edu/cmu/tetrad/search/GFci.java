@@ -99,10 +99,6 @@ public final class GFci implements IGraphSearch {
      */
     private boolean faithfulnessAssumed = true;
     /**
-     * Whether the discriminating path rule should be used.
-     */
-    private boolean doDiscriminatingPathRule = true;
-    /**
      * The depth for independence testing.
      */
     private int depth = -1;
@@ -114,6 +110,10 @@ public final class GFci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether the discriminating path tail rule should be used.
+     */
+    private boolean doDiscriminatingPathTailRule = true;
     /**
      * Whether the discriminating path collider rule should be used.
      */
@@ -173,7 +173,7 @@ public final class GFci implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
@@ -279,15 +279,6 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
-     *
-     * @param doDiscriminatingPathRule True, if so.
-     */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
      * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
@@ -309,9 +300,18 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path collider rules should be used.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathColliderRule True, if the discriminating path collider rules should be used. False, otherwise.
+     * @param doDiscriminatingPathTailRule True, if the discriminating path collider rules should be used. False, otherwise.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if the discriminating path collider rule should be used. False, otherwise.
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;

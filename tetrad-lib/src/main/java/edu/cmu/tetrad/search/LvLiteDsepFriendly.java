@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -204,10 +205,18 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
         }
 
+        test.setVerbose(false);
+
         test.setVerbose(verbose);
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
         grasp.setSeed(seed);
+//        grasp.setDepth(depth);
+//        grasp.setUncoveredDepth(uncoveredDepth);
+//        grasp.setNonSingularDepth(nonSingularDepth);
+        grasp.setDepth(3);
+        grasp.setUncoveredDepth(1);
+        grasp.setNonSingularDepth(1);
         grasp.setDepth(depth);
         grasp.setUncoveredDepth(uncoveredDepth);
         grasp.setNonSingularDepth(nonSingularDepth);
@@ -216,7 +225,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         grasp.setUseRaskuttiUhler(useRaskuttiUhler);
         grasp.setUseDataOrder(useDataOrder);
         grasp.setAllowInternalRandomness(allowInternalRandomness);
-        grasp.setVerbose(verbose);
+        grasp.setVerbose(false);
 
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
@@ -323,7 +332,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-//                    if (pag.isAdjacentTo(x, y)) {
                     if (triple(pag, x, b, y) && unshieldedColliders.contains(new Triple(x, b, y))) {
                         pag.setEndpoint(x, b, Endpoint.ARROW);
                         pag.setEndpoint(y, b, Endpoint.ARROW);
@@ -334,7 +342,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                                     "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
                         }
                     }
-//                    }
                 }
             }
         }
@@ -365,47 +372,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                                     "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                         }
                     } else if (allowTucks && pag.isAdjacentTo(x, y)) {
-                        scorer.goToBookmark();
-                        scorer.tuck(b, x);
-
-                        boolean scorerUnshieldedCollider = scorer.unshieldedCollider(x, b, y);
-                        boolean pagTriple = triple(pag, x, b, y);
-                        boolean colliderAllowed = colliderAllowed(pag, x, b, y);
-
-                        if (pagTriple && scorerUnshieldedCollider && colliderAllowed) {
-                            pag.setEndpoint(x, b, Endpoint.ARROW);
-                            pag.setEndpoint(y, b, Endpoint.ARROW);
-
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(
-                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            }
-
-                            toRemove.add(new NodePair(x, y));
-                            unshieldedColliders.add(new Triple(x, b, y));
-
-                            List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
-                            commonAdj.retainAll(pag.getAdjacentNodes(y));
-
-                            List<Node> commonChildren = new ArrayList<>(pag.getChildren(x));
-                            commonChildren.retainAll(pag.getChildren(y));
-
-                            commonAdj.removeAll(commonChildren);
-
-                            for (Node a : commonAdj) {
-                                if (a == b) continue;
-
-                                pag.setEndpoint(x, a, Endpoint.ARROW);
-                                pag.setEndpoint(y, a, Endpoint.ARROW);
-
-                                unshieldedColliders.add(new Triple(x, a, y));
-
-                                if (verbose) {
-                                    TetradLogger.getInstance().forceLogMessage(
-                                            "### Also oriented " + x + " *-> " + b + " <-* " + y + ".");
-                                }
-                            }
-                        }
+                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove);
                     }
                 }
             }
@@ -424,6 +391,75 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                 }
             }
         }
+    }
+
+    private void triangleReasoning(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
+                                   Set<NodePair> toRemove) {
+
+        // Find possible d-connecting common adjacents of x and y.
+        List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
+        commonAdj.retainAll(pag.getAdjacentNodes(y));
+
+        List<Node> commonChildren = new ArrayList<>(pag.getChildren(x));
+        commonChildren.retainAll(pag.getChildren(y));
+
+        commonAdj.removeAll(commonChildren);
+
+        if (!pag.isDefCollider(x, b, y)) {
+            // Tuck x before b.
+            scorer.goToBookmark();
+            scorer.tuck(b, x);
+
+            // If we can now copy the collider from the scorer, do so.
+            if (pag.isAdjacentTo(x, b) && pag.isAdjacentTo(b, y) && scorer.unshieldedCollider(x, b, y)
+                && colliderAllowed(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                }
+
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, b, y));
+            }
+        }
+
+        // But check all other possible d-connecting common adjacents of x and y
+        for (Node a : commonAdj) {
+
+            // Tuck those too, one at a time
+            scorer.tuck(a, x);
+
+            // If we can now copy the collider from the scorer, do so.
+            if (pag.isAdjacentTo(x, b) && pag.isAdjacentTo(a, y) && scorer.unshieldedCollider(x, a, y)
+                && colliderAllowed(pag, x, a, y)) {
+                pag.setEndpoint(x, a, Endpoint.ARROW);
+                pag.setEndpoint(y, a, Endpoint.ARROW);
+
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, a, y));
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if three nodes are connected in a graph.
+     *
+     * @param graph the graph to check for connectivity
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return {@code true} if all three nodes are connected, {@code false} otherwise
+     */
+    private boolean triple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
     }
 
     /**
@@ -467,19 +503,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
         return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if three nodes are connected in a graph.
-     *
-     * @param graph the graph to check for connectivity
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return {@code true} if all three nodes are connected, {@code false} otherwise
-     */
-    private boolean triple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
     }
 
     /**
@@ -584,10 +607,10 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a                                a {@link Node} object
-     * @param b                                a {@link Node} object
-     * @param c                                a {@link Node} object
-     * @param graph                            a {@link Graph} object
+     * @param a     a {@link Node} object
+     * @param b     a {@link Node} object
+     * @param c     a {@link Node} object
+     * @param graph a {@link Graph} object
      */
     private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer) {
         Queue<Node> Q = new ArrayDeque<>(20);

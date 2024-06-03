@@ -303,7 +303,6 @@ public final class LvLite implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-//                    if (pag.isAdjacentTo(x, y)) {
                     if (triple(pag, x, b, y) && unshieldedColliders.contains(new Triple(x, b, y))) {
                         pag.setEndpoint(x, b, Endpoint.ARROW);
                         pag.setEndpoint(y, b, Endpoint.ARROW);
@@ -314,7 +313,6 @@ public final class LvLite implements IGraphSearch {
                                     "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
                         }
                     }
-//                    }
                 }
             }
         }
@@ -345,47 +343,7 @@ public final class LvLite implements IGraphSearch {
                                     "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                         }
                     } else if (allowTucks && pag.isAdjacentTo(x, y)) {
-                        scorer.goToBookmark();
-                        scorer.tuck(b, x);
-
-                        boolean scorerUnshieldedCollider = scorer.unshieldedCollider(x, b, y);
-                        boolean pagTriple = triple(pag, x, b, y);
-                        boolean colliderAllowed = colliderAllowed(pag, x, b, y);
-
-                        if (pagTriple && scorerUnshieldedCollider && colliderAllowed) {
-                            pag.setEndpoint(x, b, Endpoint.ARROW);
-                            pag.setEndpoint(y, b, Endpoint.ARROW);
-
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(
-                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            }
-
-                            toRemove.add(new NodePair(x, y));
-                            unshieldedColliders.add(new Triple(x, b, y));
-
-                            List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
-                            commonAdj.retainAll(pag.getAdjacentNodes(y));
-
-                            List<Node> commonChildren = new ArrayList<>(pag.getChildren(x));
-                            commonChildren.retainAll(pag.getChildren(y));
-
-                            commonAdj.removeAll(commonChildren);
-
-                            for (Node a : commonAdj) {
-                                if (a == b) continue;
-
-                                pag.setEndpoint(x, a, Endpoint.ARROW);
-                                pag.setEndpoint(y, a, Endpoint.ARROW);
-
-                                unshieldedColliders.add(new Triple(x, a, y));
-
-                                if (verbose) {
-                                    TetradLogger.getInstance().forceLogMessage(
-                                            "### Also oriented " + x + " *-> " + b + " <-* " + y + ".");
-                                }
-                            }
-                        }
+                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove);
                     }
                 }
             }
@@ -401,6 +359,62 @@ public final class LvLite implements IGraphSearch {
                 if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
                     TetradLogger.getInstance().forceLogMessage(
                             "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                }
+            }
+        }
+    }
+
+    private void triangleReasoning(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
+                                   Set<NodePair> toRemove) {
+
+        // Find possible d-connecting common adjacents of x and y.
+        List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
+        commonAdj.retainAll(pag.getAdjacentNodes(y));
+
+        List<Node> commonChildren = new ArrayList<>(pag.getChildren(x));
+        commonChildren.retainAll(pag.getChildren(y));
+
+        commonAdj.removeAll(commonChildren);
+
+        if (!pag.isDefCollider(x, b, y)) {
+            // Tuck x before b.
+            scorer.goToBookmark();
+            scorer.tuck(b, x);
+
+            // If we can now copy the collider from the scorer, do so.
+            if (pag.isAdjacentTo(x, b) && pag.isAdjacentTo(b, y) && scorer.unshieldedCollider(x, b, y)
+                && colliderAllowed(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                }
+
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, b, y));
+            }
+        }
+
+        // But check all other possible d-connecting common adjacents of x and y
+        for (Node a : commonAdj) {
+
+            // Tuck those too, one at a time
+            scorer.tuck(a, x);
+
+            // If we can now copy the collider from the scorer, do so.
+            if (pag.isAdjacentTo(x, b) && pag.isAdjacentTo(a, y) && scorer.unshieldedCollider(x, a, y)
+                && colliderAllowed(pag, x, a, y)) {
+                pag.setEndpoint(x, a, Endpoint.ARROW);
+                pag.setEndpoint(y, a, Endpoint.ARROW);
+
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, a, y));
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
                 }
             }
         }
@@ -564,10 +578,10 @@ public final class LvLite implements IGraphSearch {
      * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a                                a {@link Node} object
-     * @param b                                a {@link Node} object
-     * @param c                                a {@link Node} object
-     * @param graph                            a {@link Graph} object
+     * @param a     a {@link Node} object
+     * @param b     a {@link Node} object
+     * @param c     a {@link Node} object
+     * @param graph a {@link Graph} object
      */
     private boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer) {
         Queue<Node> Q = new ArrayDeque<>(20);
