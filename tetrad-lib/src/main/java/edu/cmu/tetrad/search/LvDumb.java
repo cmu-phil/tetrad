@@ -31,7 +31,8 @@ import java.util.*;
 
 /**
  * LvDumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
- * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG.
+ * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
+ * doing any further laten variable reasoning.
  *
  * @author josephramsey
  */
