@@ -30,11 +30,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
- * structure of a graphical model from observational data.
- * <p>
- * This class provides methods for running the search algorithm and getting the learned pattern as a PAG (Partially
- * Annotated Graph).
+ * LvDumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
+ * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG.
  *
  * @author josephramsey
  */
