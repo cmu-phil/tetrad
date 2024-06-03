@@ -157,9 +157,9 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Initializing scorer with BOSS best order.");
         }
 
-        var cpdag = scorer.getGraph(true);
+        var dag = scorer.getGraph(false);
 
-        DagToPag dagToPag = new DagToPag(cpdag);
+        DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setDoDiscriminatingPathRule(doDiscriminatingPathRule);

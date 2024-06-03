@@ -316,4 +316,5 @@ public final class GFci implements IGraphSearch {
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
+
 }
