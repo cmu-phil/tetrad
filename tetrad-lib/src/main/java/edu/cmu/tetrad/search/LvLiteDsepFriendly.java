@@ -23,9 +23,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -38,11 +41,15 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class LvLiteDsepFriendly implements IGraphSearch {
+    private final ArrayList<Node> variables;
+    private boolean useRaskuttiUhler;
+    private IndependenceTest test;
     /**
      * The score.
      */
-    private final Score score;
+    private Score score;
+    private boolean useScore;
     /**
      * The background knowledge.
      */
@@ -92,20 +99,76 @@ public final class LvLite implements IGraphSearch {
      * tucks are enabled or disabled.
      */
     private boolean allowTucks = true;
+    /**
+     * The scorer to be used.
+     */
+    private TeyssierScorer scorer;
+    /**
+     * The time at which the algorithm started.
+     */
+    private long start;
+    /**
+     * Whether to impose an ordering on the three GRaSP algorithms.
+     */
+    private boolean ordered = false;
+    /**
+     * The maximum depth of the depth-first search for tucks.
+     */
+    private int uncoveredDepth = 1;
+    /**
+     * The maximum depth of the depth-first search for uncovered tucks.
+     */
+    private int nonSingularDepth = 1;
+    /**
+     * The maximum depth of the depth-first search for singular tucks.
+     */
+    private int depth = 3;
+    /**
+     * Whether to allow internal randomness in the algorithm.
+     */
+    private boolean allowInternalRandomness = false;
+    /**
+     * Represents the seed used for random number generation or shuffling.
+     */
+    private long seed = -1;
+    /**
+     * The maximum path length.
+     */
+    private int maxPathLength = -1;
 
     /**
-     * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
-     * Score object.
+     * Constructor for a score.
      *
-     * @param score The Score object to be used for scoring DAGs.
-     * @throws NullPointerException if score is null.
+     * @param score The score to use.
      */
-    public LvLite(Score score) {
-        if (score == null) {
-            throw new NullPointerException();
-        }
-
+    public LvLiteDsepFriendly(@NotNull Score score) {
         this.score = score;
+        this.variables = new ArrayList<>(score.getVariables());
+        this.useScore = true;
+    }
+
+    /**
+     * Constructor for a test.
+     *
+     * @param test The test to use.
+     */
+    public LvLiteDsepFriendly(@NotNull IndependenceTest test) {
+        this.test = test;
+        this.variables = new ArrayList<>(test.getVariables());
+        this.useScore = false;
+        this.useRaskuttiUhler = true;
+    }
+
+    /**
+     * Constructor that takes both a test and a score; only one is used-- the parameter setting will decide which.
+     *
+     * @param test  The test to use.
+     * @param score The score to use.
+     */
+    public LvLiteDsepFriendly(@NotNull IndependenceTest test, Score score) {
+        this.test = test;
+        this.score = score;
+        this.variables = new ArrayList<>(score.getVariables());
     }
 
     /**
@@ -141,25 +204,31 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
         }
 
-        // BOSS seems to be doing better here.
-        var suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
-        suborderSearch.setResetAfterBM(true);
-        suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(false);
-        suborderSearch.setUseBes(useBes);
-        suborderSearch.setUseDataOrder(useDataOrder);
-        suborderSearch.setNumStarts(numStarts);
-        var permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        var best = permutationSearch.getOrder();
+        test.setVerbose(verbose);
+        edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
+
+        grasp.setSeed(seed);
+        grasp.setDepth(depth);
+        grasp.setUncoveredDepth(uncoveredDepth);
+        grasp.setNonSingularDepth(nonSingularDepth);
+        grasp.setOrdered(ordered);
+        grasp.setUseScore(useScore);
+        grasp.setUseRaskuttiUhler(useRaskuttiUhler);
+        grasp.setUseDataOrder(useDataOrder);
+        grasp.setAllowInternalRandomness(allowInternalRandomness);
+        grasp.setVerbose(verbose);
+
+        grasp.setNumStarts(numStarts);
+        grasp.setKnowledge(this.knowledge);
+        List<Node> best = grasp.bestOrder(variables);
+        grasp.getGraph(true);
 
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("Best order: " + best);
         }
 
-        var scorer = new TeyssierScorer(null, score);
+        var scorer = new TeyssierScorer(test, score);
+        scorer.setUseScore(useScore);
         scorer.score(best);
         scorer.bookmark();
 
@@ -172,7 +241,13 @@ public final class LvLite implements IGraphSearch {
         var pag = new EdgeListGraph(cpdag);
         scorer.score(best);
 
-        FciOrient fciOrient = new FciOrient(null);
+        FciOrient fciOrient;
+
+        if (test instanceof MsepTest) {
+            fciOrient = new FciOrient(new DagSepsets(((MsepTest) test).getGraph()));
+        } else {
+            fciOrient = new FciOrient(null);
+        }
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
@@ -196,61 +271,6 @@ public final class LvLite implements IGraphSearch {
         finalOrientation(fciOrient, pag, scorer);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
-    }
-
-    /**
-     * Sets the knowledge used in search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the verbosity level of the search algorithm.
-     *
-     * @param verbose true to enable verbose mode, false to disable it
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Sets the number of starts for BOSS.
-     *
-     * @param numStarts The number of starts.
-     */
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    /**
-     * Sets whether the search algorithm should use the order of the data set during the search.
-     *
-     * @param useDataOrder true if the algorithm should use the data order, false otherwise
-     */
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    /**
-     * Sets whether the search algorithm should use the Discriminating Path Rule.
-     *
-     * @param doDiscriminatingPathTailRule true if the Discriminating Path Rule should be used, false otherwise
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
     /**
@@ -739,5 +759,140 @@ public final class LvLite implements IGraphSearch {
      */
     public void setAllowTucks(boolean allowTucks) {
         this.allowTucks = allowTucks;
+    }
+
+
+    /**
+     * Sets the knowledge used in search.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Sets whether Zhang's complete rules set is used.
+     *
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True, if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets the number of starts for GRaSP.
+     *
+     * @param numStarts The number of starts.
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    /**
+     * Sets whether to use Raskutti and Uhler's modification of GRaSP.
+     *
+     * @param useRaskuttiUhler True, if so.
+     */
+    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
+        this.useRaskuttiUhler = useRaskuttiUhler;
+    }
+
+    /**
+     * Sets whether to use data order for GRaSP (as opposed to random order) for the first step of GRaSP
+     *
+     * @param useDataOrder True, if so.
+     */
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Sets whether to use score for GRaSP (as opposed to independence test) for GRaSP.
+     *
+     * @param useScore True, if so.
+     */
+    public void setUseScore(boolean useScore) {
+        this.useScore = useScore;
+    }
+
+    /**
+     * Sets whether to use the discriminating path rule for GRaSP.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets depth for singular tucks.
+     *
+     * @param uncoveredDepth The depth for singular tucks.
+     */
+    public void setSingularDepth(int uncoveredDepth) {
+        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+        this.uncoveredDepth = uncoveredDepth;
+    }
+
+    /**
+     * Sets depth for non-singular tucks.
+     *
+     * @param nonSingularDepth The depth for non-singular tucks.
+     */
+    public void setNonSingularDepth(int nonSingularDepth) {
+        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+        this.nonSingularDepth = nonSingularDepth;
+    }
+
+    /**
+     * Sets whether to use the ordered version of GRaSP.
+     *
+     * @param ordered True, if so.
+     */
+    public void setOrdered(boolean ordered) {
+        this.ordered = ordered;
+    }
+
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
+    public void setSeed(long seed) {
+        this.seed = seed;
+    }
+
+    /**
+     * Sets the depth for the search algorithm.
+     *
+     * @param depth The depth value to set for the search algorithm.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+
+    /**
+     * Sets the maximum length of any discriminating path searched.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
     }
 }

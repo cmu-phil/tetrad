@@ -1753,7 +1753,7 @@ public final class GraphUtils {
             if (!edge.isDirected()) {
                 continue;
             }
-    
+
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
@@ -2517,26 +2517,28 @@ public final class GraphUtils {
                 } else if (referenceCpdag.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (graph.isAdjacentTo(a, c)) {
-                        graph.removeEdge(a, c);
-                    }
+                    if (sepset != null && graph.isAdjacentTo(a, c)) {
+                        if (graph.isAdjacentTo(a, c)) {
+                            graph.removeEdge(a, c);
+                        }
 
-                    if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        if (!sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                            graph.setEndpoint(a, b, Endpoint.ARROW);
+                            graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                        if (verbose) {
-                            double p = sepsets.getPValue(a, c, sepset);
-                            String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
+                            if (verbose) {
+                                double p = sepsets.getPValue(a, c, sepset);
+                                String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
 
-                            TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from test)), p = " + _p + ".");
+                                TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from test)), p = " + _p + ".");
 
-                            if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
-                            }
+                                if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
+                                    TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                                }
 
-                            if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                                if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
+                                    TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                                }
                             }
                         }
                     }

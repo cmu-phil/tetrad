@@ -103,6 +103,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
 
         Object obj = parameters.get(Params.PRINT_STREAM);
@@ -161,6 +163,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.NUM_THREADS);

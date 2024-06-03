@@ -119,7 +119,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
-        throw new UnsupportedOperationException("This makes no sense for this subclass.");
+        return dag.paths().isMSeparatedFrom(a, b, sepset, false) ? 1.0 : 0.0;
     }
 
     /**

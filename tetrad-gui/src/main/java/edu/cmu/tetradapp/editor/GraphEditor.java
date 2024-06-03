@@ -511,6 +511,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
 
+        randomGraph.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.META_DOWN_MASK));
+
         graph.addSeparator();
 
         graph.add(new GraphPropertiesAction(getWorkbench()));

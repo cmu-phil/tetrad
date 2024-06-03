@@ -125,6 +125,10 @@ public final class GraspFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Indicates whether the discriminating path collider rule should be used in GRaSP.
+     */
+    private boolean setDoDiscriminatingPathColliderRule = true;
 
     /**
      * Constructs a new GraspFci object.
@@ -192,7 +196,7 @@ public final class GraspFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(setDoDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
@@ -334,5 +338,14 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets whether to use the discriminating path collider rule for GRaSP.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.setDoDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

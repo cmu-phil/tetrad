@@ -4,18 +4,20 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -27,24 +29,32 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
- * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
- * afterward.
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
+ * unshielded colliders.
+ * <p>
+ * GFCI reference is this:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Lite",
-        command = "lv-lite",
+        name = "LV-Lite-Dsep-Friendly",
+        command = "lv-lite-dsep-friendly",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
+    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -57,46 +67,29 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a LV-Lite algorithm.
-     *
-     * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
-     * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
-     * Algorithm interface.
-     * </p>
-     *
-     * @see AbstractBootstrapAlgorithm
-     * @see Algorithm
+     * <p>Constructor for GraspFci.</p>
      */
-    public LvLite() {
+    public LvLiteDsepFriendly() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * LV-Lite is a class that represents a LV-Lite algorithm.
+     * <p>Constructor for GraspFci.</p>
      *
-     * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
-     * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
-     * Algorithm interface.
-     * </p>
-     *
-     * @param score The score to use.
-     * @see AbstractBootstrapAlgorithm
-     * @see Algorithm
+     * @param test  a {@link IndependenceWrapper} object
+     * @param score a {@link ScoreWrapper} object
      */
-    public LvLite(ScoreWrapper score) {
+    public LvLiteDsepFriendly(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
     /**
-     * Runs the search algorithm to find a graph structure based on a given data model and parameters.
+     * Runs a search algorithm to find a graph structure based on a given data set and parameters.
      *
-     * @param dataModel  The data model to use for the search algorithm.
-     * @param parameters The parameters to configure the search algorithm.
-     * @return The resulting graph structure.
-     * @throws IllegalArgumentException if the time lag is greater than 0 and the data model is not an instance of
-     *                                  DataSet.
+     * @param dataModel  the data set to be used for the search algorithm
+     * @param parameters the parameters for the search algorithm
+     * @return the graph structure found by the search algorithm
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -113,23 +106,30 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             knowledge = timeSeries.getKnowledge();
         }
 
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
-        // BOSS
+        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        edu.cmu.tetrad.search.LvLiteDsepFriendly search = new edu.cmu.tetrad.search.LvLiteDsepFriendly(test, score);
+
+        // GRaSP
+        search.setSeed(parameters.getLong(Params.SEED));
+        search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+        search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+        search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
+        search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+        search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
+        // FCI
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-        // LV-Lite
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
 
-        // General
+        // Gene
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
@@ -155,7 +155,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
+        return "LV-Lite-Dsep-Friendly (LV-Lite that can be used from a d-separation oracle--uses GRaSP) using " + this.test.getDescription()
+               + " and " + this.score.getDescription();
     }
 
     /**
@@ -165,7 +166,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public DataType getDataType() {
-        return this.score.getDataType();
+        return this.test.getDataType();
     }
 
     /**
@@ -177,25 +178,30 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        // BOSS
-        params.add(Params.USE_BES);
+        // GRaSP
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.GRASP_SINGULAR_DEPTH);
+        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_ORDERED_ALG);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
-        // FCI-ORIENT
+        // FCI
+        params.add(Params.DEPTH);
+        params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
-
-        // LV-Lite
-        params.add(Params.ALLOW_TUCKS);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
 
         // General
         params.add(Params.TIME_LAG);
+        params.add(Params.SEED);
         params.add(Params.VERBOSE);
 
         return params;
     }
+
 
     /**
      * Retrieves the knowledge object associated with this method.
@@ -215,6 +221,28 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Retrieves the IndependenceWrapper object associated with this method. The IndependenceWrapper object contains an
+     * IndependenceTest that checks the independence of two variables conditional on a set of variables using a given
+     * dataset and parameters .
+     *
+     * @return The IndependenceWrapper object associated with this method.
+     */
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
+    }
+
+    /**
+     * Sets the independence wrapper.
+     *
+     * @param test the independence wrapper.
+     */
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     /**

@@ -114,6 +114,10 @@ public final class GFci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether the discriminating path collider rule should be used.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -168,7 +172,7 @@ public final class GFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
@@ -302,5 +306,14 @@ public final class GFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rules should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if the discriminating path collider rules should be used. False, otherwise.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
