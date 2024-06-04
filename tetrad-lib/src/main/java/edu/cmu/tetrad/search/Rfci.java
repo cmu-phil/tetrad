@@ -271,7 +271,7 @@ public final class Rfci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path length for discriminating paths.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -280,8 +280,7 @@ public final class Rfci implements IGraphSearch {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
 
-        this.maxPathLength = maxPathLength == -1
-                ? Integer.MAX_VALUE : maxPathLength;
+        this.maxPathLength = maxPathLength;
     }
 
     /**

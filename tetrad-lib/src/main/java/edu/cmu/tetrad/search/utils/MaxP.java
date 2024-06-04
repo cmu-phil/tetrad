@@ -88,11 +88,15 @@ public final class MaxP {
     }
 
     /**
-     * Sets the max path length to use for the max P heuristic.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
         this.maxPathLength = maxPathLength;
     }
 

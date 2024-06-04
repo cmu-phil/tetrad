@@ -985,7 +985,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
 
     /**
-     * Sets the maximum length of any discriminating path searched.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */

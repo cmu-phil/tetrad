@@ -306,9 +306,9 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {

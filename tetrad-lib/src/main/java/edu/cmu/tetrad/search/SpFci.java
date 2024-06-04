@@ -247,7 +247,7 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets the max path length for discriminating paths.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */

@@ -92,6 +92,10 @@ public final class LvLite implements IGraphSearch {
      * tucks are enabled or disabled.
      */
     private boolean allowTucks = true;
+    /**
+     * The maximum length of a discriminating path.
+     */
+    private int maxPathLength;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -177,7 +181,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
-        fciOrient.setMaxPathLength(-1);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
@@ -833,5 +837,18 @@ public final class LvLite implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Sets the maximum length of any discriminating path.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
     }
 }

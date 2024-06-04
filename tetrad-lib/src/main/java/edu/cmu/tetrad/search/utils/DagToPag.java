@@ -196,12 +196,15 @@ public final class DagToPag {
     }
 
     /**
-     * Sets the maximum path length for some rules in the conversion.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This length.
-     * @see FciOrient
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
         this.maxPathLength = maxPathLength;
     }
 
