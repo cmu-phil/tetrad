@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
@@ -44,9 +43,8 @@ import java.util.List;
  */
 public final class LvLiteDsepFriendly implements IGraphSearch {
     /**
-     * This variable represents a list of nodes that store different variables.
-     * It is declared as private and final, hence it cannot be modified or accessed from outside
-     * the class where it is declared.
+     * This variable represents a list of nodes that store different variables. It is declared as private and final,
+     * hence it cannot be modified or accessed from outside the class where it is declared.
      */
     private final ArrayList<Node> variables;
     /**
@@ -335,7 +333,9 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
             adj.sort(Comparator.comparingInt(reverse::indexOf));
 
             for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
+                for (int j = 0; j < adj.size(); j++) {
+                    if (i == j) continue;
+
                     var x = adj.get(i);
                     var y = adj.get(j);
 
@@ -366,28 +366,23 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-                    boolean lookAt = x.getName().equals("X1") && y.getName().equals("X12");
-
-
                     // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
                     // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
-                    boolean unshieldedTriple = unshieldedTriple(pag, x, b, y);
-                    boolean unshieldedCollider = scorer.unshieldedCollider(x, b, y);
-                    boolean colliderAllowed = colliderAllowed(pag, x, b, y);
+                    boolean unshieldedColliderCpdag = unshieldedCollider(cpdag, x, b, y);
+                    boolean unshieldedTriplePAG = unshieldedTriple(pag, x, b, y);
+                    boolean colliderAllowedPag = colliderAllowed(pag, x, b, y);
 
-                    if (lookAt) {
-                        System.out.println("R0: " + x + " " + b + " " + y);
-                    }
+                    if (unshieldedTriplePAG && unshieldedColliderCpdag) {
+                        if (colliderAllowedPag) {
+                            pag.setEndpoint(x, b, Endpoint.ARROW);
+                            pag.setEndpoint(y, b, Endpoint.ARROW);
 
-                    if (unshieldedTriple && unshieldedCollider && colliderAllowed) {
-                        pag.setEndpoint(x, b, Endpoint.ARROW);
-                        pag.setEndpoint(y, b, Endpoint.ARROW);
+                            unshieldedColliders.add(new Triple(x, b, y));
 
-                        unshieldedColliders.add(new Triple(x, b, y));
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                            if (verbose) {
+                                TetradLogger.getInstance().log(
+                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                            }
                         }
                     } else if (allowTucks && pag.isAdjacentTo(x, y)) {
                         triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove);
@@ -418,15 +413,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
             return;
         }
 
-
-
-        if (pag.getEdge(x, y).pointsTowards(y)) {
-            var r = x;
-            x = y;
-            y = r;
-        }
-
-
         // Find possible d-connecting common adjacents of x and y.
         List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
         commonAdj.retainAll(pag.getAdjacentNodes(y));
@@ -436,42 +422,29 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         commonAdj.removeAll(commonChildren);
 
-        boolean oriented = false;
+        TetradLogger.getInstance().log("Common adjacents for " + x + " and " + y + ": " + commonAdj);
 
-        if (!pag.isDefCollider(x, b, y)) {
+        scorer.goToBookmark();
+        scorer.tuck(b, x);
+        copyCollider(x, b, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
 
-            // Tuck x before b.
-            scorer.goToBookmark();
+        scorer.tuck(b, x);
 
-            for (Node node : pag.getParents(x)) {
-                scorer.tuck(node, x);
-            }
+        copyCollider(x, b, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
 
-            scorer.tuck(b, x);
+        for (Node a : new ArrayList<>(commonAdj)) {
+            scorer.tuck(a, x);
+            copyCollider(x, a, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
 
-            // If we can now copy the collider from the scorer, do so.
-            if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)
-                && colliderAllowed(pag, x, b, y)) {
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
+            scorer.tuck(a, y);
+            copyCollider(x, a, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
+        }
+    }
 
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                }
-
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, b, y));
-
-                oriented = true;
-            }
-
-            if (!oriented) {
-                scorer.tuck(b, y);
-                scorer.tuck(b, x);
-
-                if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)
-                    && colliderAllowed(pag, x, b, y)) {
+    private void copyCollider(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Set<NodePair> toRemove, List<Node> commonAdj) {
+        if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
+            if (colliderAllowed(pag, x, b, y)) {
+                if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(pag, x, b, y)) {
                     pag.setEndpoint(x, b, Endpoint.ARROW);
                     pag.setEndpoint(y, b, Endpoint.ARROW);
 
@@ -482,55 +455,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
                     toRemove.add(new NodePair(x, y));
                     unshieldedColliders.add(new Triple(x, b, y));
-
-                    oriented = true;
-                }
-            }
-        }
-
-        // But check all other possible d-connecting common adjacents of x and y
-        for (Node a : commonAdj) {
-            if (a == b) continue;
-
-            // Tuck those too, one at a time
-            scorer.tuck(a, x);
-
-            // If we can now copy the collider from the scorer, do so.
-            if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)
-                && colliderAllowed(pag, x, a, y)) {
-                pag.setEndpoint(x, a, Endpoint.ARROW);
-                pag.setEndpoint(y, a, Endpoint.ARROW);
-
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, a, y));
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
-                }
-
-                oriented = true;
-            }
-
-            if (!oriented) {
-                scorer.tuck(a, y);
-                scorer.tuck(a, x);
-
-                // If we can now copy the collider from the scorer, do so.
-                if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)
-                    && colliderAllowed(pag, x, a, y)) {
-                    pag.setEndpoint(x, a, Endpoint.ARROW);
-                    pag.setEndpoint(y, a, Endpoint.ARROW);
-
-                    toRemove.add(new NodePair(x, y));
-                    unshieldedColliders.add(new Triple(x, a, y));
-
-                    if (verbose) {
-                        TetradLogger.getInstance().log(
-                                "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
-                    }
-
-                    oriented = true;
+                    commonAdj.remove(b);
                 }
             }
         }

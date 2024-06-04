@@ -378,15 +378,6 @@ public final class LvLite implements IGraphSearch {
             return;
         }
 
-
-
-        if (pag.getEdge(x, y).pointsTowards(y)) {
-            var r = x;
-            x = y;
-            y = r;
-        }
-
-
         // Find possible d-connecting common adjacents of x and y.
         List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
         commonAdj.retainAll(pag.getAdjacentNodes(y));
@@ -396,42 +387,14 @@ public final class LvLite implements IGraphSearch {
 
         commonAdj.removeAll(commonChildren);
 
-        boolean oriented = false;
+        TetradLogger.getInstance().log("Common adjacents for " + x + " and " + y + ": " + commonAdj);
 
-        if (!pag.isDefCollider(x, b, y)) {
+        scorer.goToBookmark();
+        scorer.tuck(b, x);
 
-            // Tuck x before b.
-            scorer.goToBookmark();
-
-            for (Node node : pag.getParents(x)) {
-                scorer.tuck(node, x);
-            }
-
-            scorer.tuck(b, x);
-
-            // If we can now copy the collider from the scorer, do so.
-            if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)
-                && colliderAllowed(pag, x, b, y)) {
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                }
-
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, b, y));
-
-                oriented = true;
-            }
-
-            if (!oriented) {
-                scorer.tuck(b, y);
-                scorer.tuck(b, x);
-
-                if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)
-                    && colliderAllowed(pag, x, b, y)) {
+        if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
+            if (colliderAllowed(pag, x, b, y)) {
+                if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(pag, x, b, y)) {
                     pag.setEndpoint(x, b, Endpoint.ARROW);
                     pag.setEndpoint(y, b, Endpoint.ARROW);
 
@@ -442,59 +405,70 @@ public final class LvLite implements IGraphSearch {
 
                     toRemove.add(new NodePair(x, y));
                     unshieldedColliders.add(new Triple(x, b, y));
-
-                    oriented = true;
+                    commonAdj.remove(b);
                 }
             }
         }
 
-        // But check all other possible d-connecting common adjacents of x and y
-        for (Node a : commonAdj) {
-            if (a == b) continue;
+        scorer.tuck(b, x);
 
-            // Tuck those too, one at a time
-            scorer.tuck(a, x);
-
-            // If we can now copy the collider from the scorer, do so.
-            if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)
-                && colliderAllowed(pag, x, a, y)) {
-                pag.setEndpoint(x, a, Endpoint.ARROW);
-                pag.setEndpoint(y, a, Endpoint.ARROW);
-
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, a, y));
+        if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
+            if (colliderAllowed(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
 
                 if (verbose) {
                     TetradLogger.getInstance().log(
-                            "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
+                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
 
-                oriented = true;
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, b, y));
+                commonAdj.remove(b);
             }
+        }
 
-            if (!oriented) {
-                scorer.tuck(a, y);
-                scorer.tuck(a, x);
+        for (Node a : new ArrayList<>(commonAdj)) {
+            scorer.tuck(a, x);
 
-                // If we can now copy the collider from the scorer, do so.
-                if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)
-                    && colliderAllowed(pag, x, a, y)) {
+            // If we can now copy the collider from the scorer, do so.
+            if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)) {
+                if (colliderAllowed(pag, x, a, y)) {
                     pag.setEndpoint(x, a, Endpoint.ARROW);
                     pag.setEndpoint(y, a, Endpoint.ARROW);
 
                     toRemove.add(new NodePair(x, y));
                     unshieldedColliders.add(new Triple(x, a, y));
+                    commonAdj.remove(a);
 
                     if (verbose) {
                         TetradLogger.getInstance().log(
                                 "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
                     }
+                }
+            }
 
-                    oriented = true;
+            scorer.tuck(a, y);
+
+            // If we can now copy the collider from the scorer, do so.
+            if (triple(pag, x, a, y) && scorer.unshieldedCollider(x, a, y)) {
+                if (colliderAllowed(pag, x, a, y)) {
+                    pag.setEndpoint(x, a, Endpoint.ARROW);
+                    pag.setEndpoint(y, a, Endpoint.ARROW);
+
+                    toRemove.add(new NodePair(x, y));
+                    unshieldedColliders.add(new Triple(x, a, y));
+                    commonAdj.remove(a);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
+                    }
                 }
             }
         }
     }
+
     /**
      * Determines if the collider is allowed.
      *
