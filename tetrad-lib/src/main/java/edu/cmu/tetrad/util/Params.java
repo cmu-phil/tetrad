@@ -85,10 +85,6 @@ public final class Params {
      */
     public static final String COMPLETE_RULE_SET_USED = "completeRuleSetUsed";
     /**
-     * Constant <code>DO_DISCRIMINATING_PATH_RULE="doDiscriminatingPathRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_RULE = "doDiscriminatingPathRule";
-    /**
      * Constant <code>DO_DISCRIMINATING_PATH_COLLIDER_RULE="doDiscriminatingPathColliderRule"</code>
      */
     public static final String DO_DISCRIMINATING_PATH_COLLIDER_RULE = "doDiscriminatingPathColliderRule";

@@ -56,7 +56,7 @@ public final class LvLite implements IGraphSearch {
      */
     private int numStarts = 1;
     /**
-     * Whether to use data order.
+     * Flag indicating whether to use data order.
      */
     private boolean useDataOrder = true;
     /**
@@ -236,21 +236,21 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether the search algorithm should use the order of the data set during the search.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param useDataOrder true if the algorithm should use the data order, false otherwise
-     */
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    /**
-     * Sets whether the search algorithm should use the Discriminating Path Rule.
-     *
-     * @param doDiscriminatingPathTailRule true if the Discriminating Path Rule should be used, false otherwise
+     * @param doDiscriminatingPathTailRule True, if so.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -260,15 +260,6 @@ public final class LvLite implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
-    }
-
-    /**
-     * Sets the value of the doDiscriminatingPathColliderRule property.
-     *
-     * @param doDiscriminatingPathColliderRule the new value for the doDiscriminatingPathColliderRule property
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -832,5 +823,14 @@ public final class LvLite implements IGraphSearch {
      */
     public void setAllowTucks(boolean allowTucks) {
         this.allowTucks = allowTucks;
+    }
+
+    /**
+     * Sets the flag indicating whether to use data order.
+     *
+     * @param useDataOrder {@code true} if the data order should be used, {@code false} otherwise.
+     */
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
     }
 }

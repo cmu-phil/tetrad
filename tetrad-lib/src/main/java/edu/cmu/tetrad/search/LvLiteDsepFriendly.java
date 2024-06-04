@@ -294,9 +294,18 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
     }
 
     /**
-     * Sets the value of the doDiscriminatingPathColliderRule property.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathColliderRule the new value for the doDiscriminatingPathColliderRule property
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
@@ -929,15 +938,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
-    }
-
-    /**
-     * Sets whether to use the discriminating path rule for GRaSP.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
     /**

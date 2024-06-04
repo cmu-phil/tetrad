@@ -105,7 +105,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setPcHeuristicType(pcHeuristicType);
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
@@ -158,7 +159,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
 

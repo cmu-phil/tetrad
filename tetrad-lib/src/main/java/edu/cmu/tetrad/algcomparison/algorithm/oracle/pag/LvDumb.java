@@ -125,7 +125,8 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
         // LV-Lite
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -182,7 +183,8 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // General
         params.add(Params.TIME_LAG);

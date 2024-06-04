@@ -74,7 +74,8 @@ public final class Cfci implements IGraphSearch {
     // Whether verbose output (about independencies) is output.
     private boolean verbose;
     // Whether to do the discriminating path rule.
-    private boolean doDiscriminatingPathRule;
+    private boolean doDiscriminatingPathTailRule;
+    private boolean doDiscriminatingPathColliderRule;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -170,8 +171,8 @@ public final class Cfci implements IGraphSearch {
                 new SepsetMap(), this.depth, knowledge));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
@@ -459,12 +460,21 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Whether to do the discriminating path rule.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True iff the discriminating path rule is done.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**

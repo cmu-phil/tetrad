@@ -70,7 +70,6 @@ public final class FciOrient {
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
-
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
@@ -1296,21 +1295,21 @@ public final class FciOrient {
     }
 
     /**
-     * Sets whether the discriminating path collider rule should be done.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathColliderRule True is done.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be done.
-     *
-     * @param doDiscriminatingPathTailRule True if done.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**

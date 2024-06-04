@@ -61,7 +61,8 @@ public final class TsDagToPag {
     private boolean verbose;
     private int maxPathLength = -1;
     private Graph truePag;
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -206,8 +207,8 @@ public final class TsDagToPag {
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
         System.out.println("Complete rule set is used? " + this.completeRuleSetUsed);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
@@ -318,14 +319,23 @@ public final class TsDagToPag {
     }
 
     /**
-     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     /**
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule a boolean
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();

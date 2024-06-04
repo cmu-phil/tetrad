@@ -66,14 +66,15 @@ public final class LvDumb implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * This variable represents whether the discriminating path rule is used in the LV-Lite class.
-     * <p>
-     * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
-     * considers discriminating paths when searching for patterns in the data.
-     * <p>
-     * By default, the value of this variable is set to true, indicating that the discriminating path rule is used.
+     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
+     * If set to true, the search algorithm will use the Discriminating Path Tail Rule.
+     * If set to false, the search algorithm will not use the Discriminating Path Tail Rule.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * This variable determines whether the Discriminating Path Collider Rule should be used during the search algorithm.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * True iff verbose output should be printed.
      */
@@ -160,7 +161,7 @@ public final class LvDumb implements IGraphSearch {
         DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setDoDiscriminatingPathRule(doDiscriminatingPathRule);
+        dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         return dagToPag.convert();
     }
 
@@ -220,11 +221,20 @@ public final class LvDumb implements IGraphSearch {
     }
 
     /**
-     * Sets whether the search algorithm should use the Discriminating Path Rule.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule true if the Discriminating Path Rule should be used, false otherwise
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

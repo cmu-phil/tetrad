@@ -172,8 +172,8 @@ public final class GFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
@@ -302,7 +302,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathTailRule True, if the discriminating path collider rules should be used. False, otherwise.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
@@ -311,7 +311,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether the discriminating path collider rule should be used.
      *
-     * @param doDiscriminatingPathColliderRule True, if the discriminating path collider rule should be used. False, otherwise.
+     * @param doDiscriminatingPathColliderRule True, if so.
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;

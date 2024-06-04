@@ -102,13 +102,13 @@ public final class SpFci implements IGraphSearch {
      */
     private int depth = -1;
     /**
-     * Represents whether the discriminating path rule is applied during the search.
-     * <p>
-     * By default, the discriminating path rule is enabled.
-     * <p>
-     * Setting this variable to false disables the application of the discriminating path rule.
+     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Determines whether the search algorithm should use the Discriminating Path Collider Rule.
+     */
+    private boolean doDiscriminatingPathTCollideRule = true;
     /**
      * True iff verbose output should be printed.
      */
@@ -166,8 +166,8 @@ public final class SpFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathTCollideRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
@@ -296,11 +296,20 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path search is done.
-     *
-     * @param doDiscriminatingPathRule True, if so.
+     * Sets whether the discriminating path tail rule is done.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
+
+    /**
+     * Sets whether the discriminating path collider rule is done.
+     * @param doDiscriminatingPathTCollideRule True, if so.
+     */
+    public void setDoDiscriminatingPathTCollideRule(boolean doDiscriminatingPathTCollideRule) {
+        this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
+    }
+
+
 }

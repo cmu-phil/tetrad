@@ -103,9 +103,15 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Whether the discriminating path rule will be used in search.
+     * Determines whether the discriminating path tail rule should be applied during the search.
+     * If set to true, the rule will be applied. If set to false, the rule will not be applied.
      */
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * This variable specifies whether the discriminating path collider rule should be applied during the search.
+     * If set to true, the rule will be applied; if set to false, the rule will not be applied.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether the discriminating path rule will be used in search.
      */
@@ -313,13 +319,14 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule will be used in search.
+     * Sets whether the discriminating path tail rule should be applied during the search.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param doDiscriminatingPathTailRule True, if the rule should be applied. False otherwise.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
+
 
     /**
      * Retrieves an instance of FciOrient with all necessary parameters set.
@@ -332,8 +339,8 @@ public final class FciMax implements IGraphSearch {
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
         return fciOrient;
@@ -472,6 +479,10 @@ public final class FciMax implements IGraphSearch {
                 scores.put(new Triple(a, b, c), score);
             }
         }
+    }
+
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
 

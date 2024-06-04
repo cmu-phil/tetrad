@@ -114,7 +114,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -172,7 +173,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.USE_BES);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);

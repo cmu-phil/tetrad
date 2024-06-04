@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.WeakHashMap;
 
 
 /**
@@ -60,7 +59,8 @@ public final class DagToPag {
      */
     private boolean verbose;
     private int maxPathLength = -1;
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -128,8 +128,8 @@ public final class DagToPag {
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setVerbose(false);
@@ -206,12 +206,21 @@ public final class DagToPag {
     }
 
     /**
-     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule a boolean
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     private Graph calcAdjacencyGraph() {
