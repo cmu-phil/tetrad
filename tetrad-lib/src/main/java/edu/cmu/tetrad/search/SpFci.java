@@ -307,7 +307,7 @@ public final class SpFci implements IGraphSearch {
      * Sets whether the discriminating path collider rule is done.
      * @param doDiscriminatingPathTCollideRule True, if so.
      */
-    public void setDoDiscriminatingPathTCollideRule(boolean doDiscriminatingPathTCollideRule) {
+    public void setDoDiscriminatingPathCollideRule(boolean doDiscriminatingPathTCollideRule) {
         this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
     }
 }
