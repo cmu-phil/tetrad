@@ -153,7 +153,7 @@ public class Grasp {
     public Grasp(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
+        this.variables = new ArrayList<>(test.getVariables());
     }
 
     /**
