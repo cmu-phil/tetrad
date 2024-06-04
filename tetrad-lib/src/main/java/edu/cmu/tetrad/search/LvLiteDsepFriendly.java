@@ -176,6 +176,15 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         this.variables = new ArrayList<>(score.getVariables());
     }
 
+    private static @NotNull List<Node> commonNoncolliders(Node x, Node y, Graph pag) {
+        List<Node> commonNoncolliders = new ArrayList<>(pag.getAdjacentNodes(x));
+        commonNoncolliders.retainAll(pag.getAdjacentNodes(y));
+        List<Node> commonChildren = pag.getNodesOutTo(x, Endpoint.ARROW);
+        commonChildren.retainAll(pag.getNodesOutTo(y, Endpoint.ARROW));
+        commonNoncolliders.removeAll(commonChildren);
+        return commonNoncolliders;
+    }
+
     /**
      * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
      * Graph following the PAG (Partially Ancestral Graph) structure.
@@ -322,10 +331,50 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         var reverse = new ArrayList<>(best);
         Collections.reverse(reverse);
-
         Set<NodePair> toRemove = new HashSet<>();
 
-        // Copy al the unshielded triples from the old PAG to the new PAG where adjacencies still exist.
+        recallUnshieldedTriples(pag, unshieldedColliders, reverse);
+        mainLoop(pag, scorer, unshieldedColliders, cpdag, reverse, toRemove);
+        removeEdges(pag, toRemove);
+    }
+
+    private void removeEdges(Graph pag, Set<NodePair> toRemove) {
+        for (NodePair remove : toRemove) {
+            Node x = remove.getFirst();
+            Node y = remove.getSecond();
+
+            boolean _adj = pag.isAdjacentTo(x, y);
+
+            if (pag.removeEdge(x, y)) {
+                if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
+                    TetradLogger.getInstance().log(
+                            "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                }
+            }
+        }
+    }
+
+    private void mainLoop(Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, ArrayList<Node> reverse, Set<NodePair> toRemove) {
+        for (Node b : reverse) {
+            var adj = pag.getAdjacentNodes(b);
+            Collections.reverse(adj);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = 0; j < adj.size(); j++) {
+                    if (i == j) continue;
+
+                    var x = adj.get(i);
+                    var y = adj.get(j);
+
+                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders)) {
+                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove);
+                    }
+                }
+            }
+        }
+    }
+
+    private void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, ArrayList<Node> reverse) {
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
 
@@ -352,110 +401,63 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
                 }
             }
         }
-
-        for (Node b : reverse) {
-            var adj = pag.getAdjacentNodes(b);
-
-            // Sort adj in the order of reverse
-            adj.sort(Comparator.comparingInt(reverse::indexOf));
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = 0; j < adj.size(); j++) {
-                    if (i == j) continue;
-
-                    var x = adj.get(i);
-                    var y = adj.get(j);
-
-                    // If you can copy the unshielded collider from the scorer, do so. Otherwise, if x *-* y im the PAG,
-                    // and tucking yields the collider, copy this collider x *-> b <-* y into the PAG as well.
-                    boolean unshieldedColliderCpdag = unshieldedCollider(cpdag, x, b, y);
-                    boolean unshieldedTriplePAG = unshieldedTriple(pag, x, b, y);
-                    boolean colliderAllowedPag = colliderAllowed(pag, x, b, y);
-
-                    if (unshieldedTriplePAG && unshieldedColliderCpdag) {
-                        if (colliderAllowedPag) {
-                            pag.setEndpoint(x, b, Endpoint.ARROW);
-                            pag.setEndpoint(y, b, Endpoint.ARROW);
-
-                            unshieldedColliders.add(new Triple(x, b, y));
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log(
-                                        "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            }
-                        }
-                    } else if (allowTucks && pag.isAdjacentTo(x, y)) {
-                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove);
-                    }
-                }
-            }
-        }
-
-        for (NodePair remove : toRemove) {
-            Node x = remove.getFirst();
-            Node y = remove.getSecond();
-
-            boolean _adj = pag.isAdjacentTo(x, y);
-
-            if (pag.removeEdge(x, y)) {
-                if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
-                    TetradLogger.getInstance().log(
-                            "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
-                }
-            }
-        }
     }
 
     private void triangleReasoning(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
                                    Set<NodePair> toRemove) {
-
-        if (x == b || x == y || b == y) {
-            return;
-        }
-
-        // Find possible d-connecting common adjacents of x and y.
-        List<Node> commonAdj = new ArrayList<>(pag.getAdjacentNodes(x));
-        commonAdj.retainAll(pag.getAdjacentNodes(y));
-
-        List<Node> commonChildren = pag.getNodesOutTo(x, Endpoint.ARROW);
-        commonChildren.retainAll(pag.getNodesOutTo(y, Endpoint.ARROW));
-
-        commonAdj.removeAll(commonChildren);
-
-        TetradLogger.getInstance().log("Common adjacents for " + x + " and " + y + ": " + commonAdj);
-
         scorer.goToBookmark();
-        scorer.tuck(b, x);
-        copyCollider(x, b, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
 
         scorer.tuck(b, x);
+        copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove);
 
-        copyCollider(x, b, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
+        scorer.tuck(b, y);
+        copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove);
 
-        for (Node a : new ArrayList<>(commonAdj)) {
+        List<Node> commonNoncolliders = commonNoncolliders(x, y, pag);
+        commonNoncolliders.remove(b);
+
+        for (Node a : new ArrayList<>(commonNoncolliders)) {
             scorer.tuck(a, x);
-            copyCollider(x, a, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
+            copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove);
 
             scorer.tuck(a, y);
-            copyCollider(x, a, y, pag, scorer, unshieldedColliders, toRemove, commonAdj);
+            copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove);
         }
     }
 
-    private void copyCollider(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Set<NodePair> toRemove, List<Node> commonAdj) {
+    private boolean copyColliderCpdag(Graph pag, Graph cpdag, Node x, Node b, Node y, Set<Triple> unshieldedColliders) {
+        if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(cpdag, x, b, y)) {
+            if (colliderAllowed(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
+
+                unshieldedColliders.add(new Triple(x, b, y));
+
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void copyColliderScorer(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
+                                    Set<NodePair> toRemove) {
         if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
             if (colliderAllowed(pag, x, b, y)) {
-                if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(pag, x, b, y)) {
-                    pag.setEndpoint(x, b, Endpoint.ARROW);
-                    pag.setEndpoint(y, b, Endpoint.ARROW);
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
 
-                    if (verbose) {
-                        TetradLogger.getInstance().log(
-                                "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                    }
+                toRemove.add(new NodePair(x, y));
+                unshieldedColliders.add(new Triple(x, b, y));
 
-                    toRemove.add(new NodePair(x, y));
-                    unshieldedColliders.add(new Triple(x, b, y));
-                    commonAdj.remove(b);
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
             }
         }
