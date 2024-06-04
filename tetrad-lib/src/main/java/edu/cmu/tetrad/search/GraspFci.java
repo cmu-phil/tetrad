@@ -158,8 +158,8 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting Grasp-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().log("Starting Grasp-FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + this.independenceTest + ".");
         }
 
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...

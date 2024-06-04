@@ -184,8 +184,8 @@ public final class Fci implements IGraphSearch {
         Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());

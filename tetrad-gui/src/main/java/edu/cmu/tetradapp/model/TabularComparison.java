@@ -165,7 +165,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         newExecution();
 
-        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
+        TetradLogger.getInstance().log("Graph Comparison");
     }
 
     private void newExecution() {
@@ -232,8 +232,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -243,8 +243,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

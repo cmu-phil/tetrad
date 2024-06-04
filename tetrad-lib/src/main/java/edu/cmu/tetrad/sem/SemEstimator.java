@@ -226,15 +226,15 @@ public final class SemEstimator implements TetradSerializable {
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 //        TetradLogger.getInstance().log("stats", "Final Score = " + nf.format(semIm.getScore()));
-        TetradLogger.getInstance().forceLogMessage("Sample Size = " + semIm.getSampleSize());
+        TetradLogger.getInstance().log("Sample Size = " + semIm.getSampleSize());
         String message3 = "Model Chi Square = " + nf.format(semIm.getChiSquare());
-        TetradLogger.getInstance().forceLogMessage(message3);
+        TetradLogger.getInstance().log(message3);
         String message2 = "Model DOF = " + nf.format(this.semPm.getDof());
-        TetradLogger.getInstance().forceLogMessage(message2);
+        TetradLogger.getInstance().log(message2);
         String message1 = "Model P Value = " + nf.format(semIm.getPValue());
-        TetradLogger.getInstance().forceLogMessage(message1);
+        TetradLogger.getInstance().log(message1);
         String message = "Model BIC = " + nf.format(semIm.getBicScore());
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
 
         System.out.println(this.estimatedSem);
 
@@ -446,8 +446,8 @@ public final class SemEstimator implements TetradSerializable {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -457,8 +457,8 @@ public final class SemEstimator implements TetradSerializable {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

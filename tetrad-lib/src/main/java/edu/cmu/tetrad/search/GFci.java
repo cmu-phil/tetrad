@@ -143,8 +143,8 @@ public final class GFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting GFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting GFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         Graph graph;

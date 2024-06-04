@@ -186,7 +186,7 @@ public final class TsDagToPag {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph convert() {
-        TetradLogger.getInstance().forceLogMessage("Starting DAG to PAG_of_the_true_DAG.");
+        TetradLogger.getInstance().log("Starting DAG to PAG_of_the_true_DAG.");
         //        System.out.println("Knowledge is = " + knowledge);
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");

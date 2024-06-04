@@ -105,7 +105,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             this.targetGraph = model2.getGraph();
         }
 
-        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
+        TetradLogger.getInstance().log("Graph Comparison");
 
     }
 
@@ -184,8 +184,8 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -195,8 +195,8 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

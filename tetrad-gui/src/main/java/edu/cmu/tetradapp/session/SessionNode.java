@@ -576,7 +576,7 @@ public class SessionNode implements Node {
         TetradLogger.getInstance().setTetradLoggerConfig(this.loggerConfig);
         String message1 = "\n========LOGGING " + getDisplayName()
                           + "\n";
-        TetradLogger.getInstance().forceLogMessage(message1);
+        TetradLogger.getInstance().log(message1);
 
         // Collect up the parentModels from the parents. If any model is
         // null, throw an exception.
@@ -614,7 +614,7 @@ public class SessionNode implements Node {
 
         if (this.model == null) {
             String message = getDisplayName() + " was not created.";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
             throw new CouldNotCreateModelException(modelClass);
         }
 

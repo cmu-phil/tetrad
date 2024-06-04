@@ -242,10 +242,10 @@ public class SemImWrapper implements SessionModel {
 
     //======================== Private methods =======================//
     private void log(int i, SemIm pm) {
-        TetradLogger.getInstance().forceLogMessage("Linear SEM IM");
-        TetradLogger.getInstance().forceLogMessage("IM # " + (i + 1));
+        TetradLogger.getInstance().log("Linear SEM IM");
+        TetradLogger.getInstance().log("IM # " + (i + 1));
         String message = pm.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     @Serial
@@ -253,8 +253,8 @@ public class SemImWrapper implements SessionModel {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -264,8 +264,8 @@ public class SemImWrapper implements SessionModel {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

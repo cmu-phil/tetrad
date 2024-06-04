@@ -281,8 +281,8 @@ public class BayesEstimatorWrapper implements SessionModel {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -292,16 +292,16 @@ public class BayesEstimatorWrapper implements SessionModel {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
 
     private void log(BayesIm im) {
-        TetradLogger.getInstance().forceLogMessage("ML estimated Bayes IM.");
+        TetradLogger.getInstance().log("ML estimated Bayes IM.");
         String message = im.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     private void estimate(DataSet dataSet, BayesPm bayesPm) {

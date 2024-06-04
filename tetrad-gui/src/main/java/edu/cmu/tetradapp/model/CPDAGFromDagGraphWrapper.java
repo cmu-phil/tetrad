@@ -67,8 +67,8 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         Graph cpdag = CPDAGFromDagGraphWrapper.getCpdag(new EdgeListGraph(graph));
         setGraph(cpdag);
 
-        TetradLogger.getInstance().forceLogMessage("\nGenerating cpdag from DAG.");
-        TetradLogger.getInstance().forceLogMessage(cpdag + "");
+        TetradLogger.getInstance().log("\nGenerating cpdag from DAG.");
+        TetradLogger.getInstance().log(cpdag + "");
     }
 
     /**

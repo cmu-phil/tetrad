@@ -112,7 +112,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
             }
 
             System.out.println(output);
-            TetradLogger.getInstance().forceLogMessage(output);
+            TetradLogger.getInstance().log(output);
         }
 
         return graph;

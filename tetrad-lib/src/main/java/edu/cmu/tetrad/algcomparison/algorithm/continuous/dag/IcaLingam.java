@@ -82,8 +82,8 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
         Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
 
         if (parameters.getBoolean(Params.VERBOSE)) {
-            TetradLogger.getInstance().forceLogMessage("BHat = " + bHat);
-            TetradLogger.getInstance().forceLogMessage("Graph = " + graph);
+            TetradLogger.getInstance().log("BHat = " + bHat);
+            TetradLogger.getInstance().log("Graph = " + graph);
         }
 
         LogUtilsSearch.stampWithBic(graph, dataSet);

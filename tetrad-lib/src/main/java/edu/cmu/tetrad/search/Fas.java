@@ -151,7 +151,7 @@ public class Fas implements IFas {
         this.logger.addOutputStream(out);
 
         if (verbose) {
-            this.logger.forceLogMessage("Starting Fast Adjacency Search.");
+            this.logger.log("Starting Fast Adjacency Search.");
         }
 
         this.test.setVerbose(this.verbose);
@@ -248,7 +248,7 @@ public class Fas implements IFas {
         }
 
         if (verbose) {
-            this.logger.forceLogMessage("Finishing Fast Adjacency Search.");
+            this.logger.log("Finishing Fast Adjacency Search.");
         }
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;

@@ -86,7 +86,7 @@ public class SemOptimizerRicf implements SemOptimizer {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        TetradLogger.getInstance().forceLogMessage("Trying EM...");
+        TetradLogger.getInstance().log("Trying EM...");
         //        new SemOptimizerEm().optimize(semIm);
 
         CovarianceMatrix cov = new CovarianceMatrix(semIm.getMeasuredNodes(),

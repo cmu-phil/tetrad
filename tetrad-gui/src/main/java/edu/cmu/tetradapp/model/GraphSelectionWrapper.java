@@ -118,7 +118,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
         this(graphs, params);
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**
@@ -963,7 +963,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("General Graph");
+        TetradLogger.getInstance().log("General Graph");
     }
 
     private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {
@@ -986,8 +986,8 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -997,8 +997,8 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

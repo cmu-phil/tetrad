@@ -275,10 +275,10 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
                     if (independent) {
                         String message = LogUtilsSearch.independenceFactMsg(x, y, z, p);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     } else {
                         String message = LogUtilsSearch.dependenceFactMsg(x, y, z, p);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
 
                     return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
@@ -296,7 +296,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
@@ -392,7 +392,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }

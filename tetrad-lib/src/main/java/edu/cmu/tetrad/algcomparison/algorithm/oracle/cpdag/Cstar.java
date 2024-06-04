@@ -158,9 +158,9 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         records = allRecords.getLast();
 
-        TetradLogger.getInstance().forceLogMessage("CStaR Table");
+        TetradLogger.getInstance().log("CStaR Table");
         String table1 = cStaR.makeTable(edu.cmu.tetrad.search.Cstar.cStar(allRecords));
-        TetradLogger.getInstance().forceLogMessage(table1);
+        TetradLogger.getInstance().log(table1);
 
         // Print table1 to file.
         File _file = new File(cStaR.getDir(), "/cstar_table.txt");
@@ -172,7 +172,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             System.out.println("Error writing to file: " + _file.getAbsolutePath());
         }
 
-        TetradLogger.getInstance().forceLogMessage("Files stored in : " + cStaR.getDir().getAbsolutePath());
+        TetradLogger.getInstance().log("Files stored in : " + cStaR.getDir().getAbsolutePath());
 
         // This stops the program from running in R.
 //        JOptionPane.showMessageDialog(null, "Files stored in : " + cStaR.getDir().getAbsolutePath());

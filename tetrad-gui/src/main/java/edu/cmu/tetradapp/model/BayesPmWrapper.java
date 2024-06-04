@@ -516,8 +516,8 @@ public class BayesPmWrapper implements SessionModel {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -527,8 +527,8 @@ public class BayesPmWrapper implements SessionModel {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -559,9 +559,9 @@ public class BayesPmWrapper implements SessionModel {
 
     //================================= Private Methods ==================================//
     private void log(BayesPm pm) {
-        TetradLogger.getInstance().forceLogMessage("Bayes Parametric Model (Bayes PM)");
+        TetradLogger.getInstance().log("Bayes Parametric Model (Bayes PM)");
         String message = pm.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
 
     }
 

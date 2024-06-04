@@ -190,9 +190,9 @@ public class KnowledgeBoxEditor extends JPanel {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentHidden(ComponentEvent e) {
-                TetradLogger.getInstance().forceLogMessage("Edited Knowledge:");
+                TetradLogger.getInstance().log("Edited Knowledge:");
                 String message = KnowledgeBoxEditor.this.knowledge.toString();
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         });
 

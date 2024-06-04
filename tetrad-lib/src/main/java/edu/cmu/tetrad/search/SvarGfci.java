@@ -108,8 +108,8 @@ public final class SvarGfci implements IGraphSearch {
         independenceTest.setVerbose(verbose);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting svarGFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().log("Starting svarGFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + this.independenceTest + ".");
         }
 
         this.graph = new EdgeListGraph(independenceTest.getVariables());
@@ -335,7 +335,7 @@ public final class SvarGfci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
+            TetradLogger.getInstance().log("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -359,7 +359,7 @@ public final class SvarGfci implements IGraphSearch {
 
             if (verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
@@ -383,12 +383,12 @@ public final class SvarGfci implements IGraphSearch {
 
             if (verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+            TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
 
@@ -479,8 +479,8 @@ public final class SvarGfci implements IGraphSearch {
                     graph.setEndpoint(x1, y1, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Orient edge " + graph.getEdge(x1, y1).toString());
-                        TetradLogger.getInstance().forceLogMessage(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
+                        TetradLogger.getInstance().log("Orient edge " + graph.getEdge(x1, y1).toString());
+                        TetradLogger.getInstance().log(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                     }
                 }
             }

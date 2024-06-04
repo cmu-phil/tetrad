@@ -135,15 +135,15 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-            TetradLogger.getInstance().forceLogMessage("\nIdentifiability");
+            TetradLogger.getInstance().log("\nIdentifiability");
 
             String nodeName = node.getName();
             int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
             double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
             double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
-            TetradLogger.getInstance().forceLogMessage("\nVariable = " + nodeName);
-            TetradLogger.getInstance().forceLogMessage("\nEvidence:");
+            TetradLogger.getInstance().log("\nVariable = " + nodeName);
+            TetradLogger.getInstance().log("\nEvidence:");
             Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
@@ -152,16 +152,16 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
                 int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
-                    TetradLogger.getInstance().forceLogMessage("\t" + variable + " = " + category);
+                    TetradLogger.getInstance().log("\t" + variable + " = " + category);
                 }
             }
 
-            TetradLogger.getInstance().forceLogMessage("\nCat.\tPrior\tMarginal");
+            TetradLogger.getInstance().log("\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
                 String message = category(evidence, nodeName, i) + "\t"
                                  + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
         TetradLogger.getInstance().reset();
@@ -181,8 +181,8 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -192,8 +192,8 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

@@ -269,7 +269,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.elapsedTime = endTime - start;
 
         if (verbose) {
-            this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
+            this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
         this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
@@ -767,7 +767,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 Thread.currentThread().interrupt();
-                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                TetradLogger.getInstance().log(e.getMessage());
                 return;
             }
         }
@@ -875,7 +875,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
             if (verbose) {
                 final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) + " " + T + " " + bump + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
@@ -885,7 +885,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
             if (verbose) {
                 String message = "--- Directing " + graph.getEdge(_t, y);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
     }
@@ -947,7 +947,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 graph.addDirectedEdge(nodeA, nodeB);
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                    TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
                 }
             }
         }
@@ -970,7 +970,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -981,7 +981,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -995,7 +995,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1005,7 +1005,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }

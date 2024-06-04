@@ -169,8 +169,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -180,8 +180,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -212,8 +212,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().forceLogMessage("Estimated Dirichlet Bayes IM");
-        TetradLogger.getInstance().forceLogMessage("" + im);
+        TetradLogger.getInstance().log("Estimated Dirichlet Bayes IM");
+        TetradLogger.getInstance().log("" + im);
         TetradLogger.getInstance().reset();
     }
 

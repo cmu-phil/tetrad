@@ -219,11 +219,11 @@ public class Grasp {
         long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().log("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().log("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
-        return bestPerm;
+        return new ArrayList<>(bestPerm);
     }
 
     /**
@@ -437,10 +437,10 @@ public class Grasp {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                                                       + " Score = " + scorer.score()
-                                                       + " (GRaSP)"
-                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+            TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
+                                           + " Score = " + scorer.score()
+                                           + " (GRaSP)"
+                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

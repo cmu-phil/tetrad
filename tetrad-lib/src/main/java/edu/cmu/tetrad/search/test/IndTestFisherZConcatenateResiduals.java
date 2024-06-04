@@ -187,7 +187,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }

@@ -162,7 +162,7 @@ public class BesPermutation {
             int cond = diff.size() + graph.getParents(y).size();
 
             String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y + " H = " + H + " NaYX = " + naYX + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " diff = " + diff + " (" + bump + ") " + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         for (Node h : H) {
@@ -177,7 +177,7 @@ public class BesPermutation {
             graph.addEdge(directedEdge(y, h));
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
+                TetradLogger.getInstance().log("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
             }
 
             Edge oldxh = graph.getEdge(x, h);
@@ -188,7 +188,7 @@ public class BesPermutation {
                 graph.addEdge(directedEdge(x, h));
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
+                    TetradLogger.getInstance().log("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
                 }
             }
         }

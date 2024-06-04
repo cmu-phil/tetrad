@@ -98,7 +98,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, __z, getPValue()));
             }
         }

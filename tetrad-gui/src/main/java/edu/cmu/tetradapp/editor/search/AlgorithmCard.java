@@ -519,7 +519,7 @@ public class AlgorithmCard extends JPanel {
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException exception) {
-            TetradLogger.getInstance().forceLogMessage(exception.toString());
+            TetradLogger.getInstance().log(exception.toString());
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
@@ -587,7 +587,7 @@ public class AlgorithmCard extends JPanel {
                 }
 
             } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
                 msg = "";
             }
 
@@ -609,7 +609,7 @@ public class AlgorithmCard extends JPanel {
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
                     } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
-                        TetradLogger.getInstance().forceLogMessage(exception.toString());
+                        TetradLogger.getInstance().log(exception.toString());
                     }
                 }
             }

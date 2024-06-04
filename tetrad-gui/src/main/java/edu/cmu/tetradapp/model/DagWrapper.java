@@ -287,9 +287,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
 
     //============================PRIVATE METHODS========================//
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("Directed Acyclic Graph (DAG)");
+        TetradLogger.getInstance().log("Directed Acyclic Graph (DAG)");
         String message = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     @Serial
@@ -297,8 +297,8 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -308,8 +308,8 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

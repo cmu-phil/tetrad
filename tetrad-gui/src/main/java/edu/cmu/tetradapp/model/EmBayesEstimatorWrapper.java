@@ -111,8 +111,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
-        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM:");
-        TetradLogger.getInstance().forceLogMessage("" + this.estimateBayesIm);
+        TetradLogger.getInstance().log("EM-Estimated Bayes IM:");
+        TetradLogger.getInstance().log("" + this.estimateBayesIm);
     }
 
     /**
@@ -161,8 +161,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -172,8 +172,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

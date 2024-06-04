@@ -271,7 +271,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }

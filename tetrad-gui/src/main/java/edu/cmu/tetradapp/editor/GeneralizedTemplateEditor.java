@@ -542,7 +542,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 expressionTextDoc.remove(0, expressionTextPane.getText().length());
                 expressionTextDoc.insertString(0, text, null);
             } catch (BadLocationException e) {
-                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                TetradLogger.getInstance().log(e.getMessage());
                 throw new RuntimeException(e);
             }
         });

@@ -148,15 +148,15 @@ public class SessionFileTransferHandler extends TransferHandler {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException exception) {
-                    TetradLogger.getInstance().forceLogMessage(exception.toString());
+                    TetradLogger.getInstance().log(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception exception) {
-                    TetradLogger.getInstance().forceLogMessage(exception.toString());
+                    TetradLogger.getInstance().log(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
         } catch (UnsupportedFlavorException | IOException exception) {
-            TetradLogger.getInstance().forceLogMessage(exception.toString());
+            TetradLogger.getInstance().log(exception.toString());
 //            SessionFileTransferHandler.LOGGER.error("", exception);
         }
 

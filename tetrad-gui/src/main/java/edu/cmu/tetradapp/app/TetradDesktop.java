@@ -532,7 +532,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             try {
                 TetradLogger.getInstance().setNextOutputStream();
             } catch (IllegalStateException e2) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         "Unable to setup logging, please restart Tetrad.");
                 return;
             }

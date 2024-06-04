@@ -83,7 +83,7 @@ public class MeekRules {
         Set<Node> visited = new HashSet<>();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting Orientation Step D.");
+            TetradLogger.getInstance().log("Starting Orientation Step D.");
         }
 
         if (this.revertToUnshieldedColliders) {
@@ -113,7 +113,7 @@ public class MeekRules {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing Orientation Step D.");
+            TetradLogger.getInstance().log("Finishing Orientation Step D.");
         }
 
         return visited;
@@ -352,7 +352,7 @@ public class MeekRules {
 
     private void log(String message) {
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 

@@ -151,8 +151,8 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -162,8 +162,8 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -213,9 +213,9 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
     //======================= Private methods ====================//
     private void log(GeneralizedSemIm im) {
-        TetradLogger.getInstance().forceLogMessage("Generalized SEM IM");
+        TetradLogger.getInstance().log("Generalized SEM IM");
         String message = im.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**

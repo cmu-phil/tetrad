@@ -290,8 +290,8 @@ public class SemPmWrapper implements SessionModel {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -301,8 +301,8 @@ public class SemPmWrapper implements SessionModel {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -334,10 +334,10 @@ public class SemPmWrapper implements SessionModel {
 
     //======================= Private methods ====================//
     private void log(int i, SemPm pm) {
-        TetradLogger.getInstance().forceLogMessage("Linear Structural Equation Parametric Model (SEM PM)");
-        TetradLogger.getInstance().forceLogMessage("PM # " + (i + 1));
+        TetradLogger.getInstance().log("Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().log("PM # " + (i + 1));
         String message = pm.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**

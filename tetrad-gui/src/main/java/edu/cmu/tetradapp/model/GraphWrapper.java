@@ -136,7 +136,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @param message a {@link java.lang.String} object
      */
     public GraphWrapper(Graph graph, String message) {
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
 
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -430,8 +430,8 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -441,8 +441,8 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

@@ -531,7 +531,7 @@ public class TestFges {
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Error in testCites");
+            TetradLogger.getInstance().log("Error in testCites");
         }
     }
 

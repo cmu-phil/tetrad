@@ -2040,7 +2040,7 @@ public class Paths implements TetradSerializable {
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPath(node, node)) {
-                TetradLogger.getInstance().forceLogMessage("Cycle found at node " + node.getName() + ".");
+                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
                 return true;
             }
         }
@@ -2610,8 +2610,8 @@ public class Paths implements TetradSerializable {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -2621,8 +2621,8 @@ public class Paths implements TetradSerializable {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

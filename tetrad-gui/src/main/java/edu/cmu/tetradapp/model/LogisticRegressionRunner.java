@@ -146,12 +146,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         targetName = null;
         regressorNames = new ArrayList<>();
 
-        TetradLogger.getInstance().forceLogMessage("Linear Regression");
+        TetradLogger.getInstance().log("Linear Regression");
 
         if (result == null) {
-            TetradLogger.getInstance().forceLogMessage("Please double click this regression node to run the regession.");
+            TetradLogger.getInstance().log("Please double click this regression node to run the regession.");
         } else {
-            TetradLogger.getInstance().forceLogMessage(report);
+            TetradLogger.getInstance().log(report);
         }
     }
 
@@ -412,8 +412,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -423,8 +423,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

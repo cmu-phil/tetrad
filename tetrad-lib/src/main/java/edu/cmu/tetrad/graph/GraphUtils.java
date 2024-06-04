@@ -1927,8 +1927,8 @@ public final class GraphUtils {
 
                         if (verbose) {
                             double pValue = sepsets.getPValue(a, c, sepset);
-                            TetradLogger.getInstance().forceLogMessage("Removed edge " + a + " -- " + c
-                                                                       + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
+                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
                         }
                     }
                 }
@@ -2501,14 +2501,14 @@ public final class GraphUtils {
                         pag.setEndpoint(z, y, Endpoint.ARROW);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
                             if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + pag.getEdge(x, y));
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
                             }
 
                             if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + pag.getEdge(y, z));
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
                             }
                         }
                     }
@@ -2527,14 +2527,14 @@ public final class GraphUtils {
                                     double p = sepsets.getPValue(x, z, sepset);
                                     String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
 
-                                    TetradLogger.getInstance().forceLogMessage("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
+                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + pag.getEdge(x, y));
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
                                     }
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + pag.getEdge(y, z));
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
                                     }
                                 }
                             }

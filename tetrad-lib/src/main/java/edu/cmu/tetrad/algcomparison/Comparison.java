@@ -731,7 +731,7 @@ public class Comparison implements TetradSerializable {
                 out.close();
             }
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("IO Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
         }
     }
 
@@ -825,7 +825,7 @@ public class Comparison implements TetradSerializable {
                 }
             }
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("IO Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
         }
     }
 
@@ -838,7 +838,7 @@ public class Comparison implements TetradSerializable {
     public void configuration(String path) {
         try {
             if (!new File(path).mkdirs())
-                TetradLogger.getInstance().forceLogMessage("Path already exists: " + new File(path));
+                TetradLogger.getInstance().log("Path already exists: " + new File(path));
 
             PrintStream out = new PrintStream(Files.newOutputStream(new File(path, "Configuration.txt").toPath()));
 
@@ -1010,7 +1010,7 @@ public class Comparison implements TetradSerializable {
 
             out.close();
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage("Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("Exception: " + e.getMessage());
         }
     }
 
@@ -1314,11 +1314,11 @@ public class Comparison implements TetradSerializable {
                 deleteFilesThenDirectory(currentFile);
             } else {
                 if (!currentFile.delete())
-                    TetradLogger.getInstance().forceLogMessage("File could not be deleted: " + currentFile);
+                    TetradLogger.getInstance().log("File could not be deleted: " + currentFile);
             }
         }
 
-        if (!dir.delete()) TetradLogger.getInstance().forceLogMessage("Directory could not be deleted: " + dir);
+        if (!dir.delete()) TetradLogger.getInstance().log("Directory could not be deleted: " + dir);
     }
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers, Statistics statistics,
@@ -1387,8 +1387,8 @@ public class Comparison implements TetradSerializable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            TetradLogger.getInstance().forceLogMessage("\nCould not run " + algorithmWrapper.getDescription()
-                + " on " + simulationWrapper.getDescription() + " because of " + e.getMessage());
+            TetradLogger.getInstance().log("\nCould not run " + algorithmWrapper.getDescription()
+                                           + " on " + simulationWrapper.getDescription() + " because of " + e.getMessage());
             return;
         }
 
@@ -1552,7 +1552,7 @@ public class Comparison implements TetradSerializable {
             outElapsed.println(elapsed);
             outElapsed.close();
         } catch (FileNotFoundException e) {
-            TetradLogger.getInstance().forceLogMessage("File not found exception: " + e.getMessage());
+            TetradLogger.getInstance().log("File not found exception: " + e.getMessage());
         }
     }
 

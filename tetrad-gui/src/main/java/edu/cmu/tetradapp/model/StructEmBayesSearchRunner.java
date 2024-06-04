@@ -227,8 +227,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -238,8 +238,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -270,8 +270,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM");
-        TetradLogger.getInstance().forceLogMessage("" + this.estimatedBayesIm);
+        TetradLogger.getInstance().log("EM-Estimated Bayes IM");
+        TetradLogger.getInstance().log("" + this.estimatedBayesIm);
     }
 }
 

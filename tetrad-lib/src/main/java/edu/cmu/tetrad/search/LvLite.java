@@ -120,7 +120,7 @@ public final class LvLite implements IGraphSearch {
      */
     private void reorientWithCircles(Graph pag) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
         }
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
@@ -138,11 +138,11 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
+            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
         }
 
         // BOSS seems to be doing better here.
@@ -160,7 +160,7 @@ public final class LvLite implements IGraphSearch {
         var best = permutationSearch.getOrder();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+            TetradLogger.getInstance().log("Best order: " + best);
         }
 
         var scorer = new TeyssierScorer(null, score);
@@ -168,8 +168,8 @@ public final class LvLite implements IGraphSearch {
         scorer.bookmark();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Initializing PAG to BOSS CPDAG.");
-            TetradLogger.getInstance().forceLogMessage("Initializing scorer with BOSS best order.");
+            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
         var cpdag = scorer.getGraph(true);
@@ -186,7 +186,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setVerbose(verbose);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Collider orientation and edge removal.");
+            TetradLogger.getInstance().log("Collider orientation and edge removal.");
         }
 
         // The main procedure.
@@ -305,7 +305,7 @@ public final class LvLite implements IGraphSearch {
                         pag.removeEdge(x, y);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage(
+                            TetradLogger.getInstance().log(
                                     "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
                         }
                     }
@@ -346,7 +346,7 @@ public final class LvLite implements IGraphSearch {
                         unshieldedColliders.add(new Triple(x, b, y));
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage(
+                            TetradLogger.getInstance().log(
                                     "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                         }
                     } else if (allowTucks && pag.isAdjacentTo(x, y)) {
@@ -364,7 +364,7 @@ public final class LvLite implements IGraphSearch {
 
             if (pag.removeEdge(x, y)) {
                 if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
                 }
             }
@@ -416,7 +416,7 @@ public final class LvLite implements IGraphSearch {
                 pag.setEndpoint(y, b, Endpoint.ARROW);
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
 
@@ -436,7 +436,7 @@ public final class LvLite implements IGraphSearch {
                     pag.setEndpoint(y, b, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage(
+                        TetradLogger.getInstance().log(
                                 "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                     }
 
@@ -465,7 +465,7 @@ public final class LvLite implements IGraphSearch {
                 unshieldedColliders.add(new Triple(x, a, y));
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
                 }
 
@@ -486,7 +486,7 @@ public final class LvLite implements IGraphSearch {
                     unshieldedColliders.add(new Triple(x, a, y));
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage(
+                        TetradLogger.getInstance().log(
                                 "FROM TUCKING oriented " + x + " *-> " + a + " <-* " + y + " from CPDAG to PAG.");
                     }
 
@@ -518,7 +518,7 @@ public final class LvLite implements IGraphSearch {
      */
     private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Orient required edges in PAG:");
+            TetradLogger.getInstance().log("Orient required edges in PAG:");
         }
 
         fciOrient.fciOrientbk(knowledge, pag, best);
@@ -573,7 +573,7 @@ public final class LvLite implements IGraphSearch {
      */
     private void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final Orientation:");
+            TetradLogger.getInstance().log("Final Orientation:");
         }
 
         do {
@@ -799,7 +799,7 @@ public final class LvLite implements IGraphSearch {
                 graph.setEndpoint(c, b, Endpoint.ARROW);
 
                 if (this.verbose) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
@@ -810,7 +810,7 @@ public final class LvLite implements IGraphSearch {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
 
                 if (this.verbose) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 

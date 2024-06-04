@@ -182,8 +182,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().forceLogMessage(this.graph + "");
+        TetradLogger.getInstance().log("Directed Acyclic Graph (DAG)");
+        TetradLogger.getInstance().log(this.graph + "");
     }
 
     @Serial
@@ -191,8 +191,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -202,8 +202,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

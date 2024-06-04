@@ -165,8 +165,8 @@ public final class BFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting BFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         Boss subAlg = new Boss(this.score);

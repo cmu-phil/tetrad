@@ -196,18 +196,18 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==========================PRIVATE METHODS===========================//
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("DAGs in forbid_latent_common_causes");
-        TetradLogger.getInstance().forceLogMessage("\nSelected Graph\n");
+        TetradLogger.getInstance().log("DAGs in forbid_latent_common_causes");
+        TetradLogger.getInstance().log("\nSelected Graph\n");
         String message1 = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message1);
+        TetradLogger.getInstance().log(message1);
 
-        TetradLogger.getInstance().forceLogMessage("\nAll Graphs:\n");
+        TetradLogger.getInstance().log("\nAll Graphs:\n");
         int index = 0;
 
         for (Graph graph : this.graphsToScores.keySet()) {
             String message = "\nGraph #" + (++index);
-            TetradLogger.getInstance().forceLogMessage(message);
-            TetradLogger.getInstance().forceLogMessage(graph + "");
+            TetradLogger.getInstance().log(message);
+            TetradLogger.getInstance().log(graph + "");
         }
     }
 
@@ -217,8 +217,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -228,8 +228,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

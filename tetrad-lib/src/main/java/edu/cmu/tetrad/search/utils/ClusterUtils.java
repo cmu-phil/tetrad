@@ -264,7 +264,7 @@ public class ClusterUtils {
             buf.append("\n");
         }
 
-        TetradLogger.getInstance().forceLogMessage(buf.toString());
+        TetradLogger.getInstance().log(buf.toString());
     }
 
     /**

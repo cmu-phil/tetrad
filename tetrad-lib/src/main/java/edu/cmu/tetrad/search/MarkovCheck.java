@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -1213,7 +1212,7 @@ public class MarkovCheck {
                     msep.addAll(setPair.getFirst());
                     mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    TetradLogger.getInstance().log(e.getMessage());
                 }
             }
 
@@ -1314,7 +1313,7 @@ public class MarkovCheck {
                     resultsIndep.addAll(future.get().getFirst());
                     resultsDep.addAll(future.get().getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    TetradLogger.getInstance().log(e.getMessage());
                 }
             }
 

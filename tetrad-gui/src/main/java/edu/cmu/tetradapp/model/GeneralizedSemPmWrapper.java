@@ -398,8 +398,8 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -409,8 +409,8 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -460,9 +460,9 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     //======================= Private methods ====================//
     private void log(GeneralizedSemPm pm) {
-        TetradLogger.getInstance().forceLogMessage("Generalized Structural Equation Parameter Model (Generalized SEM PM)");
+        TetradLogger.getInstance().log("Generalized Structural Equation Parameter Model (Generalized SEM PM)");
         String message = pm.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**

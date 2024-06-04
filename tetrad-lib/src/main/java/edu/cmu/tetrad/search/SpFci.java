@@ -138,8 +138,8 @@ public final class SpFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting SP-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting SP-FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         Sp subAlg = new Sp(this.score);

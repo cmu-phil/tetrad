@@ -57,7 +57,7 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
     public AllEdgesUndirectedWrapper(Graph graph) {
         super(GraphUtils.undirectedGraph(graph), "Make Bidirected Edges Undirected");
         String message = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
 

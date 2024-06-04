@@ -103,7 +103,7 @@ public final class LvDumb implements IGraphSearch {
      */
     private void reorientWithCircles(Graph pag) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
         }
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
@@ -121,11 +121,11 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
+            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
         }
 
         // BOSS seems to be doing better here.
@@ -144,7 +144,7 @@ public final class LvDumb implements IGraphSearch {
         var best = permutationSearch.getOrder();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+            TetradLogger.getInstance().log("Best order: " + best);
         }
 
         var scorer = new TeyssierScorer(null, score);
@@ -152,8 +152,8 @@ public final class LvDumb implements IGraphSearch {
         scorer.bookmark();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Initializing PAG to BOSS CPDAG.");
-            TetradLogger.getInstance().forceLogMessage("Initializing scorer with BOSS best order.");
+            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
         var dag = scorer.getGraph(false);

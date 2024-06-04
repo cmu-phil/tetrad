@@ -341,7 +341,7 @@ public final class FgesMb implements DagScorer {
         this.elapsedTime = endTime - start;
 
         if (verbose) {
-            this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
+            this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
         this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
@@ -1021,7 +1021,7 @@ public final class FgesMb implements DagScorer {
                                    + " " + T + " " + bump
                                    + " degree = " + GraphUtils.getDegree(graph)
                                    + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         for (Node _t : T) {
@@ -1030,7 +1030,7 @@ public final class FgesMb implements DagScorer {
 
             if (verbose) {
                 String message = "--- Directing " + graph.getEdge(_t, y);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
     }
@@ -1088,7 +1088,7 @@ public final class FgesMb implements DagScorer {
                 graph.addDirectedEdge(nodeA, nodeB);
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                    TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
                 }
             }
         }
@@ -1110,7 +1110,7 @@ public final class FgesMb implements DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1121,7 +1121,7 @@ public final class FgesMb implements DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1135,7 +1135,7 @@ public final class FgesMb implements DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1145,7 +1145,7 @@ public final class FgesMb implements DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }

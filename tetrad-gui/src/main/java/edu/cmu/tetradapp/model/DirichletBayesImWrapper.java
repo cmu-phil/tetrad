@@ -138,8 +138,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -149,8 +149,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
@@ -217,8 +217,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().forceLogMessage("Dirichlet Bayes IM");
+        TetradLogger.getInstance().log("Dirichlet Bayes IM");
         String message = im.toString();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 }
