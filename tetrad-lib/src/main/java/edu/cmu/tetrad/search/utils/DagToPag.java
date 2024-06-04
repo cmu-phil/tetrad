@@ -126,10 +126,10 @@ public final class DagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setVerbose(false);

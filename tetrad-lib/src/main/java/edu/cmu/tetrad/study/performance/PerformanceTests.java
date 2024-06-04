@@ -1415,7 +1415,7 @@ public class PerformanceTests {
         final double alpha = 0.01;
         final double penaltyDiscount = 3.0;
         final int depth = 3;
-        final int maxPathLength = 3;
+        final int maxPathLength = -1;
         final boolean possibleMsepDone = true;
         final boolean completeRuleSetUsed = false;
         final boolean faithfulnessAssumed = true;

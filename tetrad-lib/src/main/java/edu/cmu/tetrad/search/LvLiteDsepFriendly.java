@@ -27,11 +27,9 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -45,13 +43,27 @@ import java.util.List;
  * @author josephramsey
  */
 public final class LvLiteDsepFriendly implements IGraphSearch {
+    /**
+     * This variable represents a list of nodes that store different variables.
+     * It is declared as private and final, hence it cannot be modified or accessed from outside
+     * the class where it is declared.
+     */
     private final ArrayList<Node> variables;
+    /**
+     * Indicates whether to use Raskutti Uhler feature.
+     */
     private boolean useRaskuttiUhler;
+    /**
+     * The independence test.
+     */
     private IndependenceTest test;
     /**
      * The score.
      */
     private Score score;
+    /**
+     * Indicates whether or not the score should be used.
+     */
     private boolean useScore;
     /**
      * The background knowledge.
@@ -69,14 +81,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * Whether to use data order.
      */
     private boolean useDataOrder = true;
-    /**
-     * This flag represents whether the Bes algorithm should be used in the search.
-     * <p>
-     * If set to true, the Bes algorithm will be used. If set to false, the Bes algorithm will not be used.
-     * <p>
-     * By default, the value of this flag is false.
-     */
-    private boolean useBes = false;
     /**
      * This variable represents whether the discriminating path rule is used in the LV-Lite class.
      * <p>
@@ -127,7 +131,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private int depth = 3;
     /**
-     * Whether to allow internal randomness in the algorithm.
+     * Specifies whether internal randomness is allowed.
      */
     private boolean allowInternalRandomness = false;
     /**
@@ -263,6 +267,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
@@ -282,15 +287,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         finalOrientation(fciOrient, pag, scorer);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
-    }
-
-    /**
-     * Sets whether to use the BES (Backward Elimination Search) algorithm during the search.
-     *
-     * @param useBes true to use the BES algorithm, false otherwise
-     */
-    public void setUseBes(boolean useBes) {
-        this.useBes = useBes;
     }
 
     /**
@@ -999,5 +995,9 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         }
 
         this.maxPathLength = maxPathLength;
+    }
+
+    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
+        this.allowInternalRandomness = allowInternalRandomness;
     }
 }

@@ -217,9 +217,9 @@ public final class Fci implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets1);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
 

@@ -101,7 +101,7 @@ public final class PcCommon implements IGraphSearch {
     /**
      * The max path length for the max p collider orientation heuristic.
      */
-    private int maxPathLength = 3;
+    private int maxPathLength = -1;
 
     /**
      * The type of FAS to be used.

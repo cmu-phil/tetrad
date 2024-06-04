@@ -117,6 +117,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
+        search.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
         search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -186,6 +187,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
 
         // FCI
         params.add(Params.DEPTH);

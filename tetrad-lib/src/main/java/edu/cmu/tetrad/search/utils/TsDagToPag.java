@@ -209,8 +209,8 @@ public final class TsDagToPag {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setChangeFlag(false);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);

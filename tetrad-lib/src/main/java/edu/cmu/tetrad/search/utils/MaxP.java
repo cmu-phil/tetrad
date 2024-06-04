@@ -45,7 +45,7 @@ public final class MaxP {
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
-    private int maxPathLength = 3;
+    private int maxPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
 

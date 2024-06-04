@@ -310,6 +310,4 @@ public final class SpFci implements IGraphSearch {
     public void setDoDiscriminatingPathTCollideRule(boolean doDiscriminatingPathTCollideRule) {
         this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
     }
-
-
 }

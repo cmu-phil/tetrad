@@ -76,6 +76,7 @@ public final class Cfci implements IGraphSearch {
     // Whether to do the discriminating path rule.
     private boolean doDiscriminatingPathTailRule;
     private boolean doDiscriminatingPathColliderRule;
+    private int maxPathLength = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -173,7 +174,7 @@ public final class Cfci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(-1);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
@@ -549,6 +550,10 @@ public final class Cfci implements IGraphSearch {
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 
     private enum TripleType {

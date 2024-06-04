@@ -338,9 +338,9 @@ public final class FciMax implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
         return fciOrient;

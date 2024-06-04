@@ -177,6 +177,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 

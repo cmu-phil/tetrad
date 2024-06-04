@@ -100,6 +100,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -150,6 +151,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
