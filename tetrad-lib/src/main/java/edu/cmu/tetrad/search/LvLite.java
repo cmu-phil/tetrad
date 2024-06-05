@@ -137,7 +137,8 @@ public final class LvLite implements IGraphSearch {
      * @param scorer    The scorer used to evaluate edge orientations.
      */
     public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                                     Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge, boolean verbose) {
+                                                     Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
+                                                     boolean allowTucks, boolean verbose) {
         reorientWithCircles(pag, verbose);
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
 
@@ -146,7 +147,25 @@ public final class LvLite implements IGraphSearch {
         Set<NodePair> toRemove = new HashSet<>();
 
         recallUnshieldedTriples(pag, unshieldedColliders, reverse, verbose);
-        mainLoop(pag, scorer, unshieldedColliders, cpdag, reverse, toRemove, knowledge, verbose);
+
+        for (Node b : reverse) {
+            var adj = pag.getAdjacentNodes(b);
+            Collections.reverse(adj);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = 0; j < adj.size(); j++) {
+                    if (i == j) continue;
+
+                    var x = adj.get(i);
+                    var y = adj.get(j);
+
+                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, knowledge, verbose)) {
+                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, allowTucks, verbose);
+                    }
+                }
+            }
+        }
+
         removeEdges(pag, toRemove, verbose);
     }
 
@@ -161,27 +180,6 @@ public final class LvLite implements IGraphSearch {
                 if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
                     TetradLogger.getInstance().log(
                             "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
-                }
-            }
-        }
-    }
-
-    private static void mainLoop(Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag,
-                                 ArrayList<Node> reverse, Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
-        for (Node b : reverse) {
-            var adj = pag.getAdjacentNodes(b);
-            Collections.reverse(adj);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = 0; j < adj.size(); j++) {
-                    if (i == j) continue;
-
-                    var x = adj.get(i);
-                    var y = adj.get(j);
-
-                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, knowledge, verbose)) {
-                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-                    }
                 }
             }
         }
@@ -217,7 +215,9 @@ public final class LvLite implements IGraphSearch {
     }
 
     private static void triangleReasoning(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
-                                          Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
+                                          Set<NodePair> toRemove, Knowledge knowledge, boolean allowTucks, boolean verbose) {
+        if (!allowTucks) return;
+
         scorer.goToBookmark();
 
         if (!unshieldedTriple(pag, x, b, y)) {
@@ -350,6 +350,10 @@ public final class LvLite implements IGraphSearch {
      */
     private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
         return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+    }
+
+    private static boolean defCollider(Graph graph, Node a, Node b, Node c) {
+        return graph.isDefCollider(a, b, c);
     }
 
     /**
@@ -704,7 +708,7 @@ public final class LvLite implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, verbose);
+            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);

@@ -114,8 +114,6 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));
-        search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
-        search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
         search.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
         search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
@@ -124,7 +122,6 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
         // FCI
-        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
@@ -180,9 +177,9 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         List<String> params = new ArrayList<>();
 
         // GRaSP
-        params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_SINGULAR_DEPTH);
-        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+//        params.add(Params.GRASP_DEPTH);
+//        params.add(Params.GRASP_SINGULAR_DEPTH);
+//        params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);

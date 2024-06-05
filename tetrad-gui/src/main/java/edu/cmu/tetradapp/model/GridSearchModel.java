@@ -463,7 +463,7 @@ public class GridSearchModel implements SessionModel {
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
-        String outputFileName = "Comparison";
+        String outputFileName = "Comparison.txt";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
     }

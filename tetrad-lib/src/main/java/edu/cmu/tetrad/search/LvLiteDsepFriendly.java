@@ -60,7 +60,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private Score score;
     /**
-     * Indicates whether or not the score should be used.
+     * Indicates whether the score should be used.
      */
     private boolean useScore;
     /**
@@ -108,18 +108,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * Whether to impose an ordering on the three GRaSP algorithms.
      */
     private boolean ordered = false;
-    /**
-     * The maximum depth of the depth-first search for tucks.
-     */
-    private int uncoveredDepth = 1;
-    /**
-     * The maximum depth of the depth-first search for uncovered tucks.
-     */
-    private int nonSingularDepth = 1;
-    /**
-     * The maximum depth of the depth-first search for singular tucks.
-     */
-    private int depth = 3;
     /**
      * Specifies whether internal randomness is allowed.
      */
@@ -186,9 +174,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         grasp.setDepth(3);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
-        grasp.setDepth(depth);
-        grasp.setUncoveredDepth(uncoveredDepth);
-        grasp.setNonSingularDepth(nonSingularDepth);
         grasp.setOrdered(ordered);
         grasp.setUseScore(useScore);
         grasp.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -244,7 +229,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, verbose);
+            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
@@ -345,26 +330,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
     }
 
     /**
-     * Sets depth for singular tucks.
-     *
-     * @param uncoveredDepth The depth for singular tucks.
-     */
-    public void setSingularDepth(int uncoveredDepth) {
-        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
-        this.uncoveredDepth = uncoveredDepth;
-    }
-
-    /**
-     * Sets depth for non-singular tucks.
-     *
-     * @param nonSingularDepth The depth for non-singular tucks.
-     */
-    public void setNonSingularDepth(int nonSingularDepth) {
-        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
-        this.nonSingularDepth = nonSingularDepth;
-    }
-
-    /**
      * Sets whether to use the ordered version of GRaSP.
      *
      * @param ordered True, if so.
@@ -380,15 +345,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
-    }
-
-    /**
-     * Sets the depth for the search algorithm.
-     *
-     * @param depth The depth value to set for the search algorithm.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 
     /**
