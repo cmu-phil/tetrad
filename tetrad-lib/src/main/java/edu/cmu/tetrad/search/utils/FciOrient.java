@@ -348,9 +348,12 @@ public final class FciOrient {
 
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
+
                     if (this.verbose) {
                         this.logger.log(LogUtilsSearch.colliderOrientedMsg(a, b, c));
                     }
+
+                    this.changeFlag = true;
                 }
             }
         }
@@ -512,11 +515,12 @@ public final class FciOrient {
 
             graph.setEndpoint(c, b, Endpoint.TAIL);
             graph.setEndpoint(b, c, Endpoint.ARROW);
-            this.changeFlag = true;
 
             if (this.verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("R1: Away from collider", graph.getEdge(b, c)));
             }
+
+            this.changeFlag = true;
         }
     }
 
@@ -999,6 +1003,7 @@ public final class FciOrient {
                             "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
+                this.changeFlag = true;
                 return true;
             }
         } else {
@@ -1010,6 +1015,7 @@ public final class FciOrient {
                             "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
+                this.changeFlag = true;
                 return true;
             }
         }
@@ -1067,12 +1073,13 @@ public final class FciOrient {
 
             graph.setEndpoint(n1, n2, Endpoint.TAIL);
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
-            this.changeFlag = true;
 
             if (verbose) {
                 this.logger.log("R8: Orient circle undirectedPaths " +
                                 GraphUtils.pathString(graph, n1, n2));
             }
+
+            this.changeFlag = true;
         }
     }
 
@@ -1209,11 +1216,12 @@ public final class FciOrient {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.changeFlag = true;
 
             if (verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
             }
+
+            this.changeFlag = true;
         }
 
         for (Iterator<KnowledgeEdge> it
@@ -1242,11 +1250,12 @@ public final class FciOrient {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.changeFlag = true;
 
             if (verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
+
+            this.changeFlag = true;
         }
 
         if (verbose) {

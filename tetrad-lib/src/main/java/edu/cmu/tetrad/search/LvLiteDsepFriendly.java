@@ -22,6 +22,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagSepsets;
@@ -165,13 +167,12 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
             TetradLogger.getInstance().log("Running GRaSP to get CPDAG and best order.");
         }
 
-        test.setVerbose(false);
-
         test.setVerbose(verbose);
+
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
         grasp.setSeed(seed);
-        grasp.setDepth(3);
+        grasp.setDepth(25);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(ordered);
@@ -184,7 +185,8 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
         List<Node> best = grasp.bestOrder(variables);
-        grasp.getGraph(true);
+        Graph cpdag = grasp.getGraph(true);
+        var pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Best order: " + best);
@@ -200,8 +202,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        var cpdag = scorer.getGraph(true);
-        var pag = new EdgeListGraph(cpdag);
+
         scorer.score(best);
 
         FciOrient fciOrient;
@@ -229,7 +230,8 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose);
+            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge,
+                    allowTucks, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,

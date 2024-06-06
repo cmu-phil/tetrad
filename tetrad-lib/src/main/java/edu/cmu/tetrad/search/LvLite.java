@@ -142,15 +142,14 @@ public final class LvLite implements IGraphSearch {
         reorientWithCircles(pag, verbose);
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
 
+        recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+
         var reverse = new ArrayList<>(best);
         Collections.reverse(reverse);
         Set<NodePair> toRemove = new HashSet<>();
 
-        recallUnshieldedTriples(pag, unshieldedColliders, reverse, verbose);
-
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
-            Collections.reverse(adj);
 
             for (int i = 0; i < adj.size(); i++) {
                 for (int j = 0; j < adj.size(); j++) {
@@ -185,30 +184,25 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, ArrayList<Node> reverse, boolean verbose) {
-        for (Node b : reverse) {
-            var adj = pag.getAdjacentNodes(b);
+    private static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, boolean verbose) {
+        for (Triple triple : unshieldedColliders) {
+            Node x = triple.getX();
+            Node z = triple.getZ();
+            pag.removeEdge(x, z);
+        }
 
-            // Sort adj in the order of reverse
-            adj.sort(Comparator.comparingInt(reverse::indexOf));
+        for (Triple triple : unshieldedColliders) {
+            Node x = triple.getX();
+            Node b = triple.getY();
+            Node y = triple.getZ();
 
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = 0; j < adj.size(); j++) {
-                    if (i == j) continue;
+            if (triple(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
 
-                    var x = adj.get(i);
-                    var y = adj.get(j);
-
-                    if (triple(pag, x, b, y) && unshieldedColliders.contains(new Triple(x, b, y))) {
-                        pag.setEndpoint(x, b, Endpoint.ARROW);
-                        pag.setEndpoint(y, b, Endpoint.ARROW);
-                        pag.removeEdge(x, y);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
-                        }
-                    }
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
                 }
             }
         }
@@ -220,40 +214,37 @@ public final class LvLite implements IGraphSearch {
 
         scorer.goToBookmark();
 
-        if (!unshieldedTriple(pag, x, b, y)) {
+        if (triangle(pag, x, b, y)) {
             scorer.tuck(b, x);
+            scorer.tuck(x, y);
             copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
         }
 
-        if (!unshieldedTriple(pag, x, b, y)) {
-            scorer.tuck(b, y);
-            copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-        }
+        List<Node> commonAdjacents = commonAdjacents(x, y, pag);
+        commonAdjacents.remove(b);
 
-        scorer.goToBookmark();
+        boolean changed = true;
 
-        List<Node> commonNoncolliders = commonNoncolliders(x, y, pag);
-        commonNoncolliders.remove(b);
+        while (changed) {
+            changed = false;
+            scorer.goToBookmark();
+            Collections.shuffle(commonAdjacents);
 
-        for (Node a : new ArrayList<>(commonNoncolliders)) {
-            if (!unshieldedTriple(pag, x, a, y)) {
-                scorer.tuck(a, x);
-                copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-            }
+            for (Node a : new ArrayList<>(commonAdjacents)) {
+                scorer.goToBookmark();
 
-            if (!unshieldedTriple(pag, x, a, y)) {
-                scorer.tuck(a, y);
-                copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
+                if (triangle(pag, x, a, y)) {
+                    scorer.tuck(a, x);
+                    scorer.tuck(x, y);
+                    commonAdjacents.remove(a);
+                    changed = changed || copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
+                }
             }
         }
     }
 
     private static boolean copyColliderCpdag(Graph pag, Graph cpdag, Node x, Node b, Node y, Set<Triple> unshieldedColliders,
                                              Knowledge knowledge, boolean verbose) {
-        if (unshieldedColliders.contains(new Triple(x, b, y))) {
-            return true;
-        }
-
         if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(cpdag, x, b, y)) {
             if (colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
@@ -273,12 +264,8 @@ public final class LvLite implements IGraphSearch {
         return false;
     }
 
-    private static void copyColliderScorer(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
-                                           Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
-        if (unshieldedColliders.contains(new Triple(x, b, y))) {
-            return;
-        }
-
+    private static boolean copyColliderScorer(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
+                                              Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
             if (colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
@@ -291,8 +278,12 @@ public final class LvLite implements IGraphSearch {
                     TetradLogger.getInstance().log(
                             "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
+
+                return true;
             }
         }
+
+        return false;
     }
 
     /**
@@ -305,7 +296,13 @@ public final class LvLite implements IGraphSearch {
      * @return {@code true} if all three nodes are connected, {@code false} otherwise
      */
     private static boolean triple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+        return a != b && b != c && a != c
+               && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+    }
+
+    private static boolean triangle(Graph graph, Node a, Node b, Node c) {
+        return a != b && b != c && a != c
+               && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && graph.isAdjacentTo(a, c);
     }
 
     /**
@@ -349,7 +346,8 @@ public final class LvLite implements IGraphSearch {
      * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
      */
     private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+        return a != b && b != c && a != c
+               && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
     }
 
     private static boolean defCollider(Graph graph, Node a, Node b, Node c) {
@@ -366,16 +364,14 @@ public final class LvLite implements IGraphSearch {
      * @return true if the nodes are unshielded colliders, false otherwise
      */
     private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
+        return a != b && b != c && a != c
+               && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
-    private static @NotNull List<Node> commonNoncolliders(Node x, Node y, Graph pag) {
-        List<Node> commonNoncolliders = new ArrayList<>(pag.getAdjacentNodes(x));
-        commonNoncolliders.retainAll(pag.getAdjacentNodes(y));
-        List<Node> commonChildren = pag.getNodesOutTo(x, Endpoint.ARROW);
-        commonChildren.retainAll(pag.getNodesOutTo(y, Endpoint.ARROW));
-        commonNoncolliders.removeAll(commonChildren);
-        return commonNoncolliders;
+    private static @NotNull List<Node> commonAdjacents(Node x, Node y, Graph pag) {
+        List<Node> commonAdjacents = new ArrayList<>(pag.getAdjacentNodes(x));
+        commonAdjacents.retainAll(pag.getAdjacentNodes(y));
+        return commonAdjacents;
     }
 
     /**
@@ -390,6 +386,8 @@ public final class LvLite implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Final Orientation:");
         }
+
+        fciOrient.setVerbose(verbose);
 
         do {
             if (completeRuleSetUsed) {

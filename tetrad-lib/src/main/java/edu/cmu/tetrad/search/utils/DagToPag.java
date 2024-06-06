@@ -39,13 +39,26 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class DagToPag {
-
-//    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
-    private final Graph dag;
     /**
-     * The logger to use.
+     * The variable 'dag' represents a directed acyclic graph (DAG) that is stored in a private final field.
+     * A DAG is a finite directed graph with no directed cycles. This means that there is no way to start at some vertex and
+     * follow a sequence of directed edges that eventually loops back to the same vertex. In other words, there are no
+     * cyclic dependencies in the graph.
+     *
+     * The 'dag' variable is used within the containing class 'DagToPag' for various purposes related to the conversion of
+     * a DAG to a partially directed acyclic graph (PAG). The methods in 'DagToPag' utilize this variable to perform
+     * operations such as checking for inducing paths between nodes, converting the DAG to a PAG, and orienting
+     * unshielded colliders in the graph.
+     *
+     * The 'dag' variable has private access, meaning it can only be accessed and modified within the 'DagToPag' class.
+     * It is declared as 'final', indicating that its value cannot be changed after it is assigned in the constructor or
+     * initialization block. This ensures that the reference to the DAG remains consistent throughout the lifetime of the
+     * 'DagToPag' object.
+     *
+     * @see DagToPag
+     * @see Graph
      */
-    private final TetradLogger logger = TetradLogger.getInstance();
+    private final Graph dag;
     /*
      * The background knowledge.
      */
@@ -91,7 +104,6 @@ public final class DagToPag {
         for (Node b : graph.getAdjacentNodes(x)) {
             Edge edge = graph.getEdge(x, b);
             if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
-//            if (!edge.pointsTowards(x)) continue;
 
             if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
                 return true;
@@ -107,8 +119,6 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-//        if (history.get(dag) != null) return history.get(dag);
-
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
@@ -138,8 +148,6 @@ public final class DagToPag {
         if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
-
-//        history.put(dag, graph);
 
         return graph;
     }
