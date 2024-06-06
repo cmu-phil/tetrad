@@ -220,27 +220,27 @@ public final class LvLite implements IGraphSearch {
             copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
         }
 
-        List<Node> commonAdjacents = commonAdjacents(x, y, pag);
-        commonAdjacents.remove(b);
-
-        boolean changed = true;
-
-        while (changed) {
-            changed = false;
-            scorer.goToBookmark();
-            Collections.shuffle(commonAdjacents);
-
-            for (Node a : new ArrayList<>(commonAdjacents)) {
-                scorer.goToBookmark();
-
-                if (triangle(pag, x, a, y)) {
-                    scorer.tuck(a, x);
-                    scorer.tuck(x, y);
-                    commonAdjacents.remove(a);
-                    changed = changed || copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-                }
-            }
-        }
+//        List<Node> commonAdjacents = commonAdjacents(x, y, pag);
+//        commonAdjacents.remove(b);
+//
+//        boolean changed = true;
+//
+//        while (changed) {
+//            changed = false;
+//            scorer.goToBookmark();
+//            Collections.shuffle(commonAdjacents);
+//
+//            for (Node a : new ArrayList<>(commonAdjacents)) {
+//                scorer.goToBookmark();
+//
+//                if (triangle(pag, x, a, y)) {
+//                    scorer.tuck(a, x);
+//                    scorer.tuck(x, y);
+//                    commonAdjacents.remove(a);
+//                    changed = changed || copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
+//                }
+//            }
+//        }
     }
 
     private static boolean copyColliderCpdag(Graph pag, Graph cpdag, Node x, Node b, Node y, Set<Triple> unshieldedColliders,
