@@ -178,9 +178,6 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         List<String> params = new ArrayList<>();
 
         // GRaSP
-//        params.add(Params.GRASP_DEPTH);
-//        params.add(Params.GRASP_SINGULAR_DEPTH);
-//        params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
