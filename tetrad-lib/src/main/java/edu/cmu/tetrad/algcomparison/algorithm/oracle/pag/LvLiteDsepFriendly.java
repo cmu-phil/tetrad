@@ -121,13 +121,14 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
-        // FCI
+        // LV-Lite
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setEqualityThreshold(parameters.getDouble(Params.EQUALITY_THRESHOLD));
 
-        // Gene
+        // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
@@ -192,6 +193,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        params.add(Params.EQUALITY_THRESHOLD);
 
         // General
         params.add(Params.TIME_LAG);

@@ -10,7 +10,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -415,21 +418,25 @@ public class BesPermutation {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            int parallelism = Runtime.getRuntime().availableProcessors();
-            ForkJoinPool pool = new ForkJoinPool(parallelism);
+//            int parallelism = Runtime.getRuntime().availableProcessors();
+//            ForkJoinPool pool = new ForkJoinPool(parallelism);
 
-            try {
-                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
+            // Too many threads are being created, so we will so these all in the current thread.
+            // jdramsey 2024-6-67
+//            try {
+            new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward).compute();
+//                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+//                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+//            } catch (Exception e) {
+//                Thread.currentThread().interrupt();
+//                throw e;
+//            }
 
-            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+//            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+//                Thread.currentThread().interrupt();
+//                return;
+//            }
         }
     }
 

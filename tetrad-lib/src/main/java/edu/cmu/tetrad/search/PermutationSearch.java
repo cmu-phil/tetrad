@@ -145,12 +145,24 @@ public class PermutationSearch {
             RandomUtil.getInstance().setSeed(this.seed);
         }
 
+        List<String> notInTier = new ArrayList<>();
+        for (Node node : variables) {
+            notInTier.add(node.getName());
+        }
+
+        for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
+            List<String> tier = this.knowledge.getTier(i);
+            notInTier.removeAll(tier);
+        }
+
         List<Node> prefix;
-        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
+        if (!this.knowledge.isEmpty() && notInTier.isEmpty()) {
+//        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
             List<Node> order = new ArrayList<>(this.order);
             this.order.clear();
             int start = 0;
             List<Node> suborder;
+
             for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
                 prefix = new ArrayList<>(this.order);
                 List<String> tier = this.knowledge.getTier(i);

@@ -30,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
+
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
  * structure of a graphical model from observational data.
@@ -97,6 +99,10 @@ public final class LvLite implements IGraphSearch {
      * The maximum length of a discriminating path.
      */
     private int maxPathLength;
+    /**
+     * The threshold for equality, a fraction of abs(BIC).
+     */
+    private double equalityThreshold = 0.0005;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -131,22 +137,25 @@ public final class LvLite implements IGraphSearch {
      * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
      * possibility that the removal of an edge may allow for further removals or orientations.
      *
-     * @param pag       The original graph.
-     * @param fciOrient The orientation rules to be applied.
-     * @param best      The list of best nodes.
-     * @param scorer    The scorer used to evaluate edge orientations.
+     * @param pag               The original graph.
+     * @param fciOrient         The orientation rules to be applied.
+     * @param best              The list of best nodes.
+     * @param scorer            The scorer used to evaluate edge orientations.
+     * @param equalityThreshold The threshold for equality. (This is not used for Oracle scoring.)
      */
-    public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                                     Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                                     boolean allowTucks, boolean verbose) {
+    public static boolean orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
+                                                        Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
+                                                        boolean allowTucks, boolean verbose, double equalityThreshold) {
         reorientWithCircles(pag, verbose);
-        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+
+        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
 
         var reverse = new ArrayList<>(best);
         Collections.reverse(reverse);
         Set<NodePair> toRemove = new HashSet<>();
+
+        boolean oriented = false;
 
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
@@ -158,14 +167,39 @@ public final class LvLite implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, knowledge, verbose)) {
-                        triangleReasoning(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, allowTucks, verbose);
+                    if (unshieldedCollider(pag, x, b, y)) {
+                        continue;
+                    }
+
+                    boolean b1 = copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, toRemove, knowledge, verbose);
+
+                    oriented = oriented || b1;
+
+                    if (!b1) {
+                        if (allowTucks) {
+                            if (!unshieldedCollider(pag, x, b, y)) {
+                                scorer.goToBookmark();
+
+                                double score1 = scorer.score();
+
+                                scorer.tuck(b, x);
+                                scorer.tuck(x, y);
+
+                                double score2 = scorer.score();
+
+                                if (Double.isNaN(equalityThreshold) || score2 > score1 - equalityThreshold * abs(score1)) {
+                                    boolean b2 = copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
+                                    oriented = oriented || b2;
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
         removeEdges(pag, toRemove, verbose);
+        return oriented;
     }
 
     private static void removeEdges(Graph pag, Set<NodePair> toRemove, boolean verbose) {
@@ -187,12 +221,6 @@ public final class LvLite implements IGraphSearch {
     private static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, boolean verbose) {
         for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
-            Node z = triple.getZ();
-            pag.removeEdge(x, z);
-        }
-
-        for (Triple triple : unshieldedColliders) {
-            Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
@@ -208,48 +236,20 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private static void triangleReasoning(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
-                                          Set<NodePair> toRemove, Knowledge knowledge, boolean allowTucks, boolean verbose) {
-        if (!allowTucks) return;
-
-        scorer.goToBookmark();
-
-        if (triangle(pag, x, b, y)) {
-            scorer.tuck(b, x);
-            scorer.tuck(x, y);
-            copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-        }
-
-//        List<Node> commonAdjacents = commonAdjacents(x, y, pag);
-//        commonAdjacents.remove(b);
-//
-//        boolean changed = true;
-//
-//        while (changed) {
-//            changed = false;
-//            scorer.goToBookmark();
-//            Collections.shuffle(commonAdjacents);
-//
-//            for (Node a : new ArrayList<>(commonAdjacents)) {
-//                scorer.goToBookmark();
-//
-//                if (triangle(pag, x, a, y)) {
-//                    scorer.tuck(a, x);
-//                    scorer.tuck(x, y);
-//                    commonAdjacents.remove(a);
-//                    changed = changed || copyColliderScorer(x, a, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-//                }
-//            }
-//        }
-    }
-
     private static boolean copyColliderCpdag(Graph pag, Graph cpdag, Node x, Node b, Node y, Set<Triple> unshieldedColliders,
-                                             Knowledge knowledge, boolean verbose) {
+                                             Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(cpdag, x, b, y)) {
             if (colliderAllowed(pag, x, b, y, knowledge)) {
+                boolean oriented = false;
+
+                if (!pag.isDefCollider(x, b, y)) {
+                    oriented = true;
+                }
+
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
 
+                toRemove.add(new NodePair(x, y));
                 unshieldedColliders.add(new Triple(x, b, y));
 
                 if (verbose) {
@@ -257,7 +257,7 @@ public final class LvLite implements IGraphSearch {
                             "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
 
-                return true;
+                return oriented;
             }
         }
 
@@ -268,6 +268,12 @@ public final class LvLite implements IGraphSearch {
                                               Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
             if (colliderAllowed(pag, x, b, y, knowledge)) {
+                boolean oriented = false;
+
+                if (!pag.isDefCollider(x, b, y)) {
+                    oriented = true;
+                }
+
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
 
@@ -279,7 +285,7 @@ public final class LvLite implements IGraphSearch {
                             "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                 }
 
-                return true;
+                return oriented;
             }
         }
 
@@ -395,7 +401,7 @@ public final class LvLite implements IGraphSearch {
             } else {
                 fciOrient.spirtesFinalOrientation(pag);
             }
-        } while (discriminatingPathRule(pag, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule));
+        } while (discriminatingPathRule(pag, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
     }
 
     /**
@@ -416,7 +422,9 @@ public final class LvLite implements IGraphSearch {
      * @param graph a {@link Graph} object
      */
     private static boolean discriminatingPathRule(Graph graph, TeyssierScorer scorer,
-                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule) {
+                                                  boolean doDiscriminatingPathTailRule,
+                                                  boolean doDiscriminatingPathColliderRule,
+                                                  boolean verbose) {
         List<Node> nodes = graph.getNodes();
         boolean oriented = false;
 
@@ -450,7 +458,8 @@ public final class LvLite implements IGraphSearch {
                         continue;
                     }
 
-                    boolean _oriented = ddpOrient(a, b, c, graph, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule);
+                    boolean _oriented = ddpOrient(a, b, c, graph, scorer, doDiscriminatingPathTailRule,
+                            doDiscriminatingPathColliderRule, verbose);
 
                     if (_oriented) oriented = true;
                 }
@@ -471,7 +480,8 @@ public final class LvLite implements IGraphSearch {
      * @param graph a {@link Graph} object
      */
     private static boolean ddpOrient(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer,
-                                     boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule) {
+                                     boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                     boolean verbose) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
@@ -523,7 +533,7 @@ public final class LvLite implements IGraphSearch {
 
                 if (!graph.isAdjacentTo(d, c)) {
                     if (doDdpOrientation(d, a, b, c, path, graph, scorer,
-                            doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, false)) {
+                            doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose)) {
                         return true;
                     }
                 }
@@ -702,12 +712,12 @@ public final class LvLite implements IGraphSearch {
 
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
-        Set<Triple> _unshieldedColliders;
 
-        do {
-            _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose);
-        } while (!unshieldedColliders.equals(_unshieldedColliders));
+        while (true) {
+            if (!orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose, equalityThreshold)) {
+                break;
+            }
+        }
 
         finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
 
@@ -807,5 +817,18 @@ public final class LvLite implements IGraphSearch {
         }
 
         this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets the equality threshold used for comparing values, a fraction of abs(BIC).
+     *
+     * @param equalityThreshold the new equality threshold value
+     */
+    public void setEqualityThreshold(double equalityThreshold) {
+        if (equalityThreshold < 0) {
+            throw new IllegalArgumentException("Equality threshold must be >= 0: " + equalityThreshold);
+        }
+
+        this.equalityThreshold = equalityThreshold;
     }
 }

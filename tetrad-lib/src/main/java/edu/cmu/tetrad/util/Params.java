@@ -890,6 +890,10 @@ public final class Params {
      * Constant <code>MIN_SAMPLE_SIZE_PER_CELL="minSampleSizePerCell"</code>
      */
     public static final String ALLOW_TUCKS = "allowTucks";
+    /**
+     * Constant <code>ALLOW_TUCKS="allowTucks
+     */
+    public static final String EQUALITY_THRESHOLD = "equalityThreshold";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
