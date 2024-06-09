@@ -216,6 +216,8 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
+        setPreferredSize(new Dimension(1100, 600));
+
         conditioningSetTypeJComboBox.addItem("Parents(X) (Local Markov)");
         conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");

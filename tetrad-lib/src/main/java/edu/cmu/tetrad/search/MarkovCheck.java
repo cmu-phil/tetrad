@@ -65,6 +65,10 @@ public class MarkovCheck {
      */
     private final boolean isCpdag;
     /**
+     * List of observers to be notified when changes are made to the model.
+     */
+    private final List<ModelObserver> observers = new ArrayList<>();
+    /**
      * The independence test.
      */
     private IndependenceTest independenceTest;
@@ -266,6 +270,7 @@ public class MarkovCheck {
 
     /**
      * Get Local P values with shuffle threshold provided.
+     *
      * @param independenceTest
      * @param facts
      * @param shuffleThreshold
@@ -344,9 +349,12 @@ public class MarkovCheck {
     }
 
     /**
-     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion statistics.
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion
+     * statistics.
+     * <p>
+     * Confusion statistics were calculated using Adjacency (AdjacencyPrecision, AdjacencyRecall) and Arrowhead
+     * (ArrowheadPrecision, ArrowheadRecall)
      *
-     * Confusion statistics were calculated using Adjacency (AdjacencyPrecision, AdjacencyRecall) and Arrowhead (ArrowheadPrecision, ArrowheadRecall)
      * @param independenceTest
      * @param estimatedCpdag
      * @param trueGraph
@@ -494,9 +502,12 @@ public class MarkovCheck {
     }
 
     /**
-     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion statistics.
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion
+     * statistics.
+     * <p>
+     * Confusion statistics were calculated using Local Graph Precision and Recall (LocalGraphPrecision,
+     * LocalGraphRecall).
      *
-     * Confusion statistics were calculated using Local Graph Precision and Recall (LocalGraphPrecision, LocalGraphRecall).
      * @param independenceTest
      * @param estimatedCpdag
      * @param trueGraph
@@ -643,9 +654,8 @@ public class MarkovCheck {
     }
 
     /**
-     * Calculates the precision and recall using LocalGraphConfusion
-     * (which calculates the combination of Adjacency and ArrowHead) on the Markov Blanket graph for a given node.
-     * Prints the statistics to the console.
+     * Calculates the precision and recall using LocalGraphConfusion (which calculates the combination of Adjacency and
+     * ArrowHead) on the Markov Blanket graph for a given node. Prints the statistics to the console.
      *
      * @param x              The target node.
      * @param estimatedGraph The estimated graph.
@@ -664,7 +674,7 @@ public class MarkovCheck {
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Node " + x + "'s statistics: " + " \n" +
-                " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
+                           " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
     public List<Double> getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(Node x, Graph estimatedGraph, Graph trueGraph) {
@@ -1272,9 +1282,15 @@ public class MarkovCheck {
                 }
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
-                independenceTest.setVerbose(verbose);
 
-                if (!Double.isNaN(pValue)) {
+                double min = 0.0;
+
+                // Optionally, remove the p-values less than alpha.
+                if (false) {
+                    min = independenceTest.getAlpha();
+                }
+
+                if (pValue >= min) {
                     if (msep) {
                         resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     } else {
@@ -1336,12 +1352,23 @@ public class MarkovCheck {
         }
 
         List<Double> pValues = getPValues(results);
-        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        double aSquared = generalAndersonDarlingTest.getASquared();
-        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
+
+        double min = 0.0;
+
+        // Optionally let the minimum of the uniform range be the minimum p-value. This is useful if we ignore
+        // p-values less than alpha. This is hard-coded for now.
+        if (false) {
+            min = Double.POSITIVE_INFINITY;
+            for (double pValue : pValues) {
+                if (pValue < min) {
+                    min = pValue;
+                }
+            }
+        }
 
         if (indep) {
             fractionDependentIndep = dependent / (double) results.size();
+
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
                 binomialPIndep = Double.NaN;
@@ -1349,14 +1376,19 @@ public class MarkovCheck {
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
-                ksPValueIndep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
+                double _aSquared = _generalAndersonDarlingTest.getASquared();
+                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+
+                ksPValueIndep = UniformityTest.getKsPValue(pValues, min, 1.0);
                 binomialPIndep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredIndep = aSquared;
-                aSquaredStarIndep = aSquaredStar;
-                andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+                aSquaredIndep = _aSquared;
+                aSquaredStarIndep = _aSquaredStar;
+                andersonDarlingPIndep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
             }
         } else {
             fractionDependentDep = dependent / (double) results.size();
+
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
                 binomialPDep = Double.NaN;
@@ -1365,11 +1397,15 @@ public class MarkovCheck {
                 andersonDarlingPDep = Double.NaN;
 
             } else {
+                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
+                double _aSquared = _generalAndersonDarlingTest.getASquared();
+                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+
                 ksPValueDep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
                 binomialPDep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredDep = aSquared;
-                aSquaredStarDep = aSquaredStar;
-                andersonDarlingPDep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+                aSquaredDep = _aSquared;
+                aSquaredStarDep = _aSquaredStar;
+                andersonDarlingPDep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
             }
         }
     }
@@ -1513,11 +1549,6 @@ public class MarkovCheck {
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
-
-    /**
-     * List of observers to be notified when changes are made to the model.
-     */
-    private final List<ModelObserver> observers = new ArrayList<>();
 
     /**
      * Adds a ModelObserver to the list of observers.
