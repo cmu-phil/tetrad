@@ -887,7 +887,9 @@ public class MarkovCheckEditor extends JPanel {
             if (selectedNode.equals("All")) {
                 sorter.setRowFilter(null);
             } else {
-                sorter.setRowFilter(RowFilter.regexFilter("\\(" + selectedNode + "|" + selectedNode + "\\)"));
+                String a = selectedNode;
+                String regex = String.format("(\\(%s,)|(, %s \\|)|(, %s\\)^)", a, a, a);
+                sorter.setRowFilter(RowFilter.regexFilter(regex));
             }
         });
 

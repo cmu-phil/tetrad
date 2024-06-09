@@ -39,6 +39,8 @@ import java.awt.event.ActionListener;
 import java.io.Serial;
 import java.net.URL;
 
+import static edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems;
+
 /**
  * Apr 15, 2019 4:49:15 PM
  *
@@ -130,7 +132,7 @@ public class GraphCard extends JPanel {
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
-//        addGraphManipItems(graph, this.workbench);
+        addGraphManipItems(graph, this.workbench);
         graph.addSeparator();
 
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
