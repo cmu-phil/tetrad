@@ -42,6 +42,7 @@ import static java.lang.Math.abs;
  * @author josephramsey
  */
 public final class LvLite implements IGraphSearch {
+
     /**
      * The score.
      */
@@ -103,6 +104,10 @@ public final class LvLite implements IGraphSearch {
      * The threshold for equality, a fraction of abs(BIC).
      */
     private double equalityThreshold = 0.0005;
+    /**
+     * The algorithm to use to obtain the initial CPDAG.
+     */
+    private START_WITH startWith = START_WITH.BOSS;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -120,19 +125,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
-     * Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag The Graph to be reoriented.
-     */
-    private static void reorientWithCircles(Graph pag, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
-        }
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
-    /**
      * Orients and removes edges in a graph according to specified rules. Edges are removed in the course of the
      * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
      * possibility that the removal of an edge may allow for further removals or orientations.
@@ -143,7 +135,7 @@ public final class LvLite implements IGraphSearch {
      * @param scorer            The scorer used to evaluate edge orientations.
      * @param equalityThreshold The threshold for equality. (This is not used for Oracle scoring.)
      */
-    public static boolean orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
+    public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
                                                         Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
                                                         boolean allowTucks, boolean verbose, double equalityThreshold) {
         reorientWithCircles(pag, verbose);
@@ -154,8 +146,6 @@ public final class LvLite implements IGraphSearch {
         var reverse = new ArrayList<>(best);
         Collections.reverse(reverse);
         Set<NodePair> toRemove = new HashSet<>();
-
-        boolean oriented = false;
 
         for (Node b : reverse) {
             var adj = pag.getAdjacentNodes(b);
@@ -171,11 +161,7 @@ public final class LvLite implements IGraphSearch {
                         continue;
                     }
 
-                    boolean b1 = copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, toRemove, knowledge, verbose);
-
-                    oriented = oriented || b1;
-
-                    if (!b1) {
+                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, toRemove, knowledge, verbose)) {
                         if (allowTucks) {
                             if (!unshieldedCollider(pag, x, b, y)) {
                                 scorer.goToBookmark();
@@ -188,8 +174,7 @@ public final class LvLite implements IGraphSearch {
                                 double score2 = scorer.score();
 
                                 if (Double.isNaN(equalityThreshold) || score2 > score1 - equalityThreshold * abs(score1)) {
-                                    boolean b2 = copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-                                    oriented = oriented || b2;
+                                    copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
                                 }
                             }
                         }
@@ -199,7 +184,43 @@ public final class LvLite implements IGraphSearch {
         }
 
         removeEdges(pag, toRemove, verbose);
-        return oriented;
+    }
+
+    /**
+     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and scorer object.
+     *
+     * @param fciOrient The FciOrient object used to determine the final orientation.
+     * @param pag       The Graph object for which the final orientation is determined.
+     * @param scorer    The scorer object used in the score-based discriminating path rule.
+     */
+    public static void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean completeRuleSetUsed,
+                                        boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Final Orientation:");
+        }
+
+        fciOrient.setVerbose(verbose);
+
+        do {
+            if (completeRuleSetUsed) {
+                fciOrient.zhangFinalOrientation(pag);
+            } else {
+                fciOrient.spirtesFinalOrientation(pag);
+            }
+        } while (discriminatingPathRule(pag, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
+    }
+
+    /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
+     * Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag The Graph to be reoriented.
+     */
+    private static void reorientWithCircles(Graph pag, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
+        }
+        pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
     private static void removeEdges(Graph pag, Set<NodePair> toRemove, boolean verbose) {
@@ -240,11 +261,7 @@ public final class LvLite implements IGraphSearch {
                                              Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(cpdag, x, b, y)) {
             if (colliderAllowed(pag, x, b, y, knowledge)) {
-                boolean oriented = false;
-
-                if (!pag.isDefCollider(x, b, y)) {
-                    oriented = true;
-                }
+                boolean oriented = !pag.isDefCollider(x, b, y);
 
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
@@ -356,10 +373,6 @@ public final class LvLite implements IGraphSearch {
                && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
     }
 
-    private static boolean defCollider(Graph graph, Node a, Node b, Node c) {
-        return graph.isDefCollider(a, b, c);
-    }
-
     /**
      * Checks if the given nodes are unshielded colliders when considering the given graph.
      *
@@ -378,30 +391,6 @@ public final class LvLite implements IGraphSearch {
         List<Node> commonAdjacents = new ArrayList<>(pag.getAdjacentNodes(x));
         commonAdjacents.retainAll(pag.getAdjacentNodes(y));
         return commonAdjacents;
-    }
-
-    /**
-     * Determines the final orientation of the graph using the given FciOrient object, Graph object, and scorer object.
-     *
-     * @param fciOrient The FciOrient object used to determine the final orientation.
-     * @param pag       The Graph object for which the final orientation is determined.
-     * @param scorer    The scorer object used in the score-based discriminating path rule.
-     */
-    public static void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean completeRuleSetUsed,
-                                        boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Final Orientation:");
-        }
-
-        fciOrient.setVerbose(verbose);
-
-        do {
-            if (completeRuleSetUsed) {
-                fciOrient.zhangFinalOrientation(pag);
-            } else {
-                fciOrient.spirtesFinalOrientation(pag);
-            }
-        } while (discriminatingPathRule(pag, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
     }
 
     /**
@@ -652,39 +641,73 @@ public final class LvLite implements IGraphSearch {
      * @return The PAG.
      */
     public Graph search() {
-        List<Node> nodes = this.score.getVariables();
-
-        if (nodes == null) {
-            throw new NullPointerException("Nodes from test were null.");
-        }
+        List<Node> nodes = new ArrayList<>(this.score.getVariables());
 
         if (verbose) {
             TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
-        }
+        Graph cpdag;
+        List<Node> best;
 
         // BOSS seems to be doing better here.
-        var suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
-        suborderSearch.setResetAfterBM(true);
-        suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(false);
-        suborderSearch.setUseBes(useBes);
-        suborderSearch.setUseDataOrder(useDataOrder);
-        suborderSearch.setNumStarts(numStarts);
-        var permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        var best = permutationSearch.getOrder();
+        if (startWith == START_WITH.BOSS) {
+            var suborderSearch = new Boss(score);
+            suborderSearch.setKnowledge(knowledge);
+            suborderSearch.setResetAfterBM(true);
+            suborderSearch.setResetAfterRS(true);
+            suborderSearch.setVerbose(false);
+            suborderSearch.setUseBes(useBes);
+            suborderSearch.setUseDataOrder(useDataOrder);
+            suborderSearch.setNumStarts(numStarts);
+            var permutationSearch = new PermutationSearch(suborderSearch);
+            permutationSearch.setKnowledge(knowledge);
+            cpdag = permutationSearch.search();
+            best = permutationSearch.getOrder();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
+            }
+        } else if (startWith == START_WITH.GRASP) {
+            edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(null, score);
+
+            grasp.setSeed(-1);
+            grasp.setDepth(25);
+            grasp.setUncoveredDepth(1);
+            grasp.setNonSingularDepth(1);
+            grasp.setOrdered(true);
+            grasp.setUseScore(true);
+            grasp.setUseRaskuttiUhler(false);
+            grasp.setUseDataOrder(useDataOrder);
+            grasp.setAllowInternalRandomness(true);
+            grasp.setVerbose(false);
+
+            grasp.setNumStarts(numStarts);
+            grasp.setKnowledge(this.knowledge);
+            best = grasp.bestOrder(nodes);
+            cpdag = grasp.getGraph(true);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
+            }
+        } else {
+            throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Best order: " + best);
+        }
+
+        var pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
         var scorer = new TeyssierScorer(null, score);
+        scorer.setUseScore(true);
         scorer.score(best);
         scorer.bookmark();
 
@@ -693,12 +716,10 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        var cpdag = scorer.getGraph(true);
-        var pag = new EdgeListGraph(cpdag);
+
         scorer.score(best);
 
         FciOrient fciOrient = new FciOrient(null);
-
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.setDoDiscriminatingPathTailRule(false);
@@ -712,16 +733,28 @@ public final class LvLite implements IGraphSearch {
 
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
+        Set<Triple> _unshieldedColliders;
+        double equalityThreshold = this.equalityThreshold;
 
-        while (true) {
-            if (!orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge, allowTucks, verbose, equalityThreshold)) {
-                break;
-            }
-        }
+        do {
+            _unshieldedColliders = new HashSet<>(unshieldedColliders);
+            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge,
+                    allowTucks, verbose, equalityThreshold);
+        } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
+        LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
+                doDiscriminatingPathColliderRule, verbose);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
+    }
+
+    /**
+     * Sets the algorithm to use to obtain the initial CPDAG.
+     *
+     * @param startWith the algorithm to use to obtain the initial CPDAG.
+     */
+    public void setStartWith(START_WITH startWith) {
+        this.startWith = startWith;
     }
 
     /**
@@ -830,5 +863,9 @@ public final class LvLite implements IGraphSearch {
         }
 
         this.equalityThreshold = equalityThreshold;
+    }
+
+    public enum START_WITH {
+        BOSS, GRASP
     }
 }

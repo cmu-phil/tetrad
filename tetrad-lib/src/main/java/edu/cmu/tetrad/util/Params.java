@@ -894,6 +894,22 @@ public final class Params {
      * Constant <code>ALLOW_TUCKS="allowTucks
      */
     public static final String EQUALITY_THRESHOLD = "equalityThreshold";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    /**
+     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     */
+    public static String PC_HEURISTIC = "pcHeuristic";
+    /**
+     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     */
+    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+
+    private Params() {
+    }
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -942,17 +958,6 @@ public final class Params {
             Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
-    /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
-     */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
-    /**
-     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
-     */
-    public static String PC_HEURISTIC = "pcHeuristic";
-
-    private Params() {
-    }
 
     /**
      * <p>getAlgorithmParameters.</p>

@@ -96,19 +96,6 @@ public final class LvDumb implements IGraphSearch {
     }
 
     /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
-     * Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag The Graph to be reoriented.
-     */
-    private void reorientWithCircles(Graph pag) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
-        }
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
-    /**
      * Run the search and return s a PAG.
      *
      * @return The PAG.
@@ -162,6 +149,7 @@ public final class LvDumb implements IGraphSearch {
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        dagToPag.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         return dagToPag.convert();
     }
 

@@ -128,7 +128,7 @@ public class Grasp {
      */
     public Grasp(@NotNull Score score) {
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
+        this.variables = getVariables(null, score);
         this.useScore = true;
     }
 
@@ -139,7 +139,7 @@ public class Grasp {
      */
     public Grasp(@NotNull IndependenceTest test) {
         this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
+        variables = getVariables(test, null);
         this.useScore = false;
         this.useRaskuttiUhler = true;
     }
@@ -150,10 +150,19 @@ public class Grasp {
      * @param test  The test to use.
      * @param score The score to use.
      */
-    public Grasp(@NotNull IndependenceTest test, Score score) {
+    public Grasp(IndependenceTest test, Score score) {
+        if (test == null && score == null) throw new IllegalArgumentException("Test and score cannot both be null.");
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
+        this.variables = getVariables(test, score);
+    }
+
+    private List<Node> getVariables(IndependenceTest test, Score score) {
+        if (test != null) {
+            return new ArrayList<>(test.getVariables());
+        } else {
+            return new ArrayList<>(score.getVariables());
+        }
     }
 
     /**
