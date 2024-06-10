@@ -722,7 +722,7 @@ public final class FgesMb implements DagScorer {
             @Override
             public Boolean call() {
                 for (int _y = from; _y < to; _y++) {
-                    if (Thread.interrupted()) break;
+                    if (Thread.currentThread().isInterrupted()) break;
 
                     Node y = nodes.get(_y);
 
@@ -859,7 +859,7 @@ public final class FgesMb implements DagScorer {
             @Override
             public EvalPair call() {
                 for (int k = from; k < to; k++) {
-                    if (Thread.interrupted()) break;
+                    if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
 
                     if (_bump > maxBump) {
@@ -1592,7 +1592,7 @@ public final class FgesMb implements DagScorer {
         @Override
         public Boolean call() {
             for (int i = from; i < to; i++) {
-                if (Thread.interrupted()) break;
+                if (Thread.currentThread().isInterrupted()) break;
                 if ((i + 1) % 1000 == 0) {
                     count[0] += 1000;
                     out.println("Initializing effect edges: " + (count[0]));

@@ -117,7 +117,7 @@ public class GraspTol {
         this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
@@ -332,7 +332,7 @@ public class GraspTol {
         }
 
         for (Node y : variables) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
@@ -342,7 +342,7 @@ public class GraspTol {
             }
 
             for (Node x : parents) {
-                if (Thread.interrupted()) break;
+                if (Thread.currentThread().isInterrupted()) break;
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;

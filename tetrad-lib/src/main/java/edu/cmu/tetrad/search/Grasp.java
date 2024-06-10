@@ -199,7 +199,7 @@ public class Grasp {
         this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 RandomUtil.shuffle(order);
