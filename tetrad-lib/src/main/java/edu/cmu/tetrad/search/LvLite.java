@@ -653,7 +653,6 @@ public final class LvLite implements IGraphSearch {
         // BOSS seems to be doing better here.
         if (startWith == START_WITH.BOSS) {
             var suborderSearch = new Boss(score);
-            suborderSearch.setKnowledge(knowledge);
             suborderSearch.setResetAfterBM(true);
             suborderSearch.setResetAfterRS(true);
             suborderSearch.setVerbose(false);
