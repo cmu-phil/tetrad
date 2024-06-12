@@ -203,7 +203,7 @@ public class MarkovCheck {
                     Set<Node> z = GraphUtils.asSet(list, _other);
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
-                        continue;
+                         continue;
                     }
 
                     IndependenceFact fact = new IndependenceFact(x, y, z);

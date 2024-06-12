@@ -83,9 +83,6 @@ public class LingamStudy {
         algorithms.add(new FaskOrig(new FisherZ(), new SemBicScore()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);

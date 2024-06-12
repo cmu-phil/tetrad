@@ -137,9 +137,6 @@ public class ExampleCompareSimulation {
         simulations.add(new SemSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(false);
-        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);

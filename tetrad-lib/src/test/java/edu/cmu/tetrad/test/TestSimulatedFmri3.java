@@ -136,9 +136,6 @@ public class TestSimulatedFmri3 {
         algorithms.add(new Fask());
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -222,9 +219,6 @@ public class TestSimulatedFmri3 {
             algorithms.add(new FaskConcatenated());
 
             Comparison comparison = new Comparison();
-
-            comparison.setShowAlgorithmIndices(true);
-            comparison.setShowSimulationIndices(true);
             comparison.setSortByUtility(false);
             comparison.setShowUtilities(false);
 //            comparison.setParallelized(false);

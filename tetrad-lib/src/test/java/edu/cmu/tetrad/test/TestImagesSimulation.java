@@ -85,9 +85,6 @@ public class TestImagesSimulation {
         simulations.add(new LinearFisherModel(new RandomForward()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
 //        comparison.setSaveGraphs(true);

@@ -180,9 +180,6 @@ public class TestSimulatedFmri {
         algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -246,9 +243,6 @@ public class TestSimulatedFmri {
                 }));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -311,9 +305,6 @@ public class TestSimulatedFmri {
                 new FisherZ()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);

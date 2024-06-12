@@ -117,14 +117,12 @@ public final class BossPag implements IGraphSearch {
 
         // BOSS seems to be doing better here.
         var suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
         suborderSearch.setResetAfterBM(true);
         suborderSearch.setResetAfterRS(true);
         suborderSearch.setVerbose(false);
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
-        suborderSearch.setKnowledge(knowledge);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();

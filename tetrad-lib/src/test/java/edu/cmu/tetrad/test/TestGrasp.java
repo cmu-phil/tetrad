@@ -323,8 +323,6 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-//        comparison.setSortByUtility(true);
-        comparison.setShowAlgorithmIndices(true);
         comparison.compareFromSimulations("grasp_boss_timing", simulations, algorithms, statistics, params);
     }
 
@@ -464,7 +462,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setSaveGraphs(true);
         comparison.setSavePags(true);
         comparison.setSaveData(false);
@@ -558,7 +555,6 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setSaveData(false);
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
@@ -703,7 +699,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setSaveGraphs(true);
         comparison.setSavePags(true);
         comparison.setSaveData(false);
@@ -772,7 +767,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGraspForClark",
@@ -836,7 +830,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp1",
@@ -883,7 +876,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testComparePearlGrowShrink",
@@ -934,7 +926,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testCompareGrasp1Grasp2",
@@ -1002,7 +993,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
@@ -1065,7 +1055,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
@@ -1125,7 +1114,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
@@ -1187,7 +1175,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
@@ -2008,7 +1995,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/clark", simulations,
@@ -2059,7 +2045,6 @@ public final class TestGrasp {
         algorithms.add(new Grasp(new MSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setTabDelimitedTables(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
@@ -2557,7 +2542,6 @@ public final class TestGrasp {
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations(
@@ -2839,7 +2823,6 @@ public final class TestGrasp {
             statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
-            comparison.setShowAlgorithmIndices(true);
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
             comparison.compareFromSimulations(
@@ -2902,7 +2885,6 @@ public final class TestGrasp {
             statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
-            comparison.setShowAlgorithmIndices(true);
             comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
             comparison.compareFromSimulations(

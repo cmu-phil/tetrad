@@ -63,9 +63,6 @@ public class TestGenerateMixedData {
 
         LeeHastieSimulation simulation = new LeeHastieSimulation(new RandomForward());
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
