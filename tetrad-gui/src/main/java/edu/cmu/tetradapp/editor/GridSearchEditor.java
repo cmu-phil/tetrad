@@ -34,10 +34,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -1425,6 +1422,41 @@ public class GridSearchEditor extends JPanel {
 
                     try {
                         model.runComparison(ps);
+
+                        String resultsPath = model.getResultsPath();
+
+                        if (resultsPath != null && simulationChoiceTextArea != null) {
+                            // Write contents of simulation text area to a file at resultsPath + "/simulation.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/simulation.txt")) {
+                                writer.println(simulationChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of algorithm text area to a file at resultsPath + "/algorithm.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/algorithm.txt")) {
+                                writer.println(algorithmChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of table columns text area to a file at resultsPath + "/tableColumns.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/tableColumns.txt")) {
+                                writer.println(tableColumnsChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of verbose output text area to a file at resultsPath + "/verboseOutput.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/verboseOutput.txt")) {
+                                writer.println(verboseOutputTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+
+                        }
+
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }

@@ -133,6 +133,11 @@ public class GridSearchModel implements SessionModel {
      * The name of the GridSearchModel.
      */
     private String name = "Grid Search";
+    /**
+     * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
+     * and can be used to add additional files to the comparison results.
+     */
+    private String resultsPath = null;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -453,6 +458,9 @@ public class GridSearchModel implements SessionModel {
         String outputFileName = "Comparison.txt";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
+
+        this.resultsPath = resultsPath;
+
     }
 
     private LinkedList<AlgorithmSpec> getSelectedAlgorithmSpecs() {
@@ -1088,6 +1096,18 @@ public class GridSearchModel implements SessionModel {
      */
     public DataSet getSuppliedData() {
         return suppliedData;
+    }
+
+    public void setResultsPath(String resultsPath) {
+        this.resultsPath = resultsPath;
+    }
+
+    /**
+     * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
+     * and can be used to add additional files to the comparison results.
+     */
+    public String getResultsPath() {
+        return resultsPath;
     }
 
     /**
