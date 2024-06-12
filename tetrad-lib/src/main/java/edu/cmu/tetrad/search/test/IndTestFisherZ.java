@@ -841,8 +841,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             _rows.add(all.get(i));
         }
 
-
-
         for (Integer row : _rows) {
             if (row < 0 || row >= sampleSize()) {
                 throw new IllegalArgumentException("Row index out of bounds.");
