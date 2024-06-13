@@ -214,7 +214,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }

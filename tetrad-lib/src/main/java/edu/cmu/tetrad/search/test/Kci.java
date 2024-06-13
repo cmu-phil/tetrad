@@ -170,9 +170,9 @@ public class Kci implements IndependenceTest {
                     double p = result.getPValue();
 
                     if (result.isIndependent()) {
-                        TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+                        TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
                     } else {
-                        TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                        TetradLogger.getInstance().log(fact + " dependent p = " + p);
                     }
                 }
 
@@ -242,10 +242,10 @@ public class Kci implements IndependenceTest {
                     double p = result.getPValue();
 
                     if (result.isIndependent()) {
-                        TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+                        TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
 
                     } else {
-                        TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                        TetradLogger.getInstance().log(fact + " dependent p = " + p);
                     }
                 }
 
@@ -467,7 +467,7 @@ public class Kci implements IndependenceTest {
                 return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             IndependenceResult result = new IndependenceResult(fact, false, 0.0, getAlpha());
             this.facts.put(fact, result);
             return result;
@@ -499,7 +499,7 @@ public class Kci implements IndependenceTest {
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             boolean indep = false;
             IndependenceResult result = new IndependenceResult(fact, indep, 0.0, getAlpha());
             this.facts.put(fact, result);

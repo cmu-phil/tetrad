@@ -288,10 +288,10 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private double fes(Graph graph, double score) {
-        TetradLogger.getInstance().forceLogMessage("** FORWARD EQUIVALENCE SEARCH");
+        TetradLogger.getInstance().log("** FORWARD EQUIVALENCE SEARCH");
         double bestScore = score;
         String message = "Initial Score = " + this.nf.format(bestScore);
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
 
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -337,8 +337,8 @@ public final class HbsmsGes implements Hbsms {
 
                         double evalScore = scoreGraph(graph2).getScore();
 
-                        TetradLogger.getInstance().forceLogMessage("Trying to add " + _x + "-->" + _y + " evalScore = " +
-                                                                   evalScore);
+                        TetradLogger.getInstance().log("Trying to add " + _x + "-->" + _y + " evalScore = " +
+                                                       evalScore);
 
                         if (!(evalScore > bestScore && evalScore > score)) {
                             continue;
@@ -372,9 +372,9 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private void bes(Graph graph, double initialScore) {
-        TetradLogger.getInstance().forceLogMessage("** BACKWARD ELIMINATION SEARCH");
+        TetradLogger.getInstance().log("** BACKWARD ELIMINATION SEARCH");
         String message = "Initial Score = " + this.nf.format(initialScore);
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
         double bestScore = initialScore;
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -464,7 +464,7 @@ public final class HbsmsGes implements Hbsms {
 
             String message = "--- Directing " + oldEdge + " to " +
                              graph.getEdge(t, y);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 
@@ -482,7 +482,7 @@ public final class HbsmsGes implements Hbsms {
                 Edge oldEdge = graph.getEdge(x, h);
                 String message = "--- Directing " + oldEdge + " to " +
                                  graph.getEdge(x, h);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -492,7 +492,7 @@ public final class HbsmsGes implements Hbsms {
                 Edge oldEdge = graph.getEdge(y, h);
                 String message = "--- Directing " + oldEdge + " to " +
                                  graph.getEdge(y, h);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
     }
@@ -516,7 +516,7 @@ public final class HbsmsGes implements Hbsms {
 
             String message = "--- Directing " + oldEdge + " to " +
                              graph.getEdge(t, y);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 
@@ -542,7 +542,7 @@ public final class HbsmsGes implements Hbsms {
                 Edge oldEdge = graph.getEdge(x, h);
                 String message = "--- Directing " + oldEdge + " to " +
                                  graph.getEdge(x, h);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -552,7 +552,7 @@ public final class HbsmsGes implements Hbsms {
                 Edge oldEdge = graph.getEdge(y, h);
                 String message = "--- Directing " + oldEdge + " to " +
                                  graph.getEdge(y, h);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
     }
@@ -630,7 +630,7 @@ public final class HbsmsGes implements Hbsms {
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 
-        TetradLogger.getInstance().forceLogMessage("Rebuilt CPDAG = " + graph);
+        TetradLogger.getInstance().log("Rebuilt CPDAG = " + graph);
     }
 
     /**

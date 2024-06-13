@@ -86,9 +86,6 @@ public class ExampleCompareSimulation {
         simulations.add(new SemSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);

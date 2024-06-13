@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class IndTestConditionalGaussianLrt implements IndependenceTest {
+public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable {
     /**
      * The data set.
      */
@@ -79,6 +79,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * The minimum sample size per cell for discretization.
      */
     private int minSampleSizePerCell = 4;
+    /**
+     * The rows used in the test.
+     */
+    private List<Integer> rows = new ArrayList<>();
 
     /**
      * Constructor.
@@ -181,7 +185,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
@@ -282,6 +286,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * @return A list of row indices.
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -297,6 +305,42 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             rows.add(k);
         }
         return rows;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    public void setRows(List<Integer> rows) {
+        if (data == null) {
+            return;
+        }
+
+        List<Integer> all = new ArrayList<>();
+        for (int i = 0; i < data.getNumRows(); i++) all.add(i);
+        Collections.shuffle(all);
+
+        List<Integer> _rows = new ArrayList<>();
+        for (int i = 0; i < data.getNumRows() / 2; i++) {
+            _rows.add(all.get(i));
+        }
+
+        for (Integer row : _rows) {
+            if (row < 0 || row >= data.getNumRows()) {
+                throw new IllegalArgumentException("Row index out of bounds.");
+            }
+        }
+
+        this.rows = _rows;
     }
 
     /**

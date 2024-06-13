@@ -5162,28 +5162,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="doDiscriminatingPathRule">doDiscriminatingPathRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathRule_short_desc">Yes if the discriminating path rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathRule_long_desc">Yes if the discriminating path
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="resolveAlmostCyclicPaths">resolveAlmostCyclicPaths</h3>
         <ul
                 class="parameter_description_list">
@@ -5220,7 +5198,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     should be done, No if not </span>
             </li>
             <li>Default Value: <span
-                    id="doDiscriminatingPathColliderRule_default_value">false</span></li>
+                    id="doDiscriminatingPathColliderRule_default_value">true</span></li>
             <li>Lower
                 Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -6454,6 +6432,56 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="allowTucks_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="lvLiteStartsWith">lvLiteStartsWith</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="lvLiteStartsWith_short_desc">
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+        </span></li>
+            <li>Long Description: <span
+                    id="lvLiteStartsWith_long_desc">
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+        </span></li>
+            <li>Default Value: <span
+                    id="lvLiteStartsWith_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="lvLiteStartsWith_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="lvLiteStartsWith_upper_bound">2</span></li>
+            <li>Value
+                Type: <span
+                        id="lvLiteStartsWith_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="equalityThreshold">equalityThreshold</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="equalityThreshold_short_desc">
+                    Score equality threshold for the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="equalityThreshold_long_desc">
+                    In LV-Lite, after tucking, scores should not drop much from the
+                    the score of the best order. This ensures scores don't drop more
+                    than equality_threshold * abs(score of best model).
+        </span></li>
+            <li>Default Value: <span
+                    id="equalityThreshold_default_value">0.0005</span></li>
+            <li>Lower Bound: <span
+                    id="equalityThreshold_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="equalityThreshold_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="equalityThreshold_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

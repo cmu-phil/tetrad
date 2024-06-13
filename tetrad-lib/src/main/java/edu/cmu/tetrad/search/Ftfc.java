@@ -1080,7 +1080,7 @@ public class Ftfc {
      */
     private void log(String s, boolean toLog) {
         if (toLog) {
-            TetradLogger.getInstance().forceLogMessage(s);
+            TetradLogger.getInstance().log(s);
             //            System.out.println(s);
         }
     }

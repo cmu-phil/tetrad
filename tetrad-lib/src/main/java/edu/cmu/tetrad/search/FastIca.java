@@ -302,7 +302,7 @@ public class FastIca {
      */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
-            TetradLogger.getInstance().forceLogMessage("maxIterations should be positive.");
+            TetradLogger.getInstance().log("maxIterations should be positive.");
         }
 
         this.maxIterations = maxIterations;
@@ -315,7 +315,7 @@ public class FastIca {
      */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
-            TetradLogger.getInstance().forceLogMessage("Tolerance should be positive.");
+            TetradLogger.getInstance().log("Tolerance should be positive.");
         }
 
         this.tolerance = tolerance;
@@ -351,8 +351,8 @@ public class FastIca {
         int p = this.X.getNumRows();
 
         if (this.numComponents > min(n, p)) {
-            TetradLogger.getInstance().forceLogMessage("Requested number of components is too large.");
-            TetradLogger.getInstance().forceLogMessage("Reset to " + min(n, p));
+            TetradLogger.getInstance().log("Requested number of components is too large.");
+            TetradLogger.getInstance().log("Reset to " + min(n, p));
             this.numComponents = min(n, p);
         }
 
@@ -368,7 +368,7 @@ public class FastIca {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Centering");
+            TetradLogger.getInstance().log("Centering");
         }
 
         center(this.X);
@@ -378,7 +378,7 @@ public class FastIca {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Whitening");
+            TetradLogger.getInstance().log("Whitening");
         }
 
         // Whiten.
@@ -423,18 +423,18 @@ public class FastIca {
                                 double tolerance, int function, double alpha,
                                 int maxIterations, boolean verbose, Matrix wInit) {
         if (verbose && function == FastIca.LOGCOSH) {
-            TetradLogger.getInstance().forceLogMessage("Deflation FastIca using lgcosh approx. to neg-entropy function");
+            TetradLogger.getInstance().log("Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
 
         if (verbose && function == FastIca.EXP) {
-            TetradLogger.getInstance().forceLogMessage("Deflation FastIca using exponential approx. to neg-entropy function");
+            TetradLogger.getInstance().log("Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
         Matrix W = new Matrix(X.getNumRows(), X.getNumRows());
 
         for (int i = 0; i < X.getNumRows(); i++) {
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("Component " + (i + 1));
+                TetradLogger.getInstance().log("Component " + (i + 1));
             }
 
             Vector w = wInit.getRow(i);
@@ -525,7 +525,7 @@ public class FastIca {
                 _tolerance = abs(abs(_tolerance) - 1.0);
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Iteration " + it + " tol = " + _tolerance);
+                    TetradLogger.getInstance().log("Iteration " + it + " tol = " + _tolerance);
                 }
 
                 w = w1;
@@ -615,7 +615,7 @@ public class FastIca {
         int it = 0;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Symmetric FastICA using logcosh approx. to neg-entropy function");
+            TetradLogger.getInstance().log("Symmetric FastICA using logcosh approx. to neg-entropy function");
         }
 
         while (_tolerance > tolerance && it < maxIterations) {
@@ -672,7 +672,7 @@ public class FastIca {
             W = W1;
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("Iteration " + (it + 1) + " tol = " + _tolerance);
+                TetradLogger.getInstance().log("Iteration " + (it + 1) + " tol = " + _tolerance);
             }
 
             it++;

@@ -172,12 +172,12 @@ public final class SimulationStudy {
         final boolean doRepetition = true;
         final boolean simulation = true;
 
-        TetradLogger.getInstance().forceLogMessage("\n\n===STARTING SIMULATION STUDY===");
+        TetradLogger.getInstance().log("\n\n===STARTING SIMULATION STUDY===");
         long time1 = MillisecondTimes.timeMillis();
 
         execute(tierOrdering, doRepetition, simulation, overwrite);
 
-        TetradLogger.getInstance().forceLogMessage("\n\n===FINISHING SIMULATION STUDY===");
+        TetradLogger.getInstance().log("\n\n===FINISHING SIMULATION STUDY===");
         long time2 = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed time = " + (time2 - time1) / 1000. + " s");
@@ -298,8 +298,8 @@ public final class SimulationStudy {
             try {
 
                 if (repetition > 1) {
-                    TetradLogger.getInstance().forceLogMessage("\nREPETITION #" + (i + 1) + " FOR "
-                                                               + sessionNode.getDisplayName() + "\n");
+                    TetradLogger.getInstance().log("\nREPETITION #" + (i + 1) + " FOR "
+                                                   + sessionNode.getDisplayName() + "\n");
                 }
 
                 boolean created = sessionNode.createModel(simulation);

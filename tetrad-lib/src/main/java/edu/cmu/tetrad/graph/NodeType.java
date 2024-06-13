@@ -21,11 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializable;
-
-import java.io.*;
-
 /**
  * An enum of the node types in a graph (MEASURED, LATENT, ERROR).
  *
@@ -40,7 +35,8 @@ public enum NodeType {
     /**
      * Constant <code>LATENT</code>
      */
-    LATENT,/**
+    LATENT,
+    /**
      * Constant <code>ERROR</code>
      */
     ERROR,

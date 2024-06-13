@@ -123,9 +123,6 @@ public class TestSimulatedFmri2 {
         algorithms.add(new Fask(new SemBicScore()));
 //
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);

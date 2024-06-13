@@ -244,9 +244,9 @@ public class Kpc implements IGraphSearch {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting kPC algorithm");
+            TetradLogger.getInstance().log("Starting kPC algorithm");
             String message = "Independence test = " + getIndependenceTest() + ".";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         long startTime = MillisecondTimes.timeMillis();
@@ -282,8 +282,8 @@ public class Kpc implements IGraphSearch {
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing PC Algorithm.");
         }
 
         return this.graph;

@@ -570,7 +570,7 @@ public class SemBicScore implements Score {
         try {
             localScore(i, k);
         } catch (RuntimeException e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return true;
         }
 

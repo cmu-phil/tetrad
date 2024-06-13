@@ -257,7 +257,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
         createKnowledge(params);
 
-        TetradLogger.getInstance().forceLogMessage("Knowledge");
+        TetradLogger.getInstance().log("Knowledge");
 
         // This is a conundrum. At this point I dont know whether I am in a
         // simulation or not. If in a simulation, I should print the knowledge.
@@ -265,7 +265,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         // printing the knowledge if it's not empty.
         if (!((Knowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
             String message = params.get("knowledge", new Knowledge()).toString();
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 

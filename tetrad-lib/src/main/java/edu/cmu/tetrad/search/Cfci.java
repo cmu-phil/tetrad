@@ -74,7 +74,9 @@ public final class Cfci implements IGraphSearch {
     // Whether verbose output (about independencies) is output.
     private boolean verbose;
     // Whether to do the discriminating path rule.
-    private boolean doDiscriminatingPathRule;
+    private boolean doDiscriminatingPathTailRule;
+    private boolean doDiscriminatingPathColliderRule;
+    private int maxPathLength = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -99,8 +101,8 @@ public final class Cfci implements IGraphSearch {
         long beginTime = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting CFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().log("Starting CFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + this.independenceTest + ".");
         }
 
         setMaxReachablePathLength(this.maxReachablePathLength);
@@ -130,7 +132,7 @@ public final class Cfci implements IGraphSearch {
             long time2 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                TetradLogger.getInstance().forceLogMessage("Step C: " + (time2 - time1) / 1000. + "s");
+                TetradLogger.getInstance().log("Step C: " + (time2 - time1) / 1000. + "s");
             }
 
             // Step FCI D.
@@ -146,7 +148,7 @@ public final class Cfci implements IGraphSearch {
             long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                TetradLogger.getInstance().forceLogMessage("Step D: " + (time4 - time3) / 1000. + "s");
+                TetradLogger.getInstance().log("Step D: " + (time4 - time3) / 1000. + "s");
             }
 
             // Reorient all edges as o-o.
@@ -161,7 +163,7 @@ public final class Cfci implements IGraphSearch {
         long time6 = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
+            TetradLogger.getInstance().log("Step CI C: " + (time6 - time5) / 1000. + "s");
         }
 
         // Step CI D. (Zhang's step F4.)
@@ -170,9 +172,9 @@ public final class Cfci implements IGraphSearch {
                 new SepsetMap(), this.depth, knowledge));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setMaxPathLength(-1);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
@@ -181,7 +183,7 @@ public final class Cfci implements IGraphSearch {
         this.elapsedTime = endTime - beginTime;
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
+            TetradLogger.getInstance().log("Returning graph: " + this.graph);
         }
 
         return this.graph;
@@ -266,7 +268,7 @@ public final class Cfci implements IGraphSearch {
 
     private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
+            TetradLogger.getInstance().log("Starting Collider Orientation:");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -300,7 +302,7 @@ public final class Cfci implements IGraphSearch {
 
                         if (this.verbose) {
                             String message = "Collider: " + Triple.pathString(this.graph, x, y, z);
-                            TetradLogger.getInstance().forceLogMessage(message);
+                            TetradLogger.getInstance().log(message);
                         }
                     }
 
@@ -310,14 +312,14 @@ public final class Cfci implements IGraphSearch {
                     getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
                         String message = "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
                 }
             }
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
+            TetradLogger.getInstance().log("Finishing Collider Orientation.");
         }
     }
 
@@ -459,12 +461,21 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Whether to do the discriminating path rule.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True iff the discriminating path rule is done.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -476,7 +487,7 @@ public final class Cfci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
+            TetradLogger.getInstance().log("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -500,7 +511,7 @@ public final class Cfci implements IGraphSearch {
 
             if (this.verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
@@ -532,13 +543,25 @@ public final class Cfci implements IGraphSearch {
 
             if (this.verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+            TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
+    }
+    /**
+     * Sets the maximum length of any discriminating path.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
     }
 
     private enum TripleType {

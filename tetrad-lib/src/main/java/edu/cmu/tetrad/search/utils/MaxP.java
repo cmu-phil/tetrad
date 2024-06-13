@@ -45,7 +45,7 @@ public final class MaxP {
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
-    private int maxPathLength = 3;
+    private int maxPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
 
@@ -88,11 +88,15 @@ public final class MaxP {
     }
 
     /**
-     * Sets the max path length to use for the max P heuristic.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
         this.maxPathLength = maxPathLength;
     }
 

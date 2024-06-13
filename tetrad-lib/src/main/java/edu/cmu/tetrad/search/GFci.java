@@ -99,10 +99,6 @@ public final class GFci implements IGraphSearch {
      */
     private boolean faithfulnessAssumed = true;
     /**
-     * Whether the discriminating path rule should be used.
-     */
-    private boolean doDiscriminatingPathRule = true;
-    /**
      * The depth for independence testing.
      */
     private int depth = -1;
@@ -114,6 +110,14 @@ public final class GFci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether the discriminating path tail rule should be used.
+     */
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether the discriminating path collider rule should be used.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -139,8 +143,8 @@ public final class GFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting GFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting GFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         Graph graph;
@@ -168,8 +172,8 @@ public final class GFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
@@ -225,7 +229,7 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path length for the discriminating path rule.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -275,15 +279,6 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
-     *
-     * @param doDiscriminatingPathRule True, if so.
-     */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
      * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
@@ -303,4 +298,23 @@ public final class GFci implements IGraphSearch {
         }
         this.numThreads = numThreads;
     }
+
+    /**
+     * Sets whether the discriminating path tail rule should be used.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
 }

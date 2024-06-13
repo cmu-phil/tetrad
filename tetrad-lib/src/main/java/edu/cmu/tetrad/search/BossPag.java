@@ -30,15 +30,13 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
- * structure of a graphical model from observational data.
- * <p>
- * This class provides methods for running the search algorithm and getting the learned pattern as a PAG (Partially
- * Annotated Graph).
+ * BOSS-PAG is a class that implements the IGraphSearch interface. The BOSS-PAG algorithm finds the BOSS DAG for
+ * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
+ * doing any further laten variable reasoning.
  *
  * @author josephramsey
  */
-public final class LvDumb implements IGraphSearch {
+public final class BossPag implements IGraphSearch {
     /**
      * The score.
      */
@@ -68,14 +66,15 @@ public final class LvDumb implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * This variable represents whether the discriminating path rule is used in the LV-Lite class.
-     * <p>
-     * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
-     * considers discriminating paths when searching for patterns in the data.
-     * <p>
-     * By default, the value of this variable is set to true, indicating that the discriminating path rule is used.
+     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
+     * If set to true, the search algorithm will use the Discriminating Path Tail Rule.
+     * If set to false, the search algorithm will not use the Discriminating Path Tail Rule.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * This variable determines whether the Discriminating Path Collider Rule should be used during the search algorithm.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * True iff verbose output should be printed.
      */
@@ -88,25 +87,12 @@ public final class LvDumb implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvDumb(Score score) {
+    public BossPag(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
 
         this.score = score;
-    }
-
-    /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
-     * Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag The Graph to be reoriented.
-     */
-    private void reorientWithCircles(Graph pag) {
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Orient all edges in PAG as o-o:");
-        }
-        pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
     /**
@@ -122,30 +108,28 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Running BOSS to get CPDAG and best order.");
+            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
         }
 
         // BOSS seems to be doing better here.
         var suborderSearch = new Boss(score);
-        suborderSearch.setKnowledge(knowledge);
         suborderSearch.setResetAfterBM(true);
         suborderSearch.setResetAfterRS(true);
         suborderSearch.setVerbose(false);
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
-        suborderSearch.setKnowledge(knowledge);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
         var best = permutationSearch.getOrder();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Best order: " + best);
+            TetradLogger.getInstance().log("Best order: " + best);
         }
 
         var scorer = new TeyssierScorer(null, score);
@@ -153,16 +137,17 @@ public final class LvDumb implements IGraphSearch {
         scorer.bookmark();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Initializing PAG to BOSS CPDAG.");
-            TetradLogger.getInstance().forceLogMessage("Initializing scorer with BOSS best order.");
+            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        var cpdag = scorer.getGraph(true);
+        var dag = scorer.getGraph(false);
 
-        DagToPag dagToPag = new DagToPag(cpdag);
+        DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setDoDiscriminatingPathRule(doDiscriminatingPathRule);
+        dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        dagToPag.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         return dagToPag.convert();
     }
 
@@ -222,11 +207,20 @@ public final class LvDumb implements IGraphSearch {
     }
 
     /**
-     * Sets whether the search algorithm should use the Discriminating Path Rule.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule true if the Discriminating Path Rule should be used, false otherwise
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

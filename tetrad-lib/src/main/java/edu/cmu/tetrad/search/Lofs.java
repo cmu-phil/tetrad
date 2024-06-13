@@ -473,10 +473,10 @@ public class Lofs {
 
             for (double score : scoreReports.keySet()) {
                 String message = "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score;
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
 
-            TetradLogger.getInstance().forceLogMessage("");
+            TetradLogger.getInstance().log("");
 
             if (parents == null) {
                 continue;
@@ -549,7 +549,7 @@ public class Lofs {
      * @param strong Indicates whether to use strong or weak restrictions.
      */
     private void resolveOneEdgeMax2(Graph graph, Node x, Node y, boolean strong) {
-        TetradLogger.getInstance().forceLogMessage("\nEDGE " + x + " --- " + y);
+        TetradLogger.getInstance().log("\nEDGE " + x + " --- " + y);
 
         SortedMap<Double, String> scoreReports = new TreeMap<>();
 
@@ -753,7 +753,7 @@ public class Lofs {
 
         for (double score : scoreReports.keySet()) {
             String message = scoreReports.get(score);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         graph.removeEdges(x, y);

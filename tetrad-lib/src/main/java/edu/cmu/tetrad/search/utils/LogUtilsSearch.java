@@ -298,7 +298,7 @@ public class LogUtilsSearch {
             try {
                 graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
             } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("Error computing BIC: " + e.getMessage());
+                TetradLogger.getInstance().log("Error computing BIC: " + e.getMessage());
             }
         }
     }

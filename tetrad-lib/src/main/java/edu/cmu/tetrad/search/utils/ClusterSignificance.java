@@ -111,11 +111,11 @@ public class ClusterSignificance {
 
             try {
                 double p = clusterSignificance.significance(new ArrayList<>(_out));
-                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                                                           + " p = " + nf.format(p));
+                TetradLogger.getInstance().log("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                                               + " p = " + nf.format(p));
             } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                                                           + " p = EXCEPTION");
+                TetradLogger.getInstance().log("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                                               + " p = EXCEPTION");
             }
         }
     }

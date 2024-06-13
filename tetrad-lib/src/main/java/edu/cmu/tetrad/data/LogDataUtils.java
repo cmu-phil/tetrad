@@ -45,12 +45,12 @@ public class LogDataUtils {
      * @param list a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public static void logDataModelList(String info, DataModelList list) {
-        TetradLogger.getInstance().forceLogMessage(info);
+        TetradLogger.getInstance().log(info);
 
         if (list.size() == 1) {
-            TetradLogger.getInstance().forceLogMessage("\nThere is one data set in this box.");
+            TetradLogger.getInstance().log("\nThere is one data set in this box.");
         } else {
-            TetradLogger.getInstance().forceLogMessage("\nThere are " + list.size() + " data sets in this box.");
+            TetradLogger.getInstance().log("\nThere are " + list.size() + " data sets in this box.");
         }
     }
 }

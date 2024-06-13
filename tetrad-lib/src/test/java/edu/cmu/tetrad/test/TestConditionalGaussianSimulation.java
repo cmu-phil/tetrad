@@ -85,9 +85,6 @@ public class TestConditionalGaussianSimulation {
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
 

@@ -245,7 +245,7 @@ public class GraphoidAxioms {
                 }
             }
 
-            TetradLogger.getInstance().forceLogMessage("Symmetry fails for " + fact);
+            TetradLogger.getInstance().log("Symmetry fails for " + fact);
 
             return false;
         }
@@ -290,13 +290,13 @@ public class GraphoidAxioms {
                     GraphoidIndFact fact1 = new GraphoidIndFact(X, Y, Z);
 
                     if (textSpecs != null) {
-                        TetradLogger.getInstance().forceLogMessage("Decomposition fails:" +
-                                                                   " Have " + textSpecs.get(fact) +
-                                                                   "; Missing " + fact1);
+                        TetradLogger.getInstance().log("Decomposition fails:" +
+                                                       " Have " + textSpecs.get(fact) +
+                                                       "; Missing " + fact1);
                     } else {
-                        TetradLogger.getInstance().forceLogMessage("Decomposition fails:" +
-                                                                   " Have " + fact +
-                                                                   "; Missing " + fact1);
+                        TetradLogger.getInstance().log("Decomposition fails:" +
+                                                       " Have " + fact +
+                                                       "; Missing " + fact1);
                     }
 
                     found0 = true;
@@ -314,13 +314,13 @@ public class GraphoidAxioms {
                     GraphoidIndFact fact1 = new GraphoidIndFact(X, W, Z);
 
                     if (textSpecs != null) {
-                        TetradLogger.getInstance().forceLogMessage("Decomposition fails:" +
-                                                                   " Have " + textSpecs.get(fact) +
-                                                                   "; Missing " + fact1);
+                        TetradLogger.getInstance().log("Decomposition fails:" +
+                                                       " Have " + textSpecs.get(fact) +
+                                                       "; Missing " + fact1);
                     } else {
-                        TetradLogger.getInstance().forceLogMessage("Decomposition fails:" +
-                                                                   " Have " + fact +
-                                                                   "; Missing " + fact1);
+                        TetradLogger.getInstance().log("Decomposition fails:" +
+                                                       " Have " + fact +
+                                                       "; Missing " + fact1);
                     }
 
                     found0 = true;
@@ -371,13 +371,13 @@ public class GraphoidAxioms {
                     GraphoidIndFact newFact = new GraphoidIndFact(X, Y, ZW);
 
                     if (textSpecs != null) {
-                        TetradLogger.getInstance().forceLogMessage("Weak Union fails:" +
-                                                                   " Have " + textSpecs.get(fact) +
-                                                                   "; Missing " + newFact);
+                        TetradLogger.getInstance().log("Weak Union fails:" +
+                                                       " Have " + textSpecs.get(fact) +
+                                                       "; Missing " + newFact);
                     } else {
-                        TetradLogger.getInstance().forceLogMessage("Weak Union fails:" +
-                                                                   " Have " + fact +
-                                                                   "; Missing " + newFact);
+                        TetradLogger.getInstance().log("Weak Union fails:" +
+                                                       " Have " + fact +
+                                                       "; Missing " + newFact);
                     }
 
                     found0 = true;
@@ -429,13 +429,13 @@ public class GraphoidAxioms {
                         GraphoidIndFact newFact = new GraphoidIndFact(X, YW, Z);
 
                         if (textSpecs != null) {
-                            TetradLogger.getInstance().forceLogMessage("Contraction fails:" +
-                                                                       " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Contraction fails:" +
+                                                           " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
+                                                           "; Missing " + newFact);
                         } else {
-                            TetradLogger.getInstance().forceLogMessage("Contraction fails:" +
-                                                                       " Have " + fact1 + " and " + fact2 +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Contraction fails:" +
+                                                           " Have " + fact1 + " and " + fact2 +
+                                                           "; Missing " + newFact);
                         }
 
                         found0 = true;
@@ -501,13 +501,13 @@ public class GraphoidAxioms {
                         GraphoidIndFact newFact = new GraphoidIndFact(X, YW, Z);
 
                         if (textSpecs != null) {
-                            TetradLogger.getInstance().forceLogMessage("Intersection fails:" +
-                                                                       " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Intersection fails:" +
+                                                           " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
+                                                           "; Missing " + newFact);
                         } else {
-                            TetradLogger.getInstance().forceLogMessage("Intersection fails:" +
-                                                                       " Have " + fact1 + " and " + fact2 +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Intersection fails:" +
+                                                           " Have " + fact1 + " and " + fact2 +
+                                                           "; Missing " + newFact);
                         }
 
                         found0 = true;
@@ -553,13 +553,13 @@ public class GraphoidAxioms {
                         GraphoidIndFact newFact = new GraphoidIndFact(X, YW, Z);
 
                         if (textSpecs != null) {
-                            TetradLogger.getInstance().forceLogMessage("Composition fails:" +
-                                                                       " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Composition fails:" +
+                                                           " Have " + textSpecs.get(fact1) + " and " + textSpecs.get(fact2) +
+                                                           "; Missing " + newFact);
                         } else {
-                            TetradLogger.getInstance().forceLogMessage("Composition fails:" +
-                                                                       " Have " + fact1 + " and " + fact2 +
-                                                                       "; Missing " + newFact);
+                            TetradLogger.getInstance().log("Composition fails:" +
+                                                           " Have " + fact1 + " and " + fact2 +
+                                                           "; Missing " + newFact);
                         }
 
                         found0 = true;

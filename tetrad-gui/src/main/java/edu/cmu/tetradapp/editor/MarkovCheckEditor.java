@@ -216,6 +216,8 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
+        setPreferredSize(new Dimension(1100, 600));
+
         conditioningSetTypeJComboBox.addItem("Parents(X) (Local Markov)");
         conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -641,7 +643,7 @@ public class MarkovCheckEditor extends JPanel {
                 repaint();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                      | NoSuchMethodException e1) {
-                TetradLogger.getInstance().forceLogMessage("Error: " + e1.getMessage());
+                TetradLogger.getInstance().log("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
@@ -841,6 +843,62 @@ public class MarkovCheckEditor extends JPanel {
         TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
+        Box nodeSelectionBox = Box.createHorizontalBox();
+        nodeSelectionBox.add(new JLabel("Node Selection:"));
+        JComboBox<String> nodeSelection = new JComboBox<>();
+        nodeSelection.addItem("All");
+
+        List<String> names = new ArrayList<>();
+
+        for (Node node : model.getGraph().getNodes()) {
+            names.add(node.getName());
+        }
+
+        names.sort((o1, o2) -> {
+            // If o1 ends with an integer, find that integer.
+            // If o2 ends with an integer, find that integer.
+            // If both end with an integer, compare the integers.
+
+            String[] split1 = o1.split("(?<=\\D)(?=\\d)");
+            String[] split2 = o2.split("(?<=\\D)(?=\\d)");
+
+            if (split1.length == 2 && split2.length == 2) {
+                String prefix1 = split1[0];
+                String prefix2 = split2[0];
+
+                if (prefix1.equals(prefix2)) {
+                    return Integer.compare(Integer.parseInt(split1[1]), Integer.parseInt(split2[1]));
+                } else {
+                    return prefix1.compareTo(prefix2);
+                }
+            } else if (split1.length == 2) {
+                return -1;
+            } else if (split2.length == 2) {
+                return 1;
+            } else {
+                return o1.compareTo(o2);
+            }
+        });
+
+        for (String name : names) {
+            nodeSelection.addItem(name);
+        }
+
+        nodeSelection.addActionListener(e -> {
+            String selectedNode = (String) nodeSelection.getSelectedItem();
+            if (selectedNode.equals("All")) {
+                sorter.setRowFilter(null);
+            } else {
+                String a = selectedNode;
+                String regex = String.format("(\\(%s,)|(, %s \\|)|(, %s\\)^)", a, a, a);
+                sorter.setRowFilter(RowFilter.regexFilter(regex));
+            }
+        });
+
+        nodeSelectionBox.add(nodeSelection);
+        nodeSelectionBox.add(Box.createHorizontalGlue());
+
+
         // Create the text field
         JLabel regexLabel = new JLabel("Regexes (semicolon separated):");
         JTextField filterText = new JTextField(15);
@@ -860,9 +918,10 @@ public class MarkovCheckEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(550, 400));
 
         Box filterBox = Box.createHorizontalBox();
-        filterBox.add(regexLabel);
-        filterBox.add(filterText);
-        filterBox.add(flipEscapes);
+//        filterBox.add(regexLabel);
+//        filterBox.add(filterText);
+        filterBox.add(nodeSelectionBox);
+//        filterBox.add(flipEscapes);
         panel.add(filterBox);
         panel.add(scroll);
     }

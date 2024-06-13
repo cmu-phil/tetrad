@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author Bryan Andrews
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest {
+public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSettable {
 
     /**
      * A constant.
@@ -96,6 +96,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * The rows used in the test.
+     */
+    private List<Integer> rows = new ArrayList<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -271,7 +275,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
@@ -403,6 +407,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * @return A list of integers representing the row indices that satisfy the conditions.
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -457,6 +465,42 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         return cov;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    public void setRows(List<Integer> rows) {
+        if (dataSet == null) {
+            return;
+        }
+
+        List<Integer> all = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows(); i++) all.add(i);
+        Collections.shuffle(all);
+
+        List<Integer> _rows = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows() / 2; i++) {
+            _rows.add(all.get(i));
+        }
+
+        for (Integer row : _rows) {
+            if (row < 0 || row >= dataSet.getNumRows()) {
+                throw new IllegalArgumentException("Row index out of bounds.");
+            }
+        }
+
+        this.rows = _rows;
     }
 
     /**

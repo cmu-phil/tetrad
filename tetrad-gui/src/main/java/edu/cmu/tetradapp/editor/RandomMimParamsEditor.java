@@ -76,7 +76,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralEdges", value);
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
@@ -97,7 +97,7 @@ class RandomMimParamsEditor extends JPanel {
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
@@ -116,7 +116,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measurementModelDegree", value);
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
@@ -134,7 +134,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
@@ -152,7 +152,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
@@ -171,7 +171,7 @@ class RandomMimParamsEditor extends JPanel {
                         value);
                 return value;
             } catch (Exception exception) {
-                TetradLogger.getInstance().forceLogMessage(exception.toString());
+                TetradLogger.getInstance().log(exception.toString());
 //                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;

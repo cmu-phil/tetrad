@@ -255,7 +255,7 @@ public class TetradLogger {
      *
      * @param message a {@link java.lang.String} object
      */
-    public void forceLogMessage(String message) {
+    public void log(String message) {
         if (this.logging) {
             if (!this.writers.containsKey(System.out)) {
                 System.out.println(message);

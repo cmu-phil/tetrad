@@ -106,7 +106,7 @@ public class VcFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search.");
+        TetradLogger.getInstance().log("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
         // sepset = new SepsetMap();
@@ -153,7 +153,7 @@ public class VcFas {
 
 //        System.out.println("Finished constructing Graph.");
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().log("Finishing Fast Adjacency Search.");
 
         return this.graph;
     }
@@ -278,7 +278,7 @@ public class VcFas {
             this.knowledge.isForbidden(name2, name1)) {
             String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
                              "forbidden by background knowledge.";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
 
             return true;
         }

@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.WeakHashMap;
 
 
 /**
@@ -40,13 +39,26 @@ import java.util.WeakHashMap;
  * @version $Id: $Id
  */
 public final class DagToPag {
-
-//    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
-    private final Graph dag;
     /**
-     * The logger to use.
+     * The variable 'dag' represents a directed acyclic graph (DAG) that is stored in a private final field.
+     * A DAG is a finite directed graph with no directed cycles. This means that there is no way to start at some vertex and
+     * follow a sequence of directed edges that eventually loops back to the same vertex. In other words, there are no
+     * cyclic dependencies in the graph.
+     *
+     * The 'dag' variable is used within the containing class 'DagToPag' for various purposes related to the conversion of
+     * a DAG to a partially directed acyclic graph (PAG). The methods in 'DagToPag' utilize this variable to perform
+     * operations such as checking for inducing paths between nodes, converting the DAG to a PAG, and orienting
+     * unshielded colliders in the graph.
+     *
+     * The 'dag' variable has private access, meaning it can only be accessed and modified within the 'DagToPag' class.
+     * It is declared as 'final', indicating that its value cannot be changed after it is assigned in the constructor or
+     * initialization block. This ensures that the reference to the DAG remains consistent throughout the lifetime of the
+     * 'DagToPag' object.
+     *
+     * @see DagToPag
+     * @see Graph
      */
-    private final TetradLogger logger = TetradLogger.getInstance();
+    private final Graph dag;
     /*
      * The background knowledge.
      */
@@ -60,7 +72,8 @@ public final class DagToPag {
      */
     private boolean verbose;
     private int maxPathLength = -1;
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -91,7 +104,6 @@ public final class DagToPag {
         for (Node b : graph.getAdjacentNodes(x)) {
             Edge edge = graph.getEdge(x, b);
             if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
-//            if (!edge.pointsTowards(x)) continue;
 
             if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
                 return true;
@@ -107,8 +119,6 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-//        if (history.get(dag) != null) return history.get(dag);
-
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
@@ -126,10 +136,10 @@ public final class DagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setVerbose(false);
@@ -138,8 +148,6 @@ public final class DagToPag {
         if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
-
-//        history.put(dag, graph);
 
         return graph;
     }
@@ -196,22 +204,34 @@ public final class DagToPag {
     }
 
     /**
-     * Sets the maximum path length for some rules in the conversion.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This length.
-     * @see FciOrient
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
         this.maxPathLength = maxPathLength;
     }
 
     /**
-     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule a boolean
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     private Graph calcAdjacencyGraph() {

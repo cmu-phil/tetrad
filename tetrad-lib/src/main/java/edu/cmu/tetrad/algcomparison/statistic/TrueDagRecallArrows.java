@@ -38,7 +38,7 @@ public class TrueDagRecallArrows implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of <Y, X> where there is no directed(Y, X) in the true for which and X*->Y in the estimated graph";
+        return "Proportion of <X, Y> where Y is not an ancestor of X in the true graph where there is an arrow X *-> Y";
     }
 
     /**

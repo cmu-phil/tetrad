@@ -123,7 +123,7 @@ final class LoadSessionAction extends AbstractAction {
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
-                            TetradLogger.getInstance().forceLogMessage("Exception: " + e2.getMessage());
+                            TetradLogger.getInstance().log("Exception: " + e2.getMessage());
                         }
                     } else if (o instanceof SessionWrapper) {
                         sessionWrapper = (SessionWrapper) o;

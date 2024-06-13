@@ -196,40 +196,54 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==========================PRIVATE METHODS===========================//
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("DAGs in forbid_latent_common_causes");
-        TetradLogger.getInstance().forceLogMessage("\nSelected Graph\n");
+        TetradLogger.getInstance().log("DAGs in forbid_latent_common_causes");
+        TetradLogger.getInstance().log("\nSelected Graph\n");
         String message1 = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message1);
+        TetradLogger.getInstance().log(message1);
 
-        TetradLogger.getInstance().forceLogMessage("\nAll Graphs:\n");
+        TetradLogger.getInstance().log("\nAll Graphs:\n");
         int index = 0;
 
         for (Graph graph : this.graphsToScores.keySet()) {
             String message = "\nGraph #" + (++index);
-            TetradLogger.getInstance().forceLogMessage(message);
-            TetradLogger.getInstance().forceLogMessage(graph + "");
+            TetradLogger.getInstance().log(message);
+            TetradLogger.getInstance().log(graph + "");
         }
     }
 
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }

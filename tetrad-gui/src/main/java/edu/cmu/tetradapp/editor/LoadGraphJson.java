@@ -62,7 +62,8 @@ public class LoadGraphJson extends AbstractAction {
         File file = chooser.getSelectedFile();
 
         if (file == null) {
-            System.out.println("File was null.");
+            JOptionPane.showMessageDialog((Component) this.graphEditable,
+                    "No file was selected.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

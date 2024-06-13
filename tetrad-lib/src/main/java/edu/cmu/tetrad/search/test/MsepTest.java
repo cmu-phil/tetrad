@@ -263,7 +263,7 @@ public class MsepTest implements IndependenceTest {
 
         if (this.verbose) {
             if (mSeparated) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, 1.0));
             }
         }

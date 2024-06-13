@@ -101,7 +101,7 @@ public final class PcCommon implements IGraphSearch {
     /**
      * The max path length for the max p collider orientation heuristic.
      */
-    private int maxPathLength = 3;
+    private int maxPathLength = -1;
 
     /**
      * The type of FAS to be used.
@@ -174,7 +174,7 @@ public final class PcCommon implements IGraphSearch {
 
     private static void forceLogMessage(String s, boolean verbose) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage(s);
+            TetradLogger.getInstance().log(s);
         }
     }
 
@@ -244,8 +244,8 @@ public final class PcCommon implements IGraphSearch {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
-            this.logger.forceLogMessage("Starting algorithm");
-            this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            this.logger.log("Starting algorithm");
+            this.logger.log("Independence test = " + getIndependenceTest() + ".");
         }
 
         this.ambiguousTriples = new HashSet<>();

@@ -103,9 +103,13 @@ public final class BFci implements IGraphSearch {
      */
     private int depth = -1;
     /**
-     * Whether to apply the discriminating path rule during the search.
+     * Whether to apply the discriminating path tail rule during the search.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether to apply the discriminating path collider rule during the search.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
      * final step.
@@ -161,8 +165,8 @@ public final class BFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting BFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         Boss subAlg = new Boss(this.score);
@@ -188,8 +192,8 @@ public final class BFci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
@@ -218,9 +222,9 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Returns the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -267,12 +271,21 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True if the discriminating path rule should be used, false otherwise.
+     * @param doDiscriminatingPathTailRule True if the discriminating path tail rule should be used, false otherwise.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True if the discriminating path collider rule should be used, false.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -305,3 +318,4 @@ public final class BFci implements IGraphSearch {
         this.numThreads = numThreads;
     }
 }
+

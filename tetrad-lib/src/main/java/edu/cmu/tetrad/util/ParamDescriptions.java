@@ -53,7 +53,7 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (IOException ex) {
-            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+            TetradLogger.getInstance().log("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
 //            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 

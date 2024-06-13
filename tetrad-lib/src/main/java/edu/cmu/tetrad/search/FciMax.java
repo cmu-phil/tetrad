@@ -103,9 +103,15 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Whether the discriminating path rule will be used in search.
+     * Determines whether the discriminating path tail rule should be applied during the search.
+     * If set to true, the rule will be applied. If set to false, the rule will not be applied.
      */
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * This variable specifies whether the discriminating path collider rule should be applied during the search.
+     * If set to true, the rule will be applied; if set to false, the rule will not be applied.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether the discriminating path rule will be used in search.
      */
@@ -147,8 +153,8 @@ public final class FciMax implements IGraphSearch {
         Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting FCI-Max algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting FCI-Max algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -263,9 +269,9 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -313,13 +319,14 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule will be used in search.
+     * Sets whether the discriminating path tail rule should be applied during the search.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param doDiscriminatingPathTailRule True, if the rule should be applied. False otherwise.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
+
 
     /**
      * Retrieves an instance of FciOrient with all necessary parameters set.
@@ -331,9 +338,9 @@ public final class FciMax implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
         return fciOrient;
@@ -472,6 +479,15 @@ public final class FciMax implements IGraphSearch {
                 scores.put(new Triple(a, b, c), score);
             }
         }
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be applied during the search.
+     *
+     * @param doDiscriminatingPathColliderRule True, if the rule should be applied. False otherwise.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
 

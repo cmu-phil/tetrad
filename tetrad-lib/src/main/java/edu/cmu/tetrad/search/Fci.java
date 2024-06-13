@@ -119,7 +119,11 @@ public final class Fci implements IGraphSearch {
     /**
      * Whether the discriminating path rule should be used.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether the discriminating path rule should be used.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructor.
@@ -180,8 +184,8 @@ public final class Fci implements IGraphSearch {
         Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -213,9 +217,9 @@ public final class Fci implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets1);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
 
@@ -302,9 +306,9 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -353,12 +357,21 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
 

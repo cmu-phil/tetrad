@@ -96,7 +96,7 @@ public final class SvarFciOrient {
     public Graph orient(Graph graph) {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI orientation.");
+            TetradLogger.getInstance().log("Starting SVar-FCI orientation.");
         }
 
         ruleR0(graph);
@@ -110,7 +110,7 @@ public final class SvarFciOrient {
         doFinalOrientation(graph);
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Returning graph: " + graph);
+            TetradLogger.getInstance().log("Returning graph: " + graph);
         }
 
         return graph;
@@ -220,7 +220,7 @@ public final class SvarFciOrient {
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     if (this.verbose) {
                         String message = LogUtilsSearch.colliderOrientedMsg(a, b, c);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                         System.out.println(LogUtilsSearch.colliderOrientedMsg(a, b, c));
                         printWrongColliderMessage(a, b, c, graph);
                     }
@@ -370,7 +370,7 @@ public final class SvarFciOrient {
 
             if (this.verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Away from collider", graph.getEdge(b, c));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
                 System.out.println(LogUtilsSearch.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
             }
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
@@ -397,7 +397,7 @@ public final class SvarFciOrient {
                 this.orientSimilarPairs(graph, this.getKnowledge(), a, c, Endpoint.ARROW);
                 if (this.verbose) {
                     String message = LogUtilsSearch.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c));
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
                     System.out.println(LogUtilsSearch.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
                 }
 
@@ -459,7 +459,7 @@ public final class SvarFciOrient {
                     this.orientSimilarPairs(graph, this.getKnowledge(), D, B, Endpoint.ARROW);
                     if (this.verbose) {
                         String message = LogUtilsSearch.edgeOrientedMsg("Double triangle", graph.getEdge(D, B));
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                         System.out.println(LogUtilsSearch.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
                     }
 
@@ -615,7 +615,7 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
             if (this.verbose) {
                 String message = LogUtilsSearch.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c));
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
                 System.out.println(LogUtilsSearch.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
@@ -634,7 +634,7 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
             if (this.verbose) {
                 String message = LogUtilsSearch.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
                 System.out.println(LogUtilsSearch.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
@@ -688,7 +688,7 @@ public final class SvarFciOrient {
                     // We know u is as required: R5 applies!
 
                     String message = LogUtilsSearch.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b));
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.TAIL);
@@ -733,7 +733,7 @@ public final class SvarFciOrient {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
                     String message = LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b));
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
 
                     this.changeFlag = true;
                 }
@@ -742,7 +742,7 @@ public final class SvarFciOrient {
 //                    if (graph.isAdjacentTo(a, c)) continue;
 
                     String message = LogUtilsSearch.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b));
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
 
                     // We know A--oBo-*C and A,C nonadjacent: R7 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -803,7 +803,7 @@ public final class SvarFciOrient {
             this.changeFlag = true;
 
             String message = LogUtilsSearch.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 
@@ -835,7 +835,7 @@ public final class SvarFciOrient {
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
             String message = LogUtilsSearch.edgeOrientedMsg("R8", graph.getEdge(c, a));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
@@ -867,7 +867,7 @@ public final class SvarFciOrient {
             // We know u is as required: R9 applies!
 
             String message = LogUtilsSearch.edgeOrientedMsg("R9", graph.getEdge(c, a));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
@@ -916,7 +916,7 @@ public final class SvarFciOrient {
                         // We know B,D,u1,u2 as required: R10 applies!
 
                         String message = LogUtilsSearch.edgeOrientedMsg("R10", graph.getEdge(c, a));
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         this.changeFlag = true;
@@ -934,7 +934,7 @@ public final class SvarFciOrient {
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
+            TetradLogger.getInstance().log("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -959,7 +959,7 @@ public final class SvarFciOrient {
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;
             String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -982,11 +982,11 @@ public final class SvarFciOrient {
             graph.setEndpoint(from, to, Endpoint.ARROW);
             this.changeFlag = true;
             String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+            TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
 
@@ -1001,7 +1001,7 @@ public final class SvarFciOrient {
     }
 
     /**
-     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */

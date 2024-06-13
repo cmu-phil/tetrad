@@ -108,10 +108,10 @@ public final class IndTestMulti implements IndependenceTest {
 
         if (independent) {
             String message = "In aggregate independent: " + LogUtilsSearch.independenceFact(x, y, z);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         } else {
             String message = "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent,

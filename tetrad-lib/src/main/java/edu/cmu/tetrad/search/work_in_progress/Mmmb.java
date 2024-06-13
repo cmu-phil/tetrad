@@ -107,7 +107,7 @@ public final class Mmmb implements IMbSearch {
      * Searches for the Markov blanket of the node by the given name.
      */
     public Set<Node> findMb(Node target) {
-        TetradLogger.getInstance().forceLogMessage("target = " + target);
+        TetradLogger.getInstance().log("target = " + target);
         this.numIndTests = 0;
         long time = MillisecondTimes.timeMillis();
 
@@ -117,9 +117,9 @@ public final class Mmmb implements IMbSearch {
         Set<Node> nodes = mmmb(target);
 
         long time2 = MillisecondTimes.timeMillis() - time;
-        TetradLogger.getInstance().forceLogMessage("Number of seconds: " + (time2 / 1000.0));
-        TetradLogger.getInstance().forceLogMessage("Number of independence tests performed: " +
-                                                   this.numIndTests);
+        TetradLogger.getInstance().log("Number of seconds: " + (time2 / 1000.0));
+        TetradLogger.getInstance().log("Number of independence tests performed: " +
+                                       this.numIndTests);
         //        System.out.println("Number of calls to mmpc = " + pc.size());
 
         return nodes;
@@ -237,7 +237,7 @@ public final class Mmmb implements IMbSearch {
         // Phase 2.
         backwardsConditioning(pc, t);
 
-        TetradLogger.getInstance().forceLogMessage("PC(" + t + ") = " + pc);
+        TetradLogger.getInstance().log("PC(" + t + ") = " + pc);
         //        System.out.println("PC(" + t + ") = " + pc);
 
         return pc;

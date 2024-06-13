@@ -78,6 +78,13 @@ public class EdgewiseComparisonEditor extends JPanel {
 
         area.setFont(font);
 
+        int position = area.getText().indexOf("True graph");
+
+        // If the word is found, scroll to it
+        if (position >= 0) {
+            area.setCaretPosition(position);
+        }
+
         JScrollPane scrollTextPane = new JScrollPane(area);
         scrollTextPane.setPreferredSize(new Dimension(500, 600));
 

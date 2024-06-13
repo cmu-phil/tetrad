@@ -1753,7 +1753,7 @@ public final class GraphUtils {
             if (!edge.isDirected()) {
                 continue;
             }
-    
+
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
@@ -1927,8 +1927,8 @@ public final class GraphUtils {
 
                         if (verbose) {
                             double pValue = sepsets.getPValue(a, c, sepset);
-                            TetradLogger.getInstance().forceLogMessage("Removed edge " + a + " -- " + c
-                                                                       + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
+                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
                         }
                     }
                 }
@@ -2464,25 +2464,25 @@ public final class GraphUtils {
     }
 
     /**
-     * Applies the GFCI-R0 algorithm to orient edges in a graph based on a reference CPDAG, sepsets, and knowledge. This
-     * method modifies the given graph by changing the orientation of edges. Due to Spirtes.
+     * Applies the GFCI-R0 algorithm to orient edges in a pag based on a reference CPDAG, sepsets, and knowledge. This
+     * method modifies the given pag by changing the orientation of edges. Due to Spirtes.
      *
-     * @param graph          The graph to be modified.
-     * @param referenceCpdag The reference CPDAG to guide the orientation of edges.
-     * @param sepsets        The sepsets used to determine the orientation of edges.
-     * @param knowledge      The knowledge used to determine the orientation of edges.
-     * @param verbose        Whether to print verbose output.
+     * @param pag       The pag to be modified.
+     * @param cpdag     The reference CPDAG to guide the orientation of edges.
+     * @param sepsets   The sepsets used to determine the orientation of edges.
+     * @param knowledge The knowledge used to determine the orientation of edges.
+     * @param verbose   Whether to print verbose output.
      */
-    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge,
+    public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose) {
-        graph.reorientAllWith(Endpoint.CIRCLE);
+        pag.reorientAllWith(Endpoint.CIRCLE);
 
-        fciOrientbk(knowledge, graph, graph.getNodes());
+        fciOrientbk(knowledge, pag, pag.getNodes());
 
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = pag.getNodes();
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
+        for (Node y : nodes) {
+            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -2492,57 +2492,114 @@ public final class GraphUtils {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
 
-                if (referenceCpdag.isDefCollider(a, b, c)
-                    && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                    && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)
-                    && !referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from score search)).");
-
-                        if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
-                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
-                        }
-
-                        if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
-                            TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
-                        }
-                    }
-                } else if (referenceCpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c);
-
-                    if (graph.isAdjacentTo(a, c)) {
-                        graph.removeEdge(a, c);
-                    }
-
-                    if (sepset != null && !sepset.contains(b) && FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
+                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                        pag.setEndpoint(z, y, Endpoint.ARROW);
 
                         if (verbose) {
-                            double p = sepsets.getPValue(a, c, sepset);
-                            String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
+                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
-                            TetradLogger.getInstance().forceLogMessage("Oriented collider " + a + " *-> " + b + " <-* " + c + " (from test)), p = " + _p + ".");
-
-                            if (Edges.isBidirectedEdge(graph.getEdge(a, b))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(a, b));
+                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
                             }
 
-                            if (Edges.isBidirectedEdge(graph.getEdge(b, c))) {
-                                TetradLogger.getInstance().forceLogMessage("Created bidirected edge: " + graph.getEdge(b, c));
+                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                            }
+                        }
+                    }
+                } else if (cpdag.isAdjacentTo(x, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
+                        Set<Node> sepset = sepsets.getSepset(x, z);
+
+                        if (sepset != null) {
+                            pag.removeEdge(x, z);
+
+                            if (!sepset.contains(y)) {
+                                pag.setEndpoint(x, y, Endpoint.ARROW);
+                                pag.setEndpoint(z, y, Endpoint.ARROW);
+
+                                if (verbose) {
+                                    double p = sepsets.getPValue(x, z, sepset);
+                                    String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
+
+                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
+
+                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                    }
+
+                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+
+    /**
+     * Checks if three nodes are connected in a graph.
+     *
+     * @param graph the graph to check for connectivity
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return {@code true} if all three nodes are connected, {@code false} otherwise
+     */
+    private static boolean triple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+    }
+
+    /**
+     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
+     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
+     *
+     * @param graph The graph in which the nodes reside.
+     * @param a     The first node in the triple.
+     * @param b     The second node in the triple.
+     * @param c     The third node in the triple.
+     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
+     */
+    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+    }
+
+    /**
+     * Determines if the collider is allowed.
+     *
+     * @param pag The Graph representing the PAG.
+     * @param x   The Node object representing the first node.
+     * @param b   The Node object representing the second node.
+     * @param y   The Node object representing the third node.
+     * @return true if the collider is allowed, false otherwise.
+     */
+    private static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
+        if (true) return true;
+
+        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
+               && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
+    }
+
+    /**
+     * Checks if the given nodes are unshielded colliders when considering the given graph.
+     *
+     * @param graph the graph to consider
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return true if the nodes are unshielded colliders, false otherwise
+     */
+    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
     /**

@@ -206,18 +206,38 @@ public class LocalGraphConfusion {
         }
     }
 
+    /**
+     * Returns the true positives (TP) value of the LocalGraphConfusion object.
+     *
+     * @return The true positives (TP) value.
+     */
     public int getTp() {
         return tp;
     }
 
+    /**
+     * Retrieves the value of true negatives (TN) from the LocalGraphConfusion object.
+     *
+     * @return The true negatives (TN) value.
+     */
     public int getTn() {
         return tn;
     }
 
+    /**
+     * Retrieves the value of false positives (FP) from the LocalGraphConfusion object.
+     *
+     * @return The false positives (FP) value.
+     */
     public int getFp() {
         return fp;
     }
 
+    /**
+     * Returns the false negatives (FN) value of the LocalGraphConfusion object.
+     *
+     * @return The false negatives (FN) value.
+     */
     public int getFn() {
         return fn;
     }

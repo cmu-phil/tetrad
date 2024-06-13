@@ -77,28 +77,8 @@ public class GridSearchModel implements SessionModel {
      * The result path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
-    /**
-     * Represents the variable "knowledge" in the GridSearchModel class. This variable is of type Knowledge and is
-     * private and final.
-     */
     private final Knowledge knowledge;
-    /**
-     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis. It
-     * can be set to null if no dataset is supplied.
-     * <p>
-     * Using a supplied dataset restricts the analysis to only those statistics that do not require a true graph.
-     * <p>
-     * Example usage:
-     * <pre>
-     * DataSet dataset = new DataSet();
-     * suppliedData = dataset;
-     * </pre>
-     */
     private DataSet suppliedData = null;
-    /**
-     * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
-     * option in the user interface.
-     */
     private Graph suppliedGraph = null;
     /**
      * The list of statistic names.
@@ -153,6 +133,11 @@ public class GridSearchModel implements SessionModel {
      * The name of the GridSearchModel.
      */
     private String name = "Grid Search";
+    /**
+     * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
+     * and can be used to add additional files to the comparison results.
+     */
+    private String resultsPath = null;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -166,6 +151,8 @@ public class GridSearchModel implements SessionModel {
 
         this.parameters = parameters;
         this.knowledge = null;
+        this.suppliedData = null;
+        this.suppliedGraph = null;
         initializeIfNull();
     }
 
@@ -187,6 +174,8 @@ public class GridSearchModel implements SessionModel {
 
         this.parameters = parameters;
         this.knowledge = knowledge.getKnowledge();
+        this.suppliedData = null;
+        this.suppliedGraph = null;
         initializeIfNull();
     }
 
@@ -209,6 +198,7 @@ public class GridSearchModel implements SessionModel {
         this.parameters = parameters;
         this.knowledge = null;
         this.suppliedGraph = graphSource.getGraph();
+        this.suppliedData = null;
         initializeIfNull();
     }
 
@@ -258,6 +248,7 @@ public class GridSearchModel implements SessionModel {
         this.parameters = parameters;
         this.knowledge = null;
         this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
+        this.suppliedGraph = null;
         initializeIfNull();
     }
 
@@ -285,6 +276,9 @@ public class GridSearchModel implements SessionModel {
         this.parameters = parameters;
         this.knowledge = knowledge.getKnowledge();
         this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
+
+        System.out.println("Variables names = " + this.suppliedData.getVariableNames());
+
         initializeIfNull();
     }
 
@@ -429,8 +423,6 @@ public class GridSearchModel implements SessionModel {
         comparison.setSaveGraphs(parameters.getBoolean("algcomparisonSaveGraphs"));
         comparison.setSaveCPDAGs(parameters.getBoolean("algcomparisonSaveCPDAGs"));
         comparison.setSavePags(parameters.getBoolean("algcomparisonSavePAGs"));
-        comparison.setShowAlgorithmIndices(parameters.getBoolean("algcomparisonShowAlgorithmIndices"));
-        comparison.setShowSimulationIndices(parameters.getBoolean("algcomparisonShowSimulationIndices"));
         comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
         comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
@@ -463,9 +455,12 @@ public class GridSearchModel implements SessionModel {
 
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
-        String outputFileName = "Comparison";
+        String outputFileName = "Comparison.txt";
         comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
+
+        this.resultsPath = resultsPath;
+
     }
 
     private LinkedList<AlgorithmSpec> getSelectedAlgorithmSpecs() {
@@ -549,7 +544,8 @@ public class GridSearchModel implements SessionModel {
      */
     public void removeLastAlgorithm() {
         initializeIfNull();
-        if (!getSelectedSimulationsSpecs().isEmpty()) {
+        LinkedList<AlgorithmSpec> selectedSimulationsSpecs = getSelectedAlgorithmSpecs();
+        if (!selectedSimulationsSpecs.isEmpty()) {
             getSelectedAlgorithmSpecs().removeLast();
         }
     }
@@ -778,7 +774,7 @@ public class GridSearchModel implements SessionModel {
                 }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                TetradLogger.getInstance().forceLogMessage("Error creating statistic: " + e.getMessage());
+                TetradLogger.getInstance().log("Error creating statistic: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -1025,6 +1021,9 @@ public class GridSearchModel implements SessionModel {
     }
 
     /**
+     * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
+     * option in the user interface.
+     */ /**
      * The user may supply a graph, which will be given as an option in the UI.
      */
     public Graph getSuppliedGraph() {
@@ -1053,26 +1052,76 @@ public class GridSearchModel implements SessionModel {
         this.lastVerboseOutputText = lastVerboseOutputText;
     }
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to serialize object: " + getClass().getCanonicalName()
-                                                       + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
     }
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("Failed to deserialize object: " + getClass().getCanonicalName()
-                                                       + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
             throw e;
         }
+    }
+
+    /**
+     * Represents the variable "knowledge" in the GridSearchModel class. This variable is of type Knowledge and is
+     * private and final.
+     */
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * The suppliedData variable represents a dataset that can be used in place of a simulated dataset for analysis. It
+     * can be set to null if no dataset is supplied.
+     * <p>
+     * Using a supplied dataset restricts the analysis to only those statistics that do not require a true graph.
+     * <p>
+     * Example usage:
+     * <pre>
+     * DataSet dataset = new DataSet();
+     * suppliedData = dataset;
+     * </pre>
+     */
+    public DataSet getSuppliedData() {
+        return suppliedData;
+    }
+
+    public void setResultsPath(String resultsPath) {
+        this.resultsPath = resultsPath;
+    }
+
+    /**
+     * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
+     * and can be used to add additional files to the comparison results.
+     */
+    public String getResultsPath() {
+        return resultsPath;
     }
 
     /**

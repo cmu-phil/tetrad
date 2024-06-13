@@ -6,12 +6,16 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.SingleDatasetSimulation;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.GridSearchModel;
@@ -30,10 +34,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -155,8 +156,6 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonSaveGraphs", model.getParameters().getBoolean("algcomparisonSaveGraphs", true));
         model.getParameters().set("algcomparisonSaveCPDAGs", model.getParameters().getBoolean("algcomparisonSaveCPDAGs", false));
         model.getParameters().set("algcomparisonSavePAGs", model.getParameters().getBoolean("algcomparisonSavePAGs", false));
-        model.getParameters().set("algcomparisonShowAlgorithmIndices", model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices", true));
-        model.getParameters().set("algcomparisonShowSimulationIndices", model.getParameters().getBoolean("algcomparisonShowSimulationIndices", true));
         model.getParameters().set("algcomparisonSortByUtility", model.getParameters().getBoolean("algcomparisonSortByUtility", false));
         model.getParameters().set("algcomparisonShowUtilities", model.getParameters().getBoolean("algcomparisonShowUtilities", false));
         model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", false));
@@ -1299,16 +1298,6 @@ public class GridSearchEditor extends JPanel {
             horiz2c.add(Box.createHorizontalGlue());
             horiz2c.add(getBooleanSelectionBox("algcomparisonSavePAGs", model.getParameters(), false));
 
-            Box horiz3 = Box.createHorizontalBox();
-            horiz3.add(new JLabel("Show Algorithm Indices:"));
-            horiz3.add(Box.createHorizontalGlue());
-            horiz3.add(getBooleanSelectionBox("algcomparisonShowAlgorithmIndices", model.getParameters(), false));
-
-            Box horiz4 = Box.createHorizontalBox();
-            horiz4.add(new JLabel("Show Simulation Indices:"));
-            horiz4.add(Box.createHorizontalGlue());
-            horiz4.add(getBooleanSelectionBox("algcomparisonShowSimulationIndices", model.getParameters(), false));
-
             Box horiz4a = Box.createHorizontalBox();
             horiz4a.add(new JLabel("Sort by Utility:"));
             horiz4a.add(Box.createHorizontalGlue());
@@ -1354,8 +1343,6 @@ public class GridSearchEditor extends JPanel {
             parameterBox.add(horiz2);
             parameterBox.add(horiz2b);
             parameterBox.add(horiz2c);
-            parameterBox.add(horiz3);
-            parameterBox.add(horiz4);
             parameterBox.add(horiz4a);
             parameterBox.add(horiz4b);
             parameterBox.add(horiz4c);
@@ -1435,6 +1422,41 @@ public class GridSearchEditor extends JPanel {
 
                     try {
                         model.runComparison(ps);
+
+                        String resultsPath = model.getResultsPath();
+
+                        if (resultsPath != null && simulationChoiceTextArea != null) {
+                            // Write contents of simulation text area to a file at resultsPath + "/simulation.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/simulation.txt")) {
+                                writer.println(simulationChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of algorithm text area to a file at resultsPath + "/algorithm.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/algorithm.txt")) {
+                                writer.println(algorithmChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of table columns text area to a file at resultsPath + "/tableColumns.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/tableColumns.txt")) {
+                                writer.println(tableColumnsChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of verbose output text area to a file at resultsPath + "/verboseOutput.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/verboseOutput.txt")) {
+                                writer.println(verboseOutputTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+
+                        }
+
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }
@@ -2032,13 +2054,34 @@ public class GridSearchEditor extends JPanel {
         Simulations selectedSimulations = model.getSelectedSimulations();
         List<Simulation> simulations = selectedSimulations.getSimulations();
 
+        DataSet dataSet = model.getSuppliedData();
+
+        if (dataSet != null) {
+            simulationChoiceTextArea.append("A data set has been supplied with " + dataSet.getNumColumns() + " variables and " + dataSet.getNumRows() + " rows.");
+            simulationChoiceTextArea.append("\n\nThe variables for the data are as follow: " + dataSet.getVariableNames() + "\n\n");
+        }
+
+        Graph graph = model.getSuppliedGraph();
+
+        if (graph != null) {
+            simulationChoiceTextArea.append("A graph has been supplied with " + graph.getNumNodes() + " nodes and " + graph.getNumEdges() + " edges.");
+            simulationChoiceTextArea.append("\n\nThe nodes for the graph are as follow: " + graph.getNodeNames() + "\n\n");
+        }
+
+        Knowledge knowledge = model.getKnowledge();
+
+        if (knowledge != null) {
+            simulationChoiceTextArea.append("Knowledge has been set, as follows:");
+            simulationChoiceTextArea.append("\n\n" + knowledge + "\n\n");
+        }
+
         if (simulations.isEmpty()) {
             simulationChoiceTextArea.append("""
                      ** No simulations have been selected. Please select at least one simulation using the Add Simulation button below. **
                     """);
             return;
         } else if (simulations.size() == 1) {
-            simulationChoiceTextArea.setText("""
+            simulationChoiceTextArea.append("""
                     The following simulation has been selected. This simulations will be run with the selected algorithms.
                                         
                     """);
@@ -2049,7 +2092,7 @@ public class GridSearchEditor extends JPanel {
             simulationChoiceTextArea.append("Selected graph type = " + (randomGraphClass == null ? "None" : randomGraphClass.getSimpleName() + "\n"));
             simulationChoiceTextArea.append("Selected simulation type = " + simulationClass.getSimpleName() + "\n");
         } else {
-            simulationChoiceTextArea.setText("""
+            simulationChoiceTextArea.append("""
                     The following simulations have been selected. These simulations will be run with the selected algorithms.
                     """);
             for (int i = 0; i < simulations.size(); i++) {
@@ -2075,7 +2118,7 @@ public class GridSearchEditor extends JPanel {
                     """);
             return;
         } else if (selectedAlgorithms.size() == 1) {
-            algorithmChoiceTextArea.setText("""
+            algorithmChoiceTextArea.append("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
                                         
                     """);
@@ -2092,7 +2135,7 @@ public class GridSearchEditor extends JPanel {
             }
 
         } else {
-            algorithmChoiceTextArea.setText("""
+            algorithmChoiceTextArea.append("""
                     The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
             for (int i = 0; i < selectedAlgorithms.size(); i++) {

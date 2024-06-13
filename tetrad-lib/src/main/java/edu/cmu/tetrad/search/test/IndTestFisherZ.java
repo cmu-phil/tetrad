@@ -87,7 +87,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     private DataSet dataSet;
     /**
-     * Matrix from of the data.
+     * Matrix from of the data.a
      */
     private Matrix data;
     /**
@@ -266,7 +266,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             if (this.verbose) {
                 if (independent) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             LogUtilsSearch.independenceFactMsg(x, y, z, p));
                 }
             }
@@ -365,7 +365,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         if (this.verbose) {
             if (p > alpha) {
-                TetradLogger.getInstance().forceLogMessage(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
             }
         }
 
@@ -643,7 +643,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage(sb.toString());
+                TetradLogger.getInstance().log(sb.toString());
             }
         }
 
@@ -840,8 +840,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         for (int i = 0; i < sampleSize() / 2; i++) {
             _rows.add(all.get(i));
         }
-
-
 
         for (Integer row : _rows) {
             if (row < 0 || row >= sampleSize()) {

@@ -118,7 +118,7 @@ public class Fasd implements IFas {
      * @return a graph which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search.");
+        TetradLogger.getInstance().log("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
         this.sepset = new SepsetMap();
@@ -161,7 +161,7 @@ public class Fasd implements IFas {
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().log("Finishing Fast Adjacency Search.");
 
         return this.graph;
     }
@@ -332,7 +332,7 @@ public class Fasd implements IFas {
 
                     String message = LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
                                      this.nf.format(result.getPValue());
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
 
                     if (this.verbose) {
                         this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
@@ -345,7 +345,7 @@ public class Fasd implements IFas {
 
                     String message = LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
                                      this.nf.format(result.getPValue());
-                    TetradLogger.getInstance().forceLogMessage(message);
+                    TetradLogger.getInstance().log(message);
 
                 }
             }
@@ -399,7 +399,7 @@ public class Fasd implements IFas {
             this.knowledge.isForbidden(name2, name1)) {
             String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
                              "forbidden by background knowledge.";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
 
             return true;
         }

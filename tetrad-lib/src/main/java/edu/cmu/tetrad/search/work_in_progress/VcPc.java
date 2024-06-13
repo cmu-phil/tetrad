@@ -338,8 +338,8 @@ public final class VcPc implements IGraphSearch {
         IndependenceTest independenceTest = getIndependenceTest();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + independenceTest + ".");
+            TetradLogger.getInstance().log("Starting VCCPC algorithm");
+            TetradLogger.getInstance().log("Independence test = " + independenceTest + ".");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -545,10 +545,10 @@ public final class VcPc implements IGraphSearch {
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
-            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            TetradLogger.getInstance().log("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().log("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing CPC algorithm.");
         }
 
         return this.graph;
@@ -583,7 +583,7 @@ public final class VcPc implements IGraphSearch {
 
     private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
-        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
+        TetradLogger.getInstance().log("Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");
 
@@ -619,7 +619,7 @@ public final class VcPc implements IGraphSearch {
                         this.graph.setEndpoint(z, y, Endpoint.ARROW);
 
                         String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
 
                     this.colliderTriples.add(new Triple(x, y, z));
@@ -635,7 +635,7 @@ public final class VcPc implements IGraphSearch {
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
+        TetradLogger.getInstance().log("Finishing Collider Orientation.");
     }
 
     /**
@@ -664,7 +664,7 @@ public final class VcPc implements IGraphSearch {
 
         List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
         _nodes.remove(z);
-        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -704,7 +704,7 @@ public final class VcPc implements IGraphSearch {
 
             _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
             _nodes.remove(x);
-            TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+            TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
             _depth = depth;
             if (_depth == -1) {

@@ -168,8 +168,8 @@ public final class Rfci implements IGraphSearch {
         independenceTest.setVerbose(verbose);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting RFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting RFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         setMaxPathLength(this.maxPathLength);
@@ -204,8 +204,8 @@ public final class Rfci implements IGraphSearch {
         long stop2 = MillisecondTimes.timeMillis();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-            TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+            TetradLogger.getInstance().log("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+            TetradLogger.getInstance().log("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
         }
 
         return this.graph;
@@ -271,7 +271,7 @@ public final class Rfci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path length for discriminating paths.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -280,8 +280,7 @@ public final class Rfci implements IGraphSearch {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
 
-        this.maxPathLength = maxPathLength == -1
-                ? Integer.MAX_VALUE : maxPathLength;
+        this.maxPathLength = maxPathLength;
     }
 
     /**

@@ -254,9 +254,9 @@ public class Pcd implements IGraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting PC algorithm");
+            TetradLogger.getInstance().log("Starting PC algorithm");
             String message = "Independence test = " + getIndependenceTest() + ".";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         long startTime = MillisecondTimes.timeMillis();
@@ -294,8 +294,8 @@ public class Pcd implements IGraphSearch {
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing PC Algorithm.");
         }
 
         return this.graph;

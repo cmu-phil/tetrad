@@ -110,7 +110,7 @@ public class SemOptimizerRegression implements SemOptimizer {
         List<Node> nodes = new ArrayList<>(semIm.getVariableNodes());
         nodes.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 
-        TetradLogger.getInstance().forceLogMessage("FML = " + semIm.getScore());
+        TetradLogger.getInstance().log("FML = " + semIm.getScore());
 
         for (Node n : nodes) {
             int i = nodes.indexOf(n);
@@ -143,7 +143,7 @@ public class SemOptimizerRegression implements SemOptimizer {
         }
 
         String message = "FML = " + semIm.getScore();
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**

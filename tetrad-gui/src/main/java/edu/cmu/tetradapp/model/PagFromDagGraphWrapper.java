@@ -64,8 +64,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
         Graph pag = GraphTransforms.dagToPag(graph);
         setGraph(pag);
 
-        TetradLogger.getInstance().forceLogMessage("\nGenerating allow_latent_common_causes from DAG.");
-        TetradLogger.getInstance().forceLogMessage(pag + "");
+        TetradLogger.getInstance().log("\nGenerating allow_latent_common_causes from DAG.");
+        TetradLogger.getInstance().log(pag + "");
     }
 
     /**
