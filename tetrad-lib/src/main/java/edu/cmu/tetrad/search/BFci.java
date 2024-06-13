@@ -281,6 +281,8 @@ public final class BFci implements IGraphSearch {
 
     /**
      * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True if the discriminating path collider rule should be used, false.
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;

@@ -30,7 +30,10 @@ import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
@@ -48,13 +51,13 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private final ArrayList<Node> variables;
     /**
-     * Indicates whether to use Raskutti Uhler feature.
-     */
-    private boolean useRaskuttiUhler;
-    /**
      * The independence test.
      */
     private final IndependenceTest test;
+    /**
+     * Indicates whether to use Raskutti Uhler feature.
+     */
+    private boolean useRaskuttiUhler;
     /**
      * The score.
      */
@@ -121,8 +124,8 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private int maxPathLength = -1;
     /**
-     * The equality threshold, a fraction of abs(BIC) used to determine equality of scores.
-     * This is not used for MSEP tests.
+     * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
+     * tests.
      */
     private double equalityThreshold;
 
@@ -366,13 +369,20 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Sets whether internal randomness is allowed in the search algorithm.
+     *
+     * @param allowInternalRandomness true to allow internal randomness, false otherwise
+     */
     public void setAllowInternalRandomness(boolean allowInternalRandomness) {
         this.allowInternalRandomness = allowInternalRandomness;
     }
 
     /**
-     * The equality threshold, a fraction of abs(BIC) used to determine equality of scores.
-     * This is not used for MSEP tests.
+     * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
+     * tests.
+     *
+     * @param equalityThreshold the equality threshold
      */
     public void setEqualityThreshold(double equalityThreshold) {
         this.equalityThreshold = equalityThreshold;

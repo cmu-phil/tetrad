@@ -481,6 +481,11 @@ public final class FciMax implements IGraphSearch {
         }
     }
 
+    /**
+     * Sets whether the discriminating path collider rule should be applied during the search.
+     *
+     * @param doDiscriminatingPathColliderRule True, if the rule should be applied. False otherwise.
+     */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }

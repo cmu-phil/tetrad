@@ -203,7 +203,7 @@ public class MarkovCheck {
                     Set<Node> z = GraphUtils.asSet(list, _other);
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
-                         continue;
+                        continue;
                     }
 
                     IndependenceFact fact = new IndependenceFact(x, y, z);
@@ -271,10 +271,10 @@ public class MarkovCheck {
     /**
      * Get Local P values with shuffle threshold provided.
      *
-     * @param independenceTest
-     * @param facts
-     * @param shuffleThreshold
-     * @return
+     * @param independenceTest The independence test used for calculating the p-values.
+     * @param facts            The list of independence facts.
+     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @return The list of local p-values.
      */
     public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
         // Shuffle to generate more data from the same graph.
@@ -319,6 +319,7 @@ public class MarkovCheck {
      * @param independenceTest The independence test to be used for calculating p-values.
      * @param graph            The graph containing the nodes for testing.
      * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      * rejected nodes.
      */
@@ -355,12 +356,12 @@ public class MarkovCheck {
      * Confusion statistics were calculated using Adjacency (AdjacencyPrecision, AdjacencyRecall) and Arrowhead
      * (ArrowheadPrecision, ArrowheadRecall)
      *
-     * @param independenceTest
-     * @param estimatedCpdag
-     * @param trueGraph
-     * @param threshold
-     * @param shuffleThreshold
-     * @return
+     * @param independenceTest The independence test to be used for calculating p-values.
+     * @param estimatedCpdag   The estimated CPDAG.
+     * @param trueGraph        The true graph.
+     * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
         // When calling, default reject null as <=0.05
@@ -508,12 +509,12 @@ public class MarkovCheck {
      * Confusion statistics were calculated using Local Graph Precision and Recall (LocalGraphPrecision,
      * LocalGraphRecall).
      *
-     * @param independenceTest
-     * @param estimatedCpdag
-     * @param trueGraph
-     * @param threshold
-     * @param shuffleThreshold
-     * @return
+     * @param independenceTest The independence test to be used for calculating p-values.
+     * @param estimatedCpdag   The estimated CPDAG.
+     * @param trueGraph        The true graph.
+     * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
         // When calling, default reject null as <=0.05
@@ -638,6 +639,15 @@ public class MarkovCheck {
                            " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
 
+    /**
+     * Calculates the precision and recall on the markov blanket graph plot data.
+     *
+     * @param x              the target node
+     * @param estimatedGraph the estimated graph
+     * @param trueGraph      the true graph
+     * @return a list of doubles representing the precision and recall values: [adjacency precision, adjacency recall,
+     * arrowhead precision, arrowhead recall]
+     */
     public List<Double> getPrecisionAndRecallOnMarkovBlanketGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
@@ -677,6 +687,14 @@ public class MarkovCheck {
                            " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
+    /**
+     * This method calculates the precision and recall of a target node's Markov Blanket in the given estimated graph.
+     *
+     * @param x              the target node for which the precision and recall are calculated
+     * @param estimatedGraph the estimated graph
+     * @param trueGraph      the true graph
+     * @return a list of two doubles representing the precision and recall, respectively
+     */
     public List<Double> getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(Node x, Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());

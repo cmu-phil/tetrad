@@ -165,6 +165,14 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         TetradLogger.getInstance().log(message);
     }
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {

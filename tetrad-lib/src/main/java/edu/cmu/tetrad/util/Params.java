@@ -891,7 +891,7 @@ public final class Params {
      */
     public static final String ALLOW_TUCKS = "allowTucks";
     /**
-     * Constant <code>ALLOW_TUCKS="allowTucks
+     * Constant <code>ALLOW_TUCKS="allowTucks"</code>
      */
     public static final String EQUALITY_THRESHOLD = "equalityThreshold";
     /**

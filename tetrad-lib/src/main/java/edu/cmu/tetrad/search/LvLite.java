@@ -129,15 +129,20 @@ public final class LvLite implements IGraphSearch {
      * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
      * possibility that the removal of an edge may allow for further removals or orientations.
      *
-     * @param pag               The original graph.
-     * @param fciOrient         The orientation rules to be applied.
-     * @param best              The list of best nodes.
-     * @param scorer            The scorer used to evaluate edge orientations.
-     * @param equalityThreshold The threshold for equality. (This is not used for Oracle scoring.)
+     * @param pag                 The original graph.
+     * @param fciOrient           The orientation rules to be applied.
+     * @param best                The list of best nodes.
+     * @param scorer              The scorer used to evaluate edge orientations.
+     * @param unshieldedColliders The set of unshielded colliders.
+     * @param cpdag               The CPDAG.
+     * @param knowledge           The knowledge object.
+     * @param allowTucks          A boolean value indicating whether tucks are allowed.
+     * @param equalityThreshold   The threshold for equality. (This is not used for Oracle scoring.)
+     * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
     public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                                        Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                                        boolean allowTucks, boolean verbose, double equalityThreshold) {
+                                                     Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
+                                                     boolean allowTucks, boolean verbose, double equalityThreshold) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -189,9 +194,19 @@ public final class LvLite implements IGraphSearch {
     /**
      * Determines the final orientation of the graph using the given FciOrient object, Graph object, and scorer object.
      *
-     * @param fciOrient The FciOrient object used to determine the final orientation.
-     * @param pag       The Graph object for which the final orientation is determined.
-     * @param scorer    The scorer object used in the score-based discriminating path rule.
+     * @param fciOrient                        The FciOrient object used to determine the final orientation.
+     * @param pag                              The Graph object for which the final orientation is determined.
+     * @param scorer                           The scorer object used in the score-based discriminating path rule.
+     * @param doDiscriminatingPathTailRule     A boolean value indicating whether the discriminating path tail rule
+     *                                         should be applied. If set to true, the discriminating path tail rule will
+     *                                         be applied. If set to false, the discriminating path tail rule will not
+     *                                         be applied.
+     * @param doDiscriminatingPathColliderRule A boolean value indicating whether the discriminating path collider rule
+     *                                         should be applied. If set to true, the discriminating path collider rule
+     *                                         will be applied. If set to false, the discriminating path collider rule
+     *                                         will not be applied.
+     * @param completeRuleSetUsed              A boolean value indicating whether the complete rule set should be used.
+     * @param verbose                          A boolean value indicating whether verbose output should be printed.
      */
     public static void finalOrientation(FciOrient fciOrient, Graph pag, TeyssierScorer scorer, boolean completeRuleSetUsed,
                                         boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule, boolean verbose) {
@@ -864,7 +879,17 @@ public final class LvLite implements IGraphSearch {
         this.equalityThreshold = equalityThreshold;
     }
 
+    /**
+     * Enumeration representing different start options.
+     */
     public enum START_WITH {
-        BOSS, GRASP
+        /**
+         * Start with BOSS.
+         */
+        BOSS,
+        /**
+         * Start with GRaSP.
+         */
+        GRASP
     }
 }

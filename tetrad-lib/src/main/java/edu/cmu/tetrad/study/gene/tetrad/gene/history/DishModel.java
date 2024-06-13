@@ -156,6 +156,12 @@ public class DishModel implements TetradSerializable {
         this.dishBumpStDev = dishBumpStDev;
     }
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -167,6 +173,14 @@ public class DishModel implements TetradSerializable {
         }
     }
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
