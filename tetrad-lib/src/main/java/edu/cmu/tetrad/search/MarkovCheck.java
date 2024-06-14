@@ -413,13 +413,13 @@ public class MarkovCheck {
                     rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                 }
                 if (!Double.isNaN(ar)) {
-                    rejects_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    rejects_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
                 }
                 if (!Double.isNaN(ahp)) {
-                    rejects_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    rejects_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
                 }
                 if (!Double.isNaN(ahr)) {
-                    rejects_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    rejects_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
                 }
             } else {
                 accepts.add(x);
@@ -427,13 +427,13 @@ public class MarkovCheck {
                     accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
                 }
                 if (!Double.isNaN(ar)) {
-                    accepts_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    accepts_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
                 }
                 if (!Double.isNaN(ahp)) {
-                    accepts_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    accepts_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
                 }
                 if (!Double.isNaN(ahr)) {
-                    accepts_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
                 }
             }
         }
