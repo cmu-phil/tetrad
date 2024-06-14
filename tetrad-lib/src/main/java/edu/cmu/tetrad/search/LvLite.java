@@ -108,6 +108,7 @@ public final class LvLite implements IGraphSearch {
      * The algorithm to use to obtain the initial CPDAG.
      */
     private START_WITH startWith = START_WITH.BOSS;
+    private int depth = 25;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -175,6 +176,7 @@ public final class LvLite implements IGraphSearch {
 
                                 scorer.tuck(b, x);
                                 scorer.tuck(x, y);
+//                                scorer.tuck(y, x);
 
                                 double score2 = scorer.score();
 
@@ -412,7 +414,7 @@ public final class LvLite implements IGraphSearch {
      * This is a score-based discriminating path rule.
      * <p>
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     * the dots are a collider path from E to A with each node on the path (except E) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -559,7 +561,7 @@ public final class LvLite implements IGraphSearch {
      * Reminder:
      * <pre>
      *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
      *      <pre>
      *               B
      *              xo           x is either an arrowhead or a circle
@@ -617,8 +619,16 @@ public final class LvLite implements IGraphSearch {
 
         scorer.goToBookmark();
         scorer.tuck(b, c);
-        scorer.tuck(b, e);
-        scorer.tuck(c, e);
+            scorer.tuck(b, e);
+//        scorer.tuck(c, e);
+
+//        scorer.goToBookmark();
+//
+//        for (Node n : path) {
+//            scorer.tuck(e, n);
+//        }
+//
+//        scorer.tuck(b, c);
 
         boolean collider = !scorer.adjacent(e, c);
 
@@ -687,7 +697,7 @@ public final class LvLite implements IGraphSearch {
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(null, score);
 
             grasp.setSeed(-1);
-            grasp.setDepth(25);
+            grasp.setDepth(depth);
             grasp.setUncoveredDepth(1);
             grasp.setNonSingularDepth(1);
             grasp.setOrdered(true);
@@ -877,6 +887,10 @@ public final class LvLite implements IGraphSearch {
         }
 
         this.equalityThreshold = equalityThreshold;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     /**

@@ -129,6 +129,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
         search.setEqualityThreshold(parameters.getDouble(Params.EQUALITY_THRESHOLD));
+        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -200,6 +201,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.ALLOW_TUCKS);
         params.add(Params.EQUALITY_THRESHOLD);
         params.add(Params.LV_LITE_STARTS_WITH);
+        params.add(Params.GRASP_DEPTH);
 
         // General
         params.add(Params.TIME_LAG);

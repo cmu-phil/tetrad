@@ -128,6 +128,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * tests.
      */
     private double equalityThreshold;
+    private int depth = 25;
 
     /**
      * Constructor for a test.
@@ -178,7 +179,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
         grasp.setSeed(seed);
-        grasp.setDepth(25);
+        grasp.setDepth(depth);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(ordered);
@@ -386,5 +387,9 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     public void setEqualityThreshold(double equalityThreshold) {
         this.equalityThreshold = equalityThreshold;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }

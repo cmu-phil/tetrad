@@ -121,6 +121,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
 
         // LV-Lite
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
@@ -184,6 +185,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
+        params.add(Params.GRASP_DEPTH);
 
         // FCI
         params.add(Params.DEPTH);
