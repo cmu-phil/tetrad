@@ -889,6 +889,10 @@ public final class LvLite implements IGraphSearch {
         this.equalityThreshold = equalityThreshold;
     }
 
+    /**
+     * Sets the depth of the GRaSP if it is used.
+     * @param depth The depth of the GRaSP.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
