@@ -6,7 +6,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.simulation.SingleDatasetSimulation;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
@@ -15,17 +14,23 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
@@ -158,7 +163,7 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonSavePAGs", model.getParameters().getBoolean("algcomparisonSavePAGs", false));
         model.getParameters().set("algcomparisonSortByUtility", model.getParameters().getBoolean("algcomparisonSortByUtility", false));
         model.getParameters().set("algcomparisonShowUtilities", model.getParameters().getBoolean("algcomparisonShowUtilities", false));
-        model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", false));
+        model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", true));
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
 
@@ -800,6 +805,175 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
+     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
+     *
+     * @param simulationComboBox The combo box that contains the available simulation options.
+     * @param algorithmComboBox  The combo box that contains the available algorithm options.
+     * @param graphIndexComboBox The combo box to update with the graph indices.
+     * @param resultsDir         The directory where the graph results are stored.
+     */
+    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                           JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+        int savedAlgorithm = model.getSelectedAlgorithm();
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+
+        if (selectedSimulation == null) {
+            algorithmComboBox.removeAllItems();
+            graphIndexComboBox.removeAllItems();
+            return;
+        }
+
+        List<Integer> algorithmIndices = new ArrayList<>();
+
+        if (resultsDir.exists()) {
+            File[] dirs = resultsDir.listFiles();
+
+            if (dirs != null) {
+
+                // The dirs array should contain directories for each simulation/algorithm combination. These
+                // are formatted as, e.g., "5.2" for simulation5 and algorithm 2. We need to iterate through
+                // all of these directories and find the highest simulation number and the highest
+                // algorithm number. The number of graphs will be determined once we have the simulation and
+                // algorithm numbers. These are listed as "graph1.txt", "graph2.txt", etc., in each of these
+                // directories.
+                for (File dir : dirs) {
+                    String name = dir.getName();
+
+                    String[] parts = name.split("\\.");
+
+                    try {
+                        int simulation = Integer.parseInt(parts[0]);
+                        int algorithm = Integer.parseInt(parts[1]);
+
+                        if (simulation == (int) selectedSimulation) {
+                            if (!algorithmIndices.contains(algorithm)) {
+                                algorithmIndices.add(algorithm);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        algorithmComboBox.removeAllItems();
+        Collections.sort(algorithmIndices);
+
+        for (int i : algorithmIndices) {
+            algorithmComboBox.addItem(i);
+        }
+
+        if (savedAlgorithm > 0) {
+            algorithmComboBox.setSelectedItem(savedAlgorithm);
+        }
+
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+    }
+
+    /**
+     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
+     *
+     * @param simulationComboBox The combo box that contains the available simulation options.
+     * @param algorithmComboBox  The combo box that contains the available algorithm options.
+     * @param graphIndexComboBox The combo box to update with the graph indices.
+     * @param resultsDir         The directory where the graph results are stored.
+     */
+    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                       JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+        int savedGraphIndex = model.getSelectedGraphIndex();
+
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+        Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
+
+        if (selectedSimulation == null || selectedAlgorithm == null) {
+            graphIndexComboBox.removeAllItems();
+            return;
+        }
+
+        int simulation = (int) selectedSimulation;
+        int algorithm = (int) selectedAlgorithm;
+        File dir = new File(resultsDir, simulation + "." + algorithm);
+
+        List<Integer> indices = new ArrayList<>();
+
+        if (dir.exists()) {
+            File[] graphs = dir.listFiles();
+
+            if (graphs != null) {
+                for (File graph : graphs) {
+                    String name = graph.getName();
+
+                    if (!name.startsWith("graph.")) {
+                        continue;
+                    }
+
+                    String[] parts = name.split("\\.");
+
+                    int graphIndex;
+
+                    try {
+                        graphIndex = Integer.parseInt(parts[1]);
+
+                        if (!indices.contains(graphIndex)) {
+                            indices.add(graphIndex);
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        graphIndexComboBox.removeAllItems();
+        Collections.sort(indices);
+
+        for (int i : indices) {
+            graphIndexComboBox.addItem(i);
+        }
+
+        if (savedGraphIndex > 0) {
+            graphIndexComboBox.setSelectedItem(savedGraphIndex);
+        }
+    }
+
+    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                     JComboBox<Integer> graphIndexComboBox, File resultsDir,
+                                     GraphWorkbench workbench) {
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+        Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
+        Object selectedGraphIndex = graphIndexComboBox.getSelectedItem();
+
+        if (selectedSimulation == null || selectedAlgorithm == null || selectedGraphIndex == null) {
+            return;
+        }
+
+        File dir = new File(resultsDir, (int) selectedSimulation + "." + (int) selectedAlgorithm);
+        File graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
+
+        if (graphFile.exists()) {
+            Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
+            LayoutUtil.defaultLayout(graph);
+            workbench.setGraph(graph);
+            model.setSelectedGraph(graph);
+
+            model.setSelectedSimulation((int) selectedSimulation);
+            model.setSelectedAlgorithm((int) selectedAlgorithm);
+            model.setSelectedGraphIndex((int) selectedGraphIndex);
+
+            firePropertyChange("modelChanged", null, null);
+        }
+    }
+
+    private void refreshGraphSelectionContent(JTabbedPane tabbedPane) {
+        Box tab = (Box) tabbedPane.getComponentAt(4);
+        tab.removeAll();
+        tab.add(getGraphSelectorBox());
+        tab.revalidate();
+        tab.repaint();
+    }
+
+    /**
      * Retrieves a simulation object based on the provided graph and simulation classes.
      *
      * @param graphClazz      The class of the random graph object.
@@ -1000,6 +1174,49 @@ public class GridSearchEditor extends JPanel {
         return buttonPanel;
     }
 
+//    /**
+//     * Adds an XML tab to the provided JTabbedPane.
+//     *
+//     * @param tabbedPane the JTabbedPane to which the XML tab is added
+//     */
+//    private void addXmlTab(JTabbedPane tabbedPane) {
+//        JPanel xmlPanel = new JPanel();
+//        xmlPanel.setLayout(new BorderLayout());
+//        JTextArea xmlTextArea = new JTextArea();
+//        xmlTextArea.setLineWrap(false);
+//        xmlTextArea.setWrapStyleWord(false);
+//        xmlTextArea.setEditable(false);
+//        xmlTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+//        xmlTextArea.setText(getXmlText());
+//        xmlPanel.add(new JScrollPane(xmlTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+//
+//        JButton loadXml = new JButton("Load XML");
+//        JButton saveXml = new JButton("Save XML");
+//
+//        loadXml.addActionListener(e -> {
+//            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" + " configuration of this tool.");
+//            setSimulationText();
+//            setAlgorithmText();
+//            setTableColumnsText();
+//        });
+//
+//        saveXml.addActionListener(e -> {
+//            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
+//            setSimulationText();
+//            setAlgorithmText();
+//            setTableColumnsText();
+//        });
+//
+//        Box xmlSelectionBox = Box.createHorizontalBox();
+//        xmlSelectionBox.add(Box.createHorizontalGlue());
+//        xmlSelectionBox.add(loadXml);
+//        xmlSelectionBox.add(saveXml);
+//        xmlSelectionBox.add(Box.createHorizontalGlue());
+//
+//        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
+//        tabbedPane.addTab("XML", xmlPanel);
+//    }
+
     /**
      * Adds an algorithm tab to the given JTabbedPane.
      *
@@ -1039,7 +1256,7 @@ public class GridSearchEditor extends JPanel {
             Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
             if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
-                    && allScoreParameters.isEmpty()) {
+                && allScoreParameters.isEmpty()) {
                 JLabel noParamLbl = NO_PARAM_LBL;
                 noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
                 tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
@@ -1208,49 +1425,6 @@ public class GridSearchEditor extends JPanel {
         tabbedPane.addTab("Table Columns", tableColumnsChoice);
     }
 
-//    /**
-//     * Adds an XML tab to the provided JTabbedPane.
-//     *
-//     * @param tabbedPane the JTabbedPane to which the XML tab is added
-//     */
-//    private void addXmlTab(JTabbedPane tabbedPane) {
-//        JPanel xmlPanel = new JPanel();
-//        xmlPanel.setLayout(new BorderLayout());
-//        JTextArea xmlTextArea = new JTextArea();
-//        xmlTextArea.setLineWrap(false);
-//        xmlTextArea.setWrapStyleWord(false);
-//        xmlTextArea.setEditable(false);
-//        xmlTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-//        xmlTextArea.setText(getXmlText());
-//        xmlPanel.add(new JScrollPane(xmlTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-//
-//        JButton loadXml = new JButton("Load XML");
-//        JButton saveXml = new JButton("Save XML");
-//
-//        loadXml.addActionListener(e -> {
-//            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" + " configuration of this tool.");
-//            setSimulationText();
-//            setAlgorithmText();
-//            setTableColumnsText();
-//        });
-//
-//        saveXml.addActionListener(e -> {
-//            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
-//            setSimulationText();
-//            setAlgorithmText();
-//            setTableColumnsText();
-//        });
-//
-//        Box xmlSelectionBox = Box.createHorizontalBox();
-//        xmlSelectionBox.add(Box.createHorizontalGlue());
-//        xmlSelectionBox.add(loadXml);
-//        xmlSelectionBox.add(saveXml);
-//        xmlSelectionBox.add(Box.createHorizontalGlue());
-//
-//        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
-//        tabbedPane.addTab("XML", xmlPanel);
-//    }
-
     /**
      * Adds a comparison tab to the given JTabbedPane.
      *
@@ -1387,6 +1561,16 @@ public class GridSearchEditor extends JPanel {
         comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         comparisonTabbedPane.addTab("Comparison", comparisonScroll);
         comparisonTabbedPane.addTab("Verbose Output", new JScrollPane(verboseOutputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+//        comparisonTabbedPane.addTab("Graphs", getGraphSelectorBox());
+//
+//        comparisonTabbedPane.addChangeListener(new ChangeListener() {
+//            public void stateChanged(ChangeEvent e) {
+//                JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
+//                refreshGraphSelectionContent(sourceTabbedPane);
+//            }
+//        });
+
+
 
         JPanel comparisonPanel = new JPanel();
         comparisonPanel.setLayout(new BorderLayout());
@@ -1395,6 +1579,128 @@ public class GridSearchEditor extends JPanel {
         comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Comparison", comparisonPanel);
+
+
+        tabbedPane.addTab("View Graphs", getGraphSelectorBox());
+
+        tabbedPane.addChangeListener(e -> {
+            JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
+            refreshGraphSelectionContent(sourceTabbedPane);
+        });
+    }
+
+    /**
+     * Returns a Box component with selectors for simulation, algorithm, and graph index.
+     *
+     * @return a Box component with selectors for simulation, algorithm, and graph index
+     */
+    private @NotNull Box getGraphSelectorBox() {
+        String resultsPath = model.getResultsPath();
+
+        File resultsDir = new File(resultsPath, "results");
+
+        List<Integer> simulationIndices = new ArrayList<>();
+
+        if (resultsDir.exists()) {
+            File[] dirs = resultsDir.listFiles();
+
+            if (dirs != null) {
+
+                // The dirs array should contain directories for each simulation/algorithm combination. These
+                // are formatted as, e.g., "5.2" for simulation5 and algorithm 2. We need to iterate through
+                // all of these directories and find the highest simulation number and the highest
+                // algorithm number. The number of graphs will be determined once we have the simulation and
+                // algorithm numbers. These are listed as "graph1.txt", "graph2.txt", etc., in each of these
+                // directories.
+                for (File dir : dirs) {
+                    String name = dir.getName();
+                    String[] parts = name.split("\\.");
+
+                    int simulation;
+                    int algorithm;
+
+                    try {
+                        simulation = Integer.parseInt(parts[0]);
+                        algorithm = Integer.parseInt(parts[1]);
+
+                        if (!simulationIndices.contains(simulation)) {
+                            simulationIndices.add(simulation);
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        Collections.sort(simulationIndices);
+
+        Box graphSelectorBox = Box.createVerticalBox();
+        Box instructions = Box.createHorizontalBox();
+        instructions.add(new JLabel("Select the simulation, algorithm, and graph index to view, from the comparison table:"));
+        instructions.add(Box.createHorizontalGlue());
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+        graphSelectorBox.add(instructions);
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+        Box selectors = Box.createHorizontalBox();
+        JComboBox<Integer> simulationComboBox = new JComboBox<>();
+        JComboBox<Integer> algorithmComboBox = new JComboBox<>();
+        JComboBox<Integer> graphIndexComboBox = new JComboBox<>();
+
+        for (int i : simulationIndices) {
+            simulationComboBox.addItem(i);
+        }
+
+        if (model.getSelectedSimulation() > 0) {
+            simulationComboBox.setSelectedItem(model.getSelectedSimulation());
+        }
+
+        updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+
+        if (model.getSelectedGraphIndex() > 0) {
+            graphIndexComboBox.setSelectedItem(model.getSelectedGraphIndex());
+        }
+
+        selectors.add(new JLabel("Simulation:"));
+        selectors.add(simulationComboBox);
+
+        selectors.add(new JLabel("Algorithm:"));
+        selectors.add(algorithmComboBox);
+
+        selectors.add(new JLabel("Graph Index:"));
+        selectors.add(graphIndexComboBox);
+
+        graphSelectorBox.add(selectors);
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+
+        GraphWorkbench workbench = new GraphWorkbench();
+        workbench.setGraph(new EdgeListGraph());
+
+        graphSelectorBox.add(new JScrollPane(workbench));
+
+        // Add listeners to the algorithm and simulation combo boxes to update the graph index combo box
+        // when the algorithm or simulation is changed.
+        simulationComboBox.addActionListener(e -> {
+            updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        algorithmComboBox.addActionListener(e -> {
+            updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        graphIndexComboBox.addActionListener(e -> {
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+
+        return graphSelectorBox;
     }
 
     @NotNull
@@ -1961,7 +2267,7 @@ public class GridSearchEditor extends JPanel {
                     GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
 
                     if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER
-                            && myTableColumn.isSetByUser()) {
+                        && myTableColumn.isSetByUser()) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -1973,7 +2279,7 @@ public class GridSearchEditor extends JPanel {
                     List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
 
                     if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
-                            && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
+                        && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -2271,7 +2577,7 @@ public class GridSearchEditor extends JPanel {
      */
     private void setComparisonText() {
         if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty()
-                || model.getSelectedTableColumns().isEmpty()) {
+            || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
                             ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **

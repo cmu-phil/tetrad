@@ -26,7 +26,7 @@ public class ImpliedArrowOrientationRatioEst implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "IAOR-Est";
+        return "IAOR";
     }
 
     /**A

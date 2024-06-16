@@ -41,6 +41,7 @@ import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -66,7 +67,7 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  */
-public class GridSearchModel implements SessionModel {
+public class GridSearchModel implements SessionModel, GraphSource {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
@@ -138,6 +139,10 @@ public class GridSearchModel implements SessionModel {
      * and can be used to add additional files to the comparison results.
      */
     private String resultsPath = null;
+    private Graph selectedGraph = null;
+    private int selectedSimulation = 0;
+    private int selectedAlgorithm = 0;
+    private int selectedGraphIndex = 0;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -403,7 +408,7 @@ public class GridSearchModel implements SessionModel {
      *
      * @param localOut The output stream to write the comparison results.
      */
-    public void runComparison(java.io.PrintStream localOut) {
+    public void runComparison(PrintStream localOut) {
         initializeIfNull();
 
         Simulations simulations = new Simulations();
@@ -578,6 +583,16 @@ public class GridSearchModel implements SessionModel {
     public List<Class<? extends Statistic>> getStatisticsClasses() {
         initializeIfNull();
         return new ArrayList<>(statisticsClasses);
+    }
+
+    /**
+     * Returns the selected graph. This is set by the editor when the user selects a graph.
+     *
+     * @return The selected graph.
+     */
+    @Override
+    public Graph getGraph() {
+        return selectedGraph == null ? new EdgeListGraph() : selectedGraph;
     }
 
     /**
@@ -856,8 +871,8 @@ public class GridSearchModel implements SessionModel {
     }
 
     @NotNull
-    public List<GridSearchModel.MyTableColumn> getAllTableColumns() {
-        List<GridSearchModel.MyTableColumn> allTableColumns = new ArrayList<>();
+    public List<MyTableColumn> getAllTableColumns() {
+        List<MyTableColumn> allTableColumns = new ArrayList<>();
 
         List<Simulation> simulations = getSelectedSimulations().getSimulations();
         List<AlgorithmSpec> algorithms = getSelectedAlgorithms();
@@ -866,7 +881,7 @@ public class GridSearchModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
+            MyTableColumn column = new MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -875,7 +890,7 @@ public class GridSearchModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
+            MyTableColumn column = new MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -884,7 +899,7 @@ public class GridSearchModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
+            MyTableColumn column = new MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -893,7 +908,7 @@ public class GridSearchModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
+            MyTableColumn column = new MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -902,7 +917,7 @@ public class GridSearchModel implements SessionModel {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             String shortDescriptiom = paramDescription.getShortDescription();
             String description = paramDescription.getLongDescription();
-            GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(shortDescriptiom, description, name);
+            MyTableColumn column = new MyTableColumn(shortDescriptiom, description, name);
             column.setSetByUser(paramSetByUser(name));
             allTableColumns.add(column);
         }
@@ -923,7 +938,7 @@ public class GridSearchModel implements SessionModel {
 
                 if (hasNoArgConstructor) {
                     Statistic statistic = statisticClass.getConstructor().newInstance();
-                    GridSearchModel.MyTableColumn column = new GridSearchModel.MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                    MyTableColumn column = new MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
@@ -1023,7 +1038,8 @@ public class GridSearchModel implements SessionModel {
     /**
      * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
      * option in the user interface.
-     */ /**
+     */
+    /**
      * The user may supply a graph, which will be given as an option in the UI.
      */
     public Graph getSuppliedGraph() {
@@ -1070,8 +1086,8 @@ public class GridSearchModel implements SessionModel {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -1112,16 +1128,44 @@ public class GridSearchModel implements SessionModel {
         return suppliedData;
     }
 
-    public void setResultsPath(String resultsPath) {
-        this.resultsPath = resultsPath;
-    }
-
     /**
      * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
      * and can be used to add additional files to the comparison results.
      */
     public String getResultsPath() {
         return resultsPath;
+    }
+
+    public void setResultsPath(String resultsPath) {
+        this.resultsPath = resultsPath;
+    }
+
+    public void setSelectedGraph(Graph graph) {
+        this.selectedGraph = graph;
+    }
+
+    public int getSelectedSimulation() {
+        return selectedSimulation;
+    }
+
+    public void setSelectedSimulation(int selectedSimulation) {
+        this.selectedSimulation = selectedSimulation;
+    }
+
+    public int getSelectedAlgorithm() {
+        return selectedAlgorithm;
+    }
+
+    public void setSelectedAlgorithm(int selectedAlgorithm) {
+        this.selectedAlgorithm = selectedAlgorithm;
+    }
+
+    public int getSelectedGraphIndex() {
+        return selectedGraphIndex;
+    }
+
+    public void setSelectedGraphIndex(int selectedGraphIndex) {
+        this.selectedGraphIndex = selectedGraphIndex;
     }
 
     /**
