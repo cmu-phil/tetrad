@@ -49,8 +49,6 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
      */
     private Graph resultGraph = new EdgeListGraph();
 
-    private double[][] data;
-
     /**
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
@@ -67,9 +65,10 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
             throw new IllegalArgumentException("FaskForbiddenGraphModel only works with continuous data.");
         }
 
-        data = dataSet.getDoubleData().transpose().toArray();
+        double[][] data = dataSet.getDoubleData().transpose().toArray();
 
         Knowledge knowledge = getKnowledge();
+
         if (knowledge == null) {
             return;
         }

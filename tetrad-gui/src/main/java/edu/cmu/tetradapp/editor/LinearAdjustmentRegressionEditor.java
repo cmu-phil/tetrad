@@ -555,6 +555,16 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
         return field;
     }
 
+    /**
+     * Returns a ListLongTextField component with the specified parameters.
+     *
+     * @param parameter      the name of the parameter
+     * @param parameters     the Parameters object containing the parameter values
+     * @param defaultValues  the default values for the component
+     * @param lowerBound     the lower bound for the values
+     * @param upperBound     the upper bound for the values
+     * @return a ListLongTextField component with the specified parameters
+     */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
                                                          Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);

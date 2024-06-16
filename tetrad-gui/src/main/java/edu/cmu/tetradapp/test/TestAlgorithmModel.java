@@ -7,7 +7,11 @@ import java.util.List;
 
 public class TestAlgorithmModel {
 
-
+    /**
+     * Main method.
+     *
+     * @param args the arguments.
+     */
     public static void main(String[] args) {
         new TestAlgorithmModel().test1();
     }

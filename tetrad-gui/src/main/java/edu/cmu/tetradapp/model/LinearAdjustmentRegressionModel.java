@@ -236,6 +236,8 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
 
     /**
      * The parameters.
+     *
+     * @return the parameters.
      */
     public Parameters getParameters() {
         return parameters;

@@ -407,6 +407,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return field;
     }
 
+    /**
+     * Creates a ListLongTextField with the specified parameters.
+     *
+     * @param parameter     The parameter name to be set in the Parameters object.
+     * @param parameters    The Parameters object to set the parameter value.
+     * @param defaultValues The default values for the ListLongTextField.
+     * @param lowerBound    The lower bound for valid values.
+     * @param upperBound    The upper bound for valid values.
+     * @return The created ListLongTextField.
+     */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
                                                          Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);

@@ -51,6 +51,9 @@ public class ParameterTab extends JPanel {
             GraphTypes.RANDOM_ONE_FACTOR_MIM,
             GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
+    /**
+     * The model type items.
+     */
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,

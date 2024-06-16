@@ -78,8 +78,17 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * The result path for the GridSearchModel.
      */
     private final String resultsRoot = System.getProperty("user.home");
+    /**
+     * The knowledge to be used for the GridSearchModel.
+     */
     private final Knowledge knowledge;
+    /**
+     * The data to be used for the GridSearchModel.
+     */
     private DataSet suppliedData = null;
+    /**
+     * The graph to be used for the GridSearchModel.
+     */
     private Graph suppliedGraph = null;
     /**
      * The list of statistic names.
@@ -139,9 +148,40 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * and can be used to add additional files to the comparison results.
      */
     private String resultsPath = null;
+    /**
+     * This variable represents the currently selected graph.
+     */
     private Graph selectedGraph = null;
+    /**
+     * The selectedSimulation variable represents the index of the currently selected simulation.
+     * This variable is used to keep track of the selected simulation in a collection of simulations.
+     * The index is zero-based, where 0 represents the first simulation.
+     *
+     * By default, the value of selectedSimulation is 0, indicating that the first simulation is selected.
+     *
+     * The value of selectedSimulation can be modified externally to change the selected simulation.
+     *
+     * @see Simulation
+     */
     private int selectedSimulation = 0;
+    /**
+     * The selectedAlgorithm variable holds the index of the currently selected algorithm.
+     *
+     * The value of selectedAlgorithm represents the index of the algorithm in a collection
+     * or an array of algorithms.
+     *
+     * The default value of selectedAlgorithm is 0, indicating that the first algorithm in
+     * the collection or array is selected by default.
+     *
+     * The value of selectedAlgorithm can be changed to select a different algorithm by
+     * assigning a different index to it.
+     *
+     * @since 1.0
+     */
     private int selectedAlgorithm = 0;
+    /**
+     * The index of the selected graph.
+     */
     private int selectedGraphIndex = 0;
 
     /**
@@ -1194,11 +1234,29 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public static class MyTableColumn implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
+        /**
+         * The name of the column.
+         */
         private final String columnName;
+        /**
+         * The description of the column.
+         */
         private final String description;
+        /**
+         * The statistic class.
+         */
         private final Class<? extends Statistic> statistic;
+        /**
+         * The parameter name.
+         */
         private final String parameter;
+        /**
+         * The type of the column.
+         */
         private final ColumnType type;
+        /**
+         * A boolean that indicates whether the column was set by the user.
+         */
         private boolean setByUser = false;
 
         public MyTableColumn(String name, String description, Class<? extends Statistic> statistic) {
@@ -1271,11 +1329,31 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public static class AlgorithmSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
+        /**
+         * The name of the algorithm.
+         */
         private final String name;
+        /**
+         * The algorithm model.
+         */
         private final AlgorithmModel algorithm;
+        /**
+         * The test of independence.
+         */
         private final AnnotatedClass<TestOfIndependence> test;
+        /**
+         * The score.
+         */
         private final AnnotatedClass<Score> score;
 
+        /**
+         * Constructs a new AlgorithmSpec object with the specified name, algorithm model, test of independence, and
+         *
+         * @param name      The name of the algorithm.
+         * @param algorithm The algorithm model.
+         * @param test      The test of independence.
+         * @param score     The score.
+         */
         public AlgorithmSpec(String name, AlgorithmModel algorithm,
                              AnnotatedClass<TestOfIndependence> test, AnnotatedClass<Score> score) {
             this.name = name;
@@ -1347,8 +1425,17 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public static class SimulationSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
+        /**
+         * The name of the simulation.
+         */
         private final String name;
+        /**
+         * The class of the graph.
+         */
         private final Class<? extends RandomGraph> graphClass;
+        /**
+         * The class of the simulation.
+         */
         private final Class<? extends Simulation> simulationClass;
 
         public SimulationSpec(String name, Class<? extends RandomGraph> graph,
