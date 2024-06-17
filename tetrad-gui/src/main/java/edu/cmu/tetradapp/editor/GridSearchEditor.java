@@ -85,54 +85,54 @@ public class GridSearchEditor extends JPanel {
     /**
      * JTextArea used for displaying verbose output.
      */
-    private JTextArea verboseOutputTextArea;
+    private transient JTextArea verboseOutputTextArea;
     /**
      * JTextArea used for displaying simulation choice information.
      */
-    private JTextArea simulationChoiceTextArea;
+    private transient JTextArea simulationChoiceTextArea;
     /**
      * The TextArea component used for displaying algorithm choices.
      */
-    private JTextArea algorithmChoiceTextArea;
+    private transient JTextArea algorithmChoiceTextArea;
     /**
      * JTextArea used for displaying table column choices.
      */
-    private JTextArea tableColumnsChoiceTextArea;
+    private transient JTextArea tableColumnsChoiceTextArea;
     /**
      * JTextArea used for displaying comparison results.
      */
-    private JTextArea comparisonTextArea;
+    private transient JTextArea comparisonTextArea;
     /**
      * JTextArea used for displaying help choice information.
      */
-    private JTextArea helpChoiceTextArea;
+    private transient JTextArea helpChoiceTextArea;
     /**
      * Button used to add a simulation.
      */
-    private JButton addSimulation;
+    private transient JButton addSimulation;
     /**
      * Button used to add an algorithm.
      */
-    private JButton addAlgorithm;
+    private transient JButton addAlgorithm;
     /**
      * Button used to add table columns.
      */
-    private JButton addTableColumns;
+    private transient JButton addTableColumns;
     /**
      * Represents a drop-down menu for selecting an algorithm.
      */
-    private JComboBox<Object> algorithmDropdown;
+    private transient JComboBox<Object> algorithmDropdown;
     /**
      * Private variable representing a JScrollPane used for comparing variables.
      */
-    private JScrollPane comparisonScroll;
+    private transient JScrollPane comparisonScroll;
     /**
      * The comparisonTabbedPane represents a tabbed pane component in the user interface for displaying comparison
      * related data and functionality.
      * <p>
      * It is a private instance variable of type JTabbedPane.
      */
-    private JTabbedPane comparisonTabbedPane;
+    private transient JTabbedPane comparisonTabbedPane;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
@@ -1369,6 +1369,21 @@ public class GridSearchEditor extends JPanel {
             setComparisonText();
         });
 
+        tableColumnsSelectionBox.add(addTableColumns);
+        tableColumnsSelectionBox.add(removeLastTableColumn);
+//        tableColumnsSelectionBox.add(createEditutilitiesButton());
+        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
+
+        JPanel tableColumnsChoice = new JPanel();
+        tableColumnsChoice.setLayout(new BorderLayout());
+        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
+
+        tabbedPane.addTab("Table Columns", tableColumnsChoice);
+    }
+
+    private @NotNull JButton createEditutilitiesButton() {
         JButton editUtilities = new JButton("Edit Utilities");
         editUtilities.addActionListener(e -> {
             List<GridSearchModel.MyTableColumn> columns = model.getSelectedTableColumns();
@@ -1410,19 +1425,7 @@ public class GridSearchEditor extends JPanel {
             dialog.setLocationRelativeTo(GridSearchEditor.this); // Center dialog relative to the parent component
             dialog.setVisible(true);
         });
-
-        tableColumnsSelectionBox.add(addTableColumns);
-        tableColumnsSelectionBox.add(removeLastTableColumn);
-        tableColumnsSelectionBox.add(editUtilities);
-        tableColumnsSelectionBox.add(Box.createHorizontalGlue());
-
-        JPanel tableColumnsChoice = new JPanel();
-        tableColumnsChoice.setLayout(new BorderLayout());
-        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
-
-        tabbedPane.addTab("Table Columns", tableColumnsChoice);
+        return editUtilities;
     }
 
     /**
@@ -1555,6 +1558,7 @@ public class GridSearchEditor extends JPanel {
         comparisonSelectionBox.add(Box.createHorizontalGlue());
         comparisonSelectionBox.add(runComparison);
         comparisonSelectionBox.add(setComparisonParameters);
+        comparisonSelectionBox.add(createEditutilitiesButton());
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
         comparisonTabbedPane = new JTabbedPane();
