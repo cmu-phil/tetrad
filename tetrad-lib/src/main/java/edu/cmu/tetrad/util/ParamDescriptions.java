@@ -120,9 +120,6 @@ public final class ParamDescriptions {
                 }
             }
         }
-
-        // add parameters not in documentation
-        this.map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
     }
 
     /**

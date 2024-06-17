@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.util;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serial;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -276,6 +273,15 @@ public class Parameters implements TetradSerializable {
      * @param n    A list of values for the parameter.
      */
     public void set(String name, Object... n) {
+
+        // Check if the values are serializable, so that a Parameters object can be saved as
+        // a field.
+        for (Object o : n) {
+            if (!(o instanceof Serializable)) {
+                throw new IllegalArgumentException("Parameter '" + name + "' is being set to an array containing a non-serizable value.");
+            }
+        }
+
         this.parameters.put(name, n);
     }
 
@@ -312,7 +318,12 @@ public class Parameters implements TetradSerializable {
     public void set(String name, Object value) {
         if (value == null) {
             return;
-//            throw new IllegalArgumentException("Parameter '" + name + "' has no default value.");
+        }
+
+        // Check if the values are serializable, so that a Parameters object can be saved as
+        // a field.
+        if (!(value instanceof Serializable)) {
+            throw new IllegalArgumentException("Parameter '" + name + "' is being assigned a value that is not serializable.");
         }
 
         this.parameters.put(name, new Object[]{value});

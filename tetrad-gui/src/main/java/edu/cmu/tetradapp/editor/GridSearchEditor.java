@@ -1725,8 +1725,7 @@ public class GridSearchEditor extends JPanel {
 
                     TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
                     PrintStream printStream = new PrintStream(baos2);
-
-                    model.getParameters().set("printStream", printStream);
+                    model.getVerboseOut(printStream);
 
                     TetradLogger.getInstance().addOutputStream(baos2);
 
@@ -1782,9 +1781,6 @@ public class GridSearchEditor extends JPanel {
                             System.out.println("Scrolling operation failed.");
                         }
                     });
-
-                    // Remove the printStream parameter from the parameters object to avoid serialization issues.
-                    model.getParameters().remove("printStream");
 
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
 

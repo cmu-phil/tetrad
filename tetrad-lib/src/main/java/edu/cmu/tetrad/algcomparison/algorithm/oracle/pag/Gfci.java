@@ -22,7 +22,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,12 +104,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream printStream) {
-            search.setOut(printStream);
-        }
-
+        search.setOut(System.out);
         return search.search();
     }
 

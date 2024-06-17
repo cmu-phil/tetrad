@@ -147,6 +147,8 @@ public class Comparison implements TetradSerializable {
      */
     private boolean setAlgorithmKnowledge = false;
 
+    private transient PrintStream verboseOut;
+
     /**
      * Initializes a new instance of the Comparison class.
      * <p>
@@ -330,7 +332,7 @@ public class Comparison implements TetradSerializable {
 
         setParallelism(parallelism);
 
-        PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
+        PrintStream stdout = System.out;
 
         // Create output file.
         try {
@@ -716,7 +718,7 @@ public class Comparison implements TetradSerializable {
 
                 }
 
-                PrintStream out = new PrintStream(Files.newOutputStream(new File(subdir, "parameters.txt").toPath()));
+                PrintStream out = verboseOut;
                 out.println(simulationWrapper.getDescription());
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
@@ -1867,6 +1869,10 @@ public class Comparison implements TetradSerializable {
      */
     public void setSetAlgorithmKnowledge(boolean setAlgorithmKnowledge) {
         this.setAlgorithmKnowledge = setAlgorithmKnowledge;
+    }
+
+    public void setVerboseOut(PrintStream verboseOut) {
+        this.verboseOut = verboseOut;
     }
 
     /**

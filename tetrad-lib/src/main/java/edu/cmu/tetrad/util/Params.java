@@ -656,12 +656,6 @@ public final class Params {
      * Constant <code>MEEK_VERBOSE="meekVerbose"</code>
      */
     public static final String MEEK_VERBOSE = "meekVerbose";
-
-    // System prameters that are not supposed to put in the HTML manual documentation
-    /**
-     * Constant <code>PRINT_STREAM="printStream"</code>
-     */
-    public static final String PRINT_STREAM = "printStream";
     /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */

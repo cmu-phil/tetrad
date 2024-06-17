@@ -114,13 +114,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathCollideRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-
-        if (obj instanceof PrintStream) {
-            search.setOut((PrintStream) obj);
-        }
-
+        search.setOut(System.out);
         return search.search();
     }
 

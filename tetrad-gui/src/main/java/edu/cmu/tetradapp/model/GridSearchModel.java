@@ -183,6 +183,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * The index of the selected graph.
      */
     private int selectedGraphIndex = 0;
+    /**
+     * Verbose output is sent here.
+     */
+    private PrintStream verboseOut;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -472,6 +476,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
         comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
+        comparison.setVerboseOut(verboseOut);
         comparison.setKnowledge(knowledge);
 
         String string = parameters.getString("algcomparisonGraphType", "DAG");
@@ -1206,6 +1211,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     public void setSelectedGraphIndex(int selectedGraphIndex) {
         this.selectedGraphIndex = selectedGraphIndex;
+    }
+
+    public void getVerboseOut(PrintStream printStream) {
+        this.verboseOut = printStream;
     }
 
     /**

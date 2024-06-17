@@ -16,7 +16,6 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,12 +76,7 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
-            search.setOut(ps);
-        }
-
+        search.setOut(System.out);
         return search.search();
     }
 

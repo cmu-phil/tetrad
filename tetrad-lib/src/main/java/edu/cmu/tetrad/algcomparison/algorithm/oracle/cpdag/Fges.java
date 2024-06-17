@@ -22,7 +22,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,12 +115,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
-            search.setOut(ps);
-        }
-
+        search.setOut(System.out);
         graph = search.search();
 
         LogUtilsSearch.stampWithScore(graph, myScore);
