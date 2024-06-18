@@ -139,6 +139,10 @@ public class Comparison implements TetradSerializable {
      */
     private transient PrintStream localOut = null;
     /**
+     * The second output stream for local output. Could be null.
+     */
+    private transient PrintStream localOut2 = null;
+    /**
      * Represents a variable for storing knowledge.
      */
     private Knowledge knowledge = null;
@@ -146,8 +150,6 @@ public class Comparison implements TetradSerializable {
      * True if knowledge should be set on the algorithms (if supplied).
      */
     private boolean setAlgorithmKnowledge = false;
-
-    private transient PrintStream verboseOut;
 
     /**
      * Initializes a new instance of the Comparison class.
@@ -311,6 +313,10 @@ public class Comparison implements TetradSerializable {
         compareFromSimulations(resultsPath, simulations, outputFileName, System.out, algorithms, statistics, parameters);
     }
 
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
+    }
+
     /**
      * Compares the results of different simulations and algorithms.
      *
@@ -322,7 +328,7 @@ public class Comparison implements TetradSerializable {
      * @param statistics     the statistics object containing the statistics data
      * @param parameters     the parameters object containing the parameter data
      */
-    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut, PrintStream localOut2,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
 
@@ -330,9 +336,13 @@ public class Comparison implements TetradSerializable {
             this.localOut = localOut;
         }
 
+        if (localOut2 != null) {
+            this.localOut2 = localOut2;
+        }
+
         setParallelism(parallelism);
 
-        PrintStream stdout = System.out;
+        PrintStream stdout = localOut2 != null ? localOut2 : System.out;
 
         // Create output file.
         try {
@@ -718,7 +728,7 @@ public class Comparison implements TetradSerializable {
 
                 }
 
-                PrintStream out = verboseOut;
+                PrintStream out = new PrintStream(Files.newOutputStream(new File(subdir, "parameters.txt").toPath()));
                 out.println(simulationWrapper.getDescription());
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
@@ -1869,10 +1879,6 @@ public class Comparison implements TetradSerializable {
      */
     public void setSetAlgorithmKnowledge(boolean setAlgorithmKnowledge) {
         this.setAlgorithmKnowledge = setAlgorithmKnowledge;
-    }
-
-    public void setVerboseOut(PrintStream verboseOut) {
-        this.verboseOut = verboseOut;
     }
 
     /**

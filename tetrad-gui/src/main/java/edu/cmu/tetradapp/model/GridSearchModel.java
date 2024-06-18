@@ -75,10 +75,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private final Parameters parameters;
     /**
-     * The result path for the GridSearchModel.
-     */
-    private final String resultsRoot = System.getProperty("user.home");
-    /**
      * The knowledge to be used for the GridSearchModel.
      */
     private final Knowledge knowledge;
@@ -114,23 +110,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * The list of algorithm names.
      */
     private List<String> algNames;
-//    /**
-//     * The selected parameters for the GridSearchModel.
-//     */
-//    private List<String> selectedParameters;
-//    /**
-//     * The list of selected simulations in the GridSearchModel. This list holds Simulation objects, which are
-//     * implementations of the Simulation interface.
-//     */
-//    private LinkedList<SimulationSpec> selectedSimulations;
-//    /**
-//     * The selected algorithms for the GridSearchModel.
-//     */
-//    private LinkedList<AlgorithmSpec> selectedAlgorithms;
-//    /**
-//     * The selected table columns for the GridSearchModel.
-//     */
-//    private LinkedList<MyTableColumn> selectedTableColumns;
     /**
      * The last comparison text displayed.
      */
@@ -186,7 +165,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * Verbose output is sent here.
      */
-    private PrintStream verboseOut;
+    private transient PrintStream verboseOut;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -450,9 +429,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * Runs the comparison of simulations, algorithms, and statistics.
      *
-     * @param localOut The output stream to write the comparison results.
+     * @param ps1 A print stream to write the verbose output.
+     * @param ps2 A print stream to write the verbose output.
      */
-    public void runComparison(PrintStream localOut) {
+    public void runComparison(PrintStream ps1, PrintStream ps2) {
         initializeIfNull();
 
         Simulations simulations = new Simulations();
@@ -476,7 +456,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
         comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
         comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
-        comparison.setVerboseOut(verboseOut);
         comparison.setKnowledge(knowledge);
 
         String string = parameters.getString("algcomparisonGraphType", "DAG");
@@ -492,7 +471,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         String resultsPath;
 
         for (int i = 1; ; i++) {
-            String pathname = resultsRoot + "/comparison-results/comparison-" + i;
+            String pathname = System.getProperty("user.home") + "/comparison-results/comparison-" + i;
             File resultsDir = new File(pathname);
             if (!resultsDir.exists()) {
                 if (!resultsDir.mkdirs()) {
@@ -506,7 +485,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
         String outputFileName = "Comparison.txt";
-        comparison.compareFromSimulations(resultsPath, simulations, outputFileName, localOut,
+        comparison.compareFromSimulations(resultsPath, simulations, outputFileName, ps1, ps2,
                 algorithms, getSelectedStatistics(), new Parameters(parameters));
 
         this.resultsPath = resultsPath;
@@ -1083,9 +1062,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
      * option in the user interface.
-     */
-    /**
-     * The user may supply a graph, which will be given as an option in the UI.
      */
     public Graph getSuppliedGraph() {
         return suppliedGraph;

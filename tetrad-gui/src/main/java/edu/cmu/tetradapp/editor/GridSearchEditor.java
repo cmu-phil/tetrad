@@ -1719,18 +1719,17 @@ public class GridSearchEditor extends JPanel {
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(1));
 
                     ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-                    java.io.PrintStream ps = new java.io.PrintStream(baos);
+                    java.io.PrintStream ps1 = new java.io.PrintStream(baos);
 
                     verboseOutputTextArea.setText("");
 
                     TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
-                    PrintStream printStream = new PrintStream(baos2);
-                    model.getVerboseOut(printStream);
+                    PrintStream ps2 = new PrintStream(baos2);
 
                     TetradLogger.getInstance().addOutputStream(baos2);
 
                     try {
-                        model.runComparison(ps);
+                        model.runComparison(ps1, ps2);
 
                         String resultsPath = model.getResultsPath();
 
@@ -1769,7 +1768,7 @@ public class GridSearchEditor extends JPanel {
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }
-                    ps.flush();
+                    ps1.flush();
                     comparisonTextArea.setText(baos.toString());
 
                     TetradLogger.getInstance().removeOutputStream(baos2);
