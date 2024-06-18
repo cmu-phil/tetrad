@@ -394,6 +394,7 @@ public class MarkovCheck {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
             Double ap = ap_ar_ahp_ahr.get(0);
@@ -436,6 +437,7 @@ public class MarkovCheck {
                     accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
                 }
             }
+            System.out.println("-----------------------------");
         }
         accepts_rejects.add(accepts);
         accepts_rejects.add(rejects);
@@ -540,6 +542,7 @@ public class MarkovCheck {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.get(0);
@@ -549,6 +552,7 @@ public class MarkovCheck {
             List<Double> flatList = shuffledlocalPValues.stream()
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
+            System.out.println("# p values feed into ADTest: " + flatList.size() );
             Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
             // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
             if (ADTestPValue <= threshold) {
@@ -568,6 +572,7 @@ public class MarkovCheck {
                     accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
                 }
             }
+            System.out.println("-----------------------------");
         }
         accepts_rejects.add(accepts);
         accepts_rejects.add(rejects);

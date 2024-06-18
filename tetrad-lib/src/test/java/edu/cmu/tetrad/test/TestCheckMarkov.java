@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -113,26 +114,55 @@ public class TestCheckMarkov {
 
     @Test
     public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
-//       TODO VBC: Also check different dense graph.
-        Graph trueGraph = RandomGraph.randomDag(20, 0, 80, 100, 100, 100, false);
+        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(10000, false);
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
 
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag);
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
+        System.out.println("whole_ap: " + whole_ap);
+        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ahp: " + whole_ahp);
+        System.out.println("whole_ahr: " + whole_ahr);
+        System.out.println("whole_lgp: " + whole_lgp);
+        System.out.println("whole_lgr: " + whole_lgr);
+    }
+
+    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag) {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-//        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.5);
+        // Using Adj, AH confusion matrix
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 1.0);
+        List<Node> accepts = accepts_rejects.get(0);
+        List<Node> rejects = accepts_rejects.get(1);
+        System.out.println("Accepts size: " + accepts.size());
+        System.out.println("Rejects size: " + rejects.size());
+    }
+
+    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag) {
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
+        // Using Local Graph (LG) confusion matrix
+        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(fisherZTest, estimatedCpdag, trueGraph, 0.05, 1.0);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -406,32 +436,6 @@ public class TestCheckMarkov {
         }
     }
 
-    @Test
-    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket2() {
-        Graph trueGraph = RandomGraph.randomDag(20, 0, 80, 100, 100, 100, false);
-        System.out.println("Test True Graph: " + trueGraph);
-        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
-
-        SemPm pm = new SemPm(trueGraph);
-        SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
-        score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
-        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
-        // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
-        // List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(fisherZTest, estimatedCpdag, 0.05, 0.5);
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(fisherZTest, estimatedCpdag, trueGraph, 0.05, 0.3);
-
-        List<Node> accepts = accepts_rejects.get(0);
-        List<Node> rejects = accepts_rejects.get(1);
-        System.out.println("Accepts size: " + accepts.size());
-        System.out.println("Rejects size: " + rejects.size());
-    }
 
     @Test
     public void testGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket2() {
