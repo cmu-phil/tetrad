@@ -831,24 +831,17 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         if (dataSet == null) {
             return;
         }
-
-        List<Integer> all = new ArrayList<>();
-        for (int i = 0; i < sampleSize(); i++) all.add(i);
-        Collections.shuffle(all);
-
-        List<Integer> _rows = new ArrayList<>();
-        for (int i = 0; i < sampleSize() / 2; i++) {
-            _rows.add(all.get(i));
-        }
-
-        for (Integer row : _rows) {
-            if (row < 0 || row >= sampleSize()) {
-                throw new IllegalArgumentException("Row index out of bounds.");
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
-        }
 
-        this.rows = _rows;
-        cor = null;
+            this.rows = rows;
+            cor = null;
+        }
     }
 
     /**

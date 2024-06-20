@@ -43,7 +43,7 @@ public final class CellTable {
     // The value used in the data for missing values.
     private int missingValue = -99;
     // The rows to be used in the table.
-    private List<Integer> rows;
+    private List<Integer> rows = null;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.

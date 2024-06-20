@@ -36,7 +36,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 import static java.lang.Double.NaN;
 import static org.apache.commons.math3.util.FastMath.*;
@@ -99,7 +98,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     /**
      * The rows used in the test.
      */
-    private List<Integer> rows = new ArrayList<>();
+    private List<Integer> rows = null;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -115,12 +114,12 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         this.variables = dataSet.getVariables();
         // The number of instances.
         int n = dataSet.getNumRows();
-        this.embedding = new ConcurrentSkipListMap<>();
+        this.embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
 
-        Map<Node, Integer> nodesHash = new ConcurrentSkipListMap<>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
             nodesHash.put(this.variables.get(j), j);
@@ -138,8 +137,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
 
             if (v instanceof DiscreteVariable) {
 
-                Map<List<Integer>, Integer> keys = new ConcurrentHashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new ConcurrentSkipListMap<>();
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
                     List<Integer> key = new ArrayList<>();
                     key.add(this.dataSet.getInt(j, i_));
@@ -230,43 +229,43 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         List<Integer> rows = getRows(allNodes, this.nodeHash);
 
         if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                true, NaN, pValue);
+                true, NaN, NaN);
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
 
-        int[] list0 = new int[z.size() + 1];
-        int[] list2 = new int[z.size()];
+        int[] list0 = new int[z.size()];
+        int[] list1 = new int[z.size() + 1];
 
-        list0[0] = _x;
+        list1[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
             int __z = this.nodeHash.get(z.get(i));
-            list0[i + 1] = __z;
-            list2[i] = __z;
+            list0[i] = __z;
+            list1[i + 1] = __z;
         }
 
-        Ret ret1 = getlldof(rows, _y, list0);
-        Ret ret2 = getlldof(rows, _y, list2);
+        Ret ret0 = getlldof(rows, _y, list0);
+        Ret ret1 = getlldof(rows, _y, list1);
 
-        double lik0 = ret1.getLik() - ret2.getLik();
-        double dof0 = ret1.getDof() - ret2.getDof();
+        double lik_diff = ret0.getLik() - ret1.getLik();
+        double dof_diff = ret1.getDof() - ret0.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
+        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
 
         double pValue;
 
-        if (Double.isNaN(lik0)) {
+        if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
         }
 
         this.pValue = pValue;
@@ -481,26 +480,16 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      * values.
      */
     public void setRows(List<Integer> rows) {
-        if (dataSet == null) {
-            return;
-        }
-
-        List<Integer> all = new ArrayList<>();
-        for (int i = 0; i < dataSet.getNumRows(); i++) all.add(i);
-        Collections.shuffle(all);
-
-        List<Integer> _rows = new ArrayList<>();
-        for (int i = 0; i < dataSet.getNumRows() / 2; i++) {
-            _rows.add(all.get(i));
-        }
-
-        for (Integer row : _rows) {
-            if (row < 0 || row >= dataSet.getNumRows()) {
-                throw new IllegalArgumentException("Row index out of bounds.");
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
-        }
 
-        this.rows = _rows;
+            this.rows = rows;
+        }
     }
 
     /**

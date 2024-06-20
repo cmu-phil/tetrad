@@ -37,6 +37,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Double.NaN;
+
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
  * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
@@ -82,7 +84,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
     /**
      * The rows used in the test.
      */
-    private List<Integer> rows = new ArrayList<>();
+    private List<Integer> rows = null;
+    private double pValue;
 
     /**
      * Constructor.
@@ -138,7 +141,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
         allVars.add(y);
@@ -148,40 +150,43 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
 
-        int[] list0 = new int[z.size() + 1];
-        int[] list2 = new int[z.size()];
+        int[] list0 = new int[z.size()];
+        int[] list1 = new int[z.size() + 1];
 
-        list0[0] = _x;
+        list1[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
             int __z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = __z;
-            list2[i] = __z;
+            list0[i] = __z;
+            list1[i + 1] = __z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
-        ConditionalGaussianLikelihood.Ret ret2 = this.likelihood.getLikelihood(_y, list2);
+        ConditionalGaussianLikelihood.Ret ret0 = likelihood.getLikelihood(_y, list0);
+        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list1);
 
-        double lik0 = ret1.getLik() - ret2.getLik();
-        double dof0 = ret1.getDof() - ret2.getDof();
+        double lik_diff = ret0.getLik() - ret1.getLik();
+        double dof_diff = ret1.getDof() - ret0.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 0)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 1)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
 
         double pValue;
 
-        if (Double.isNaN(lik0)) {
+        if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
         }
 
-        boolean independent = pValue > this.alpha;
+        this.pValue = pValue;
+
+        boolean independent = pValue > alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -194,6 +199,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
                 pValue, getAlpha() - pValue);
         facts.put(new IndependenceFact(x, y, _z), result);
         return result;
+    }
+
+    /**
+     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for this test.
+     *
+     * @return This p-value.
+     */
+    public double getPValue() {
+        return this.pValue;
     }
 
     /**

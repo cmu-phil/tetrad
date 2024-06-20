@@ -726,10 +726,6 @@ public final class LvLite implements IGraphSearch {
 
         var pag = new EdgeListGraph(cpdag);
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Best order: " + best);
-        }
-
         var scorer = new TeyssierScorer(null, score);
         scorer.setUseScore(true);
         scorer.score(best);

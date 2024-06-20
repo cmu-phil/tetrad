@@ -3,10 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -779,7 +776,18 @@ public class MarkovCheck {
 
                     switch (setType) {
                         case LOCAL_MARKOV:
-                            z = new HashSet<>(graph.getParents(x));
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
+                                if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
+                                    z.add(w);
+                                }
+
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");

@@ -125,25 +125,9 @@ public final class BossPag implements IGraphSearch {
         suborderSearch.setNumStarts(numStarts);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        var best = permutationSearch.getOrder();
+        var cpdag = permutationSearch.search();
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Best order: " + best);
-        }
-
-        var scorer = new TeyssierScorer(null, score);
-        scorer.score(best);
-        scorer.bookmark();
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
-            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
-        }
-
-        var dag = scorer.getGraph(false);
-
-        DagToPag dagToPag = new DagToPag(dag);
+        DagToPag dagToPag = new DagToPag(cpdag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
