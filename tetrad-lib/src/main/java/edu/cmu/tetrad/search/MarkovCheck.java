@@ -788,6 +788,10 @@ public class MarkovCheck {
                                 }
                             }
 
+                            if (graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                                z = removeExtraneousVariables(z, x, y);
+                            }
+
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
@@ -806,6 +810,11 @@ public class MarkovCheck {
                             break;
                         case MARKOV_BLANKET:
                             z = GraphUtils.markovBlanket(x, graph);
+
+                            if (graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                                z = removeExtraneousVariables(z, x, y);
+                            }
+
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
@@ -832,6 +841,22 @@ public class MarkovCheck {
 
         calcStats(true);
         calcStats(false);
+    }
+
+    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y) {
+        Set<Node> _z = new HashSet<>(z);
+
+        do {
+            for (Node w : new HashSet<>(_z)) {
+                _z.remove(w);
+                if (!graph.paths().isMSeparatedFrom(x, y, _z, false)) {
+                    _z.add(w);
+                }
+            }
+
+            z = new HashSet<>(_z);
+        } while (!_z.equals(z));
+        return z;
     }
 
     /**

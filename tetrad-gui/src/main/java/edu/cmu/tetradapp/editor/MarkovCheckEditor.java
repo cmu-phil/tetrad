@@ -468,7 +468,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
-        histogram.setNumBins(20);
+        histogram.setNumBins(10);
         HistogramPanel view = new HistogramPanel(histogram, true);
 
         Color fillColor = new Color(113, 165, 210);
