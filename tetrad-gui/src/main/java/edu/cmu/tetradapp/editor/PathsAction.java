@@ -836,8 +836,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.setCaretPosition(0);
             }
         };
-
-//        new MyWatchedProcess();
     }
 
 
