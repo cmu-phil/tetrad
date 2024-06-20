@@ -315,11 +315,16 @@ public final class PcCommon implements IGraphSearch {
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(this.knowledge);
-        meekRules.setVerbose(verbose);
-        meekRules.setMeekPreventCycles(this.meekPreventCycles);
-        meekRules.orientImplied(this.graph);
+        if (meekPreventCycles) {
+            GraphTransforms.dagFromCpdag(this.graph, true);
+            graph = GraphTransforms.dagToCpdag(this.graph);
+        } else {
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(this.knowledge);
+            meekRules.setVerbose(verbose);
+            meekRules.setMeekPreventCycles(false);
+            meekRules.orientImplied(this.graph);
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
@@ -533,7 +538,7 @@ public final class PcCommon implements IGraphSearch {
                 Set<Set<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
-                    if (colliderAllowed(x, y, z, knowledge)) {
+                    if (colliderAllowed(graph, x, y, z, knowledge)) {
                         PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
                         this.colliderTriples.add(new Triple(x, y, z));
                     }
@@ -633,13 +638,14 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Checks if colliders are allowed based on the given knowledge.
      *
+     * @param graph
      * @param x         The first node.
      * @param y         The second node.
      * @param z         The third node.
      * @param knowledge The knowledge object containing the required and forbidden relationships.
      * @return True if colliders are allowed based on the given knowledge, false otherwise.
      */
-    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
+    public static boolean colliderAllowed(Graph graph, Node x, Node y, Node z, Knowledge knowledge) {
         boolean result = true;
         if (knowledge != null) {
             result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
@@ -649,8 +655,14 @@ public final class PcCommon implements IGraphSearch {
         if (knowledge == null) {
             return true;
         }
-        return !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
-               && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+        boolean allowed = !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
+                    && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+
+        if (allowed) {
+            allowed = !(graph.paths().isAncestorOf(y, z) || graph.paths().isAncestorOf(y, z));
+        }
+
+        return allowed;
     }
 
     /**
@@ -713,14 +725,16 @@ public final class PcCommon implements IGraphSearch {
                                      && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                         }
                         if (result) {
-                            PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
+                            if (colliderAllowed(graph, a, b, c, knowledge)) {
+                                PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
 
-                            if (verbose) {
-                                System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                                if (verbose) {
+                                    System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                                }
+
+                                colliderTriples.add(new Triple(a, b, c));
+                                forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                             }
-
-                            colliderTriples.add(new Triple(a, b, c));
-                            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                         }
                     }
                 }

@@ -31,7 +31,27 @@ public class GraphTransforms {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph dagFromCpdag(Graph graph) {
-        return dagFromCpdag(graph, null);
+        return dagFromCpdag(graph, null, true);
+    }
+
+    /**
+     * <p>dagFromCpdag.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph dagFromCpdag(Graph graph, boolean meekPreventCycles) {
+        return dagFromCpdag(graph, null, meekPreventCycles);
+    }
+
+    /**
+     * <p>dagFromCpdag.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
+        return dagFromCpdag(graph, knowledge, true);
     }
 
     /**
@@ -41,9 +61,9 @@ public class GraphTransforms {
      * @param knowledge the knowledge
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
-    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge) {
+    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles) {
         Graph dag = new EdgeListGraph(cpdag);
-        transformCpdagIntoRandomDag(dag, knowledge);
+        transformCpdagIntoRandomDag(dag, knowledge, meekPreventCycles);
         return dag;
     }
 
@@ -51,10 +71,11 @@ public class GraphTransforms {
      * Transforms a completed partially directed acyclic graph (CPDAG) into a random directed acyclic graph (DAG) by
      * randomly orienting the undirected edges in the CPDAG in shuffled order.
      *
-     * @param graph     The original graph from which the CPDAG was derived.
-     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     * @param graph             The original graph from which the CPDAG was derived.
+     * @param knowledge         The knowledge available to check if a potential DAG violates any constraints.
+     * @param meekPreventCycles
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge) {
+    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles) {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -66,6 +87,7 @@ public class GraphTransforms {
         Collections.shuffle(undirectedEdges);
 
         MeekRules rules = new MeekRules();
+        rules.setMeekPreventCycles(meekPreventCycles);
 
         if (knowledge != null) {
             rules.setKnowledge(knowledge);

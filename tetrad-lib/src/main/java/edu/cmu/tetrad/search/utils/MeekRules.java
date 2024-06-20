@@ -312,8 +312,12 @@ public class MeekRules {
         Edge before = graph.getEdge(a, c);
         graph.removeEdge(before);
 
+        // We prevent new cycles in the graph by adding arbitrary unshielded colliders to prevent cycles.
+        // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
-            graph.addEdge(before);
+            graph.addEdge(Edges.directedEdge(c, a));
+            visited.add(a);
+            visited.add(c);
             return false;
         }
 
@@ -322,7 +326,6 @@ public class MeekRules {
         visited.add(a);
         visited.add(c);
 
-        graph.removeEdge(before);
         graph.addEdge(after);
 
         return true;
