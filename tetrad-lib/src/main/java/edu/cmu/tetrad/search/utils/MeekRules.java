@@ -22,17 +22,13 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
 /**
  * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
- * with background knowledge"), modified for Conservative PC to check noncolliders against recorded noncolliders before
  * orienting.
  * <p>
  * Rule R4 is only performed if knowledge is nonempty.
@@ -346,8 +342,21 @@ public class MeekRules {
         // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
             graph.addEdge(Edges.directedEdge(c, a));
+
+            if (verbose) {
+                graph.getNodesInTo(a, Endpoint.ARROW).forEach(node -> {
+                    if (!graph.isAdjacentTo(node, c)) {
+                        TetradLogger.getInstance().log("Meek: Prevented cycle by orienting "
+                                                       + a + "---" + c + " as " + a + "<--" + c
+                                                       + " creating new unshielded collider " + node
+                                                       + " --> " + a + " <-- " + c);
+                    }
+                });
+            }
+
             visited.add(a);
             visited.add(c);
+
             return false;
         }
 
