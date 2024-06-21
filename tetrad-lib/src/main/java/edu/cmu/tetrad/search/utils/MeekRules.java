@@ -91,6 +91,25 @@ public class MeekRules {
      */
     public Set<Node> orientImplied(Graph graph) {
 
+        // If the meekPreventCycles flag is set to tru, eheck that the graph contains only directed or undirected
+        // edges (i.e., is a mixed graph). For instance, if the graph contains bidirected edges, which
+        // PC can possibly orient with one choice of collider conflict policy, then the graph is not a mixed
+        // graph and the meekPreventCycles flag should be set to false. Also, if the graph contains a cycle, then
+        // the meekPreventCycles flag should be set to false; otherwise, a model will be output that contains
+        // a cycle. Also, this method cannot be applied to, say, PAGs, that contain edges other than directed
+        // or undirected edges.
+        if (meekPreventCycles) {
+            for (Edge edge : graph.getEdges()) {
+                if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
+                    throw new IllegalArgumentException("Graph must contain only directed or undirected edges.");
+                }
+            }
+
+            if (graph.paths().existsDirectedCycle()) {
+                throw new IllegalArgumentException("Graph contains a cycle before Meek orientation.");
+            }
+        }
+
         // The initial list of nodes to visit.
         Set<Node> visited = new HashSet<>();
 
@@ -341,6 +360,9 @@ public class MeekRules {
         // We prevent new cycles in the graph by adding arbitrary unshielded colliders to prevent cycles.
         // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
+
+            // Log this before adding a <-- c back so that we don't accidentally say we added c --> a <--c
+            // as an unshielded collider.
             if (verbose) {
                 graph.getNodesInTo(a, Endpoint.ARROW).forEach(node -> {
                     if (!graph.isAdjacentTo(node, c)) {

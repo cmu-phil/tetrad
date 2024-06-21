@@ -391,6 +391,10 @@ public final class Cpc implements IGraphSearch {
             }
         }
     }
+
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
+    }
 }
 
 
