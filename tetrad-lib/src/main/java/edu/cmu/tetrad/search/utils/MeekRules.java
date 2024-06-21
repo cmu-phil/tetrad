@@ -38,30 +38,40 @@ import java.util.*;
  * Rule R4 is only performed if knowledge is nonempty.
  * <p>
  * Note that the meekPreventCycles flag is set to true by default. This means that the algorithm will prevent cycles
- * from being created in the graph by adding arbitrary unshielded colliders to prevent cycles. The user can turn this
- * off if they want to by setting the Meek prevent cycles flag to false, in which case the algorithm will not prevent
- * cycles from being created, e.g., by repeated applications of R1. This behavior was adjusted 2024-6-24, as a way to
- * allow the PC algorithm to always output a CPDAG.
+ * from being created in the graph by adding arbitrary unshielded colliders to the graph. The user can turn this off if
+ * they want to by setting the Meek prevent cycles flag to false, in which case the algorithm will not prevent cycles
+ * from being created, e.g., by repeated applications of R1. This behavior was adjusted 2024-6-24, as a way to allow the
+ * PC algorithm to always output a CPDAG.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class MeekRules {
 
-    //The logger to use.
+    /**
+     * The logger to use.
+     */
     private final Map<Edge, Edge> changedEdges = new HashMap<>();
-    // If knowledge is available.
+    /**
+     * If knowledge is available.
+     */
     boolean useRule4;
+    /**
+     * Represents the variable `knowledge` of type `Knowledge`.
+     */
     private Knowledge knowledge = new Knowledge();
-    //True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
-    //graphs).
+    /**
+     * True if cycles are to be prevented. Default is true. If true, cycles are prevented adding arbitrary new
+     * unshielded colliders to the graph.
+     */
     private boolean meekPreventCycles;
-
-    // Whether verbose output should be generated.
-    // True if verbose output should be printed.
+    /**
+     * Whether verbose output should be generated. True if verbose output should be printed.
+     */
     private boolean verbose;
-
-    // True (default) iff the graph should be reverted to its unshielded colliders before orienting.
+    /**
+     * True (default) iff the graph should be reverted to its unshielded colliders before orienting.
+     */
     private boolean revertToUnshieldedColliders = true;
 
     /**
@@ -70,7 +80,6 @@ public class MeekRules {
     public MeekRules() {
         this.useRule4 = !this.knowledge.isEmpty();
     }
-
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
@@ -85,6 +94,7 @@ public class MeekRules {
      * @return The set of nodes that were visited in this orientation.
      */
     public Set<Node> orientImplied(Graph graph) {
+
         // The initial list of nodes to visit.
         Set<Node> visited = new HashSet<>();
 
@@ -136,7 +146,9 @@ public class MeekRules {
     }
 
     /**
-     * Sets whether cycles should be prevented by cycle checking.
+     * Sets whether cycles should be prevented by cycle checking. Default is true. If true, cycles are prevented by
+     * adding arbitrary new unshielded colliders to the graph. This behavior was adjusted 2024-6-24, as a way to allow
+     * the PC algorithm to always output a CPDAG.
      *
      * @param meekPreventCycles True, if so.
      */
@@ -285,6 +297,9 @@ public class MeekRules {
         return false;
     }
 
+    /**
+     * Meek's rule R4. If a--b, b--c, a--d, c not adj to d, then a-->c.
+     */
     private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
         if (!this.useRule4) {
             return false;
@@ -311,6 +326,15 @@ public class MeekRules {
         return oriented;
     }
 
+    /**
+     * Directs an edge from a to c in the graph, if the edge is allowed by the knowledge and the edge is undirected.
+     *
+     * @param a       The node from which the edge is directed.
+     * @param c       The node to which the edge is directed.
+     * @param graph   The graph.
+     * @param visited The set of visited nodes.
+     * @return True if the edge was directed.
+     */
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
         if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
@@ -337,6 +361,13 @@ public class MeekRules {
         return true;
     }
 
+    /**
+     * Reverts edges not in unshielded colliders to undirected edges.
+     *
+     * @param y       The node to revert.
+     * @param graph   The graph.
+     * @param visited The set of visited nodes.
+     */
     private void revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
         List<Node> parents = graph.getParents(y);
 
@@ -359,12 +390,25 @@ public class MeekRules {
         }
     }
 
+    /**
+     * Logs a message if the verbose flag is set.
+     *
+     * @param message The message to be logged.
+     */
     private void log(String message) {
         if (this.verbose) {
             TetradLogger.getInstance().log(message);
         }
     }
 
+    /**
+     * Returns the set of common adjacent nodes between two given nodes in a given graph.
+     *
+     * @param x     The first node.
+     * @param y     The second node.
+     * @param graph The graph.
+     * @return The set of common adjacent nodes between the two given nodes.
+     */
     private Set<Node> getCommonAdjacents(Node x, Node y, Graph graph) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
