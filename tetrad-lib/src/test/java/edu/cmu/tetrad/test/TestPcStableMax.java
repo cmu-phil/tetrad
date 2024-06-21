@@ -177,7 +177,7 @@ public class TestPcStableMax {
         Pc pc = new Pc(independence);
         pc.setStable(true);
         pc.setUseMaxPHeuristic(true);
-        pc.setMeekPreventCycles(false);
+        pc.setGuaranteeCpdag(false);
 
         // Set up search.
         pc.setKnowledge(knowledge);

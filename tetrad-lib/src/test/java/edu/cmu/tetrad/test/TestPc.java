@@ -118,7 +118,7 @@ public class TestPc {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
-        pc.setMeekPreventCycles(true);
+        pc.setGuaranteeCpdag(true);
 
         Graph CPDAG = pc.search();
 
@@ -190,7 +190,7 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
-        pc.setMeekPreventCycles(false);
+        pc.setGuaranteeCpdag(false);
 //        pc.setVerbose(false);
 
         // Run search
@@ -666,12 +666,12 @@ public class TestPc {
             switch (t) {
                 case 0:
                     search = new Pc(test);
-                    ((Pc) search).setMeekPreventCycles(false);
+                    ((Pc) search).setGuaranteeCpdag(false);
                     out = search.search();
                     break;
                 case 1:
                     search = new Cpc(test);
-                    ((Cpc) search).setMeekPreventCycles(false);
+                    ((Cpc) search).setGuaranteeCpdag(false);
                     out = search.search();
                     break;
                 case 2:

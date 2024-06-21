@@ -245,7 +245,7 @@ public class Bes {
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setMeekPreventCycles(true);
+        rules.setMeekPreventCycles(false);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);

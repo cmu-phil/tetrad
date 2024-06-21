@@ -1271,7 +1271,7 @@ public final class FgesMb implements DagScorer {
     private Set<Node> revertToCPDAG() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setMeekPreventCycles(true);
+        rules.setMeekPreventCycles(false);
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }

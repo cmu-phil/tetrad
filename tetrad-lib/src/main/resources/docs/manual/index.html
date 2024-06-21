@@ -2584,6 +2584,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Causation, Prediction, and Search for more details for these
             heuristics.</p>
 
+        <p>Note that it is possible for PC with some choices of parameters to output
+            bidirected edges or cycles, or to imply cycles by the Meek rules, against
+            assumption. Bidirected edges can be prevented by choosing an appropriate collider
+            conflict rule. Cycles can be prevented by setting the guaranteeCpdag
+            parameter to 'true' ('Yes). This parameter has two effects. First, it prevents
+            the orientation of any collider that would create a cycle in the graph.
+            Second, whenever the final Meek rules attempt to directed an undirected edge
+            as a directed edge, if this orientation would create a cycle, the edge
+            is oriented in reverse, adding one or more new (arbitrary) unshielded triples
+            to the graph. When this happens, the behavior is logged.</p>
+
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
@@ -4272,7 +4283,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         may also be specified, though this is by default for these scores equal
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
-   L </p>
+        L </p>
     </div>
 
     <h3>MAG SEM BIC Test</h3>
@@ -4711,7 +4722,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell/span></li>
+                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell/span>
+            </li>
             <li>Long Description: <span
                     id="minSampleSizePerCell_long_desc">For conditional Gaussian, the minimum sample size per cell</span>
             </li>
@@ -5273,23 +5285,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="meekPreventCycles">meekPreventCycles</h3>
+            id="guaranteeCpdag">guaranteeCpdag</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="meekPreventCycles_short_desc">
-                    Yes if cycles should be prevented in the application of the Meek rules</span></li>
-            <li>Long Description: <span id="meekPreventCycles_long_desc">
-            	It is possible due to unfaithfulness for the Meek rules to orient
-            	cycles; this does a cycle check before each orientation to
-            	prevent this.</span></li>
+                    id="guaranteeCpdag_short_desc">
+                    Yes if the output should guarantee a CPDAG</span></li>
+            <li>Long Description: <span id="guaranteeCpdag_long_desc">
+            	It is possible due to unfaithfulness for the Meek rules to output a
+            	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
+            	</span></li>
             <li>Default Value: <span
-                    id="meekPreventCycles_default_value">true</span></li>
+                    id="guaranteeCpdag_default_value">true</span></li>
             <li>Lower Bound: <span
-                    id="meekPreventCycles_lower_bound"></span></li>
+                    id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="meekPreventCycles_upper_bound"></span></li>
+                    id="guaranteeCpdag_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="meekPreventCycles_value_type">Boolean</span></li>
+                    id="guaranteeCpdag_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="connected">connected</h3>

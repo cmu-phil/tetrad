@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
@@ -204,7 +205,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      */
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setMeekPreventCycles(this.isMeekPreventCycles());
+        rules.setMeekPreventCycles(this.isGuaranteeCpdag());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
@@ -228,7 +229,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setMeekPreventCycles(isMeekPreventCycles());
+        pc.setGuaranteeCpdag(isGuaranteeCpdag());
         pc.setDepth(depth);
         graph = pc.search();
 
@@ -326,8 +327,8 @@ public class PcRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isMeekPreventCycles() {
-        return getParams().getBoolean("MeekPreventCycles", false);
+    private boolean isGuaranteeCpdag() {
+        return getParams().getBoolean(Params.GUARANTEE_CPDAG, false);
     }
 
     private void setPcFields(Pc pc) {

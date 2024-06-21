@@ -101,9 +101,9 @@ public final class Params {
      */
     public static final String CONFLICT_RULE = "conflictRule";
     /**
-     * Constant <code>MEEK_PREVENT_CYCLES="meekPreventCycles"</code>
+     * Constant <code>GUARANTEE_CPDAG="guaranteeCpdag"</code>
      */
-    public static final String MEEK_PREVENT_CYCLES = "meekPreventCycles";
+    public static final String GUARANTEE_CPDAG = "guaranteeCpdag";
     /**
      * Constant <code>CONNECTED="connected"</code>
      */

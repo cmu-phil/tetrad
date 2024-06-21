@@ -63,7 +63,13 @@ public final class ParamDescriptions {
 
             for (Element element : elements) {
                 String paramName = element.id();
-                String valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
+                String valueType = null;
+                try {
+                    valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error initializing parameter " + paramName + " in ParamDescriptions; " +
+                                               "check the definition of the parameter.", e);
+                }
 
                 // Add params that don't have value types for spalsh screen error
                 if (!PARAM_VALUE_TYPES.contains(valueType)) {

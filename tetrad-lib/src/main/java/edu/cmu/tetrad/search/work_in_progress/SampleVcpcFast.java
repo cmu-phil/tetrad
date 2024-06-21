@@ -89,7 +89,7 @@ public final class SampleVcpcFast implements IGraphSearch {
      */
     private Set<Triple> ambiguousTriples;
     private Set<Edge> definitelyNonadjacencies;
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
     /**
      * The sepsets.
      */
@@ -218,17 +218,18 @@ public final class SampleVcpcFast implements IGraphSearch {
      *
      * @return true just in case edges will not be added if they would create cycles.
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
-     * Sets to true just in case edges will not be added if they would create cycles.
+     * Sets to true just in case the output is guaranteed to be compatible with a CPDAG--i.e.,
+     * no bidirected edges and no actual or implied cycles due to the Meek rules.
      *
-     * @param meekPreventCycles a boolean
+     * @param setGuaranteeCpdag a boolean
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setMeekPreventCycles(boolean setGuaranteeCpdag) {
+        this.guaranteeCpdag = setGuaranteeCpdag;
     }
 
     /**
@@ -402,7 +403,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
 
-            meekRules.setMeekPreventCycles(this.meekPreventCycles);
+            meekRules.setMeekPreventCycles(this.guaranteeCpdag);
             meekRules.setKnowledge(this.knowledge);
 
             meekRules.orientImplied(this.graph);

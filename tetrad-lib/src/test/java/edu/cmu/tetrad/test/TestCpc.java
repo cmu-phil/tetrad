@@ -144,7 +144,7 @@ public class TestCpc {
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
         Cpc cpc = new Cpc(independence);
-        cpc.setMeekPreventCycles(false);
+        cpc.setGuaranteeCpdag(false);
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);

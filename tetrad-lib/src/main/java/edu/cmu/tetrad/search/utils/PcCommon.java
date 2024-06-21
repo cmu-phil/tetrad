@@ -91,7 +91,7 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Whether to prevent cycles using Meek's rules.
      */
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
 
     /**
      * Whether to print verbose output.
@@ -244,21 +244,21 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * <p>isMeekPreventCycles.</p>
+     * Checks if the current object guarantees a complete directed acyclic graph (CPDAG).
      *
-     * @return true, just in case edges will not be added if they create cycles.
+     * @return {@code true} if the current object guarantees a CPDAG, {@code false} otherwise.
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
      * Sets to true just in case edges will not be added if they create cycles.
      *
-     * @param meekPreventCycles True, just in case edges will not be added if they create cycles.
+     * @param guaranteeCpdag True, just in the output will guarantee a CPDAG.
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**
@@ -351,7 +351,7 @@ public final class PcCommon implements IGraphSearch {
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
-        if (meekPreventCycles) {
+        if (guaranteeCpdag) {
             GraphTransforms.dagFromCpdag(this.graph, true);
             graph = GraphTransforms.dagToCpdag(this.graph);
         } else {

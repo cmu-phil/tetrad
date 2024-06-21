@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.work_in_progress.SampleVcpc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
@@ -461,7 +462,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return params.getBoolean("MeekPreventCycles", false);
+            return params.getBoolean(Params.GUARANTEE_CPDAG, false);
         }
         return false;
     }
