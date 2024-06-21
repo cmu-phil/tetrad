@@ -313,6 +313,17 @@ public class Comparison implements TetradSerializable {
         compareFromSimulations(resultsPath, simulations, outputFileName, System.out, algorithms, statistics, parameters);
     }
 
+    /**
+     * Compares the results of simulations and generates an output file.
+     *
+     * @param resultsPath    The path to the directory containing the simulation results.
+     * @param simulations    The simulations to compare.
+     * @param outputFileName The name of the file to generate.
+     * @param localOut       The print stream to write the output to.
+     * @param algorithms     The algorithms to use for comparison.
+     * @param statistics     The statistics to calculate for comparison.
+     * @param parameters     The parameters for comparison.
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
     }
@@ -321,12 +332,13 @@ public class Comparison implements TetradSerializable {
      * Compares the results of different simulations and algorithms.
      *
      * @param resultsPath    the path to the results directory
-     * @param simulations    the simulations object containing the simulation data
+     * @param simulations    the simulation object containing the simulation data
      * @param outputFileName the name of the output file
-     * @param localOut       the local output stream
+     * @param localOut       the local output stream; may be null.
+     * @param localOut2      the second local output stream; may be null.
      * @param algorithms     the algorithms object containing the algorithm data
      * @param statistics     the statistics object containing the statistics data
-     * @param parameters     the parameters object containing the parameter data
+     * @param parameters     the parameter object containing the parameter data
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut, PrintStream localOut2,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {

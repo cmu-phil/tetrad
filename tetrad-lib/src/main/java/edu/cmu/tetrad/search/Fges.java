@@ -1133,7 +1133,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private Set<Node> revertToCpdag() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setMeekPreventCycles(false);
+        rules.setMeekPreventCycles(true);
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }
