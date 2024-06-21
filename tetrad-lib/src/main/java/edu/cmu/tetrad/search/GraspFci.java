@@ -174,6 +174,7 @@ public final class GraspFci implements IGraphSearch {
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
         alg.setVerbose(verbose);
+        alg.setKnowledge(knowledge);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;

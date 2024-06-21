@@ -1,24 +1,18 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
 import java.io.Serial;
 
 /**
  * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value for whether the p-values for the
- * estimated graph are distributed as U(0, 1).
+ * estimated graph are distributed as U(0, 1). This version reports whether the p-value is greater than 0.05 and
+ * reports the best of 10 repetitions.
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
+public class MarkovCheckKsPassesBestOf10 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -26,7 +20,7 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
      */
-    public MarkovCheckKolmogorovSmirnoffP() {
+    public MarkovCheckKsPassesBestOf10() {
 
     }
 
@@ -37,7 +31,7 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "MC-KSP";
+        return "MC-KSPass10";
     }
 
     /**
@@ -47,41 +41,22 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Markov Check Kolmogorov-Smirnoff P";
+        return "Markov Check Kolmogorov-Smirnoff P Passes (1 = p > 0.05, 0 = p <= 0.05); best of 10 repetitions.";
     }
 
     /**
-     * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
-     * are distributed as U(0, 1).
+     * Calculates whether Kolmogorov-Smirnoff P > 0.05.
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
      * @param dataModel The data model.
-     * @return The Kolmogorov-Smirnoff P value.
+     * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-
-        if (dataModel == null) {
-            throw new IllegalArgumentException("Data model is null.");
-        }
-
-        IndependenceTest independenceTest;
-
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
-
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.generateResults(true);
-        return markovCheck.getKsPValue(true);
+        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10().getValue(trueGraph, estGraph, dataModel);
+        return p > 0.05 ? 1 : 0;
     }
 
     /**

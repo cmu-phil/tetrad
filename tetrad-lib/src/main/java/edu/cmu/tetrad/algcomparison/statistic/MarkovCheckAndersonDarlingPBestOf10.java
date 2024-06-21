@@ -13,20 +13,20 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import java.io.Serial;
 
 /**
- * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value for whether the p-values for the
- * estimated graph are distributed as U(0, 1).
+ * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+ * distributed as U(0, 1).
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
+public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
-     * are distributed as U(0, 1).
+     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+     * distributed as U(0, 1).
      */
-    public MarkovCheckKolmogorovSmirnoffP() {
+    public MarkovCheckAndersonDarlingPBestOf10() {
 
     }
 
@@ -37,7 +37,7 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "MC-KSP";
+        return "MC-ADP10";
     }
 
     /**
@@ -47,17 +47,17 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Markov Check Kolmogorov-Smirnoff P";
+        return "Markov Check Anderson Darling P, best of 10 reps";
     }
 
     /**
-     * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
-     * are distributed as U(0, 1).
+     * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
+     * distributed as U(0, 1).
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
      * @param dataModel The data model.
-     * @return The Kolmogorov-Smirnoff P value.
+     * @return The Anderson Darling P value.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
@@ -80,8 +80,18 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
         }
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.generateResults(true);
-        return markovCheck.getKsPValue(true);
+
+        double max = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < 10; i++) {
+            markovCheck.generateResults(true);
+            double adp = markovCheck.getAndersonDarlingP(true);
+            if (adp > max) {
+                max = adp;
+            }
+        }
+
+        return max;
     }
 
     /**
