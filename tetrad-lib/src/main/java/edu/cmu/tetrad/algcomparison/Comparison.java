@@ -326,6 +326,7 @@ public class Comparison implements TetradSerializable {
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
+        compareFromSimulations(resultsPath, simulations, outputFileName, localOut, null, algorithms, statistics, parameters);
     }
 
     /**
