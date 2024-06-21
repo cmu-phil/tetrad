@@ -36,6 +36,12 @@ import java.util.*;
  * orienting.
  * <p>
  * Rule R4 is only performed if knowledge is nonempty.
+ * <p>
+ * Note that the meekPreventCycles flag is set to true by default. This means that the algorithm will prevent cycles
+ * from being created in the graph by adding arbitrary unshielded colliders to prevent cycles. The user can turn this
+ * off if they want to by setting the Meek prevent cycles flag to false, in which case the algorithm will not prevent
+ * cycles from being created, e.g., by repeated applications of R1. This behavior was adjusted 2024-6-24, as a way to
+ * allow the PC algorithm to always output a CPDAG.
  *
  * @author josephramsey
  * @version $Id: $Id
