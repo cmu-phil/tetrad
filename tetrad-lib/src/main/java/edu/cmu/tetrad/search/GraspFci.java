@@ -169,7 +169,7 @@ public final class GraspFci implements IGraphSearch {
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(3);
+        alg.setDepth(depth);
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
