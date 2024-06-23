@@ -141,9 +141,9 @@ public final class LvLite implements IGraphSearch {
      * @param equalityThreshold   The threshold for equality. (This is not used for Oracle scoring.)
      * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
-    public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
-                                                     TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                                     boolean allowTucks, boolean verbose, double equalityThreshold) {
+    public static void orientAndRemove(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
+                                       TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
+                                       boolean allowTucks, boolean verbose, double equalityThreshold) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -707,6 +707,7 @@ public final class LvLite implements IGraphSearch {
 
         var scorer = new TeyssierScorer(null, score);
         scorer.setUseScore(true);
+        scorer.setKnowledge(knowledge);
         double best_score = scorer.score(best);
         scorer.bookmark();
 
@@ -736,7 +737,7 @@ public final class LvLite implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
+            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
                     allowTucks, verbose, this.equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 

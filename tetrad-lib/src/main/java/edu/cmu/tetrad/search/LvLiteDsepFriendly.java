@@ -238,7 +238,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
+            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
                     allowTucks, verbose, equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
