@@ -127,7 +127,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
      * tests.
      */
-    private double equalityThreshold;
+    private double bayesFactorThreshold;
     private int depth = 25;
 
     /**
@@ -234,12 +234,12 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
-        double equalityThreshold = test instanceof MsepTest ? Double.NaN : this.equalityThreshold;
+        double bayesFactorThreshold = test instanceof MsepTest ? Double.NaN : this.bayesFactorThreshold;
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
             LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
-                    allowTucks, verbose, equalityThreshold);
+                    allowTucks, verbose, bayesFactorThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
@@ -383,10 +383,10 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
      * tests.
      *
-     * @param equalityThreshold the equality threshold
+     * @param bayesFactorThreshold the equality threshold
      */
-    public void setEqualityThreshold(double equalityThreshold) {
-        this.equalityThreshold = equalityThreshold;
+    public void setBayesFactorThreshold(double bayesFactorThreshold) {
+        this.bayesFactorThreshold = bayesFactorThreshold;
     }
 
     /**

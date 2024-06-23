@@ -6471,29 +6471,29 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="equalityThreshold">equalityThreshold</h3>
+            id="bayesFactorThreshold">bayesFactorThreshold</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="equalityThreshold_short_desc">
-                    Score equality threshold for the LV-Lite procedure
+                    id="bayesFactorThreshold_short_desc">
+                    Bayes factor threshold for the LV-Lite procedure
         </span></li>
             <li>Long Description: <span
-                    id="equalityThreshold_long_desc">
+                    id="bayesFactorThreshold_long_desc">
                     In LV-Lite, after tucking, scores should not drop much from the
                     the score of the best order. This ensures scores don't drop more
-                    than equality_threshold * abs(score of best model).
+                    than 2 * Bayes factor (since our BIC scores use formula 2L - c k ln N).
         </span></li>
             <li>Default Value: <span
-                    id="equalityThreshold_default_value">1e-9</span></li>
+                    id="bayesFactorThreshold_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="equalityThreshold_lower_bound">0</span></li>
+                    id="bayesFactorThreshold_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="equalityThreshold_upper_bound">Infinity</span></li>
+                        id="bayesFactorThreshold_upper_bound">Infinity</span></li>
             <li>Value
                 Type: <span
-                        id="equalityThreshold_value_type">Double</span></li>
+                        id="bayesFactorThreshold_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

@@ -103,7 +103,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The threshold for equality, a fraction of abs(BIC).
      */
-    private double equalityThreshold = 0.0005;
+    private double bayesFactorThreshold = 0.0005;
     /**
      * The algorithm to use to obtain the initial CPDAG.
      */
@@ -138,12 +138,12 @@ public final class LvLite implements IGraphSearch {
      * @param cpdag               The CPDAG.
      * @param knowledge           The knowledge object.
      * @param allowTucks          A boolean value indicating whether tucks are allowed.
-     * @param equalityThreshold   The threshold for equality. (This is not used for Oracle scoring.)
+     * @param bayesFactorThreshold   The threshold for equality. (This is not used for Oracle scoring.)
      * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
     public static void orientAndRemove(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
                                        TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                       boolean allowTucks, boolean verbose, double equalityThreshold) {
+                                       boolean allowTucks, boolean verbose, double bayesFactorThreshold) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -162,7 +162,7 @@ public final class LvLite implements IGraphSearch {
                     var y = adj.get(j);
 
                     if (!copyCollider(x, b, y, pag, unshieldedCollider(cpdag, x, b, y), unshieldedColliders,
-                            best_score, best_score, equalityThreshold, toRemove, knowledge, verbose)) {
+                            best_score, best_score, bayesFactorThreshold, toRemove, knowledge, verbose)) {
                         if (allowTucks) {
                             if (!unshieldedCollider(pag, x, b, y)) {
                                 scorer.goToBookmark();
@@ -173,7 +173,7 @@ public final class LvLite implements IGraphSearch {
 
                                 copyCollider(x, b, y, pag, scorer.unshieldedCollider(x, b, y),
                                         unshieldedColliders, best_score, newScore,
-                                        equalityThreshold, toRemove, knowledge, verbose);
+                                        bayesFactorThreshold, toRemove, knowledge, verbose);
                             }
                         }
                     }
@@ -267,15 +267,15 @@ public final class LvLite implements IGraphSearch {
 
     private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean unshielded_collider_cpdag,
                                         Set<Triple> unshieldedColliders,
-                                        double bestScore, double newScore, double equalityThreshold,
+                                        double bestScore, double newScore, double bayesFactorThreshold,
                                         Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && unshielded_collider_cpdag && !unshieldedCollider(pag, x, b, y)) {
             double bayesFactor = newScore - bestScore;
 
             System.out.println("Bayes factor = " + bayesFactor);
 
-//            if (Double.isNaN(equalityThreshold) || bestScore == newScore || bayesFactor > 0.5) {
-            if (Double.isNaN(equalityThreshold) || bestScore == newScore || newScore >= bestScore - equalityThreshold) {
+            // Multiplying the Bayes factor threshold by 2 since our BIC scores are of the form 2L - c k ln N.
+            if (Double.isNaN(bayesFactorThreshold) || bestScore == newScore || newScore >= bestScore - 2 * bayesFactorThreshold) {
                 if (colliderAllowed(pag, x, b, y, knowledge)) {
                     boolean oriented = false;
 
@@ -296,7 +296,7 @@ public final class LvLite implements IGraphSearch {
                         } else {
                             TetradLogger.getInstance().log(
                                     "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " equalityThreshold = " + equalityThreshold);
+                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " bayesFactorThreshold = " + bayesFactorThreshold);
                         }
                     }
 
@@ -744,7 +744,7 @@ public final class LvLite implements IGraphSearch {
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
             LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
-                    allowTucks, verbose, this.equalityThreshold);
+                    allowTucks, verbose, this.bayesFactorThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
@@ -860,18 +860,18 @@ public final class LvLite implements IGraphSearch {
     /**
      * Sets the equality threshold used for comparing values, a fraction of abs(BIC).
      *
-     * @param equalityThreshold the new equality threshold value
+     * @param bayesFactorThreshold the new equality threshold value
      */
-    public void setEqualityThreshold(double equalityThreshold) {
-        if (Double.isNaN(equalityThreshold) || Double.isInfinite(equalityThreshold)) {
-            throw new IllegalArgumentException("Equality threshold must be a finite number: " + equalityThreshold);
+    public void setBayesFactorThreshold(double bayesFactorThreshold) {
+        if (Double.isNaN(bayesFactorThreshold) || Double.isInfinite(bayesFactorThreshold)) {
+            throw new IllegalArgumentException("Equality threshold must be a finite number: " + bayesFactorThreshold);
         }
 
-        if (equalityThreshold < 0) {
-            throw new IllegalArgumentException("Equality threshold must be >= 0: " + equalityThreshold);
+        if (bayesFactorThreshold < 0) {
+            throw new IllegalArgumentException("Equality threshold must be >= 0: " + bayesFactorThreshold);
         }
 
-        this.equalityThreshold = equalityThreshold;
+        this.bayesFactorThreshold = bayesFactorThreshold;
     }
 
     /**

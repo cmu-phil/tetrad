@@ -887,7 +887,7 @@ public final class Params {
     /**
      * Constant <code>ALLOW_TUCKS="allowTucks"</code>
      */
-    public static final String EQUALITY_THRESHOLD = "equalityThreshold";
+    public static final String BAYES_FACTOR_THRESHOLD = "bayesFactorThreshold";
     /**
      * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
      */
