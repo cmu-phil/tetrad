@@ -88,6 +88,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * Represents an action that performs calculations on paths in a graph.
+     *
+     * @param workbench  the workbench
+     * @param parameters the parameters
      */
     public PathsAction(GraphWorkbench workbench, Parameters parameters) {
         super("Paths");
@@ -98,8 +101,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
      *
-     * @param params     the set of parameter names
-     * @param parameters the Parameters object containing the parameter values
+     * @param params            the set of parameter names
+     * @param parameters        the Parameters object containing the parameter values
+     * @param listOptionAllowed whether the option allows for a list of values
+     * @param bothOptionAllowed whether the option allows for both true and false to be selected
      * @return a map of parameter names to corresponding Box components
      */
     public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
@@ -108,7 +113,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, false),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },

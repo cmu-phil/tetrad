@@ -43,6 +43,9 @@ import java.util.Set;
  */
 public class ParameterTab extends JPanel {
 
+    /**
+     * The graph type items.
+     */
     public static final String[] GRAPH_TYPE_ITEMS = {
             GraphTypes.RANDOM_FOWARD_DAG,
             GraphTypes.ERDOS_RENYI_DAG,
@@ -119,6 +122,11 @@ public class ParameterTab extends JPanel {
         }
     }
 
+    /**
+     * Returns an array of strings representing the available simulation items.
+     *
+     * @return an array of strings representing the available simulation items
+     */
     public static String[] getSimulationItems() {
         return ParameterTab.MODEL_TYPE_ITEMS;
     }

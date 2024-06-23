@@ -5,6 +5,9 @@ import edu.cmu.tetradapp.model.GridSearchModel;
 
 import java.util.List;
 
+/**
+ * Test the algorithm model.
+ */
 public class TestAlgorithmModel {
 
     /**

@@ -66,13 +66,13 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
      */
     private final JComboBox<Set<Node>> adjustmentSetBox;
     /**
-     * Represents a message.
-     */
-    private String message = null;
-    /**
      * Represents whether a node selection has changed.
      */
     boolean changed = false;
+    /**
+     * Represents a message.
+     */
+    private String message = null;
     /**
      * The set of nodes to adjust for.
      */
@@ -246,8 +246,10 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
     /**
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
      *
-     * @param params     the set of parameter names
-     * @param parameters the Parameters object containing the parameter values
+     * @param params            the set of parameter names
+     * @param parameters        the Parameters object containing the parameter values
+     * @param listOptionAllowed whether the option allows one to select a list of values
+     * @param bothOptionAllowed whether the option allows one to select both true and false
      * @return a map of parameter names to corresponding Box components
      */
     public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
@@ -256,7 +258,7 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, false),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -558,11 +560,11 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
     /**
      * Returns a ListLongTextField component with the specified parameters.
      *
-     * @param parameter      the name of the parameter
-     * @param parameters     the Parameters object containing the parameter values
-     * @param defaultValues  the default values for the component
-     * @param lowerBound     the lower bound for the values
-     * @param upperBound     the upper bound for the values
+     * @param parameter     the name of the parameter
+     * @param parameters    the Parameters object containing the parameter values
+     * @param defaultValues the default values for the component
+     * @param lowerBound    the lower bound for the values
+     * @param upperBound    the upper bound for the values
      * @return a ListLongTextField component with the specified parameters
      */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
