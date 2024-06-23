@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.exp;
 
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
@@ -267,10 +267,15 @@ public final class LvLite implements IGraphSearch {
 
     private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean unshielded_collider_cpdag,
                                         Set<Triple> unshieldedColliders,
-                                        double best_score, double newScore, double equalityThreshold,
+                                        double bestScore, double newScore, double equalityThreshold,
                                         Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && unshielded_collider_cpdag && !unshieldedCollider(pag, x, b, y)) {
-            if (Double.isNaN(equalityThreshold) || best_score == newScore || newScore >= best_score - equalityThreshold * abs(best_score)) {
+            double bayesFactor = newScore - bestScore;
+
+            System.out.println("Bayes factor = " + bayesFactor);
+
+//            if (Double.isNaN(equalityThreshold) || bestScore == newScore || bayesFactor > 0.5) {
+            if (Double.isNaN(equalityThreshold) || bestScore == newScore || newScore >= bestScore - equalityThreshold) {
                 if (colliderAllowed(pag, x, b, y, knowledge)) {
                     boolean oriented = false;
 
@@ -285,13 +290,13 @@ public final class LvLite implements IGraphSearch {
                     unshieldedColliders.add(new Triple(x, b, y));
 
                     if (verbose) {
-                        if (best_score == newScore) {
+                        if (bestScore == newScore) {
                             TetradLogger.getInstance().log(
                                     "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                         } else {
                             TetradLogger.getInstance().log(
                                     "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            System.out.println(unshielded_collider_cpdag + " best_score  - newscore = " + (best_score - newScore) + " best_score = " + best_score + " newScore = " + newScore + " equalityThreshold = " + equalityThreshold);
+                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " equalityThreshold = " + equalityThreshold);
                         }
                     }
 
@@ -343,7 +348,8 @@ public final class LvLite implements IGraphSearch {
      * @param pag       The Graph representing the PAG.
      * @param best      The list of Node objects representing the best nodes.
      */
-    private static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge,
+    private static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge
+            knowledge,
                                                boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Orient required edges in PAG:");
