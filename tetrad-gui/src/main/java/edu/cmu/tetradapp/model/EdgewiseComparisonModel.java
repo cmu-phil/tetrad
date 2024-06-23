@@ -120,21 +120,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
-        String type = params.getString("graphComparisonType");
-
-        if ("DAG".equals(type)) {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        } else if ("CPDAG".equals(type)) {
-            params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.dagToCpdag(graph);
-        } else if ("PAG".equals(type)) {
-            params.set("graphComparisonType", "PAG");
-            return GraphTransforms.dagToPag(graph);
-        } else {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        }
+        return Misclassifications.getComparisonGraph(graph, params);
     }
 
     //==============================PUBLIC METHODS========================//

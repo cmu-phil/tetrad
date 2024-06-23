@@ -115,11 +115,11 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     //==============================PUBLIC METHODS========================//
 
     /**
-     * <p>getComparisonGraph.</p>
+     * Returns a comparison graph based on the given input graph and parameters.
      *
-     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  The input graph to compare.
+     * @param params The parameters for the comparison.
+     * @return The comparison graph based on the input graph and parameters.
      */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");

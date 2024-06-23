@@ -141,19 +141,17 @@ public final class LvLite implements IGraphSearch {
      * @param equalityThreshold   The threshold for equality. (This is not used for Oracle scoring.)
      * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
-    public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, TeyssierScorer scorer,
-                                                     Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
+    public static void orientCollidersAndRemoveEdges(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
+                                                     TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
                                                      boolean allowTucks, boolean verbose, double equalityThreshold) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
 
-        var reverse = new ArrayList<>(best);
-        Collections.reverse(reverse);
         Set<NodePair> toRemove = new HashSet<>();
 
-        for (Node b : reverse) {
+        for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
             for (int i = 0; i < adj.size(); i++) {
@@ -163,26 +161,19 @@ public final class LvLite implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-                    if (unshieldedCollider(pag, x, b, y)) {
-                        continue;
-                    }
-
-                    if (!copyColliderCpdag(pag, cpdag, x, b, y, unshieldedColliders, toRemove, knowledge, verbose)) {
+                    if (!copyCollider(x, b, y, pag, unshieldedCollider(cpdag, x, b, y), unshieldedColliders,
+                            best_score, best_score, equalityThreshold, toRemove, knowledge, verbose)) {
                         if (allowTucks) {
                             if (!unshieldedCollider(pag, x, b, y)) {
                                 scorer.goToBookmark();
 
-                                double score1 = scorer.score();
-
                                 scorer.tuck(b, x);
                                 scorer.tuck(x, y);
-//                                scorer.tuck(y, x);
+                                double newScore = scorer.score();
 
-                                double score2 = scorer.score();
-
-                                if (Double.isNaN(equalityThreshold) || score2 > score1 - equalityThreshold * abs(score1)) {
-                                    copyColliderScorer(x, b, y, pag, scorer, unshieldedColliders, toRemove, knowledge, verbose);
-                                }
+                                copyCollider(x, b, y, pag, scorer.unshieldedCollider(x, b, y),
+                                        unshieldedColliders, best_score, newScore,
+                                        equalityThreshold, toRemove, knowledge, verbose);
                             }
                         }
                     }
@@ -250,7 +241,7 @@ public final class LvLite implements IGraphSearch {
             if (pag.removeEdge(x, y)) {
                 if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
                     TetradLogger.getInstance().log(
-                            "TUCKING: Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                            "AFTER TUCKING Removed adjacency " + x + " *-* " + y + " in the PAG.");
                 }
             }
         }
@@ -274,52 +265,38 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private static boolean copyColliderCpdag(Graph pag, Graph cpdag, Node x, Node b, Node y, Set<Triple> unshieldedColliders,
-                                             Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
-        if (unshieldedTriple(pag, x, b, y) && unshieldedCollider(cpdag, x, b, y)) {
-            if (colliderAllowed(pag, x, b, y, knowledge)) {
-                boolean oriented = !pag.isDefCollider(x, b, y);
+    private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean unshielded_collider_cpdag,
+                                        Set<Triple> unshieldedColliders,
+                                        double best_score, double newScore, double equalityThreshold,
+                                        Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
+        if (triple(pag, x, b, y) && unshielded_collider_cpdag && !unshieldedCollider(pag, x, b, y)) {
+            if (Double.isNaN(equalityThreshold) || best_score == newScore || newScore >= best_score - equalityThreshold * abs(best_score)) {
+                if (colliderAllowed(pag, x, b, y, knowledge)) {
+                    boolean oriented = false;
 
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
+                    if (!pag.isDefCollider(x, b, y)) {
+                        oriented = true;
+                    }
 
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, b, y));
+                    pag.setEndpoint(x, b, Endpoint.ARROW);
+                    pag.setEndpoint(y, b, Endpoint.ARROW);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    toRemove.add(new NodePair(x, y));
+                    unshieldedColliders.add(new Triple(x, b, y));
+
+                    if (verbose) {
+                        if (best_score == newScore) {
+                            TetradLogger.getInstance().log(
+                                    "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                        } else {
+                            TetradLogger.getInstance().log(
+                                    "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                            System.out.println(unshielded_collider_cpdag + " best_score  - newscore = " + (best_score - newScore) + " best_score = " + best_score + " newScore = " + newScore + " equalityThreshold = " + equalityThreshold);
+                        }
+                    }
+
+                    return oriented;
                 }
-
-                return oriented;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean copyColliderScorer(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, Set<Triple> unshieldedColliders,
-                                              Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
-        if (triple(pag, x, b, y) && scorer.unshieldedCollider(x, b, y)) {
-            if (colliderAllowed(pag, x, b, y, knowledge)) {
-                boolean oriented = false;
-
-                if (!pag.isDefCollider(x, b, y)) {
-                    oriented = true;
-                }
-
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
-
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, b, y));
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "FROM TUCKING oriented " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                }
-
-                return oriented;
             }
         }
 
@@ -619,7 +596,7 @@ public final class LvLite implements IGraphSearch {
 
         scorer.goToBookmark();
         scorer.tuck(b, c);
-            scorer.tuck(b, e);
+        scorer.tuck(b, e);
 //        scorer.tuck(c, e);
 
 //        scorer.goToBookmark();
@@ -720,6 +697,8 @@ public final class LvLite implements IGraphSearch {
             throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
         }
 
+        System.out.println(cpdag);
+
         if (verbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
@@ -728,7 +707,7 @@ public final class LvLite implements IGraphSearch {
 
         var scorer = new TeyssierScorer(null, score);
         scorer.setUseScore(true);
-        scorer.score(best);
+        double best_score = scorer.score(best);
         scorer.bookmark();
 
         if (verbose) {
@@ -754,12 +733,11 @@ public final class LvLite implements IGraphSearch {
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
-        double equalityThreshold = this.equalityThreshold;
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, scorer, unshieldedColliders, cpdag, knowledge,
-                    allowTucks, verbose, equalityThreshold);
+            LvLite.orientCollidersAndRemoveEdges(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
+                    allowTucks, verbose, this.equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
@@ -878,6 +856,10 @@ public final class LvLite implements IGraphSearch {
      * @param equalityThreshold the new equality threshold value
      */
     public void setEqualityThreshold(double equalityThreshold) {
+        if (Double.isNaN(equalityThreshold) || Double.isInfinite(equalityThreshold)) {
+            throw new IllegalArgumentException("Equality threshold must be a finite number: " + equalityThreshold);
+        }
+
         if (equalityThreshold < 0) {
             throw new IllegalArgumentException("Equality threshold must be >= 0: " + equalityThreshold);
         }
@@ -887,6 +869,7 @@ public final class LvLite implements IGraphSearch {
 
     /**
      * Sets the depth of the GRaSP if it is used.
+     *
      * @param depth The depth of the GRaSP.
      */
     public void setDepth(int depth) {
