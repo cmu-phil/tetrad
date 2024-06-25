@@ -407,47 +407,41 @@ public class MarkovCheck {
             Double ar = ap_ar_ahp_ahr.get(1);
             Double ahp = ap_ar_ahp_ahr.get(2);
             Double ahr = ap_ar_ahp_ahr.get(3);
-            // Record lower recall nodes
-            if (ar < lowRecallBound) {
-                lowAdjRecallNodes.add(x);
-            }
-            if (ahr < lowRecallBound) {
-                lowAHRecallNodes.add(x);
-            }
-            // All local nodes' p-values for node x.
-            List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
-            List<Double> flatList = shuffledlocalPValues.stream()
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
-            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-            if (ADTestPValue <= threshold) {
-                rejects.add(x);
-                if (!Double.isNaN(ap)) {
-                    rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ar)) {
-                    rejects_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
-                }
-                if (!Double.isNaN(ahp)) {
-                    rejects_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
-                }
-                if (!Double.isNaN(ahr)) {
-                    rejects_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
-                }
-            } else {
-                accepts.add(x);
-                if (!Double.isNaN(ap)) {
-                    accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ar)) {
-                    accepts_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
-                }
-                if (!Double.isNaN(ahp)) {
-                    accepts_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
-                }
-                if (!Double.isNaN(ahr)) {
-                    accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(ap)) {
+                        rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        rejects_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        rejects_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        rejects_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(ap)) {
+                        accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        accepts_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        accepts_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
                 }
             }
             System.out.println("-----------------------------");
@@ -541,8 +535,7 @@ public class MarkovCheck {
      * @param estimatedCpdag   The estimated CPDAG.
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
-     * @param shuffleThreshold The threshold value for shuffling the data.
-     * @param lowRecallBound   The bound value for recording low recall.
+     * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
@@ -577,32 +570,30 @@ public class MarkovCheck {
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.get(0);
             Double lgr = lgp_lgr.get(1);
-            if (lgr < lowRecallBound) {
-                lowLGRecallNodes.add(x);
-            }
-            // All local nodes' p-values for node x.
-            List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
-            List<Double> flatList = shuffledlocalPValues.stream()
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            System.out.println("# p values feed into ADTest: " + flatList.size() );
-            Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
-            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-            if (ADTestPValue <= threshold) {
-                rejects.add(x);
-                if (!Double.isNaN(lgp)) {
-                    rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
-                }
-                if (!Double.isNaN(lgr)) {
-                    rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
-                }
-            } else {
-                accepts.add(x);
-                if (!Double.isNaN(lgp)) {
-                    accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
-                }
-                if (!Double.isNaN(lgr)) {
-                    accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                System.out.println("# p values feed into ADTest: " + flatList.size() );
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
                 }
             }
             System.out.println("-----------------------------");
