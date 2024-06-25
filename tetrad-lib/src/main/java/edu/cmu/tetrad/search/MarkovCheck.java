@@ -407,6 +407,12 @@ public class MarkovCheck {
             Double ar = ap_ar_ahp_ahr.get(1);
             Double ahp = ap_ar_ahp_ahr.get(2);
             Double ahr = ap_ar_ahp_ahr.get(3);
+            if (ar < lowRecallBound) {
+                lowAdjRecallNodes.add(x);
+            }
+            if (ahr < lowRecallBound) {
+                lowAHRecallNodes.add(x);
+            }
             if (!localIndependenceFacts.isEmpty()) {
                 // All local nodes' p-values for node x.
                 List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
@@ -570,6 +576,9 @@ public class MarkovCheck {
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.get(0);
             Double lgr = lgp_lgr.get(1);
+            if (lgr < lowRecallBound) {
+                lowLGRecallNodes.add(x);
+            }
             if (!localIndependenceFacts.isEmpty()) {
                 // All local nodes' p-values for node x.
                 List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
