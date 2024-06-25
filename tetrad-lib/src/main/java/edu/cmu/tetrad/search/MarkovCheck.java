@@ -361,14 +361,17 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
-    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
         // When calling, default reject null as <=0.05
-        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<List<Node>> accepts_rejects_lowRecalls = new ArrayList<>();
         List<Node> accepts = new ArrayList<>();
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
+        List<Node> lowAdjRecallNodes = new ArrayList<>();
+        List<Node> lowAHRecallNodes = new ArrayList<>();
 
         // Confusion stats lists for data processing.
         Map<String, String> fileContentMap = new HashMap<>();
@@ -390,6 +393,9 @@ public class MarkovCheck {
         fileContentMap.put("rejects_AdjR_ADTestP_data.csv", "");
         fileContentMap.put("rejects_AHP_ADTestP_data.csv", "");
         fileContentMap.put("rejects_AHR_ADTestP_data.csv", "");
+
+        fileContentMap.put("lowAdjRecallNodes.csv", "");
+        fileContentMap.put("lowAHRecallNodes.csv", "");
 
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
@@ -440,8 +446,10 @@ public class MarkovCheck {
             }
             System.out.println("-----------------------------");
         }
-        accepts_rejects.add(accepts);
-        accepts_rejects.add(rejects);
+        accepts_rejects_lowRecalls.add(accepts);
+        accepts_rejects_lowRecalls.add(rejects);
+        accepts_rejects_lowRecalls.add(lowAdjRecallNodes);
+        accepts_rejects_lowRecalls.add(lowAHRecallNodes);
         // Write into data files.
         for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
@@ -494,6 +502,17 @@ public class MarkovCheck {
                             writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
+                    case "lowAdjRecallNodes.csv":
+                        for (Node n : lowAdjRecallNodes) {
+                            writer.write(n.toString() + "\n");
+                        }
+                        break;
+                    case "lowAHRecallNodes.csv":
+                        for (Node n: lowAHRecallNodes) {
+                            writer.write(n.toString()+"\n");
+                        }
+                         break;
+
                     default:
                         break;
                 }
@@ -502,7 +521,7 @@ public class MarkovCheck {
                 e.printStackTrace();
             }
         }
-        return accepts_rejects;
+        return accepts_rejects_lowRecalls;
     }
 
     /**
@@ -519,12 +538,13 @@ public class MarkovCheck {
      * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
-    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
         // When calling, default reject null as <=0.05
-        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<List<Node>> accepts_rejects_lowRecall = new ArrayList<>();
         List<Node> accepts = new ArrayList<>();
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
+        List<Node> lowLGRecallNodes = new ArrayList<>();
 
         // Confusion stats lists for data processing.
         Map<String, String> fileContentMap = new HashMap<>();
@@ -539,6 +559,8 @@ public class MarkovCheck {
         List<List<Double>> rejects_LGR_ADTestP = new ArrayList<>();
         fileContentMap.put("rejects_LGP_ADTestP_data.csv", "");
         fileContentMap.put("rejects_LGR_ADTestP_data.csv", "");
+
+        fileContentMap.put("lowLGRecallNodes.csv", "");
 
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
@@ -576,8 +598,9 @@ public class MarkovCheck {
             }
             System.out.println("-----------------------------");
         }
-        accepts_rejects.add(accepts);
-        accepts_rejects.add(rejects);
+        accepts_rejects_lowRecall.add(accepts);
+        accepts_rejects_lowRecall.add(rejects);
+        accepts_rejects_lowRecall.add(lowLGRecallNodes);
         // Write into data files.
         for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
@@ -606,6 +629,11 @@ public class MarkovCheck {
                             writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
+                    case "lowLGRecallNodes.csv":
+                        for (Node n: lowLGRecallNodes) {
+                            writer.write(n.toString()+"\n");
+                        }
+                        break;
 
                     default:
                         break;
@@ -615,7 +643,7 @@ public class MarkovCheck {
                 e.printStackTrace();
             }
         }
-        return accepts_rejects;
+        return accepts_rejects_lowRecall;
     }
 
     /**
