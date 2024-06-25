@@ -21,7 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -129,6 +132,10 @@ public final class GraspFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * The flag for whether to repair a faulty PAG.
+     */
+    private boolean repairFaultyPag;
 
     /**
      * Constructs a new GraspFci object.
@@ -179,7 +186,7 @@ public final class GraspFci implements IGraphSearch {
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        alg.bestOrder(variables);
+        List<Node> bestOrder = alg.bestOrder(variables);
         Graph graph = alg.getGraph(true); // Get the DAG
 
         Graph referenceDag = new EdgeListGraph(graph);
@@ -195,6 +202,10 @@ public final class GraspFci implements IGraphSearch {
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
+        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+        scorer.setKnowledge(knowledge);
+        scorer.score(bestOrder);
+
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
@@ -203,6 +214,10 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+        }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
         return graph;
@@ -348,5 +363,14 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets the flag for whether to repair a faulty PAG.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }

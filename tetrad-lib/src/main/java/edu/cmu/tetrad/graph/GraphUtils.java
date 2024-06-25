@@ -23,9 +23,12 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.LvLite;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.*;
 
 import java.text.DecimalFormat;
@@ -2858,6 +2861,52 @@ public final class GraphUtils {
         }
 
         return existsLatentConfounder;
+    }
+
+    public static Graph repairFaultyPag(FciOrient fciOrient, Graph pag) {
+        Graph _pag;
+
+        do {
+            _pag = new EdgeListGraph(pag);
+
+            for (Edge edge : pag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    if (pag.paths().isAncestorOf(x, y)) {
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(x, y);
+                    } else if (pag.paths().isAncestorOf(y, x)) {
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(y, x);
+                    }
+                }
+            }
+
+            List<Node> nodes = pag.getNodes();
+
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                        if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
+                            pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
+                        }
+                    }
+                }
+            }
+
+            fciOrient.doFinalOrientation(pag);
+
+//            LvLite.finalOrientation(fciOrient, pag, fciOrient, true, true,
+//                    true, true);
+
+            fciOrient.zhangFinalOrientation(pag);
+         } while (!pag.equals(_pag));
+
+        pag = GraphTransforms.dagToPag(pag);
+
+        return pag;
     }
 
     /**

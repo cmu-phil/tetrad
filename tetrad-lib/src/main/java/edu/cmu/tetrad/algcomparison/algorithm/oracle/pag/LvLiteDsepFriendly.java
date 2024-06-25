@@ -127,7 +127,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setAllowableThreshold(parameters.getDouble(Params.BAYES_FACTOR_THRESHOLD));
+        search.setEqualityThreshold(parameters.getDouble(Params.BAYES_FACTOR_THRESHOLD));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));

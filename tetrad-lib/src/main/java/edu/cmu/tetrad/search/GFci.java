@@ -118,6 +118,10 @@ public final class GFci implements IGraphSearch {
      * Whether the discriminating path collider rule should be used.
      */
     private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether to repair faulty PAGs.
+     */
+    private boolean repairFaultyPag = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -178,6 +182,10 @@ public final class GFci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+        }
 
         return graph;
     }
@@ -317,4 +325,12 @@ public final class GFci implements IGraphSearch {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
+    /**
+     * Sets the flag indicating whether to repair faulty PAG.
+     *
+     * @param repairFaultyPag A boolean value indicating whether to repair faulty PAG.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
 }

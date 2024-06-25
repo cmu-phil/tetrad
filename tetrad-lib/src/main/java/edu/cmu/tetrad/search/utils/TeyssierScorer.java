@@ -595,6 +595,18 @@ public class TeyssierScorer {
     }
 
     /**
+     * Returns true iff [a, b, c] is an unshielded triple.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param c The third node.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
+     */
+    public boolean unshieldedTriple(Node a, Node b, Node c) {
+        return adjacent(a, b) && adjacent(b, c) && !adjacent(a, c);
+    }
+
+    /**
      * Returns true iff [a, b, c] is a triangle.
      *
      * @param a The first node.

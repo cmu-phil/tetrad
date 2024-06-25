@@ -477,7 +477,7 @@ public final class SemGraphEditor extends JPanel
         graphProperties.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
         pathsAction.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK));
 
         graph.add(graphProperties);
         graph.add(pathsAction);

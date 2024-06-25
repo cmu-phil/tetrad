@@ -889,6 +889,10 @@ public final class Params {
      */
     public static final String BAYES_FACTOR_THRESHOLD = "bayesFactorThreshold";
     /**
+     * Constant <code>REPAIR_FAULTY_PAG="repairFaultyPag"</code>
+     */
+    public static final String REPAIR_FAULTY_PAG = "repairFaultyPag";
+    /**
      * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
      */
     public static String MIN_COUNT_PER_CELL = "minCountPerCell";

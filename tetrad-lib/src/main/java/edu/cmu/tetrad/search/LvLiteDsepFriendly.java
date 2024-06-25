@@ -103,11 +103,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * Represents a variable that determines whether tucks are allowed. The value of this variable determines whether
-     * tucks are enabled or disabled.
-     */
-    private boolean allowTucks = true;
-    /**
      * Whether to impose an ordering on the three GRaSP algorithms.
      */
     private boolean ordered = false;
@@ -127,7 +122,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
      * tests.
      */
-    private double allowableThreshold;
+    private double equalityThreshold;
     private int depth = 25;
 
     /**
@@ -217,7 +212,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         if (test instanceof MsepTest) {
             fciOrient = new FciOrient(new DagSepsets(((MsepTest) test).getGraph()));
         } else {
-            fciOrient = new FciOrient(null);
+            fciOrient = new FciOrient(scorer);
         }
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -234,16 +229,18 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
-        double bayesFactorThreshold = test instanceof MsepTest ? Double.NaN : this.allowableThreshold;
+        double equalityThreshold = /*test instanceof MsepTest ? Double.NaN :*/ this.equalityThreshold;
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientAndRemove(pag, fciOrient, best, best_score, allowableThreshold, scorer, unshieldedColliders, cpdag, knowledge,
-                    allowTucks, verbose);
+            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
+                    verbose, equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                doDiscriminatingPathColliderRule, verbose);
+        fciOrient.zhangFinalOrientation(pag);
+
+//        LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
+//                doDiscriminatingPathColliderRule, verbose);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
@@ -264,15 +261,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Sets the allowTucks flag to the specified value.
-     *
-     * @param allowTucks the boolean value indicating whether tucks are allowed
-     */
-    public void setAllowTucks(boolean allowTucks) {
-        this.allowTucks = allowTucks;
     }
 
     /**
@@ -383,10 +371,10 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
      * tests.
      *
-     * @param allowableThreshold the equality threshold
+     * @param equalityThreshold the equality threshold
      */
-    public void setAllowableThreshold(double allowableThreshold) {
-        this.allowableThreshold = allowableThreshold;
+    public void setEqualityThreshold(double equalityThreshold) {
+        this.equalityThreshold = equalityThreshold;
     }
 
     /**

@@ -133,6 +133,10 @@ public final class BFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether to repair a faulty PAG.
+     */
+    private boolean repairFaultyPag;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -199,6 +203,11 @@ public final class BFci implements IGraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+        }
+
         return graph;
     }
 
@@ -316,6 +325,15 @@ public final class BFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
+    }
+
+    /**
+     * Sets whether to repair a faulty PAG.
+     *
+     * @param repairFaultyPag True if a faulty PAG should be repaired, false otherwise.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }
 

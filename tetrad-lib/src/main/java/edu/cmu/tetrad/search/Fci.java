@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -124,6 +127,10 @@ public final class Fci implements IGraphSearch {
      * Whether the discriminating path rule should be used.
      */
     private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether the PAG should be repaired.
+     */
+    private boolean repairFaultyPag;
 
     /**
      * Constructor.
@@ -225,6 +232,10 @@ public final class Fci implements IGraphSearch {
 
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+        }
 
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
@@ -372,6 +383,15 @@ public final class Fci implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    /**
+     * Sets whether the PAG should be repaired if faulty.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }
 

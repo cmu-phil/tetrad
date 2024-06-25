@@ -27,7 +27,10 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DagSepsets;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -97,8 +100,8 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * Indicates the maximum number of variables that can be conditioned
-     * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
+     * Indicates the maximum number of variables that can be conditioned on during the search. A negative depth value
+     * (-1 in this case) indicates unlimited depth.
      */
     private int depth = -1;
     /**
@@ -113,6 +116,10 @@ public final class SpFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * True iff the search should repair a faulty PAG.
+     */
+    private boolean repairFaultyPag = false;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -174,6 +181,11 @@ public final class SpFci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+        }
+
         return graph;
     }
 
@@ -297,6 +309,7 @@ public final class SpFci implements IGraphSearch {
 
     /**
      * Sets whether the discriminating path tail rule is done.
+     *
      * @param doDiscriminatingPathTailRule True, if so.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
@@ -305,9 +318,19 @@ public final class SpFci implements IGraphSearch {
 
     /**
      * Sets whether the discriminating path collider rule is done.
+     *
      * @param doDiscriminatingPathTCollideRule True, if so.
      */
     public void setDoDiscriminatingPathCollideRule(boolean doDiscriminatingPathTCollideRule) {
         this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
+    }
+
+    /**
+     * Sets whether the search should repair a faulty PAG.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }
