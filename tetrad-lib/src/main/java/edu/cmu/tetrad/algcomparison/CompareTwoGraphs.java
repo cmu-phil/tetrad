@@ -101,7 +101,7 @@ public class CompareTwoGraphs {
         builder.append("""
 
 
-                Two-cycles in true correctly adjacent in estimated""");
+                Two-cycles in true correctly adjacent in estimated:""");
 
         sort(allSingleEdges);
 
@@ -116,13 +116,43 @@ public class CompareTwoGraphs {
         }
 
         List<Edge> incorrect = new ArrayList<>();
+        List<Edge> compatible = new ArrayList<>();
 
         for (Edge adj : allSingleEdges) {
             Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
             Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
 
             if (!edge1.equals(edge2)) {
-                incorrect.add(adj);
+                Node x = edge1.getNode1();
+                Node y = edge1.getNode2();
+
+                boolean wrong = false;
+
+                if (edge2 == null) {
+                    wrong = true;
+                } else {
+                    if (edge1.getProximalEndpoint(x) == Endpoint.ARROW && edge2.getProximalEndpoint(x) == Endpoint.TAIL) {
+                        wrong = true;
+                    }
+
+                    if (edge1.getProximalEndpoint(x) == Endpoint.TAIL && edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
+                        wrong = true;
+                    }
+
+                    if (edge1.getDistalEndpoint(x) == Endpoint.ARROW && edge2.getDistalEndpoint(x) == Endpoint.TAIL) {
+                        wrong = true;
+                    }
+
+                    if (edge1.getDistalEndpoint(x) == Endpoint.TAIL && edge2.getDistalEndpoint(x) == Endpoint.ARROW) {
+                        wrong = true;
+                    }
+                }
+
+                if (wrong) {
+                    incorrect.add(adj);
+                } else {
+                    compatible.add(adj);
+                }
             }
         }
 
@@ -130,7 +160,7 @@ public class CompareTwoGraphs {
             builder.append("""
 
 
-                    Edges incorrectly oriented""");
+                    Edges incorrectly oriented:""");
 
             if (incorrect.isEmpty()) {
                 builder.append("\n  --NONE--");
@@ -151,7 +181,28 @@ public class CompareTwoGraphs {
             builder.append("""
 
 
-                    Edges correctly oriented""");
+                    Edges compatibly oriented (but different):""");
+
+            if (compatible.isEmpty()) {
+                builder.append("\n  --NONE--");
+            } else {
+                int j1 = 0;
+                sort(compatible);
+
+                for (Edge adj : compatible) {
+                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
+                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
+                    if (edge1 == null || edge2 == null) continue;
+                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
+                }
+            }
+        }
+
+        {
+            builder.append("""
+
+
+                    Edges correctly oriented:""");
 
             List<Edge> correct = new ArrayList<>();
 

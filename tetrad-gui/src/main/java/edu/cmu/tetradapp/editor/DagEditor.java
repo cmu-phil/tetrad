@@ -490,11 +490,16 @@ public final class DagEditor extends JPanel
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
         graph.addSeparator();
+        randomGraph.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
 
-        graph.add(new GraphPropertiesAction(this.workbench));
-        graph.add(new PathsAction(this.workbench, parameters));
-        graph.add(new UnderliningsAction(this.workbench));
-        graph.addSeparator();
+
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(getWorkbench()));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction(getWorkbench(), parameters));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));

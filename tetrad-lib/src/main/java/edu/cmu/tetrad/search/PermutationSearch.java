@@ -135,12 +135,16 @@ public class PermutationSearch {
         return graph;
     }
 
+    public Graph search() {
+        return search(true);
+    }
+
     /**
      * Performe the search and return a CPDAG.
      *
      * @return The CPDAG.
      */
-    public Graph search() {
+    public Graph search(boolean cpdag) {
         if (this.seed != -1) {
             RandomUtil.getInstance().setSeed(this.seed);
         }
@@ -186,7 +190,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag);
     }
 
     /**

@@ -24,28 +24,32 @@ public class GraphTransforms {
     private GraphTransforms() {
     }
 
+    public static Graph dagFromCpdag(Graph graph) {
+        return dagFromCpdag(graph, null, true, true);
+    }
+
     /**
      * <p>dagFromCpdag.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static Graph dagFromCpdag(Graph graph) {
-        return dagFromCpdag(graph, null, true);
+    public static Graph dagFromCpdag(Graph graph, boolean verbose) {
+        return dagFromCpdag(graph, null, true, verbose);
     }
 
     /**
-     * Converts a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG).
-     * If the given CPDAG is not a PDAG (Partially Directed Acyclic Graph), returns null.
+     * Converts a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG). If the given
+     * CPDAG is not a PDAG (Partially Directed Acyclic Graph), returns null.
      *
-     * @param graph                 the CPDAG to be converted into a DAG
-     * @param meekPreventCycles     whether to prevent cycles using the Meek rules by orienting additional
-     *                              arbitrary unshielded colliders in the graph
-     * @return a directed acyclic graph (DAG) obtained from the given CPDAG.
-     *         If the given CPDAG is not a PDAG, returns null.
+     * @param graph             the CPDAG to be converted into a DAG
+     * @param meekPreventCycles whether to prevent cycles using the Meek rules by orienting additional arbitrary
+     *                          unshielded colliders in the graph
+     * @return a directed acyclic graph (DAG) obtained from the given CPDAG. If the given CPDAG is not a PDAG, returns
+     * null.
      */
-    public static Graph dagFromCpdag(Graph graph, boolean meekPreventCycles) {
-        return dagFromCpdag(graph, null, meekPreventCycles);
+    public static Graph dagFromCpdag(Graph graph, boolean meekPreventCycles, boolean verbose) {
+        return dagFromCpdag(graph, null, meekPreventCycles, verbose);
     }
 
     /**
@@ -56,7 +60,7 @@ public class GraphTransforms {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
-        return dagFromCpdag(graph, knowledge, true);
+        return dagFromCpdag(graph, knowledge, true, true);
     }
 
     /**
@@ -68,9 +72,9 @@ public class GraphTransforms {
      *                          unshielded colliders in the graph.
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
-    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles) {
+    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         Graph dag = new EdgeListGraph(cpdag);
-        transformCpdagIntoRandomDag(dag, knowledge, meekPreventCycles);
+        transformCpdagIntoRandomDag(dag, knowledge, meekPreventCycles, verbose);
         return dag;
     }
 
@@ -83,7 +87,8 @@ public class GraphTransforms {
      * @param meekPreventCycles Whether to prevent cycles using the Meek rules by orienting additional arbitrary
      *                          unshielded colliders in the graph.
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles) {
+    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles,
+                                                   boolean verbose) {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -96,6 +101,7 @@ public class GraphTransforms {
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(meekPreventCycles);
+        rules.setVerbose(verbose);
 
         if (knowledge != null) {
             rules.setKnowledge(knowledge);

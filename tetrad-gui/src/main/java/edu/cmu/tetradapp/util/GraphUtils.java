@@ -198,6 +198,19 @@ public class GraphUtils {
         checkGraph.add(checkGraphForMag);
         checkGraph.add(checkGraphForPag);
 //        checkGraph.add(checkGraphForMpag);
+
+        checkGraphForDag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.ALT_DOWN_MASK));
+        checkGraphForCpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_2, InputEvent.ALT_DOWN_MASK));
+        checkGraphForMpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_3, InputEvent.ALT_DOWN_MASK));
+        checkGraphForMag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_4, InputEvent.ALT_DOWN_MASK));
+        checkGraphForPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_5, InputEvent.ALT_DOWN_MASK));
+
+
         return checkGraph;
     }
 

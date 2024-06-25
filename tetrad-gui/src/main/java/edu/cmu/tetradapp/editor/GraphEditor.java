@@ -512,12 +512,19 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(randomGraph);
 
         randomGraph.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.META_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
 
         graph.addSeparator();
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench(), parameters));
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(getWorkbench()));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction(getWorkbench(), parameters));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
+
+        graph.add(graphProperties);
+        graph.add(pathsAction);
         graph.add(new UnderliningsAction(getWorkbench()));
         graph.addSeparator();
 

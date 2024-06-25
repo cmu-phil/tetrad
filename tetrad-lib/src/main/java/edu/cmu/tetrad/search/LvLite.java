@@ -30,8 +30,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static java.lang.Math.exp;
-
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
  * structure of a graphical model from observational data.
@@ -103,7 +101,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The threshold for equality, a fraction of abs(BIC).
      */
-    private double bayesFactorThreshold = 0.0005;
+    private double allowableThreshold = 0.0;
     /**
      * The algorithm to use to obtain the initial CPDAG.
      */
@@ -138,12 +136,11 @@ public final class LvLite implements IGraphSearch {
      * @param cpdag               The CPDAG.
      * @param knowledge           The knowledge object.
      * @param allowTucks          A boolean value indicating whether tucks are allowed.
-     * @param bayesFactorThreshold   The threshold for equality. (This is not used for Oracle scoring.)
      * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
-    public static void orientAndRemove(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
+    public static void orientAndRemove(Graph pag, FciOrient fciOrient, List<Node> best, double best_score, double allowableThreshold,
                                        TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                       boolean allowTucks, boolean verbose, double bayesFactorThreshold) {
+                                       boolean allowTucks, boolean verbose) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -162,18 +159,17 @@ public final class LvLite implements IGraphSearch {
                     var y = adj.get(j);
 
                     if (!copyCollider(x, b, y, pag, unshieldedCollider(cpdag, x, b, y), unshieldedColliders,
-                            best_score, best_score, bayesFactorThreshold, toRemove, knowledge, verbose)) {
+                            best_score, best_score, allowableThreshold, toRemove, knowledge, verbose)) {
                         if (allowTucks) {
                             if (!unshieldedCollider(pag, x, b, y)) {
                                 scorer.goToBookmark();
 
                                 scorer.tuck(b, x);
                                 scorer.tuck(x, y);
-                                double newScore = scorer.score();
+                                double newScore = scorer.getNumEdges();
 
                                 copyCollider(x, b, y, pag, scorer.unshieldedCollider(x, b, y),
-                                        unshieldedColliders, best_score, newScore,
-                                        bayesFactorThreshold, toRemove, knowledge, verbose);
+                                        unshieldedColliders, best_score, allowableThreshold, newScore, toRemove, knowledge, verbose);
                             }
                         }
                     }
@@ -267,15 +263,12 @@ public final class LvLite implements IGraphSearch {
 
     private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean unshielded_collider_cpdag,
                                         Set<Triple> unshieldedColliders,
-                                        double bestScore, double newScore, double bayesFactorThreshold,
+                                        double bestScore, double allowableThreshold, double newScore,
                                         Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && unshielded_collider_cpdag && !unshieldedCollider(pag, x, b, y)) {
-            double bayesFactor = newScore - bestScore;
-
-            System.out.println("Bayes factor = " + bayesFactor);
 
             // Multiplying the Bayes factor threshold by 2 since our BIC scores are of the form 2L - c k ln N.
-            if (Double.isNaN(bayesFactorThreshold) || bestScore == newScore || newScore >= bestScore - 2 * bayesFactorThreshold) {
+            if (newScore >= bestScore - allowableThreshold) {
                 if (colliderAllowed(pag, x, b, y, knowledge)) {
                     boolean oriented = false;
 
@@ -296,7 +289,7 @@ public final class LvLite implements IGraphSearch {
                         } else {
                             TetradLogger.getInstance().log(
                                     "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " bayesFactorThreshold = " + bayesFactorThreshold);
+                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore);
                         }
                     }
 
@@ -655,7 +648,7 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
-        Graph cpdag;
+        Graph dag;
         List<Node> best;
 
         // BOSS seems to be doing better here.
@@ -669,8 +662,9 @@ public final class LvLite implements IGraphSearch {
             suborderSearch.setNumStarts(numStarts);
             var permutationSearch = new PermutationSearch(suborderSearch);
             permutationSearch.setKnowledge(knowledge);
-            cpdag = permutationSearch.search();
+            dag = permutationSearch.search(false);
             best = permutationSearch.getOrder();
+//            dag = getGraph(suborderSearch.getVariables(), suborderSearch.getParents(), this.knowledge, false);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
@@ -693,7 +687,7 @@ public final class LvLite implements IGraphSearch {
             grasp.setNumStarts(numStarts);
             grasp.setKnowledge(this.knowledge);
             best = grasp.bestOrder(nodes);
-            cpdag = grasp.getGraph(true);
+            dag = grasp.getGraph(false);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
@@ -703,18 +697,19 @@ public final class LvLite implements IGraphSearch {
             throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
         }
 
-        System.out.println(cpdag);
+        System.out.println(dag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
-        var pag = new EdgeListGraph(cpdag);
+        var pag = new EdgeListGraph(dag);
 
         var scorer = new TeyssierScorer(null, score);
         scorer.setUseScore(true);
         scorer.setKnowledge(knowledge);
-        double best_score = scorer.score(best);
+        scorer.score(best);
+        double best_score = scorer.getNumEdges();
         scorer.bookmark();
 
         if (verbose) {
@@ -741,10 +736,17 @@ public final class LvLite implements IGraphSearch {
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
 
+//        do {
+//            _unshieldedColliders = new HashSet<>(unshieldedColliders);
+//            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, dag, knowledge,
+//                    allowTucks, verbose, 0.0001);
+//        } while (!unshieldedColliders.equals(_unshieldedColliders));
+
+
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
-                    allowTucks, verbose, this.bayesFactorThreshold);
+            LvLite.orientAndRemove(pag, fciOrient, best, best_score, this.allowableThreshold, scorer, unshieldedColliders, dag, knowledge,
+                    allowTucks, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
@@ -860,18 +862,14 @@ public final class LvLite implements IGraphSearch {
     /**
      * Sets the equality threshold used for comparing values, a fraction of abs(BIC).
      *
-     * @param bayesFactorThreshold the new equality threshold value
+     * @param allowableThreshold the new equality threshold value
      */
-    public void setBayesFactorThreshold(double bayesFactorThreshold) {
-        if (Double.isNaN(bayesFactorThreshold) || Double.isInfinite(bayesFactorThreshold)) {
-            throw new IllegalArgumentException("Equality threshold must be a finite number: " + bayesFactorThreshold);
+    public void setAllowableThreshold(double allowableThreshold) {
+        if (Double.isNaN(allowableThreshold) || Double.isInfinite(allowableThreshold)) {
+            throw new IllegalArgumentException("Equality threshold must be a finite number: " + allowableThreshold);
         }
 
-        if (bayesFactorThreshold < 0) {
-            throw new IllegalArgumentException("Equality threshold must be >= 0: " + bayesFactorThreshold);
-        }
-
-        this.bayesFactorThreshold = bayesFactorThreshold;
+        this.allowableThreshold = allowableThreshold;
     }
 
     /**

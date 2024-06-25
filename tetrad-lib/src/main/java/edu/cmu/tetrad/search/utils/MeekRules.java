@@ -60,7 +60,7 @@ public class MeekRules {
      * True if cycles are to be prevented. Default is true. If true, cycles are prevented adding arbitrary new
      * unshielded colliders to the graph.
      */
-    private boolean meekPreventCycles;
+    private boolean meekPreventCycles = false;
     /**
      * Whether verbose output should be generated. True if verbose output should be printed.
      */
@@ -381,7 +381,7 @@ public class MeekRules {
             visited.add(a);
             visited.add(c);
 
-            return false;
+            return true;
         }
 
         Edge after = Edges.directedEdge(a, c);
