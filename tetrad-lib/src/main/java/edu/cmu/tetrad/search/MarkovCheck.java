@@ -361,6 +361,7 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
@@ -541,6 +542,7 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
