@@ -517,7 +517,7 @@ public class MarkovCheck {
                         for (Node n: lowAHRecallNodes) {
                             writer.write(n.toString()+"\n");
                         }
-                         break;
+                        break;
 
                     default:
                         break;
