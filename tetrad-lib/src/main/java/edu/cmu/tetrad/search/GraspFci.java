@@ -216,7 +216,7 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
+            GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
         }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());

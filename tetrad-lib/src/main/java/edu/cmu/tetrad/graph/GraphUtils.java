@@ -1897,6 +1897,10 @@ public final class GraphUtils {
      * @param verbose Whether to print verbose output.
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting extra-edge removal step.");
+        }
+
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -2475,6 +2479,10 @@ public final class GraphUtils {
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting GFCI-R0.");
+        }
+
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         fciOrientbk(knowledge, pag, pag.getNodes());
@@ -2860,7 +2868,7 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
-    public static Graph repairFaultyPag(FciOrient fciOrient, Graph pag, boolean verbose) {
+    public static void repairFaultyPag(FciOrient fciOrient, Graph pag, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2916,13 +2924,9 @@ public final class GraphUtils {
             fciOrient.doFinalOrientation(pag);
          } while (!pag.equals(_pag));
 
-//        pag = GraphTransforms.dagToPag(pag);
-
         if (verbose) {
             TetradLogger.getInstance().log("Faulty PAG repaired.");
         }
-
-        return pag;
     }
 
     /**

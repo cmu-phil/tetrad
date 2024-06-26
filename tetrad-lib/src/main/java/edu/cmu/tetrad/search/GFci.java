@@ -151,7 +151,9 @@ public final class GFci implements IGraphSearch {
             TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        Graph graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FGES algorithm.");
+        }
 
         Fges fges = new Fges(this.score);
         fges.setKnowledge(getKnowledge());
@@ -160,9 +162,17 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        graph = fges.search();
+        Graph graph = fges.search();
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished FGES algorithm.");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
+        }
+
+        Graph cpdag = new EdgeListGraph(graph);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
@@ -171,8 +181,12 @@ public final class GFci implements IGraphSearch {
             sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -184,7 +198,7 @@ public final class GFci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
+            GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
         }
 
         return graph;

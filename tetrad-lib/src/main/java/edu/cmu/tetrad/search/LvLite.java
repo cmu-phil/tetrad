@@ -500,7 +500,7 @@ public final class LvLite implements IGraphSearch {
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         if (repairFaultyPag) {
-            pag = GraphUtils.repairFaultyPag(fciOrient, pag, verbose);
+            GraphUtils.repairFaultyPag(fciOrient, pag, verbose);
         }
 
         fciOrient.zhangFinalOrientation(pag);
