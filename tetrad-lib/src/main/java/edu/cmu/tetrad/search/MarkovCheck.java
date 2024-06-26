@@ -358,14 +358,17 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
-    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
         // When calling, default reject null as <=0.05
-        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<List<Node>> accepts_rejects_lowRecalls = new ArrayList<>();
         List<Node> accepts = new ArrayList<>();
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
+        List<Node> lowAdjRecallNodes = new ArrayList<>();
+        List<Node> lowAHRecallNodes = new ArrayList<>();
 
         // Confusion stats lists for data processing.
         Map<String, String> fileContentMap = new HashMap<>();
@@ -388,54 +391,68 @@ public class MarkovCheck {
         fileContentMap.put("rejects_AHP_ADTestP_data.csv", "");
         fileContentMap.put("rejects_AHR_ADTestP_data.csv", "");
 
+        fileContentMap.put("lowAdjRecallNodes.csv", "");
+        fileContentMap.put("lowAHRecallNodes.csv", "");
+
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
             Double ap = ap_ar_ahp_ahr.get(0);
             Double ar = ap_ar_ahp_ahr.get(1);
             Double ahp = ap_ar_ahp_ahr.get(2);
             Double ahr = ap_ar_ahp_ahr.get(3);
-            // All local nodes' p-values for node x.
-            List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
-            List<Double> flatList = shuffledlocalPValues.stream()
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
-            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-            if (ADTestPValue <= threshold) {
-                rejects.add(x);
-                if (!Double.isNaN(ap)) {
-                    rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ar)) {
-                    rejects_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ahp)) {
-                    rejects_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ahr)) {
-                    rejects_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-            } else {
-                accepts.add(x);
-                if (!Double.isNaN(ap)) {
-                    accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ar)) {
-                    accepts_AdjR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ahp)) {
-                    accepts_AHP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
-                }
-                if (!Double.isNaN(ahr)) {
-                    accepts_AHR_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+            if (ar < lowRecallBound) {
+                lowAdjRecallNodes.add(x);
+            }
+            if (ahr < lowRecallBound) {
+                lowAHRecallNodes.add(x);
+            }
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(ap)) {
+                        rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        rejects_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        rejects_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        rejects_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(ap)) {
+                        accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        accepts_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        accepts_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
                 }
             }
+            System.out.println("-----------------------------");
         }
-        accepts_rejects.add(accepts);
-        accepts_rejects.add(rejects);
+        accepts_rejects_lowRecalls.add(accepts);
+        accepts_rejects_lowRecalls.add(rejects);
+        accepts_rejects_lowRecalls.add(lowAdjRecallNodes);
+        accepts_rejects_lowRecalls.add(lowAHRecallNodes);
         // Write into data files.
         for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
@@ -488,6 +505,17 @@ public class MarkovCheck {
                             writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
+                    case "lowAdjRecallNodes.csv":
+                        for (Node n : lowAdjRecallNodes) {
+                            writer.write(n.toString() + "\n");
+                        }
+                        break;
+                    case "lowAHRecallNodes.csv":
+                        for (Node n: lowAHRecallNodes) {
+                            writer.write(n.toString()+"\n");
+                        }
+                        break;
+
                     default:
                         break;
                 }
@@ -496,7 +524,7 @@ public class MarkovCheck {
                 e.printStackTrace();
             }
         }
-        return accepts_rejects;
+        return accepts_rejects_lowRecalls;
     }
 
     /**
@@ -510,15 +538,16 @@ public class MarkovCheck {
      * @param estimatedCpdag   The estimated CPDAG.
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
-     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
-    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold) {
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
         // When calling, default reject null as <=0.05
-        List<List<Node>> accepts_rejects = new ArrayList<>();
+        List<List<Node>> accepts_rejects_lowRecall = new ArrayList<>();
         List<Node> accepts = new ArrayList<>();
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
+        List<Node> lowLGRecallNodes = new ArrayList<>();
 
         // Confusion stats lists for data processing.
         Map<String, String> fileContentMap = new HashMap<>();
@@ -534,40 +563,50 @@ public class MarkovCheck {
         fileContentMap.put("rejects_LGP_ADTestP_data.csv", "");
         fileContentMap.put("rejects_LGR_ADTestP_data.csv", "");
 
+        fileContentMap.put("lowLGRecallNodes.csv", "");
+
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.get(0);
             Double lgr = lgp_lgr.get(1);
-            // All local nodes' p-values for node x.
-            List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
-            List<Double> flatList = shuffledlocalPValues.stream()
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
-            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
-            if (ADTestPValue <= threshold) {
-                rejects.add(x);
-                if (!Double.isNaN(lgp)) {
-                    rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
-                }
-                if (!Double.isNaN(lgr)) {
-                    rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
-                }
-            } else {
-                accepts.add(x);
-                if (!Double.isNaN(lgp)) {
-                    accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
-                }
-                if (!Double.isNaN(lgr)) {
-                    accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+            if (lgr < lowRecallBound) {
+                lowLGRecallNodes.add(x);
+            }
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                System.out.println("# p values feed into ADTest: " + flatList.size() );
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
                 }
             }
+            System.out.println("-----------------------------");
         }
-        accepts_rejects.add(accepts);
-        accepts_rejects.add(rejects);
+        accepts_rejects_lowRecall.add(accepts);
+        accepts_rejects_lowRecall.add(rejects);
+        accepts_rejects_lowRecall.add(lowLGRecallNodes);
         // Write into data files.
         for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
@@ -596,6 +635,11 @@ public class MarkovCheck {
                             writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
+                    case "lowLGRecallNodes.csv":
+                        for (Node n: lowLGRecallNodes) {
+                            writer.write(n.toString()+"\n");
+                        }
+                        break;
 
                     default:
                         break;
@@ -605,7 +649,7 @@ public class MarkovCheck {
                 e.printStackTrace();
             }
         }
-        return accepts_rejects;
+        return accepts_rejects_lowRecall;
     }
 
     /**
