@@ -126,6 +126,7 @@ public class TestCheckMarkov {
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -135,7 +136,6 @@ public class TestCheckMarkov {
         double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
-
         testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag);
         testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
