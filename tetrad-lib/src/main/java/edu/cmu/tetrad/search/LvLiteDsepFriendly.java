@@ -216,8 +216,8 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         }
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(false);
-        fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -238,10 +238,6 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
-
-//        LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
-//                doDiscriminatingPathColliderRule, verbose);
-
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
 

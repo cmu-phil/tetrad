@@ -202,8 +202,17 @@ public final class Fci implements IGraphSearch {
         fas.setStable(this.stable);
 
         //The PAG being constructed.
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FAS search.");
+        }
+
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Reorienting with o-o.");
+        }
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -212,8 +221,25 @@ public final class Fci implements IGraphSearch {
         SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
 
         if (this.possibleMsepSearchDone) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Starting possible msep search.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing R0.");
+            }
+
             new FciOrient(sepsets1).ruleR0(graph);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Removing by possible d-sep.");
+            }
+
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Reorienting all edges as o-o.");
+            }
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -230,11 +256,20 @@ public final class Fci implements IGraphSearch {
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
 
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing R0.");
+        }
+
         fciOrient.ruleR0(graph);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing Final Orientation.");
+        }
+
         fciOrient.doFinalOrientation(graph);
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();

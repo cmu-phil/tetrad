@@ -23,12 +23,9 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.LvLite;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.*;
 
 import java.text.DecimalFormat;
@@ -2863,7 +2860,11 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
-    public static Graph repairFaultyPag(FciOrient fciOrient, Graph pag) {
+    public static Graph repairFaultyPag(FciOrient fciOrient, Graph pag, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Repairing faulty PAG...");
+        }
+
         Graph _pag;
 
         do {
@@ -2876,10 +2877,18 @@ public final class GraphUtils {
 
                     if (pag.paths().isAncestorOf(x, y)) {
                         pag.removeEdge(x, y);
-                        pag.addDirectedEdge(x, y);
+                        pag.addPartiallyOrientedEdge(x, y);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Oriented " + x + " <-> " + y + " to " + x + " -> " + y + ".");
+                        }
                     } else if (pag.paths().isAncestorOf(y, x)) {
                         pag.removeEdge(x, y);
-                        pag.addDirectedEdge(y, x);
+                        pag.addPartiallyOrientedEdge(y, x);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Oriented " + x + " <-> " + y + " to " + y + " -> " + x + ".");
+                        }
                     }
                 }
             }
@@ -2891,20 +2900,27 @@ public final class GraphUtils {
                     if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
                         if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
                             pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
+
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Added nondirected edge: " + nodes.get(i) + " --- " + nodes.get(j) + ".");
+                            }
                         }
                     }
                 }
             }
 
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing final orientation...");
+            }
+
             fciOrient.doFinalOrientation(pag);
-
-//            LvLite.finalOrientation(fciOrient, pag, fciOrient, true, true,
-//                    true, true);
-
-            fciOrient.zhangFinalOrientation(pag);
          } while (!pag.equals(_pag));
 
-        pag = GraphTransforms.dagToPag(pag);
+//        pag = GraphTransforms.dagToPag(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Faulty PAG repaired.");
+        }
 
         return pag;
     }

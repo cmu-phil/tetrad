@@ -205,7 +205,7 @@ public final class BFci implements IGraphSearch {
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
         }
 
         return graph;

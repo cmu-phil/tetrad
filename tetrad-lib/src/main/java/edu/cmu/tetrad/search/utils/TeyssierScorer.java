@@ -146,11 +146,11 @@ public class TeyssierScorer {
     /**
      * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param k The node to tuck j before.
      * @param j The node to tuck.
+     * @param k The node to tuck j before.
      * @return true if the tuck made a change.
      */
-    public boolean tuck(Node k, Node j) {
+    public boolean tuck(Node j, Node k) {
         int jIndex = index(j);
         int kIndex = index(k);
 

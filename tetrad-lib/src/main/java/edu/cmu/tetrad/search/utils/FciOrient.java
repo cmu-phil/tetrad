@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.LvLite;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -437,8 +436,8 @@ public final class FciOrient {
         }
 
         scorer.goToBookmark();
-        scorer.tuck(b, c);
-        scorer.tuck(b, e);
+        scorer.tuck(c, b);
+        scorer.tuck(e, b);
 //        scorer.tuck(c, e);
 
 //        scorer.goToBookmark();
@@ -883,15 +882,10 @@ public final class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4B(Graph graph) {
-        if (scorer != null) {
-            discriminatingPathRuleScoreBased(graph, scorer, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
-            return;
-        }
-
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
-            if (sepsets == null) {
+            if (sepsets == null && scorer == null) {
                 throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
-                                               "in FciOrient, you must provide a SepsetProducer.");
+                                               "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
             }
 
             List<Node> nodes = graph.getNodes();
@@ -1211,6 +1205,12 @@ public final class FciOrient {
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+
+        if (scorer != null) {
+            return doDdpOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
+                    doDiscriminatingPathColliderRule, verbose);
+        }
+
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
             return false;
         }

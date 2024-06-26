@@ -184,7 +184,7 @@ public final class GFci implements IGraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(fciOrient, graph);
+            graph = GraphUtils.repairFaultyPag(fciOrient, graph, verbose);
         }
 
         return graph;

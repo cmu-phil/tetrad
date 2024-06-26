@@ -133,19 +133,19 @@ public final class LvLite implements IGraphSearch {
      * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
      * possibility that the removal of an edge may allow for further removals or orientations.
      *
-     * @param pag                  The original graph.
-     * @param fciOrient            The orientation rules to be applied.
-     * @param best                 The list of best nodes.
-     * @param scorer               The scorer used to evaluate edge orientations.
-     * @param unshieldedColliders  The set of unshielded colliders.
-     * @param cpdag                The CPDAG.
-     * @param knowledge            The knowledge object.
-     * @param bayesFactorThreshold The threshold for equality. (This is not used for Oracle scoring.)
-     * @param verbose              A boolean value indicating whether verbose output should be printed.
+     * @param pag                 The original graph.
+     * @param fciOrient           The orientation rules to be applied.
+     * @param best                The list of best nodes.
+     * @param scorer              The scorer used to evaluate edge orientations.
+     * @param unshieldedColliders The set of unshielded colliders.
+     * @param cpdag               The CPDAG.
+     * @param knowledge           The knowledge object.
+     * @param maxScoreDrop        The threshold for equality. (This is not used for Oracle scoring.)
+     * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
     public static void orientAndRemove(Graph pag, FciOrient fciOrient, List<Node> best, double best_score,
                                        TeyssierScorer scorer, Set<Triple> unshieldedColliders, Graph cpdag, Knowledge knowledge,
-                                       boolean verbose, double bayesFactorThreshold) {
+                                       boolean verbose, double maxScoreDrop) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -164,25 +164,27 @@ public final class LvLite implements IGraphSearch {
                     var y = adj.get(j);
 
                     if (!copyCollider(x, b, y, pag, true, unshieldedCollider(cpdag, x, b, y), unshieldedColliders,
-                            best_score, best_score, bayesFactorThreshold, toRemove, knowledge, verbose)) {
-                        for (Node w : cpdag.getAdjacentNodes(y)) {
-                            if (w == x || w == b) {
-                                continue;
-                            }
+                            best_score, best_score, maxScoreDrop, toRemove, knowledge, verbose)) {
+                        if (triangle(cpdag, x, b, y)) {
+//                            for (Node w : cpdag.getAdjacentNodes(y)) {
+//                                if (w == x || w == b) {
+//                                    continue;
+//                                }
+//
+//                                if (unshieldedCollider(cpdag, b, y, w) && triangle(cpdag, x, b, y)) {
+                                    scorer.goToBookmark();
+                                    scorer.tuck(y, b);
+                                    scorer.tuck(x, y);
+                                    double newScore = scorer.score();
 
-                            if (unshieldedCollider(cpdag, b, y, w) /*&& unshieldedCollider(cpdag, x, y, w)*/ && triangle(cpdag, x, b, y)) {
-                                scorer.goToBookmark();
-                                scorer.tuck(b, x);
-                                scorer.tuck(x, y);
-                                double newScore = scorer.score();
-
-                                if (scorer.triangle(b, y, w) && scorer.unshieldedCollider(x, b, y) /*&& scorer.unshieldedCollider(x, b, w)*/) {
-                                    copyCollider(x, b, y, pag, false, scorer.unshieldedCollider(x, b, y),
-                                            unshieldedColliders, best_score, newScore,
-                                            bayesFactorThreshold, toRemove, knowledge, verbose);
-                                }
+//                                    if (scorer.triangle(b, y, w) && scorer.unshieldedTriple(x, b, y)) {
+                                        copyCollider(x, b, y, pag, false, scorer.unshieldedCollider(x, b, y),
+                                                unshieldedColliders, best_score, newScore,
+                                                maxScoreDrop, toRemove, knowledge, verbose);
+//                                    }
+//                                }
                             }
-                        }
+//                        }
                     }
                 }
             }
@@ -275,35 +277,34 @@ public final class LvLite implements IGraphSearch {
     private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean copy,
                                         boolean unshielded_collider_cpdag,
                                         Set<Triple> unshieldedColliders,
-                                        double bestScore, double newScore, double bayesFactorThreshold,
+                                        double bestScore, double newScore, double maxScoreDrop,
                                         Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
         if (triple(pag, x, b, y) && !unshieldedCollider(pag, x, b, y) && unshielded_collider_cpdag) {
 
-            // Multiplying the Bayes factor threshold by 2 since our BIC scores are of the form 2L - c k ln N.
-//            if (Double.isNaN(bayesFactorThreshold) || newScore >= bestScore - bayesFactorThreshold) {
-            if (colliderAllowed(pag, x, b, y, knowledge)) {
-                boolean oriented = !pag.isDefCollider(x, b, y);
+            if (/*Double.isNaN(maxScoreDrop) ||*/ newScore >= bestScore - maxScoreDrop) {
+                if (colliderAllowed(pag, x, b, y, knowledge)) {
+                    boolean oriented = !pag.isDefCollider(x, b, y);
 
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
+                    pag.setEndpoint(x, b, Endpoint.ARROW);
+                    pag.setEndpoint(y, b, Endpoint.ARROW);
 
-                toRemove.add(new NodePair(x, y));
-                unshieldedColliders.add(new Triple(x, b, y));
+                    toRemove.add(new NodePair(x, y));
+                    unshieldedColliders.add(new Triple(x, b, y));
 
-                if (verbose) {
-                    if (copy) {
-                        TetradLogger.getInstance().log(
-                                "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                    } else {
-                        TetradLogger.getInstance().log(
-                                "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                        System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " bayesFactorThreshold = " + bayesFactorThreshold);
+                    if (verbose) {
+                        if (copy) {
+                            TetradLogger.getInstance().log(
+                                    "Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                        } else {
+                            TetradLogger.getInstance().log(
+                                    "AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                            System.out.println(unshielded_collider_cpdag + " bestScore  - newscore = " + (bestScore - newScore) + " bestScore = " + bestScore + " newScore = " + newScore + " maxScoreDrop = " + maxScoreDrop);
+                        }
                     }
-                }
 
-                return oriented;
+                    return oriented;
+                }
             }
-//            }
         }
 
         return false;
@@ -478,8 +479,8 @@ public final class LvLite implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(false);
-        fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -499,17 +500,12 @@ public final class LvLite implements IGraphSearch {
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         if (repairFaultyPag) {
-            pag = GraphUtils.repairFaultyPag(fciOrient, pag);
+            pag = GraphUtils.repairFaultyPag(fciOrient, pag, verbose);
         }
 
-        LvLite.finalOrientation(fciOrient, pag, scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                doDiscriminatingPathColliderRule, verbose);
-
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//        pag = GraphTransforms.dagToPag(mag);
+        fciOrient.zhangFinalOrientation(pag);
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
-//        return GraphUtils.repairFaultyPag(score, _out);
     }
 
     /**
