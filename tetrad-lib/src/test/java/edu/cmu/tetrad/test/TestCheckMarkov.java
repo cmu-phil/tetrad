@@ -115,7 +115,7 @@ public class TestCheckMarkov {
     @Test
     public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
 //        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
-        Graph trueGraph = RandomGraph.randomDag(10, 0, 40, 100, 100, 100, false);
+        Graph trueGraph = RandomGraph.randomDag(80, 0, 80, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
@@ -126,19 +126,19 @@ public class TestCheckMarkov {
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
-        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag);
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
+        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
         double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
         double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null);
         double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null);
         double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
-        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag);
-        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
-        System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
         System.out.println("whole_ap: " + whole_ap);
         System.out.println("whole_ar: " + whole_ar );
         System.out.println("whole_ahp: " + whole_ahp);
