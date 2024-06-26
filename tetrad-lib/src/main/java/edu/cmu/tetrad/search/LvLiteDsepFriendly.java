@@ -216,8 +216,8 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         }
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(true);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -229,12 +229,11 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> _unshieldedColliders;
-        double equalityThreshold = /*test instanceof MsepTest ? Double.NaN :*/ this.equalityThreshold;
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, cpdag, knowledge,
-                    verbose, equalityThreshold);
+            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge,
+                    verbose, this.equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
