@@ -103,11 +103,13 @@ public class DegenerateGaussianScore implements Score {
                     B.get(keys.get(key))[j] = 1;
                 }
 
-                // Remove a degenerate dimension.
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
+                if (!usePseudoInverse) {
+                    // Remove a degenerate dimension.
+                    i--;
+                    keys.remove(keysReverse.get(i));
+                    A.remove(i);
+                    B.remove(i);
+                }
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
 

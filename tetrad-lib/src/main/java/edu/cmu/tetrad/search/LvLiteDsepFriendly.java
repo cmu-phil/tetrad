@@ -35,6 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.cmu.tetrad.search.LvLite.recallUnshieldedTriples;
+import static edu.cmu.tetrad.search.LvLite.reorientWithCircles;
+
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
  * structure of a graphical model from observational data.
@@ -232,11 +235,18 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            LvLite.orientAndRemove(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge,
+            LvLite.processTriples(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge,
                     verbose, this.equalityThreshold);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
+
+        LvLite.removeExtraEdges(pag, test, verbose);
+
+        reorientWithCircles(pag, verbose);
+        recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+        fciOrient.zhangFinalOrientation(pag);
+
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
 

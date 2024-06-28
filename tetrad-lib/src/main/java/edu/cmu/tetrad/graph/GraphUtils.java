@@ -252,7 +252,7 @@ public final class GraphUtils {
      * @return the string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
-        return GraphUtils.pathString(graph, path, new HashSet<>(), showBlocked);
+        return pathString(graph, path, new HashSet<>(), showBlocked, false);
     }
 
     /**
@@ -277,27 +277,31 @@ public final class GraphUtils {
      * @return a string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars) {
-        return pathString(graph, path, conditioningVars, false);
+        return pathString(graph, path, conditioningVars, false, false);
     }
 
     /**
      * Returns a string representation of the given path in the graph, with additional information about conditioning
      * variables.
      *
-     * @param graph            the graph containing the path
-     * @param path             the list of nodes representing the path
-     * @param conditioningVars the list of nodes representing the conditioning variables
-     * @param showBlocked      whether to show information about blocked paths
+     * @param graph              the graph containing the path
+     * @param path               the list of nodes representing the path
+     * @param conditioningVars   the list of nodes representing the conditioning variables
+     * @param showBlocked        whether to show information about blocked paths
+     * @param allowSelectionBias whether to allow selection bias. For CPDAGs, this should be false, since undirected
+     *                           edges mean directed in one direction or the other. For PAGs, it should be true, since
+     *                           undirected edges indicate selection bias.
      * @return a string representation of the path with conditioning information
      */
-    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked) {
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked,
+                                    boolean allowSelectionBias) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
         }
 
-        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, false);
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, allowSelectionBias);
 
         if (showBlocked) {
             if (!mConnecting) {
@@ -2868,12 +2872,52 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
-    public static void repairFaultyPag(FciOrient fciOrient, Graph pag, boolean verbose) {
+    /**
+     * Repairs a faulty PAG (Partially Directed Acyclic Graph).
+     * <p>
+     * If the estimated PAG contains a directed cycle, an IllegalArgumentException is thrown, as this type of estimated
+     * PAG cannot be repaired.
+     * <p>
+     * Otherwise, two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y,
+     * then the edge is oriented to x --&gt; y. Such an edge cannot be x &lt;-- y on pain of a cycle. Also, it cannot be
+     * x &lt;-&gt; y because the bidirected-edge semantics prohibits it (the problem we're trying to fix). So it must
+     * actually be x --&gt; y. The basic issue here is that to know the edge is not bidirected, we need to be able to
+     * "peer into the future" of the orientation process, which we can't do. As it turns out, this edge can't have been
+     * bidirected in the first place, because it would have been oriented to x --&gt; y in the first place had we known
+     * that x ~~&gt; y. So it's making a claim about non-causality that can't be supported. So we just fix it in
+     * post-processing.
+     * <p>
+     * Second, if there is an inducing path between two non-adjacent nodes x and y, then a nondirected edge x o-o y is
+     * added between them. In a PAG, x and y are adjacent if and only if there is an inducing path between x and y, so
+     * this is an error that should be fixed. It's possible the final orientation will orient it, but it's also possible
+     * that it will remain nondirected.
+     * <p>
+     * The final orientation is then done using the supplied FciOrient object, which should be configured to have the
+     * desired behavior.
+     * <p>
+     * As changes that are made above may imply further changes, the process is repeated until no further changes are
+     * made.
+     * <p>
+     * The end result of this repair process may not be a legal PAG if additional edges are oriented by knowledge or by
+     * unfaithfulness in the original estimated PAG. However, it will be a PAG for which some knowledge-based
+     * orientation process could have been applied.
+     *
+     * @param pag       the faulty PAG to be repaired
+     * @param fciOrient the FciOrient object used for final orientation
+     * @param verbose   indicates whether or not to print verbose output
+     * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
+     */
+    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
+        if (pag.paths().existsDirectedCycle()) {
+            throw new IllegalArgumentException("The estimated PAG contains a directed cycle; we can't repair it.");
+        }
+
         Graph _pag;
+        boolean changed = false;
 
         do {
             _pag = new EdgeListGraph(pag);
@@ -2883,20 +2927,31 @@ public final class GraphUtils {
                     Node x = edge.getNode1();
                     Node y = edge.getNode2();
 
+                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
+                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
+                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
+                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
+                    // it turns out, this edge can't have been bidirected in the first place, because it would have
+                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
+                    // about non-causality that can't be supported. So we just fix it in post-processing.
                     if (pag.paths().isAncestorOf(x, y)) {
                         pag.removeEdge(x, y);
-                        pag.addPartiallyOrientedEdge(x, y);
+                        pag.addDirectedEdge(x, y);
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + " <-> " + y + " to " + x + " -> " + y + ".");
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented" + y + " <-> " + x + " as " + x + " -> " + y + ".");
                         }
+
+                        changed = true;
                     } else if (pag.paths().isAncestorOf(y, x)) {
                         pag.removeEdge(x, y);
-                        pag.addPartiallyOrientedEdge(y, x);
+                        pag.addDirectedEdge(y, x);
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + " <-> " + y + " to " + y + " -> " + x + ".");
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
                         }
+
+                        changed = true;
                     }
                 }
             }
@@ -2905,13 +2960,21 @@ public final class GraphUtils {
 
             for (int i = 0; i < nodes.size(); i++) {
                 for (int j = i + 1; j < nodes.size(); j++) {
+
+                    // The nodes x and y should be adjacent in the PAG if and only if there is an inducing path between
+                    // them. If they are not adjacent, but there is an inducing path between them, then we add a
+                    // nondirected edge x o-o y between them, as we know this edge must exist, but we don't know its
+                    // orientation. It's possible the final orientation will orient it, but it's also possible that
+                    // it will remain nondirected.
                     if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
                         if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
                             pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("Added nondirected edge: " + nodes.get(i) + " --- " + nodes.get(j) + ".");
+                                TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because of an inducing path, added nondirected edge: " + nodes.get(i) + " o-o " + nodes.get(j) + ".");
                             }
+
+                            changed = true;
                         }
                     }
                 }
@@ -2922,7 +2985,13 @@ public final class GraphUtils {
             }
 
             fciOrient.doFinalOrientation(pag);
-         } while (!pag.equals(_pag));
+        } while (!pag.equals(_pag));
+
+        if (!changed) {
+            if (verbose) {
+                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+            }
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Faulty PAG repaired.");

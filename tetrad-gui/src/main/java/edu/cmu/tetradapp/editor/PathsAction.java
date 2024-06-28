@@ -1179,6 +1179,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private void listPaths(Graph graph, JTextArea textArea, List<List<Node>> paths) {
         textArea.append("\n\n    Not Blocked:\n");
 
+        boolean allowSelectionBias = graph.paths().isLegalPag();
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                allowSelectionBias = true;
+                break;
+            }
+        }
+
         boolean found1 = false;
 
         boolean mpdag = false;
@@ -1199,7 +1208,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             if (graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, !mpdag));
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet,
+                        !mpdag, allowSelectionBias));
                 found1 = true;
             }
         }
@@ -1218,7 +1228,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             if (!graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true,
+                        allowSelectionBias));
                 found2 = true;
             }
         }

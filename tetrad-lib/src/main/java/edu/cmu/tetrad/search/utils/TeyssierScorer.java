@@ -515,6 +515,10 @@ public class TeyssierScorer {
             throw new IllegalArgumentException("That key was not bookmarked: " + key);
         }
 
+        if (this.pi.equals(this.bookmarkedOrders.get(key))) {
+            return;
+        }
+
         this.pi = new ArrayList<>(this.bookmarkedOrders.get(key));
         this.scores = new ArrayList<>(this.bookmarkedScores.get(key));
         this.orderHash = new HashMap<>(this.bookmarkedOrderHashes.get(key));

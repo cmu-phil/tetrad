@@ -4,8 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -16,6 +18,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -40,11 +43,12 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -85,7 +89,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite(ScoreWrapper score) {
+    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
@@ -113,8 +118,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             knowledge = timeSeries.getKnowledge();
         }
 
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -249,5 +255,15 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

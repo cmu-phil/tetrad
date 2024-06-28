@@ -569,46 +569,10 @@ public class Paths implements TetradSerializable {
      * @param maxLength The maximum length of the paths.
      * @return A list of paths, where each path is a list of nodes.
      */
-    public List<List<Node>> allBlockablePaths(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, null, false);
         return paths;
-    }
-
-    private void allBlockablePathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (maxLength != -1 && path.size() > maxLength - 2) {
-            return;
-        }
-
-        path.addLast(node1);
-
-        Set<Node> __path = new HashSet<>(path);
-        if (__path.size() < path.size()) {
-            return;
-        }
-
-        if (node1 == node2) {
-            LinkedList<Node> _path = new LinkedList<>(path);
-            if (!paths.contains(path)) {
-                paths.add(_path);
-            }
-        }
-
-        for (Edge edge : graph.getEdges(node1)) {
-            Node child = Edges.traverse(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (path.contains(child)) {
-                continue;
-            }
-
-            allPathsVisit(child, node2, path, paths, maxLength);
-        }
-
-        path.removeLast();
     }
 
     /**
@@ -619,14 +583,16 @@ public class Paths implements TetradSerializable {
      * @param maxLength The maximum length of the paths.
      * @return A list of paths, where each path is a list of nodes.
      */
-    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
+                                     boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
-    private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (maxLength != -1 && path.size() > maxLength - 2) {
+    private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength,
+                               Set<Node> conditionSet, boolean allowSelectionBias) {
+        if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
 
@@ -638,9 +604,22 @@ public class Paths implements TetradSerializable {
         }
 
         if (node1 == node2) {
-            LinkedList<Node> _path = new LinkedList<>(path);
-            if (!paths.contains(path)) {
-                paths.add(_path);
+            if (conditionSet != null) {
+                LinkedList<Node> _path = new LinkedList<>(path);
+
+                if (path.size() > 1) {
+                    if (!paths.contains(path)) {
+                        if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                            paths.add(_path);
+                        }
+                    }
+                }
+            } else {
+                LinkedList<Node> _path = new LinkedList<>(path);
+
+                if (!paths.contains(path)) {
+                    paths.add(_path);
+                }
             }
         }
 
@@ -655,7 +634,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsVisit(child, node2, path, paths, maxLength);
+            allPathsVisit(child, node2, path, paths, maxLength, conditionSet, allowSelectionBias);
         }
 
         path.removeLast();
@@ -1805,10 +1784,10 @@ public class Paths implements TetradSerializable {
             // "virtual edges" that are directed in the direction of the arrow, so that the reachability
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
-            if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                if (Edges.isUndirectedEdge(edge2)) {
+            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (Edges.isNondirectedEdge(edge2)) {
+                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
                     edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                 }
             }
@@ -2521,6 +2500,42 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
      * An algorithm to find all cliques in a graph.
      */
     public static class AllCliquesAlgorithm {
@@ -2602,42 +2617,6 @@ public class Paths implements TetradSerializable {
             Set<Integer> result = new HashSet<>(set);
             result.add(element);
             return result;
-        }
-    }
-
-    /**
-     * Writes the object to the specified ObjectOutputStream.
-     *
-     * @param out The ObjectOutputStream to write the object to.
-     * @throws IOException If an I/O error occurs.
-     */
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
-     *
-     * @param in The ObjectInputStream to read the object from.
-     * @throws IOException            If an I/O error occurs.
-     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
-     */
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
         }
     }
 }
