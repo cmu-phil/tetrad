@@ -300,20 +300,6 @@ public final class LvLite implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return a != b && b != c && a != c && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
     public static void removeExtraEdges(Graph pag, IndependenceTest test, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking larger conditioning sets:");
@@ -321,48 +307,13 @@ public final class LvLite implements IGraphSearch {
 
         List<Edge> toRemove = new ArrayList<>();
 
-        EDGE:
-        for (Edge edge : pag.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-            Set<Node> conditioningSet = new HashSet<>();
-            List<List<Node>> paths;
+//        for (Edge edge : pag.getEdges()) {
+//            tryRemovingEdge(edge, pag, test, toRemove, verbose);
+//        }
 
-            W:
-            while (true) {
-                for (int length = 3; length <= 5; length++) {
-                    paths = pag.paths().allPaths(x, y, length, conditioningSet, true);
-
-                    // Sort paths by length.
-                    paths.sort(Comparator.comparingInt(List::size));
-
-                    for (List<Node> path : paths) {
-                        for (int i = 1; i < path.size() - 1; i++) {
-                            Node z1 = path.get(i - 1);
-                            Node z2 = path.get(i);
-                            Node z3 = path.get(i + 1);
-
-                            if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)){
-                                conditioningSet.add(z2);
-                                if (path.size() - 1 > 2) {
-                                    continue W;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                break;
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking independence of " + x + " *-* " + y + " given " + conditioningSet);
-            }
-
-            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-                toRemove.add(edge);
-            }
-        }
+        pag.getEdges().parallelStream().forEach(edge -> {
+            tryRemovingEdge(edge, pag, test, toRemove, verbose);
+        });
 
         if (verbose) {
             TetradLogger.getInstance().log("Done listing larger conditioning sets.");
@@ -374,6 +325,48 @@ public final class LvLite implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Removed edges: " + toRemove);
+        }
+    }
+
+    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, List<Edge> toRemove, boolean verbose) {
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+        Set<Node> conditioningSet = new HashSet<>();
+        List<List<Node>> paths;
+
+        W:
+        while (true) {
+            for (int length = 3; length <= 5; length++) {
+                paths = pag.paths().allPaths(x, y, length, conditioningSet, true);
+
+                // Sort paths by length.
+                paths.sort(Comparator.comparingInt(List::size));
+
+                for (List<Node> path : paths) {
+                    for (int i = 1; i < path.size() - 1; i++) {
+                        Node z1 = path.get(i - 1);
+                        Node z2 = path.get(i);
+                        Node z3 = path.get(i + 1);
+
+                        if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)){
+                            conditioningSet.add(z2);
+                            if (path.size() - 1 > 2) {
+                                continue W;
+                            }
+                        }
+                    }
+                }
+            }
+
+            break;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Checking independence of " + x + " *-* " + y + " given " + conditioningSet);
+        }
+
+        if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
+            toRemove.add(edge);
         }
     }
 
