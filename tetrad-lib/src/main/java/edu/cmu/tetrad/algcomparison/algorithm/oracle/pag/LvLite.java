@@ -125,7 +125,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         if (test instanceof MsepTest) {
             if (parameters.getBoolean(Params.ALLOW_TUCKS)) {
                 if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
-                    throw new IllegalArgumentException("BOSS cannot be used form a d-separation oracle.");
+                    throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
                 }
             }
         }
