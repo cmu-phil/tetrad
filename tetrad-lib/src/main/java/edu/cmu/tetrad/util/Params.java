@@ -885,9 +885,9 @@ public final class Params {
      */
     public static final String ALLOW_TUCKS = "allowTucks";
     /**
-     * Constant <code>ALLOW_TUCKS="allowTucks"</code>
+     * Constant <code>ALLOWABLE_SCORE_DROP="allowableScoreDrop"</code>
      */
-    public static final String BAYES_FACTOR_THRESHOLD = "bayesFactorThreshold";
+    public static final String ALLOWABLE_SCORE_DROP = "allowableScoreDrop";
     /**
      * Constant <code>REPAIR_FAULTY_PAG="repairFaultyPag"</code>
      */
@@ -904,6 +904,11 @@ public final class Params {
      * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
      */
     public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    /**
+     * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
+     */
+    public static final String LV_LITE_MAX_PATH_LENGTH = "lvLiteMaxPathLength";
+
 
     private Params() {
     }

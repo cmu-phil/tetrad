@@ -99,7 +99,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The threshold for equality, a fraction of abs(BIC).
      */
-    private double equalityThreshold = 0.0005;
+    private double allowableScoreDrop = 5;
     /**
      * The algorithm to use to obtain the initial CPDAG.
      */
@@ -300,19 +300,16 @@ public final class LvLite implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
-    public static void removeExtraEdges(Graph pag, IndependenceTest test, boolean verbose) {
+    public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking larger conditioning sets:");
         }
 
         List<Edge> toRemove = new ArrayList<>();
 
-//        for (Edge edge : pag.getEdges()) {
-//            tryRemovingEdge(edge, pag, test, toRemove, verbose);
-//        }
-
+        // Embarrasingly parallel.
         pag.getEdges().parallelStream().forEach(edge -> {
-            tryRemovingEdge(edge, pag, test, toRemove, verbose);
+            tryRemovingEdge(edge, pag, test, toRemove, maxPathLength, verbose);
         });
 
         if (verbose) {
@@ -328,7 +325,8 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, List<Edge> toRemove, boolean verbose) {
+    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, List<Edge> toRemove, int maxPathLength,
+                                        boolean verbose) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
         Set<Node> conditioningSet = new HashSet<>();
@@ -336,26 +334,30 @@ public final class LvLite implements IGraphSearch {
 
         W:
         while (true) {
-            for (int length = 3; length <= 5; length++) {
-                paths = pag.paths().allPaths(x, y, length, conditioningSet, true);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
-                // Sort paths by length.
-                paths.sort(Comparator.comparingInt(List::size));
+//            for (int length = 3; length <= 5; length++) {
+            paths = pag.paths().allPaths(x, y, maxPathLength, conditioningSet, true);
 
-                for (List<Node> path : paths) {
-                    for (int i = 1; i < path.size() - 1; i++) {
-                        Node z1 = path.get(i - 1);
-                        Node z2 = path.get(i);
-                        Node z3 = path.get(i + 1);
+            // Sort paths by length.
+            paths.sort(Comparator.comparingInt(List::size));
 
-                        if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)){
-                            conditioningSet.add(z2);
-                            if (path.size() - 1 > 2) {
-                                continue W;
-                            }
+            for (List<Node> path : paths) {
+                for (int i = 1; i < path.size() - 1; i++) {
+                    Node z1 = path.get(i - 1);
+                    Node z2 = path.get(i);
+                    Node z3 = path.get(i + 1);
+
+                    if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
+                        conditioningSet.add(z2);
+                        if (path.size() - 1 > 2) {
+                            continue W;
                         }
                     }
                 }
+//                }
             }
 
             break;
@@ -454,7 +456,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
@@ -468,7 +470,7 @@ public final class LvLite implements IGraphSearch {
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            processTriples(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge, verbose, this.equalityThreshold);
+            processTriples(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge, verbose, this.allowableScoreDrop);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
@@ -477,7 +479,7 @@ public final class LvLite implements IGraphSearch {
             GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
         }
 
-        removeExtraEdges(pag, test, verbose);
+        removeExtraEdges(pag, test, maxPathLength, verbose);
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
         fciOrient.zhangFinalOrientation(pag);
@@ -585,20 +587,20 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets the equality threshold used for comparing values, a fraction of abs(BIC).
+     * Sets the allowable score drop used in the process triples step. A higher bound may orient more colliders.
      *
-     * @param equalityThreshold the new equality threshold value
+     * @param allowableScoreDrop the new equality threshold value
      */
-    public void setEqualityThreshold(double equalityThreshold) {
-        if (Double.isNaN(equalityThreshold) || Double.isInfinite(equalityThreshold)) {
-            throw new IllegalArgumentException("Equality threshold must be a finite number: " + equalityThreshold);
+    public void setAllowableScoreDrop(double allowableScoreDrop) {
+        if (Double.isNaN(allowableScoreDrop) || Double.isInfinite(allowableScoreDrop)) {
+            throw new IllegalArgumentException("Equality threshold must be a finite number: " + allowableScoreDrop);
         }
 
-        if (equalityThreshold < 0) {
-            throw new IllegalArgumentException("Equality threshold must be >= 0: " + equalityThreshold);
+        if (allowableScoreDrop < 0) {
+            throw new IllegalArgumentException("Equality threshold must be >= 0: " + allowableScoreDrop);
         }
 
-        this.equalityThreshold = equalityThreshold;
+        this.allowableScoreDrop = allowableScoreDrop;
     }
 
     /**

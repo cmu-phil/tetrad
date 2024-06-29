@@ -9,7 +9,6 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -127,7 +126,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setEqualityThreshold(parameters.getDouble(Params.BAYES_FACTOR_THRESHOLD));
+        search.setAllowableScoreDrop(parameters.getDouble(Params.ALLOWABLE_SCORE_DROP));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -192,7 +191,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.BAYES_FACTOR_THRESHOLD);
+        params.add(Params.ALLOWABLE_SCORE_DROP);
 
         // General
         params.add(Params.TIME_LAG);

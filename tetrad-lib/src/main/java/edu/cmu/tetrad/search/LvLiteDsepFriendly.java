@@ -125,7 +125,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
      * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
      * tests.
      */
-    private double equalityThreshold;
+    private double allowableScoreDrop;
     private int depth = 25;
 
     /**
@@ -221,7 +221,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
 
@@ -236,12 +236,12 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
             LvLite.processTriples(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge,
-                    verbose, this.equalityThreshold);
+                    verbose, this.allowableScoreDrop);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
 
-        LvLite.removeExtraEdges(pag, test, verbose);
+        LvLite.removeExtraEdges(pag, test, maxPathLength, verbose);
 
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
@@ -373,13 +373,12 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
     }
 
     /**
-     * The equality threshold, a fraction of abs(BIC) used to determine equality of scores. This is not used for MSEP
-     * tests.
+     * The allowable score drop in the process triples step. A higher value may result in more colliders.
      *
-     * @param equalityThreshold the equality threshold
+     * @param allowableScoreDrop the equality threshold
      */
-    public void setEqualityThreshold(double equalityThreshold) {
-        this.equalityThreshold = equalityThreshold;
+    public void setAllowableScoreDrop(double allowableScoreDrop) {
+        this.allowableScoreDrop = allowableScoreDrop;
     }
 
     /**
