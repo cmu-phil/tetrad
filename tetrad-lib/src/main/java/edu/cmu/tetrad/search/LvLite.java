@@ -403,7 +403,7 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
-            edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(null, score);
+            edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
             grasp.setSeed(-1);
             grasp.setDepth(depth);
@@ -434,7 +434,7 @@ public final class LvLite implements IGraphSearch {
         }
 
 
-        var scorer = new TeyssierScorer(null, score);
+        var scorer = new TeyssierScorer(test, score);
 
         scorer.setUseScore(true);
         scorer.setKnowledge(knowledge);

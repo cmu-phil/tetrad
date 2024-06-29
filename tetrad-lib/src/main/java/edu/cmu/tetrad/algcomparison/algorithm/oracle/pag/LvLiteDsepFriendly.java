@@ -39,11 +39,11 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Lite-Dsep-Friendly",
-        command = "lv-lite-dsep-friendly",
-        algoType = AlgType.allow_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "LV-Lite-Dsep-Friendly",
+//        command = "lv-lite-dsep-friendly",
+//        algoType = AlgType.allow_latent_common_causes
+//)
 @Bootstrapping
 public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {

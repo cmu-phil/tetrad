@@ -20,6 +20,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -120,6 +121,15 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
+
+        if (test instanceof MsepTest) {
+            if (parameters.getBoolean(Params.ALLOW_TUCKS)) {
+                if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+                    throw new IllegalArgumentException("BOSS cannot be used form a d-separation oracle.");
+                }
+            }
+        }
+
         edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
         // BOSS

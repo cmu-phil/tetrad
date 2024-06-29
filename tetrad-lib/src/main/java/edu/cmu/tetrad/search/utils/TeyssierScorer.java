@@ -805,6 +805,7 @@ public class TeyssierScorer {
                     parents.add(z0);
                     continue;
                 }
+
                 if (this.test.checkIndependence(n, z0, new HashSet<>(parents)).isDependent()) {
                     parents.add(z0);
                     changed1 = true;
