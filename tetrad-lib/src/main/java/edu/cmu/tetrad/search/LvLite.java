@@ -300,14 +300,14 @@ public final class LvLite implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
-    public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, boolean verbose) {
+    public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking larger conditioning sets:");
         }
 
-        List<Edge> toRemove = new ArrayList<>();
+        Map<Edge, Set<Node>> toRemove = new HashMap<>();
 
-        // Embarrasingly parallel.
+        // Embarrasingly parallelizable.
         pag.getEdges().parallelStream().forEach(edge -> {
             tryRemovingEdge(edge, pag, test, toRemove, maxPathLength, verbose);
         });
@@ -316,8 +316,17 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Done listing larger conditioning sets.");
         }
 
-        for (Edge edge : toRemove) {
+        for (Edge edge : toRemove.keySet()) {
             pag.removeEdge(edge.getNode1(), edge.getNode2());
+
+            List<Node> common = new ArrayList<>(toRemove.get(edge));
+            common.retainAll(pag.getAdjacentNodes(edge.getNode1()));
+
+            for (Node node : common) {
+                if (!toRemove.get(edge).contains(node)) {
+                    unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
+                }
+            }
         }
 
         if (verbose) {
@@ -325,42 +334,47 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, List<Edge> toRemove, int maxPathLength,
+    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength,
                                         boolean verbose) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
         Set<Node> conditioningSet = new HashSet<>();
         List<List<Node>> paths;
 
-        W:
-        while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+        // Let's block the short paths first.
+        for (int length = 3; length <= maxPathLength; length++) {
 
-//            for (int length = 3; length <= 5; length++) {
-            paths = pag.paths().allPaths(x, y, maxPathLength, conditioningSet, true);
+            W:
+            while (true) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
 
-            // Sort paths by length.
-            paths.sort(Comparator.comparingInt(List::size));
+                paths = pag.paths().allPaths(x, y, length, conditioningSet, true);
 
-            for (List<Node> path : paths) {
-                for (int i = 1; i < path.size() - 1; i++) {
-                    Node z1 = path.get(i - 1);
-                    Node z2 = path.get(i);
-                    Node z3 = path.get(i + 1);
+                // Sort paths by length.
+                paths.sort(Comparator.comparingInt(List::size));
 
-                    if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
-                        conditioningSet.add(z2);
-                        if (path.size() - 1 > 2) {
-                            continue W;
+                for (List<Node> path : paths) {
+                    for (int i = 1; i < path.size() - 1; i++) {
+                        Node z1 = path.get(i - 1);
+                        Node z2 = path.get(i);
+                        Node z3 = path.get(i + 1);
+
+                        if (pag.paths().isMConnectingPath(path, conditioningSet, true)
+                            && !pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
+                            conditioningSet.add(z2);
+
+                            // All the length-3 paths need to be blocked first.
+                            if (path.size() - 1 > 2) {
+                                continue W;
+                            }
                         }
                     }
                 }
-//                }
-            }
 
-            break;
+                break;
+            }
         }
 
         if (verbose) {
@@ -368,7 +382,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-            toRemove.add(edge);
+            toRemove.put(edge, conditioningSet);
         }
     }
 
@@ -479,7 +493,7 @@ public final class LvLite implements IGraphSearch {
             GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
         }
 
-        removeExtraEdges(pag, test, maxPathLength, verbose);
+        removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
         fciOrient.zhangFinalOrientation(pag);

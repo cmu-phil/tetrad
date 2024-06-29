@@ -241,7 +241,7 @@ public final class LvLiteDsepFriendly implements IGraphSearch {
 
         fciOrient.zhangFinalOrientation(pag);
 
-        LvLite.removeExtraEdges(pag, test, maxPathLength, verbose);
+        LvLite.removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
 
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);

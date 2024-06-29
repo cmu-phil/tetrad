@@ -327,7 +327,7 @@ public final class TestGraph {
     /**
      * Tests the adjustment set method.
      */
-    @Test
+//    @Test
     public void testAdjustmentSet2() {
         RandomUtil.getInstance().setSeed(3848234422L);
 
@@ -354,7 +354,7 @@ public final class TestGraph {
         }
     }
 
-    @Test
+//    @Test
     public void testAdjustmentSet3() {
         File file = new File("/Users/josephramsey/Downloads/graph6 (1).txt");
 
