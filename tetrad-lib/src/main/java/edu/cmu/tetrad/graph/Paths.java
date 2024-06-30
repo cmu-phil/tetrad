@@ -576,12 +576,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Finds all paths from node1 to node2 within a specified maximum length.
+     * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection bias.
      *
-     * @param node1     The starting node.
-     * @param node2     The target node.
-     * @param maxLength The maximum length of the paths.
-     * @return A list of paths, where each path is a list of nodes.
+     * @param node1             the starting node
+     * @param node2             the target node
+     * @param maxLength         the maximum length of each path
+     * @param conditionSet      a set of nodes that need to be included in the path (optional)
+     * @param allowSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
+     *                           edges in one direction or the other.
+     * @return a list of paths between node1 and node2 that satisfy the conditions
      */
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                      boolean allowSelectionBias) {

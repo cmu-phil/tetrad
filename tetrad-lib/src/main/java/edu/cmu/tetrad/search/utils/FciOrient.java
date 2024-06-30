@@ -60,8 +60,8 @@ import java.util.*;
  * @see Rfci
  */
 public final class FciOrient {
-    private SepsetProducer sepsets;
     private final TetradLogger logger = TetradLogger.getInstance();
+    private SepsetProducer sepsets;
     private TeyssierScorer scorer;
     private Knowledge knowledge = new Knowledge();
     private boolean changeFlag = true;
@@ -81,6 +81,11 @@ public final class FciOrient {
         this.sepsets = sepsets;
     }
 
+    /**
+     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
+     *
+     * @param scorer the TeyssierScorer object to be used for scoring
+     */
     public FciOrient(TeyssierScorer scorer) {
         this.scorer = scorer;
     }
@@ -243,7 +248,12 @@ public final class FciOrient {
      * <p>
      * This is Zhang's rule R4, discriminating paths.
      *
-     * @param graph a {@link Graph} object
+     * @param graph                            a {@link Graph} object
+     * @param scorer                           a {@link TeyssierScorer} object
+     * @param doDiscriminatingPathTailRule     Whether to apply the discriminating path tail rule
+     * @param doDiscriminatingPathColliderRule Whether to apply the discriminating path collider rule
+     * @param  verbose                          whether to print verbose output
+     * @return true if the orientation is determined, false otherwise
      */
     public static boolean discriminatingPathRuleScoreBased(Graph graph, TeyssierScorer scorer,
                                                            boolean doDiscriminatingPathTailRule,
@@ -932,10 +942,10 @@ public final class FciOrient {
      * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a                                a {@link Node} object
-     * @param b                                a {@link Node} object
-     * @param c                                a {@link Node} object
-     * @param graph                            a {@link Graph} object
+     * @param a     a {@link Node} object
+     * @param b     a {@link Node} object
+     * @param c     a {@link Node} object
+     * @param graph a {@link Graph} object
      */
     private boolean ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);

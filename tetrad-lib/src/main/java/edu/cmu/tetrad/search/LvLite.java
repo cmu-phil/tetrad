@@ -117,6 +117,7 @@ public final class LvLite implements IGraphSearch {
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
      * Score object.
      *
+     * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
@@ -141,13 +142,15 @@ public final class LvLite implements IGraphSearch {
      * @param pag                 The original graph.
      * @param fciOrient           The orientation rules to be applied.
      * @param best                The list of best nodes.
+     * @param best_score          The score of the BOSS/GRaSP model.
      * @param scorer              The scorer used to evaluate edge orientations.
      * @param unshieldedColliders The set of unshielded colliders.
      * @param knowledge           The knowledge object.
      * @param maxScoreDrop        The threshold for equality. (This is not used for Oracle scoring.)
      * @param verbose             A boolean value indicating whether verbose output should be printed.
      */
-    public static void processTriples(Graph pag, FciOrient fciOrient, List<Node> best, double best_score, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose, double maxScoreDrop) {
+    public static void processTriples(Graph pag, FciOrient fciOrient, List<Node> best, double best_score, TeyssierScorer scorer,
+                                      Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose, double maxScoreDrop) {
         reorientWithCircles(pag, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
@@ -190,7 +193,8 @@ public final class LvLite implements IGraphSearch {
      * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
      * Graph following the PAG (Partially Ancestral Graph) structure.
      *
-     * @param pag The Graph to be reoriented.
+     * @param pag     The Graph to be reoriented.
+     * @param verbose A boolean value indicating whether verbose output should be printed.
      */
     public static void reorientWithCircles(Graph pag, boolean verbose) {
         if (verbose) {
@@ -214,6 +218,13 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
+    /**
+     * Recall unshielded triples in a given graph.
+     *
+     * @param pag                 The graph to recall unshielded triples from.
+     * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
+     * @param verbose             A boolean flag indicating whether verbose output should be printed.
+     */
     public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, boolean verbose) {
         for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
@@ -300,6 +311,15 @@ public final class LvLite implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
+    /**
+     * Removes extra edges in a graph according to specified conditions.
+     *
+     * @param pag                 The graph in which to remove extra edges.
+     * @param test                The IndependenceTest object used for testing independence between variables.
+     * @param maxPathLength       The maximum length of any blocked path.
+     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
+     * @param verbose             A boolean value indicating whether verbose output should be printed.
+     */
     public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking larger conditioning sets:");

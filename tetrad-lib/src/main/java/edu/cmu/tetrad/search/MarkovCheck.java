@@ -511,8 +511,8 @@ public class MarkovCheck {
                         }
                         break;
                     case "lowAHRecallNodes.csv":
-                        for (Node n: lowAHRecallNodes) {
-                            writer.write(n.toString()+"\n");
+                        for (Node n : lowAHRecallNodes) {
+                            writer.write(n.toString() + "\n");
                         }
                         break;
 
@@ -539,6 +539,7 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
@@ -582,7 +583,7 @@ public class MarkovCheck {
                 List<Double> flatList = shuffledlocalPValues.stream()
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
-                System.out.println("# p values feed into ADTest: " + flatList.size() );
+                System.out.println("# p values feed into ADTest: " + flatList.size());
                 Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
                 if (ADTestPValue <= threshold) {
                     rejects.add(x);
@@ -636,8 +637,8 @@ public class MarkovCheck {
                         }
                         break;
                     case "lowLGRecallNodes.csv":
-                        for (Node n: lowLGRecallNodes) {
-                            writer.write(n.toString()+"\n");
+                        for (Node n : lowLGRecallNodes) {
+                            writer.write(n.toString() + "\n");
                         }
                         break;
 

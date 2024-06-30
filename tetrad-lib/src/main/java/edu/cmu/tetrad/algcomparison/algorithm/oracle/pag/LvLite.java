@@ -49,6 +49,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
 
     /**
@@ -86,6 +90,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * Algorithm interface.
      * </p>
      *
+     * @param test  The independence test to use.
      * @param score The score to use.
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
