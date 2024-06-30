@@ -319,8 +319,8 @@ public final class LvLite implements IGraphSearch {
         for (Edge edge : toRemove.keySet()) {
             pag.removeEdge(edge.getNode1(), edge.getNode2());
 
-            List<Node> common = new ArrayList<>(toRemove.get(edge));
-            common.retainAll(pag.getAdjacentNodes(edge.getNode1()));
+            List<Node> common = pag.getAdjacentNodes(edge.getNode1());
+            common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
             for (Node node : common) {
                 if (!toRemove.get(edge).contains(node)) {
@@ -339,41 +339,74 @@ public final class LvLite implements IGraphSearch {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
         Set<Node> conditioningSet = new HashSet<>();
+
         List<List<Node>> paths;
 
-        // Let's block the short paths first.
-        for (int length = 3; length <= maxPathLength; length++) {
+        while (true) {
+            paths = pag.paths().allPaths(x, y, maxPathLength, conditioningSet, true);
 
-            W:
-            while (true) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
+            if (paths.size() == 1) {
+                break;
+            }
+
+            // Make a set of all uncovered noncolliders in the paths that's not already in the conditioning set.
+            Set<Node> uncoveredNoncolliders = new HashSet<>();
+
+            for (List<Node> path : paths) {
+                for (int i = 1; i < path.size() - 1; i++) {
+                    Node z1 = path.get(i - 1);
+                    Node z2 = path.get(i);
+                    Node z3 = path.get(i + 1);
+
+                    if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3) && !conditioningSet.contains(z2)) {
+                        uncoveredNoncolliders.add(z2);
+                    }
                 }
+            }
 
-                paths = pag.paths().allPaths(x, y, length, conditioningSet, true);
+            if (uncoveredNoncolliders.isEmpty()) {
+                break;
+            }
 
-                // Sort paths by length.
-                paths.sort(Comparator.comparingInt(List::size));
+            // Until all paths are removed from the list, find the node that is in the most paths, add it
+            // to the conditioning set, and remove all paths that contain it.
+            int _size;
 
-                for (List<Node> path : paths) {
-                    for (int i = 1; i < path.size() - 1; i++) {
-                        Node z1 = path.get(i - 1);
-                        Node z2 = path.get(i);
-                        Node z3 = path.get(i + 1);
+            do {
+                _size = paths.size();
 
-                        if (pag.paths().isMConnectingPath(path, conditioningSet, true)
-                            && !pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
-                            conditioningSet.add(z2);
+                // Find the node that is in the most paths.
+                Node best = null;
+                int bestCount = 0;
 
-                            // All the length-3 paths need to be blocked first.
-                            if (path.size() - 1 > 2) {
-                                continue W;
-                            }
+                for (Node node : uncoveredNoncolliders) {
+                    int count = 0;
+                    for (List<Node> path : paths) {
+                        if (path.contains(node)) {
+                            count++;
                         }
+                    }
+
+                    if (count > bestCount) {
+                        best = node;
+                        bestCount = count;
                     }
                 }
 
-                break;
+                // Add that node to the conditioning set.
+                if (best != null) {
+                    conditioningSet.add(best);
+                }
+
+                Node _best = best;
+
+                // Remove all paths that contain the best node.
+                paths.removeIf(path -> path.contains(_best));
+            } while (paths.size() < _size);
+
+            // If we couldn't block all of those paths, then the edge can't be removed anyway.
+            if (paths.size() > 1) {
+                return;
             }
         }
 
