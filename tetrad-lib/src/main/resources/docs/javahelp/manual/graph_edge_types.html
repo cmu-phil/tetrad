@@ -69,14 +69,16 @@
     <tfoot>
     <tr>
         <td colspan="3"><b>PAG Edge Specialization Markups:</b> If the graph is a PAG and PAG
-            edge specialization markup is turned on then the following are also true. (1) If
-            an edge is solid, that means there is no latent confounder (i.e., the edge is visible,
-            which means that for linear models its coefficient can be estimated); (2) If dashed,
-            there is possibly a latent confounder (so that its coefficient may not be estimable).
-            Also, (3) If an edge is thickened, that means the edge is definitely direct
-            (which means that the directed edge appears in the true DAG). (4) Otherwise, if
-            not thickened, the edge is possibly direct (which means the directed edge may or
-            may not appear in the true DAG).
+            edge-specialization markup is turned on, then the following are also true of
+            directed edges in the graph. (1) If a directed edge is solid, that means there is
+            no latent confounder for that directed edge (i.e., the edge is visible, which means
+            that for linear models its coefficient can be estimated); (2) If a directed edge is dashed,
+            there is possibly a latent confounder (so that its coefficient *may not* be estimable).
+            In addition, (3) If a directed edge is thickened, that means the edge is definitely
+            direct (which means that the directed edge appears in the true DAG). (4) Otherwise, if
+            the directed edges is not thickened, then it is edge is *possibly direct* (which means
+            the directed edge may or may not appear in the true DAG--there may be an indirected
+            directed path instead).
         </td>
     </tr>
     <tr>

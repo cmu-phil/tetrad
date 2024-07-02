@@ -949,8 +949,8 @@ public class MarkovCheckEditor extends JPanel {
                 double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
 
                 fractionDepLabelIndep.setText(
-                        "% dependent = " + ((Double.isNaN(fractionDependent)) ?
-                                "NaN" : nf.format(fractionDependent * 100))
+                        "Fraction dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                "NaN" : nf.format(fractionDependent))
                 );
 
                 ksLabelIndep.setText(
@@ -1000,8 +1000,8 @@ public class MarkovCheckEditor extends JPanel {
                 double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
 
                 fractionDepLabelDep.setText(
-                        "% dependent = " + ((Double.isNaN(fractionDependent)) ?
-                                "NaN" : nf.format(fractionDependent * 100))
+                        "Fraction dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                "NaN" : nf.format(fractionDependent))
                 );
 
                 ksLabelDep.setText(
@@ -1332,11 +1332,11 @@ public class MarkovCheckEditor extends JPanel {
                                   + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
-        fractionDepLabelIndep.setText("% dependent = "
+        fractionDepLabelIndep.setText("Fraction dependent = "
                                       + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(true)))));
-        fractionDepLabelDep.setText("% dependent = "
+        fractionDepLabelDep.setText("Fraction dependent = "
                                     + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));

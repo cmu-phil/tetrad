@@ -25,6 +25,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -328,7 +330,6 @@ public final class LvLite implements IGraphSearch {
 
         Map<Edge, Set<Node>> toRemove = new HashMap<>();
 
-        // Embarrasingly parallelizable.
         pag.getEdges().forEach(edge -> {
             tryRemovingEdge(edge, pag, test, toRemove, maxPathLength, verbose);
         });
@@ -363,68 +364,90 @@ public final class LvLite implements IGraphSearch {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
         Edge e = pag.getEdge(x, y);
-        pag.removeEdge(e);
 
-        Set<Node> conditioningSet = new HashSet<>();
+        // This is the set of all possible conditioning variables, though note below.
+        Set<Node> possibleConditioningVariables = new HashSet<>();
 
+        // These guys could either hide colliders or not, so we need to consider either conditioning on them or not.
+        // These are elements of possibleConditioningVariables, but we need to consider the Cartesian product where we either
+        // include these variables in the conditioning set for the test or not.
+        Set<Node> couldBeColliders = new HashSet<>();
         List<List<Node>> paths;
 
         while (true) {
-            paths = pag.paths().allPaths(x, y, maxPathLength, conditioningSet, true);
+            paths = pag.paths().allPaths(x, y, maxPathLength, possibleConditioningVariables, true);
 
             if (paths.isEmpty()) {
                 break;
             }
 
             // Make a set of all uncovered noncolliders in the paths that's not already in the conditioning set.
-            Set<Node> uncoveredNoncolliders = new HashSet<>();
-            Set<Node> _uncoveredNoncolliders;
+            Set<Node> possibleUncoveredNoncolliders = new HashSet<>();
 
-            do {
-                _uncoveredNoncolliders = new HashSet<>(uncoveredNoncolliders);
+            for (List<Node> path : paths) {
+                for (int i = 1; i < path.size() - 1; i++) {
+                    Node z1 = path.get(i - 1);
+                    Node z2 = path.get(i);
+                    Node z3 = path.get(i + 1);
 
-                P:
-                for (List<Node> path : paths) {
-                    for (int i = 1; i < path.size() - 1; i++) {
-                        Node z1 = path.get(i - 1);
-                        Node z2 = path.get(i);
-                        Node z3 = path.get(i + 1);
+                    boolean noncollider = !pag.isDefCollider(z1, z2, z3);
 
-                        if (path.size() - 1 == 2 && !pag.isDefCollider(z1, z2, z3)) {
-                            uncoveredNoncolliders.add(z2);
-                        } else if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
-                            uncoveredNoncolliders.add(z2);
+                    if (noncollider) {
+                        if (path.size() - 1 == 2 || !pag.isAdjacentTo(z1, z3)) {
+                            possibleUncoveredNoncolliders.add(z2);
+                        }
+
+                        if (path.size() - 1 == 2 && pag.getEndpoint(z1, z2) == Endpoint.CIRCLE && pag.getEndpoint(z3, z2) == Endpoint.CIRCLE) {
+                            couldBeColliders.add(z2);
                         }
                     }
                 }
-            } while (!uncoveredNoncolliders.equals(_uncoveredNoncolliders));
+            }
 
-            if (uncoveredNoncolliders.isEmpty()) {
+            if (possibleUncoveredNoncolliders.isEmpty()) {
                 break;
             }
 
-            LinkedList<Node> __uncoveredNoncolliders = new LinkedList<>(uncoveredNoncolliders);
+            LinkedList<Node> _uncoveredNoncolliders = new LinkedList<>(possibleUncoveredNoncolliders);
 
             // Until all paths are removed from the list, find the node that is in the most paths, add it
             // to the conditioning set, and remove all paths that contain it.
-            int _size;
-
-            do {
-                Node first = __uncoveredNoncolliders.removeFirst();
-                conditioningSet.add(first);
+            while (!_uncoveredNoncolliders.isEmpty() && !paths.isEmpty()) {
+                Node first = _uncoveredNoncolliders.removeFirst();
+                possibleConditioningVariables.add(first);
                 paths.removeIf(path -> path.contains(first));
-            } while (!__uncoveredNoncolliders.isEmpty() && !paths.isEmpty());
+            }
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Checking independence of " + x + " *-* " + y + " given " + conditioningSet);
+            TetradLogger.getInstance().log("Checking independence of " + x + " *-* " + y + " given " + possibleConditioningVariables);
+            TetradLogger.getInstance().log("Uncovered noncolliders for paths of length 2: " + couldBeColliders);
         }
 
-        if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-            toRemove.put(edge, conditioningSet);
-        }
+        List<Node> _uncoveredNoncollidersLength2 = new ArrayList<>(couldBeColliders);
 
-        pag.addEdge(e);
+        SublistGenerator generator = new SublistGenerator(_uncoveredNoncollidersLength2.size(), _uncoveredNoncollidersLength2.size());
+        int[] choice;
+
+        Set<Node> otherConditioningVariables = new HashSet<>(possibleConditioningVariables);
+        otherConditioningVariables.removeAll(couldBeColliders);
+
+        while ((choice = generator.next()) != null) {
+            if (choice.length == 0) continue;
+
+            Set<Node> conditioningSet = new HashSet<>();
+
+            for (int j : choice) {
+                conditioningSet.add(_uncoveredNoncollidersLength2.get(j));
+            }
+
+            conditioningSet.addAll(otherConditioningVariables);
+
+            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
+                toRemove.put(edge, conditioningSet);
+                break;
+            }
+        }
     }
 
     /**
@@ -443,6 +466,13 @@ public final class LvLite implements IGraphSearch {
 
         // BOSS seems to be doing better here.
         if (startWith == START_WITH.BOSS) {
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Running BOSS...");
+            }
+
+            long start = MillisecondTimes.wallTimeMillis();
+
             var suborderSearch = new Boss(score);
             suborderSearch.setResetAfterBM(true);
             suborderSearch.setResetAfterRS(true);
@@ -455,11 +485,23 @@ public final class LvLite implements IGraphSearch {
             permutationSearch.search();
             best = permutationSearch.getOrder();
 
+            long stop = MillisecondTimes.wallTimeMillis();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
+            }
+
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Running GRaSP...");
+            }
+
+            long start = MillisecondTimes.wallTimeMillis();
+
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
             grasp.setSeed(-1);
@@ -477,6 +519,12 @@ public final class LvLite implements IGraphSearch {
             grasp.setKnowledge(this.knowledge);
             best = grasp.bestOrder(nodes);
             grasp.getGraph(true);
+
+            long stop = MillisecondTimes.wallTimeMillis();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
+            }
 
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
@@ -534,13 +582,15 @@ public final class LvLite implements IGraphSearch {
             GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
         }
 
-        removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
-        reorientWithCircles(pag, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, verbose);
-        fciOrient.zhangFinalOrientation(pag);
+        if (test.getAlpha() > 0) {
+            removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
+            reorientWithCircles(pag, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+            fciOrient.zhangFinalOrientation(pag);
 
-        if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
+            if (repairFaultyPag) {
+                GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
+            }
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
