@@ -109,7 +109,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Whether verbose output should be printed.
      */
-    private boolean verbose;
+    private boolean verbose = false;
     /**
      * Whether the discriminating path tail rule should be used.
      */

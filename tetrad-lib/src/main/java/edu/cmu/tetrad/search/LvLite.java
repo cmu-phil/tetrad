@@ -101,7 +101,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The threshold for equality, a fraction of abs(BIC).
      */
-    private double allowableScoreDrop = 5;
+    private double allowableScoreDrop = 100;
     /**
      * The algorithm to use to obtain the initial CPDAG.
      */
