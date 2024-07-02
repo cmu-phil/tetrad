@@ -9,6 +9,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -38,11 +39,11 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "LV-Lite-Dsep-Friendly",
-//        command = "lv-lite-dsep-friendly",
-//        algoType = AlgType.allow_latent_common_causes
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "LV-Lite-Dsep-Friendly",
+        command = "lv-lite-dsep-friendly",
+        algoType = AlgType.allow_latent_common_causes
+)
 @Bootstrapping
 public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
@@ -122,7 +123,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
         search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
 
         // LV-Lite
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxPathLength(parameters.getInt(Params.LV_LITE_MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
@@ -187,7 +188,7 @@ public class LvLiteDsepFriendly extends AbstractBootstrapAlgorithm implements Al
 
         // FCI
         params.add(Params.DEPTH);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.LV_LITE_MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);

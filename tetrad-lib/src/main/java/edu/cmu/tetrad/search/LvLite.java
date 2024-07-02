@@ -155,6 +155,7 @@ public final class LvLite implements IGraphSearch {
         recallUnshieldedTriples(pag, unshieldedColliders, verbose);
 
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        scorer.goToBookmark();
 
         Set<NodePair> toRemove = new HashSet<>();
 
@@ -168,8 +169,6 @@ public final class LvLite implements IGraphSearch {
                     var x = adj.get(i);
                     var y = adj.get(j);
 
-                    scorer.goToBookmark();
-
                     if (!copyCollider(x, b, y, pag, false, scorer, best_score, best_score, maxScoreDrop, unshieldedColliders, toRemove, knowledge, verbose)) {
                         if (scorer.triangle(x, b, y)) {
                             scorer.tuck(y, b);
@@ -177,6 +176,7 @@ public final class LvLite implements IGraphSearch {
                             double newScore = scorer.score();
 
                             copyCollider(x, b, y, pag, true, scorer, newScore, best_score, maxScoreDrop, unshieldedColliders, toRemove, knowledge, verbose);
+                            scorer.goToBookmark();
                         }
                     }
                 }
@@ -234,6 +234,7 @@ public final class LvLite implements IGraphSearch {
             if (triple(pag, x, b, y)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
+                pag.removeEdge(x, y);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
@@ -328,7 +329,7 @@ public final class LvLite implements IGraphSearch {
         Map<Edge, Set<Node>> toRemove = new HashMap<>();
 
         // Embarrasingly parallelizable.
-        pag.getEdges().parallelStream().forEach(edge -> {
+        pag.getEdges().forEach(edge -> {
             tryRemovingEdge(edge, pag, test, toRemove, maxPathLength, verbose);
         });
 
@@ -338,15 +339,7 @@ public final class LvLite implements IGraphSearch {
 
         for (Edge edge : toRemove.keySet()) {
             pag.removeEdge(edge.getNode1(), edge.getNode2());
-
-            List<Node> common = pag.getAdjacentNodes(edge.getNode1());
-            common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
-
-            for (Node node : common) {
-                if (!toRemove.get(edge).contains(node)) {
-                    unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
-                }
-            }
+            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
         }
 
         if (verbose) {
@@ -354,10 +347,24 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
+    private static void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
+        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
+        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
+
+        for (Node node : common) {
+            if (!toRemove.get(edge).contains(node)) {
+                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
+            }
+        }
+    }
+
     private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength,
                                         boolean verbose) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
+        Edge e = pag.getEdge(x, y);
+        pag.removeEdge(e);
+
         Set<Node> conditioningSet = new HashSet<>();
 
         List<List<Node>> paths;
@@ -365,69 +372,48 @@ public final class LvLite implements IGraphSearch {
         while (true) {
             paths = pag.paths().allPaths(x, y, maxPathLength, conditioningSet, true);
 
-            if (paths.size() == 1) {
+            if (paths.isEmpty()) {
                 break;
             }
 
             // Make a set of all uncovered noncolliders in the paths that's not already in the conditioning set.
             Set<Node> uncoveredNoncolliders = new HashSet<>();
+            Set<Node> _uncoveredNoncolliders;
 
-            for (List<Node> path : paths) {
-                for (int i = 1; i < path.size() - 1; i++) {
-                    Node z1 = path.get(i - 1);
-                    Node z2 = path.get(i);
-                    Node z3 = path.get(i + 1);
+            do {
+                _uncoveredNoncolliders = new HashSet<>(uncoveredNoncolliders);
 
-                    if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3) && !conditioningSet.contains(z2)) {
-                        uncoveredNoncolliders.add(z2);
+                P:
+                for (List<Node> path : paths) {
+                    for (int i = 1; i < path.size() - 1; i++) {
+                        Node z1 = path.get(i - 1);
+                        Node z2 = path.get(i);
+                        Node z3 = path.get(i + 1);
+
+                        if (path.size() - 1 == 2 && !pag.isDefCollider(z1, z2, z3)) {
+                            uncoveredNoncolliders.add(z2);
+                        } else if (!pag.isDefCollider(z1, z2, z3) && !pag.isAdjacentTo(z1, z3)) {
+                            uncoveredNoncolliders.add(z2);
+                        }
                     }
                 }
-            }
+            } while (!uncoveredNoncolliders.equals(_uncoveredNoncolliders));
 
             if (uncoveredNoncolliders.isEmpty()) {
                 break;
             }
+
+            LinkedList<Node> __uncoveredNoncolliders = new LinkedList<>(uncoveredNoncolliders);
 
             // Until all paths are removed from the list, find the node that is in the most paths, add it
             // to the conditioning set, and remove all paths that contain it.
             int _size;
 
             do {
-                _size = paths.size();
-
-                // Find the node that is in the most paths.
-                Node best = null;
-                int bestCount = 0;
-
-                for (Node node : uncoveredNoncolliders) {
-                    int count = 0;
-                    for (List<Node> path : paths) {
-                        if (path.contains(node)) {
-                            count++;
-                        }
-                    }
-
-                    if (count > bestCount) {
-                        best = node;
-                        bestCount = count;
-                    }
-                }
-
-                // Add that node to the conditioning set.
-                if (best != null) {
-                    conditioningSet.add(best);
-                }
-
-                Node _best = best;
-
-                // Remove all paths that contain the best node.
-                paths.removeIf(path -> path.contains(_best));
-            } while (paths.size() < _size);
-
-            // If we couldn't block all of those paths, then the edge can't be removed anyway.
-            if (paths.size() > 1) {
-                return;
-            }
+                Node first = __uncoveredNoncolliders.removeFirst();
+                conditioningSet.add(first);
+                paths.removeIf(path -> path.contains(first));
+            } while (!__uncoveredNoncolliders.isEmpty() && !paths.isEmpty());
         }
 
         if (verbose) {
@@ -437,6 +423,8 @@ public final class LvLite implements IGraphSearch {
         if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
             toRemove.put(edge, conditioningSet);
         }
+
+        pag.addEdge(e);
     }
 
     /**
