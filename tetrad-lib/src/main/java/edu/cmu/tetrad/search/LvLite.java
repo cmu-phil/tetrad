@@ -154,7 +154,7 @@ public final class LvLite implements IGraphSearch {
     public static void processTriples(Graph pag, FciOrient fciOrient, List<Node> best, double best_score, TeyssierScorer scorer,
                                       Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose, double maxScoreDrop) {
         reorientWithCircles(pag, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+        recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
 
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         scorer.goToBookmark();
@@ -187,7 +187,7 @@ public final class LvLite implements IGraphSearch {
 
         removeEdges(pag, toRemove, verbose);
         reorientWithCircles(pag, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+        recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
         fciOrient.zhangFinalOrientation(pag);
     }
 
@@ -225,15 +225,16 @@ public final class LvLite implements IGraphSearch {
      *
      * @param pag                 The graph to recall unshielded triples from.
      * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
+     * @param knowledge
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
-    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, boolean verbose) {
+    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose) {
         for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
-            if (triple(pag, x, b, y)) {
+            if (triple(pag, x, b, y) && colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
                 pag.removeEdge(x, y);
@@ -579,17 +580,17 @@ public final class LvLite implements IGraphSearch {
         fciOrient.zhangFinalOrientation(pag);
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
         }
 
         if (test.getAlpha() > 0) {
             removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
             reorientWithCircles(pag, verbose);
-            recallUnshieldedTriples(pag, unshieldedColliders, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
             fciOrient.zhangFinalOrientation(pag);
 
             if (repairFaultyPag) {
-                GraphUtils.repairFaultyPag(pag, fciOrient, verbose);
+                GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
             }
         }
 

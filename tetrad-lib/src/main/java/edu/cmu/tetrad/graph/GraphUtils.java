@@ -2904,10 +2904,11 @@ public final class GraphUtils {
      *
      * @param pag       the faulty PAG to be repaired
      * @param fciOrient the FciOrient object used for final orientation
+     * @param knowledge
      * @param verbose   indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, boolean verbose) {
+    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2934,7 +2935,7 @@ public final class GraphUtils {
                     // it turns out, this edge can't have been bidirected in the first place, because it would have
                     // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
                     // about non-causality that can't be supported. So we just fix it in post-processing.
-                    if (pag.paths().isAncestorOf(x, y)) {
+                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
                         pag.removeEdge(x, y);
                         pag.addDirectedEdge(x, y);
 
@@ -2943,7 +2944,7 @@ public final class GraphUtils {
                         }
 
                         changed = true;
-                    } else if (pag.paths().isAncestorOf(y, x)) {
+                    } else if (pag.paths().isAncestorOf(y, x) && !knowledge.isForbidden(y.getName(), x.getName())) {
                         pag.removeEdge(x, y);
                         pag.addDirectedEdge(y, x);
 
