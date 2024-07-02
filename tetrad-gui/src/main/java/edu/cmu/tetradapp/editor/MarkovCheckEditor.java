@@ -393,6 +393,14 @@ public class MarkovCheckEditor extends JPanel {
 
         JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
+        JCheckBox removeExtraneousVariables = new JCheckBox("Remove Extraneous Variables");
+        removeExtraneousVariables.setSelected(false);
+
+        removeExtraneousVariables.addActionListener(e -> {
+            model.getMarkovCheck().setRemoveExtraneousVariables(removeExtraneousVariables.isSelected());
+            refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, true);
+        });
+
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
         testDescTextArea.setLineWrap(true);
@@ -425,7 +433,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         new MyWatchedProcess();
-        initComponents(params, resample, addSample, pane, conditioningSetsLabel, percentSampleLabel);
+        initComponents(params, resample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, percentSampleLabel);
     }
 
     /**
@@ -556,7 +564,8 @@ public class MarkovCheckEditor extends JPanel {
         return flipEscapes;
     }
 
-    private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
+    private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
+                                JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables, JLabel percentSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -569,7 +578,10 @@ public class MarkovCheckEditor extends JPanel {
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(conditioningSetsLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                                        .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                )
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(testLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -601,7 +613,9 @@ public class MarkovCheckEditor extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(conditioningSetsLabel))
+                                .addComponent(conditioningSetsLabel)
+                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        )
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                         .addContainerGap())

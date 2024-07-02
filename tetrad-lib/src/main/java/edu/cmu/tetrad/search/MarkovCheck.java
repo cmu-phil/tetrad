@@ -149,6 +149,14 @@ public class MarkovCheck {
      * For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
      */
     private List<Node> conditioningNodes;
+    /**
+     * Indicates whether extraneous variables should be removed when d-separation holds.
+     * <p>
+     * Extraneous variables are irrelevant or redundant variables that are not necessary for finding d-separation.
+     * <p>
+     * Default value is false, meaning that extraneous variables are not removed by default.
+     */
+    private boolean removeExtraneousVariables = false;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -824,6 +832,16 @@ public class MarkovCheck {
                             z = new HashSet<>();
 
                             for (Node w : graph.getAdjacentNodes(x)) {
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
+                            break;
+                        case PARENTS_AND_NEIGHBORS:
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
                                 if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
                                     z.add(w);
                                 }
@@ -831,10 +849,6 @@ public class MarkovCheck {
                                 if (graph.isParentOf(w, x)) {
                                     z.add(w);
                                 }
-                            }
-
-                            if (graph.paths().isMSeparatedFrom(x, y, z, false)) {
-                                z = removeExtraneousVariables(z, x, y);
                             }
 
                             break;
@@ -855,17 +869,16 @@ public class MarkovCheck {
                             break;
                         case MARKOV_BLANKET:
                             z = GraphUtils.markovBlanket(x, graph);
-
-                            if (graph.paths().isMSeparatedFrom(x, y, z, false)) {
-                                z = removeExtraneousVariables(z, x, y);
-                            }
-
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
                     }
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
+
+                    if (removeExtraneousVariables && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                        z = removeExtraneousVariables(z, x, y);
+                    }
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
                         continue;
@@ -1671,6 +1684,16 @@ public class MarkovCheck {
         for (ModelObserver observer : observers) {
             observer.update();
         }
+    }
+
+    /**
+     * Sets the flag indicating whether to remove extraneous variables when d-separation holds, to form smaller
+     * conditioning sets.
+     *
+     * @param removeExtraneousVariables {@code true} if extraneous variables should be removed, {@code false} otherwise
+     */
+    public void setRemoveExtraneousVariables(boolean removeExtraneousVariables) {
+        this.removeExtraneousVariables = removeExtraneousVariables;
     }
 
     /**
