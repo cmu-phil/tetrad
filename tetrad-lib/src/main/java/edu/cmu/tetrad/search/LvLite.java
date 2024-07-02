@@ -225,7 +225,7 @@ public final class LvLite implements IGraphSearch {
      *
      * @param pag                 The graph to recall unshielded triples from.
      * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
-     * @param knowledge
+     * @param knowledge           the knowledge object.
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
     public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose) {

@@ -2904,7 +2904,7 @@ public final class GraphUtils {
      *
      * @param pag       the faulty PAG to be repaired
      * @param fciOrient the FciOrient object used for final orientation
-     * @param knowledge
+     * @param knowledge the knowledge object used for orientation
      * @param verbose   indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
