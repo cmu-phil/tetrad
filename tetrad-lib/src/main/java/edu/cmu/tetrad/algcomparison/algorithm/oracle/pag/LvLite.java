@@ -149,7 +149,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setAllowableScoreDrop(parameters.getDouble(Params.ALLOWABLE_SCORE_DROP));
-        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+        search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.LV_LITE_MAX_PATH_LENGTH));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {

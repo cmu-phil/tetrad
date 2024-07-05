@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphTransforms;
@@ -28,10 +29,12 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Date;
+import java.util.stream.IntStream;
 
 
 /**
@@ -46,7 +49,7 @@ public class TestLvFromOracle {
         int numMeasures = 15;
         int numLatents = 4;
         int numEdges = 25;
-        int numReps = 10;
+        int numReps = 50;
 
         System.out.println("Measures: " + numMeasures);
         System.out.println("Latents: " + numLatents);
@@ -56,21 +59,15 @@ public class TestLvFromOracle {
 
         File dir = new File("/Users/josephramsey/Downloads/failed_models_" + date);
 
-        for (int rep = 1; rep <= numReps; rep++) {
-            // Make a random graph.
+        // Make a random graph.
+        IntStream.rangeClosed(1, numReps).parallel().forEach(rep -> {
             Graph dag = RandomGraph.randomGraph(numMeasures, numLatents, numEdges, 100, 100, 100, false);
-
             File dir2 = new File(dir, "rep_" + rep);
-
             dir2.mkdirs();
-
             File file = new File(dir2, "rep_" + rep + "_true_dag.txt");
             GraphSaveLoadUtils.saveGraph(dag, file, false);
-
-            System.out.println();
-
             testAlgorithms(dag, rep, dir, dir2);
-        }
+        });
     }
 
     private void testAlgorithms(Graph dag, int rep, File dir, File dir2) {
@@ -81,14 +78,16 @@ public class TestLvFromOracle {
         for (LV_ALGORITHMS algorithm : LV_ALGORITHMS.values()) {
             Graph estimated;
             switch (algorithm) {
-                case FCI -> estimated = new Fci(msepTest).search();
-                case CFCI -> estimated = new Cfci(msepTest).search();
-                case FCI_MAX -> estimated = new FciMax(msepTest).search();
-                case GFCI -> estimated = new GFci(msepTest, score).search();
-                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
+//                case FCI -> estimated = new Fci(msepTest).search();
+//                case CFCI -> estimated = new Cfci(msepTest).search();
+//                case FCI_MAX -> estimated = new FciMax(msepTest).search();
+//                case GFCI -> estimated = new GFci(msepTest, score).search();
+//                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
                 case LV_LITE -> estimated = new LvLite(msepTest, score).search();
                 default -> throw new IllegalArgumentException();
             }
+
+            estimated = new LvLite(msepTest, score).search();
 
             boolean equals = estimated.equals(truePag);
 
@@ -102,14 +101,24 @@ public class TestLvFromOracle {
 
                 File file2 = new File(dir2, "rep_" + rep + "_" + algorithm + ".txt");
                 GraphSaveLoadUtils.saveGraph(estimated, file2, false);
-            }
 
+                double ap = new AdjacencyPrecision().getValue(truePag, estimated, null);
+                double ar = new AdjacencyRecall().getValue(truePag, estimated, null);
+                double ahp = new ArrowheadPrecision().getValue(truePag, estimated, null);
+                double ahr = new ArrowheadRecall().getValue(truePag, estimated, null);
+                double ahpc = new ArrowheadPrecisionCommonEdges().getValue(truePag, estimated, null);
+                double ahprc = new ArrowheadRecallCommonEdges().getValue(truePag, estimated, null);
+
+                System.out.printf("AP = %5.2f, AR = %5.2f, AHP = %5.2f, AHR = %5.2f, AHPC = %5.2f, AHRC = %5.2f\n",
+                        ap, ar, ahp, ahr, ahpc, ahprc);
+            }
         }
     }
 
     // BFCI currently cannot be run from Oracle.
     private enum LV_ALGORITHMS {
-        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
+//        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
+        LV_LITE
     }
 }
 

@@ -2610,7 +2610,7 @@ public final class GraphUtils {
      * @param c     the third node
      * @return true if the nodes are unshielded colliders, false otherwise
      */
-    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+    public static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
         return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
@@ -2940,7 +2940,7 @@ public final class GraphUtils {
                         pag.addDirectedEdge(x, y);
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented" + y + " <-> " + x + " as " + x + " -> " + y + ".");
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
                         }
 
                         changed = true;
@@ -2992,10 +2992,10 @@ public final class GraphUtils {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Faulty PAG repaired.");
+        } else {
+            if (verbose) {
+                TetradLogger.getInstance().log("Faulty PAG repaired.");
+            }
         }
     }
 

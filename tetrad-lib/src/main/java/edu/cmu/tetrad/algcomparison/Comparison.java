@@ -1416,7 +1416,7 @@ public class Comparison implements TetradSerializable {
 
             truth[0] = new EdgeListGraph(comparisonGraph);
 
-            if (data.isMixed()) {
+                if (data.isMixed()) {
                 truth[1] = getSubgraph(comparisonGraph, true, true, simulationWrapper.getDataModel(run.runIndex()));
                 truth[2] = getSubgraph(comparisonGraph, true, false, simulationWrapper.getDataModel(run.runIndex()));
                 truth[3] = getSubgraph(comparisonGraph, false, false, simulationWrapper.getDataModel(run.runIndex()));

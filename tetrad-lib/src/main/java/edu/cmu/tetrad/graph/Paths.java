@@ -840,6 +840,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    public Set<Node> markovBlanket(Node node) {
+        return GraphUtils.markovBlanket(node, graph);
+    }
+
+    public Set<Node> district(Node node) {
+        return GraphUtils.district(node, graph);
+    }
+
     /**
      * Checks if a directed path exists between two nodes within a certain depth.
      *

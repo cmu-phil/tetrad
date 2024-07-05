@@ -404,12 +404,11 @@ public interface Graph extends TetradSerializable {
     boolean removeEdge(Edge edge);
 
     /**
-     * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
+     * Removes an edge between two given nodes.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
-     * @throws java.lang.UnsupportedOperationException if multiple edges between node pairs are not supported.
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return true if the edge between node1 and node2 was successfully removed, false otherwise.
      */
     boolean removeEdge(Node node1, Node node2);
 

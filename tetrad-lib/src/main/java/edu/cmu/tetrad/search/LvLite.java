@@ -23,13 +23,16 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The LV-Lite algorithm implements the IGraphSearch interface and represents a search algorithm for learning the
@@ -41,7 +44,6 @@ import java.util.*;
  * @author josephramsey
  */
 public final class LvLite implements IGraphSearch {
-
     /**
      * The independence test.
      */
@@ -55,13 +57,29 @@ public final class LvLite implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+     * The algorithm to use to obtain the initial CPDAG.
      */
-    private boolean completeRuleSetUsed = true;
+    private START_WITH startWith = START_WITH.BOSS;
+    /**
+     * Flag indicating whether to repair a faulty PAG.
+     */
+    private boolean repairFaultyPag = false;
     /**
      * The number of starts for GRaSP.
      */
-    private int numStarts = 1;
+    private int numStarts = 3;
+    /**
+     * The threshold for equality, a fraction of abs(BIC).
+     */
+    private double allowableScoreDrop = 30;
+    /**
+     * The depth of the GRaSP if it is used.
+     */
+    private int recursionDepth = 15;
+    /**
+     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
     /**
      * Flag indicating whether to use data order.
      */
@@ -95,27 +113,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * The maximum length of a discriminating path.
-     */
-    private int maxPathLength;
-    /**
-     * The threshold for equality, a fraction of abs(BIC).
-     */
-    private double allowableScoreDrop = 100;
-    /**
-     * The algorithm to use to obtain the initial CPDAG.
-     */
-    private START_WITH startWith = START_WITH.BOSS;
-    /**
-     * The depth of the GRaSP if it is used.
-     */
-    private int depth = 25;
-    /**
-     * Flag indicating whether to repair a faulty PAG.
-     */
-    private boolean repairFaultyPag = false;
-
-    /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
      * Score object.
      *
@@ -134,61 +131,10 @@ public final class LvLite implements IGraphSearch {
 
         this.test = test;
         this.score = score;
-    }
 
-    /**
-     * Orients and removes edges in a graph according to specified rules. Edges are removed in the course of the
-     * algorithm, and the graph is modified in place. The call to this method may be repeated to account for the
-     * possibility that the removal of an edge may allow for further removals or orientations.
-     *
-     * @param pag                 The original graph.
-     * @param fciOrient           The orientation rules to be applied.
-     * @param best                The list of best nodes.
-     * @param best_score          The score of the BOSS/GRaSP model.
-     * @param scorer              The scorer used to evaluate edge orientations.
-     * @param unshieldedColliders The set of unshielded colliders.
-     * @param knowledge           The knowledge object.
-     * @param maxScoreDrop        The threshold for equality. (This is not used for Oracle scoring.)
-     * @param verbose             A boolean value indicating whether verbose output should be printed.
-     */
-    public static void processTriples(Graph pag, FciOrient fciOrient, List<Node> best, double best_score, TeyssierScorer scorer,
-                                      Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose, double maxScoreDrop) {
-        reorientWithCircles(pag, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
-
-        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        scorer.goToBookmark();
-
-        Set<NodePair> toRemove = new HashSet<>();
-
-        for (Node b : best) {
-            var adj = pag.getAdjacentNodes(b);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = 0; j < adj.size(); j++) {
-                    if (i == j) continue;
-
-                    var x = adj.get(i);
-                    var y = adj.get(j);
-
-                    if (!copyCollider(x, b, y, pag, false, scorer, best_score, best_score, maxScoreDrop, unshieldedColliders, toRemove, knowledge, verbose)) {
-                        if (scorer.triangle(x, b, y)) {
-                            scorer.tuck(y, b);
-                            scorer.tuck(x, y);
-                            double newScore = scorer.score();
-
-                            copyCollider(x, b, y, pag, true, scorer, newScore, best_score, maxScoreDrop, unshieldedColliders, toRemove, knowledge, verbose);
-                            scorer.goToBookmark();
-                        }
-                    }
-                }
-            }
+        if (test instanceof MsepTest) {
+            this.startWith = START_WITH.GRASP;
         }
-
-        removeEdges(pag, toRemove, verbose);
-        reorientWithCircles(pag, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
-        fciOrient.zhangFinalOrientation(pag);
     }
 
     /**
@@ -205,21 +151,6 @@ public final class LvLite implements IGraphSearch {
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
-    private static void removeEdges(Graph pag, Set<NodePair> toRemove, boolean verbose) {
-        for (NodePair remove : toRemove) {
-            Node x = remove.getFirst();
-            Node y = remove.getSecond();
-
-            boolean _adj = pag.isAdjacentTo(x, y);
-
-            if (pag.removeEdge(x, y)) {
-                if (verbose && _adj && !pag.isAdjacentTo(x, y)) {
-                    TetradLogger.getInstance().log("AFTER TUCKING Removed adjacency " + x + " *-* " + y + " in the PAG.");
-                }
-            }
-        }
-    }
-
     /**
      * Recall unshielded triples in a given graph.
      *
@@ -228,50 +159,264 @@ public final class LvLite implements IGraphSearch {
      * @param knowledge           the knowledge object.
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
-    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge, boolean verbose) {
+    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Set<Set<Node>> removedEdges,
+                                               Knowledge knowledge, boolean verbose) {
         for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
-            if (triple(pag, x, b, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
-                pag.removeEdge(x, y);
+                boolean removed = pag.removeEdge(x, y);
+
+                if (removed) {
+                    removedEdges.add(Set.of(x, y));
+                }
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
+
+                    if (removed) {
+                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                    }
                 }
             }
         }
     }
 
-    private static boolean copyCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer, double newScore, double bestScore, double maxScoreDrop, Set<Triple> unshieldedColliders, Set<NodePair> toRemove, Knowledge knowledge, boolean verbose) {
-        if (scorer.unshieldedCollider(x, b, y)) {
-            if (newScore >= bestScore - maxScoreDrop) {
-                if (colliderAllowed(pag, x, b, y, knowledge)) {
-                    boolean oriented = !pag.isDefCollider(x, b, y);
+//    /**
+//     * Removes extra edges in a graph according to specified conditions.
+//     *
+//     * @param pag                 The graph in which to remove extra edges.
+//     * @param test                The IndependenceTest object used for testing independence between variables.
+//     * @param maxPathLength       The maximum length of any blocked path.
+//     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
+//     * @param verbose             A boolean value indicating whether verbose output should be printed.
+//     */
+//    public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Checking larger conditioning sets:");
+//        }
+//
+//        Map<Edge, Set<Node>> toRemove = new HashMap<>();
+//
+//        for (int maxLength = 3; maxLength <= 3; maxLength++) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Checking paths of length " + maxLength + ":");
+//            }
+//
+//            int _maxPathLength = maxLength;
+//
+//            pag.getEdges().forEach(edge -> {
+//                boolean removed = tryRemovingEdge(edge, pag, test, toRemove, _maxPathLength, verbose);
+//
+//                if (removed) {
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("Removed edge: " + edge);
+//                    }
+//                }
+//            });
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Done checking larger conditioning sets.");
+//        }
+//
+//        for (Edge edge : toRemove.keySet()) {
+//            pag.removeEdge(edge.getNode1(), edge.getNode2());
+//            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Removed edges: " + toRemove);
+//        }
+//    }
 
-                    pag.setEndpoint(x, b, Endpoint.ARROW);
-                    pag.setEndpoint(y, b, Endpoint.ARROW);
+//    private static void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
+//        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
+//        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
+//
+//        for (Node node : common) {
+//            if (!toRemove.get(edge).contains(node)) {
+//                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
+//            }
+//        }
+//    }
 
-                    toRemove.add(new NodePair(x, y));
-                    unshieldedColliders.add(new Triple(x, b, y));
+//    private static boolean tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength,
+//                                           boolean verbose) {
+//        test.setVerbose(verbose);
+//
+////        TetradLogger.getInstance().log("### Checking edge: " + edge);
+//
+//        Node x = edge.getNode1();
+//        Node y = edge.getNode2();
+//
+//        // This is the set of all possible conditioning variables, though note below.
+//        Set<Node> defNoncolliders = new HashSet<>();
+//
+//        // These guys could either hide colliders or not, so we need to consider either conditioning on them or not.
+//        // These are elements of possibleConditioningVariables, but we need to consider the Cartesian product where we either
+//        // include these variables in the conditioning set for the test or not.
+//        Set<Node> couldBeNoncolliders = new HashSet<>();
+//        List<List<Node>> paths;
+//        Set<Node> alreadyAdded = new HashSet<>();
+//
+//        while (true) {
+//            paths = pag.paths().allPaths(x, y, maxPathLength, defNoncolliders, true);
+//            boolean changed = false;
+//            boolean allBlocked = true;
+//
+//            for (List<Node> path : paths) {
+//                if (!pag.paths().isMConnectingPath(path, alreadyAdded, true)) {
+//                    continue;
+//                }
+//
+//                boolean blocked = false;
+//
+//                for (int i = 1; i < path.size() - 1; i++) {
+//                    Node z1 = path.get(i - 1);
+//                    Node z2 = path.get(i);
+//                    Node z3 = path.get(i + 1);
+//
+//                    if (alreadyAdded.contains(z2)) {
+//                        continue;
+//                    }
+//
+//                    if (!pag.isDefCollider(z1, z2, z3)) {
+//                        if (!pag.isDefNoncollider(z1, z2, z3)) {
+//                            defNoncolliders.add(z2);
+//                            alreadyAdded.add(z2);
+//                            blocked = true;
+//                        }
+//
+//                        if (path.size() - 1 == 2) {
+//                            if (pag.getEndpoint(z1, z2) == Endpoint.CIRCLE && pag.getEndpoint(z3, z2) == Endpoint.CIRCLE) {
+//                                couldBeNoncolliders.add(z2);
+//                                alreadyAdded.add(z2);
+//                                blocked = true;
+//                            }
+//
+//                            if (pag.getEndpoint(z1, z2) == Endpoint.ARROW && pag.getEndpoint(z3, z2) == Endpoint.CIRCLE) {
+//                                couldBeNoncolliders.add(z2);
+//                                alreadyAdded.add(z2);
+//                                blocked = true;
+//                            }
+//
+//                            if (pag.getEndpoint(z1, z2) == Endpoint.CIRCLE && pag.getEndpoint(z3, z2) == Endpoint.ARROW) {
+//                                couldBeNoncolliders.add(z2);
+//                                alreadyAdded.add(z2);
+//                                blocked = true;
+//                            }
+//                        }
+//                    }
+//
+//                    if (blocked) {
+//                        changed = true;
+//                    }
+//                }
+//
+//                if (!blocked) {
+//                    allBlocked = false;
+//                }
+//            }
+//
+//            if (!allBlocked) {
+//                return false;
+//            }
+//
+//            if (!changed) break;
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
+//            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
+//        }
+//
+//        List<Node> couldBeCollidersList = new ArrayList<>(couldBeNoncolliders);
+//
+//        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
+//        int[] choice;
+//
+//        while ((choice = generator.next()) != null) {
+//            Set<Node> conditioningSet = new HashSet<>();
+//
+//            for (int j : choice) {
+//                conditioningSet.add(couldBeCollidersList.get(j));
+//            }
+//
+//            conditioningSet.addAll(defNoncolliders);
+//
+//            if (verbose) {
+//                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
+//            }
+//
+//            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
+//                toRemove.put(edge, conditioningSet);
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
-                    if (verbose) {
-                        if (tucked) {
-                            TetradLogger.getInstance().log("AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                        } else {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                        }
+//    /**
+//     * Sets the maximum length of any discriminating path.
+//     *
+//     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+//     */
+//    public void setMaxPathLength(int maxPathLength) {
+//        if (maxPathLength < -1) {
+//            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+//        }
+//
+//        this.maxPathLength = maxPathLength;
+//    }
+
+
+//    private static void adjustDistricts(Graph pag, TeyssierScorer scorer, Node x, Node b, Node y) {
+//        Set<Node> districtx = pag.paths().district(x);
+//
+//        for (Node node : districtx) {
+//            scorer.tuck(x, node);
+//            scorer.tuck(node, x);
+//        }
+//
+//        Set<Node> districty = pag.paths().district(y);
+//
+//        for (Node node : districty) {
+//            scorer.tuck(y, node);
+//            scorer.tuck(node, y);
+//        }
+//
+//        Set<Node> districtb = pag.paths().district(b);
+//
+//        for (Node node : districtb) {
+//            scorer.tuck(b, node);
+//            scorer.tuck(node, b);
+//        }
+//    }
+
+    private static void addCollider(Node x, Node b, Node y, Graph pag, boolean tucked,
+                                    TeyssierScorer scorer, double newScore, double bestScore,
+                                    double maxScoreDrop, Set<Triple> unshieldedColliders, Set<Triple> tested,
+                                    Knowledge knowledge, boolean verbose) {
+        if (colliderAllowed(pag, x, b, y, knowledge)) {
+            if (scorer.unshieldedCollider(x, b, y) && newScore >= bestScore - maxScoreDrop) {
+                unshieldedColliders.add(new Triple(x, b, y));
+                tested.add(new Triple(x, b, y));
+
+                if (verbose) {
+                    if (tucked) {
+                        TetradLogger.getInstance().log("AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    } else {
+                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
                     }
-
-                    return oriented;
                 }
             }
         }
-
-        return false;
     }
 
     /**
@@ -284,7 +429,7 @@ public final class LvLite implements IGraphSearch {
      * @return {@code true} if all three nodes are connected, {@code false} otherwise
      */
     private static boolean triple(Graph graph, Node a, Node b, Node c) {
-        return a != b && b != c && a != c && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+        return distinct(a, b, c) && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
     }
 
     /**
@@ -315,140 +460,8 @@ public final class LvLite implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
-    /**
-     * Removes extra edges in a graph according to specified conditions.
-     *
-     * @param pag                 The graph in which to remove extra edges.
-     * @param test                The IndependenceTest object used for testing independence between variables.
-     * @param maxPathLength       The maximum length of any blocked path.
-     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
-     * @param verbose             A boolean value indicating whether verbose output should be printed.
-     */
-    public static void removeExtraEdges(Graph pag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking larger conditioning sets:");
-        }
-
-        Map<Edge, Set<Node>> toRemove = new HashMap<>();
-
-        pag.getEdges().forEach(edge -> {
-            tryRemovingEdge(edge, pag, test, toRemove, maxPathLength, verbose);
-        });
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Done listing larger conditioning sets.");
-        }
-
-        for (Edge edge : toRemove.keySet()) {
-            pag.removeEdge(edge.getNode1(), edge.getNode2());
-            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removed edges: " + toRemove);
-        }
-    }
-
-    private static void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
-        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
-        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
-
-        for (Node node : common) {
-            if (!toRemove.get(edge).contains(node)) {
-                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
-            }
-        }
-    }
-
-    private static void tryRemovingEdge(Edge edge, Graph pag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength,
-                                        boolean verbose) {
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-        Edge e = pag.getEdge(x, y);
-
-        // This is the set of all possible conditioning variables, though note below.
-        Set<Node> possibleConditioningVariables = new HashSet<>();
-
-        // These guys could either hide colliders or not, so we need to consider either conditioning on them or not.
-        // These are elements of possibleConditioningVariables, but we need to consider the Cartesian product where we either
-        // include these variables in the conditioning set for the test or not.
-        Set<Node> couldBeColliders = new HashSet<>();
-        List<List<Node>> paths;
-
-        while (true) {
-            paths = pag.paths().allPaths(x, y, maxPathLength, possibleConditioningVariables, true);
-
-            if (paths.isEmpty()) {
-                break;
-            }
-
-            // Make a set of all uncovered noncolliders in the paths that's not already in the conditioning set.
-            Set<Node> possibleUncoveredNoncolliders = new HashSet<>();
-
-            for (List<Node> path : paths) {
-                for (int i = 1; i < path.size() - 1; i++) {
-                    Node z1 = path.get(i - 1);
-                    Node z2 = path.get(i);
-                    Node z3 = path.get(i + 1);
-
-                    boolean noncollider = !pag.isDefCollider(z1, z2, z3);
-
-                    if (noncollider) {
-                        if (path.size() - 1 == 2 || !pag.isAdjacentTo(z1, z3)) {
-                            possibleUncoveredNoncolliders.add(z2);
-                        }
-
-                        if (path.size() - 1 == 2 && pag.getEndpoint(z1, z2) == Endpoint.CIRCLE && pag.getEndpoint(z3, z2) == Endpoint.CIRCLE) {
-                            couldBeColliders.add(z2);
-                        }
-                    }
-                }
-            }
-
-            if (possibleUncoveredNoncolliders.isEmpty()) {
-                break;
-            }
-
-            LinkedList<Node> _uncoveredNoncolliders = new LinkedList<>(possibleUncoveredNoncolliders);
-
-            // Until all paths are removed from the list, find the node that is in the most paths, add it
-            // to the conditioning set, and remove all paths that contain it.
-            while (!_uncoveredNoncolliders.isEmpty() && !paths.isEmpty()) {
-                Node first = _uncoveredNoncolliders.removeFirst();
-                possibleConditioningVariables.add(first);
-                paths.removeIf(path -> path.contains(first));
-            }
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking independence of " + x + " *-* " + y + " given " + possibleConditioningVariables);
-            TetradLogger.getInstance().log("Uncovered noncolliders for paths of length 2: " + couldBeColliders);
-        }
-
-        List<Node> _uncoveredNoncollidersLength2 = new ArrayList<>(couldBeColliders);
-
-        SublistGenerator generator = new SublistGenerator(_uncoveredNoncollidersLength2.size(), _uncoveredNoncollidersLength2.size());
-        int[] choice;
-
-        Set<Node> otherConditioningVariables = new HashSet<>(possibleConditioningVariables);
-        otherConditioningVariables.removeAll(couldBeColliders);
-
-        while ((choice = generator.next()) != null) {
-            if (choice.length == 0) continue;
-
-            Set<Node> conditioningSet = new HashSet<>();
-
-            for (int j : choice) {
-                conditioningSet.add(_uncoveredNoncollidersLength2.get(j));
-            }
-
-            conditioningSet.addAll(otherConditioningVariables);
-
-            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-                toRemove.put(edge, conditioningSet);
-                break;
-            }
-        }
+    private static boolean distinct(Node x, Node b, Node y) {
+        return x != b && y != b && x != y;
     }
 
     /**
@@ -506,7 +519,7 @@ public final class LvLite implements IGraphSearch {
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
             grasp.setSeed(-1);
-            grasp.setDepth(depth);
+            grasp.setDepth(recursionDepth);
             grasp.setUncoveredDepth(1);
             grasp.setNonSingularDepth(1);
             grasp.setOrdered(true);
@@ -539,7 +552,6 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
-
         var scorer = new TeyssierScorer(test, score);
 
         scorer.setUseScore(true);
@@ -552,7 +564,6 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
-
 
         scorer.score(best);
 
@@ -570,11 +581,47 @@ public final class LvLite implements IGraphSearch {
 
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
+        Set<Triple> tested = new HashSet<>();
         Set<Triple> _unshieldedColliders;
+
+        reorientWithCircles(pag, verbose);
+
+        for (Node b : best) {
+            var adj = pag.getAdjacentNodes(b);
+
+            for (Node x : adj) {
+                for (Node y : adj) {
+                    if (distinct(x, b, y)) {
+                        addCollider(x, b, y, pag, false, scorer, best_score, best_score, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                    }
+                }
+            }
+        }
+
+        Set<Set<Node>> removedEdges = new HashSet<>();
 
         do {
             _unshieldedColliders = new HashSet<>(unshieldedColliders);
-            processTriples(pag, fciOrient, best, best_score, scorer, unshieldedColliders, knowledge, verbose, this.allowableScoreDrop);
+
+            for (Node b : best) {
+                var adj = pag.getAdjacentNodes(b);
+
+                for (Node x : adj) {
+                    for (Node y : adj) {
+                        if (distinct(x, b, y) && !tested.contains(new Triple(x, b, y))) {
+                            scorer.tuck(y, b);
+                            scorer.tuck(x, y);
+                            double newScore = scorer.score();
+                            addCollider(x, b, y, pag, true, scorer, newScore, best_score, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                            scorer.goToBookmark();
+                        }
+                    }
+                }
+            }
+
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
         fciOrient.zhangFinalOrientation(pag);
@@ -583,18 +630,42 @@ public final class LvLite implements IGraphSearch {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
         }
 
-        if (test.getAlpha() > 0) {
-            removeExtraEdges(pag, test, maxPathLength, unshieldedColliders, verbose);
-            reorientWithCircles(pag, verbose);
-            recallUnshieldedTriples(pag, unshieldedColliders, knowledge, verbose);
-            fciOrient.zhangFinalOrientation(pag);
+        return GraphUtils.replaceNodes(pag, this.score.getVariables());
+    }
 
-            if (repairFaultyPag) {
-                GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
-            }
+    /**
+     * Sets the allowable score drop used in the process triples step. A higher bound may orient more colliders.
+     *
+     * @param allowableScoreDrop the new equality threshold value
+     */
+    public void setAllowableScoreDrop(double allowableScoreDrop) {
+        if (Double.isNaN(allowableScoreDrop) || Double.isInfinite(allowableScoreDrop)) {
+            throw new IllegalArgumentException("Equality threshold must be a finite number: " + allowableScoreDrop);
         }
 
-        return GraphUtils.replaceNodes(pag, this.score.getVariables());
+        if (allowableScoreDrop < 0) {
+            throw new IllegalArgumentException("Equality threshold must be >= 0: " + allowableScoreDrop);
+        }
+
+        this.allowableScoreDrop = allowableScoreDrop;
+    }
+
+    /**
+     * Sets the depth of the GRaSP if it is used.
+     *
+     * @param recursionDepth The depth of the GRaSP.
+     */
+    public void setRecursionDepth(int recursionDepth) {
+        this.recursionDepth = recursionDepth;
+    }
+
+    /**
+     * Sets whether to repair a faulty PAG.
+     *
+     * @param repairFaultyPag true if a faulty PAG should be repaired, false otherwise
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 
     /**
@@ -677,54 +748,6 @@ public final class LvLite implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets the allowable score drop used in the process triples step. A higher bound may orient more colliders.
-     *
-     * @param allowableScoreDrop the new equality threshold value
-     */
-    public void setAllowableScoreDrop(double allowableScoreDrop) {
-        if (Double.isNaN(allowableScoreDrop) || Double.isInfinite(allowableScoreDrop)) {
-            throw new IllegalArgumentException("Equality threshold must be a finite number: " + allowableScoreDrop);
-        }
-
-        if (allowableScoreDrop < 0) {
-            throw new IllegalArgumentException("Equality threshold must be >= 0: " + allowableScoreDrop);
-        }
-
-        this.allowableScoreDrop = allowableScoreDrop;
-    }
-
-    /**
-     * Sets the depth of the GRaSP if it is used.
-     *
-     * @param depth The depth of the GRaSP.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets whether to repair a faulty PAG.
-     *
-     * @param repairFaultyPag true if a faulty PAG should be repaired, false otherwise
-     */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
     }
 
     /**
