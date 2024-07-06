@@ -589,17 +589,17 @@ public final class LvLite implements IGraphSearch {
         // be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the highest
         // number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded colliders,
         // though like the BOSS graph, they should be Markov, so their unshielded colliders should be valid.
-        for (Node b : best) {
-            var adj = pag.getAdjacentNodes(b);
-
-            for (Node x : adj) {
-                for (Node y : adj) {
-                    if (distinct(x, b, y)) {
-                        addCollider(x, b, y, pag, false, scorer, bestScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
-                    }
-                }
-            }
-        }
+//        for (Node b : best) {
+//            var adj = pag.getAdjacentNodes(b);
+//
+//            for (Node x : adj) {
+//                for (Node y : adj) {
+//                    if (distinct(x, b, y)) {
+//                        addCollider(x, b, y, pag, false, scorer, bestScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+//                    }
+//                }
+//            }
+//        }
 
         Set<Set<Node>> removedEdges = new HashSet<>();
 
@@ -611,12 +611,26 @@ public final class LvLite implements IGraphSearch {
 
                 for (Node x : adj) {
                     for (Node y : adj) {
-                        if (distinct(x, b, y) && !tested.contains(new Triple(x, b, y))) {
-                            scorer.tuck(y, b);
-                            scorer.tuck(x, y);
-                            double newScore = scorer.score();
-                            addCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
-                            scorer.goToBookmark();
+                        if (distinct(x, b, y) && scorer.index(x) < scorer.index(y)) {
+                            if (!tested.contains(new Triple(x, b, y))) {
+                                addCollider(x, b, y, pag, false, scorer, bestScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                            }
+
+                            if (!tested.contains(new Triple(x, b, y))) {
+                                scorer.tuck(y, b);
+                                scorer.tuck(x, y);
+                                double newScore = scorer.score();
+                                addCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                                scorer.goToBookmark();
+                            }
+
+                            if (!tested.contains(new Triple(y, b, x))) {
+                                scorer.tuck(x, b);
+                                scorer.tuck(y, x);
+                                double newScore = scorer.score();
+                                addCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                                scorer.goToBookmark();
+                            }
                         }
                     }
                 }
