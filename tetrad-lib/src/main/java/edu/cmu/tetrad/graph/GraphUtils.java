@@ -2913,9 +2913,11 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-        if (pag.paths().existsDirectedCycle()) {
-            throw new IllegalArgumentException("The estimated PAG contains a directed cycle; we can't repair it.");
-        }
+        fciOrient.setKnowledge(knowledge);
+
+//        if (pag.paths().existsDirectedCycle()) {
+//            throw new IllegalArgumentException("The estimated PAG contains a directed cycle; we can't repair it.");
+//        }
 
         Graph _pag;
         boolean changed = false;
