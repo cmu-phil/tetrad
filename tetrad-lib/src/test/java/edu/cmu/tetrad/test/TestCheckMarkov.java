@@ -123,7 +123,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(10000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
@@ -182,7 +182,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -215,7 +215,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -249,7 +249,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -278,7 +278,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -319,7 +319,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -362,7 +362,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -408,7 +408,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -450,7 +450,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -483,7 +483,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -517,7 +517,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, false);
+        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
