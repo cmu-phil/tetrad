@@ -3002,6 +3002,137 @@ public final class GraphUtils {
     }
 
     /**
+     * Calculates the number of induced adjacencies in the given estiamted Partial Ancestral (PAG) with respect to the
+     * given true PAG. An induced adjacency in a PAG is an edge that is adjacent in the estimated graph, but not in the
+     * true graph, and is not covering a collider or noncollider in the true graph.
+     *
+     * @param trueGraph the true PAG.
+     * @param estGraph  the estimated PAG.
+     * @return the number of induced adjacencies in the PAG.
+     * @see #isInducedAdjacency(Graph, Graph, Node, Node)
+     */
+    public static int getNumInducedAdjacenciesInPag(Graph trueGraph, Graph estGraph) {
+
+        // Assume trueGraph and estGraph are PAGs; information may be unhelpful if not.
+        int count = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            boolean isInducedAdjacency = isInducedAdjacency(trueGraph, estGraph, x, y);
+
+            if (isInducedAdjacency) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Returns the number of covering edges in the given estimated partial ancestral graph (PAG) with respect to the
+     * given true PAG. A covering edge in a PAG connects two nodes such that the edges in the true graph represent the
+     * edges in the estimated graph.
+     *
+     * @param trueGraph The true ancestral graph
+     * @param estGraph  The estimated ancestral graph
+     * @return The count of covering edges in the PAG
+     * @see #isCoveringAdjacency(Graph, Graph, Node, Node)
+     */
+    public static int getNumCoveringAdjacenciesInPag(Graph trueGraph, Graph estGraph) {
+
+        // Assume trueGraph and estGraph are PAGs; information may be unhelpful if not.
+        int count = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            boolean isCoveringAdjacency = isCoveringAdjacency(trueGraph, estGraph, x, y);
+
+            if (isCoveringAdjacency) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Checks if an edge between two nodes is an induced edge in the estimated graph. This is an edge that is adjacent
+     * in the estimated graph, but not in the true graph, and is not covering a collider or noncollider in the true
+     * graph.
+     *
+     * @param trueGraph The true graph.
+     * @param estGraph  The estimated graph.
+     * @param x         The first node.
+     * @param y         The second node.
+     * @return True if the edge is an induced edge in the true graph, false otherwise.
+     * @see #isCoveringAdjacency(Graph, Graph, Node, Node)
+     */
+    private static boolean isInducedAdjacency(Graph trueGraph, Graph estGraph, Node x, Node y) {
+        boolean isInducedAdjacency = false;
+
+        if (estGraph.isAdjacentTo(x, y)) {
+            boolean coveringEdge = isCoveringAdjacency(trueGraph, estGraph, x, y);
+
+            // If the edge is not a covering edge, and it is non-adjacent in the true graph, then it is an
+            // induced edge in the true graph. We count the induced edges.
+            if (!trueGraph.isAdjacentTo(x, y) && !coveringEdge) {
+                isInducedAdjacency = true;
+            }
+        }
+
+        return isInducedAdjacency;
+    }
+
+    /**
+     * Determines whether an edge between two nodes in the estimated graph is covering a collider or noncollider in the
+     * true graph. This is the case if the edge is adjacent in the estimated graph, but not in the true graph, and there
+     * is a common adjacent node in the estimated graph that is also a common adjacent node in the true graph. If the
+     * path through the common adjacent node is a collider in the true graph if and only if it is a noncollider in the
+     * estimated graph, then the edge is covering a collider or noncollider.
+     *
+     * @param trueGraph the true graph
+     * @param estGraph  the estimated graph
+     * @param x         the first node
+     * @param y         the second node
+     * @return true if the edge is covering a collider or noncollider, false otherwise
+     */
+    public static boolean isCoveringAdjacency(Graph trueGraph, Graph estGraph, Node x, Node y) {
+
+        // We need to look at common adjacents of x and y in the estimated graph, which are also common
+        // adjacents of x and y in the true graph.
+        List<Node> commonAdjacents = estGraph.getAdjacentNodes(x);
+        commonAdjacents.retainAll(estGraph.getAdjacentNodes(y));
+
+        boolean coveringAdjacency = false;
+
+        for (Node z : commonAdjacents) {
+
+            // We need to determine if adjacency x *-* y in the estimated graph is covering a collider or
+            // noncollider in the true graph. For this, we first of all need to make sure that x and y are
+            // non-adjacent in the true graph. Then we need to check if some path through a common adjacent z
+            // in both the true and estimated graphs is a collider in the true graph if and only if it is
+            // a noncollider in the estimated graph.
+            if (!trueGraph.isAdjacentTo(x, y)) {
+                if (trueGraph.isAdjacentTo(x, z) && trueGraph.isAdjacentTo(y, z)) {
+                    boolean colliderInTrueGraph = trueGraph.isDefCollider(x, z, y);
+                    boolean colliderInEstGraph = estGraph.isDefCollider(x, z, y);
+
+                    if (colliderInTrueGraph != colliderInEstGraph) {
+                        coveringAdjacency = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return coveringAdjacency;
+    }
+
+    /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */
     public enum GraphType {
