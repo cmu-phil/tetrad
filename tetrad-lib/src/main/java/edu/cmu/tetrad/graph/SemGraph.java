@@ -921,7 +921,6 @@ public final class SemGraph implements Graph {
         List<Edge> edges = graph.getEdges(node1);
 
         if (edges == null) {
-            System.out.println();
             edges = new ArrayList<>();
         }
 

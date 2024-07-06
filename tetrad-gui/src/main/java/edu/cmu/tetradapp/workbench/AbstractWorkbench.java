@@ -1414,10 +1414,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         if (pagEdgeSpecializationMarked) {
 
-            if (Edges.isBidirectedEdge(modelEdge)) {
-                System.out.println();
-            }
-
             // Mark the edge as a specialization if it is one. For directed edges only; the method setting these
             // properties only sets them for directed edges.
             if (modelEdge.getProperties().contains(Edge.Property.pl)) {

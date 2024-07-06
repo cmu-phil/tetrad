@@ -234,148 +234,86 @@ public final class FciOrient {
     }
 
     /**
-     * This is a score-based discriminating path rule.
+     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
      * <p>
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from E to A with each node on the path (except E) a parent of C.
+     * Reminder:
      * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * E....A --> C
+     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
+     *      <pre>
+     *               B
+     *              xo           x is either an arrowhead or a circle
+     *             /  \
+     *            v    v
+     *      E....A --> C
+     *
+     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
+     *      along the E...A path (all parents of C), including A. The idea is that if we know that E is independent
+     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
+     *      at B; otherwise, there should be a noncollider at B.
      * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating paths.
      *
-     * @param graph                            a {@link Graph} object
-     * @param scorer                           a {@link TeyssierScorer} object
-     * @param doDiscriminatingPathTailRule     Whether to apply the discriminating path tail rule
-     * @param doDiscriminatingPathColliderRule Whether to apply the discriminating path collider rule
-     * @param  verbose                          whether to print verbose output
+     * @param e     the 'e' node
+     * @param a     the 'a' node
+     * @param b     the 'b' node
+     * @param c     the 'c' node
+     * @param graph the graph representation
      * @return true if the orientation is determined, false otherwise
+     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    public static boolean discriminatingPathRuleScoreBased(Graph graph, TeyssierScorer scorer,
-                                                           boolean doDiscriminatingPathTailRule,
-                                                           boolean doDiscriminatingPathColliderRule,
-                                                           boolean verbose) {
-        List<Node> nodes = graph.getNodes();
-        boolean oriented = false;
+    private static boolean doDdpOrientationScoreBased(Node e, Node a, Node b, Node c, List<Node> path, Graph graph,
+                                                      TeyssierScorer scorer, boolean doDiscriminatingPathTailRule,
+                                                      boolean doDiscriminatingPathColliderRule, boolean verbose) {
 
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+
+        scorer.goToBookmark();
+        scorer.tuck(c, b);
+        scorer.tuck(e, b);
+//        scorer.tuck(c, e);
+
+//        scorer.goToBookmark();
+//
+//        for (Node n : path) {
+//            scorer.tuck(e, n);
+//        }
+//
+//        scorer.tuck(b, c);
+
+//        for (Node n : path) {
+//            if (n != a) {
+//                if (!scorer.adjacent(e, n)) {
+//                    return false;
+//                }
+//            }
+//        }
+
+        if (!scorer.getAdjacentNodes(c).containsAll(path)) return false;
+
+        boolean collider = !scorer.adjacent(e, c);
+
+        if (collider) {
+            if (doDiscriminatingPathColliderRule) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                }
+
+                return true;
             }
+        } else {
+            if (doDiscriminatingPathTailRule) {
+                graph.setEndpoint(c, b, Endpoint.TAIL);
 
-            // potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
-            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
-
-            for (Node a : possA) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
-                for (Node c : possC) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    if (a == c) continue;
-
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    boolean _oriented = ddpOrientScoreBased(a, b, c, graph, scorer, doDiscriminatingPathTailRule,
-                            doDiscriminatingPathColliderRule, verbose);
-
-                    if (_oriented) oriented = true;
-                }
-            }
-        }
-
-        return oriented;
-    }
-
-    /**
-     * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
-     * consists of colliders that are parents of c.
-     *
-     * @param a     a {@link Node} object
-     * @param b     a {@link Node} object
-     * @param c     a {@link Node} object
-     * @param graph a {@link Graph} object
-     */
-    private static boolean ddpOrientScoreBased(Node a, Node b, Node c, Graph graph, TeyssierScorer scorer,
-                                               boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                               boolean verbose) {
-        Queue<Node> Q = new ArrayDeque<>(20);
-        Set<Node> V = new HashSet<>();
-
-        Node e = null;
-
-        Map<Node, Node> previous = new HashMap<>();
-        List<Node> path = new ArrayList<>();
-
-        List<Node> cParents = graph.getParents(c);
-
-        Q.offer(a);
-        V.add(a);
-        V.add(b);
-        previous.put(a, b);
-
-        while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node t = Q.poll();
-
-            if (e == null || e == t) {
-                e = t;
-            }
-
-            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
-
-            for (Node d : nodesInTo) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (V.contains(d)) {
-                    continue;
-                }
-
-                Node p = previous.get(t);
-
-                if (!graph.isDefCollider(d, t, p)) {
-                    continue;
-                }
-
-                previous.put(d, t);
-
-                if (!path.contains(t)) {
-                    path.add(t);
-                }
-
-                if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientationScoreBased(d, a, b, c, path, graph, scorer,
-                            doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose)) {
-                        return true;
-                    }
-                }
-
-                if (cParents.contains(d)) {
-                    Q.offer(d);
-                    V.add(d);
-                }
+                return true;
             }
         }
 
@@ -408,35 +346,35 @@ public final class FciOrient {
      * @param b     the 'b' node
      * @param c     the 'c' node
      * @param graph the graph representation
-     * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private static boolean doDdpOrientationScoreBased(Node e, Node a, Node b, Node c, List<Node> path, Graph graph,
-                                                      TeyssierScorer scorer, boolean doDiscriminatingPathTailRule,
-                                                      boolean doDiscriminatingPathColliderRule, boolean verbose) {
-
+    private static void doubleCheckDdpConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            return false;
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-            return false;
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-            return false;
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            return false;
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-            return false;
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         if (!path.contains(a)) {
-            throw new IllegalArgumentException("Path does not contain a");
+            throw new IllegalArgumentException("This is not a DDP construct.");
+        }
+
+        if (graph.isAdjacentTo(e, b)) {
+            throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
         for (Node n : path) {
@@ -444,48 +382,6 @@ public final class FciOrient {
                 throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
             }
         }
-
-        scorer.goToBookmark();
-        scorer.tuck(c, b);
-        scorer.tuck(e, b);
-//        scorer.tuck(c, e);
-
-//        scorer.goToBookmark();
-//
-//        for (Node n : path) {
-//            scorer.tuck(e, n);
-//        }
-//
-//        scorer.tuck(b, c);
-
-        boolean collider = !scorer.adjacent(e, c);
-
-        if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return true;
-            }
-        } else {
-            if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -638,6 +534,9 @@ public final class FciOrient {
         }/**/
     }
 
+    //Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
+
     /**
      * <p>spirtesFinalOrientation.</p>
      *
@@ -667,6 +566,9 @@ public final class FciOrient {
             }
         }
     }
+
+    /// R1, away from collider
+    // If a*->bo-*c and a, c not adjacent then a*->b->c
 
     /**
      * <p>zhangFinalOrientation.</p>
@@ -718,8 +620,8 @@ public final class FciOrient {
         }
     }
 
-    //Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
+    //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
+    // This is Zhang's rule R2.
 
     /**
      * <p>rulesR1R2cycle.</p>
@@ -756,9 +658,6 @@ public final class FciOrient {
         }
     }
 
-    /// R1, away from collider
-    // If a*->bo-*c and a, c not adjacent then a*->b->c
-
     /**
      * <p>ruleR1.</p>
      *
@@ -787,9 +686,6 @@ public final class FciOrient {
             this.changeFlag = true;
         }
     }
-
-    //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
-    // This is Zhang's rule R2.
 
     /**
      * <p>ruleR2.</p>
@@ -926,6 +822,11 @@ public final class FciOrient {
                             continue;
                         }
 
+                        // Some ddp orientation may already have been made.
+                        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                            continue;
+                        }
+
                         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
                             continue;
                         }
@@ -998,7 +899,7 @@ public final class FciOrient {
                     path.add(t);
                 }
 
-                if (!graph.isAdjacentTo(d, c)) {
+                if (!graph.isAdjacentTo(d, c) && !graph.isAdjacentTo(d, b)) {
                     if (doDdpOrientation(d, a, b, c, path, graph)) {
                         return true;
                     }
@@ -1009,6 +910,129 @@ public final class FciOrient {
                     V.add(d);
                 }
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
+     * <p>
+     * Reminder:
+     * <pre>
+     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
+     *      <pre>
+     *               B
+     *              xo           x is either an arrowhead or a circle
+     *             /  \
+     *            v    v
+     *      E....A --> C
+     *
+     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
+     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
+     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
+     *      at B; otherwise, there should be a noncollider at B.
+     * </pre>
+     *
+     * @param e     the 'e' node
+     * @param a     the 'a' node
+     * @param b     the 'b' node
+     * @param c     the 'c' node
+     * @param graph the graph representation
+     * @return true if the orientation is determined, false otherwise
+     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     */
+    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+        doubleCheckDdpConstruct(e, a, b, c, path, graph);
+
+        if (scorer != null) {
+            return doDdpOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
+                    doDiscriminatingPathColliderRule, verbose);
+        }
+
+
+        for (Node n : path) {
+            if (!graph.isParentOf(n, c)) {
+                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
+            }
+        }
+
+//        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
+        Set<Node> sepset = getSepsets().getSepset(e, c);
+
+        if (sepset == null) {
+            return false;
+        }
+
+        if (!sepset.containsAll(path)) return false;
+
+        if (this.verbose) {
+            logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
+        }
+
+        boolean collider = !sepset.contains(b);
+
+        if (collider) {
+            if (doDiscriminatingPathColliderRule) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                if (this.verbose) {
+                    TetradLogger.getInstance().log(
+                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                }
+
+                this.changeFlag = true;
+                return true;
+            }
+        } else {
+            if (doDiscriminatingPathTailRule) {
+                graph.setEndpoint(c, b, Endpoint.TAIL);
+
+                if (this.verbose) {
+                    TetradLogger.getInstance().log(
+                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                }
+
+                this.changeFlag = true;
+                return true;
+            }
+        }
+
+        if (graph.isAdjacentTo(e, c)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
+            if (!isArrowheadAllowed(a, b, graph, knowledge)) {
+                return false;
+            }
+
+            if (!isArrowheadAllowed(c, b, graph, knowledge)) {
+                return false;
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            if (this.verbose) {
+                this.logger.log(
+                        "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            this.changeFlag = true;
+        } else if (doDiscriminatingPathTailRule) {
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
+            if (this.verbose) {
+                this.logger.log(LogUtilsSearch.edgeOrientedMsg(
+                        "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
+            }
+
+            this.changeFlag = true;
+            return true;
         }
 
         return false;
@@ -1183,148 +1207,6 @@ public final class FciOrient {
                 }
             }
         }
-    }
-
-    /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except L) a parent of C.
-     *      <pre>
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
-     *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
-     * @return true if the orientation is determined, false otherwise
-     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     */
-    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
-
-        if (scorer != null) {
-            return doDdpOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
-                    doDiscriminatingPathColliderRule, verbose);
-        }
-
-        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            return false;
-        }
-
-        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-            return false;
-        }
-
-        if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-            return false;
-        }
-
-        if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            return false;
-        }
-
-        if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-            return false;
-        }
-
-        if (!path.contains(a)) {
-            throw new IllegalArgumentException("Path does not contain a");
-        }
-
-        for (Node n : path) {
-            if (!graph.isParentOf(n, c)) {
-                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
-            }
-        }
-
-        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
-
-        if (sepset == null) {
-            return false;
-        }
-
-        if (this.verbose) {
-            logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
-        }
-
-        boolean collider = !sepset.contains(b);
-
-        if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                this.changeFlag = true;
-                return true;
-            }
-        } else {
-            if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                this.changeFlag = true;
-                return true;
-            }
-        }
-
-        if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException();
-        }
-
-        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-            if (!isArrowheadAllowed(a, b, graph, knowledge)) {
-                return false;
-            }
-
-            if (!isArrowheadAllowed(c, b, graph, knowledge)) {
-                return false;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (this.verbose) {
-                this.logger.log(
-                        "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-            }
-
-            this.changeFlag = true;
-        } else if (doDiscriminatingPathTailRule) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (this.verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg(
-                        "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
-            }
-
-            this.changeFlag = true;
-            return true;
-        }
-
-        return false;
     }
 
     /**

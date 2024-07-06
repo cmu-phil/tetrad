@@ -24,7 +24,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagSepsets;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -67,11 +69,11 @@ public final class LvLite implements IGraphSearch {
     /**
      * The number of starts for GRaSP.
      */
-    private int numStarts = 3;
+    private int numStarts = 1;
     /**
      * The threshold for equality, a fraction of abs(BIC).
      */
-    private double allowableScoreDrop = 30;
+    private double allowableScoreDrop = 100;
     /**
      * The depth of the GRaSP if it is used.
      */
@@ -472,6 +474,8 @@ public final class LvLite implements IGraphSearch {
     public Graph search() {
         List<Node> nodes = new ArrayList<>(this.score.getVariables());
 
+//        allowableScoreDrop = nodes.size() * (nodes.size() - 1) / 2.0 - 10;
+
         if (verbose) {
             TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
@@ -556,8 +560,12 @@ public final class LvLite implements IGraphSearch {
 
         scorer.setUseScore(true);
         scorer.setKnowledge(knowledge);
-        double best_score = scorer.score(best);
+
+        scorer.score(best);
+//        double bestScore = -scorer.getNumEdges();// scorer.score(bxest);
+        double bestScore = scorer.score(best);
         scorer.bookmark();
+
         Graph pag = new EdgeListGraph(scorer.getGraph(true));
 
         if (verbose) {
@@ -565,9 +573,21 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        scorer.score(best);
 
-        FciOrient fciOrient = new FciOrient(scorer);
+        FciOrient fciOrient;
+
+//        if (test instanceof MsepTest) {
+//            fciOrient = new FciOrient(new DagSepsets(((MsepTest)test).getGraph()));
+//        } else {
+//        TeyssierScorer scorer1 = new TeyssierScorer(test, score);
+//        scorer1.setUseScore(false);
+//        scorer1.setUseRaskuttiUhler(true);
+        scorer.score(best);
+        scorer.bookmark();
+
+        fciOrient = new FciOrient(scorer);
+//        }
+
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
@@ -592,7 +612,7 @@ public final class LvLite implements IGraphSearch {
             for (Node x : adj) {
                 for (Node y : adj) {
                     if (distinct(x, b, y)) {
-                        addCollider(x, b, y, pag, false, scorer, best_score, best_score, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                        addCollider(x, b, y, pag, false, scorer, bestScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
                     }
                 }
             }
@@ -611,8 +631,9 @@ public final class LvLite implements IGraphSearch {
                         if (distinct(x, b, y) && !tested.contains(new Triple(x, b, y))) {
                             scorer.tuck(y, b);
                             scorer.tuck(x, y);
+//                            double newScore = -scorer.getNumEdges();// scorer.score();
                             double newScore = scorer.score();
-                            addCollider(x, b, y, pag, true, scorer, newScore, best_score, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
+                            addCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.allowableScoreDrop, unshieldedColliders, tested, knowledge, verbose);
                             scorer.goToBookmark();
                         }
                     }

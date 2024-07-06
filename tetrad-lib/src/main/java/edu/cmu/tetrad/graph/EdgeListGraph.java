@@ -628,12 +628,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Endpoint getEndpoint(Node node1, Node node2) {
-        List<Edge> edges = getEdges(node2);
+        Edge edge = getEdge(node1, node2);
 
-        for (Edge edge : edges) {
-            if (edge.getDistalNode(node2) == node1) {
-                return edge.getProximalEndpoint(node2);
-            }
+        if (edge != null) {
+            return edge.getProximalEndpoint(node2);
         }
 
         return null;
