@@ -443,6 +443,12 @@ public class Paths implements TetradSerializable {
         }
 
         for (Edge edge : graph.getEdges(node1)) {
+            if (edge == null) continue;
+
+            if (!edge.isDirected()) {
+                continue;
+            }
+
             Node child = Edges.traverseDirected(node1, edge);
 
             if (child == null) {

@@ -118,6 +118,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
+
         return graph;
     }
 
@@ -161,6 +162,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
+        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);

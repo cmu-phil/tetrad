@@ -173,6 +173,31 @@ public class TeyssierScorer {
         return changed;
     }
 
+    public boolean tuckInCpdag(Node j, Node k) {
+        int jIndex = index(j);
+        int kIndex = index(k);
+
+        if (jIndex < kIndex) {
+            return false;
+        }
+
+        Graph cpdag = getGraph(true);
+
+        List<Node> ancestors = cpdag.paths().getAncestors(j);
+        int _kIndex = kIndex;
+
+        boolean changed = false;
+
+        for (int i = jIndex; i > kIndex; i--) {
+            if (ancestors.contains(get(i))) {
+                moveTo(get(i), _kIndex++);
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
     /**
      * Moves all j's to before k and moves all the ancestors of all ji's betwween k and ji to before k.
      *

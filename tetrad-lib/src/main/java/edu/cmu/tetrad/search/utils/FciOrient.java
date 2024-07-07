@@ -268,28 +268,6 @@ public final class FciOrient {
 
 
         scorer.goToBookmark();
-        scorer.tuck(c, b);
-        scorer.tuck(e, b);
-//        scorer.tuck(c, e);
-
-//        scorer.goToBookmark();
-//
-//        for (Node n : path) {
-//            scorer.tuck(e, n);
-//        }
-//
-//        scorer.tuck(b, c);
-
-//        for (Node n : path) {
-//            if (n != a) {
-//                if (!scorer.adjacent(e, n)) {
-//                    return false;
-//                }
-//            }
-//        }
-
-        if (!scorer.getAdjacentNodes(c).containsAll(path)) return false;
-
         boolean collider = !scorer.adjacent(e, c);
 
         if (collider) {
@@ -321,7 +299,8 @@ public final class FciOrient {
     }
 
     /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
+     * Triple-checks a DDP construct to make sure it satisfies all of the requirements.
+     * <p>
      * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
      * <p>
      * Reminder:

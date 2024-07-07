@@ -119,7 +119,7 @@ public final class Edges {
      * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff the given edge is a directed edge (--&gt;).
      */
-    public static boolean isDirectedEdge(Edge edge) {
+    public synchronized static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
             return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.TAIL) {
