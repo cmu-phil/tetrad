@@ -907,7 +907,7 @@ public final class Params {
     /**
      * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
      */
-    public static final String LV_LITE_MAX_PATH_LENGTH = "lvLiteMaxPathLength";
+    public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
 
 
     private Params() {
