@@ -885,9 +885,9 @@ public final class Params {
      */
     public static final String ALLOW_TUCKS = "allowTucks";
     /**
-     * Constant <code>ALLOWABLE_SCORE_DROP="allowableScoreDrop"</code>
+     * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
-    public static final String ALLOWABLE_SCORE_DROP = "allowableScoreDrop";
+    public static final String MAX_SCORE_DROP = "maxScoreDrop";
     /**
      * Constant <code>REPAIR_FAULTY_PAG="repairFaultyPag"</code>
      */
@@ -908,6 +908,10 @@ public final class Params {
      * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
+    /**
+     * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
+     */
+    public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
 
 
     private Params() {

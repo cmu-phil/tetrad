@@ -307,7 +307,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * {@inheritDoc}
      */
     @Override
-    public List<Node> getChildren(Node node) {
+    public synchronized List<Node> getChildren(Node node) {
         List<Node> children = new ArrayList<>();
 
         for (Edge edge : getEdges(node)) {
@@ -392,7 +392,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * {@inheritDoc}
      */
     @Override
-    public List<Node> getParents(Node node) {
+    public synchronized List<Node> getParents(Node node) {
         if (!parentsHash.containsKey(node)) {
             List<Node> parents = new ArrayList<>();
             Set<Edge> edges = this.edgeLists.get(node);

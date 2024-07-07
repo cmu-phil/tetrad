@@ -6495,28 +6495,53 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="allowableScoreDrop">allowableScoreDrop</h3>
+            id="maxSepsetSize">maxSepsetSize</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxSepsetSize_short_desc">For testing steps in LV-Lite, the
+                    maximum conditioning set size</span></li>
+            <li>Long Description: <span
+                    id="maxSepsetSize_long_desc">
+                    In the extra edge removal step, we build conditioning sets based on the
+                    current PAG to attempt to remove adjacencies from the graph, by
+                    blocking paths from x to y of up to this length. This is the maximum
+                    size these sets are allowed to grow to.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="maxSepsetSize_default_value">8</span></li>
+            <li>Lower Bound: <span
+                    id="maxSepsetSize_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxSepsetSize_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="maxSepsetSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxScoreDrop">maxScoreDrop</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="allowableScoreDrop_short_desc">
-                    Allowable score drop for the process triples step
+                    id="maxScoreDrop_short_desc">
+                    Maximum score drop for the process triples step
         </span></li>
             <li>Long Description: <span
-                    id="allowableScoreDrop_long_desc">
+                    id="maxScoreDrop_long_desc">
                     In orienting unshielded colliders by examining triples of nodes,
                     the score is permitted to drop by this much.
         </span></li>
             <li>Default Value: <span
-                    id="allowableScoreDrop_default_value">5</span></li>
+                    id="maxScoreDrop_default_value">5</span></li>
             <li>Lower Bound: <span
-                    id="allowableScoreDrop_lower_bound">0</span></li>
+                    id="maxScoreDrop_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span
-                        id="allowableScoreDrop_upper_bound">Infinity</span></li>
+                        id="maxScoreDrop_upper_bound">Infinity</span></li>
             <li>Value
                 Type: <span
-                        id="allowableScoreDrop_value_type">Double</span></li>
+                        id="maxScoreDrop_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

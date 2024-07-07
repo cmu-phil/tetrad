@@ -148,9 +148,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // LV-Lite
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setMaxScoreDrop(parameters.getDouble(Params.ALLOWABLE_SCORE_DROP));
+        search.setMaxScoreDrop(parameters.getDouble(Params.MAX_SCORE_DROP));
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+        search.setMaxSepsetSize(parameters.getInt(Params.MAX_SEPSET_SIZE));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -220,10 +221,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
-        params.add(Params.ALLOWABLE_SCORE_DROP);
+        params.add(Params.MAX_SCORE_DROP);
         params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
+        params.add(Params.MAX_SEPSET_SIZE);
 
         // General
         params.add(Params.TIME_LAG);
