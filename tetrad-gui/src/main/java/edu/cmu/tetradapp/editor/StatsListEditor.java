@@ -16,10 +16,7 @@ import java.io.Serial;
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
- * <p>StatsListEditor class.</p>
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The StatsListEditor class is a JPanel that displays statistics for a tabular comparison.
  */
 public class StatsListEditor extends JPanel {
 
