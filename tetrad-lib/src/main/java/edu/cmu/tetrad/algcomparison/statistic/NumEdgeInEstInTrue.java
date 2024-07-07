@@ -9,19 +9,19 @@ import java.io.Serial;
 import static java.lang.Math.tanh;
 
 /**
- * The number of induced adjacencies in an estimated PAG compared to the true PAG.
+ * The number of adjacencies in the estimated graph but not in the true graph.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class NumInducedAdjacenciesInPag implements Statistic {
+public class NumEdgeInEstInTrue implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the statistic.
      */
-    public NumInducedAdjacenciesInPag() {
+    public NumEdgeInEstInTrue() {
 
     }
 
@@ -30,7 +30,7 @@ public class NumInducedAdjacenciesInPag implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "NumInducedAdj";
+        return "#EdgesEstInTrue";
     }
 
     /**
@@ -38,7 +38,7 @@ public class NumInducedAdjacenciesInPag implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number of Induced Adjacencies in PAG (adjacencies in estimated graph but not in true graph that are not covering colliders or non-colliders)";
+        return "Number of Adjacencies in PAG (adjacencies in estimated graph and are in true graph)";
     }
 
     /**

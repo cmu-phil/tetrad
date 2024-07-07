@@ -3009,7 +3009,7 @@ public final class GraphUtils {
      * @param trueGraph the true PAG.
      * @param estGraph  the estimated PAG.
      * @return the number of induced adjacencies in the PAG.
-     * @see #isInducedAdjacency(Graph, Graph, Node, Node)
+     * @see #edgeInEstInTrue(Graph, Graph, Node, Node)
      */
     public static int getNumInducedAdjacenciesInPag(Graph trueGraph, Graph estGraph) {
 
@@ -3020,7 +3020,7 @@ public final class GraphUtils {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            boolean isInducedAdjacency = isInducedAdjacency(trueGraph, estGraph, x, y);
+            boolean isInducedAdjacency = edgeInEstInTrue(trueGraph, estGraph, x, y);
 
             if (isInducedAdjacency) {
                 count++;
@@ -3060,31 +3060,29 @@ public final class GraphUtils {
     }
 
     /**
-     * Checks if an edge between two nodes is an induced edge in the estimated graph. This is an edge that is adjacent
-     * in the estimated graph, but not in the true graph, and is not covering a collider or noncollider in the true
-     * graph.
+     * Checks if an edge between two nodes is in the estimated graph but is not adjacent in the true graph.
      *
      * @param trueGraph The true graph.
      * @param estGraph  The estimated graph.
      * @param x         The first node.
      * @param y         The second node.
-     * @return True if the edge is an induced edge in the true graph, false otherwise.
+     * @return True if the edge is in the estimated graph but not in the true graph, false otherwise.
      * @see #isCoveringAdjacency(Graph, Graph, Node, Node)
      */
-    private static boolean isInducedAdjacency(Graph trueGraph, Graph estGraph, Node x, Node y) {
-        boolean isInducedAdjacency = false;
+    private static boolean edgeInEstInTrue(Graph trueGraph, Graph estGraph, Node x, Node y) {
+        boolean inEstNotTrue = false;
 
         if (estGraph.isAdjacentTo(x, y)) {
-            boolean coveringEdge = isCoveringAdjacency(trueGraph, estGraph, x, y);
+//            boolean coveringEdge = isCoveringAdjacency(trueGraph, estGraph, x, y);
 
             // If the edge is not a covering edge, and it is non-adjacent in the true graph, then it is an
             // induced edge in the true graph. We count the induced edges.
-            if (!trueGraph.isAdjacentTo(x, y) && !coveringEdge) {
-                isInducedAdjacency = true;
+            if (trueGraph.isAdjacentTo(x, y)) {// && !coveringEdge) {
+                inEstNotTrue = true;
             }
         }
 
-        return isInducedAdjacency;
+        return inEstNotTrue;
     }
 
     /**

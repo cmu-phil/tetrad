@@ -30,7 +30,7 @@ public class NumCoveringAdjacenciesInPag implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "NumCoveringAdj";
+        return "#CoveringAdj";
     }
 
     /**

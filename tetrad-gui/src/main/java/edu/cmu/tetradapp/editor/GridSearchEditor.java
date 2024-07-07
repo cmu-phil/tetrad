@@ -1557,8 +1557,8 @@ public class GridSearchEditor extends JPanel {
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
         comparisonSelectionBox.add(runComparison);
-        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(createEditutilitiesButton());
+        comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
         comparisonTabbedPane = new JTabbedPane();
