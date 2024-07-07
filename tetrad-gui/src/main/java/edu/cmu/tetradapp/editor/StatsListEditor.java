@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.TabularComparison;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -153,14 +154,28 @@ public class StatsListEditor extends JPanel {
             this.params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+//            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    SwingUtilities.invokeLater(() -> {
+                        referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+                        area.setText(tableTextWithHeader());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
 
-            this.area.repaint();
+//            this.area.setText(tableTextWithHeader());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//
+//            this.area.repaint();
 
         });
 
@@ -168,14 +183,28 @@ public class StatsListEditor extends JPanel {
             this.params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+//            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    SwingUtilities.invokeLater(() -> {
+                        referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+                        area.setText(tableTextWithHeader());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
 
-            this.area.repaint();
+//            this.area.setText(tableTextWithHeader());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//
+//            this.area.repaint();
 
         });
 
@@ -183,13 +212,26 @@ public class StatsListEditor extends JPanel {
             this.params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
-            this.area.repaint();
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    SwingUtilities.invokeLater(() -> {
+                        referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+                        area.setText(tableTextWithHeader());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
+
+//            this.area.setText(tableTextWithHeader());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//            this.area.repaint();
         });
 
         return menubar;
