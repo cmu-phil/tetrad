@@ -75,6 +75,10 @@ public final class LvLite implements IGraphSearch {
      */
     private int recursionDepth = 15;
     /**
+     * The maximum path length for blocking paths.
+     */
+    private int maxBlockingPathLength = 5;
+    /**
      * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
@@ -110,7 +114,6 @@ public final class LvLite implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int maxPathLength = 5;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -135,315 +138,6 @@ public final class LvLite implements IGraphSearch {
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
         }
-    }
-
-    /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
-     * Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag     The Graph to be reoriented.
-     * @param verbose A boolean value indicating whether verbose output should be printed.
-     */
-    public static void reorientWithCircles(Graph pag, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
-        }
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
-    /**
-     * Recall unshielded triples in a given graph.
-     *
-     * @param pag                 The graph to recall unshielded triples from.
-     * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
-     * @param knowledge           the knowledge object.
-     * @param verbose             A boolean flag indicating whether verbose output should be printed.
-     */
-    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Set<Set<Node>> removedEdges, Knowledge knowledge, boolean verbose) {
-        for (Triple triple : unshieldedColliders) {
-            Node x = triple.getX();
-            Node b = triple.getY();
-            Node y = triple.getZ();
-
-            // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
-            // creat almost cycles in final orientation.
-            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !createsAlmostCycle(pag, x, b, y)) {
-                pag.setEndpoint(x, b, Endpoint.ARROW);
-                pag.setEndpoint(y, b, Endpoint.ARROW);
-                boolean removed = pag.removeEdge(x, y);
-
-                if (removed) {
-                    removedEdges.add(Set.of(x, y));
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
-
-                    if (removed) {
-                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
-                    }
-                }
-            }
-        }
-    }
-
-    private static boolean createsAlmostCycle(Graph pag, Node x, Node b, Node y) {
-        if (pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Removes extra edges in a graph according to specified conditions.
-     *
-     * @param pag                 The graph in which to remove extra edges.
-     * @param test                The IndependenceTest object used for testing independence between variables.
-     * @param maxPathLength       The maximum length of any blocked path.
-     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
-     * @param verbose             A boolean value indicating whether verbose output should be printed.
-     * @return A map of edges to remove to sepsets used to removed them. The sepsets are the conditioning sets used to
-     * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
-     * is not in this sepset.
-     */
-    public static Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking larger conditioning sets:");
-        }
-
-        Map<Edge, Set<Node>> toRemove = new HashMap<>();
-
-        for (int maxLength = 3; maxLength <= maxPathLength; maxLength++) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking paths of length " + maxLength + ":");
-            }
-
-            int _maxPathLength = maxLength;
-
-            dag.getEdges().forEach(edge -> {
-                boolean removed = tryRemovingEdge(edge, dag, test, toRemove, _maxPathLength, verbose);
-
-                if (removed) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Removed edge: " + edge);
-                    }
-                }
-            });
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Done checking larger conditioning sets.");
-        }
-
-        for (Edge edge : toRemove.keySet()) {
-            pag.removeEdge(edge.getNode1(), edge.getNode2());
-            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removed edges: " + toRemove);
-        }
-
-        return toRemove;
-    }
-
-    private static void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
-        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
-        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
-
-        pag.removeEdge(edge);
-
-        for (Node node : common) {
-            if (!toRemove.get(edge).contains(node)) {
-                pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
-                pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
-
-//                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
-            }
-        }
-    }
-
-    private static boolean tryRemovingEdge(Edge edge, Graph dag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength, boolean verbose) {
-        test.setVerbose(verbose);
-
-        TetradLogger.getInstance().log("### Checking edge: " + edge);
-
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-
-        if (x.getName().equals("X4") && y.getName().equals("X13")) {
-            System.out.println("###### Double-Checking edge: " + edge);
-        }
-
-        // This is the set of all possible conditioning variables, though note below.
-        Set<Node> defNoncolliders = new HashSet<>();
-
-        // These guys could either hide colliders or not, so we need to consider either conditioning on them or not.
-        // These are elements of possibleConditioningVariables, but we need to consider the Cartesian product where we either
-        // include these variables in the conditioning set for the test or not.
-        Set<Node> couldBeNoncolliders = new HashSet<>();
-        List<List<Node>> paths;
-        Set<Node> alreadyAdded = new HashSet<>();
-
-        while (true) {
-            paths = dag.paths().allPaths(x, y, maxPathLength, defNoncolliders, true);
-            boolean changed = false;
-            boolean allBlocked = true;
-
-            // Sort paths by increasing size.
-            paths.sort(Comparator.comparingInt(List::size));
-
-            for (List<Node> path : paths) {
-                if (!dag.paths().isMConnectingPath(path, alreadyAdded, true)) {
-                    continue;
-                }
-
-                boolean blocked = false;
-
-                for (int i = 1; i < path.size() - 1; i++) {
-                    Node z1 = path.get(i - 1);
-                    Node z2 = path.get(i);
-                    Node z3 = path.get(i + 1);
-
-                    if (alreadyAdded.contains(z2)) {
-                        blocked = true;
-                        continue;
-                    }
-
-                    if (!dag.isDefCollider(z1, z2, z3)) {
-                        defNoncolliders.add(z2);
-                        alreadyAdded.add(z2);
-                        blocked = true;
-
-                        if (path.size() - 1 == 2) {
-                            couldBeNoncolliders.add(z2);
-                        }
-                    }
-
-                    if (path.size() - 1 > 1 && blocked) {
-                        changed = true;
-                    }
-                }
-
-                if (path.size() - 1 > 1 && !blocked) {
-                    allBlocked = false;
-                }
-            }
-
-            if (!allBlocked) {
-                return false;
-            }
-
-            if (!changed) break;
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
-            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
-        }
-
-        List<Node> couldBeCollidersList = new ArrayList<>(couldBeNoncolliders);
-        defNoncolliders.removeAll(couldBeNoncolliders);
-
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> conditioningSet = new HashSet<>();
-
-            for (int j : choice) {
-                conditioningSet.add(couldBeCollidersList.get(j));
-            }
-
-            conditioningSet.addAll(defNoncolliders);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
-            }
-
-            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-                toRemove.put(edge, conditioningSet);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void tryAddingCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer, double newScore, double bestScore, double maxScoreDrop, Set<Triple> unshieldedColliders, Set<Triple> tested, Knowledge knowledge, boolean verbose) {
-        if (colliderAllowed(pag, x, b, y, knowledge)) {
-            if (scorer.unshieldedCollider(x, b, y) && newScore >= bestScore - maxScoreDrop) {
-                unshieldedColliders.add(new Triple(x, b, y));
-                tested.add(new Triple(x, b, y));
-
-                if (verbose) {
-                    if (tucked) {
-                        TetradLogger.getInstance().log("AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                    } else {
-                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if three nodes are connected in a graph.
-     *
-     * @param graph the graph to check for connectivity
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return {@code true} if all three nodes are connected, {@code false} otherwise
-     */
-    private static boolean triple(Graph graph, Node a, Node b, Node c) {
-        return distinct(a, b, c) && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
-    }
-
-    /**
-     * Determines if the collider is allowed.
-     *
-     * @param pag The Graph representing the PAG.
-     * @param x   The Node object representing the first node.
-     * @param b   The Node object representing the second node.
-     * @param y   The Node object representing the third node.
-     * @return true if the collider is allowed, false otherwise.
-     */
-    private static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
-        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge) && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
-    }
-
-    /**
-     * Orient required edges in PAG.
-     *
-     * @param fciOrient The FciOrient object used for orienting the edges.
-     * @param pag       The Graph representing the PAG.
-     * @param best      The list of Node objects representing the best nodes.
-     */
-    private static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient required edges in PAG:");
-        }
-
-        fciOrient.fciOrientbk(knowledge, pag, best);
-    }
-
-    private static boolean distinct(Node x, Node b, Node y) {
-        return x != b && y != b && x != y;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
     }
 
     /**
@@ -650,7 +344,7 @@ public final class LvLite implements IGraphSearch {
         fciOrient.zhangFinalOrientation(pag);
 
         if (test instanceof MsepTest || test.getAlpha() > 0) {
-            Map<Edge, Set<Node>> toRemove = removeExtraEdges(pag, dag, test, maxPathLength, unshieldedColliders, verbose);
+            Map<Edge, Set<Node>> toRemove = removeExtraEdges(pag, dag, test, maxBlockingPathLength, unshieldedColliders, verbose);
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
@@ -666,6 +360,20 @@ public final class LvLite implements IGraphSearch {
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
+    }
+
+
+    /**
+     * Sets the maximum length of any discriminating path.
+     *
+     * @param maxBlockingPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        if (maxBlockingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxBlockingPathLength);
+        }
+
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**
@@ -783,6 +491,298 @@ public final class LvLite implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
+     * Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag     The Graph to be reoriented.
+     * @param verbose A boolean value indicating whether verbose output should be printed.
+     */
+    private void reorientWithCircles(Graph pag, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
+        }
+        pag.reorientAllWith(Endpoint.CIRCLE);
+    }
+
+    /**
+     * Recall unshielded triples in a given graph.
+     *
+     * @param pag                 The graph to recall unshielded triples from.
+     * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
+     * @param knowledge           the knowledge object.
+     * @param verbose             A boolean flag indicating whether verbose output should be printed.
+     */
+    private void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Set<Set<Node>> removedEdges, Knowledge knowledge, boolean verbose) {
+        for (Triple triple : unshieldedColliders) {
+            Node x = triple.getX();
+            Node b = triple.getY();
+            Node y = triple.getZ();
+
+            // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
+            // creat almost cycles in final orientation.
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !createsAlmostCycle(pag, x, b, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
+                boolean removed = pag.removeEdge(x, y);
+
+                if (removed) {
+                    removedEdges.add(Set.of(x, y));
+                }
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
+
+                    if (removed) {
+                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean createsAlmostCycle(Graph pag, Node x, Node b, Node y) {
+        if (pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes extra edges in a graph according to specified conditions.
+     *
+     * @param pag                 The graph in which to remove extra edges.
+     * @param test                The IndependenceTest object used for testing independence between variables.
+     * @param maxPathLength       The maximum length of any blocked path.
+     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
+     * @param verbose             A boolean value indicating whether verbose output should be printed.
+     * @return A map of edges to remove to sepsets used to removed them. The sepsets are the conditioning sets used to
+     * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
+     * is not in this sepset.
+     */
+    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Checking larger conditioning sets:");
+        }
+
+        Map<Edge, Set<Node>> toRemove = new HashMap<>();
+
+        for (int maxLength = 3; maxLength <= maxPathLength; maxLength++) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Checking paths of length " + maxLength + ":");
+            }
+
+            int _maxPathLength = maxLength;
+
+            dag.getEdges().forEach(edge -> {
+                boolean removed = tryRemovingEdge(edge, dag, test, toRemove, _maxPathLength, verbose);
+
+                if (removed) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Removed edge: " + edge);
+                    }
+                }
+            });
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Done checking larger conditioning sets.");
+        }
+
+        for (Edge edge : toRemove.keySet()) {
+            pag.removeEdge(edge.getNode1(), edge.getNode2());
+            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Removed edges: " + toRemove);
+        }
+
+        return toRemove;
+    }
+
+    private void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
+        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
+        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
+
+        pag.removeEdge(edge);
+
+        for (Node node : common) {
+            if (!toRemove.get(edge).contains(node)) {
+                pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
+                pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
+
+//                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
+            }
+        }
+    }
+
+    private boolean tryRemovingEdge(Edge edge, Graph dag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength, boolean verbose) {
+        test.setVerbose(verbose);
+
+        TetradLogger.getInstance().log("### Checking edge: " + edge);
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        // This is the set of all possible conditioning variables, though note below.
+        Set<Node> defNoncolliders = new HashSet<>();
+
+        // These guys could either hide colliders or not, so we need to consider either conditioning on them or not.
+        // These are elements of possibleConditioningVariables, but we need to consider the Cartesian product where we either
+        // include these variables in the conditioning set for the test or not.
+        Set<Node> couldBeNoncolliders = new HashSet<>();
+        List<List<Node>> paths;
+        Set<Node> alreadyAdded = new HashSet<>();
+
+        while (true) {
+            paths = dag.paths().allPaths(x, y, maxPathLength, defNoncolliders, true);
+            boolean changed = false;
+            boolean allBlocked = true;
+
+            // Sort paths by increasing size.
+            paths.sort(Comparator.comparingInt(List::size));
+
+            for (List<Node> path : paths) {
+                if (!dag.paths().isMConnectingPath(path, alreadyAdded, true)) {
+                    continue;
+                }
+
+                boolean blocked = false;
+
+                for (int i = 1; i < path.size() - 1; i++) {
+                    Node z1 = path.get(i - 1);
+                    Node z2 = path.get(i);
+                    Node z3 = path.get(i + 1);
+
+                    if (alreadyAdded.contains(z2)) {
+                        blocked = true;
+                        continue;
+                    }
+
+                    if (!dag.isDefCollider(z1, z2, z3)) {
+                        defNoncolliders.add(z2);
+                        alreadyAdded.add(z2);
+                        blocked = true;
+
+                        if (path.size() - 1 == 2) {
+                            couldBeNoncolliders.add(z2);
+                        }
+                    }
+
+                    if (path.size() - 1 > 1 && blocked) {
+                        changed = true;
+                    }
+                }
+
+                if (path.size() - 1 > 1 && !blocked) {
+                    allBlocked = false;
+                }
+            }
+
+            if (!allBlocked) {
+                return false;
+            }
+
+            if (!changed) break;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
+            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
+        }
+
+        List<Node> couldBeCollidersList = new ArrayList<>(couldBeNoncolliders);
+        defNoncolliders.removeAll(couldBeNoncolliders);
+
+        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Node> conditioningSet = new HashSet<>();
+
+            for (int j : choice) {
+                conditioningSet.add(couldBeCollidersList.get(j));
+            }
+
+            conditioningSet.addAll(defNoncolliders);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
+            }
+
+            if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
+                toRemove.put(edge, conditioningSet);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer, double newScore, double bestScore, double maxScoreDrop, Set<Triple> unshieldedColliders, Set<Triple> tested, Knowledge knowledge, boolean verbose) {
+        if (colliderAllowed(pag, x, b, y, knowledge)) {
+            if (scorer.unshieldedCollider(x, b, y) && newScore >= bestScore - maxScoreDrop) {
+                unshieldedColliders.add(new Triple(x, b, y));
+                tested.add(new Triple(x, b, y));
+
+                if (verbose) {
+                    if (tucked) {
+                        TetradLogger.getInstance().log("AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    } else {
+                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if three nodes are connected in a graph.
+     *
+     * @param graph the graph to check for connectivity
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return {@code true} if all three nodes are connected, {@code false} otherwise
+     */
+    private boolean triple(Graph graph, Node a, Node b, Node c) {
+        return distinct(a, b, c) && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+    }
+
+    /**
+     * Determines if the collider is allowed.
+     *
+     * @param pag The Graph representing the PAG.
+     * @param x   The Node object representing the first node.
+     * @param b   The Node object representing the second node.
+     * @param y   The Node object representing the third node.
+     * @return true if the collider is allowed, false otherwise.
+     */
+    private boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
+        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge) && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
+    }
+
+    /**
+     * Orient required edges in PAG.
+     *
+     * @param fciOrient The FciOrient object used for orienting the edges.
+     * @param pag       The Graph representing the PAG.
+     * @param best      The list of Node objects representing the best nodes.
+     */
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient required edges in PAG:");
+        }
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
+    }
+
+    private boolean distinct(Node x, Node b, Node y) {
+        return x != b && y != b && x != y;
     }
 
     /**
