@@ -268,6 +268,7 @@ public final class FciOrient {
 
 
         scorer.goToBookmark();
+        scorer.tuck(c, b);
         boolean collider = !scorer.adjacent(e, c);
 
         if (collider) {

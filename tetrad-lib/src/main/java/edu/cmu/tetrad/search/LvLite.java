@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -248,6 +249,7 @@ public final class LvLite implements IGraphSearch {
         scorer.score(best);
         scorer.bookmark();
 
+//        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
         FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
@@ -322,27 +324,12 @@ public final class LvLite implements IGraphSearch {
             recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        // Now we have all the unshielded colliders we can find without doing any tests. Heuristically, we now
-        // make a PAG to return by copying the unshielded colliders to the PAG and doing final orientation. This
-        // produces a PAG that is Markov equivalent to the true graph, but not necessarily edge minimal. The
-        // reason is that all the edges removed were removed for correct reasons, and the orientations
-        // that were done for correct reasons. The only thing that might be wrong is that we might have missed
-        // some unshielded colliders that we could have detected with a test. But the independencies in the graph
-        // are correct, so the graph is Markov equivalent to the true graph.
-        //
-        // To find a minimal PAG, we would need to add a testing step to detect unshielded colliders that we
-        // missed. This would be done by testing for independence of X and Y given adjacents of X or Y in
-        // the PAG. If X and Y are independent given some set of adjacents in the PAG, then we can remove
-        // the edge X *-* Y from the PAG. In this case, we may be able to go back and test whether new unshielded
-        // colliders can then be oriented in the PAG. Even this step possibly leaves some edge removals on the
-        // table, because we might have missed some unshielded colliders that we could have detected with a
-        // possible dsep test. These testing steps are expensive, though, and inaccurate, so until we can find
-        // a better way to do them, we will leave them out.
         reorientWithCircles(pag, verbose);
         doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
         fciOrient.zhangFinalOrientation(pag);
 
+        // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG.
         if (test instanceof MsepTest || test.getAlpha() > 0) {
             Map<Edge, Set<Node>> toRemove = removeExtraEdges(pag, dag, test, maxBlockingPathLength, unshieldedColliders, verbose);
             reorientWithCircles(pag, verbose);
@@ -353,6 +340,8 @@ public final class LvLite implements IGraphSearch {
                 pag.removeEdge(edge.getNode1(), edge.getNode2());
                 orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
             }
+
+            fciOrient.zhangFinalOrientation(pag);
         }
 
         if (repairFaultyPag) {
@@ -532,13 +521,13 @@ public final class LvLite implements IGraphSearch {
                     removedEdges.add(Set.of(x, y));
                 }
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
-
-                    if (removed) {
-                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
-                    }
-                }
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
+//
+//                    if (removed) {
+//                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
+//                    }
+//                }
             }
         }
     }
@@ -582,7 +571,7 @@ public final class LvLite implements IGraphSearch {
 
                 if (removed) {
                     if (verbose) {
-                        TetradLogger.getInstance().log("Removed edge: " + edge);
+                        TetradLogger.getInstance().log("Removing edge: " + edge);
                     }
                 }
             });
@@ -615,7 +604,11 @@ public final class LvLite implements IGraphSearch {
                 pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
                 pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
 
-//                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
+                if (verbose) {
+                    TetradLogger.getInstance().log("Oriented " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2() + " in PAG.");
+                }
+
+                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
             }
         }
     }
@@ -690,10 +683,10 @@ public final class LvLite implements IGraphSearch {
             if (!changed) break;
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
-            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
-        }
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
+//            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
+//        }
 
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeNoncolliders);
         defNoncolliders.removeAll(couldBeNoncolliders);
@@ -710,9 +703,9 @@ public final class LvLite implements IGraphSearch {
 
             conditioningSet.addAll(defNoncolliders);
 
-            if (verbose) {
-                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
-            }
+//            if (verbose) {
+//                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
+//            }
 
             if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
                 toRemove.put(edge, conditioningSet);
