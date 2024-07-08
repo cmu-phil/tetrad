@@ -126,7 +126,7 @@ public final class LvLite implements IGraphSearch {
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
-     * @throws NullPointerException if score is null.
+     * @throws NullPointerException if the score is null.
      */
     public LvLite(IndependenceTest test, Score score) {
         if (test == null) {
@@ -243,12 +243,12 @@ public final class LvLite implements IGraphSearch {
 
         reorientWithCircles(pag, verbose);
 
-        // We're just looking for unshielded colliders in these next steps that we can detect without using only
+        // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs
         // that can be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the
         // highest number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded
         // colliders, though like the BOSS graph, they should be Markov, so their unshielded colliders should be
-        // valid. From sample, because of unfaithfulness, the quality may fall off depending on the different in
+        // valid. From sample, because of unfaithfulness, the quality may fall off depending on the difference in
         // score between the best order and a tucked order.
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
@@ -367,7 +367,6 @@ public final class LvLite implements IGraphSearch {
         permutationSearch.search();
         return permutationSearch;
     }
-
 
     /**
      * Sets the maximum length of any discriminating path.
@@ -645,7 +644,7 @@ public final class LvLite implements IGraphSearch {
         Set<Node> alreadyAdded = new HashSet<>();
 
         while (true) {
-            paths = dag.paths().allPaths(x, y, maxBlockingLength, 500, defNoncolliders, true);
+            paths = dag.paths().allPaths(x, y, maxBlockingLength, 800, defNoncolliders, true);
 
             // We note any changes to the set of noncolliders.
             boolean changed = false;
@@ -697,8 +696,8 @@ public final class LvLite implements IGraphSearch {
                 }
             }
 
-            // We need to block *all* of the paths, so if any path remains unblocked after that above, we need to
-            // return false since we can't remove the edge.
+            // We need to block *all* of the current paths, so if any path remains unblocked after that above, we
+            // need to return false (since we can't remove the edge).
             if (!allBlocked) {
                 return false;
             }
