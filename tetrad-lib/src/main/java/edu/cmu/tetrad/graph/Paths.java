@@ -577,17 +577,18 @@ public class Paths implements TetradSerializable {
      */
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, null, false);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, null, false);
         return paths;
     }
 
     /**
-     * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection bias.
+     * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection
+     * bias.
      *
-     * @param node1             the starting node
-     * @param node2             the target node
-     * @param maxLength         the maximum length of each path
-     * @param conditionSet      a set of nodes that need to be included in the path (optional)
+     * @param node1              the starting node
+     * @param node2              the target node
+     * @param maxLength          the maximum length of each path
+     * @param conditionSet       a set of nodes that need to be included in the path (optional)
      * @param allowSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
      *                           edges in one direction or the other.
      * @return a list of paths between node1 and node2 that satisfy the conditions
@@ -595,13 +596,24 @@ public class Paths implements TetradSerializable {
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                      boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, conditionSet, allowSelectionBias);
+        return paths;
+    }
+
+    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, int maxNumPaths, Set<Node> conditionSet,
+                                     boolean allowSelectionBias) {
+        List<List<Node>> paths = new LinkedList<>();
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, maxNumPaths, conditionSet, allowSelectionBias);
         return paths;
     }
 
     private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength,
-                               Set<Node> conditionSet, boolean allowSelectionBias) {
+                               int maxNumPaths, Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
+            return;
+        }
+
+        if (maxNumPaths != -1 && paths.size() >= maxNumPaths) {
             return;
         }
 
@@ -643,7 +655,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsVisit(child, node2, path, paths, maxLength, conditionSet, allowSelectionBias);
+            allPathsVisit(child, node2, path, paths, maxLength, maxNumPaths, conditionSet, allowSelectionBias);
         }
 
         path.removeLast();
