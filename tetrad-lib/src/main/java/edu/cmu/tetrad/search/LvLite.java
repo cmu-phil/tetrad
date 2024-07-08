@@ -117,7 +117,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose;
+    private boolean verbose = false;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -241,7 +241,10 @@ public final class LvLite implements IGraphSearch {
         double bestScore = scorer.score(best);
         scorer.bookmark();
 
+        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
         Graph pag = new EdgeListGraph(scorer.getGraph(true));
+
+        // We're going to use the BOSS/GRaSP DAG here to find sepsets for removing extra edges.
         Graph dag = new EdgeListGraph(scorer.getGraph(false));
 
         if (verbose) {
@@ -249,9 +252,9 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        scorer.score(best);
-        scorer.bookmark();
-
+        // The difference between the following two initializations of FciOrient is whether the definite
+        // discriminating path rule is to be based on a test or a score. They both work, so the choice
+        // should be heuristic.
 //        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
         FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -272,18 +275,21 @@ public final class LvLite implements IGraphSearch {
 
         reorientWithCircles(pag, verbose);
 
-        // We're just looking for unshielded colliders in these next steps that we can detect without doing any tests.
-        // We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs that can
-        // be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the highest
-        // number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded colliders,
-        // though like the BOSS graph, they should be Markov, so their unshielded colliders should be valid.
+        // We're just looking for unshielded colliders in these next steps that we can detect without using only
+        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs
+        // that can be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the
+        // highest number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded
+        // colliders, though like the BOSS graph, they should be Markov, so their unshielded colliders should be
+        // valid. From sample, because of unfaithfulness, the quality may fall off depending on the different in
+        // score between the best order and a tucked order.
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
             for (Node x : adj) {
                 for (Node y : adj) {
                     if (distinct(x, b, y)) {
-                        tryAddingCollider(x, b, y, pag, false, scorer, bestScore, bestScore, this.maxScoreDrop, unshieldedColliders, checked, knowledge, verbose);
+                        tryAddingCollider(x, b, y, pag, false, scorer, bestScore, bestScore, unshieldedColliders,
+                                checked, knowledge, verbose);
                     }
                 }
             }
@@ -307,8 +313,8 @@ public final class LvLite implements IGraphSearch {
                                 scorer.tuck(y, b);
                                 scorer.tuck(x, y);
                                 double newScore = scorer.score();
-                                tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.maxScoreDrop, unshieldedColliders, checked,
-                                        knowledge, verbose);
+                                tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore,
+                                        unshieldedColliders, checked, knowledge, verbose);
                                 scorer.goToBookmark();
                             }
 
@@ -316,7 +322,7 @@ public final class LvLite implements IGraphSearch {
                                 scorer.tuck(x, b);
                                 scorer.tuck(y, x);
                                 double newScore = scorer.score();
-                                tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore, this.maxScoreDrop, unshieldedColliders, checked,
+                                tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore, unshieldedColliders, checked,
                                         knowledge, verbose);
                                 scorer.goToBookmark();
                             }
@@ -329,20 +335,15 @@ public final class LvLite implements IGraphSearch {
             recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
         } while (!unshieldedColliders.equals(_unshieldedColliders));
 
-        reorientWithCircles(pag, verbose);
-        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
-        fciOrient.zhangFinalOrientation(pag);
-
         // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG.
         if (test instanceof MsepTest || test.getAlpha() > 0) {
-            Map<Edge, Set<Node>> toRemove = removeExtraEdges(pag, dag, test, maxBlockingPathLength, unshieldedColliders, verbose);
+            Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, unshieldedColliders, removedEdges, knowledge, verbose);
 
-            for (Edge edge : toRemove.keySet()) {
-                orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
+            for (Edge edge : extraSepsets.keySet()) {
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
             }
 
             fciOrient.zhangFinalOrientation(pag);
@@ -516,7 +517,7 @@ public final class LvLite implements IGraphSearch {
 
             // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
             // creat almost cycles in final orientation.
-            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !createsAlmostCycle(pag, x, b, y)) {
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !couldCreateAlmostCycle(pag, x, b, y)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
                 boolean removed = pag.removeEdge(x, y);
@@ -524,19 +525,20 @@ public final class LvLite implements IGraphSearch {
                 if (removed) {
                     removedEdges.add(Set.of(x, y));
                 }
-
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("Recalled " + x + " *-> " + b + " <-* " + y + " from previous PAG.");
-//
-//                    if (removed) {
-//                        TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " in the PAG.");
-//                    }
-//                }
             }
         }
     }
 
-    private boolean createsAlmostCycle(Graph pag, Node x, Node b, Node y) {
+    /**
+     * Checks if creating an almost cycle between nodes x, b, and y is possible in a given graph.
+     *
+     * @param pag The graph to check if the almost cycle can be created.
+     * @param x   The first node of the almost cycle.
+     * @param b   The second node of the almost cycle.
+     * @param y   The third node of the almost cycle.
+     * @return True if creating the almost cycle is possible, false otherwise.
+     */
+    private boolean couldCreateAlmostCycle(Graph pag, Node x, Node b, Node y) {
         if (pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x)) {
             return true;
         }
@@ -545,33 +547,27 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Removes extra edges in a graph according to specified conditions.
+     * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
      * @param pag                 The graph in which to remove extra edges.
-     * @param test                The IndependenceTest object used for testing independence between variables.
-     * @param maxPathLength       The maximum length of any blocked path.
+     * @param dag                 The BOSS/GRaSP DAG to use for removing extra edges.
      * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
-     * @param verbose             A boolean value indicating whether verbose output should be printed.
-     * @return A map of edges to remove to sepsets used to removed them. The sepsets are the conditioning sets used to
+     * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
      * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
      * is not in this sepset.
      */
-    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, IndependenceTest test, int maxPathLength, Set<Triple> unshieldedColliders, boolean verbose) {
+    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, Set<Triple> unshieldedColliders) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking larger conditioning sets:");
         }
 
-        Map<Edge, Set<Node>> toRemove = new HashMap<>();
+        Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
 
-        for (int maxLength = 3; maxLength <= maxPathLength; maxLength++) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking paths of length " + maxLength + ":");
-            }
-
-            int _maxPathLength = maxLength;
+        for (int maxLength = maxBlockingPathLength; maxLength <= maxBlockingPathLength; maxLength++) {
+            int _maxLength = maxLength;
 
             dag.getEdges().parallelStream().forEach(edge -> {
-                boolean removed = tryRemovingEdge(edge, dag, test, toRemove, _maxPathLength, verbose);
+                boolean removed = tryRemovingEdge(edge, dag, test, _maxLength, extraSepsets);
 
                 if (removed) {
                     if (verbose) {
@@ -585,25 +581,34 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Done checking larger conditioning sets.");
         }
 
-        for (Edge edge : toRemove.keySet()) {
-            orientCommonAdjacents(pag, unshieldedColliders, edge, toRemove);
+        for (Edge edge : extraSepsets.keySet()) {
+            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removed edges: " + toRemove);
+            TetradLogger.getInstance().log("Removed edges: " + extraSepsets);
         }
 
-        return toRemove;
+        return extraSepsets;
     }
 
-    private void orientCommonAdjacents(Graph pag, Set<Triple> unshieldedColliders, Edge edge, Map<Edge, Set<Node>> toRemove) {
+    /**
+     * Orients an unshielded collider in a graph based on a sepset from a test and adds the unshielded collider to the
+     * set of unshielded colliders.
+     *
+     * @param edge                The edge to remove the adjacency for.
+     * @param pag                 The graph in which to orient the unshielded collider.
+     * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
+     * @param extraSepsets            The map of edges to sepsets used to remove them.
+     */
+    private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
         pag.removeEdge(edge.getNode1(), edge.getNode2());
 
         for (Node node : common) {
-            if (!toRemove.get(edge).contains(node)) {
+            if (!extraSepsets.get(edge).contains(node)) {
                 pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
                 pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
 
@@ -616,10 +621,12 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private boolean tryRemovingEdge(Edge edge, Graph dag, IndependenceTest test, Map<Edge, Set<Node>> toRemove, int maxPathLength, boolean verbose) {
+    private boolean tryRemovingEdge(Edge edge, Graph dag, IndependenceTest test, int maxLength, Map<Edge, Set<Node>> extraSepsets) {
         test.setVerbose(verbose);
 
-        TetradLogger.getInstance().log("### Checking edge: " + edge);
+        if (verbose) {
+            TetradLogger.getInstance().log("### Checking edge: " + edge);
+        }
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
@@ -635,7 +642,7 @@ public final class LvLite implements IGraphSearch {
         Set<Node> alreadyAdded = new HashSet<>();
 
         while (true) {
-            paths = dag.paths().allPaths(x, y, maxPathLength, defNoncolliders, true);
+            paths = dag.paths().allPaths(x, y, maxLength, defNoncolliders, true);
             boolean changed = false;
             boolean allBlocked = true;
 
@@ -690,11 +697,6 @@ public final class LvLite implements IGraphSearch {
             if (!changed) break;
         }
 
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Checking independence for " + edge + " given " + defNoncolliders);
-//            TetradLogger.getInstance().log("Uncovered defNoncolliders for paths of length 2: " + couldBeNoncolliders);
-//        }
-
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeNoncolliders);
         defNoncolliders.removeAll(couldBeNoncolliders);
 
@@ -714,12 +716,8 @@ public final class LvLite implements IGraphSearch {
                 continue;
             }
 
-//            if (verbose) {
-//                TetradLogger.getInstance().log("TESTING " + x + " _||_ " + y + " | " + conditioningSet);
-//            }
-
             if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
-                toRemove.put(edge, conditioningSet);
+                extraSepsets.put(edge, conditioningSet);
                 return true;
             }
         }
@@ -727,7 +725,9 @@ public final class LvLite implements IGraphSearch {
         return false;
     }
 
-    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer, double newScore, double bestScore, double maxScoreDrop, Set<Triple> unshieldedColliders, Set<Triple> checked, Knowledge knowledge, boolean verbose) {
+    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer,
+                                   double newScore, double bestScore, Set<Triple> unshieldedColliders,
+                                   Set<Triple> checked, Knowledge knowledge, boolean verbose) {
         if (colliderAllowed(pag, x, b, y, knowledge)) {
             if (scorer.unshieldedCollider(x, b, y) && newScore >= bestScore - maxScoreDrop) {
                 unshieldedColliders.add(new Triple(x, b, y));
