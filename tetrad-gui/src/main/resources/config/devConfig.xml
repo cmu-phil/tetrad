@@ -72,7 +72,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
             </model>
-            <model name="Choose Dag in CPDAG" acronym="Dag in CPDAG"
+            <model name="Choose DAG in CPDAG" acronym="Dag in CPDAG"
                    help="graph" category="Graph Manipulations">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -92,7 +92,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor</editor-class>
             </model>
-            <model name="Show DAGs in CPDAG" acronym="Dags in CPDAG"
+            <model name="Show DAGs in CPDAG" acronym="DAGs in CPDAG"
                    help="graph" category="Graph Manipulations">
                 <logger>
                     <event id="info" description="Information" default="on"/>

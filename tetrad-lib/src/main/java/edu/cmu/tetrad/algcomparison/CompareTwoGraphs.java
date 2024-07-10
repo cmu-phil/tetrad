@@ -160,7 +160,7 @@ public class CompareTwoGraphs {
             builder.append("""
 
 
-                    Edges incorrectly oriented:""");
+                    Edges incompatibly (incorrectly) oriented:""");
 
             if (incorrect.isEmpty()) {
                 builder.append("\n  --NONE--");

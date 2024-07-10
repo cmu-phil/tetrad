@@ -296,7 +296,7 @@ public final class LvLite implements IGraphSearch {
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
             // per edge.
 //            if (test instanceof MsepTest || test.getAlpha() > 0) {
-            Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, cpdag, unshieldedColliders);
+            Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
@@ -622,10 +622,11 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
+        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
-        dag.getEdges().forEach(edge -> {
-            Set<Node> sepset = getSepset(edge, dag, test, maxBlockingPathLength);
+        dag.getEdges().parallelStream().forEach(edge -> {
+            Set<Node> sepset = getSepset(edge, dag, ancestors, test, maxBlockingPathLength);
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
@@ -683,11 +684,12 @@ public final class LvLite implements IGraphSearch {
      * @param edge              the edge to find the sepset for
      * @param cpdag             the DAG graph to analyze
      * @param test              the independence test to use
+     * @param ancestors         the ancestors of each node in the graph
      * @param maxBlockingLength the maximum blocking length for paths
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    private Set<Node> getSepset(Edge edge, Graph cpdag, IndependenceTest test, int maxBlockingLength) {
+    private Set<Node> getSepset(Edge edge, Graph cpdag, Map<Node, Set<Node>> ancestors, IndependenceTest test, int maxBlockingLength) {
         test.setVerbose(verbose);
 
 //        System.out.println("\n\n### CHECKING EDGE!: " + edge);
@@ -712,7 +714,7 @@ public final class LvLite implements IGraphSearch {
         while (_changed) {
             _changed = false;
 
-            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, 800, defNoncolliders, false);
+            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, 900, defNoncolliders, ancestors, false);
 
             // We note any changes to the set of noncolliders.
 //            boolean changed = false;

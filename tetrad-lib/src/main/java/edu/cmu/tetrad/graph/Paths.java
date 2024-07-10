@@ -577,7 +577,7 @@ public class Paths implements TetradSerializable {
      */
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, null, false);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, new HashSet<>(), null, false);
         return paths;
     }
 
@@ -596,19 +596,19 @@ public class Paths implements TetradSerializable {
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                      boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, conditionSet, allowSelectionBias);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, conditionSet, null, allowSelectionBias);
         return paths;
     }
 
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, int maxNumPaths, Set<Node> conditionSet,
-                                     boolean allowSelectionBias) {
+                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, maxNumPaths, conditionSet, allowSelectionBias);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, maxNumPaths, conditionSet, ancestors, allowSelectionBias);
         return paths;
     }
 
     private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength,
-                               int maxNumPaths, Set<Node> conditionSet, boolean allowSelectionBias) {
+                               int maxNumPaths, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -630,8 +630,14 @@ public class Paths implements TetradSerializable {
 
                 if (path.size() > 1) {
                     if (!paths.contains(path)) {
-                        if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
-                            paths.add(_path);
+                        if (ancestors != null) {
+                            if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
+                                paths.add(_path);
+                            }
+                        } else {
+                            if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                                paths.add(_path);
+                            }
                         }
                     }
                 }
@@ -655,7 +661,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsVisit(child, node2, path, paths, maxLength, maxNumPaths, conditionSet, allowSelectionBias);
+            allPathsVisit(child, node2, path, paths, maxLength, maxNumPaths, conditionSet, null, allowSelectionBias);
         }
 
         path.removeLast();
@@ -1788,11 +1794,11 @@ public class Paths implements TetradSerializable {
      * Checks if the given path is an m-connecting path.
      *
      * @param path               The path to check.
-     * @param z                  The set of nodes to check reachability against.
+     * @param conditioningSet    The set of nodes to check reachability against.
      * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
      * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
      */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> z, boolean allowSelectionBias) {
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean allowSelectionBias) {
         Edge edge1, edge2;
 
         edge2 = graph.getEdge(path.get(0), path.get(1));
@@ -1821,7 +1827,54 @@ public class Paths implements TetradSerializable {
                 }
             }
 
-            if (!reachable(edge1, edge2, path.get(i), z)) {
+            if (!reachable(edge1, edge2, path.get(i), conditioningSet)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Checks if the given path is an m-connecting path.
+     *
+     * @param path               The path to check.
+     * @param conditioningSet    The set of nodes to check reachability against.
+     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @param ancestors          The ancestors of each node in the graph.
+     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        Edge edge1, edge2;
+
+        edge2 = graph.getEdge(path.get(0), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+            // algorithm can eventually find any colliders along the path that may be implied.
+            // jdramsey 2024-04-14
+            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), conditioningSet, ancestors)) {
                 return false;
             }
         }
