@@ -353,9 +353,9 @@ public final class FciOrient {
             throw new IllegalArgumentException("This is not a DDP construct.");
         }
 
-        if (graph.isAdjacentTo(e, b)) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
-        }
+//        if (graph.isAdjacentTo(e, b)) {
+//            throw new IllegalArgumentException("This is not a DDP construct.");
+//        }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
@@ -537,7 +537,7 @@ public final class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4B(graph);
+                ruleR4(graph);
                 firstTime = false;
             }
 
@@ -566,7 +566,7 @@ public final class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4B(graph);
+                ruleR4(graph);
                 firstTime = false;
             }
 
@@ -754,7 +754,7 @@ public final class FciOrient {
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from E to A with each node on the path (except L) a parent of C.
+     * the dots are a collider path from E to A with each node on the path (except E) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -767,7 +767,7 @@ public final class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR4B(Graph graph) {
+    public void ruleR4(Graph graph) {
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             if (sepsets == null && scorer == null) {
                 throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
@@ -828,7 +828,7 @@ public final class FciOrient {
      * @param c     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private boolean ddpOrient(Node a, Node b, Node c, Graph graph) {
+    private void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
 
@@ -836,6 +836,7 @@ public final class FciOrient {
 
         Map<Node, Node> previous = new HashMap<>();
         List<Node> path = new ArrayList<>();
+        path.add(a);
 
         List<Node> cParents = graph.getParents(c);
 
@@ -866,7 +867,6 @@ public final class FciOrient {
                     continue;
                 }
 
-//                previous.put(d, t);
                 Node p = previous.get(t);
 
                 if (!graph.isDefCollider(d, t, p)) {
@@ -877,11 +877,19 @@ public final class FciOrient {
 
                 if (!path.contains(t)) {
                     path.add(t);
+
+                    if (maxPathLength != -1 && path.size() > maxPathLength) {
+                        if (t != a) {
+                            path.remove(t);
+                        }
+
+                        continue;
+                    }
                 }
 
-                if (!graph.isAdjacentTo(d, c) && !graph.isAdjacentTo(d, b)) {
+                if (!graph.isAdjacentTo(d, c)) {
                     if (doDdpOrientation(d, a, b, c, path, graph)) {
-                        return true;
+                        return;
                     }
                 }
 
@@ -890,9 +898,12 @@ public final class FciOrient {
                     V.add(d);
                 }
             }
+
+            if (t != a) {
+                path.remove(t);
+            }
         }
 
-        return false;
     }
 
     /**

@@ -885,6 +885,10 @@ public final class Params {
      */
     public static final String ALLOW_TUCKS = "allowTucks";
     /**
+     * Constant <code>ALLOW_TESTING="ALLOW_TESTING"</code>
+     */
+    public static final String ALLOW_TESTING = "allowTesting";
+    /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
     public static final String MAX_SCORE_DROP = "maxScoreDrop";
