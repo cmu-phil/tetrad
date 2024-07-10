@@ -226,7 +226,7 @@ public class MarkovCheck {
      * @param x The node for which to retrieve the local independence facts.
      * @return The list of local independence facts for the given node.
      */
-    public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
+    public List<IndependenceFact> checkIndependenceForTargetNode(Node x) {
         Set<Node> parents = new HashSet<>(graph.getParents(x));
 
         // Remove all parent nodes and x node itself from the graph
@@ -330,7 +330,7 @@ public class MarkovCheck {
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
         for (Node x : allNodes) {
-            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             // All local nodes' p-values for node x
             List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
             // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
@@ -401,7 +401,7 @@ public class MarkovCheck {
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
             System.out.println("Target Node: " + x);
-            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
             Double ap = ap_ar_ahp_ahr.get(0);
             Double ar = ap_ar_ahp_ahr.get(1);
@@ -572,7 +572,7 @@ public class MarkovCheck {
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
             System.out.println("Target Node: " + x);
-            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.get(0);
             Double lgr = lgp_lgr.get(1);
