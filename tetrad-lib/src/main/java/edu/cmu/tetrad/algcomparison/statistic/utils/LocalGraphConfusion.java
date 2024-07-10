@@ -95,7 +95,7 @@ public class LocalGraphConfusion {
          *    Est     | --------------------------
          *         <- |   FP, FN     TP         /
          *            | --------------------------
-         *         -- |   FN         FN         /
+         *         -- |   0         0           /       (0 means unknown, do nothing)
          *            | --------------------------
          *         ...|    /         /          /
          *           -----------------------------
@@ -145,7 +145,7 @@ public class LocalGraphConfusion {
                         // this.fp++;
                         this.fn++;
                     } else if (ep1Est == Endpoint.TAIL && ep2Est == Endpoint.TAIL) { // Est: --
-                        this.fn++;
+                        // -- means Unknown, do nothing
                     }
                 } else if (ep1True == Endpoint.ARROW && ep2True == Endpoint.TAIL) { // True: <-
                     if (ep1Est == Endpoint.TAIL && ep2Est == Endpoint.ARROW) { // Est: ->
@@ -154,7 +154,7 @@ public class LocalGraphConfusion {
                     } else if (ep1Est == Endpoint.ARROW && ep2Est == Endpoint.TAIL) { // Est: <-
                         this.tp++;
                     } else if (ep1Est == Endpoint.TAIL && ep2Est == Endpoint.TAIL) { // Est: --
-                        this.fn++;
+                        // -- means Unknown, do nothing
                     }
                 }
             }

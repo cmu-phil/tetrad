@@ -6,116 +6,25 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.Kci;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-public class TestCheckMarkov {
+
+
+public class TestCheckNodewiseMarkov {
 
     public static void main(String... args) {
-        new TestCheckMarkov().test1();
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(10, 40, 40, 0.5, 1.0, 0.8);
     }
 
-    public void test1() {
-        double alpha = 0.05;
-        int numIndep = 0;
-        int total = 0;
-
-        Graph dag = RandomGraph.randomDag(10, 0, 10, 100, 100,
-                100, false);
-
-        SemPm pm = new SemPm(dag);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
-
-        Kci test = new Kci(data, alpha);
-        test.setApproximate(true);
-        test.setNumBootstraps(1000);
-        test.setWidthMultiplier(1.0);
-//
-//        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
-
-        test.setVerbose(false);
-
-        dag = GraphUtils.replaceNodes(dag, test.getVariables());
-
-        System.out.println("DAG = " + dag);
-
-        for (Node x : dag.getNodes()) {
-
-            List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
-
-            List<Node> nondesc = dag.getNodes();
-            nondesc.removeAll(desc);
-
-            List<Node> cond = dag.getParents(x);
-
-            System.out.println("Node " + x + " parents = " + cond
-                               + " non-descendants = " + nondesc);
-
-            for (Node y : nondesc) {
-                System.out.print("\t" + LogUtilsSearch.independenceFact(x, y, new HashSet<>(cond)));
-
-                IndependenceResult result = test.checkIndependence(x, y, new HashSet<>(cond));
-
-                if (result.isIndependent()) {
-                    numIndep++;
-                }
-
-                total++;
-
-                System.out.print(" " + (result.isIndependent() ? "Independent" : "Dependent"));
-                System.out.print(" p = " + result.getPValue());
-                System.out.println();
-            }
-
-        }
-
-        System.out.println();
-        System.out.println("Alpha = " + alpha + " Fraction Dependent = " +
-                           NumberFormatUtil.getInstance().getNumberFormat().format(
-                                   1d - numIndep / (double) total));
-    }
-
-    /**
-     * Test of getMarkovCheckRecordString method, of class MarkovCheck.
-     */
-    @Test
-    public void test2() {
-        Graph dag = RandomGraph.randomDag(10, 0, 10, 100, 100,
-                100, false);
-        SemPm pm = new SemPm(dag);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
-
-        SemBicScore score = new SemBicScore(data, true);
-
-        PermutationSearch search = new PermutationSearch(new Boss(score));
-        Graph cpdag = search.search();
-
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
-
-        MarkovCheck markovCheck = new MarkovCheck(cpdag, test, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.setPercentResample(0.7);
-
-        System.out.println(markovCheck.getMarkovCheckRecordString());
-    }
-
-    @Test
-    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
+    public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(int numNodes, int maxNumEdges, int maxDegree, double threshold, double shuffleThreshold, double lowRecallBound) {
 //        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
-        Graph trueGraph = RandomGraph.randomDag(80, 0, 80, 100, 100, 100, false);
+        Graph trueGraph = RandomGraph.randomDag(numNodes, 0, maxNumEdges, maxDegree, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
 
@@ -123,14 +32,14 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(10000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag);
-        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
         System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
         estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
         double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
@@ -147,23 +56,23 @@ public class TestCheckMarkov {
         System.out.println("whole_lgr: " + whole_lgr);
     }
 
-    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag) {
+    public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag, double threshold, double shuffleThreshold, double lowRecallBound) {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
         // Using Adj, AH confusion matrix
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, 0.05, 1.0, 0.8);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(fisherZTest, estimatedCpdag, trueGraph, threshold, shuffleThreshold, lowRecallBound);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
     }
 
-    public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag) {
+    public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(DataSet data, Graph trueGraph, Graph estimatedCpdag, double threshold, double shuffleThreshold, double lowRecallBound) {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.MARKOV_BLANKET);
         // Using Local Graph (LG) confusion matrix
         // ADTest pass/fail threshold default to be 0.05. shuffleThreshold default to be 0.5
-        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(fisherZTest, estimatedCpdag, trueGraph, 0.05, 1.0, 0.8);
+        List<List<Node>> accepts_rejects = markovCheck.getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(fisherZTest, estimatedCpdag, trueGraph, threshold, shuffleThreshold, lowRecallBound);
         List<Node> accepts = accepts_rejects.get(0);
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
@@ -182,7 +91,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -215,7 +124,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -249,7 +158,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -278,7 +187,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -319,7 +228,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -362,7 +271,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -408,7 +317,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -450,7 +359,7 @@ public class TestCheckMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -483,7 +392,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
@@ -517,7 +426,7 @@ public class TestCheckMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
-        edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
+        SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
