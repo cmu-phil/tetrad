@@ -374,22 +374,6 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private void checkTucked2(Node x, Node b, Node y, Set<Node> sepset, Graph pag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
-        if (!checked.contains(new Triple(x, b, y))) {
-            scorer.tuck(y, b);
-            scorer.tuck(x, y);
-
-            for (Node z : sepset) {
-                scorer.tuck(z, x);
-            }
-
-            double newScore = scorer.score();
-            tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore,
-                    unshieldedColliders, checked, knowledge, verbose);
-            scorer.goToBookmark();
-        }
-    }
-
     private @NotNull FciOrient getFciOrient(TeyssierScorer scorer, Graph pag) {
         FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
 //        FciOrient fciOrient = new FciOrient(scorer);
@@ -647,10 +631,6 @@ public final class LvLite implements IGraphSearch {
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
-//
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("Removing edge: " + edge + " with sepset: " + sepset);
-//                }
             }
         });
 
