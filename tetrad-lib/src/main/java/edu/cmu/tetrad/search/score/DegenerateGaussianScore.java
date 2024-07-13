@@ -157,13 +157,14 @@ public class DegenerateGaussianScore implements Score {
             B.addAll(this.embedding.get(i_));
         }
 
-        int[] parents_ = new int[B.size()];
-        for (int i_ = 0; i_ < B.size(); i_++) {
-            parents_[i_] = B.get(i_);
-        }
 
         for (Integer i_ : A) {
+            int[] parents_ = new int[B.size()];
+            for (int i__ = 0; i__ < B.size(); i__++) {
+                parents_[i__] = B.get(i__);
+            }
             score += this.bic.localScore(i_, parents_);
+            B.add(i_);
         }
 
         return score;
