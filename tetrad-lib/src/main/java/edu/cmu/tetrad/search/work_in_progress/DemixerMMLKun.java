@@ -44,7 +44,7 @@ public class DemixerMMLKun {
         DataSet dataSet;
 
         try {
-            dataSet = SimpleDataLoader.loadContinuousData(new File("/Users/user/Documents/Demix_Testing/NonGaussian/sub_1500_4var_3comp.txt"),
+            dataSet = SimpleDataLoader.loadContinuousData(new File("/Users/josephramsey/Downloads/15.txt"),
                     "//", '\"', "*", true, Delimiter.TAB, false);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -61,7 +61,7 @@ public class DemixerMMLKun {
         }
 
         try {
-            FileWriter writer = new FileWriter("/Users/user/Documents/Demix_Testing/sub_1500_4var_3comp.txt");
+            FileWriter writer = new FileWriter("/Users/josephramsey/Downloads/DemixTesting/15.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -73,7 +73,7 @@ public class DemixerMMLKun {
             DataSet[] dataSets = model.getDemixedData();
 
             for (int i = 0; i < dataSets.length; i++) {
-                writer = new FileWriter("/Users/user/Documents/Demix_Testing/sub_1500_4var_3comp_demixed_" + (i + 1) + ".txt");
+                writer = new FileWriter("/Users/josephramsey/Downloads/DemixTesting/sub_1500_4var_3comp_demixed_" + (i + 1) + ".txt");
                 bufferedWriter = new BufferedWriter(writer);
                 bufferedWriter.write(dataSets[i].toString());
                 bufferedWriter.flush();

@@ -38,7 +38,7 @@ public class NumEdgeInEstInTrue implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number of Adjacencies in PAG (adjacencies in estimated graph and are in true graph)";
+        return "Number of Adjacencies in the Estimated Graph that are Also in the True Graph";
     }
 
     /**

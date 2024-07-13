@@ -10,14 +10,14 @@ import java.io.Serial;
  * Implied Arrow Orientation Ratio in the Estimated Graph = (numImpliedArrows - numArrowsInUnshieldedColliders) / numArrowsInUnshieldedColliders.
  * It implements the Statistic interface.
  */
-public class ImpliedArrowOrientationRatioEst implements Statistic {
+public class ImpliedOrientationRatioEst implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the statistic.
      */
-    public ImpliedArrowOrientationRatioEst() {
+    public ImpliedOrientationRatioEst() {
 
     }
 
@@ -26,7 +26,7 @@ public class ImpliedArrowOrientationRatioEst implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "IAOR";
+        return "IOR";
     }
 
     /**A
@@ -34,7 +34,7 @@ public class ImpliedArrowOrientationRatioEst implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Implied Arrow Orientation Ratio in the Estimated Graph (# implied arrows / # arrows in unshielded colliders)";
+        return "Implied Arrow Orientation Ratio in the Estimated Graph (# implied arrow and tail orientions / # edges in unshielded colliders)";
     }
 
     /**
@@ -45,7 +45,7 @@ public class ImpliedArrowOrientationRatioEst implements Statistic {
         double n1 = new NumberEdgesInUnshieldedCollidersEst().getValue(trueGraph, estGraph, dataModel);
         double n2 = new NumberArrowsEst().getValue(trueGraph, estGraph, dataModel);
         double n3 = new NumberTailsEst().getValue(trueGraph, estGraph, dataModel);
-        return n1 == 0 ? Double.NaN : (n2 - n1) / n1;
+        return (n2 + n3 - n1);
     }
 
     /**

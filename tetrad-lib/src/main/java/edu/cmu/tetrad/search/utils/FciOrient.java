@@ -830,20 +830,11 @@ public final class FciOrient {
      */
     private void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
-        Set<Node> V = new HashSet<>();
-
-        Node e = null;
-
-        Map<Node, Node> previous = new HashMap<>();
-        List<Node> path = new ArrayList<>();
-        path.add(a);
-
-        List<Node> cParents = graph.getParents(c);
+        LinkedList<Node> V = new LinkedList<>();
 
         Q.offer(a);
-        V.add(a);
-        V.add(b);
-        previous.put(a, b);
+        V.addFirst(b);
+        V.addFirst(a);
 
         while (!Q.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -852,58 +843,51 @@ public final class FciOrient {
 
             Node t = Q.poll();
 
-            if (e == null || e == t) {
-                e = t;
-            }
-
             List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
-            for (Node d : nodesInTo) {
+            D:
+            for (Node e : nodesInTo) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                if (V.contains(d)) {
+                if (V.contains(e)) {
                     continue;
                 }
 
-                Node p = previous.get(t);
+                LinkedList<Node> path = new LinkedList<>(V);
+                path.addFirst(e);
 
-                if (!graph.isDefCollider(d, t, p)) {
-                    continue;
-                }
+                for (int i = 0; i < path.size() - 2; i++) {
+                    Node x = path.get(i);
+                    Node y = path.get(i + 1);
+                    Node z = path.get(i + 2);
 
-                previous.put(d, t);
-
-                if (!path.contains(t)) {
-                    path.add(t);
-
-                    if (maxPathLength != -1 && path.size() > maxPathLength) {
-                        if (t != a) {
-                            path.remove(t);
-                        }
-
-                        continue;
+                    if (!graph.isDefCollider(x, y, z) || !graph.isParentOf(y, c)) {
+                        continue D;
                     }
                 }
 
-                if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, path, graph)) {
+                if (!graph.isAdjacentTo(e, c)) {
+                    List<Node> colliderPath = new ArrayList<>(path);
+                    colliderPath.remove(e);
+                    colliderPath.remove(b);
+
+                    if (doDdpOrientation(e, a, b, c, colliderPath, graph)) {
                         return;
                     }
                 }
 
-                if (cParents.contains(d)) {
-                    Q.offer(d);
-                    V.add(d);
+                if (!V.contains(e)) {
+                    Q.offer(e);
+                    V.add(e);
+
+                    if (maxPathLength != -1 && V.size() - 1 > maxPathLength) {
+                        return;
+                    }
                 }
             }
-
-            if (t != a) {
-                path.remove(t);
-            }
         }
-
     }
 
     /**

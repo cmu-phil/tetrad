@@ -909,6 +909,10 @@ public final class Params {
      */
     public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
     /**
+     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
+     */
+    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    /**
      * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";

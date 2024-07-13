@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -35,6 +32,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * The LV-Lite algorithm implements a search algorithm for learning the structure of a graphical model from
@@ -61,6 +60,10 @@ public final class LvLite implements IGraphSearch {
      * The algorithm to use to obtain the initial CPDAG.
      */
     private START_WITH startWith = START_WITH.BOSS;
+    /**
+     * The extra edge removal step to use.
+     */
+    private EXTRA_EDGE_REMOVAL_STEP extraEdgeStep = EXTRA_EDGE_REMOVAL_STEP.LV_LITE;
     /**
      * Flag indicating whether to repair a faulty PAG.
      */
@@ -292,19 +295,33 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (testingAllowed) {
-            // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
-            // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
-            // per edge.
-//            if (test instanceof MsepTest || test.getAlpha() > 0) {
-            Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+            if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.LV_LITE) {
 
-            for (Edge edge : extraSepsets.keySet()) {
-                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+                // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
+                // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
+                // per edge.
+                Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
+
+                reorientWithCircles(pag, verbose);
+                doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+                recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+
+                for (Edge edge : extraSepsets.keySet()) {
+                    orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+                }
+            } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_GREEDY) {
+                SepsetProducer sepsets = new SepsetsGreedy(pag, test, null, -1, knowledge);
+                gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
+                GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
+            } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_MAX) {
+                SepsetProducer sepsets = new SepsetsMaxP(pag, test, null, -1);
+                gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
+                GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
+            } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_MIN) {
+                SepsetProducer sepsets = new SepsetsMinP(pag, test, null, -1);
+                gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
+                GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
             }
-//            }
         }
 
         // Final FCI orientation.
@@ -374,8 +391,8 @@ public final class LvLite implements IGraphSearch {
     }
 
     private @NotNull FciOrient getFciOrient(TeyssierScorer scorer, Graph pag) {
-//        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
-        FciOrient fciOrient = new FciOrient(scorer);
+        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
+//        FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
@@ -611,7 +628,7 @@ public final class LvLite implements IGraphSearch {
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
      * @param pag                 The graph in which to remove extra edges.
-     * @param dag  xx             The BOSS/GRaSP DAG to use for removing extra edges.
+     * @param dag                 xx             The BOSS/GRaSP DAG to use for removing extra edges.
      * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
      * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
      * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
@@ -622,11 +639,11 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
+        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
 
         dag.getEdges().parallelStream().forEach(edge -> {
-            Set<Node> sepset = getSepset(edge, dag, ancestors, test, maxBlockingPathLength);
+            Set<Node> sepset = getSepset(edge, dag, test, ancestors, maxBlockingPathLength);
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
@@ -684,12 +701,11 @@ public final class LvLite implements IGraphSearch {
      * @param edge              the edge to find the sepset for
      * @param cpdag             the DAG graph to analyze
      * @param test              the independence test to use
-     * @param ancestors         the ancestors of each node in the graph
      * @param maxBlockingLength the maximum blocking length for paths
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    private Set<Node> getSepset(Edge edge, Graph cpdag, Map<Node, Set<Node>> ancestors, IndependenceTest test, int maxBlockingLength) {
+    private Set<Node> getSepset(Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int maxBlockingLength) {
         test.setVerbose(verbose);
 
 //        System.out.println("\n\n### CHECKING EDGE!: " + edge);
@@ -714,7 +730,7 @@ public final class LvLite implements IGraphSearch {
         while (_changed) {
             _changed = false;
 
-            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, 900, defNoncolliders, ancestors, false);
+            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, 800, defNoncolliders, ancestors, false);
 
             // We note any changes to the set of noncolliders.
 //            boolean changed = false;
@@ -751,7 +767,7 @@ public final class LvLite implements IGraphSearch {
                         _changed = true;
 //                        System.out.println("Blocking " + path + " with noncollider " + z2);
 
-                        if (z1 == x && z3 == y && cpdag.isAdjacentTo(z1, z3)) {
+                        if (/*z1 == x && z3 == y &&*/ cpdag.isAdjacentTo(z1, z3)) {
                             couldBeColliders.add(z2);
 //                            System.out.println("Noting that " + z2 + " could be an initial collider on " + path);
                         }
@@ -918,16 +934,39 @@ public final class LvLite implements IGraphSearch {
         this.maxSepsetSize = maxSepsetSize;
     }
 
+    /**
+     * Sets whether or not tucking is allowed.
+     *
+     * @param tuckingAllowed true if tucking is allowed, false otherwise
+     */
     public void setTuckingAllowed(boolean tuckingAllowed) {
         this.tuckingAllowed = tuckingAllowed;
     }
 
+    /**
+     * Sets whether testing is allowed or not.
+     *
+     * @param testingAllowed true if testing is allowed, false otherwise
+     */
     public void setTestingAllowed(boolean testingAllowed) {
         this.testingAllowed = testingAllowed;
     }
 
+    /**
+     * Sets the maximum DDP path length.
+     *
+     * @param maxDdpPathLength the maximum DDP path length to set
+     */
     public void setMaxDdpPathLength(int maxDdpPathLength) {
         this.maxDdpPathLength = maxDdpPathLength;
+    }
+
+    /**
+     * Sets the extra-edge removal step.
+     * @param extraEdgeStep The extra-edge removal step.
+     */
+    public void setExtraEdgeStep(EXTRA_EDGE_REMOVAL_STEP extraEdgeStep) {
+        this.extraEdgeStep = extraEdgeStep;
     }
 
     /**
@@ -942,5 +981,27 @@ public final class LvLite implements IGraphSearch {
          * Start with GRaSP.
          */
         GRASP
+    }
+
+    /**
+     * This enum represents the different steps of extra edge removal in a graph.
+     */
+    public enum EXTRA_EDGE_REMOVAL_STEP {
+        /**
+         * The LV-Lite step.
+         */
+        LV_LITE,
+        /**
+         * The GFCI greedy step.
+         */
+        GFCI_GREEDY,
+        /**
+         * The GFCI max step.
+         */
+        GFCI_MAX,
+        /**
+         * The GFCI min step.
+         */
+        GFCI_MIN
     }
 }

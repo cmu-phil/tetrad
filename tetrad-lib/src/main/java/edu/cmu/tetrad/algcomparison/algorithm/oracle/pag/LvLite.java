@@ -164,6 +164,22 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
         }
 
+        if (parameters.getInt(Params.EXTRA_EDGE_REMOVAL_STEP) == 1) {
+            search.setExtraEdgeStep(edu.cmu.tetrad.search.LvLite.EXTRA_EDGE_REMOVAL_STEP.LV_LITE);
+        } else if (parameters.getInt(Params.EXTRA_EDGE_REMOVAL_STEP) == 2) {
+            search.setExtraEdgeStep(edu.cmu.tetrad.search.LvLite.EXTRA_EDGE_REMOVAL_STEP.GFCI_GREEDY);
+        } else if (parameters.getInt(Params.EXTRA_EDGE_REMOVAL_STEP) == 3) {
+            search.setExtraEdgeStep(edu.cmu.tetrad.search.LvLite.EXTRA_EDGE_REMOVAL_STEP.GFCI_MAX);
+        } else if (parameters.getInt(Params.EXTRA_EDGE_REMOVAL_STEP) == 4) {
+            search.setExtraEdgeStep(edu.cmu.tetrad.search.LvLite.EXTRA_EDGE_REMOVAL_STEP.GFCI_MIN);
+        } else {
+            throw new IllegalArgumentException("Unknown extra-edge removal option: " + parameters.getInt(Params.EXTRA_EDGE_REMOVAL_STEP));
+        }
+
+        if (parameters.getBoolean(Params.ALLOW_TUCKS)) {
+            search.setTuckingAllowed(true);
+        }
+
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
@@ -226,6 +242,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // LV-Lite
         params.add(Params.MAX_SCORE_DROP);
         params.add(Params.LV_LITE_STARTS_WITH);
+        params.add(Params.EXTRA_EDGE_REMOVAL_STEP);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.MAX_SEPSET_SIZE);
