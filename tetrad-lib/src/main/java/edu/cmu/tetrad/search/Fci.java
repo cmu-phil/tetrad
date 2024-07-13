@@ -219,6 +219,7 @@ public final class Fci implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets1, knowledge);
 
         if (this.possibleMsepSearchDone) {
             if (verbose) {
@@ -229,7 +230,7 @@ public final class Fci implements IGraphSearch {
                 TetradLogger.getInstance().log("Doing R0.");
             }
 
-            new FciOrient(sepsets1).ruleR0(graph);
+            fciOrient.ruleR0(graph);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Removing by possible d-sep.");
@@ -246,15 +247,6 @@ public final class Fci implements IGraphSearch {
         }
 
         // Step CI C (Zhang's step F3.)
-
-        FciOrient fciOrient = new FciOrient(sepsets1);
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing R0.");

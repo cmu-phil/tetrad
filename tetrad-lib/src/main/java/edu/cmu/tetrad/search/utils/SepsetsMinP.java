@@ -162,7 +162,7 @@ public class SepsetsMinP implements SepsetProducer {
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<List<Set<Node>>> ret = getSepsetsLists(i, j, k, this.independenceTest, this.depth, true);
+        List<List<Set<Node>>> ret = getSepsetsLists(i, j, k, this.independenceTest, this.depth, false);
         return ret.get(0).isEmpty();
     }
 

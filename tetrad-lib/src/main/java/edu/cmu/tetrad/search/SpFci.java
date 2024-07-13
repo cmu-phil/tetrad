@@ -171,13 +171,7 @@ public final class SpFci implements IGraphSearch {
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathTCollideRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());

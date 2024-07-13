@@ -850,6 +850,19 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (o instanceof EdgeListGraph _o) {
             boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
             boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
+
+            // to check discrepancies if necessary...
+//            if (!edgesEqual) {
+//                Set<Edge> edges1 = new HashSet<>(_o.edgesSet);
+//                edges1.removeAll(this.edgesSet);
+//
+//                Set<Edge> edges2 = new HashSet<>(this.edgesSet);
+//                edges2.removeAll(_o.edgesSet);
+//
+//                System.out.println("Edges in this graph but not in the other: " + edges1);
+//                System.out.println("Edges in the other graph but not in this: " + edges2);
+//            }
+
             return (nodesEqual && edgesEqual);
         } else {
             Graph graph = (Graph) o;

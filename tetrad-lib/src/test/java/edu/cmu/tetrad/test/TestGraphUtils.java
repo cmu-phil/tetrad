@@ -335,8 +335,7 @@
             Knowledge knowledge = new Knowledge();
             knowledge.setRequired(x.getName(), y.getName());
 
-            FciOrient fciOrientation = new FciOrient(new DagSepsets(graph));
-            fciOrientation.setKnowledge(knowledge);
+            FciOrient fciOrientation = FciOrient.defaultConfiguration(new DagSepsets(graph), knowledge);
             fciOrientation.orient(_graph);
 
             _graph.removeEdge(x, y);

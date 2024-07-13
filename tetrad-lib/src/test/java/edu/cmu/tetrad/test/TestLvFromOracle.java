@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
@@ -44,7 +45,10 @@ import java.util.stream.IntStream;
  */
 public class TestLvFromOracle {
 
-    @Test
+    public static void main(String...args) {
+        new TestLvFromOracle().testLvFromOracle();
+    }
+
     public void testLvFromOracle() {
         int numMeasures = 15;
         int numLatents = 4;
@@ -60,7 +64,7 @@ public class TestLvFromOracle {
         File dir = new File("/Users/josephramsey/Downloads/failed_models_" + date);
 
         // Make a random graph.
-        IntStream.rangeClosed(1, numReps).parallel().forEach(rep -> {
+        IntStream.rangeClosed(1, numReps).forEach(rep -> {
             Graph dag = RandomGraph.randomGraph(numMeasures, numLatents, numEdges, 100, 100, 100, false);
             File dir2 = new File(dir, "rep_" + rep);
             dir2.mkdirs();
@@ -75,19 +79,27 @@ public class TestLvFromOracle {
         GraphScore score = new GraphScore(dag);
         Graph truePag = GraphTransforms.dagToPag(dag);
 
-        for (LV_ALGORITHMS algorithm : LV_ALGORITHMS.values()) {
-            Graph estimated;
-            switch (algorithm) {
-//                case FCI -> estimated = new Fci(msepTest).search();
-//                case CFCI -> estimated = new Cfci(msepTest).search();
-//                case FCI_MAX -> estimated = new FciMax(msepTest).search();
-//                case GFCI -> estimated = new GFci(msepTest, score).search();
-//                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
-                case LV_LITE -> estimated = new LvLite(msepTest, score).search();
-                default -> throw new IllegalArgumentException();
-            }
+//        for (LV_ALGORITHMS algorithm : LV_ALGORITHMS.values()) {
+//            Graph estimated;
+////            switch (algorithm) {
+//////                case FCI -> estimated = new Fci(msepTest).search();
+//////                case CFCI -> estimated = new Cfci(msepTest).search();
+//////                case FCI_MAX -> estimated = new FciMax(msepTest).search();
+//////                case GFCI -> estimated = new GFci(msepTest, score).search();
+////                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
+//////                case LV_LITE -> {
+//////                    LvLite lvLite = new LvLite(msepTest, score);
+//////                    lvLite.setTuckingAllowed(false);
+//////                    estimated = lvLite.search();
+//////                }
+////                default -> throw new IllegalArgumentException();
+////            }
 
-            estimated = new LvLite(msepTest, score).search();
+        LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
+
+            Graph estimated = new LvLite(msepTest, score).search();
+//
+//            estimated = new GraspFci(msepTest, score).search();
 
             boolean equals = estimated.equals(truePag);
 
@@ -111,14 +123,16 @@ public class TestLvFromOracle {
 
                 System.out.printf("AP = %5.2f, AR = %5.2f, AHP = %5.2f, AHR = %5.2f, AHPC = %5.2f, AHRC = %5.2f\n",
                         ap, ar, ahp, ahr, ahpc, ahprc);
-            }
+
+                boolean _equals = estimated.equals(truePag);
+//            }
         }
     }
 
     // BFCI currently cannot be run from Oracle.
     private enum LV_ALGORITHMS {
-//        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
-        LV_LITE
+                FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
+//        GRASP_FCI
     }
 }
 

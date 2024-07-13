@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -168,15 +169,16 @@ public final class Cfci implements IGraphSearch {
 
         // Step CI D. (Zhang's step F4.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(this.graph, this.independenceTest,
-                new SepsetMap(), this.depth, knowledge));
+        SepsetProducer sepsets;
 
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(this.graph);
+        if (independenceTest instanceof MsepTest) {
+            Graph trueDag = ((MsepTest) independenceTest).getGraph();
+            sepsets = new DagSepsets(trueDag);
+        } else {
+            sepsets = new SepsetsMinP(this.graph, this.independenceTest, null, this.depth);
+        }
+
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
         fciOrient.doFinalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();

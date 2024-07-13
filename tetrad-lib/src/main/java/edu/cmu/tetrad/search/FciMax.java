@@ -32,7 +32,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,7 +172,7 @@ public final class FciMax implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
-            new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
+            FciOrient.defaultConfiguration(new SepsetsSet(this.sepsets, this.independenceTest), knowledge).ruleR0(graph);
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -182,7 +181,7 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = getFciOrient();
+        FciOrient fciOrient = FciOrient.defaultConfiguration(new SepsetsSet(this.sepsets, this.independenceTest), knowledge);
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
@@ -327,24 +326,6 @@ public final class FciMax implements IGraphSearch {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
-
-    /**
-     * Retrieves an instance of FciOrient with all necessary parameters set.
-     *
-     * @return A new instance of FciOrient.
-     */
-    @NotNull
-    private FciOrient getFciOrient() {
-        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
-        return fciOrient;
-    }
 
     /**
      * Adds colliders to the given graph.

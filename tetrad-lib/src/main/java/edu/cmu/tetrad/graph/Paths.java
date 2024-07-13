@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -313,8 +314,8 @@ public class Paths implements TetradSerializable {
 
                 if (__g.paths().isLegalPag()) {
                     Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = new FciOrient(new DagSepsets(_g));
-                    fciOrient.zhangFinalOrientation(_g);
+                    FciOrient fciOrient = FciOrient.defaultConfiguration(new DagSepsets(pag), new Knowledge());
+                    fciOrient.doFinalOrientation(pag);
                     return g.equals(_g);
                 }
             }

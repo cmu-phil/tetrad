@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -135,14 +134,8 @@ public final class DagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.setVerbose(false);
+        SepsetProducer sepsets = new DagSepsets(dag);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
         fciOrient.doFinalOrientation(graph);
 
         if (this.verbose) {

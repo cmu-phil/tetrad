@@ -126,7 +126,7 @@ public final class LvLite implements IGraphSearch {
     private boolean verbose = false;
     private boolean tuckingAllowed = true;
     private boolean testingAllowed = true;
-    private int maxDdpPathLength;
+    private int maxDdpPathLength = -1;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -236,7 +236,16 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = getFciOrient(scorer, pag);
+        SepsetProducer sepsets;
+
+        if (test instanceof MsepTest) {
+            Graph trueDag = ((MsepTest) test).getGraph();
+            sepsets = new DagSepsets(trueDag);
+        } else {
+            sepsets = new SepsetsGreedy(pag, this.test, null, -1, knowledge);
+        }
+
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -310,22 +319,22 @@ public final class LvLite implements IGraphSearch {
                     orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
                 }
             } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_GREEDY) {
-                SepsetProducer sepsets = new SepsetsGreedy(pag, test, null, -1, knowledge);
+                sepsets = new SepsetsGreedy(pag, test, null, -1, knowledge);
                 gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
                 GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
             } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_MAX) {
-                SepsetProducer sepsets = new SepsetsMaxP(pag, test, null, -1);
+                sepsets = new SepsetsMaxP(pag, test, null, -1);
                 gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
                 GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
             } else if (this.extraEdgeStep == EXTRA_EDGE_REMOVAL_STEP.GFCI_MIN) {
-                SepsetProducer sepsets = new SepsetsMinP(pag, test, null, -1);
+                sepsets = new SepsetsMinP(pag, test, null, -1);
                 gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
                 GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose);
             }
         }
 
         // Final FCI orientation.
-        fciOrient.zhangFinalOrientation(pag);
+        fciOrient.doFinalOrientation(pag);
 
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
@@ -374,17 +383,27 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private @NotNull FciOrient getFciOrient(TeyssierScorer scorer, Graph pag) {
-        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(pag, test, null, -1, knowledge));
-//        FciOrient fciOrient = new FciOrient(scorer);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setMaxPathLength(maxDdpPathLength);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.setVerbose(verbose);
-        return fciOrient;
-    }
+//    private @NotNull FciOrient getFciOrient(TeyssierScorer scorer, Graph pag) {
+//        SepsetProducer sepsets;
+//
+//        if (test instanceof MsepTest) {
+//            Graph trueDag = ((MsepTest) test).getGraph();
+//            sepsets = new DagSepsets(trueDag);
+//        } else {
+////            sepsets = new SepsetsGreedy(pagEst, this.independenceTest, null, depth, knowledge);
+//            sepsets = new SepsetsMinP(pag, this.test, null, -1);
+//        }
+//
+//        FciOrient fciOrient = new FciOrient(sepsets);
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+//        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
+//        fciOrient.setMaxPathLength(maxDdpPathLength);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(knowledge);
+////        fciOrient.doFinalOrientation(pag);
+//        return fciOrient;
+//    }
 
     /**
      * Parameterizes and returns a new BOSS search.

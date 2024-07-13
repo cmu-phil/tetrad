@@ -77,17 +77,35 @@ public final class FciOrient {
      * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object representing the independence test,
      *                which must be given only if the discriminating path rule is used. Otherwise, it can be null.
      */
-    public FciOrient(SepsetProducer sepsets) {
+    private FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
     }
 
-    /**
-     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
-     *
-     * @param scorer the TeyssierScorer object to be used for scoring
-     */
-    public FciOrient(TeyssierScorer scorer) {
-        this.scorer = scorer;
+//    /**
+//     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
+//     *
+//     * @param scorer the TeyssierScorer object to be used for scoring
+//     */
+//    private FciOrient(TeyssierScorer scorer) {
+//        this.scorer = scorer;
+//    }
+
+    public static FciOrient defaultConfiguration(SepsetProducer sepsets, Knowledge knowledge) {
+        return FciOrient.specialConfiguration(sepsets, true, true,
+                true, -1, knowledge, false);
+    }
+
+    public static FciOrient specialConfiguration(SepsetProducer sepsets, boolean completeRuleSetUsed,
+                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                 int maxPathLength, Knowledge knowledge, boolean verbose) {
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
+        return fciOrient;
     }
 
     /**
@@ -522,7 +540,7 @@ public final class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void spirtesFinalOrientation(Graph graph) {
+    private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -555,7 +573,7 @@ public final class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void zhangFinalOrientation(Graph graph) {
+    private void zhangFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -946,14 +964,16 @@ public final class FciOrient {
             }
         }
 
-//        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
-        Set<Node> sepset = getSepsets().getSepset(e, c);
+        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
+//        Set<Node> sepset = getSepsets().getSepset(e, c);
 
         if (sepset == null) {
             return false;
         }
 
-        if (!sepset.containsAll(path)) return false;
+//        if (!sepset.containsAll(path)) {
+//            throw new IllegalArgumentException("Sepset does not contain all nodes on the path.");
+//        }
 
         if (this.verbose) {
             logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);

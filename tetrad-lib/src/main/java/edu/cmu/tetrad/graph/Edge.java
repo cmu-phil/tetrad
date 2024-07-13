@@ -429,8 +429,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         Endpoint end1b = edge.getEndpoint1();
         Endpoint end2b = edge.getEndpoint2();
 
-        boolean equals1 = node1 == node1b && node2 == node2b && end1 == end1b && end2 == end2b;
-        boolean equals2 = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
+        boolean equals1 = node1.equals(node1b) && node2.equals(node2b) && end1.equals(end1b) && end2.equals(end2b);
+        boolean equals2 = node1.equals(node2b) && node2.equals(node1b) && end1.equals(end2b) && end2.equals(end1b);
 
         return equals1 || equals2;
     }
@@ -475,8 +475,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

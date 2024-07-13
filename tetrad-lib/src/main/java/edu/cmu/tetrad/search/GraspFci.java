@@ -131,11 +131,11 @@ public final class GraspFci implements IGraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose;
+    private boolean verbose = false;
     /**
      * The flag for whether to repair a faulty PAG.
      */
-    private boolean repairFaultyPag;
+    private boolean repairFaultyPag = false;
 
     /**
      * Constructs a new GraspFci object.
@@ -187,42 +187,31 @@ public final class GraspFci implements IGraphSearch {
         assert variables != null;
 
         List<Node> bestOrder = alg.bestOrder(variables);
-        Graph graph = alg.getGraph(true); // Get the DAG
+        Graph pagEst = alg.getGraph(true);
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        Graph referenceCpdag = new EdgeListGraph(pagEst);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
-            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+            Graph trueDag = ((MsepTest) independenceTest).getGraph();
+            sepsets = new DagSepsets(trueDag);
         } else {
-//            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
-            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
-
+            sepsets = new SepsetsMinP(pagEst, this.independenceTest, null, this.depth);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(pagEst, referenceCpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(pagEst, referenceCpdag, sepsets, knowledge, verbose);
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
-        scorer.setKnowledge(knowledge);
-        scorer.score(bestOrder);
-
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
+        fciOrient.doFinalOrientation(pagEst);
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, verbose);
+            GraphUtils.repairFaultyPag(pagEst, fciOrient, knowledge, verbose);
         }
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-        return graph;
+        GraphUtils.replaceNodes(pagEst, this.independenceTest.getVariables());
+        return pagEst;
     }
 
     /**
