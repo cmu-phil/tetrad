@@ -830,11 +830,15 @@ public final class FciOrient {
      */
     private void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
-        LinkedList<Node> V = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Map<Node, Node> previous = new HashMap<>();
 
         Q.offer(a);
-        V.addFirst(b);
-        V.addFirst(a);
+        V.add(a);
+        V.add(b);
+
+        previous.put(b, null);
+        previous.put(a, b);
 
         while (!Q.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -855,8 +859,20 @@ public final class FciOrient {
                     continue;
                 }
 
-                LinkedList<Node> path = new LinkedList<>(V);
-                path.addFirst(e);
+                previous.put(e, t);
+
+                LinkedList<Node> path = new LinkedList<>();
+
+                Node d = e;
+
+                while (previous.get(d) != null) {
+                    path.addLast(d);
+                    d = previous.get(d);
+                }
+
+                if (maxPathLength != -1 && path.size() - 1 > maxPathLength) {
+                    continue;
+                }
 
                 for (int i = 0; i < path.size() - 2; i++) {
                     Node x = path.get(i);
@@ -869,7 +885,7 @@ public final class FciOrient {
                 }
 
                 if (!graph.isAdjacentTo(e, c)) {
-                    List<Node> colliderPath = new ArrayList<>(path);
+                    LinkedList<Node> colliderPath = new LinkedList<>(path);
                     colliderPath.remove(e);
                     colliderPath.remove(b);
 
@@ -881,10 +897,6 @@ public final class FciOrient {
                 if (!V.contains(e)) {
                     Q.offer(e);
                     V.add(e);
-
-                    if (maxPathLength != -1 && V.size() - 1 > maxPathLength) {
-                        return;
-                    }
                 }
             }
         }
