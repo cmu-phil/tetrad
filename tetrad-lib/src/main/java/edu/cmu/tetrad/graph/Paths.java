@@ -314,8 +314,8 @@ public class Paths implements TetradSerializable {
 
                 if (__g.paths().isLegalPag()) {
                     Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = FciOrient.defaultConfiguration(new DagSepsets(pag), new Knowledge());
-                    fciOrient.doFinalOrientation(pag);
+                    FciOrient fciOrient = FciOrient.defaultConfiguration(pag, new Knowledge(), false);
+                    fciOrient.finalOrientation(pag);
                     return g.equals(_g);
                 }
             }
@@ -578,7 +578,7 @@ public class Paths implements TetradSerializable {
      */
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, new HashSet<>(), null, false);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, new HashSet<>(), null, false);
         return paths;
     }
 
@@ -597,24 +597,20 @@ public class Paths implements TetradSerializable {
     public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                      boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, -1, conditionSet, null, allowSelectionBias);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, null, allowSelectionBias);
         return paths;
     }
 
-    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, int maxNumPaths, Set<Node> conditionSet,
+    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                      Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, maxNumPaths, conditionSet, ancestors, allowSelectionBias);
+        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, ancestors, allowSelectionBias);
         return paths;
     }
 
     private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength,
-                               int maxNumPaths, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+                               Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
-            return;
-        }
-
-        if (maxNumPaths != -1 && paths.size() >= maxNumPaths) {
             return;
         }
 
@@ -662,7 +658,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsVisit(child, node2, path, paths, maxLength, maxNumPaths, conditionSet, null, allowSelectionBias);
+            allPathsVisit(child, node2, path, paths, maxLength, conditionSet, null, allowSelectionBias);
         }
 
         path.removeLast();

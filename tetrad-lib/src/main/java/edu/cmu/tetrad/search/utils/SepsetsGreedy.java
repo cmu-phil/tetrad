@@ -46,7 +46,7 @@ import java.util.Set;
  * @see SepsetMap
  */
 public class SepsetsGreedy implements SepsetProducer {
-    private final Graph graph;
+    private Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private int depth;
@@ -129,6 +129,11 @@ public class SepsetsGreedy implements SepsetProducer {
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         return result.getPValue();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        this.graph = graph;
     }
 
     /**

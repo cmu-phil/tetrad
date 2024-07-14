@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public class DagSepsets implements SepsetProducer {
     // The DAG being analyzed.
-    private final EdgeListGraph dag;
+    private Graph dag;
 
     /**
      * Constructs a new DagSepsets object for the given DAG.
@@ -70,15 +70,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
-        Set<Node> sepset = this.dag.getSepset(a, b);
-        sepset.addAll(s);
-
-//        if (sepset != null && !sepset.containsAll(s)) {
-//            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
-//                                               + ") to contain all the nodes in " + s + ".");
-//        }
-
-        return sepset;
+        return this.dag.getSepset(a, b);
     }
 
     /**
@@ -120,6 +112,11 @@ public class DagSepsets implements SepsetProducer {
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         return dag.paths().isMSeparatedFrom(a, b, sepset, false) ? 1.0 : 0.0;
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        this.dag = graph;
     }
 
     /**

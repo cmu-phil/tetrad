@@ -25,7 +25,9 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Rfci;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -90,9 +92,31 @@ public final class FciOrient {
 //        this.scorer = scorer;
 //    }
 
-    public static FciOrient defaultConfiguration(SepsetProducer sepsets, Knowledge knowledge) {
-        return FciOrient.specialConfiguration(sepsets, true, true,
-                true, -1, knowledge, false);
+    public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
+        return FciOrient.specialConfiguration(new DagSepsets(dag), true, true,
+                true, -1, knowledge, verbose);
+    }
+
+    public static FciOrient defaultConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
+        if (test instanceof MsepTest) {
+            return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
+        } else {
+            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, null, -1, knowledge);
+            return FciOrient.specialConfiguration(sepsets, true, true,
+                    true, -1, knowledge, verbose);
+        }
+    }
+
+    public static FciOrient specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean completeRuleSetUsed,
+                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                 int maxPathLength, boolean verbose) {
+        if (test instanceof MsepTest) {
+            return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
+        } else {
+            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, null, -1, knowledge);
+            return FciOrient.specialConfiguration(sepsets, completeRuleSetUsed, doDiscriminatingPathTailRule,
+                    doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
+        }
     }
 
     public static FciOrient specialConfiguration(SepsetProducer sepsets, boolean completeRuleSetUsed,
@@ -400,7 +424,7 @@ public final class FciOrient {
         }
 
         // Step CI D. (Zhang's step F4.)
-        doFinalOrientation(graph);
+        finalOrientation(graph);
 
         if (this.verbose) {
             this.logger.log("Returning graph: " + graph);
@@ -524,12 +548,12 @@ public final class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void doFinalOrientation(Graph graph) {
+    public void finalOrientation(Graph graph) {
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
             spirtesFinalOrientation(graph);
-        }/**/
+        }
     }
 
     //Does all 3 of these rules at once instead of going through all
@@ -786,6 +810,8 @@ public final class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4(Graph graph) {
+        sepsets.setGraph(graph);
+
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             if (sepsets == null && scorer == null) {
                 throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
@@ -888,7 +914,7 @@ public final class FciOrient {
                     d = previous.get(d);
                 }
 
-                if (maxPathLength != -1 && path.size() - 1 > maxPathLength) {
+                if (maxPathLength != -1 && path.size() - 3 > maxPathLength) {
                     continue;
                 }
 

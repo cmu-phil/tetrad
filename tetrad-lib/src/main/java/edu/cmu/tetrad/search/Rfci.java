@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -188,8 +187,7 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-        FciOrient orient = FciOrient.defaultConfiguration(new SepsetsGreedy(graph, this.independenceTest, null,
-                        this.maxPathLength, knowledge), knowledge);
+        FciOrient orient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
@@ -197,7 +195,7 @@ public final class Rfci implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
-        orient.doFinalOrientation(this.graph);
+        orient.finalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;

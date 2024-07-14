@@ -194,8 +194,8 @@ public class GraphTransforms {
                     pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
                 }
 
-                FciOrient fciOrient = FciOrient.defaultConfiguration(new DagSepsets(pag), new Knowledge());
-                fciOrient.doFinalOrientation(pag);
+                FciOrient fciOrient = FciOrient.defaultConfiguration(pag, new Knowledge(), false);
+                fciOrient.finalOrientation(pag);
             }
         }
     }

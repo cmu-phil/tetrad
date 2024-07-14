@@ -27,7 +27,6 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -172,7 +171,7 @@ public final class FciMax implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
-            FciOrient.defaultConfiguration(new SepsetsSet(this.sepsets, this.independenceTest), knowledge).ruleR0(graph);
+            FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose).ruleR0(graph);
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -181,11 +180,11 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = FciOrient.defaultConfiguration(new SepsetsSet(this.sepsets, this.independenceTest), knowledge);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.finalOrientation(graph);
 
         long stop = MillisecondTimes.timeMillis();
 

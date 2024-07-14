@@ -180,16 +180,16 @@ public final class GraspFci implements IGraphSearch {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
+        alg.setVerbose(false);
         alg.setKnowledge(knowledge);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        List<Node> bestOrder = alg.bestOrder(variables);
-        Graph pagEst = alg.getGraph(true);
+        alg.bestOrder(variables);
+        Graph pag = alg.getGraph(true);
 
-        Graph referenceCpdag = new EdgeListGraph(pagEst);
+        Graph referenceCpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
@@ -197,21 +197,21 @@ public final class GraspFci implements IGraphSearch {
             Graph trueDag = ((MsepTest) independenceTest).getGraph();
             sepsets = new DagSepsets(trueDag);
         } else {
-            sepsets = new SepsetsMinP(pagEst, this.independenceTest, null, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, null, this.depth);
         }
 
-        gfciExtraEdgeRemovalStep(pagEst, referenceCpdag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(pagEst, referenceCpdag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
-        fciOrient.doFinalOrientation(pagEst);
+        var fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
+        fciOrient.finalOrientation(pag);
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pagEst, fciOrient, knowledge, verbose);
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
         }
 
-        GraphUtils.replaceNodes(pagEst, this.independenceTest.getVariables());
-        return pagEst;
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        return pag;
     }
 
     /**

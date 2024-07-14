@@ -24,7 +24,6 @@
     import edu.cmu.tetrad.data.ContinuousVariable;
     import edu.cmu.tetrad.data.Knowledge;
     import edu.cmu.tetrad.graph.*;
-    import edu.cmu.tetrad.search.utils.DagSepsets;
     import edu.cmu.tetrad.search.utils.FciOrient;
     import edu.cmu.tetrad.util.RandomUtil;
     import org.jetbrains.annotations.Nullable;
@@ -335,7 +334,7 @@
             Knowledge knowledge = new Knowledge();
             knowledge.setRequired(x.getName(), y.getName());
 
-            FciOrient fciOrientation = FciOrient.defaultConfiguration(new DagSepsets(graph), knowledge);
+            FciOrient fciOrientation = FciOrient.defaultConfiguration(graph, knowledge, false);
             fciOrientation.orient(_graph);
 
             _graph.removeEdge(x, y);

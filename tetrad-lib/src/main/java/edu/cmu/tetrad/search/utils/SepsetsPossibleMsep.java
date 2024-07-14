@@ -44,7 +44,7 @@ import java.util.Set;
  * @see SepsetMap
  */
 public class SepsetsPossibleMsep implements SepsetProducer {
-    private final Graph graph;
+    private Graph graph;
     private final int maxPathLength;
     private final Knowledge knowledge;
     private final int depth;
@@ -169,6 +169,11 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         return result.getPValue();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        // Ignored.
     }
 
     private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) {

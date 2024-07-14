@@ -151,7 +151,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setMaxScoreDrop(parameters.getDouble(Params.MAX_SCORE_DROP));
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
-        search.setMaxSepsetSize(parameters.getInt(Params.MAX_SEPSET_SIZE));
+        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setTuckingAllowed(parameters.getBoolean(Params.ALLOW_TUCKS));
         search.setTestingAllowed(parameters.getBoolean(Params.ALLOW_TESTING));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
@@ -245,7 +245,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.EXTRA_EDGE_REMOVAL_STEP);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
-        params.add(Params.MAX_SEPSET_SIZE);
+        params.add(Params.DEPTH);
         params.add(Params.ALLOW_TUCKS);
         params.add(Params.ALLOW_TESTING);
         params.add(Params.MAX_PATH_LENGTH);

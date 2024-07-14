@@ -2987,7 +2987,7 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("Doing final orientation...");
             }
 
-            fciOrient.doFinalOrientation(pag);
+            fciOrient.finalOrientation(pag);
         } while (!pag.equals(_pag));
 
         if (!changed) {

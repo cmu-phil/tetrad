@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -93,6 +94,11 @@ public class SepsetsSet implements SepsetProducer {
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         throw new UnsupportedOperationException("This makes no sense for this subclass.");
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+       // Ignored.
     }
 
     /**

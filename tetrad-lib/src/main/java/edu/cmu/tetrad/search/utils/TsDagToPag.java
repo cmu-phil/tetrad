@@ -204,9 +204,8 @@ public final class TsDagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        SepsetProducer sepsets = new DagSepsets(dag);
-        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(dag, knowledge, verbose);
+        fciOrient.finalOrientation(graph);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");

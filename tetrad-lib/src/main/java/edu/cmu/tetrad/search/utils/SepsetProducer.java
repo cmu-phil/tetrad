@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -107,5 +108,7 @@ public interface SepsetProducer {
      * @return the p-value for the statistical test
      */
     double getPValue(Node a, Node b, Set<Node> sepset);
+
+    void setGraph(Graph graph);
 }
 

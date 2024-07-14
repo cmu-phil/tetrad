@@ -188,8 +188,8 @@ public final class GFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = FciOrient.defaultConfiguration(sepsets, knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
+        fciOrient.finalOrientation(graph);
 
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, verbose);
