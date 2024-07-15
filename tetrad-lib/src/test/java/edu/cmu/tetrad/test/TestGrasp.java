@@ -3280,7 +3280,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = graph.paths().allPaths(x, y, 4);
+                    Set<List<Node>> paths = graph.paths().allPaths(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

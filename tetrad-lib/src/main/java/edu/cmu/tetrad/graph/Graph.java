@@ -208,10 +208,10 @@ public interface Graph extends TetradSerializable {
      * <p>getEdges.</p>
      *
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
-    List<Edge> getEdges(Node node);
+    Set<Edge> getEdges(Node node);
 
     /**
      * <p>getEdges.</p>

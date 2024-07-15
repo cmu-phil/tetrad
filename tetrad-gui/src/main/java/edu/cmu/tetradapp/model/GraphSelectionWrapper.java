@@ -457,7 +457,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                    Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -495,21 +495,21 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));

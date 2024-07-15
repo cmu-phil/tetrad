@@ -384,16 +384,16 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * {@inheritDoc}
      */
-    public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new ArrayList<>();
+    public Set<Edge> getEdges(Node node) {
+        Set<Edge> edges = new HashSet<>();
 
         for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
-                edgeList.add(edge);
+                edges.add(edge);
             }
         }
 
-        return edgeList;
+        return edges;
     }
 
     /**

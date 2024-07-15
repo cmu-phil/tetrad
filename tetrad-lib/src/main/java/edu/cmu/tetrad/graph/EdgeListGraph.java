@@ -259,7 +259,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         if (node1 == null || node2 == null || node3 == null) return false;
-        List<Edge> edges = getEdges(node2);
+        Set<Edge> edges = getEdges(node2);
         boolean circle12 = false;
         boolean circle32 = false;
 
@@ -668,7 +668,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         List<Node> nodes = new ArrayList<>();
-        List<Edge> edges = getEdges(node);
+        Set<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
             if (edge.getProximalEndpoint(node) == endpoint) {
@@ -688,7 +688,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
         List<Node> nodes = new ArrayList<>();
-        List<Edge> edges = getEdges(node);
+        Set<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
             if (edge.getDistalEndpoint(node) == endpoint) {
@@ -816,12 +816,20 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * {@inheritDoc}
      */
     @Override
-    public List<Edge> getEdges(Node node) {
-        Set<Edge> list = this.edgeLists.get(node);
-        if (list == null) {
-            return new ArrayList<>();
+    public Set<Edge> getEdges(Node node) {
+        Set<Edge> edges = this.edgeLists.get(node);
+        if (edges == null) {
+            return new HashSet<>();
         }
-        return new ArrayList<>(list);
+        return new HashSet<>(edges);
+    }
+
+    public Set<Edge> getEdgesNoCopy(Node node) {
+        Set<Edge> edges = this.edgeLists.get(node);
+        if (edges == null) {
+            return new HashSet<>();
+        }
+        return edges;
     }
 
     /**

@@ -171,7 +171,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     // Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
     private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {
@@ -193,7 +193,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     // Get all nodes that are connected to Y by an undirected edge.
     private static Set<Node> getNeighbors(Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -212,7 +212,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     // Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private static Set<Node> getNaYX(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -1380,12 +1380,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         List<Node> nodes = graph.getAdjacentNodes(a);
         nodes.add(a);
 
-        List<Edge> edges = graph.getEdges(a);
+        Set<Edge> edges = graph.getEdges(a);
         GraphSearchUtils.basicCpdagRestricted2(graph, a);
         addRequiredEdges(graph);
         Set<Node> visited = meekOrientRestricted(graph, getKnowledge());
 
-        List<Edge> newEdges = graph.getEdges(a);
+        Set<Edge> newEdges = graph.getEdges(a);
         newEdges.removeAll(edges); // The newly oriented edges.
 
         for (Edge edge : newEdges) {

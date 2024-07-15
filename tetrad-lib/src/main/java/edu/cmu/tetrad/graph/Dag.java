@@ -341,7 +341,7 @@ public final class Dag implements Graph {
      * @param node a {@link Node} object representing the node
      * @return a list of {@link Edge} objects connected to the node
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return this.graph.getEdges(node);
     }
 

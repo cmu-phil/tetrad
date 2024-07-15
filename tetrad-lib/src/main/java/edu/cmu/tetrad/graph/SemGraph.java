@@ -567,7 +567,7 @@ public final class SemGraph implements Graph {
     /**
      * {@inheritDoc}
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
@@ -918,10 +918,10 @@ public final class SemGraph implements Graph {
         }
 
         Graph graph = getGraph();
-        List<Edge> edges = graph.getEdges(node1);
+        Set<Edge> edges = graph.getEdges(node1);
 
         if (edges == null) {
-            edges = new ArrayList<>();
+            edges = new HashSet<>();
         }
 
         List<Edge> attachedEdges = new LinkedList<>(edges);

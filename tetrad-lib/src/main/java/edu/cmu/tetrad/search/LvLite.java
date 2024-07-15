@@ -719,7 +719,7 @@ public final class LvLite implements IGraphSearch {
         // check both scenarios.
         Set<Node> couldBeColliders = new HashSet<>();
 
-        List<List<Node>> paths;
+        Set<List<Node>> paths;
 
         boolean _changed = true;
 
@@ -731,10 +731,12 @@ public final class LvLite implements IGraphSearch {
             // We note whether all current paths are blocked.
             boolean allBlocked = true;
 
-            // Sort paths by increasing size. We want to block the sorter paths first.
-            paths.sort(Comparator.comparingInt(List::size));
+            List<List<Node>> _paths = new ArrayList<>(paths);
 
-            for (List<Node> path : paths) {
+            // Sort paths by increasing size. We want to block the sorter paths first.
+            _paths.sort(Comparator.comparingInt(List::size));
+
+            for (List<Node> path : _paths) {
                 boolean blocked = false;
 
                 for (int i = 1; i < path.size() - 1; i++) {
@@ -862,7 +864,8 @@ public final class LvLite implements IGraphSearch {
         while (_changed) {
             _changed = false;
 
-            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, defNoncolliders, ancestors, false);
+            Set<List<Node>> _paths = cpdag.paths().allPaths(x, y, maxBlockingLength, defNoncolliders, ancestors, false);
+            paths = new ArrayList<>(_paths);
 
             // We note whether all current paths are blocked.
             boolean allBlocked = true;

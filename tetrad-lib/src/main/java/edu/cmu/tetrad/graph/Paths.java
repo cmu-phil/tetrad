@@ -576,9 +576,9 @@ public class Paths implements TetradSerializable {
      * @param maxLength The maximum length of the paths.
      * @return A list of paths, where each path is a list of nodes.
      */
-    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, new HashSet<>(), null, false);
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, maxLength, new HashSet<>(), null, false);
         return paths;
     }
 
@@ -594,74 +594,69 @@ public class Paths implements TetradSerializable {
      *                           edges in one direction or the other.
      * @return a list of paths between node1 and node2 that satisfy the conditions
      */
-    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
-                                     boolean allowSelectionBias) {
-        List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, null, allowSelectionBias);
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
+                                    boolean allowSelectionBias) {
+        Set<List<Node>> paths = new HashSet<>();
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, null, allowSelectionBias);
         return paths;
     }
 
-    public List<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
-                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
-        List<List<Node>> paths = new LinkedList<>();
-        allPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength, conditionSet, ancestors, allowSelectionBias);
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
+                                    Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        Set<List<Node>> paths = new HashSet<>();
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, ancestors, allowSelectionBias);
         return paths;
     }
 
-    private void allPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength,
+    private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
                                Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
 
-        path.addLast(node1);
-
-        Set<Node> __path = new HashSet<>(path);
-        if (__path.size() < path.size()) {
+        if (pathSet.contains(node1)) {
             return;
         }
+
+        path.addLast(node1);
+        pathSet.add(node1);
 
         if (node1 == node2) {
             if (conditionSet != null) {
                 LinkedList<Node> _path = new LinkedList<>(path);
 
                 if (path.size() > 1) {
-                    if (!paths.contains(path)) {
-                        if (ancestors != null) {
-                            if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
-                                paths.add(_path);
-                            }
-                        } else {
-                            if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
-                                paths.add(_path);
-                            }
+                    if (ancestors != null) {
+                        if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
+                            paths.add(_path);
+                        }
+                    } else {
+                        if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                            paths.add(_path);
                         }
                     }
                 }
             } else {
-                LinkedList<Node> _path = new LinkedList<>(path);
-
-                if (!paths.contains(path)) {
-                    paths.add(_path);
-                }
+                paths.add(new LinkedList<Node>(path));
             }
         }
 
-        for (Edge edge : graph.getEdges(node1)) {
+        for (Edge edge : ((EdgeListGraph) graph).getEdgesNoCopy(node1)) {
             Node child = Edges.traverse(node1, edge);
 
             if (child == null) {
                 continue;
             }
 
-            if (path.contains(child)) {
+            if (pathSet.contains(child)) {
                 continue;
             }
 
-            allPathsVisit(child, node2, path, paths, maxLength, conditionSet, null, allowSelectionBias);
+            allPathsVisit(child, node2, pathSet, path, paths, maxLength, conditionSet, ancestors, allowSelectionBias);
         }
 
         path.removeLast();
+        pathSet.remove(node1);
     }
 
     /**
@@ -2463,7 +2458,7 @@ public class Paths implements TetradSerializable {
             throw new IllegalArgumentException("No amenable paths found.");
         }
 
-        List<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
+        Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
             backdoorPaths.removeIf(path -> path.size() < 2 ||

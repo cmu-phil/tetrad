@@ -1098,8 +1098,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> backdoor = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
+                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
 
                 if (mpdag || mag) {
                     backdoor.removeIf(path -> path.size() < 2 ||
@@ -1157,8 +1158,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> _paths = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
+                List<List<Node>> paths = new ArrayList<>(_paths);
 
                 if (paths.isEmpty()) {
                     continue;

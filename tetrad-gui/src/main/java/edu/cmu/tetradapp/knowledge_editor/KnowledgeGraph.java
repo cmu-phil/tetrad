@@ -498,7 +498,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * @param node the node for which to retrieve the edges
      * @return the list of edges connected to the given node
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 

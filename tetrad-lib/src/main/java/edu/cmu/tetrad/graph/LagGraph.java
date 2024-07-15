@@ -255,7 +255,7 @@ public class LagGraph implements Graph {
     /**
      * {@inheritDoc}
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
