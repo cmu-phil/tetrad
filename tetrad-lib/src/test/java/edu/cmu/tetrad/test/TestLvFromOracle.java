@@ -93,7 +93,7 @@ public class TestLvFromOracle {
 //////                    estimated = lvLite.search();
 //////                }
 ////                default -> throw new IllegalArgumentException();
-////            }
+////            }}
 
         LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
 

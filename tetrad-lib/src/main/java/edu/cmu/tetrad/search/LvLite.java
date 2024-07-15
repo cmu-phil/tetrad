@@ -829,6 +829,159 @@ public final class LvLite implements IGraphSearch {
         return null;
     }
 
+    private Set<Node> getSepset2(Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int maxBlockingLength) {
+        test.setVerbose(verbose);
+
+        boolean printTrace = false;
+
+        if (printTrace) {
+            System.out.println("\n\n### CHECKING EDGE!: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        if (cpdag.getAdjacentNodes(x).size() > cpdag.getAdjacentNodes(y).size()) {
+            Node z = y;
+            y = x;
+            x = z;
+        }
+
+        // This is the set of all possible conditioning variables, though note below.
+        Set<Node> defNoncolliders = new HashSet<>();
+
+        // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
+        // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
+        // check both scenarios.
+        Set<Node> couldBeColliders = new HashSet<>();
+
+        List<List<Node>> paths;
+
+        boolean _changed = true;
+
+        while (_changed) {
+            _changed = false;
+
+            paths = cpdag.paths().allPaths(x, y, maxBlockingLength, defNoncolliders, ancestors, false);
+
+            // We note whether all current paths are blocked.
+            boolean allBlocked = true;
+
+            // Sort paths by increasing size. We want to block the sorter paths first.
+            paths.sort(Comparator.comparingInt(List::size));
+
+            for (List<Node> path : paths) {
+                boolean blocked = false;
+
+                for (int i = 1; i < path.size() - 1; i++) {
+                    Node z1 = path.get(i - 1);
+                    Node z2 = path.get(i);
+                    Node z3 = path.get(i + 1);
+
+                    if (!cpdag.isDefCollider(z1, z2, z3)) {
+                        if (defNoncolliders.contains(z2)) {
+                            blocked = true;
+
+                            if (printTrace) {
+                                System.out.println("This " + path + "--is already blocked by " + z2);
+                            }
+
+                            break;
+                        }
+
+                        if (!cpdag.isAdjacentTo(z1, z3) && !defNoncolliders.contains(z2)) {
+                            defNoncolliders.add(z2);
+                            blocked = true;
+                            _changed = true;
+
+                            if (printTrace) {
+                                System.out.println("Blocking " + path + " with noncollider " + z2);
+                            }
+//
+//                            if (cpdag.isAdjacentTo(z1, z3)) {
+//                                couldBeColliders.add(z2);
+//z
+//                                if (printTrace) {
+//                                    System.out.println("Noting that " + z2 + " could be a collider on " + path);
+//                                }
+//                            }
+
+
+                            if (depth != -1 && defNoncolliders.size() > depth) {
+                                return null;
+                            }
+
+                            break;
+                        }
+//
+//                        if (depth != -1 && defNoncolliders.size() > depth) {
+//                            return null;
+//                        }
+//
+//                        break;
+                    }
+                }
+
+                if (path.size() - 1 > 1 && !blocked) {
+                    allBlocked = false;
+                }
+            }
+
+            // We need to block *all* of the current paths, so if any path remains unblocked after that above, we
+            // need to return false (since we can't remove the edge).
+            if (!allBlocked) {
+                return null;
+            }
+        }
+
+        if (printTrace) {
+            System.out.println("defNoncolliders: " + defNoncolliders);
+            System.out.println("couldBeColliders: " + couldBeColliders);
+        }
+
+        // Now, for each conditioning set we identify, where the length-2 noncolliders are either included or not
+        // in the set, we check independence greedily. Hopefully the number of options here is small.
+        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
+        defNoncolliders.removeAll(couldBeColliders);
+
+        if (test.checkIndependence(x, y, defNoncolliders).isIndependent()) {
+            if (printTrace) {
+                System.out.println("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, defNoncolliders));
+            }
+
+            return defNoncolliders;
+        }
+
+//        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
+//        int[] choice;
+//
+//        while ((choice = generator.next()) != null) {
+//            Set<Node> sepset = new HashSet<>();
+//
+//            for (int j : choice) {
+//                sepset.add(couldBeCollidersList.get(j));
+//            }
+//
+//            sepset.addAll(defNoncolliders);
+//
+//            if (depth != -1 && sepset.size() > depth) {
+//                continue;
+//            }
+//
+//            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+//                if (printTrace) {
+//                    System.out.println("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+//                }
+//
+//                return sepset;
+//            }
+//        }
+
+        // We've checked a sufficient set of possible sepsets, and none of them worked, so we return false, since
+        // we can't remove the edge.
+        return null;
+    }
+
     /**
      * Adds a collider if it's a collider in the current scorer and knowledge permits it in the current PAG.
      *
