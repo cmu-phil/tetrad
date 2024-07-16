@@ -2908,22 +2908,14 @@ public final class GraphUtils {
      * @param verbose   indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static Graph repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
+    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
         fciOrient.setKnowledge(knowledge);
 
-//        if (pag.paths().existsDirectedCycle()) {
-//            throw new IllegalArgumentException("The estimated PAG contains a directed cycle; we can't repair it.");
-//        }
-
-        Graph _pag;
         boolean changed = false;
-
-//        do {
-        _pag = new EdgeListGraph(pag);
 
         for (Edge edge : pag.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
@@ -2975,41 +2967,11 @@ public final class GraphUtils {
             }
         }
 
-        fciOrient.finalOrientation(pag);
-
-//        } while (!pag.equals(_pag));
-
-        List<Node> nodes = pag.getNodes();
-
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i + 1; j < nodes.size(); j++) {
-//
-//                // The nodes x and y should be adjacent in the PAG if and only if there is an inducing path between
-//                // them. If they are not adjacent, but there is an inducing path between them, then we add a
-//                // nondirected edge x o-o y between them, as we know this edge must exist, but we don't know its
-//                // orientation. It's possible the final orientation will orient it, but it's also possible that
-//                // it will remain nondirected.
-//                if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
-//                    if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
-//                        pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
-//
-//                        if (verbose) {
-//                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because of an inducing path, added nondirected edge: " + nodes.get(i) + " o-o " + nodes.get(j) + ".");
-//                        }
-//
-//                        changed = true;
-//                    }
-//                }
-//            }
-//        }
-
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
         }
 
         fciOrient.finalOrientation(pag);
-
-//        pag = new DagToPag(pag).convert();
 
         if (!changed) {
             if (verbose) {
@@ -3020,8 +2982,6 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("Faulty PAG repaired.");
             }
         }
-
-        return pag;
     }
 
     /**

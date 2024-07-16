@@ -260,19 +260,17 @@ public final class SessionEditorNode extends DisplayNode {
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
 
-        SwingUtilities.invokeLater(() -> {
-            TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-            launchEditorVisit();
-        });
+//        SwingUtilities.invokeLater(() -> {
+//            TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+//            launchEditorVisit();
+//        });
 
-//        class MyWatchedProcess extends WatchedProcess {
-//            public void watch() {
-//                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-//                launchEditorVisit();
-//            }
-//        }
-//
-//        new MyWatchedProcess();
+        new WatchedProcess() {
+            public void watch() {
+                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+                launchEditorVisit();
+            }
+        };
     }
 
     private void launchEditorVisit() {
