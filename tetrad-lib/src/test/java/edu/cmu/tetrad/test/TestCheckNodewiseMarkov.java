@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -19,7 +20,49 @@ import java.util.List;
 public class TestCheckNodewiseMarkov {
 
     public static void main(String... args) {
-        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(10, 40, 40, 0.5, 1.0, 0.8);
+//        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(10, 40, 40, 0.5, 1.0, 0.8);
+        String filePath = "testTrueGraphForCheckNodewiseMarkov.txt";
+        File file = new File(filePath);
+        if (file.exists()) {
+            System.out.println("Loading true graph file: " + filePath);
+            testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(file, 0.5, 1.0, 0.8);
+        } else {
+            System.out.println("File does not exist at the specified path.");
+        }
+    }
+
+    public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(File txtFile, double threshold, double shuffleThreshold, double lowRecallBound) {
+//        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
+        Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(txtFile);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
+        SemIm im = new SemIm(pm, new Parameters());
+        DataSet data = im.simulateData(10000, false);
+        SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+//        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingAdjAHConfusionMatrix(data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
+        testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
+        System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
+        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
+        System.out.println("whole_ap: " + whole_ap);
+        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ahp: " + whole_ahp);
+        System.out.println("whole_ahr: " + whole_ahr);
+        System.out.println("whole_lgp: " + whole_lgp);
+        System.out.println("whole_lgr: " + whole_lgr);
     }
 
     public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(int numNodes, int maxNumEdges, int maxDegree, double threshold, double shuffleThreshold, double lowRecallBound) {
