@@ -641,7 +641,7 @@ public class Paths implements TetradSerializable {
             }
         }
 
-        for (Edge edge : ((EdgeListGraph) graph).getEdgesNoCopy(node1)) {
+        for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverse(node1, edge);
 
             if (child == null) {
@@ -1201,20 +1201,36 @@ public class Paths implements TetradSerializable {
 
     }
 
-
     private boolean reachable(Node a, Node b, Node c, Set<Node> z) {
+        return reachable(a, b, c, z, null);
+    }
+
+
+    private boolean reachable(Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         boolean collider = graph.isDefCollider(a, b, c);
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
-        boolean ancestor = isAncestor(b, z);
-        return collider && ancestor;
+        if (ancestors == null) {
+            return collider && isAncestor(b, z);
+        } else {
+            boolean ancestor = false;
+
+            for (Node _z : ancestors.get(b)) {
+                if (z.contains(_z)) {
+                    ancestor = true;
+                    break;
+                }
+            }
+
+            return collider && ancestor;
+        }
     }
 
 
-    private List<Node> getPassNodes(Node a, Node b, Set<Node> z) {
+    private List<Node> getPassNodes(Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
         List<Node> passNodes = new ArrayList<>();
 
         for (Node c : graph.getAdjacentNodes(b)) {
@@ -1222,7 +1238,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (reachable(a, b, c, z)) {
+            if (reachable(a, b, c, z, ancestorMap)) {
                 passNodes.add(c);
             }
         }
@@ -1576,21 +1592,23 @@ public class Paths implements TetradSerializable {
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
 
     /**
-     * <p>getSepset.</p>
+     * Retrieves the sepset (a set of nodes) between two given nodes.
+     * The sepset is the minimal set of nodes that need to be conditioned on
+     * in order to render two nodes conditionally independent.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.Set} object
+     * @param x the first node
+     * @param y the second node
+     * @return the sepset between the two nodes as a Set<Node>
      */
     public Set<Node> getSepset(Node x, Node y) {
-        Set<Node> sepset = getSepsetVisit(x, y);
-        if (sepset == null) {
-            sepset = getSepsetVisit(y, x);
-        }
+        Set<Node> sepset = getSepsetVisit(x, y, graph.paths().getAncestorMap());
+//        if (sepset == null) {
+//            sepset = getSepsetVisit(y, x);
+//        }
         return sepset;
     }
 
-    private Set<Node> getSepsetVisit(Node x, Node y) {
+    private Set<Node> getSepsetVisit(Node x, Node y, Map<Node, Set<Node>> ancestorMap) {
         if (x == y) {
             return null;
         }
@@ -1607,7 +1625,7 @@ public class Paths implements TetradSerializable {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(x, b, y, path, z, colliders, 8)) {
+                if (sepsetPathFound(x, b, y, path, z, colliders, 8, ancestorMap)) {
                     return null;
                 }
             }
@@ -1616,7 +1634,8 @@ public class Paths implements TetradSerializable {
         return z;
     }
 
-    private boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound) {
+    private boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
+            Set<Node>> ancestorMap) {
         if (b == y) {
             return true;
         }
@@ -1632,10 +1651,10 @@ public class Paths implements TetradSerializable {
         path.add(b);
 
         if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getPassNodes(a, b, z);
+            List<Node> passNodes = getPassNodes(a, b, z, ancestorMap);
 
             for (Node c : passNodes) {
-                if (sepsetPathFound(b, c, y, path, z, colliders, bound)) {
+                if (sepsetPathFound(b, c, y, path, z, colliders, bound, ancestorMap)) {
                     path.remove(b);
                     return true;
                 }
@@ -1647,8 +1666,8 @@ public class Paths implements TetradSerializable {
             boolean found1 = false;
             Set<Triple> _colliders1 = new HashSet<>();
 
-            for (Node c : getPassNodes(a, b, z)) {
-                if (sepsetPathFound(b, c, y, path, z, _colliders1, bound)) {
+            for (Node c : getPassNodes(a, b, z, ancestorMap)) {
+                if (sepsetPathFound(b, c, y, path, z, _colliders1, bound, ancestorMap)) {
                     found1 = true;
                     break;
                 }
@@ -1664,8 +1683,8 @@ public class Paths implements TetradSerializable {
             boolean found2 = false;
             Set<Triple> _colliders2 = new HashSet<>();
 
-            for (Node c : getPassNodes(a, b, z)) {
-                if (sepsetPathFound(b, c, y, path, z, _colliders2, bound)) {
+            for (Node c : getPassNodes(a, b, z, ancestorMap)) {
+                if (sepsetPathFound(b, c, y, path, z, _colliders2, bound, ancestorMap)) {
                     found2 = true;
                     break;
                 }

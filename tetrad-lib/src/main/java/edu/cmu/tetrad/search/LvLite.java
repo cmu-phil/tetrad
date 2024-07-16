@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -640,21 +641,48 @@ public final class LvLite implements IGraphSearch {
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
         Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
 
-        dag.getEdges().parallelStream().forEach(edge -> {
-            Set<Node> sepset = getSepset(edge, dag, test, ancestors, maxBlockingPathLength);
+        List<Node> nodes = pag.getNodes();
+        int numNodes = pag.getNumNodes();
 
-            if (sepset != null) {
-                extraSepsets.put(edge, sepset);
-            }
-        });
+        Matrix m = new Matrix(numNodes, numNodes);
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Done checking for additional sepsets.");
+        for (Edge e : pag.getEdges()) {
+            int i = nodes.indexOf(e.getNode1());
+            int j = nodes.indexOf(e.getNode2());
+            m.set(i, j, 1);
+            m.set(j, i, 1);
         }
 
-        for (Edge edge : extraSepsets.keySet()) {
-            pag.removeEdge(edge.getNode1(), edge.getNode2());
-            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+        Matrix prod = m.copy();
+
+        for (int length = 0; length <= maxBlockingPathLength; length++) {
+            int _length = length;
+            Matrix _prod = prod.copy();
+            Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
+
+            dag.getEdges().parallelStream().forEach(edge -> {
+                int i = nodes.indexOf(edge.getNode1());
+                int j = nodes.indexOf(edge.getNode2());
+
+                Set<Node> sepset = getSepset(i, j, _prod, edge, dag, test, ancestors, _length);
+
+                if (sepset != null) {
+                    _extraSepsets.put(edge, sepset);
+                }
+            });
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Done checking for additional sepsets.");
+            }
+
+            for (Edge edge : _extraSepsets.keySet()) {
+                pag.removeEdge(edge.getNode1(), edge.getNode2());
+                orientCommonAdjacents(edge, pag, unshieldedColliders, _extraSepsets);
+            }
+
+            extraSepsets.putAll(_extraSepsets);
+
+            prod = prod.times(m);
         }
 
         return extraSepsets;
@@ -699,8 +727,12 @@ public final class LvLite implements IGraphSearch {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    private Set<Node> getSepset(Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int maxBlockingLength) {
+    private Set<Node> getSepset(int i, int j, Matrix m, Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int maxBlockingLength) {
         test.setVerbose(verbose);
+
+        if (m.get(i, j) == 0) {
+            return null;
+        }
 
         boolean printTrace = false;
 
@@ -739,10 +771,10 @@ public final class LvLite implements IGraphSearch {
             for (List<Node> path : _paths) {
                 boolean blocked = false;
 
-                for (int i = 1; i < path.size() - 1; i++) {
-                    Node z1 = path.get(i - 1);
-                    Node z2 = path.get(i);
-                    Node z3 = path.get(i + 1);
+                for (int n = 1; n < path.size() - 1; n++) {
+                    Node z1 = path.get(n - 1);
+                    Node z2 = path.get(n);
+                    Node z3 = path.get(n + 1);
 
                     if (!cpdag.isDefCollider(z1, z2, z3)) {
                         if (defNoncolliders.contains(z2)) {
@@ -807,8 +839,8 @@ public final class LvLite implements IGraphSearch {
         while ((choice = generator.next()) != null) {
             Set<Node> sepset = new HashSet<>();
 
-            for (int j : choice) {
-                sepset.add(couldBeCollidersList.get(j));
+            for (int k : choice) {
+                sepset.add(couldBeCollidersList.get(k));
             }
 
             sepset.addAll(defNoncolliders);

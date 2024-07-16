@@ -150,7 +150,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
         for (Node node : nodes) {
-            edgeLists.put(node, Collections.synchronizedSet(graph.edgeLists.get(node)));
+            edgeLists.put(node, Collections.unmodifiableSet(graph.edgeLists.get(node)));
         }
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
@@ -682,8 +682,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * {@inheritDoc}
      * <p>
-     *     (
-     * Nodes adjacent to the given node with the given distal endpoint.
+     * ( Nodes adjacent to the given node with the given distal endpoint.
      */
     @Override
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
@@ -727,8 +726,13 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             edgeLists.computeIfAbsent(node1, k -> new HashSet<>());
             // System.out.println("Missing node2 is not in edgeLists: " + node2);
             edgeLists.computeIfAbsent(node2, k -> new HashSet<>());
-            this.edgeLists.get(node1).add(edge);
-            this.edgeLists.get(node2).add(edge);
+
+            Set<Edge> edges1 = new HashSet<>(this.edgeLists.get(node1));
+            Set<Edge> edges2 = new HashSet<>(this.edgeLists.get(node2));
+            edges1.add(edge);
+            edges2.add(edge);
+            this.edgeLists.put(node1, Collections.unmodifiableSet(edges1));
+            this.edgeLists.put(node2, Collections.unmodifiableSet(edges2));
             this.edgesSet.add(edge);
 
             this.parentsHash.remove(node1);
@@ -822,14 +826,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return new HashSet<>();
         }
         return new HashSet<>(edges);
-    }
-
-    public Set<Edge> getEdgesNoCopy(Node node) {
-        Set<Edge> edges = this.edgeLists.get(node);
-        if (edges == null) {
-            return new HashSet<>();
-        }
-        return edges;
     }
 
     /**
@@ -1029,8 +1025,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             edgeList1.remove(edge);
             edgeList2.remove(edge);
 
-            this.edgeLists.put(edge.getNode1(), edgeList1);
-            this.edgeLists.put(edge.getNode2(), edgeList2);
+            this.edgeLists.put(edge.getNode1(), Collections.unmodifiableSet(edgeList1));
+            this.edgeLists.put(edge.getNode2(), Collections.unmodifiableSet(edgeList2));
 
             this.parentsHash.remove(edge.getNode1());
             this.parentsHash.remove(edge.getNode2());
@@ -1079,17 +1075,18 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         boolean changed = false;
-        Set<Edge> edgeList1 = this.edgeLists.get(node);    //list of edges connected to that node
+        Set<Edge> _edgeSet = this.edgeLists.get(node);
+        if (_edgeSet == null) return true;
+        Set<Edge> edgeSet1 = new HashSet<>(_edgeSet);    //list of edges connected to that node
 
-        if (edgeList1 == null) return true;
-
-        for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
+        for (Iterator<Edge> i = edgeSet1.iterator(); i.hasNext(); ) {
             Edge edge = (i.next());
             Node node2 = edge.getDistalNode(node);
 
             if (node2 != node) {
-                Set<Edge> edgeList2 = this.edgeLists.get(node2);
+                Set<Edge> edgeList2 = new HashSet<>(this.edgeLists.get(node2));
                 edgeList2.remove(edge);
+                this.edgeLists.put(node2, Collections.unmodifiableSet(edgeList2));
                 this.edgesSet.remove(edge);
                 this.parentsHash.remove(edge.getNode1());
                 this.parentsHash.remove(edge.getNode2());
