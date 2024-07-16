@@ -2908,7 +2908,7 @@ public final class GraphUtils {
      * @param verbose   indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
+    public static Graph repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2922,73 +2922,94 @@ public final class GraphUtils {
         Graph _pag;
         boolean changed = false;
 
-        do {
-            _pag = new EdgeListGraph(pag);
+//        do {
+        _pag = new EdgeListGraph(pag);
 
-            for (Edge edge : pag.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
+        for (Edge edge : pag.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
-                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
-                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
-                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
-                    // it turns out, this edge can't have been bidirected in the first place, because it would have
-                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
-                    // about non-causality that can't be supported. So we just fix it in post-processing.
-                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
-                        pag.removeEdge(x, y);
-                        pag.addDirectedEdge(x, y);
+                // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
+                // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
+                // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
+                // need to be able to "peer into the future" of the orientation process, which we can't do. As
+                // it turns out, this edge can't have been bidirected in the first place, because it would have
+                // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
+                // about non-causality that can't be supported. So we just fix it in post-processing.
+                if (pag.paths().isAncestorOf(x, y)) {// && !knowledge.isForbidden(x.getName(), y.getName())) {
+                    List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
-                        }
+                    pag.removeEdge(x, y);
+                    pag.addPartiallyOrientedEdge(x, y);
 
-                        changed = true;
-                    } else if (pag.paths().isAncestorOf(y, x) && !knowledge.isForbidden(y.getName(), x.getName())) {
-                        pag.removeEdge(x, y);
-                        pag.addDirectedEdge(y, x);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
-                        }
-
-                        changed = true;
-                    }
-                }
-            }
-
-            List<Node> nodes = pag.getNodes();
-
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
-
-                    // The nodes x and y should be adjacent in the PAG if and only if there is an inducing path between
-                    // them. If they are not adjacent, but there is an inducing path between them, then we add a
-                    // nondirected edge x o-o y between them, as we know this edge must exist, but we don't know its
-                    // orientation. It's possible the final orientation will orient it, but it's also possible that
-                    // it will remain nondirected.
-                    if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
-                        if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
-                            pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because of an inducing path, added nondirected edge: " + nodes.get(i) + " o-o " + nodes.get(j) + ".");
-                            }
-
-                            changed = true;
+                    for (Node _into : into) {
+                        if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+                            pag.addNondirectedEdge(_into, y);
                         }
                     }
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
+                    }
+
+                    changed = true;
+                } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
+                    List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
+
+                    pag.removeEdge(y, x);
+                    pag.addPartiallyOrientedEdge(y, x);
+
+                    for (Node _into : into) {
+                        if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
+                            pag.addNondirectedEdge(_into, x);
+                        }
+                    }
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
+                    }
+
+                    changed = true;
                 }
             }
+        }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Doing final orientation...");
-            }
+        fciOrient.finalOrientation(pag);
 
-            fciOrient.finalOrientation(pag);
-        } while (!pag.equals(_pag));
+//        } while (!pag.equals(_pag));
+
+        List<Node> nodes = pag.getNodes();
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i + 1; j < nodes.size(); j++) {
+//
+//                // The nodes x and y should be adjacent in the PAG if and only if there is an inducing path between
+//                // them. If they are not adjacent, but there is an inducing path between them, then we add a
+//                // nondirected edge x o-o y between them, as we know this edge must exist, but we don't know its
+//                // orientation. It's possible the final orientation will orient it, but it's also possible that
+//                // it will remain nondirected.
+//                if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
+//                    if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j))) {
+//                        pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
+//
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because of an inducing path, added nondirected edge: " + nodes.get(i) + " o-o " + nodes.get(j) + ".");
+//                        }
+//
+//                        changed = true;
+//                    }
+//                }
+//            }
+//        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing final orientation...");
+        }
+
+        fciOrient.finalOrientation(pag);
+
+//        pag = new DagToPag(pag).convert();
 
         if (!changed) {
             if (verbose) {
@@ -2999,6 +3020,8 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("Faulty PAG repaired.");
             }
         }
+
+        return pag;
     }
 
     /**
@@ -3128,6 +3151,28 @@ public final class GraphUtils {
         }
 
         return coveringAdjacency;
+    }
+
+    public static Matrix getUndirectedPathMatrix(Graph graph, int power) {
+        List<Node> nodes = graph.getNodes();
+        int numNodes = graph.getNumNodes();
+
+        Matrix m = new Matrix(numNodes, numNodes);
+
+        for (Edge e : new HashSet<>(graph.getEdges())) {
+            int i = nodes.indexOf(e.getNode1());
+            int j = nodes.indexOf(e.getNode2());
+            m.set(i, j, 1);
+            m.set(j, i, 1);
+        }
+
+        Matrix prod = new Matrix(m);
+
+        for (int i = 1; i <= power; i++) {
+            prod = prod.times(m);
+        }
+
+        return prod;
     }
 
     /**

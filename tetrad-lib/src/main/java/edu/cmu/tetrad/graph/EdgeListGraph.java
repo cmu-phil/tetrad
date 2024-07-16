@@ -792,7 +792,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * {@inheritDoc}
      */
     @Override
-    public Set<Edge> getEdges() {
+    public synchronized Set<Edge> getEdges() {
         return new HashSet<>(this.edgesSet);
     }
 

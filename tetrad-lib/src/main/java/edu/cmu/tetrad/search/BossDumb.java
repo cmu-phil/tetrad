@@ -24,19 +24,18 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
 /**
- * BOSS-PAG is a class that implements the IGraphSearch interface. The BOSS-PAG algorithm finds the BOSS DAG for
+ * BOSS-Dumb is a class that implements the IGraphSearch interface. The BOSS-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
- * doing any further laten variable reasoning.
+ * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class BossPag implements IGraphSearch {
+public final class BossDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -87,7 +86,7 @@ public final class BossPag implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public BossPag(Score score) {
+    public BossDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }

@@ -7,15 +7,13 @@ import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.BossDumb;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,13 +31,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-PAG",
-        command = "boss-pag",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-Dumb",
+//        command = "boss-dumb",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
@@ -114,7 +112,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BossPag search = new edu.cmu.tetrad.search.BossPag(score);
+        BossDumb search = new BossDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -154,7 +152,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "BOSS-PAG (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "BOSS-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**

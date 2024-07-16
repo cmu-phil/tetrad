@@ -3,10 +3,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1713,6 +1710,8 @@ public class Paths implements TetradSerializable {
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean allowSelectionBias) {
+        List<Node> nodes = graph.getNodes();
+
         class EdgeNode {
 
             private final Edge edge;
@@ -1760,6 +1759,7 @@ public class Paths implements TetradSerializable {
 
             for (Edge edge2 : graph.getEdges(b)) {
                 Node c = edge2.getDistalNode(b);
+
                 if (c == a) {
                     continue;
                 }
@@ -1905,6 +1905,9 @@ public class Paths implements TetradSerializable {
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+
+        List<Node> nodes = graph.getNodes();
+
         class EdgeNode {
 
             private final Edge edge;
