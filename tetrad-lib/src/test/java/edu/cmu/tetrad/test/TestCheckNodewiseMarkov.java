@@ -32,7 +32,6 @@ public class TestCheckNodewiseMarkov {
     }
 
     public static void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket(File txtFile, double threshold, double shuffleThreshold, double lowRecallBound) {
-//        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
         Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(txtFile);
         System.out.println("Test True Graph: " + trueGraph);
         System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
