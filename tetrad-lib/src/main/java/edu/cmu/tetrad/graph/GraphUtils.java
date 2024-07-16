@@ -2908,72 +2908,104 @@ public final class GraphUtils {
      * @param verbose   indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge, boolean verbose) {
+    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                       Set<Triple> unshieldedColliders, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
         fciOrient.setKnowledge(knowledge);
 
-        boolean changed = false;
+        boolean changed;
+        boolean anyChange = false;
 
-        for (Edge edge : pag.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
+        do {
+            changed = false;
 
-                // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
-                // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
-                // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
-                // need to be able to "peer into the future" of the orientation process, which we can't do. As
-                // it turns out, this edge can't have been bidirected in the first place, because it would have
-                // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
-                // about non-causality that can't be supported. So we just fix it in post-processing.
-                if (pag.paths().isAncestorOf(x, y)) {// && !knowledge.isForbidden(x.getName(), y.getName())) {
-                    List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
+            for (Edge edge : pag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
 
-                    pag.removeEdge(x, y);
-                    pag.addPartiallyOrientedEdge(x, y);
+                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
+                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
+                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
+                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
+                    // it turns out, this edge can't have been bidirected in the first place, because it would have
+                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
+                    // about non-causality that can't be supported. So we just fix it in post-processing.
+                    if (pag.paths().isAncestorOf(x, y)) {// && !knowledge.isForbidden(x.getName(), y.getName())) {
+                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
 
-                    for (Node _into : into) {
-                        if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
-                            pag.addNondirectedEdge(_into, y);
+                        pag.removeEdge(x, y);
+                        pag.addPartiallyOrientedEdge(x, y);
+
+                        for (Node _into : into) {
+                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//                                pag.addNondirectedEdge(_into, y);
+//                            }
+
+                            unshieldedColliders.remove(new Triple(_into, x, y));
                         }
-                    }
 
-                    if (verbose) {
-                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
-                    }
-
-                    changed = true;
-                } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
-                    List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
-
-                    pag.removeEdge(y, x);
-                    pag.addPartiallyOrientedEdge(y, x);
-
-                    for (Node _into : into) {
-                        if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
-                            pag.addNondirectedEdge(_into, x);
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
                         }
-                    }
 
-                    if (verbose) {
-                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
-                    }
+                        changed = true;
+                        anyChange = true;
+                    } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
+                        List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
 
-                    changed = true;
+                        pag.removeEdge(y, x);
+                        pag.addPartiallyOrientedEdge(y, x);
+
+                        for (Node _into : into) {
+                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+//                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
+//                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+//                                pag.addNondirectedEdge(_into, x);
+//                            }
+
+                            unshieldedColliders.remove(new Triple(_into, y, x));
+
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
                 }
             }
-        }
+
+            for (Node x : pag.getNodes()) {
+                for (Node y : pag.getNodes()) {
+                    if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
+                        pag.addNondirectedEdge(x, y);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " o-o " + y + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
+                }
+            }
+
+            fciOrient.finalOrientation(pag);
+        } while (changed);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
         }
 
-        fciOrient.finalOrientation(pag);
-
-        if (!changed) {
+        if (!anyChange) {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }

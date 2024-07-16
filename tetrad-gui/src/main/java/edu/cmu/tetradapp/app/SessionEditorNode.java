@@ -259,15 +259,10 @@ public final class SessionEditorNode extends DisplayNode {
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
-
-//        SwingUtilities.invokeLater(() -> {
-//            TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-//            launchEditorVisit();
-//        });
+        TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
 
         new WatchedProcess() {
             public void watch() {
-                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
                 launchEditorVisit();
             }
         };
@@ -655,26 +650,31 @@ public final class SessionEditorNode extends DisplayNode {
                                            + "<br>overwriting any models that already exist.</html>");
 
         propagateDownstream.addActionListener((e) -> {
-            Component centeringComp = this;
+            new WatchedProcess() {
+                @Override
+                public void watch() {
+                    Component centeringComp = SessionEditorNode.this;
 
-            if (getSessionNode().getModel() != null && !getSessionNode().getChildren().isEmpty()) {
-                int ret = JOptionPane.showConfirmDialog(centeringComp,
-                        "You will be rewriting all downstream models. Is that OK?",
-                        "Confirm",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.WARNING_MESSAGE);
+                    if (getSessionNode().getModel() != null && !getSessionNode().getChildren().isEmpty()) {
+                        int ret = JOptionPane.showConfirmDialog(centeringComp,
+                                "You will be rewriting all downstream models. Is that OK?",
+                                "Confirm",
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
 
-                if (ret != JOptionPane.YES_OPTION) {
-                    return;
+                        if (ret != JOptionPane.YES_OPTION) {
+                            return;
+                        }
+                    }
+                    try {
+                        createDescendantModels();
+                    } catch (RuntimeException e1) {
+                        JOptionPane.showMessageDialog(centeringComp,
+                                "Could not complete the creation of descendant models.");
+                        e1.printStackTrace();
+                    }
                 }
-            }
-            try {
-                createDescendantModels();
-            } catch (RuntimeException e1) {
-                JOptionPane.showMessageDialog(centeringComp,
-                        "Could not complete the creation of descendant models.");
-                e1.printStackTrace();
-            }
+            };
         });
 
         JMenuItem renameBox = new JMenuItem("Rename Box");
@@ -833,24 +833,34 @@ public final class SessionEditorNode extends DisplayNode {
                 workbench.getSimulationStudy().execute(sessionNode, true);
             }
         };
+
+//        final Class c = SessionEditorWorkbench.class;
+//        Container container = SwingUtilities.getAncestorOfClass(c,
+//                SessionEditorNode.this);
+//        SessionEditorWorkbench workbench
+//                = (SessionEditorWorkbench) container;
+//
+//        System.out.println("Executing " + sessionNode);
+//
+//        workbench.getSimulationStudy().execute(sessionNode, true);
     }
 
     private void createDescendantModels() {
-        new WatchedProcess() {
-            @Override
-            public void watch() {
-                final Class clazz = SessionEditorWorkbench.class;
-                Container container = SwingUtilities.getAncestorOfClass(clazz,
-                        SessionEditorNode.this);
-                SessionEditorWorkbench workbench
-                        = (SessionEditorWorkbench) container;
+//        new WatchedProcess() {
+//            @Override
+//            public void watch() {
+        final Class clazz = SessionEditorWorkbench.class;
+        Container container = SwingUtilities.getAncestorOfClass(clazz,
+                SessionEditorNode.this);
+        SessionEditorWorkbench workbench
+                = (SessionEditorWorkbench) container;
 
-                if (workbench != null) {
-                    workbench.getSimulationStudy().createDescendantModels(
-                            getSessionNode(), true);
-                }
-            }
-        };
+        if (workbench != null) {
+            workbench.getSimulationStudy().createDescendantModels(
+                    getSessionNode(), true);
+        }
+//            }
+//        };
     }
 
     /**
@@ -880,31 +890,37 @@ public final class SessionEditorNode extends DisplayNode {
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
-        if (selection == 0) {
-            for (SessionNode child : getChildren()) {
-                executeSessionNode(child);
-            }
-        } else if (selection == 1) {
-            for (Edge edge : this.sessionWrapper.getEdges(getModelNode())) {
+//        new WatchedProcess() {
+//            @Override
+//            public void watch() {
 
-                // only break edges to children.
-                if (edge.getNode2() == getModelNode()) {
-                    SessionNodeWrapper otherWrapper
-                            = (SessionNodeWrapper) edge.getNode1();
-                    SessionNode other = otherWrapper.getSessionNode();
-                    if (getChildren().contains(other)) {
-                        this.sessionWrapper.removeEdge(edge);
+                if (selection == 0) {
+                    for (SessionNode child : getChildren()) {
+                        executeSessionNode(child);
                     }
-                } else {
-                    SessionNodeWrapper otherWrapper
-                            = (SessionNodeWrapper) edge.getNode2();
-                    SessionNode other = otherWrapper.getSessionNode();
-                    if (getChildren().contains(other)) {
-                        this.sessionWrapper.removeEdge(edge);
+                } else if (selection == 1) {
+                    for (Edge edge : SessionEditorNode.this.sessionWrapper.getEdges(getModelNode())) {
+
+                        // only break edges to children.
+                        if (edge.getNode2() == getModelNode()) {
+                            SessionNodeWrapper otherWrapper
+                                    = (SessionNodeWrapper) edge.getNode1();
+                            SessionNode other = otherWrapper.getSessionNode();
+                            if (getChildren().contains(other)) {
+                                SessionEditorNode.this.sessionWrapper.removeEdge(edge);
+                            }
+                        } else {
+                            SessionNodeWrapper otherWrapper
+                                    = (SessionNodeWrapper) edge.getNode2();
+                            SessionNode other = otherWrapper.getSessionNode();
+                            if (getChildren().contains(other)) {
+                                SessionEditorNode.this.sessionWrapper.removeEdge(edge);
+                            }
+                        }
                     }
                 }
-            }
-        }
+//            }
+//        };
     }
 
     /**

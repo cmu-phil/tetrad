@@ -172,6 +172,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         List<Node> best;
+        Graph cpdag;
 
         if (startWith == START_WITH.BOSS) {
 
@@ -182,7 +183,7 @@ public final class LvLite implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             var permutationSearch = getBossSearch();
-            Graph cpdag = permutationSearch.search();
+            cpdag = permutationSearch.search();
             best = permutationSearch.getOrder();
             best = cpdag.paths().getValidOrder(best, true);
 
@@ -205,6 +206,7 @@ public final class LvLite implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
+            cpdag = grasp.getGraph(true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -230,8 +232,6 @@ public final class LvLite implements IGraphSearch {
         scorer.bookmark();
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
-        Graph cpdag = scorer.getGraph(true);
-        Graph dag = scorer.getGraph(false);
         Graph pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
@@ -298,12 +298,26 @@ public final class LvLite implements IGraphSearch {
             } while (!unshieldedColliders.equals(_unshieldedColliders));
         }
 
+        Map<Edge, Set<Node>> extraSepsets = null;
+
         if (testingAllowed) {
 
             // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
             // per edge.
-            Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
+            extraSepsets = removeExtraEdges(pag, cpdag, unshieldedColliders);
+
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+
+            for (Edge edge : extraSepsets.keySet()) {
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+            }
+        }
+
+        if (repairFaultyPag) {
+            repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, best, verbose);
 
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -325,8 +339,10 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Finished final orientation.");
         }
 
-        if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose);
+        if (extraSepsets != null) {
+            for (Edge edge : extraSepsets.keySet()) {
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+            }
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -617,7 +633,7 @@ public final class LvLite implements IGraphSearch {
             Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
 
             dag.getEdges().parallelStream().forEach(edge -> {
-                Set<Node> sepset = getSepset(edge, dag, pag, test, ancestors, _length);
+                Set<Node> sepset = getSepset(edge, dag, test, ancestors, _length);
 
                 if (sepset != null) {
                     _extraSepsets.put(edge, sepset);
@@ -678,10 +694,10 @@ public final class LvLite implements IGraphSearch {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    private Set<Node> getSepset(Edge edge, Graph cpdag, Graph pag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int blockingLength) {
+    private Set<Node> getSepset(Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int blockingLength) {
         test.setVerbose(verbose);
 
-        Matrix pathMatrix = GraphUtils.getUndirectedPathMatrix(pag, blockingLength);
+        Matrix pathMatrix = GraphUtils.getUndirectedPathMatrix(cpdag, blockingLength);
         List<Node> nodes = cpdag.getNodes();
 
         // There should be at least two distinct paths between the endpoints of the edge.
@@ -699,7 +715,7 @@ public final class LvLite implements IGraphSearch {
         Node y = edge.getNode2();
 
         // This is the set of all possible conditioning variables, though note below.
-        Set<Node> defNoncolliders = new HashSet<>();
+        Set<Node> noncolliders = new HashSet<>();
 
         // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
         // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
@@ -713,7 +729,7 @@ public final class LvLite implements IGraphSearch {
         while (_changed) {
             _changed = false;
 
-            paths = cpdag.paths().allPaths(x, y, blockingLength, defNoncolliders, ancestors, false);
+            paths = cpdag.paths().allPaths(x, y, blockingLength, noncolliders, ancestors, false);
 
             // We note whether all current paths are blocked.
             boolean allBlocked = true;
@@ -732,7 +748,7 @@ public final class LvLite implements IGraphSearch {
                     Node z3 = path.get(n + 1);
 
                     if (!cpdag.isDefCollider(z1, z2, z3)) {
-                        if (defNoncolliders.contains(z2)) {
+                        if (noncolliders.contains(z2)) {
                             blocked = true;
 
                             if (printTrace) {
@@ -742,7 +758,7 @@ public final class LvLite implements IGraphSearch {
                             break;
                         }
 
-                        defNoncolliders.add(z2);
+                        noncolliders.add(z2);
                         blocked = true;
                         _changed = true;
 
@@ -758,7 +774,7 @@ public final class LvLite implements IGraphSearch {
                             }
                         }
 
-                        if (depth != -1 && defNoncolliders.size() > depth) {
+                        if (depth != -1 && noncolliders.size() > depth) {
                             return null;
                         }
 
@@ -779,14 +795,14 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (printTrace) {
-            System.out.println("defNoncolliders: " + defNoncolliders);
+            System.out.println("noncolliders: " + noncolliders);
             System.out.println("couldBeColliders: " + couldBeColliders);
         }
 
         // Now, for each conditioning set we identify, where the length-2 noncolliders are either included or not
         // in the set, we check independence greedily. Hopefully the number of options here is small.
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        defNoncolliders.removeAll(couldBeColliders);
+        noncolliders.removeAll(couldBeColliders);
 
         SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
         int[] choice;
@@ -798,7 +814,7 @@ public final class LvLite implements IGraphSearch {
                 sepset.add(couldBeCollidersList.get(k));
             }
 
-            sepset.addAll(defNoncolliders);
+            sepset.addAll(noncolliders);
 
             if (depth != -1 && sepset.size() > depth) {
                 continue;
@@ -904,6 +920,114 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean distinct(Node x, Node b, Node y) {
         return x != b && y != b && x != y;
+    }
+
+    public void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                Set<Triple> unshieldedColliders, List<Node> best, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Repairing faulty PAG...");
+        }
+
+        fciOrient.setKnowledge(knowledge);
+
+        boolean changed;
+        boolean anyChange = false;
+
+        do {
+            changed = false;
+
+            for (Edge edge : pag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
+                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
+                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
+                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
+                    // it turns out, this edge can't have been bidirected in the first place, because it would have
+                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
+                    // about non-causality that can't be supported. So we just fix it in post-processing.
+                    if (pag.paths().isAncestorOf(x, y)) {// && !knowledge.isForbidden(x.getName(), y.getName())) {
+                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
+
+                        pag.removeEdge(x, y);
+                        pag.addPartiallyOrientedEdge(x, y);
+
+                        for (Node _into : into) {
+                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//                                pag.addNondirectedEdge(_into, y);
+//                            }
+
+                            unshieldedColliders.remove(new Triple(_into, x, y));
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
+                        List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
+
+                        pag.removeEdge(y, x);
+                        pag.addPartiallyOrientedEdge(y, x);
+
+                        for (Node _into : into) {
+                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+//                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
+//                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+//                                pag.addNondirectedEdge(_into, x);
+//                            }
+
+                            unshieldedColliders.remove(new Triple(_into, y, x));
+
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
+                }
+            }
+
+            for (Node x : pag.getNodes()) {
+                for (Node y : pag.getNodes()) {
+                    if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
+                        pag.addNondirectedEdge(x, y);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " o-o " + y + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
+                }
+            }
+
+            fciOrient.finalOrientation(pag);
+        } while (changed);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing final orientation...");
+        }
+
+        if (!anyChange) {
+            if (verbose) {
+                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+            }
+        } else {
+            if (verbose) {
+                TetradLogger.getInstance().log("Faulty PAG repaired.");
+            }
+        }
     }
 
     /**

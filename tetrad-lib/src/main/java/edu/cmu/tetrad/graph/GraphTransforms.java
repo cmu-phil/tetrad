@@ -208,66 +208,49 @@ public class GraphTransforms {
      * @return The maximally ancestral graph obtained from the PAG.
      */
     public static Graph zhangMagFromPag(Graph pag) {
-        Graph mag = new EdgeListGraph(pag.getNodes());
-        for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
+        List<Node> nodes = pag.getNodes();
 
-        List<Node> nodes = mag.getNodes();
+        Graph pcafci = new EdgeListGraph(pag);
 
-        Graph pcafci = new EdgeListGraph(nodes);
+        // pcafcic is the graph with only the circle-circle edges
+        Graph pcafcic = new EdgeListGraph(pag.getNodes());
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                if (i == j) continue;
+        for (Edge e : pcafci.getEdges()) {
+            if (Edges.isNondirectedEdge(e)) {
+                pcafcic.addUndirectedEdge(e.getNode1(), e.getNode2());
+            }
+        }
 
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
+        pcafcic = GraphTransforms.dagFromCpdag(pcafcic, new Knowledge(), false, false);
 
-                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.ARROW) {
-                    mag.setEndpoint(y, x, Endpoint.TAIL);
+        for (Edge e : pcafcic.getEdges()) {
+            pcafci.removeEdge(e.getNode1(), e.getNode2());
+            pcafci.addEdge(e);
+        }
+
+        Graph H = new EdgeListGraph(pcafci);
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x.equals(y)) {
+                    continue;
                 }
 
-                if (mag.getEndpoint(y, x) == Endpoint.TAIL && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    mag.setEndpoint(x, y, Endpoint.ARROW);
+                if (!H.isAdjacentTo(x, y)) {
+                    continue;
                 }
 
-                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    pcafci.addEdge(mag.getEdge(x, y));
+                if (H.getEndpoint(y, x) == Endpoint.CIRCLE && H.getEndpoint(x, y) == Endpoint.ARROW) {
+                    H.setEndpoint(y, x, Endpoint.TAIL);
+                }
+
+                if (H.getEndpoint(y, x) == Endpoint.TAIL && H.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    H.setEndpoint(x, y, Endpoint.ARROW);
                 }
             }
         }
 
-        for (Edge e : pcafci.getEdges()) {
-            e.setEndpoint1(Endpoint.TAIL);
-            e.setEndpoint2(Endpoint.TAIL);
-        }
-
-        W:
-        while (true) {
-            for (Edge e : pcafci.getEdges()) {
-                if (Edges.isUndirectedEdge(e)) {
-                    Node x = e.getNode1();
-                    Node y = e.getNode2();
-
-                    pcafci.setEndpoint(y, x, Endpoint.TAIL);
-                    pcafci.setEndpoint(x, y, Endpoint.ARROW);
-
-                    MeekRules meekRules = new MeekRules();
-                    meekRules.setRevertToUnshieldedColliders(false);
-                    meekRules.orientImplied(pcafci);
-
-                    continue W;
-                }
-            }
-
-            break;
-        }
-
-        for (Edge e : pcafci.getEdges()) {
-            mag.removeEdge(e.getNode1(), e.getNode2());
-            mag.addEdge(e);
-        }
-
-        return mag;
+        return H;
     }
 
     /**

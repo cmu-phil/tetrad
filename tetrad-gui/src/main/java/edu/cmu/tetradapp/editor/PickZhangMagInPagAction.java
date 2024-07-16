@@ -69,12 +69,6 @@ public class PickZhangMagInPagAction extends AbstractAction {
             return;
         }
 
-        // Commenting this out because the PAG algorithms are not always returning legal PAGs
-//        if (!graph.paths().isLegalPag()) {
-//            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "I can only convert PAGs.");
-//            return;
-//        }
-
         graph = GraphTransforms.zhangMagFromPag(graph);
         workbench.setGraph(graph);
     }
