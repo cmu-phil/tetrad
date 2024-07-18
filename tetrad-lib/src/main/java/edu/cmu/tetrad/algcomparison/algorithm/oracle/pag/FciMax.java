@@ -110,6 +110,9 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+
         return search.search();
     }
 
@@ -163,6 +166,10 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
+
+        // Ablation
+        parameters.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
+
         return parameters;
     }
 

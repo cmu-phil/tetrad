@@ -115,6 +115,10 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setDoDiscriminatingPathCollideRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
+
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+
         return search.search();
     }
 
@@ -167,6 +171,9 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
+
+        // Ablation
+        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         // Flags
         params.add(Params.VERBOSE);

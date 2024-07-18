@@ -128,7 +128,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getBoolean(Params.ALLOW_TUCKS)) {
+            if (parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP)) {
                 if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
                     throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
                 }
@@ -152,9 +152,13 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setTuckingAllowed(parameters.getBoolean(Params.ALLOW_TUCKS));
-        search.setTestingAllowed(parameters.getBoolean(Params.ALLOW_TESTING));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+
+        // Ablation
+        search.setAblationLeaveOutTuckingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP));
+        search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEP));
+        search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -164,8 +168,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
         }
 
-        if (parameters.getBoolean(Params.ALLOW_TUCKS)) {
-            search.setTuckingAllowed(true);
+        if (parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP)) {
+            search.setAblationLeaveOutTuckingStep(true);
         }
 
         // General
@@ -233,14 +237,17 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
-        params.add(Params.ALLOW_TUCKS);
-        params.add(Params.ALLOW_TESTING);
+        params.add(Params.ABLATION_LEAVE_OUT_TUCKING_STEP);
+        params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEP);
         params.add(Params.MAX_PATH_LENGTH);
 
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
+
+        // Ablation
+        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

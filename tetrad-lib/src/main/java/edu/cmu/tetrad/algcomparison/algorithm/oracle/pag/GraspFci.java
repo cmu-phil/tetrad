@@ -134,6 +134,9 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setKnowledge(this.knowledge);
 
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+
         return search.search();
     }
 
@@ -201,6 +204,9 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.SEED);
         params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
+
+        // Ablation
+        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

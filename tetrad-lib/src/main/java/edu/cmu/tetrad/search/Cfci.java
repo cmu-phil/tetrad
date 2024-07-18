@@ -79,6 +79,11 @@ public final class Cfci implements IGraphSearch {
     private int maxPathLength = -1;
 
     /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
+
+    /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
      * @param independenceTest The independence to use as an oracle.
@@ -168,7 +173,10 @@ public final class Cfci implements IGraphSearch {
 
         // Step CI D. (Zhang's step F4.)
         FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
-        fciOrient.finalOrientation(this.graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(this.graph);
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -553,6 +561,10 @@ public final class Cfci implements IGraphSearch {
         }
 
         this.maxPathLength = maxPathLength;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     private enum TripleType {

@@ -6422,53 +6422,53 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="allowTucks">allowTucks</h3>
+            id="ablationLeaveOutTuckingStep">ablationLeaveOutTuckingStep</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="allowTucks_short_desc">
-                    Yes, if the tucking step should be included for the LV-Lite procedure
+                    id="ablationLeaveOutTuckingStep_short_desc">
+                    ABLATION: Yes, if the tucking step should be left out for the LV-Lite procedure
         </span></li>
             <li>Long Description: <span
-                    id="allowTucks_long_desc">
+                    id="ablationLeaveOutTuckingStep_long_desc">
                     Allowing tucks can sometimes lead to lower arrowhead accuracies,
                     even they are theoretically correct.
         </span></li>
             <li>Default Value: <span
-                    id="allowTucks_default_value">true</span></li>
+                    id="ablationLeaveOutTuckingStep_default_value">false</span></li>
             <li>Lower Bound: <span
-                    id="allowTucks_lower_bound"></span></li>
+                    id="ablationLeaveOutTuckingStep_lower_bound"></span></li>
             <li>Upper
                 Bound: <span
-                        id="allowTucks_upper_bound"></span></li>
+                        id="ablationLeaveOutTuckingStep_upper_bound"></span></li>
             <li>Value
                 Type: <span
-                        id="allowTucks_value_type">Boolean</span></li>
+                        id="ablationLeaveOutTuckingStep_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="allowTesting">allowTesting</h3>
+            id="ablationLeaveOutTestingStep">ablationLeaveOutTestingStep</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="allowTesting_short_desc">
-                    Yes, if the testing step should be included for the LV-Lite procedure
+                    id="ablationLeaveOutTestingStep_short_desc">
+                    ABLATION: Yes, if the testing step should be left out for the LV-Lite procedure
         </span></li>
             <li>Long Description: <span
-                    id="allowTesting_long_desc">
+                    id="ablationLeaveOutTestingStep_long_desc">
                     Allowing testing can sometimes lead to lower arrowhead accuracies,
                     even though it is theoretically correct.
         </span></li>
             <li>Default Value: <span
-                    id="allowTesting_default_value">true</span></li>
+                    id="ablationLeaveOutTestingStep_default_value">false</span></li>
             <li>Lower Bound: <span
-                    id="allowTesting_lower_bound"></span></li>
+                    id="ablationLeaveOutTestingStep_lower_bound"></span></li>
             <li>Upper
                 Bound: <span
-                        id="allowTesting_upper_bound"></span></li>
+                        id="ablationLeaveOutTestingStep_upper_bound"></span></li>
             <li>Value
                 Type: <span
-                        id="allowTesting_value_type">Boolean</span></li>
+                        id="ablationLeaveOutTestingStep_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6524,7 +6524,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="maxBlockingPathLength_short_desc">Maximum path length to block in
-                    extra edge removal step</span></li>
+                    extra-edge removal step, >= 3</span></li>
             <li>Long Description: <span
                     id="maxBlockingPathLength_long_desc">
                     In the extra edge removal step, we build conditioning sets based on the
@@ -6618,6 +6618,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="repairFaultyPag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutFinalOrientation">ablationLeaveOutFinalOrientation</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutFinalOrientation_short_desc">
+                    ABLATION: Leave out final orientation step.
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutFinalOrientation_long_desc">
+                    If true, the final orientation step of the algorithm is not performed.
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutFinalOrientation_default_value">False</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutFinalOrientation_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutFinalOrientation_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutFinalOrientation_value_type">Boolean</span></li>
         </ul>
 
 

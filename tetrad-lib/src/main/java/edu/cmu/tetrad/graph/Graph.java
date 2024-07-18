@@ -523,11 +523,14 @@ public interface Graph extends TetradSerializable {
     TimeLagGraph getTimeLagGraph();
 
     /**
-     * <p>getSepset.</p>
+     * Returns the set of nodes that form the separating set between two given nodes.
+     * A separating set is a set of nodes that, when conditioned on, renders the given
+     * nodes d-separated.
      *
-     * @param n1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param n2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.Set} object
+     * @param n1                the first node
+     * @param n2                the second node
+     * @return the set of nodes that form the separating set between
+     *                          the two given nodes
      */
     Set<Node> getSepset(Node n1, Node n2);
 

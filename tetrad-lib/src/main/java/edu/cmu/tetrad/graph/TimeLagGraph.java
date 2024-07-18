@@ -759,7 +759,7 @@ public class TimeLagGraph implements Graph {
      */
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
-        return this.graph.getSepset(n1, n2);
+        return this.graph.getSepset(n1, n2, false);
     }
 
     /**

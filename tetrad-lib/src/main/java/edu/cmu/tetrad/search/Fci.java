@@ -131,6 +131,10 @@ public final class Fci implements IGraphSearch {
      * Whether the PAG should be repaired.
      */
     private boolean repairFaultyPag;
+    /**
+     * Whether the final orientation step should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -257,10 +261,12 @@ public final class Fci implements IGraphSearch {
             TetradLogger.getInstance().log("Doing Final Orientation.");
         }
 
-        fciOrient.finalOrientation(graph);
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -418,6 +424,10 @@ public final class Fci implements IGraphSearch {
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

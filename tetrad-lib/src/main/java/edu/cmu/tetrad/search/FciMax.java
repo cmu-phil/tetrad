@@ -101,13 +101,13 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Determines whether the discriminating path tail rule should be applied during the search.
-     * If set to true, the rule will be applied. If set to false, the rule will not be applied.
+     * Determines whether the discriminating path tail rule should be applied during the search. If set to true, the
+     * rule will be applied. If set to false, the rule will not be applied.
      */
     private boolean doDiscriminatingPathTailRule = true;
     /**
-     * This variable specifies whether the discriminating path collider rule should be applied during the search.
-     * If set to true, the rule will be applied; if set to false, the rule will not be applied.
+     * This variable specifies whether the discriminating path collider rule should be applied during the search. If set
+     * to true, the rule will be applied; if set to false, the rule will not be applied.
      */
     private boolean doDiscriminatingPathColliderRule = true;
     /**
@@ -126,6 +126,10 @@ public final class FciMax implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Whether the final orientation step should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -184,7 +188,10 @@ public final class FciMax implements IGraphSearch {
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
-        fciOrient.finalOrientation(graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -468,6 +475,10 @@ public final class FciMax implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

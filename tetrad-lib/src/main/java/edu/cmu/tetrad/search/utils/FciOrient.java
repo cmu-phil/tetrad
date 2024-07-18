@@ -83,14 +83,14 @@ public final class FciOrient {
         this.sepsets = sepsets;
     }
 
-//    /**
-//     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
-//     *
-//     * @param scorer the TeyssierScorer object to be used for scoring
-//     */
-//    private FciOrient(TeyssierScorer scorer) {
-//        this.scorer = scorer;
-//    }
+    /**
+     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
+     *
+     * @param scorer the TeyssierScorer object to be used for scoring
+     */
+    private FciOrient(TeyssierScorer scorer) {
+        this.scorer = scorer;
+    }
 
     public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
         return FciOrient.specialConfiguration(new DagSepsets(dag), true, true,
@@ -119,10 +119,30 @@ public final class FciOrient {
         }
     }
 
+    public static FciOrient specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
+                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                 int maxPathLength, boolean verbose) {
+        return FciOrient.specialConfiguration(scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
+                doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
+    }
+
     public static FciOrient specialConfiguration(SepsetProducer sepsets, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
                                                  int maxPathLength, Knowledge knowledge, boolean verbose) {
         FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
+        return fciOrient;
+    }
+
+    public static FciOrient specialConfiguration(TeyssierScorer scorer, boolean completeRuleSetUsed,
+                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                 int maxPathLength, Knowledge knowledge, boolean verbose) {
+        FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
@@ -311,6 +331,8 @@ public final class FciOrient {
 
         scorer.goToBookmark();
         scorer.tuck(c, b);
+        scorer.tuck(e, b);
+        scorer.tuck(a, c);
         boolean collider = !scorer.adjacent(e, c);
 
         if (collider) {
@@ -810,7 +832,14 @@ public final class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4(Graph graph) {
-        sepsets.setGraph(graph);
+        if (sepsets == null && scorer == null) {
+            throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
+                                           "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
+        }
+
+        if (sepsets != null) {
+            sepsets.setGraph(graph);
+        }
 
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             if (sepsets == null && scorer == null) {
@@ -990,8 +1019,11 @@ public final class FciOrient {
             }
         }
 
-        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
-//        Set<Node> sepset = getSepsets().getSepset(e, c);
+//        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
+//        Set<Node> sepset = graph.paths().getSepsetContaining(e, c, new HashSet<>(path), true);
+        Set<Node> sepset = graph.paths().getSepsetContaining2(e, c, new HashSet<>(path), true);
+
+//        Set<Node> sepset = LvLite.getSepset(e, c, graph, new MsepTest(graph), null, -1, -1, -1);
 
         if (sepset == null) {
             return false;

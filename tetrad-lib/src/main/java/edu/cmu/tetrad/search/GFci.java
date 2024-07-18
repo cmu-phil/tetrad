@@ -122,6 +122,10 @@ public final class GFci implements IGraphSearch {
      * Whether to repair faulty PAGs.
      */
     private boolean repairFaultyPag = false;
+    /**
+     * Whether to leave out the final orientation step in the ablation study.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -189,10 +193,13 @@ public final class GFci implements IGraphSearch {
         }
 
         FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
-        fciOrient.finalOrientation(graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         return graph;
@@ -340,5 +347,9 @@ public final class GFci implements IGraphSearch {
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
+    }
+
+    public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }

@@ -58,8 +58,8 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
-     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note
-     * that for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
+     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note that
+     * for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
      * otherwise, an exception is thrown.
      *
      * @param a The first node.
@@ -70,7 +70,9 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
-        return this.dag.getSepset(a, b);
+//        return dag.getSepset(a, b);
+        return  ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
+//        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
     }
 
     /**
@@ -80,7 +82,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> sepset = this.dag.getSepset(i, k);
+        Set<Node> sepset = ((EdgeListGraph) this.dag).getSepset(i, k, false);
         return sepset != null && !sepset.contains(j);
     }
 

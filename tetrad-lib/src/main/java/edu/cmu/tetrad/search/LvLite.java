@@ -124,15 +124,19 @@ public final class LvLite implements IGraphSearch {
     /**
      * Determines if tucking is allowed. Default value is false.
      */
-    private boolean tuckingAllowed = false;
+    private boolean ablationLeaveOutTuckingStep = false;
     /**
      * Determines if testing is allowed. Default value is true.
      */
-    private boolean testingAllowed = true;
+    private boolean ablationLeaveOutTestingStep = false;
     /**
      * The maximum length of any discriminating path.
      */
     private int maxDdpPathLength = -1;
+    /**
+     * ABLATION: The flag indicating whether to leave out the final orientation.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -239,7 +243,7 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = FciOrient.specialConfiguration(this.test, knowledge, completeRuleSetUsed,
+        FciOrient fciOrient = FciOrient.specialConfiguration(test, knowledge, completeRuleSetUsed,
                 doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, maxDdpPathLength, verbose);
 
         if (verbose) {
@@ -276,7 +280,7 @@ public final class LvLite implements IGraphSearch {
         doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-        if (tuckingAllowed) {
+        if (!ablationLeaveOutTuckingStep) {
             do {
                 _unshieldedColliders = new HashSet<>(unshieldedColliders);
 
@@ -300,7 +304,7 @@ public final class LvLite implements IGraphSearch {
 
         Map<Edge, Set<Node>> extraSepsets = null;
 
-        if (testingAllowed) {
+        if (!ablationLeaveOutTestingStep) {
 
             // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
@@ -316,33 +320,21 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
+        // Final FCI orientation.
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(pag);
+        }
+
         if (repairFaultyPag) {
-            repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, best, verbose);
-
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-
-            for (Edge edge : extraSepsets.keySet()) {
-                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-            }
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose, ablationLeaveOutFinalOrientation);
         }
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation.");
         }
 
-        // Final FCI orientation.
-        fciOrient.finalOrientation(pag);
-
         if (verbose) {
             TetradLogger.getInstance().log("Finished final orientation.");
-        }
-
-        if (extraSepsets != null) {
-            for (Edge edge : extraSepsets.keySet()) {
-                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-            }
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -632,7 +624,7 @@ public final class LvLite implements IGraphSearch {
             int _length = length;
             Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
 
-            dag.getEdges().parallelStream().forEach(edge -> {
+            dag.getEdges().forEach(edge -> {
                 Set<Node> sepset = getSepset(edge, dag, test, ancestors, _length);
 
                 if (sepset != null) {
@@ -729,7 +721,7 @@ public final class LvLite implements IGraphSearch {
         while (_changed) {
             _changed = false;
 
-            paths = cpdag.paths().allPaths(x, y, blockingLength, noncolliders, ancestors, false);
+            paths = cpdag.paths().allPaths(x, y, 0, blockingLength, noncolliders, ancestors, false);
 
             // We note whether all current paths are blocked.
             boolean allBlocked = true;
@@ -923,7 +915,7 @@ public final class LvLite implements IGraphSearch {
     }
 
     public void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                Set<Triple> unshieldedColliders, List<Node> best, boolean verbose) {
+                                Set<Triple> unshieldedColliders, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -948,18 +940,18 @@ public final class LvLite implements IGraphSearch {
                     // it turns out, this edge can't have been bidirected in the first place, because it would have
                     // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
                     // about non-causality that can't be supported. So we just fix it in post-processing.
-                    if (pag.paths().isAncestorOf(x, y)) {// && !knowledge.isForbidden(x.getName(), y.getName())) {
+                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(x, y);
+
                         List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
 
-                        pag.removeEdge(x, y);
-                        pag.addPartiallyOrientedEdge(x, y);
-
                         for (Node _into : into) {
-                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
-//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//                                pag.addNondirectedEdge(_into, y);
-//                            }
+//                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+                                pag.addNondirectedEdge(_into, y);
+                            }
 
                             unshieldedColliders.remove(new Triple(_into, x, y));
                         }
@@ -971,17 +963,17 @@ public final class LvLite implements IGraphSearch {
                         changed = true;
                         anyChange = true;
                     } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
+                        pag.removeEdge(y, x);
+                        pag.addDirectedEdge(y, x);
+
                         List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
 
-                        pag.removeEdge(y, x);
-                        pag.addPartiallyOrientedEdge(y, x);
-
                         for (Node _into : into) {
-                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-//                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
-//                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-//                                pag.addNondirectedEdge(_into, x);
-//                            }
+//                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
+                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+                                pag.addNondirectedEdge(_into, x);
+                            }
 
                             unshieldedColliders.remove(new Triple(_into, y, x));
 
@@ -1012,7 +1004,7 @@ public final class LvLite implements IGraphSearch {
                 }
             }
 
-            fciOrient.finalOrientation(pag);
+//            fciOrient.finalOrientation(pag);
         } while (changed);
 
         if (verbose) {
@@ -1042,19 +1034,19 @@ public final class LvLite implements IGraphSearch {
     /**
      * Sets whether or not tucking is allowed.
      *
-     * @param tuckingAllowed true if tucking is allowed, false otherwise
+     * @param ablationLeaveOutTuckingStep true if tucking is allowed, false otherwise
      */
-    public void setTuckingAllowed(boolean tuckingAllowed) {
-        this.tuckingAllowed = tuckingAllowed;
+    public void setAblationLeaveOutTuckingStep(boolean ablationLeaveOutTuckingStep) {
+        this.ablationLeaveOutTuckingStep = ablationLeaveOutTuckingStep;
     }
 
     /**
      * Sets whether testing is allowed or not.
      *
-     * @param testingAllowed true if testing is allowed, false otherwise
+     * @param ablationLeaveOutTestingStep true if testing is allowed, false otherwise
      */
-    public void setTestingAllowed(boolean testingAllowed) {
-        this.testingAllowed = testingAllowed;
+    public void setAblationLeaveOutTestingStep(boolean ablationLeaveOutTestingStep) {
+        this.ablationLeaveOutTestingStep = ablationLeaveOutTestingStep;
     }
 
     /**
@@ -1064,6 +1056,15 @@ public final class LvLite implements IGraphSearch {
      */
     public void setMaxDdpPathLength(int maxDdpPathLength) {
         this.maxDdpPathLength = maxDdpPathLength;
+    }
+
+    /**
+     * ABLATION: Sets whether to leave out the final orientation.
+     *
+     * @param leaveOutFinalOrientation true if the final orientation should be left out, false otherwise
+     */
+    public void ablationSetLeaveOutFinalOrientation(boolean leaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = leaveOutFinalOrientation;
     }
 
     /**

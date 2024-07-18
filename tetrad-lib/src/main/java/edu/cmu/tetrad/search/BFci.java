@@ -137,6 +137,10 @@ public final class BFci implements IGraphSearch {
      * Whether to repair a faulty PAG.
      */
     private boolean repairFaultyPag;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -195,12 +199,15 @@ public final class BFci implements IGraphSearch {
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
-        fciOrient.finalOrientation(graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         return graph;
@@ -329,6 +336,10 @@ public final class BFci implements IGraphSearch {
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

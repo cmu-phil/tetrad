@@ -484,7 +484,24 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Set<Node> getSepset(Node x, Node y) {
-        return new Paths(this).getSepset(x, y);
+        return new Paths(this).getSepset(x, y, false);
+    }
+
+    /**
+     * Retrieves the set of nodes that form the sepset between two given nodes. This method needs specifically
+     * to be called on the EdgeListGraph class, as it is not implemented in the Graph interface.
+     *
+     * @param x               The first node.
+     * @param y               The second node.
+     * @param allowSelectionBias  A flag indicating whether to allow selection bias in determining the sepset.
+     * @return The set of nodes that form the sepset between the two given nodes.
+     */
+    public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias) {
+        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), allowSelectionBias);
+    }
+
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
+        return new Paths(this).getSepsetContaining(x, y, containing, allowSelectionBias);
     }
 
     /**

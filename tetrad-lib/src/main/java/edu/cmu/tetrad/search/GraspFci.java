@@ -136,6 +136,10 @@ public final class GraspFci implements IGraphSearch {
      * The flag for whether to repair a faulty PAG.
      */
     private boolean repairFaultyPag = false;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructs a new GraspFci object.
@@ -204,10 +208,13 @@ public final class GraspFci implements IGraphSearch {
         GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
 
         var fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
-        fciOrient.finalOrientation(pag);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(pag);
+        }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose);
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
@@ -363,5 +370,9 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }

@@ -135,6 +135,8 @@ public final class DagToPag {
         }
 
         FciOrient fciOrient = FciOrient.defaultConfiguration(dag, knowledge, verbose);
+//        fciOrient.setDoDiscriminatingPathTailRule(false);
+//        fciOrient.setDoDiscriminatingPathColliderRule(false);
         fciOrient.finalOrientation(graph);
 
         if (this.verbose) {

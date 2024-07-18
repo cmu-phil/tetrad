@@ -120,6 +120,10 @@ public final class SpFci implements IGraphSearch {
      * True iff the search should repair a faulty PAG.
      */
     private boolean repairFaultyPag = false;
+    /**
+     * True iff the final orientation should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -172,12 +176,15 @@ public final class SpFci implements IGraphSearch {
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
-        fciOrient.finalOrientation(graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         return graph;
@@ -326,5 +333,9 @@ public final class SpFci implements IGraphSearch {
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
+    }
+
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
