@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -1174,7 +1175,7 @@ public class Paths implements TetradSerializable {
     }
 
     // Return true if b is an ancestor of any node in z
-    private boolean isAncestor(Node b, Set<Node> z) {
+    public boolean isAncestor(Node b, Set<Node> z) {
         if (z.contains(b)) {
             return true;
         }
@@ -1203,75 +1204,6 @@ public class Paths implements TetradSerializable {
 
         return false;
 
-    }
-
-    private boolean reachable(Node a, Node b, Node c, Set<Node> z) {
-        return reachable(a, b, c, z, null);
-    }
-
-
-    private boolean reachable(Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        boolean collider = graph.isDefCollider(a, b, c);
-
-        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
-            return true;
-        }
-
-        if (ancestors == null) {
-            return collider && isAncestor(b, z);
-        } else {
-            boolean ancestor = false;
-
-            for (Node _z : ancestors.get(b)) {
-                if (z.contains(_z)) {
-                    ancestor = true;
-                    break;
-                }
-            }
-
-            return collider && ancestor;
-        }
-    }
-
-
-    private List<Node> getPassNodes(Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
-        List<Node> passNodes = new ArrayList<>();
-
-        for (Node c : graph.getAdjacentNodes(b)) {
-            if (c == a) {
-                continue;
-            }
-
-            if (reachable(a, b, c, z, ancestorMap)) {
-                passNodes.add(c);
-            }
-        }
-
-        return passNodes;
-    }
-
-
-    private Set<Node> ancestorsOf(Set<Node> z) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-
-            for (Node c : graph.getParents(t)) {
-                if (!V.contains(c)) {
-                    Q.offer(c);
-                    V.add(c);
-                }
-            }
-        }
-
-        return V;
     }
 
     /**
@@ -1596,7 +1528,7 @@ public class Paths implements TetradSerializable {
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
 
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias) {
-        return getSepsetContaining(x, y, Collections.emptySet(), allowSelectionBias);
+        return SepsetFinder.getSepsetContaining(graph, x, y, Collections.emptySet());
     }
 
     /**
@@ -1608,185 +1540,15 @@ public class Paths implements TetradSerializable {
      * @return the sepset between the two nodes as a Set<Node>
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
-        if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
-            return getSepsetVisit(x, y, containing, graph.paths().getAncestorMap());
-        } else {
-            return getSepsetVisit(y, x, containing, graph.paths().getAncestorMap());
-        }
+        return SepsetFinder.getSepsetContaining(graph, x, y, containing);
     }
 
-    public Set<Node> getSepsetContaining2(Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
-        List<Node> adjx = graph.getAdjacentNodes(x);
-        List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.removeAll(graph.getChildren(x));
-        adjy.retainAll(graph.getChildren(y));
-        adjx.remove(y);
-        adjy.remove(x);
 
-        adjx.removeAll(containing);
-        adjy.removeAll(containing);
-
-        adjx.removeIf(z -> !graph.paths().existsTrek(z, y));
-        adjy.removeIf(z -> !graph.paths().existsTrek(z, x));
-
-        List<int[]> choices = new ArrayList<>();
-
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjx.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-
-//            if (choices.size() > 200) {
-//                break;
-//            }
-        }
-
-        int[] sepset = choices.parallelStream().filter(choice -> separates(x, y, allowSelectionBias, combination(choice, adjx), containing)).findFirst().orElse(null);
-
-        if (sepset != null) {
-            return combination(sepset, adjx);
-        }
-
-        // Do the same for adjy.
-        choices.clear();
-
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjy.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-
-//            if (choices.size() > 200) {
-//                break;
-//            }
-        }
-
-        sepset = choices.parallelStream().filter(choice -> separates(x, y, allowSelectionBias, combination(choice, adjy), containing)).findFirst().orElse(null);
-
-        if (sepset != null) {
-            return combination(sepset, adjy);
-        }
-
-        return null;
-    }
-
-    private Set<Node> combination(int[] choice, List<Node> adj) {
-        // Create a set of nodes from the subset of adjx represented by choice.
-        Set<Node> combination = new HashSet<>();
-        for (int i : choice) {
-            combination.add(adj.get(i));
-        }
-        return combination;
-    }
-
-    private boolean separates(Node x, Node y, boolean allowSelectionBias, Set<Node> combination, Set<Node> containing) {
+    private boolean separates(Node x, Node y, boolean allowSelectionBias, Set<Node> combination) {
         if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
             return !isMConnectedTo(x, y, combination, allowSelectionBias);
         } else {
             return !isMConnectedTo(y, x, combination, allowSelectionBias);
-        }
-    }
-
-    private Set<Node> getSepsetVisit(Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap) {
-        if (x == y) {
-            return null;
-        }
-
-        Set<Node> z = new HashSet<>(containing);
-
-        Set<Node> _z;
-
-        do {
-            _z = new HashSet<>(z);
-
-            Set<Node> path = new HashSet<>();
-            path.add(x);
-            Set<Triple> colliders = new HashSet<>();
-
-            for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(x, b, y, path, z, colliders, -1, ancestorMap)) {
-                    return null;
-                }
-            }
-        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
-
-        return z;
-    }
-
-    private boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
-            Set<Node>> ancestorMap) {
-        if (b == y) {
-            return true;
-        }
-
-        if (path.contains(b)) {
-            return false;
-        }
-
-        if (path.size() > (bound == -1 ? 1000 : bound)) {
-            return false;
-        }
-
-        path.add(b);
-
-        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getPassNodes(a, b, z, ancestorMap);
-
-            for (Node c : passNodes) {
-                if (sepsetPathFound(b, c, y, path, z, colliders, bound, ancestorMap)) {
-//                    path.remove(b);
-                    return true;
-                }
-            }
-
-            path.remove(b);
-            return false;
-        } else {
-            boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
-
-            for (Node c : getPassNodes(a, b, z, ancestorMap)) {
-                if (sepsetPathFound(b, c, y, path, z, _colliders1, bound, ancestorMap)) {
-                    found1 = true;
-                    break;
-                }
-            }
-
-            if (!found1) {
-                path.remove(b);
-                colliders.addAll(_colliders1);
-                return false;
-            }
-
-            z.add(b);
-            boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
-            for (Node c : getPassNodes(a, b, z, ancestorMap)) {
-                if (sepsetPathFound(b, c, y, path, z, _colliders2, bound, ancestorMap)) {
-                    found2 = true;
-                    break;
-                }
-            }
-
-            if (!found2) {
-                path.remove(b);
-                colliders.addAll(_colliders2);
-                return false;
-            }
-
-//            z.remove(b);
-//            path.remove(b);
-            return true;
         }
     }
 
@@ -2395,7 +2157,7 @@ public class Paths implements TetradSerializable {
      * @return true if node1 is d-separated from node2 given set t, false if not.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
-        return separates(node1, node2, allowSelectionBias, z, Collections.emptySet());
+        return separates(node1, node2, allowSelectionBias, z);
     }
 
     /**

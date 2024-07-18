@@ -25,13 +25,11 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.LvLite;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import org.junit.Test;
 
 import java.util.*;
-
-import static junit.framework.TestCase.fail;
 
 /**
  * Tests the BooleanFunction class.
@@ -47,7 +45,7 @@ public class TestSepsetMethods {
     public void test1() {
 
         int numNodes = 50;
-        int numEdges = 150;
+        int numEdges = 100;
         int numReps = 10;
 
         // Make a list of numNodes nodes.
@@ -109,7 +107,7 @@ public class TestSepsetMethods {
         long start2 = System.currentTimeMillis();
 
         // Method 2: Using the getSepset method of the Graph class.
-        Set<Node> sepset2 = dag.paths().getSepsetContaining(x, y, new HashSet<>(), false);
+        Set<Node> sepset2 = SepsetFinder.getSepsetContaining(dag, x, y, new HashSet<>());
 
         long stop2 = System.currentTimeMillis();
 
@@ -118,7 +116,7 @@ public class TestSepsetMethods {
         long start3 = System.currentTimeMillis();
 
         // Method 3: Use the getSepsetContaining2 method of the Graph class.
-//        Set<Node> sepset3 = dag.paths().getSepsetContaining2(x, y, new HashSet<>(), false);
+        Set<Node> sepset3 = SepsetFinder.getSepsetContaining2(dag, x, y, new HashSet<>(), false);
 
         long stop3 = System.currentTimeMillis();
 

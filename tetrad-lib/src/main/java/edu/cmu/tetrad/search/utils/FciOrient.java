@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Rfci;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -1012,17 +1009,14 @@ public final class FciOrient {
                     doDiscriminatingPathColliderRule, verbose);
         }
 
-
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
                 throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
             }
         }
 
-//        Set<Node> sepset = getSepsets().getSepsetContaining(e, c, new HashSet<>(path));
-//        Set<Node> sepset = graph.paths().getSepsetContaining(e, c, new HashSet<>(path), true);
-        Set<Node> sepset = graph.paths().getSepsetContaining2(e, c, new HashSet<>(path), true);
-
+//        Set<Node> sepset = SepsetFinder.getSepsetContaining(graph, e, c, new HashSet<>(path));
+        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, e, c, new HashSet<>(path), true);
 //        Set<Node> sepset = LvLite.getSepset(e, c, graph, new MsepTest(graph), null, -1, -1, -1);
 
         if (sepset == null) {
