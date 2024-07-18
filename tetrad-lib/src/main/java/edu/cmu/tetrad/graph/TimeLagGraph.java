@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serial;
@@ -753,12 +755,13 @@ public class TimeLagGraph implements Graph {
     /**
      * Retrieves the sepset of two nodes in the graph.
      *
-     * @param n1 The first node
-     * @param n2 The second node
+     * @param n1   The first node
+     * @param n2   The second node
+     * @param test
      * @return The set of nodes that form the sepset of n1 and n2
      */
     @Override
-    public Set<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
         return this.graph.getSepset(n1, n2, false);
     }
 

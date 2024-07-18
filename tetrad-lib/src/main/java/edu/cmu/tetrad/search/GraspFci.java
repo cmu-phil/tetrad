@@ -201,7 +201,7 @@ public final class GraspFci implements IGraphSearch {
             Graph trueDag = ((MsepTest) independenceTest).getGraph();
             sepsets = new DagSepsets(trueDag);
         } else {
-            sepsets = new SepsetsMinP(pag, this.independenceTest, null, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         }
 
         gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);

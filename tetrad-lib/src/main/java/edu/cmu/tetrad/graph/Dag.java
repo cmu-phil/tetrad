@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -738,12 +740,13 @@ public final class Dag implements Graph {
     /**
      * Returns the sepset between two given nodes in the graph.
      *
-     * @param n1 the first node
-     * @param n2 the second node
+     * @param n1   the first node
+     * @param n2   the second node
+     * @param test
      * @return a set of nodes representing the sepset between n1 and n2
      */
-    public Set<Node> getSepset(Node n1, Node n2) {
-        return this.graph.getSepset(n1, n2);
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
+        return this.graph.getSepset(n1, n2, test);
     }
 
     /**

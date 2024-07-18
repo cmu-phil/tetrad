@@ -60,7 +60,7 @@ import java.util.*;
  */
 public final class FciOrient {
     private final TetradLogger logger = TetradLogger.getInstance();
-    private SepsetProducer sepsets;
+    private IndependenceTest test;
     private TeyssierScorer scorer;
     private Knowledge knowledge = new Knowledge();
     private boolean changeFlag = true;
@@ -73,11 +73,10 @@ public final class FciOrient {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object representing the independence test,
-     *                which must be given only if the discriminating path rule is used. Otherwise, it can be null.
+     * @param test The independence test to use.
      */
-    private FciOrient(SepsetProducer sepsets) {
-        this.sepsets = sepsets;
+    private FciOrient(IndependenceTest test) {
+        this.test = test;
     }
 
     /**
@@ -90,7 +89,7 @@ public final class FciOrient {
     }
 
     public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
-        return FciOrient.specialConfiguration(new DagSepsets(dag), true, true,
+        return FciOrient.specialConfiguration(new MsepTest(dag), true, true,
                 true, -1, knowledge, verbose);
     }
 
@@ -98,9 +97,7 @@ public final class FciOrient {
         if (test instanceof MsepTest) {
             return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
         } else {
-            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, null, -1, knowledge);
-            return FciOrient.specialConfiguration(sepsets, true, true,
-                    true, -1, knowledge, verbose);
+            return FciOrient.specialConfiguration(test, true, true, true, -1, knowledge, verbose);
         }
     }
 
@@ -110,8 +107,8 @@ public final class FciOrient {
         if (test instanceof MsepTest) {
             return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
         } else {
-            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, null, -1, knowledge);
-            return FciOrient.specialConfiguration(sepsets, completeRuleSetUsed, doDiscriminatingPathTailRule,
+            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, -1);
+            return FciOrient.specialConfiguration(test, completeRuleSetUsed, doDiscriminatingPathTailRule,
                     doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
         }
     }
@@ -123,10 +120,10 @@ public final class FciOrient {
                 doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
     }
 
-    public static FciOrient specialConfiguration(SepsetProducer sepsets, boolean completeRuleSetUsed,
+    public static FciOrient specialConfiguration(IndependenceTest test, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
                                                  int maxPathLength, Knowledge knowledge, boolean verbose) {
-        FciOrient fciOrient = new FciOrient(sepsets);
+        FciOrient fciOrient = new FciOrient(test);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
@@ -457,8 +454,8 @@ public final class FciOrient {
      *
      * @return Thia map.
      */
-    public SepsetProducer getSepsets() {
-        return this.sepsets;
+    public IndependenceTest getTest() {
+        return this.test;
     }
 
     /**
@@ -538,7 +535,7 @@ public final class FciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
+                if (isUnshieldedCollider(graph, a, b, c)) {
                     if (!isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
@@ -558,6 +555,11 @@ public final class FciOrient {
                 }
             }
         }
+    }
+
+    public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, i, k, null, true, test);
+        return sepset != null && !sepset.contains(j);
     }
 
     /**
@@ -829,21 +831,12 @@ public final class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4(Graph graph) {
-        if (sepsets == null && scorer == null) {
+        if (test == null && scorer == null) {
             throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
                                            "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
         }
 
-        if (sepsets != null) {
-            sepsets.setGraph(graph);
-        }
-
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
-            if (sepsets == null && scorer == null) {
-                throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
-                                               "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
-            }
-
             List<Node> nodes = graph.getNodes();
 
             for (Node b : nodes) {
@@ -1015,8 +1008,8 @@ public final class FciOrient {
             }
         }
 
-//        Set<Node> sepset = SepsetFinder.getSepsetContaining(graph, e, c, new HashSet<>(path));
-        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, e, c, new HashSet<>(path), true);
+//        Set<Node> sepset = SepsetFinder.getSepsetContaining1(graph, e, c, new HashSet<>(path));
+        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, e, c, new HashSet<>(path), true, test);
 //        Set<Node> sepset = LvLite.getSepset(e, c, graph, new MsepTest(graph), null, -1, -1, -1);
 
         if (sepset == null) {

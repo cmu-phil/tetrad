@@ -20,6 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -483,8 +486,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * {@inheritDoc}
      */
     @Override
-    public Set<Node> getSepset(Node x, Node y) {
-        return new Paths(this).getSepset(x, y, false);
+    public Set<Node> getSepset(Node x, Node y, IndependenceTest test) {
+        return new Paths(this).getSepset(x, y, false, test);
     }
 
     /**
@@ -497,11 +500,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return The set of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias) {
-        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), allowSelectionBias);
+        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), new MsepTest(this));
     }
 
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
-        return new Paths(this).getSepsetContaining(x, y, containing, allowSelectionBias);
+        return new Paths(this).getSepsetContaining(x, y, containing, new MsepTest(this));
     }
 
     /**

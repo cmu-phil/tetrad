@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class SepsetFinder {
 
@@ -15,19 +15,16 @@ public class SepsetFinder {
      * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
      * to be conditioned on in order to render two nodes conditionally independent.
      *
-     * @param x the first node
-     * @param y the second node
+     * @param x    the first node
+     * @param y    the second node
+     * @param test
      * @return the sepset between the two nodes as a Set<Node>
      */
-    public static Set<Node> getSepsetContaining(Graph graph, Node x, Node y, Set<Node> containing) {
-        if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
-            return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap());
-        } else {
-            return getSepsetVisit(graph, y, x, containing, graph.paths().getAncestorMap());
-        }
+    public static Set<Node> getSepsetContaining1(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
     }
 
-    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap) {
+    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
         if (x == y) {
             return null;
         }
@@ -44,17 +41,21 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap)) {
+                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap, test)) {
                     return null;
                 }
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
-        return z;
+        if (test.checkIndependence(x, y, z).isIndependent()) {
+            return z;
+        } else {
+            return null;
+        }
     }
 
     private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
-            Set<Node>> ancestorMap) {
+            Set<Node>> ancestorMap, IndependenceTest test) {
         if (b == y) {
             return true;
         }
@@ -73,7 +74,7 @@ public class SepsetFinder {
             List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
 
             for (Node c : passNodes) {
-                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap, test)) {
 //                    path.remove(b);
                     return true;
                 }
@@ -86,7 +87,7 @@ public class SepsetFinder {
             Set<Triple> _colliders1 = new HashSet<>();
 
             for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap, test)) {
                     found1 = true;
                     break;
                 }
@@ -103,7 +104,7 @@ public class SepsetFinder {
             Set<Triple> _colliders2 = new HashSet<>();
 
             for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap, test)) {
                     found2 = true;
                     break;
                 }
@@ -160,19 +161,18 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getSepsetContaining2(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
+    public static Set<Node> getSepsetContaining2(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.removeAll(graph.getChildren(x));
-        adjy.retainAll(graph.getChildren(y));
+        adjy.removeAll(graph.getChildren(y));
         adjx.remove(y);
         adjy.remove(x);
 
-        adjx.removeAll(containing);
-        adjy.removeAll(containing);
-
-//        adjx.removeIf(z -> !graph.paths().existsTrek(z, y));
-//        adjy.removeIf(z -> !graph.paths().existsTrek(z, x));
+        if (containing != null) {
+            adjx.removeAll(containing);
+            adjy.removeAll(containing);
+        }
 
         List<int[]> choices = new ArrayList<>();
 
@@ -187,7 +187,7 @@ public class SepsetFinder {
             }
         }
 
-        int[] sepset = choices.parallelStream().filter(choice -> separates(graph, x, y, allowSelectionBias, combination(choice, adjx), containing)).findFirst().orElse(null);
+        int[] sepset = choices.parallelStream().filter(choice -> separates(x, y, combination(choice, adjx), test)).findFirst().orElse(null);
 
         if (sepset != null) {
             return combination(sepset, adjx);
@@ -207,10 +207,140 @@ public class SepsetFinder {
             }
         }
 
-        sepset = choices.parallelStream().filter(choice -> separates(graph, x, y, allowSelectionBias, combination(choice, adjy), containing)).findFirst().orElse(null);
+        sepset = choices.parallelStream().filter(choice -> separates(x, y, combination(choice, adjy), test)).findFirst().orElse(null);
 
         if (sepset != null) {
             return combination(sepset, adjy);
+        }
+
+        return null;
+    }
+
+    public static Set<Node> getSepsetContainingMaxP(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+        adjx.removeAll(graph.getChildren(x));
+        adjy.removeAll(graph.getChildren(y));
+        adjx.remove(y);
+        adjy.remove(x);
+
+        if (containing != null) {
+            adjx.removeAll(containing);
+            adjy.removeAll(containing);
+        }
+
+        List<int[]> choices = new ArrayList<>();
+
+        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
+        // of adjy, check if the subset is a separating set for x and y.
+        for (int i = 0; i <= adjx.size(); i++) {
+            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                choices.add(choice);
+            }
+        }
+
+        Function<int[], Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
+
+        // Find the object that maximizes the function in parallel
+        int[] maxObject = choices.parallelStream()
+                .max(Comparator.comparing(function))
+                .orElse(null);
+
+        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > 0.01) {
+            return combination(maxObject, adjx);
+        }
+
+        // Do the same for adjy.
+        choices = new ArrayList<>();
+
+        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
+        // of adjy, check if the subset is a separating set for x and y.
+        for (int i = 0; i <= adjy.size(); i++) {
+            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                choices.add(choice);
+            }
+        }
+
+        function = choice -> getPValue(x, y, combination(choice, adjy), test);
+
+        // Find the object that maximizes the function in parallel
+        maxObject = choices.parallelStream()
+                .max(Comparator.comparing(function))
+                .orElse(null);
+
+        if (maxObject != null && getPValue(x, y, combination(maxObject, adjy), test) > 0.01) {
+            return combination(maxObject, adjy);
+        }
+
+        return null;
+    }
+
+    public static Set<Node> getSepsetContainingMinP(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+        adjx.removeAll(graph.getChildren(x));
+        adjy.removeAll(graph.getChildren(y));
+        adjx.remove(y);
+        adjy.remove(x);
+
+        if (containing != null) {
+            adjx.removeAll(containing);
+            adjy.removeAll(containing);
+        }
+
+        List<int[]> choices = new ArrayList<>();
+
+        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
+        // of adjy, check if the subset is a separating set for x and y.
+        for (int i = 0; i <= adjx.size(); i++) {
+            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                choices.add(choice);
+            }
+        }
+
+        Function<int[], Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
+
+        // Find the object that maximizes the function in parallel
+        int[] minObject = choices.parallelStream()
+                .min(Comparator.comparing(function))
+                .orElse(null);
+
+        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > 0.01) {
+            return combination(minObject, adjx);
+        }
+
+        // Do the same for adjy.
+        choices = new ArrayList<>();
+
+        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
+        // of adjy, check if the subset is a separating set for x and y.
+        for (int i = 0; i <= adjy.size(); i++) {
+            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                choices.add(choice);
+            }
+        }
+
+        function = choice -> getPValue(x, y, combination(choice, adjy), test);
+
+        // Find the object that maximizes the function in parallel
+        minObject = choices.parallelStream()
+                .min(Comparator.comparing(function))
+                .orElse(null);
+
+        if (minObject != null && getPValue(x, y, combination(minObject, adjy), test) > 0.01) {
+            return combination(minObject, adjy);
         }
 
         return null;
@@ -225,11 +355,158 @@ public class SepsetFinder {
         return combination;
     }
 
-    private static boolean separates(Graph graph, Node x, Node y, boolean allowSelectionBias, Set<Node> combination, Set<Node> containing) {
-        if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
-            return !graph.paths().isMConnectedTo(x, y, combination, allowSelectionBias);
-        } else {
-            return !graph.paths().isMConnectedTo(y, x, combination, allowSelectionBias);
+    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+        return test.checkIndependence(x, y, combination).isIndependent();
+    }
+
+    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+        return test.checkIndependence(x, y, combination).getPValue();
+    }
+
+    /**
+     * Searches for sets, by following paths from x to y in the given MPDAG, that could possibly block all paths from x
+     * to y except for an edge from x to y itself. These possible sets are then tested for independence, and the first
+     * set that is found to be independent is returned as the sepset.
+     * <p>
+     * This is the sepset finding method from LV-lite.
+     *
+     * @param x          the first node
+     * @param y          the second node
+     * @param mpdag      the MPDAG graph to analyze (can be a DAG or a CPDAG)
+     * @param test       the independence test to use
+     * @param maxLength  the maximum blocking length for paths, or -1 for no limit
+     * @param depth      the maximum depth of the sepset, or -1 for no limit
+     * @param printTrace whether to print trace information; false by default. This can be quite verbose, so it's
+     *                   recommended to only use this for debugging.
+     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
+     * {@code null} if no sepset can be found.
+     */
+    public static Set<Node> getSepset5(Node x, Node y, Graph mpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors,
+                                       int maxLength, int depth, boolean printTrace) {
+        if (printTrace) {
+            Edge e = mpdag.getEdge(x, y);
+            TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
         }
+
+        // This is the set of all possible conditioning variables, though note below.
+        Set<Node> noncolliders = new HashSet<>();
+
+        // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
+        // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
+        // check both scenarios.
+        Set<Node> couldBeColliders = new HashSet<>();
+
+        Set<List<Node>> paths;
+
+        boolean _changed = true;
+
+        while (_changed) {
+            _changed = false;
+
+            paths = mpdag.paths().allPaths(x, y, -1, maxLength, noncolliders, ancestors, false);
+
+            System.out.println("Conditioning on " + noncolliders + " number of paths is " + paths.size());
+
+            // We note whether all current paths are blocked.
+            boolean allBlocked = true;
+
+            List<List<Node>> _paths = new ArrayList<>(paths);
+
+            // Sort paths by increasing size. We want to block the sorter paths first.
+            _paths.sort(Comparator.comparingInt(List::size));
+
+            for (List<Node> path : _paths) {
+                boolean blocked = false;
+
+                for (int n = 1; n < path.size() - 1; n++) {
+                    Node z1 = path.get(n - 1);
+                    Node z2 = path.get(n);
+                    Node z3 = path.get(n + 1);
+
+                    if (!mpdag.isDefCollider(z1, z2, z3)) {
+                        if (noncolliders.contains(z2)) {
+                            blocked = true;
+
+                            if (printTrace) {
+                                TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
+                            }
+
+                            break;
+                        }
+
+                        noncolliders.add(z2);
+                        blocked = true;
+                        _changed = true;
+
+                        if (printTrace) {
+                            TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
+                        }
+
+                        if (mpdag.isAdjacentTo(z1, z3)) {
+                            couldBeColliders.add(z2);
+
+                            if (printTrace) {
+                                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
+                            }
+                        }
+
+                        if (depth != -1 && noncolliders.size() > depth) {
+                            return null;
+                        }
+
+                        break;
+                    }
+                }
+
+                if (path.size() - 1 > 1 && !blocked) {
+                    allBlocked = false;
+                }
+            }
+
+            // We need to block *all* of the current paths, so if any path remains unblocked after that above, we
+            // need to return false (since we can't remove the edge).
+            if (!allBlocked) {
+                return null;
+            }
+        }
+
+        if (printTrace) {
+            TetradLogger.getInstance().log("noncolliders: " + noncolliders);
+            TetradLogger.getInstance().log("couldBeColliders: " + couldBeColliders);
+        }
+
+        // Now, for each conditioning set we identify, where the length-2 noncolliders are either included or not
+        // in the set, we check independence greedily. Hopefully the number of options here is small.
+        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
+        noncolliders.removeAll(couldBeColliders);
+
+        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Node> sepset = new HashSet<>();
+
+            for (int k : choice) {
+                sepset.add(couldBeCollidersList.get(k));
+            }
+
+            sepset.addAll(noncolliders);
+
+            if (depth != -1 && sepset.size() > depth) {
+                continue;
+            }
+
+            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+                if (printTrace) {
+                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+                }
+
+                return sepset;
+            }
+        }
+
+        // We've checked a sufficient set of possible sepsets, and none of them worked, so we return false, since
+        // we can't remove the edge.
+        return null;
     }
 }

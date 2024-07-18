@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -178,13 +179,14 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * Returns the set of nodes that form the separator set for the given two nodes in the graph.
      *
-     * @param n1 the first node
-     * @param n2 the second node
+     * @param n1   the first node
+     * @param n2   the second node
+     * @param test
      * @return the set of nodes that form the separator set
      */
     @Override
-    public Set<Node> getSepset(Node n1, Node n2) {
-        return this.graph.getSepset(n1, n2);
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
+        return this.graph.getSepset(n1, n2, test);
     }
 
     /**

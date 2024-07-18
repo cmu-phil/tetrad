@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.MsepTest;
 
 import java.util.List;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
-        return this.dag.getSepset(a, b);
+        return this.dag.getSepset(a, b, new MsepTest(dag));
     }
 
     /**

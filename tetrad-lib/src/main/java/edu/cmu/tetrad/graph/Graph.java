@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
@@ -523,16 +524,15 @@ public interface Graph extends TetradSerializable {
     TimeLagGraph getTimeLagGraph();
 
     /**
-     * Returns the set of nodes that form the separating set between two given nodes.
-     * A separating set is a set of nodes that, when conditioned on, renders the given
-     * nodes d-separated.
+     * Returns the set of nodes that form the separating set between two given nodes. A separating set is a set of nodes
+     * that, when conditioned on, renders the given nodes d-separated.
      *
-     * @param n1                the first node
-     * @param n2                the second node
-     * @return the set of nodes that form the separating set between
-     *                          the two given nodes
+     * @param n1   the first node
+     * @param n2   the second node
+     * @param test
+     * @return the set of nodes that form the separating set between the two given nodes
      */
-    Set<Node> getSepset(Node n1, Node n2);
+    Set<Node> getSepset(Node n1, Node n2, IndependenceTest test);
 
     /**
      * <p>getAllAttributes.</p>

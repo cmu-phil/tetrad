@@ -25,11 +25,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -625,7 +622,8 @@ public final class LvLite implements IGraphSearch {
             Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
 
             dag.getEdges().forEach(edge -> {
-                Set<Node> sepset = getSepset(edge, dag, test, ancestors, _length);
+                Set<Node> sepset = SepsetFinder.getSepset5(edge.getNode1(), edge.getNode2(), dag, test, ancestors,
+                        _length, depth, false);
 
                 if (sepset != null) {
                     _extraSepsets.put(edge, sepset);
@@ -674,156 +672,6 @@ public final class LvLite implements IGraphSearch {
                 unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
             }
         }
-    }
-
-    /**
-     * Returns the sepset for the endpoints of the given edge in a DAG graph based on the specified conditions.
-     *
-     * @param edge           the edge to find the sepset for
-     * @param cpdag          the DAG graph to analyze
-     * @param test           the independence test to use
-     * @param blockingLength the maximum blocking length for paths
-     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
-     * {@code null} if no sepset can be found.
-     */
-    private Set<Node> getSepset(Edge edge, Graph cpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors, int blockingLength) {
-        test.setVerbose(verbose);
-
-        Matrix pathMatrix = GraphUtils.getUndirectedPathMatrix(cpdag, blockingLength);
-        List<Node> nodes = cpdag.getNodes();
-
-        // There should be at least two distinct paths between the endpoints of the edge.
-        if (pathMatrix.get(nodes.indexOf(edge.getNode1()), nodes.indexOf(edge.getNode2())) < 2) {
-            return null;
-        }
-
-        boolean printTrace = false;
-
-        if (printTrace) {
-            System.out.println("\n\n### CHECKING EDGE!: " + edge);
-        }
-
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-
-        // This is the set of all possible conditioning variables, though note below.
-        Set<Node> noncolliders = new HashSet<>();
-
-        // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
-        // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
-        // check both scenarios.
-        Set<Node> couldBeColliders = new HashSet<>();
-
-        Set<List<Node>> paths;
-
-        boolean _changed = true;
-
-        while (_changed) {
-            _changed = false;
-
-            paths = cpdag.paths().allPaths(x, y, 0, blockingLength, noncolliders, ancestors, false);
-
-            // We note whether all current paths are blocked.
-            boolean allBlocked = true;
-
-            List<List<Node>> _paths = new ArrayList<>(paths);
-
-            // Sort paths by increasing size. We want to block the sorter paths first.
-            _paths.sort(Comparator.comparingInt(List::size));
-
-            for (List<Node> path : _paths) {
-                boolean blocked = false;
-
-                for (int n = 1; n < path.size() - 1; n++) {
-                    Node z1 = path.get(n - 1);
-                    Node z2 = path.get(n);
-                    Node z3 = path.get(n + 1);
-
-                    if (!cpdag.isDefCollider(z1, z2, z3)) {
-                        if (noncolliders.contains(z2)) {
-                            blocked = true;
-
-                            if (printTrace) {
-                                System.out.println("This " + path + "--is already blocked by " + z2);
-                            }
-
-                            break;
-                        }
-
-                        noncolliders.add(z2);
-                        blocked = true;
-                        _changed = true;
-
-                        if (printTrace) {
-                            System.out.println("Blocking " + path + " with noncollider " + z2);
-                        }
-
-                        if (cpdag.isAdjacentTo(z1, z3)) {
-                            couldBeColliders.add(z2);
-
-                            if (printTrace) {
-                                System.out.println("Noting that " + z2 + " could be a collider on " + path);
-                            }
-                        }
-
-                        if (depth != -1 && noncolliders.size() > depth) {
-                            return null;
-                        }
-
-                        break;
-                    }
-                }
-
-                if (path.size() - 1 > 1 && !blocked) {
-                    allBlocked = false;
-                }
-            }
-
-            // We need to block *all* of the current paths, so if any path remains unblocked after that above, we
-            // need to return false (since we can't remove the edge).
-            if (!allBlocked) {
-                return null;
-            }
-        }
-
-        if (printTrace) {
-            System.out.println("noncolliders: " + noncolliders);
-            System.out.println("couldBeColliders: " + couldBeColliders);
-        }
-
-        // Now, for each conditioning set we identify, where the length-2 noncolliders are either included or not
-        // in the set, we check independence greedily. Hopefully the number of options here is small.
-        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        noncolliders.removeAll(couldBeColliders);
-
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> sepset = new HashSet<>();
-
-            for (int k : choice) {
-                sepset.add(couldBeCollidersList.get(k));
-            }
-
-            sepset.addAll(noncolliders);
-
-            if (depth != -1 && sepset.size() > depth) {
-                continue;
-            }
-
-            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                if (printTrace) {
-                    System.out.println("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-                }
-
-                return sepset;
-            }
-        }
-
-        // We've checked a sufficient set of possible sepsets, and none of them worked, so we return false, since
-        // we can't remove the edge.
-        return null;
     }
 
     /**

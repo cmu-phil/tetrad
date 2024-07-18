@@ -23,21 +23,18 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Provides a SepsetProcuder that selects the first sepset it comes to from among the extra sepsets or the adjacents of
+ * Provides a SepsetProducer that selects the first sepset it comes to from among the extra sepsets or the adjacents of
  * i or k, or null if none is found.
  *
  * @author josephramsey
@@ -48,30 +45,19 @@ import java.util.Set;
 public class SepsetsGreedy implements SepsetProducer {
     private Graph graph;
     private final IndependenceTest independenceTest;
-    private final SepsetMap extraSepsets;
-    private int depth;
     private boolean verbose;
     private IndependenceResult result;
-    private Knowledge knowledge = new Knowledge();
 
     /**
      * <p>Constructor for SepsetsGreedy.</p>
      *
-     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param graph            a {@link Graph} object
+     * @param independenceTest a {@link IndependenceTest} object
      * @param depth            a int
-     * @param knowledge        a {@link edu.cmu.tetrad.data.Knowledge} object
      */
-    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
+    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
-        this.extraSepsets = extraSepsets;
-        this.depth = depth;
-
-        if (knowledge != null) {
-            this.knowledge = knowledge;
-        }
     }
 
     /**
@@ -131,13 +117,20 @@ public class SepsetsGreedy implements SepsetProducer {
         return result.getPValue();
     }
 
+    /**
+     * Sets the graph for the SepsetsGreedy object.
+     *
+     * @param graph The graph to set.
+     */
     @Override
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
     /**
-     * {@inheritDoc}
+     * Calculates the score for the given SepsetsGreedy object.
+     *
+     * @return The score calculated based on the result's p-value and the independence test's alpha value.
      */
     @Override
     public double getScore() {
@@ -145,7 +138,9 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the variables used in the independence test.
+     *
+     * @return A list of Node objects representing the variables used in the independence test.
      */
     @Override
     public List<Node> getVariables() {
@@ -153,16 +148,19 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * <p>isVerbose.</p>
+     * Returns whether the object is in verbose mode.
      *
-     * @return a boolean
+     * @return true if the object is in verbose mode, false otherwise
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information
+     * will be printed during the execution of this method.
+     *
+     * @param verbose The verbosity level to set. Set to true for verbose output, false otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -171,9 +169,10 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * <p>getDag.</p>
+     * Retrieves the Directed Acyclic Graph (DAG) produced by the SepsetsGreedy algorithm.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return The DAG produced by the SepsetsGreedy algorithm, or null if the independence test
+     *         is not an instance of MsepTest.
      */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {
@@ -183,71 +182,8 @@ public class SepsetsGreedy implements SepsetProducer {
         }
     }
 
-    /**
-     * <p>Setter for the field <code>depth</code>.</p>
-     *
-     * @param depth a int
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
     private Set<Node> getSepsetGreedyContaining(Node i, Node k, Set<Node> s) {
-        if (this.extraSepsets != null) {
-            Set<Node> v = this.extraSepsets.get(i, k);
-
-            if (v != null) {
-                return v;
-            }
-        }
-
-        List<Node> adji = new ArrayList<>(this.graph.getAdjacentNodes(i));
-        List<Node> adjk = new ArrayList<>(this.graph.getAdjacentNodes(k));
-        adji.remove(k);
-        adjk.remove(i);
-
-        for (int d = 0; d <= FastMath.min((this.depth == -1 ? 1000 : this.depth), FastMath.max(adji.size(), adjk.size())); d++) {
-            if (d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> v = GraphUtils.asSet(choice, adji);
-
-                    if (s != null && !v.containsAll(s)) {
-                        continue;
-                    }
-
-                    v = possibleParents(i, v, this.knowledge, k);
-
-                    if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
-                        return v;
-                    }
-                }
-            }
-
-            if (d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> v = GraphUtils.asSet(choice, adjk);
-
-                    if (s != null && !v.containsAll(s)) {
-                        continue;
-                    }
-
-                    v = possibleParents(k, v, this.knowledge, i);
-
-
-                    if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
-                        return v;
-                    }
-                }
-            }
-        }
-
-        return null;
+        return SepsetFinder.getSepsetContaining2(graph, i, k, s, false, this.independenceTest);
     }
 
     private Set<Node> possibleParents(Node x, Set<Node> adjx,

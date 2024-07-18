@@ -2948,7 +2948,9 @@ public final class GraphUtils {
                                 pag.addNondirectedEdge(_into, y);
                             }
 
-                            unshieldedColliders.remove(new Triple(_into, x, y));
+                            if (unshieldedColliders != null) {
+                                unshieldedColliders.remove(new Triple(_into, x, y));
+                            }
                         }
 
                         if (verbose) {
@@ -2970,7 +2972,9 @@ public final class GraphUtils {
                                 pag.addNondirectedEdge(_into, x);
                             }
 
-                            unshieldedColliders.remove(new Triple(_into, y, x));
+                            if (unshieldedColliders != null) {
+                                unshieldedColliders.remove(new Triple(_into, y, x));
+                            }
 
                         }
 
