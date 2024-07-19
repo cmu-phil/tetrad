@@ -161,7 +161,7 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getSepsetContaining2(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.removeAll(graph.getChildren(x));

@@ -558,7 +558,7 @@ public final class FciOrient {
     }
 
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, i, k, null, true, test);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, true, test);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -1009,7 +1009,7 @@ public final class FciOrient {
         }
 
 //        Set<Node> sepset = SepsetFinder.getSepsetContaining1(graph, e, c, new HashSet<>(path));
-        Set<Node> sepset = SepsetFinder.getSepsetContaining2(graph, e, c, new HashSet<>(path), true, test);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), true, test);
 //        Set<Node> sepset = LvLite.getSepset(e, c, graph, new MsepTest(graph), null, -1, -1, -1);
 
         if (sepset == null) {

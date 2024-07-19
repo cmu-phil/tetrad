@@ -52,7 +52,7 @@ public class SepsetsMinP implements SepsetProducer {
     private IndependenceResult result;
 
     /**
-     * <p>Constructor for SepsetsGreedy.</p>
+     * <p>Constructor for Sepsets.</p>
      *
      * @param graph            a {@link Graph} object
      * @param independenceTest a {@link IndependenceTest} object
@@ -71,7 +71,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return getSepsetGreedyContaining(i, k, null);
+        return SepsetFinder.getSepsetContainingMinP(graph, i, k, null, false, this.independenceTest);
     }
 
     /**
@@ -85,14 +85,14 @@ public class SepsetsMinP implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
-        return getSepsetGreedyContaining(i, k, s);
+        return SepsetFinder.getSepsetContainingMinP(graph, i, k, s, false, this.independenceTest);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = getSepsetGreedyContaining(i, k, null);
+        Set<Node> set = SepsetFinder.getSepsetContainingMinP(graph, i, k, null, false, this.independenceTest);
         return set != null && !set.contains(j);
     }
 
@@ -121,7 +121,7 @@ public class SepsetsMinP implements SepsetProducer {
     }
 
     /**
-     * Sets the graph for the SepsetsGreedy object.
+     * Sets the graph for the Sepsets object.
      *
      * @param graph The graph to set.
      */
@@ -131,7 +131,7 @@ public class SepsetsMinP implements SepsetProducer {
     }
 
     /**
-     * Calculates the score for the given SepsetsGreedy object.
+     * Calculates the score for the given Sepsets object.
      *
      * @return The score calculated based on the result's p-value and the independence test's alpha value.
      */
@@ -172,9 +172,9 @@ public class SepsetsMinP implements SepsetProducer {
     }
 
     /**
-     * Retrieves the Directed Acyclic Graph (DAG) produced by the SepsetsGreedy algorithm.
+     * Retrieves the Directed Acyclic Graph (DAG) produced by the Sepsets algorithm.
      *
-     * @return The DAG produced by the SepsetsGreedy algorithm, or null if the independence test
+     * @return The DAG produced by the Sepsets algorithm, or null if the independence test
      *         is not an instance of MsepTest.
      */
     public Graph getDag() {
@@ -183,10 +183,6 @@ public class SepsetsMinP implements SepsetProducer {
         } else {
             return null;
         }
-    }
-
-    private Set<Node> getSepsetGreedyContaining(Node i, Node k, Set<Node> s) {
-        return SepsetFinder.getSepsetContainingMinP(graph, i, k, s, false, this.independenceTest);
     }
 
     private Set<Node> possibleParents(Node x, Set<Node> adjx,

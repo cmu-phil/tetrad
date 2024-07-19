@@ -131,7 +131,7 @@ public final class SvarGfci implements IGraphSearch {
 
         // The maxIndegree for the fast adjacency search.
         int maxIndegree = -1;
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, maxIndegree);
+        this.sepsets = new SepsetsMinP(fgesGraph, this.independenceTest, maxIndegree);
 
         for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));

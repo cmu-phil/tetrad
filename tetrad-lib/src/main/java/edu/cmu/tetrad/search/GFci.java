@@ -182,7 +182,7 @@ public final class GFci implements IGraphSearch {
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
         }
 
         gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);

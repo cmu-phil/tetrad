@@ -1528,7 +1528,7 @@ public class Paths implements TetradSerializable {
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
 
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test) {
-        return SepsetFinder.getSepsetContaining2(graph, x, y, Collections.emptySet(), allowSelectionBias, test);
+        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), allowSelectionBias, test);
     }
 
     /**

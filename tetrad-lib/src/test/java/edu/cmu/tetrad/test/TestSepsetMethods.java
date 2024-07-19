@@ -112,7 +112,7 @@ public class TestSepsetMethods {
         times[0] = stop1 - start1;
 
         long start2 = System.currentTimeMillis();
-        Set<Node> sepset2 = SepsetFinder.getSepsetContaining2(dag, x, y, new HashSet<>(), false, new MsepTest(dag));
+        Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(dag, x, y, new HashSet<>(), false, new MsepTest(dag));
         long stop2 = System.currentTimeMillis();
         times[1] = stop2 - start2;
         System.out.println("Time taken by getSepsetContaining2: " + (stop2 - start2) + " ms");

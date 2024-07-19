@@ -27,10 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagSepsets;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -169,7 +166,7 @@ public final class SpFci implements IGraphSearch {
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
