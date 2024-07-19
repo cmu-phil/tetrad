@@ -71,7 +71,7 @@ public class MultiDimIntTable {
      *               corresponding dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent values.
      */
-    public int getCellIndex(int[] coords) {
+    public synchronized int getCellIndex(int[] coords) {
         int cellIndex = 0;
 
         for (int i = 0; i < this.dims.length; i++) {
@@ -107,7 +107,7 @@ public class MultiDimIntTable {
      * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
      * @return the new value at that table cell.
      */
-    public long increment(int[] coords, int value) {
+    public synchronized long increment(int[] coords, int value) {
         int cellIndex = getCellIndex(coords);
 
         if (!this.cells.containsKey(cellIndex)) {

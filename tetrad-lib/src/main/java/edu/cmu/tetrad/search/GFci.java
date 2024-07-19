@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
@@ -126,6 +127,10 @@ public final class GFci implements IGraphSearch {
      * Whether to leave out the final orientation step in the ablation study.
      */
     private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -148,7 +153,7 @@ public final class GFci implements IGraphSearch {
      */
     public Graph search() {
         this.independenceTest.setVerbose(verbose);
-        List<Node> nodes = getIndependenceTest().getVariables();
+        List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting GFCI algorithm.");
@@ -177,12 +182,19 @@ public final class GFci implements IGraphSearch {
         }
 
         Graph cpdag = new EdgeListGraph(graph);
+
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else {
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
             sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+        } else {
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);
@@ -351,5 +363,9 @@ public final class GFci implements IGraphSearch {
 
     public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }

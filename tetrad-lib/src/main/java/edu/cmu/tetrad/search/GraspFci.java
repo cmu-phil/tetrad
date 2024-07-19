@@ -140,6 +140,10 @@ public final class GraspFci implements IGraphSearch {
      * Whether to leave out the final orientation step.
      */
     private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GraspFci object.
@@ -198,10 +202,15 @@ public final class GraspFci implements IGraphSearch {
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
-            Graph trueDag = ((MsepTest) independenceTest).getGraph();
-            sepsets = new DagSepsets(trueDag);
-        } else {
+            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
             sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
+        } else {
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
@@ -374,5 +383,9 @@ public final class GraspFci implements IGraphSearch {
 
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }

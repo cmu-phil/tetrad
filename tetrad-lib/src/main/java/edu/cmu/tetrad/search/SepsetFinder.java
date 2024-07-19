@@ -1,9 +1,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
@@ -20,7 +22,7 @@ public class SepsetFinder {
      * @param test
      * @return the sepset between the two nodes as a Set<Node>
      */
-    public static Set<Node> getSepsetContaining1(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+    public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
     }
 
@@ -161,11 +163,9 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.removeAll(graph.getChildren(x));
-        adjy.removeAll(graph.getChildren(y));
         adjx.remove(y);
         adjy.remove(x);
 
@@ -174,40 +174,20 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        List<int[]> choices = new ArrayList<>();
+        // remove latents.
+        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjx.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        int[] sepset = choices.parallelStream().filter(choice -> separates(x, y, combination(choice, adjx), test)).findFirst().orElse(null);
+        List<List<Integer>> choices = getChoices(adjx);
+        List<Integer> sepset = choices.parallelStream().filter(_choice -> separates(x, y, combination(_choice, adjx), test)).findFirst().orElse(null);
 
         if (sepset != null) {
             return combination(sepset, adjx);
         }
 
         // Do the same for adjy.
-        choices.clear();
-
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjy.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        sepset = choices.parallelStream().filter(choice -> separates(x, y, combination(choice, adjy), test)).findFirst().orElse(null);
+        choices = getChoices(adjy);
+        sepset = choices.parallelStream().filter(_choice -> separates(x, y, combination(_choice, adjy), test)).findFirst().orElse(null);
 
         if (sepset != null) {
             return combination(sepset, adjy);
@@ -216,11 +196,29 @@ public class SepsetFinder {
         return null;
     }
 
-    public static Set<Node> getSepsetContainingMaxP(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+    private static @NotNull List<List<Integer>> getChoices(List<Node> adjx) {
+        List<List<Integer>> choices = new ArrayList<>();
+
+        SublistGenerator cg = new SublistGenerator(adjx.size(), adjx.size());
+        int[] choice;
+
+        while ((choice = cg.next()) != null) {
+            choices.add(asList(choice));
+        }
+        return choices;
+    }
+
+    private static @NotNull List<Integer> asList(int[] choice) {
+        List<Integer> integerList = new ArrayList<>();
+        for (int i : choice) {
+            integerList.add(i);
+        }
+        return integerList;
+    }
+
+    public static Set<Node> getSepsetContainingMaxP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.removeAll(graph.getChildren(x));
-        adjy.removeAll(graph.getChildren(y));
         adjx.remove(y);
         adjy.remove(x);
 
@@ -229,63 +227,41 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        List<int[]> choices = new ArrayList<>();
+        // remove latents.
+        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjx.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        Function<int[], Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
+        List<List<Integer>> choices = getChoices(adjx);
+        Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
-        int[] maxObject = choices.parallelStream()
+        List<Integer> maxObject = choices.parallelStream()
                 .max(Comparator.comparing(function))
                 .orElse(null);
 
-        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > 0.01) {
+        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
             return combination(maxObject, adjx);
         }
 
         // Do the same for adjy.
-        choices = new ArrayList<>();
-
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjy.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        function = choice -> getPValue(x, y, combination(choice, adjy), test);
+        choices = getChoices(adjx);
+        function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
         maxObject = choices.parallelStream()
                 .max(Comparator.comparing(function))
                 .orElse(null);
 
-        if (maxObject != null && getPValue(x, y, combination(maxObject, adjy), test) > 0.01) {
-            return combination(maxObject, adjy);
+        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
+            return combination(maxObject, adjx);
         }
 
         return null;
     }
 
-    public static Set<Node> getSepsetContainingMinP(Graph graph, Node x, Node y, Set<Node> containing, boolean allowSelectionBias, IndependenceTest test) {
+    public static Set<Node> getSepsetContainingMinP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.removeAll(graph.getChildren(x));
-        adjy.removeAll(graph.getChildren(y));
         adjx.remove(y);
         adjy.remove(x);
 
@@ -294,64 +270,46 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        List<int[]> choices = new ArrayList<>();
+        // remove latents.
+        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjx.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjx.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        Function<int[], Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
+        List<List<Integer>> choices = getChoices(adjx);
+        Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
-        int[] minObject = choices.parallelStream()
+        List<Integer> minObject = choices.parallelStream()
                 .min(Comparator.comparing(function))
                 .orElse(null);
 
-        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > 0.01) {
+        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
             return combination(minObject, adjx);
         }
 
         // Do the same for adjy.
-        choices = new ArrayList<>();
-
-        // Looking at each size subset from 0 up to the number of variables in adjy, for all subsets of that size
-        // of adjy, check if the subset is a separating set for x and y.
-        for (int i = 0; i <= adjy.size(); i++) {
-            SublistGenerator cg = new SublistGenerator(adjy.size(), i);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                choices.add(choice);
-            }
-        }
-
-        function = choice -> getPValue(x, y, combination(choice, adjy), test);
+        choices = getChoices(adjx);
+        function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
         minObject = choices.parallelStream()
                 .min(Comparator.comparing(function))
                 .orElse(null);
 
-        if (minObject != null && getPValue(x, y, combination(minObject, adjy), test) > 0.01) {
-            return combination(minObject, adjy);
+        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
+            return combination(minObject, adjx);
         }
 
         return null;
     }
 
-    private static Set<Node> combination(int[] choice, List<Node> adj) {
+    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
         // Create a set of nodes from the subset of adjx represented by choice.
         Set<Node> combination = new HashSet<>();
+
         for (int i : choice) {
             combination.add(adj.get(i));
         }
+
         return combination;
     }
 
@@ -381,8 +339,8 @@ public class SepsetFinder {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> getSepset5(Node x, Node y, Graph mpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors,
-                                       int maxLength, int depth, boolean printTrace) {
+    public static Set<Node> getSepsetPathBlocking(Node x, Node y, Graph mpdag, IndependenceTest test, Map<Node, Set<Node>> ancestors,
+                                                  int maxLength, int depth, boolean printTrace) {
         if (printTrace) {
             Edge e = mpdag.getEdge(x, y);
             TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
@@ -404,8 +362,6 @@ public class SepsetFinder {
             _changed = false;
 
             paths = mpdag.paths().allPaths(x, y, -1, maxLength, noncolliders, ancestors, false);
-
-            System.out.println("Conditioning on " + noncolliders + " number of paths is " + paths.size());
 
             // We note whether all current paths are blocked.
             boolean allBlocked = true;

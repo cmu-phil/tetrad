@@ -60,7 +60,7 @@ public final class CellTable {
      * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    public void addToTable(DataSet dataSet, int[] indices) {
+    public synchronized void addToTable(DataSet dataSet, int[] indices) {
         if (rows == null) {
             rows = new ArrayList<>();
             for (int i = 0; i < dataSet.getNumRows(); i++) {

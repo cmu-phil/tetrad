@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Cpc;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -35,28 +34,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
- * among the extra sepsets or the adjacents of i or k, or null if none is found. This version uses conservative
- * reasoning (see the CPC algorithm).</p>
- *
- * @author josephramsey
- * @version $Id: $Id
- * @see SepsetProducer
- * @see SepsetMap
- * @see Cpc
+ * The class SepsetsMaxP implements the SepsetProducer interface and provides methods for generating sepsets based on a
+ * given graph and an independence test. It also allows for checking conditional independencies and calculating p-values
+ * for statistical tests.
+ * <p>
+ * This class tries to maximize the p-value of the independence test result when selecting sepsets.
  */
 public class SepsetsMaxP implements SepsetProducer {
-    private Graph graph;
     private final IndependenceTest independenceTest;
+    private Graph graph;
     private boolean verbose;
     private IndependenceResult result;
 
     /**
-     * <p>Constructor for Sepsets.</p>
+     * Constructs a SepsetsMaxP object with the given graph, independence test, and depth.
      *
-     * @param graph            a {@link Graph} object
-     * @param independenceTest a {@link IndependenceTest} object
-     * @param depth            a int
+     * @param graph            The graph representing the causal relationships between nodes.
+     * @param independenceTest The independence test used to determine the conditional independence between variables.
+     * @param depth            The depth of the sepsets search.
      */
     public SepsetsMaxP(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
@@ -64,40 +59,51 @@ public class SepsetsMaxP implements SepsetProducer {
     }
 
     /**
-     * Retrieves the sepset (separating set) between two nodes, or null if no such sepset is found.
+     * Retrieves the sepset (separating set) between two nodes which contains a set of nodes. If no such sepset is
+     * found, it returns null.
      *
-     * @param i The first node
-     * @param k The second node
-     * @return The sepset between the two nodes
+     * @param i The first node.
+     * @param k The second node.
+     * @return The sepset between the two nodes containing the specified set of nodes.
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest);
     }
 
     /**
-     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, or null if no such sepset is
-     * found. If there is no required set of nodes, pass null for the set.
+     * Retrieves a sepset (separating set) between two nodes containing a set of nodes containing the nodes in s, or
+     * null if no such sepset is found. If there is no required set of nodes, pass null for the set.
      *
      * @param i The first node
      * @param k The second node
-     * @param s The set of nodes that must be contained in the sepset, or null if no such set is required.
-     * @return The sepset between the two nodes
+     * @param s The set of nodes that the sepset must contain
+     * @return The sepset between the two nodes containing the specified set of nodes
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, s, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, s, this.independenceTest);
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if a node is an unshielded collider between two other nodes.
+     *
+     * @param i The first node.
+     * @param j The node to check.
+     * @param k The second node.
+     * @return true if the node j is an unshielded collider between nodes i and k, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, false, this.independenceTest);
+        Set<Node> set = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest);
         return set != null && !set.contains(j);
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if two nodes are independent given a set of separating nodes.
+     *
+     * @param a      The first node
+     * @param b      The second node
+     * @param sepset The set of separating nodes
+     * @return true if the nodes a and b are independent, false otherwise
      */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
@@ -107,12 +113,13 @@ public class SepsetsMaxP implements SepsetProducer {
     }
 
     /**
-     * Returns the p-value for the independence test between two nodes, given a set of separator nodes.
+     * Retrieves the p-value from the result of an independence test between two nodes, given a set of separating
+     * nodes.
      *
-     * @param a      the first node
-     * @param b      the second node
-     * @param sepset the set of separator nodes
-     * @return the p-value for the independence test
+     * @param a      The first node
+     * @param b      The second node
+     * @param sepset The set of separating nodes
+     * @return The p-value from the independence test result
      */
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
@@ -121,9 +128,9 @@ public class SepsetsMaxP implements SepsetProducer {
     }
 
     /**
-     * Sets the graph for the Sepsets object.
+     * Sets the graph for the SepsetsMaxP object.
      *
-     * @param graph The graph to set.
+     * @param graph The graph to set
      */
     @Override
     public void setGraph(Graph graph) {
@@ -160,8 +167,8 @@ public class SepsetsMaxP implements SepsetProducer {
     }
 
     /**
-     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information
-     * will be printed during the execution of this method.
+     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information will
+     * be printed during the execution of this method.
      *
      * @param verbose The verbosity level to set. Set to true for verbose output, false otherwise.
      */
@@ -174,8 +181,8 @@ public class SepsetsMaxP implements SepsetProducer {
     /**
      * Retrieves the Directed Acyclic Graph (DAG) produced by the Sepset algorithm.
      *
-     * @return The DAG produced by the Sepsets algorithm, or null if the independence test
-     *         is not an instance of MsepTest.
+     * @return The DAG produced by the Sepsets algorithm, or null if the independence test is not an instance of
+     * MsepTest.
      */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {

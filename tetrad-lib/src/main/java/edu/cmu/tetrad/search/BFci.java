@@ -21,13 +21,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagSepsets;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsMinP;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -141,6 +141,10 @@ public final class BFci implements IGraphSearch {
      * Whether to leave out the final orientation step.
      */
     private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -191,8 +195,14 @@ public final class BFci implements IGraphSearch {
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else {
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
             sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+        } else {
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
@@ -340,6 +350,10 @@ public final class BFci implements IGraphSearch {
 
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }
 

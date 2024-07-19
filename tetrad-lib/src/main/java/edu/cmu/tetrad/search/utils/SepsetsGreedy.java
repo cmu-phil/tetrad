@@ -43,8 +43,8 @@ import java.util.Set;
  * @see SepsetMap
  */
 public class SepsetsGreedy implements SepsetProducer {
-    private Graph graph;
     private final IndependenceTest independenceTest;
+    private Graph graph;
     private boolean verbose;
     private IndependenceResult result;
 
@@ -60,6 +60,10 @@ public class SepsetsGreedy implements SepsetProducer {
         this.independenceTest = independenceTest;
     }
 
+    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+        return test.checkIndependence(x, y, combination).getPValue();
+    }
+
     /**
      * Retrieves the sepset (separating set) between two nodes, or null if no such sepset is found.
      *
@@ -68,12 +72,12 @@ public class SepsetsGreedy implements SepsetProducer {
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, this.independenceTest);
     }
 
     /**
-     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, or null if no such sepset is
-     * found. If there is no required set of nodes, pass null for the set.
+     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, containing the nodes in s, or
+     * null if no such sepset is found. If there is no required set of nodes, pass null for the set.
      *
      * @param i The first node
      * @param k The second node
@@ -82,14 +86,14 @@ public class SepsetsGreedy implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, s, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, s, this.independenceTest);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, false, this.independenceTest);
+        Set<Node> set = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, this.independenceTest);
         return set != null && !set.contains(j);
     }
 
@@ -157,8 +161,8 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information
-     * will be printed during the execution of this method.
+     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information will
+     * be printed during the execution of this method.
      *
      * @param verbose The verbosity level to set. Set to true for verbose output, false otherwise.
      */
@@ -171,8 +175,8 @@ public class SepsetsGreedy implements SepsetProducer {
     /**
      * Retrieves the Directed Acyclic Graph (DAG) produced by the Sepsets algorithm.
      *
-     * @return The DAG produced by the Sepsets algorithm, or null if the independence test
-     *         is not an instance of MsepTest.
+     * @return The DAG produced by the Sepsets algorithm, or null if the independence test is not an instance of
+     * MsepTest.
      */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {

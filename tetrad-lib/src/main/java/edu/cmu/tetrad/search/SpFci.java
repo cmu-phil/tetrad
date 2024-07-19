@@ -121,6 +121,10 @@ public final class SpFci implements IGraphSearch {
      * True iff the final orientation should be left out.
      */
     private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -161,12 +165,19 @@ public final class SpFci implements IGraphSearch {
         }
 
         Graph referenceDag = new EdgeListGraph(graph);
+
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else {
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
             sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+        } else {
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
@@ -334,5 +345,9 @@ public final class SpFci implements IGraphSearch {
 
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }

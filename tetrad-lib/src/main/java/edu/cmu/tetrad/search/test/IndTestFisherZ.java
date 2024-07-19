@@ -244,8 +244,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        if (facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
+        IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
+
+        if (_result != null) {
+            return _result;
         }
 
         if (usePseudoinverse) {

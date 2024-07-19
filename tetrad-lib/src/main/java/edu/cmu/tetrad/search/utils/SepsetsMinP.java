@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Cpc;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -35,28 +34,55 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides a SepsetProducer that selects the first sepset it comes to from
- * among the extra sepsets or the adjacents of i or k, or null if none is found. This version uses conservative
- * reasoning (see the CPC algorithm).</p>
- *
- * @author josephramsey
- * @version $Id: $Id
- * @see SepsetProducer
- * @see SepsetMap
- * @see Cpc
+ * The SepsetsMinP class is a concrete implementation of the SepsetProducer interface. It calculates the separating sets
+ * (sepsets) between nodes in a given graph using a minimum p-value approach. The sepsets are calculated based on an
+ * independence test provided to the class.
+ * <p>
+ * This class tries to minimize the p-value of the independence test result when selecting sepsets.
  */
 public class SepsetsMinP implements SepsetProducer {
-    private Graph graph;
+    /**
+     * The independenceTest variable represents an object that performs an independence test between two nodes given a
+     * set of separator nodes. It provides methods for retrieving the sepset (separating set) between two nodes,
+     * checking if two nodes are independent, calculating the p-value for the independence test, setting the graph,
+     * getting the score, retrieving the variables used in the independence test, setting verbosity level, and
+     * retrieving the produced DAG (Directed Acyclic Graph) by the Sepsets algorithm.
+     * <p>
+     * This variable is used in the SepsetsMinP class as one of its fields to perform various operations related to
+     * independence tests and separation sets.
+     *
+     * @see SepsetsMinP
+     */
     private final IndependenceTest independenceTest;
-    private boolean verbose;
+    /**
+     * This private variable represents a graph.
+     * <p>
+     * The graph is used within the SepsetsMinP class for storing and manipulating nodes and their relationships. It is
+     * a directed acyclic graph (DAG) produced by the Sepsets algorithm.
+     * <p>
+     * Methods within the SepsetsMinP class may use this variable to perform calculations and retrieve information
+     * related to nodes and their relationships. The graph is set using the setGraph() method.
+     * <p>
+     * It is important to note that this variable is declared as private, which means it can only be accessed within the
+     * same class.
+     */
+    private Graph graph;
+    /**
+     * Represents the result of an independence test in the context of the SepsetsMinP class. This variable stores
+     * information about the sepsets (separating sets) between different nodes in a graph.
+     */
     private IndependenceResult result;
+    /**
+     * Returns whether the object is in verbose mode.
+     */
+    private boolean verbose;
 
     /**
-     * <p>Constructor for Sepsets.</p>
+     * Initializes a new instance of the SepsetsMinP class.
      *
-     * @param graph            a {@link Graph} object
-     * @param independenceTest a {@link IndependenceTest} object
-     * @param depth            a int
+     * @param graph            The graph to set.
+     * @param independenceTest The independence test used for calculating sepsets.
+     * @param depth            The depth of the sepsets search algorithm.
      */
     public SepsetsMinP(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
@@ -71,12 +97,12 @@ public class SepsetsMinP implements SepsetProducer {
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k) {
-        return SepsetFinder.getSepsetContainingMinP(graph, i, k, null, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingMinP(graph, i, k, null, this.independenceTest);
     }
 
     /**
-     * Retrieves a sepset (separating set) between two nodes containing a set of nodes, or null if no such sepset is
-     * found. If there is no required set of nodes, pass null for the set.
+     * Retrieves a sepset (separating set) between two nodes containing a set of nodes containing the nodes in s, or
+     * null if no such sepset is found. If there is no required set of nodes, pass null for the set.
      *
      * @param i The first node
      * @param k The second node
@@ -85,19 +111,29 @@ public class SepsetsMinP implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
-        return SepsetFinder.getSepsetContainingMinP(graph, i, k, s, false, this.independenceTest);
+        return SepsetFinder.getSepsetContainingMinP(graph, i, k, s, this.independenceTest);
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if a given collider node is unshielded between two other nodes.
+     *
+     * @param i The first node.
+     * @param j The collider node.
+     * @param k The second node.
+     * @return true if the collider node is unshielded between the two nodes, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = SepsetFinder.getSepsetContainingMinP(graph, i, k, null, false, this.independenceTest);
+        Set<Node> set = SepsetFinder.getSepsetContainingMinP(graph, i, k, null, this.independenceTest);
         return set != null && !set.contains(j);
     }
 
     /**
-     * {@inheritDoc}
+     * Determines if two nodes are independent given a set of separating nodes.
+     *
+     * @param a      The first node.
+     * @param b      The second node.
+     * @param sepset The set of separating nodes.
+     * @return true if the two nodes are independent, false otherwise.
      */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
@@ -160,8 +196,8 @@ public class SepsetsMinP implements SepsetProducer {
     }
 
     /**
-     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information
-     * will be printed during the execution of this method.
+     * Sets the verbosity level for this object. When verbose mode is set to true, additional debugging information will
+     * be printed during the execution of this method.
      *
      * @param verbose The verbosity level to set. Set to true for verbose output, false otherwise.
      */
@@ -174,8 +210,8 @@ public class SepsetsMinP implements SepsetProducer {
     /**
      * Retrieves the Directed Acyclic Graph (DAG) produced by the Sepsets algorithm.
      *
-     * @return The DAG produced by the Sepsets algorithm, or null if the independence test
-     *         is not an instance of MsepTest.
+     * @return The DAG produced by the Sepsets algorithm, or null if the independence test is not an instance of
+     * MsepTest.
      */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {

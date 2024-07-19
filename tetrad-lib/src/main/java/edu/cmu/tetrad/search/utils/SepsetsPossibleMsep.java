@@ -88,14 +88,14 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     }
 
     /**
-     * Retrieves the separation set (sepset) between two nodes i and k that contains a given set of nodes s. If there
-     * is no required set of nodes, pass null for the set.
+     * Retrieves the separation set (sepset) between two nodes i and k that contains a given set of nodes s. If there is
+     * no required set of nodes, pass null for the set.
      *
      * @param i The first node
      * @param k The second node
      * @param s The set of nodes to be contained in the sepset
-     * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s,
-     *         or null if no sepset exists
+     * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s, or
+     * null if no sepset exists
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {

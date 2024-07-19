@@ -1528,7 +1528,7 @@ public class Paths implements TetradSerializable {
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
 
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), allowSelectionBias, test);
+        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test);
     }
 
     /**
@@ -1540,7 +1540,7 @@ public class Paths implements TetradSerializable {
      * @return the sepset between the two nodes as a Set<Node>
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return SepsetFinder.getSepsetContaining1(graph, x, y, containing, test);
+        return SepsetFinder.getSepsetContainingRecursive(graph, x, y, containing, test);
     }
 
 

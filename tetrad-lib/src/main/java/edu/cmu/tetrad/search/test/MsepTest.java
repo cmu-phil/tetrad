@@ -247,8 +247,10 @@ public class MsepTest implements IndependenceTest {
             }
         }
 
-        if (facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
+        IndependenceResult storedResult = facts.get(new IndependenceFact(x, y, z));
+
+        if (storedResult != null) {
+            return storedResult;
         }
 
         boolean mSeparated;
