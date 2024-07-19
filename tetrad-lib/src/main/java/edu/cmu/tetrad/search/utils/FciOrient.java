@@ -1008,9 +1008,7 @@ public final class FciOrient {
             }
         }
 
-//        Set<Node> sepset = SepsetFinder.getSepsetContaining1(graph, e, c, new HashSet<>(path));
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test);
-//        Set<Node> sepset = LvLite.getSepset(e, c, graph, new MsepTest(graph), null, -1, -1, -1);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(), test);
 
         if (sepset == null) {
             return false;
