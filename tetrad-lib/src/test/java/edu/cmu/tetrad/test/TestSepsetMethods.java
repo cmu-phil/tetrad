@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -142,7 +141,7 @@ public class TestSepsetMethods {
         System.out.println("Time taken by getSepsetPathBlocking: " + (stop5 - start5) + " ms");
 
         long start6 = System.currentTimeMillis();
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlocking2(dag, x, y, new HashSet<>(), msepTest, ancestorMap, -1, -1,
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOf(dag, x, y, new HashSet<>(), msepTest, ancestorMap, -1, -1,
                 false);
         long stop6 = System.currentTimeMillis();
         times[5] = stop6 - start6;
@@ -214,7 +213,7 @@ public class TestSepsetMethods {
         } while (x.equals(y));
 
 //        Set<Node> sepset6 = SepsetFinder.getSepsetParentsOfXorY(dag, x, y,  new MsepTest(dag));
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlocking2(dag, x, y, new HashSet<>(), new MsepTest(dag), ancestorMap, -1, -1,
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOf(dag, x, y, new HashSet<>(), new MsepTest(dag), ancestorMap, -1, -1,
                 false);
 
         System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);

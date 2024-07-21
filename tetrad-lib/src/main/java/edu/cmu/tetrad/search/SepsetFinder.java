@@ -465,22 +465,26 @@ public class SepsetFinder {
     }
 
     /**
-     * Searches for sets, by systematically block paths out of x of increasing lengths, other than x *-* y itself, until
-     * all paths out of x are blocked.
+     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
+     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite noncollider
+     * nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The length of the
+     * paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can be limited by
+     * the depth parameter. When increasing the considered path length does not yield any new paths, the search is
+     * terminated early.
      *
-     * @param mpdag      the MPDAG graph to analyze (can be a DAG or a CPDAG)
-     * @param x          the first node
-     * @param y          the second node
-     * @param cond       the set of nodes to condition on
-     * @param test       the independence test to use
-     * @param ancestors  A map from nodes to their ancestors in the graph
-     * @param maxLength  the maximum blocking length for paths, or -1 for no limit
-     * @param depth      the maximum depth of the sepset, or -1 for no limit
-     * @param printTrace whether to print trace information; false by default. This can be quite verbose, so it's
-     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
+     * @param mpdag     The graph representing the Markov equivalence class that contains the nodes.
+     * @param x         The first node in the pair.
+     * @param y         The second node in the pair.
+     * @param cond      The set of conditioning nodes.
+     * @param test      The independence test object to use for checking independence.
+     * @param ancestors A map storing the ancestors of each node in the graph.
+     * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than the number of nodes minus one, it is adjusted accordingly.
+     * @param depth     The maximum depth of the final sepset. If set to a negative value, no limit is applied.
+     * @param printTrace A boolean flag indicating whether to print trace information.
+     * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlocking2(Graph mpdag, Node x, Node y, Set<Node> cond, IndependenceTest test,
-                                                   Map<Node, Set<Node>> ancestors, int maxLength, int depth, boolean printTrace) {
+    public static Set<Node> getSepsetPathBlockingOutOf(Graph mpdag, Node x, Node y, Set<Node> cond, IndependenceTest test,
+                                                       Map<Node, Set<Node>> ancestors, int maxLength, int depth, boolean printTrace) {
         if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
             return new HashSet<>();
         }
@@ -498,15 +502,11 @@ public class SepsetFinder {
         Set<List<Node>> lastPaths;
         Set<List<Node>> paths = new HashSet<>();
 
-        for (int length = 2; length < 6; length++) {
+        for (int length = 2; length < maxLength; length++) {
             lastPaths = new HashSet<>(paths);
 
             couldBeColliders = new HashSet<>();
             paths = tryToBlockPaths(x, y, mpdag, cond, couldBeColliders, length, depth, ancestors, printTrace);
-
-            if (paths.size() > 500) {
-                break;
-            }
 
             if (paths.equals(lastPaths)) {
                 break;
