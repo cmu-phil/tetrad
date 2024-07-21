@@ -62,38 +62,41 @@ public class SepsetsMaxP implements SepsetProducer {
      * Retrieves the sepset (separating set) between two nodes which contains a set of nodes. If no such sepset is
      * found, it returns null.
      *
-     * @param i The first node.
-     * @param k The second node.
+     * @param i     The first node.
+     * @param k     The second node.
+     * @param depth
      * @return The sepset between the two nodes containing the specified set of nodes.
      */
-    public Set<Node> getSepset(Node i, Node k) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest);
+    public Set<Node> getSepset(Node i, Node k, int depth) {
+        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest, depth);
     }
 
     /**
      * Retrieves a sepset (separating set) between two nodes containing a set of nodes containing the nodes in s, or
      * null if no such sepset is found. If there is no required set of nodes, pass null for the set.
      *
-     * @param i The first node
-     * @param k The second node
-     * @param s The set of nodes that the sepset must contain
+     * @param i     The first node
+     * @param k     The second node
+     * @param s     The set of nodes that the sepset must contain
+     * @param depth
      * @return The sepset between the two nodes containing the specified set of nodes
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, s, this.independenceTest);
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
+        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, s, this.independenceTest, depth);
     }
 
     /**
      * Determines if a node is an unshielded collider between two other nodes.
      *
-     * @param i The first node.
-     * @param j The node to check.
-     * @param k The second node.
+     * @param i     The first node.
+     * @param j     The node to check.
+     * @param k     The second node.
+     * @param depth
      * @return true if the node j is an unshielded collider between nodes i and k, false otherwise.
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> set = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest);
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+        Set<Node> set = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
 

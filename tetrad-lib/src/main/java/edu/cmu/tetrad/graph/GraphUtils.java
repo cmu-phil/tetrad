@@ -23,10 +23,12 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1928,7 +1930,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c, -1);
 
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2526,7 +2528,7 @@ public final class GraphUtils {
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
                     if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsets.getSepset(x, z);
+                        Set<Node> sepset = sepsets.getSepset(x, z, -1);
 
                         if (sepset != null) {
                             pag.removeEdge(x, z);
@@ -3192,6 +3194,10 @@ public final class GraphUtils {
         }
 
         return prod;
+    }
+
+    public static @NotNull List<Integer> asList(int[] choice) {
+        return ClusterSignificance.getInts(choice);
     }
 
     /**

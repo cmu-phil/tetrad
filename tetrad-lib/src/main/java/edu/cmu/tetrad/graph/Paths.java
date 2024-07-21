@@ -593,7 +593,7 @@ public class Paths implements TetradSerializable {
      * @param conditionSet       a set of nodes that need to be included in the path (optional)
      * @param allowSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
      *                           edges in one direction or the other.
-     * @return a list of paths between node1 and node2 that satisfy the conditions
+     * @return a set of paths between node1 and node2 that satisfy the conditions
      */
     public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
                                     boolean allowSelectionBias) {
@@ -606,6 +606,13 @@ public class Paths implements TetradSerializable {
                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+        return paths;
+    }
+
+    public Set<List<Node>> allPaths2(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
+                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        Set<List<Node>> paths = new HashSet<>();
+        allPathsVisit2(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
         return paths;
     }
 
@@ -658,6 +665,48 @@ public class Paths implements TetradSerializable {
             }
 
             allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+        }
+
+        path.removeLast();
+        pathSet.remove(node1);
+    }
+
+    private void allPathsVisit2(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength,
+                                Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        if (maxLength != -1 && path.size() - 1 > maxLength) {
+            return;
+        }
+
+        if (pathSet.contains(node1)) {
+            return;
+        }
+
+        path.addLast(node1);
+        pathSet.add(node1);
+
+        LinkedList<Node> _path = new LinkedList<>(path);
+        int maxPaths = 500;
+
+        if (path.size() - 1 > 1) {
+            if (paths.size() < maxPaths && isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                paths.add(_path);
+            }
+        }
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node child = Edges.traverse(node1, edge);
+
+            if (child == null) {
+                continue;
+            }
+
+            if (pathSet.contains(child)) {
+                continue;
+            }
+
+            if (paths.size() < maxPaths) {
+                allPathsVisit2(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+            }
         }
 
         path.removeLast();
@@ -1527,8 +1576,8 @@ public class Paths implements TetradSerializable {
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
 
-    public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test);
+    public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
+        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth);
     }
 
     /**

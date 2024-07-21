@@ -207,7 +207,7 @@ public final class SvarFciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
+                if (this.sepsets.isUnshieldedCollider(a, b, c, -1)) {
                     if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
@@ -594,7 +594,7 @@ public final class SvarFciOrient {
         boolean ind2 = getSepsets().isIndependent(d, c, new HashSet<>(path2));
 
         if (!ind && !ind2) {
-            Set<Node> sepset = getSepsets().getSepset(d, c);
+            Set<Node> sepset = getSepsets().getSepset(d, c, -1);
 
             if (this.verbose) {
                 System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);

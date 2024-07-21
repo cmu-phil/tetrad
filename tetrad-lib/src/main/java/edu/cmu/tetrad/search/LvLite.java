@@ -241,7 +241,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         FciOrient fciOrient = FciOrient.specialConfiguration(test, knowledge, completeRuleSetUsed,
-                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, maxDdpPathLength, verbose);
+                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, maxDdpPathLength, verbose, depth);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -267,7 +267,7 @@ public final class LvLite implements IGraphSearch {
             for (Node x : adj) {
                 for (Node y : adj) {
                     if (distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-                        checkUntucked(x, b, y, pag, scorer, bestScore, unshieldedColliders, checked);
+                        checkUntucked(x, b, y, pag, cpdag, scorer, bestScore, unshieldedColliders, checked);
                     }
                 }
             }
@@ -349,8 +349,9 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set to store unshielded colliders.
      * @param checked             The set to store already checked nodes.
      */
-    private void checkUntucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
-        tryAddingCollider(x, b, y, pag, false, scorer, bestScore, bestScore, unshieldedColliders,
+    private void checkUntucked(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, double bestScore,
+                               Set<Triple> unshieldedColliders, Set<Triple> checked) {
+        tryAddingCollider(x, b, y, pag, cpdag, false, scorer, bestScore, bestScore, unshieldedColliders,
                 checked, knowledge, verbose);
     }
 
@@ -366,12 +367,13 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders
      * @param checked             The set of checked triples
      */
-    private void checkTucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
+    private void checkTucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore,
+                             Set<Triple> unshieldedColliders, Set<Triple> checked) {
         if (!checked.contains(new Triple(x, b, y))) {
             scorer.tuck(y, b);
             scorer.tuck(x, y);
             double newScore = scorer.score();
-            tryAddingCollider(x, b, y, pag, true, scorer, newScore, bestScore,
+            tryAddingCollider(x, b, y, pag, null, true, scorer, newScore, bestScore,
                     unshieldedColliders, checked, knowledge, verbose);
             scorer.goToBookmark();
         }
@@ -617,12 +619,13 @@ public final class LvLite implements IGraphSearch {
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
         Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
 
-        for (int length = 3; length <= maxBlockingPathLength; length += 2) {
+        for (int length = 1; length <= 6; length += 2) {
             int _length = length;
             Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
 
             dag.getEdges().forEach(edge -> {
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(edge.getNode1(), edge.getNode2(), dag, test, ancestors,
+                Set<Node> cond = new HashSet<>();
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlocking2(dag, edge.getNode1(), edge.getNode2(), cond, test, ancestors,
                         _length, depth, false);
 
                 if (sepset != null) {
@@ -636,7 +639,7 @@ public final class LvLite implements IGraphSearch {
             }
 
             if (verbose) {
-                TetradLogger.getInstance().log("Done checking for additional sepsets.");
+                TetradLogger.getInstance().log("Done checking for additional sepsets length = " + length + ".");
             }
 
             extraSepsets.putAll(_extraSepsets);
@@ -690,10 +693,23 @@ public final class LvLite implements IGraphSearch {
      * @param knowledge           The knowledge object.
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
-    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, boolean tucked, TeyssierScorer scorer,
+    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, boolean tucked, TeyssierScorer scorer,
                                    double newScore, double bestScore, Set<Triple> unshieldedColliders,
                                    Set<Triple> checked, Knowledge knowledge, boolean verbose) {
-        if (colliderAllowed(pag, x, b, y, knowledge)) {
+        if (cpdag != null) {
+            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
+                unshieldedColliders.add(new Triple(x, b, y));
+                checked.add(new Triple(x, b, y));
+
+                if (verbose) {
+                    if (tucked) {
+                        TetradLogger.getInstance().log("AFTER TUCKING copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    } else {
+                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    }
+                }
+            }
+        } else if (colliderAllowed(pag, x, b, y, knowledge)) {
             if (scorer.unshieldedCollider(x, b, y) && (maxScoreDrop == -1 || newScore >= bestScore - maxScoreDrop)) {
                 unshieldedColliders.add(new Triple(x, b, y));
                 checked.add(new Triple(x, b, y));

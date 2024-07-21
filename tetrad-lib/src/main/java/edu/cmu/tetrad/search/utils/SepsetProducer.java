@@ -39,31 +39,34 @@ public interface SepsetProducer {
     /**
      * Retrieves the sepset, which is the set of common neighbors between two given nodes.
      *
-     * @param a the first node
-     * @param b the second node
+     * @param a     the first node
+     * @param b     the second node
+     * @param depth
      * @return the set of common neighbors between nodes a and b
      */
-    Set<Node> getSepset(Node a, Node b);
+    Set<Node> getSepset(Node a, Node b, int depth);
 
     /**
      * Retrieves a sepset containing nodes in s from the given set of nodes.
      *
-     * @param a the first node
-     * @param b the second node
-     * @param s the set of nodes
+     * @param a     the first node
+     * @param b     the second node
+     * @param s     the set of nodes
+     * @param depth
      * @return the sepset containing nodes a and b from the given set of nodes
      */
-    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s);
+    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth);
 
     /**
      * <p>isUnshieldedCollider.</p>
      *
-     * @param i a {@link Node} object
-     * @param j a {@link Node} object
-     * @param k a {@link Node} object
+     * @param i     a {@link Node} object
+     * @param j     a {@link Node} object
+     * @param k     a {@link Node} object
+     * @param depth
      * @return a boolean
      */
-    boolean isUnshieldedCollider(Node i, Node j, Node k);
+    boolean isUnshieldedCollider(Node i, Node j, Node k, int depth);
 
     /**
      * Returns the score of the object.

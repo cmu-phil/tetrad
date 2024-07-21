@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -49,8 +50,8 @@ public class TestSepsetMethods {
     public void test1() {
         RandomUtil.getInstance().setSeed(384828384L);
 
-        int numNodes = 10;
-        int numEdges = 10;
+        int numNodes = 50;
+        int numEdges = 100;
         int numReps = 10;
 
         // Make a list of numNodes nodes.
@@ -63,11 +64,11 @@ public class TestSepsetMethods {
         // Make a random DAG with numEdges edges.
         Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
 
-        System.out.println(dag);
+//        System.out.println(dag);
 
         Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
 
-        long[] timeSums = new long[5];
+        long[] timeSums = new long[6];
 
         for (int i = 0; i < numReps; i++) {
 
@@ -98,6 +99,8 @@ public class TestSepsetMethods {
      */
     public long[] checkNodePair(Graph dag, Node x, Node y, Map<Node, Set<Node>> ancestorMap) {
 
+        MsepTest msepTest = new MsepTest(dag);
+
         Edge e = dag.getEdge(x, y);
 
         // Method 1: Using the getSepset method of the DagSepsets class.
@@ -105,47 +108,55 @@ public class TestSepsetMethods {
         // Method 3: Using the getSepset method from the LvLite class.
 
         // We have several methods for finding a sepset for x and y in a DAG. Let me find them briefly.
-        long[] times = new long[5];
+        long[] times = new long[6];
 
         long start1 = System.currentTimeMillis();
         Set<Node> sepset1 = SepsetFinder.getSepsetContainingRecursive(dag, x, y, new HashSet<>(), new MsepTest(dag));
         long stop1 = System.currentTimeMillis();
-        System.out.println("Time taken by getSepsetContaining1: " + (stop1 - start1) + " ms");
+        System.out.println("Time taken by getSepsetContainingRecursive: " + (stop1 - start1) + " ms");
         times[0] = stop1 - start1;
 
         long start2 = System.currentTimeMillis();
-        Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(dag, x, y, new HashSet<>(), new MsepTest(dag));
+        Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(dag, x, y, new HashSet<>(), msepTest, -1);
         long stop2 = System.currentTimeMillis();
         times[1] = stop2 - start2;
-        System.out.println("Time taken by getSepsetContaining2: " + (stop2 - start2) + " ms");
+        System.out.println("Time taken by getSepsetContainingGreedy: " + (stop2 - start2) + " ms");
 
         long start3 = System.currentTimeMillis();
-        Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxP(dag, x, y, new HashSet<>(), new MsepTest(dag));
+        Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxP(dag, x, y, new HashSet<>(), msepTest, -1);
         long stop3 = System.currentTimeMillis();
         times[2] = stop3 - start3;
-        System.out.println("Time taken by getSepsetContaining2: " + (stop3 - start3) + " ms");
+        System.out.println("Time taken by getSepsetContainingMaxP: " + (stop3 - start3) + " ms");
 
         long start4 = System.currentTimeMillis();
-        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), new MsepTest(dag));
+        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), msepTest, -1);
         long stop4 = System.currentTimeMillis();
         times[3] = stop4 - start4;
-        System.out.println("Time taken by getSepsetContaining2: " + (stop4 - start4) + " ms");
+        System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
 
         long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlocking(x, y, dag, new MsepTest(dag), ancestorMap, 10, -1,
+        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlocking(dag, x, y, msepTest, ancestorMap, 10, -1,
                 false);
         long stop5 = System.currentTimeMillis();
         times[4] = stop5 - start5;
-        System.out.println("Time taken by getSepset5: " + (stop5 - start5) + " ms");
+        System.out.println("Time taken by getSepsetPathBlocking: " + (stop5 - start5) + " ms");
+
+        long start6 = System.currentTimeMillis();
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlocking2(dag, x, y, new HashSet<>(), msepTest, ancestorMap, -1, -1,
+                false);
+        long stop6 = System.currentTimeMillis();
+        times[5] = stop6 - start6;
+        System.out.println("Time taken by getSepsetPathBlocking2: " + (stop6 - start6) + " ms");
 
         System.out.println("Sepset 1: " + sepset1);
         System.out.println("Sepset 2: " + sepset2);
         System.out.println("Sepset 3: " + sepset3);
         System.out.println("Sepset 4: " + sepset4);
         System.out.println("Sepset 5: " + sepset5);
+        System.out.println("Sepset 6: " + sepset6);
 
         // Check if the sepsets found by the five methods all separate x from y.
-        MsepTest msepTest = new MsepTest(dag);
+
 
         // Note that methods 3 and 4 cannot find null sepsets from Oracle. These need to be tested separately from data.
 
@@ -155,21 +166,62 @@ public class TestSepsetMethods {
 //            assertNotNull(sepset3);
 //            assertNotNull(sepset4);
             assertNotNull(sepset5);
+            assertNotNull(sepset6);
 
             assertTrue(msepTest.checkIndependence(x, y, sepset1).isIndependent());
             assertTrue(msepTest.checkIndependence(x, y, sepset2).isIndependent());
 //            assertTrue(msepTest.checkIndependence(x, y, sepset3).isIndependent());
 //            assertTrue(msepTest.checkIndependence(x, y, sepset4).isIndependent());
             assertTrue(msepTest.checkIndependence(x, y, sepset5).isIndependent());
+            assertTrue(msepTest.checkIndependence(x, y, sepset6).isIndependent());
         } else {
             assertNull(sepset1);
             assertNull(sepset2);
 //            assertNull(sepset3);
 //            assertNull(sepset4);
             assertNull(sepset5);
+            assertNull(sepset6);
         }
 
         return times;
+    }
+
+    @Test
+    public void test6() {
+        RandomUtil.getInstance().setSeed(384828384L);
+
+        int numNodes = 50;
+        int numEdges = 100;
+        int numReps = 10;
+
+        // Make a list of numNodes nodes.
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new ContinuousVariable("X" + i));
+        }
+
+        // Make a random DAG with numEdges edges.
+        Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
+        Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
+
+        // Pick two distinct nodes x and y randomly from the list of nodes.
+        Node x, y;
+
+        do {
+            x = nodes.get((int) (Math.random() * numNodes));
+            y = nodes.get((int) (Math.random() * numNodes));
+        } while (x.equals(y));
+
+//        Set<Node> sepset6 = SepsetFinder.getSepsetParentsOfXorY(dag, x, y,  new MsepTest(dag));
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlocking2(dag, x, y, new HashSet<>(), new MsepTest(dag), ancestorMap, -1, -1,
+                false);
+
+        System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);
+
+        System.out.println(((!dag.isAdjacentTo(x, y)) == (sepset6 != null)) ? "###OK###" : "###ERROR###");
+
+        long stop6 = System.currentTimeMillis();
     }
 }
 

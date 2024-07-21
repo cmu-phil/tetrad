@@ -69,6 +69,7 @@ public final class FciOrient {
     private boolean verbose;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
+    private int depth = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -90,39 +91,39 @@ public final class FciOrient {
 
     public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
         return FciOrient.specialConfiguration(new MsepTest(dag), true, true,
-                true, -1, knowledge, verbose);
+                true, -1, knowledge, verbose, -1);
     }
 
     public static FciOrient defaultConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
         if (test instanceof MsepTest) {
             return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
         } else {
-            return FciOrient.specialConfiguration(test, true, true, true, -1, knowledge, verbose);
+            return FciOrient.specialConfiguration(test, true, true,
+                    true, -1, knowledge, verbose, -1);
         }
     }
 
     public static FciOrient specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, boolean verbose) {
+                                                 int maxPathLength, boolean verbose, int depth) {
         if (test instanceof MsepTest) {
             return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
         } else {
-            SepsetProducer sepsets = new SepsetsGreedy(new EdgeListGraph(), test, -1);
             return FciOrient.specialConfiguration(test, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                    doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
+                    doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose, depth);
         }
     }
 
     public static FciOrient specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, boolean verbose) {
+                                                 int maxPathLength, boolean verbose, int depth) {
         return FciOrient.specialConfiguration(scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose);
+                doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose, depth);
     }
 
     public static FciOrient specialConfiguration(IndependenceTest test, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, Knowledge knowledge, boolean verbose) {
+                                                 int maxPathLength, Knowledge knowledge, boolean verbose, int depth) {
         FciOrient fciOrient = new FciOrient(test);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
@@ -130,12 +131,13 @@ public final class FciOrient {
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setDepth(depth);
         return fciOrient;
     }
 
     public static FciOrient specialConfiguration(TeyssierScorer scorer, boolean completeRuleSetUsed,
                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, Knowledge knowledge, boolean verbose) {
+                                                 int maxPathLength, Knowledge knowledge, boolean verbose, int depth) {
         FciOrient fciOrient = new FciOrient(scorer);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
@@ -143,6 +145,7 @@ public final class FciOrient {
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setDepth(depth);
         return fciOrient;
     }
 
@@ -318,16 +321,18 @@ public final class FciOrient {
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private static boolean doDdpOrientationScoreBased(Node e, Node a, Node b, Node c, List<Node> path, Graph graph,
-                                                      TeyssierScorer scorer, boolean doDiscriminatingPathTailRule,
-                                                      boolean doDiscriminatingPathColliderRule, boolean verbose) {
+    private static boolean doDiscriminatingPathOrientationScoreBased(Node e, Node a, Node b, Node c, List<Node> path, Graph graph,
+                                                                     TeyssierScorer scorer, boolean doDiscriminatingPathTailRule,
+                                                                     boolean doDiscriminatingPathColliderRule, boolean verbose) {
 
 
+        System.out.println("For discriminating path rule, tucking");
         scorer.goToBookmark();
         scorer.tuck(c, b);
         scorer.tuck(e, b);
         scorer.tuck(a, c);
         boolean collider = !scorer.adjacent(e, c);
+        System.out.println("For discriminating path rule, found collider = " + collider);
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
@@ -358,7 +363,7 @@ public final class FciOrient {
     }
 
     /**
-     * Triple-checks a DDP construct to make sure it satisfies all of the requirements.
+     * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.
      * <p>
      * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
      * <p>
@@ -386,34 +391,34 @@ public final class FciOrient {
      * @param graph the graph representation
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private static void doubleCheckDdpConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+    private static void doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
 
         if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a dicriminatin path construct.");
         }
 
         if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
 
         if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
 
         if (!path.contains(a)) {
-            throw new IllegalArgumentException("This is not a DDP construct.");
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
 
-//        if (graph.isAdjacentTo(e, b)) {
-//            throw new IllegalArgumentException("This is not a DDP construct.");
-//        }
+        if (graph.isAdjacentTo(e, c)) {
+            throw new IllegalArgumentException("This is not a discriminating path construct.");
+        }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
@@ -535,7 +540,7 @@ public final class FciOrient {
                     continue;
                 }
 
-                if (isUnshieldedCollider(graph, a, b, c)) {
+                if (isUnshieldedCollider(graph, a, b, c, depth)) {
                     if (!isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
@@ -557,8 +562,8 @@ public final class FciOrient {
         }
     }
 
-    public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, test);
+    public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
+        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -865,7 +870,7 @@ public final class FciOrient {
                             continue;
                         }
 
-                        // Some ddp orientation may already have been made.
+                        // Some discriminating path orientation may already have been made.
                         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
                             continue;
                         }
@@ -874,7 +879,7 @@ public final class FciOrient {
                             continue;
                         }
 
-                        ddpOrient(a, b, c, graph);
+                        discriminatingPathOrient(a, b, c, graph);
                     }
                 }
             }
@@ -882,16 +887,16 @@ public final class FciOrient {
     }
 
     /**
-     * A method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
-     * consists of colliders that are parents of c.
+     * A method to search "back from a" to find a discriminaging path. It is called with a reachability list (first
+     * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
+     * The body of a discriminating path consists of colliders that are parents of c.
      *
      * @param a     a {@link Node} object
      * @param b     a {@link Node} object
      * @param c     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private void ddpOrient(Node a, Node b, Node c, Graph graph) {
+    private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>(20);
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();
@@ -952,7 +957,7 @@ public final class FciOrient {
                     colliderPath.remove(e);
                     colliderPath.remove(b);
 
-                    if (doDdpOrientation(e, a, b, c, colliderPath, graph)) {
+                    if (doDiscriminatingPathOrientation(e, a, b, c, colliderPath, graph, depth)) {
                         return;
                     }
                 }
@@ -991,14 +996,15 @@ public final class FciOrient {
      * @param b     the 'b' node
      * @param c     the 'c' node
      * @param graph the graph representation
+     * @param depth
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private boolean doDdpOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
-        doubleCheckDdpConstruct(e, a, b, c, path, graph);
+    private boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph, int depth) {
+        doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
 
         if (scorer != null) {
-            return doDdpOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
+            return doDiscriminatingPathOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
                     doDiscriminatingPathColliderRule, verbose);
         }
 
@@ -1008,7 +1014,22 @@ public final class FciOrient {
             }
         }
 
-        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(), test);
+        System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
+//        Set<Node> sepset;
+//
+//        if (test instanceof MsepTest) {
+//            Graph dag = ((MsepTest) test).getGraph();
+//            sepset = SepsetFinder.getSepsetParentsOfXorY(dag, e, c, test);
+//        } else {
+//            sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
+//        }
+
+//        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
+        HashSet<Node> cond = new HashSet<>();
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlocking2(graph, e, c, cond, test, null, -1, -1, false);
+//       Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(graph, e, c, test, null, -1, -1, false);
+//
+        System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
         if (sepset == null) {
             return false;
@@ -1602,5 +1623,9 @@ public final class FciOrient {
             }
         }
 
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }

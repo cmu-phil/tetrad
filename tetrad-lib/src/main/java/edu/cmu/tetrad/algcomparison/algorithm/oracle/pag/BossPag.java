@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.BossDumb;
+import edu.cmu.tetrad.search.LvDumb;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -32,8 +32,8 @@ import java.util.List;
  * @author josephramsey
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BOSS-Dumb",
-//        command = "boss-dumb",
+//        name = "LV-Dumb",
+//        command = "lv-dumb",
 //        algoType = AlgType.allow_latent_common_causes
 //)
 //@Bootstrapping
@@ -112,7 +112,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        BossDumb search = new BossDumb(score);
+        LvDumb search = new LvDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -152,7 +152,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "BOSS-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**

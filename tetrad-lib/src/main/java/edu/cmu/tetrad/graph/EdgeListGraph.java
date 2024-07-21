@@ -487,7 +487,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Set<Node> getSepset(Node x, Node y, IndependenceTest test) {
-        return new Paths(this).getSepset(x, y, false, test);
+        return new Paths(this).getSepset(x, y, false, test, -1);
     }
 
     /**

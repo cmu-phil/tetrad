@@ -29,13 +29,13 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * BOSS-Dumb is a class that implements the IGraphSearch interface. The BOSS-Dumb algorithm finds the BOSS DAG for
+ * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class BossDumb implements IGraphSearch {
+public final class LvDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -86,7 +86,7 @@ public final class BossDumb implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public BossDumb(Score score) {
+    public LvDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }

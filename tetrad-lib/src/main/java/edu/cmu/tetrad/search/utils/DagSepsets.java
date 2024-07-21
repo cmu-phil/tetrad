@@ -54,7 +54,7 @@ public class DagSepsets implements SepsetProducer {
      * Returns the list of sepset for {a, b}.
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b) {
+    public Set<Node> getSepset(Node a, Node b, int depth) {
         return this.dag.getSepset(a, b, new MsepTest(dag));
     }
 
@@ -63,14 +63,15 @@ public class DagSepsets implements SepsetProducer {
      * for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
      * otherwise, an exception is thrown.
      *
-     * @param a The first node.
-     * @param b The second node.
-     * @param s The set of nodes that must be contained in the sepset.
+     * @param a     The first node.
+     * @param b     The second node.
+     * @param s     The set of nodes that must be contained in the sepset.
+     * @param depth
      * @return The sepset containing 'a' and 'b' that also contains all the nodes in 's'.
      * @throws IllegalArgumentException If the sepset of 'a' and 'b' does not contain all the nodes in 's'.
      */
     @Override
-    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
 //        return dag.getSepset(a, b);
         return  ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
 //        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
@@ -82,7 +83,7 @@ public class DagSepsets implements SepsetProducer {
      * True iff i*-*j*-*k is an unshielded collider.
      */
     @Override
-    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
         Set<Node> sepset = ((EdgeListGraph) this.dag).getSepset(i, k, false);
         return sepset != null && !sepset.contains(j);
     }
