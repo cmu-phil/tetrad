@@ -609,10 +609,10 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
-    public Set<List<Node>> allPaths2(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
-                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
+                                         boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisit2(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+        allPathsVisitOutOf(node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
@@ -671,8 +671,8 @@ public class Paths implements TetradSerializable {
         pathSet.remove(node1);
     }
 
-    private void allPathsVisit2(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength,
-                                Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    private void allPathsVisitOutOf(Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
+                                    Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -705,7 +705,7 @@ public class Paths implements TetradSerializable {
             }
 
             if (paths.size() < maxPaths) {
-                allPathsVisit2(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+                allPathsVisitOutOf(child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
             }
         }
 

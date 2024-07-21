@@ -625,7 +625,7 @@ public final class LvLite implements IGraphSearch {
 
             dag.getEdges().forEach(edge -> {
                 Set<Node> cond = new HashSet<>();
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOf(dag, edge.getNode1(), edge.getNode2(), cond, test, ancestors,
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, edge.getNode1(), edge.getNode2(), cond, test,
                         _length, depth, false);
 
                 if (sepset != null) {

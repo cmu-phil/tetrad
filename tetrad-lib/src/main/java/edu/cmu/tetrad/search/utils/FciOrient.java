@@ -564,7 +564,7 @@ public final class FciOrient {
 
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
         Set<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOf(graph, i, k, cond, test, null, 6, depth, false);
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, i, k, cond, test, 6, depth, false);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -1027,7 +1027,7 @@ public final class FciOrient {
 
 //        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
         HashSet<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOf(graph, e, c, cond, test, null, -1, -1, false);
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, cond, test, -1, -1, false);
 //       Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(graph, e, c, test, null, -1, -1, false);
 //
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);

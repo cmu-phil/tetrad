@@ -337,8 +337,8 @@ public class SepsetFinder {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> getSepsetPathBlocking(Graph mpdag, Node x, Node y, IndependenceTest test, Map<Node, Set<Node>> ancestors,
-                                                  int maxLength, int depth, boolean printTrace) {
+    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test, Map<Node, Set<Node>> ancestors,
+                                                      int maxLength, int depth, boolean printTrace) {
         if (printTrace) {
             Edge e = mpdag.getEdge(x, y);
             TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
@@ -466,28 +466,28 @@ public class SepsetFinder {
 
     /**
      * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
-     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite noncollider
-     * nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The length of the
-     * paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can be limited by
-     * the depth parameter. When increasing the considered path length does not yield any new paths, the search is
-     * terminated early.
+     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
+     * noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The
+     * length of the paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can
+     * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
+     * search is terminated early.
      *
-     * @param mpdag     The graph representing the Markov equivalence class that contains the nodes.
-     * @param x         The first node in the pair.
-     * @param y         The second node in the pair.
-     * @param cond      The set of conditioning nodes.
-     * @param test      The independence test object to use for checking independence.
-     * @param ancestors A map storing the ancestors of each node in the graph.
-     * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than the number of nodes minus one, it is adjusted accordingly.
-     * @param depth     The maximum depth of the final sepset. If set to a negative value, no limit is applied.
+     * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
+     * @param x          The first node in the pair.
+     * @param y          The second node in the pair.
+     * @param cond       The set of conditioning nodes.
+     * @param test       The independence test object to use for checking independence.
+     * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
+     *                   the number of nodes minus one, it is adjusted accordingly.
+     * @param depth      The maximum depth of the final sepset. If set to a negative value, no limit is applied.
      * @param printTrace A boolean flag indicating whether to print trace information.
      * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlockingOutOf(Graph mpdag, Node x, Node y, Set<Node> cond, IndependenceTest test,
-                                                       Map<Node, Set<Node>> ancestors, int maxLength, int depth, boolean printTrace) {
-        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-            return new HashSet<>();
-        }
+    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, Set<Node> cond, IndependenceTest test,
+                                                        int maxLength, int depth, boolean printTrace) {
+//        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
+//            return new HashSet<>();
+//        }
 
         Set<Node> couldBeColliders = new HashSet<>();
 
@@ -495,6 +495,8 @@ public class SepsetFinder {
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
         }
+        
+        System.out.println("max length = " + maxLength + " depth = " + depth);
 
         // We start with path of length 2, since these are the shortest paths that can be blocked.
         // We will start assuming all paths at this length are blocked, and if any are not blocked, we will
@@ -506,7 +508,7 @@ public class SepsetFinder {
             lastPaths = new HashSet<>(paths);
 
             couldBeColliders = new HashSet<>();
-            paths = tryToBlockPaths(x, y, mpdag, cond, couldBeColliders, length, depth, ancestors, printTrace);
+            paths = tryToBlockPaths(x, y, mpdag, cond, couldBeColliders, length, depth, printTrace);
 
             if (paths.equals(lastPaths)) {
                 break;
@@ -583,8 +585,8 @@ public class SepsetFinder {
      * Attempts to block all paths from x to y by conditioning on definite noncollider nodes. If all paths are blocked,
      * returns true; otherwise, returns false.
      *
-     * @param mpdag            the MPDAG graph to analyze
      * @param y                the second node
+     * @param mpdag            the MPDAG graph to analyze
      * @param cond             the set of nodes to condition on
      * @param couldBeColliders the set of nodes that could be colliders
      * @param depth            the maximum depth of the sepset
@@ -592,9 +594,9 @@ public class SepsetFinder {
      * @return true if all paths are successfully blocked, false otherwise
      */
     private static Set<List<Node>> tryToBlockPaths(Node x, Node y, Graph mpdag, Set<Node> cond, Set<Node> couldBeColliders,
-                                                   int length, int depth, Map<Node, Set<Node>> ancestors, boolean printTrace) {
+                                                   int length, int depth, boolean printTrace) {
 
-        Set<List<Node>> paths = mpdag.paths().allPaths2(x, null, 0, length, cond, ancestors, false);
+        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, length, cond, false);
 
 
         // Sort paths by increasing size. We want to block the shorter paths first.
