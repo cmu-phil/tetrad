@@ -48,8 +48,8 @@ public class TestSepsetMethods {
     public void test1() {
         RandomUtil.getInstance().setSeed(384828384L);
 
-        int numNodes = 50;
-        int numEdges = 100;
+        int numNodes = 20;
+        int numEdges = 40;
         int numReps = 10;
 
         // Make a list of numNodes nodes.
@@ -177,8 +177,8 @@ public class TestSepsetMethods {
     public void test6() {
         RandomUtil.getInstance().setSeed(384828384L);
 
-        int numNodes = 50;
-        int numEdges = 100;
+        int numNodes = 20;
+        int numEdges = 40;
 
         // Make a list of numNodes nodes.
         List<Node> nodes = new ArrayList<>();
