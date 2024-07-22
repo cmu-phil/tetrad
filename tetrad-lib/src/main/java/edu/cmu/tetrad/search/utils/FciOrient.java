@@ -563,8 +563,7 @@ public final class FciOrient {
     }
 
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
-        Set<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, i, k, test, 6, depth, false);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -1016,20 +1015,12 @@ public final class FciOrient {
         }
 
         System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
-//        Set<Node> sepset;
-//
-//        if (test instanceof MsepTest) {
-//            Graph dag = ((MsepTest) test).getGraph();
-//            sepset = SepsetFinder.getSepsetParentsOfXorY(dag, e, c, test);
-//        } else {
-//            sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
-//        }
 
-//        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
-        HashSet<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-//       Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(graph, e, c, test, null, -1, -1, false);
-//
+        //        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
+//        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
+//        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingXtoY(graph, e, c, test, -1, -1, false);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
         if (sepset == null) {

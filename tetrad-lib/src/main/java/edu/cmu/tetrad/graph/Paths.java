@@ -704,13 +704,13 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (previous != null) {
-                Edge _previous = graph.getEdge(previous, node1);
-
-                if (!reachable(_previous, edge, edge.getDistalNode(node1), conditionSet)) {
-                    continue;
-                }
-            }
+//            if (previous != null) {
+//                Edge _previous = graph.getEdge(previous, node1);
+//
+//                if (!reachable(_previous, edge, edge.getDistalNode(node1), conditionSet)) {
+//                    continue;
+//                }
+//            }
 
             if (paths.size() < maxPaths) {
                 allPathsVisitOutOf(node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);

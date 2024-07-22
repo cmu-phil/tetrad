@@ -135,7 +135,7 @@ public class TestSepsetMethods {
         System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop5 - start5) + " ms");
 
         long start6 = System.currentTimeMillis();
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXOrY(dag, x, y, msepTest, -1, -1,
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXorY(dag, x, y, msepTest, -1, -1,
                 false);
         long stop6 = System.currentTimeMillis();
         times[5] = stop6 - start6;

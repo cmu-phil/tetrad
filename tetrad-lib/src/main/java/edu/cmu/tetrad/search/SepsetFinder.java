@@ -323,14 +323,23 @@ public class SepsetFinder {
      * @param printTrace a flag indicating whether to print the trace of the execution
      * @return a set of nodes representing the sepset path blocking out of either node X or Y
      */
-    public static Set<Node> getSepsetPathBlockingOutOfXOrY(Graph mpdag, Node x, Node y, IndependenceTest test,
+    public static Set<Node> getSepsetPathBlockingOutOfXorY(Graph mpdag, Node x, Node y, IndependenceTest test,
                                                            int maxLength, int depth, boolean printTrace) {
+        Set<Node> sepsetPathBlockingOutOfX = getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
+        Set<Node> sepsetPathBlockingOutOfY = getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
 
-        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
-            return getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
+        if (sepsetPathBlockingOutOfX != null) {
+            return sepsetPathBlockingOutOfX;
         } else {
-            return getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
+            return sepsetPathBlockingOutOfY;
         }
+
+
+//        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
+//             return sepsetPathBlockingOutOfX;
+//        } else {
+//            return sepsetPathBlockingOutOfX;
+//        }
     }
 
 
