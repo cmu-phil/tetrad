@@ -612,7 +612,7 @@ public class Paths implements TetradSerializable {
     public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
                                          boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisitOutOf(node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
+        allPathsVisitOutOf(null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
@@ -671,7 +671,7 @@ public class Paths implements TetradSerializable {
         pathSet.remove(node1);
     }
 
-    private void allPathsVisitOutOf(Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
+    private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
                                     Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
@@ -704,8 +704,20 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
+            if (previous != null) {
+                Edge _previous = graph.getEdge(previous, node1);
+
+                if (!reachable(_previous, edge, edge.getDistalNode(node1), conditionSet)) {
+                    continue;
+                }
+            }
+
+//            if (!reachable(edge, edge2, edge.getDistalNode(node1), conditionSet)) {
+//                continue;
+//            }
+
             if (paths.size() < maxPaths) {
-                allPathsVisitOutOf(child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
+                allPathsVisitOutOf(node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
             }
         }
 

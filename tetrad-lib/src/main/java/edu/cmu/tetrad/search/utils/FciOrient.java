@@ -91,7 +91,7 @@ public final class FciOrient {
 
     public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
         return FciOrient.specialConfiguration(new MsepTest(dag), true, true,
-                true, -1, knowledge, verbose, -1);
+                true, -1, knowledge, verbose, 5);
     }
 
     public static FciOrient defaultConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
@@ -99,7 +99,7 @@ public final class FciOrient {
             return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
         } else {
             return FciOrient.specialConfiguration(test, true, true,
-                    true, -1, knowledge, verbose, -1);
+                    true, -1, knowledge, verbose, 5);
         }
     }
 
@@ -564,7 +564,7 @@ public final class FciOrient {
 
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
         Set<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, i, k, cond, test, 6, depth, false);
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, i, k, test, 6, depth, false);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -1027,7 +1027,7 @@ public final class FciOrient {
 
 //        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
         HashSet<Node> cond = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, cond, test, -1, -1, false);
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
 //       Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(graph, e, c, test, null, -1, -1, false);
 //
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);

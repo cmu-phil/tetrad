@@ -14,12 +14,15 @@ public class SepsetFinder {
 
     /**
      * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
-     * to be conditioned on in order to render two nodes conditionally independent.
+     * to be conditioned on to render two nodes conditionally independent.
      *
-     * @param x    the first node
-     * @param y    the second node
-     * @param test
-     * @return the sepset between the two nodes as a Set<Node>
+     * @param graph      the graph to analyze
+     * @param x          the first node
+     * @param y          the second node
+     * @param containing the set of nodes that must be in the sepset
+     * @param test       the independence test to use
+     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
+     * {@code null} if no sepset can be found.
      */
     public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
@@ -76,7 +79,6 @@ public class SepsetFinder {
 
             for (Node c : passNodes) {
                 if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap, test)) {
-//                    path.remove(b);
                     return true;
                 }
             }
@@ -117,8 +119,6 @@ public class SepsetFinder {
                 return false;
             }
 
-//            z.remove(b);
-//            path.remove(b);
             return true;
         }
     }
@@ -337,7 +337,7 @@ public class SepsetFinder {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test, Map<Node, Set<Node>> ancestors,
+    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test,
                                                       int maxLength, int depth, boolean printTrace) {
         if (printTrace) {
             Edge e = mpdag.getEdge(x, y);
@@ -345,7 +345,7 @@ public class SepsetFinder {
         }
 
         // This is the set of all possible conditioning variables, though note below.
-        Set<Node> noncolliders = new HashSet<>();
+        Set<Node> conditioningSet = new HashSet<>();
 
         // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
         // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
@@ -359,7 +359,7 @@ public class SepsetFinder {
         while (_changed) {
             _changed = false;
 
-            paths = mpdag.paths().allPaths(x, y, -1, maxLength, noncolliders, ancestors, false);
+            paths = mpdag.paths().allPaths(x, y, -1, maxLength, conditioningSet, null, false);
 
             // We note whether all current paths are blocked.
             boolean allBlocked = true;
@@ -378,7 +378,7 @@ public class SepsetFinder {
                     Node z3 = path.get(n + 1);
 
                     if (!mpdag.isDefCollider(z1, z2, z3)) {
-                        if (noncolliders.contains(z2)) {
+                        if (conditioningSet.contains(z2)) {
                             blocked = true;
 
                             if (printTrace) {
@@ -388,7 +388,7 @@ public class SepsetFinder {
                             break;
                         }
 
-                        noncolliders.add(z2);
+                        conditioningSet.add(z2);
                         blocked = true;
                         _changed = true;
 
@@ -396,15 +396,9 @@ public class SepsetFinder {
                             TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
                         }
 
-                        if (mpdag.isAdjacentTo(z1, z3)) {
-                            couldBeColliders.add(z2);
+                        addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
 
-                            if (printTrace) {
-                                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
-                            }
-                        }
-
-                        if (depth != -1 && noncolliders.size() > depth) {
+                        if (depth != -1 && conditioningSet.size() > depth) {
                             return null;
                         }
 
@@ -425,14 +419,14 @@ public class SepsetFinder {
         }
 
         if (printTrace) {
-            TetradLogger.getInstance().log("noncolliders: " + noncolliders);
+            TetradLogger.getInstance().log("conditioningSet: " + conditioningSet);
             TetradLogger.getInstance().log("couldBeColliders: " + couldBeColliders);
         }
 
-        // Now, for each conditioning set we identify, where the length-2 noncolliders are either included or not
+        // Now, for each conditioning set we identify, where the length-2 conditioningSet are either included or not
         // in the set, we check independence greedily. Hopefully the number of options here is small.
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        noncolliders.removeAll(couldBeColliders);
+        conditioningSet.removeAll(couldBeColliders);
 
         SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
         int[] choice;
@@ -444,7 +438,7 @@ public class SepsetFinder {
                 sepset.add(couldBeCollidersList.get(k));
             }
 
-            sepset.addAll(noncolliders);
+            sepset.addAll(conditioningSet);
 
             if (depth != -1 && sepset.size() > depth) {
                 continue;
@@ -464,6 +458,16 @@ public class SepsetFinder {
         return null;
     }
 
+    public static Set<Node> getSepsetPathBlockingOutOfXOrY(Graph mpdag, Node x, Node y, IndependenceTest test,
+                                                           int maxLength, int depth, boolean printTrace) {
+
+        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
+            return getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
+        } else {
+            return getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
+        }
+    }
+
     /**
      * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
      * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
@@ -475,7 +479,6 @@ public class SepsetFinder {
      * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
      * @param x          The first node in the pair.
      * @param y          The second node in the pair.
-     * @param cond       The set of conditioning nodes.
      * @param test       The independence test object to use for checking independence.
      * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
      *                   the number of nodes minus one, it is adjusted accordingly.
@@ -483,46 +486,34 @@ public class SepsetFinder {
      * @param printTrace A boolean flag indicating whether to print trace information.
      * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, Set<Node> cond, IndependenceTest test,
+    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
                                                         int maxLength, int depth, boolean printTrace) {
-//        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-//            return new HashSet<>();
-//        }
 
-        Set<Node> couldBeColliders = new HashSet<>();
-
-        // We will try condititionng on paths of increasing length until we find a conditioning set that works.
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
         }
-        
-        System.out.println("max length = " + maxLength + " depth = " + depth);
 
-        // We start with path of length 2, since these are the shortest paths that can be blocked.
-        // We will start assuming all paths at this length are blocked, and if any are not blocked, we will
-        // set this to false.
         Set<List<Node>> lastPaths;
         Set<List<Node>> paths = new HashSet<>();
 
-        for (int length = 2; length < maxLength; length++) {
+        Set<Node> conditioningSet = new HashSet<>();
+        Set<Node> couldBeColliders = new HashSet<>();
+        Set<Node> blacklist = new HashSet<>();
+
+        for (int length = 1; length < maxLength; length++) {
             lastPaths = new HashSet<>(paths);
 
-            couldBeColliders = new HashSet<>();
-            paths = tryToBlockPaths(x, y, mpdag, cond, couldBeColliders, length, depth, printTrace);
+            paths = tryToBlockPaths(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, length, printTrace);
 
             if (paths.equals(lastPaths)) {
                 break;
             }
         }
 
-        // Now, for each conditioning set we identify, where the length-2 _cond are either included or not
-        // in the set, we check independence greedily. Hopefully the number of options here is small.
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        cond.removeAll(couldBeColliders);
+        conditioningSet.removeAll(couldBeColliders);
 
-        System.out.println("Considering choices of couldBeCollidersList: " + couldBeCollidersList + " and cond: " + cond);
-
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
+        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
@@ -532,18 +523,15 @@ public class SepsetFinder {
                 sepset.add(couldBeCollidersList.get(k));
             }
 
-            sepset.addAll(cond);
+            sepset.addAll(conditioningSet);
 
             if (depth != -1 && sepset.size() > depth) {
                 continue;
             }
 
-            System.out.println("Condidering, sepset: " + sepset);
+            sepset.remove(y);
 
             if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-
-
                 Set<Node> _z = new HashSet<>(sepset);
                 boolean removed;
 
@@ -568,16 +556,14 @@ public class SepsetFinder {
                     throw new IllegalArgumentException("Independence does not hold.");
                 }
 
-//                if (printTrace) {
-                TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-//                }
+                if (printTrace) {
+                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+                }
 
                 return sepset;
             }
         }
 
-        // We've checked a sufficient set of possible sepsets, and none of them worked, so we return false, since
-        // we can't remove the edge.
         return null;
     }
 
@@ -587,17 +573,13 @@ public class SepsetFinder {
      *
      * @param y                the second node
      * @param mpdag            the MPDAG graph to analyze
-     * @param cond             the set of nodes to condition on
+     * @param conditioningSet  the set of nodes to condition on
      * @param couldBeColliders the set of nodes that could be colliders
-     * @param depth            the maximum depth of the sepset
      * @param printTrace       whether to print trace information
-     * @return true if all paths are successfully blocked, false otherwise
      */
-    private static Set<List<Node>> tryToBlockPaths(Node x, Node y, Graph mpdag, Set<Node> cond, Set<Node> couldBeColliders,
-                                                   int length, int depth, boolean printTrace) {
-
-        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, length, cond, false);
-
+    private static Set<List<Node>> tryToBlockPaths(Node x, Node y, Graph mpdag, Set<Node> conditioningSet, Set<Node> couldBeColliders,
+                                                   Set<Node> blacklist, int maxLength, boolean printTrace) {
+        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, maxLength, conditioningSet, false);
 
         // Sort paths by increasing size. We want to block the shorter paths first.
         List<List<Node>> _paths = new ArrayList<>(paths);
@@ -608,10 +590,9 @@ public class SepsetFinder {
                 continue;
             }
 
-            blockPath(path, mpdag, cond, couldBeColliders, depth, y, printTrace);
+            blockPath(path, mpdag, conditioningSet, couldBeColliders, blacklist, x, y, printTrace);
         }
 
-        System.out.println("# paths = " + paths.size() + " length = " + length + " couldBeColliders = " + couldBeColliders + " cond = " + cond);
         return paths;
     }
 
@@ -621,25 +602,19 @@ public class SepsetFinder {
      *
      * @param path             the path to check
      * @param mpdag            the MPDAG graph to analyze
-     * @param cond             the set of nodes to condition on; this may be modified
+     * @param conditioningSet  the set of nodes to condition on; this may be modified
      * @param couldBeColliders the set of nodes that could be colliders; this may be modified
-     * @param depth            the maximum depth of the sepset
      * @param y                the second node
      * @param printTrace       whether to print trace information
      */
-    private static void blockPath(List<Node> path, Graph mpdag, Set<Node> cond, Set<Node> couldBeColliders, int depth,
-                                  Node y, boolean printTrace) {
-        // We need to determine if this path is blocked. We initially assume that it is not, and
-        // if it is, we will set this to true.
-        boolean blocked = false;
+    private static void blockPath(List<Node> path, Graph mpdag, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist,
+                                  Node x, Node y, boolean printTrace) {
 
-        // We look for a definite noncollider along that path and condition on it to block the path.
         for (int n = 1; n < path.size() - 1; n++) {
             Node z1 = path.get(n - 1);
             Node z2 = path.get(n);
             Node z3 = path.get(n + 1);
 
-            // If z2 is latent, we don't need to condition on it.
             if (z2.getNodeType() == NodeType.LATENT) {
                 continue;
             }
@@ -648,34 +623,24 @@ public class SepsetFinder {
                 continue;
             }
 
-            if (z2 == y) {
-                continue;
+            if (z1 == x && z3 == y && mpdag.isDefCollider(z1, z2, z3)) {
+                blacklist.add(z2);
+                break;
             }
 
             if (mpdag.isDefNoncollider(z1, z2, z3)) {
-
-                // If we've already conditioned on this definite noncollider node, we don't need to
-                // do it again.
-                if (cond.contains(z2)) {
+                if (conditioningSet.contains(z2)) {
                     if (printTrace) {
                         TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
                     }
 
-                    // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
-                    // it could be a collider. We will need to either consider this to be a collider or
-                    // a noncollider below.
-                    if (mpdag.isAdjacentTo(z1, z3)) {
-                        couldBeColliders.add(z2);
-
-                        if (printTrace) {
-                            TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
-                        }
+                    if (z1 == x) {
+                        addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
                     }
-
-                    break;
                 }
 
-                cond.add(z2);
+                conditioningSet.add(z2);
+                conditioningSet.removeAll(blacklist);
 
                 if (printTrace) {
                     TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
@@ -684,16 +649,23 @@ public class SepsetFinder {
                 // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
                 // it could be a collider. We will need to either consider this to be a collider or
                 // a noncollider below.
-                if (mpdag.isAdjacentTo(z1, z3)) {
-                    couldBeColliders.add(z2);
+                addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
 
-                    if (printTrace) {
-                        TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
-                    }
-                }
+                break;
             }
         }
 
+    }
+
+    private static void addCouldBeCollider(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag,
+                                           Set<Node> couldBeColliders, boolean printTrace) {
+        if (mpdag.isAdjacentTo(z1, z3)) {
+            couldBeColliders.add(z2);
+
+            if (printTrace) {
+                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
+            }
+        }
     }
 
     public static Set<Node> getSepsetParentsOfXorY(Graph dag, Node x, Node y, IndependenceTest test) {
