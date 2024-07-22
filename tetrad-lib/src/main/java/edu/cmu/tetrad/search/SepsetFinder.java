@@ -726,7 +726,9 @@ public class SepsetFinder {
                 // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
                 // it could be a collider. We will need to either consider this to be a collider or
                 // a noncollider below.
-                addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
+                if (z1 == x) {
+                    addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
+                }
 
                 break;
             }
