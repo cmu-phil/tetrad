@@ -712,10 +712,6 @@ public class Paths implements TetradSerializable {
                 }
             }
 
-//            if (!reachable(edge, edge2, edge.getDistalNode(node1), conditionSet)) {
-//                continue;
-//            }
-
             if (paths.size() < maxPaths) {
                 allPathsVisitOutOf(node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
             }
@@ -1294,8 +1290,6 @@ public class Paths implements TetradSerializable {
 
         return false;
     }
-
-    // Needs to be public.
 
     /**
      * <p>existsInducingPathVisit.</p>

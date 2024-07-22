@@ -11,157 +11,17 @@ import java.util.function.Function;
 
 public class SepsetFinder {
 
-
     /**
-     * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
-     * to be conditioned on to render two nodes conditionally independent.
+     * Returns the sepset that contains the greedy test for variables x and y in the given graph.
      *
-     * @param graph      the graph to analyze
-     * @param x          the first node
-     * @param y          the second node
-     * @param containing the set of nodes that must be in the sepset
+     * @param graph      the graph containing the variables
+     * @param x          the first variable
+     * @param y          the second variable
+     * @param containing the set of nodes that must be contained in the sepset (optional)
      * @param test       the independence test to use
-     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
-     * {@code null} if no sepset can be found.
+     * @param depth      the depth of the search
+     * @return the sepset containing the greedy test for variables x and y, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
-    }
-
-    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
-        if (x == y) {
-            return null;
-        }
-
-        Set<Node> z = new HashSet<>(containing);
-
-        Set<Node> _z;
-
-        do {
-            _z = new HashSet<>(z);
-
-            Set<Node> path = new HashSet<>();
-            path.add(x);
-            Set<Triple> colliders = new HashSet<>();
-
-            for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap, test)) {
-                    return null;
-                }
-            }
-        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
-
-        if (test.checkIndependence(x, y, z).isIndependent()) {
-            return z;
-        } else {
-            return null;
-        }
-    }
-
-    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
-            Set<Node>> ancestorMap, IndependenceTest test) {
-        if (b == y) {
-            return true;
-        }
-
-        if (path.contains(b)) {
-            return false;
-        }
-
-        if (path.size() > (bound == -1 ? 1000 : bound)) {
-            return false;
-        }
-
-        path.add(b);
-
-        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
-
-            for (Node c : passNodes) {
-                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap, test)) {
-                    return true;
-                }
-            }
-
-            path.remove(b);
-            return false;
-        } else {
-            boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
-
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap, test)) {
-                    found1 = true;
-                    break;
-                }
-            }
-
-            if (!found1) {
-                path.remove(b);
-                colliders.addAll(_colliders1);
-                return false;
-            }
-
-            z.add(b);
-            boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap, test)) {
-                    found2 = true;
-                    break;
-                }
-            }
-
-            if (!found2) {
-                path.remove(b);
-                colliders.addAll(_colliders2);
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    private static List<Node> getPassNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
-        List<Node> passNodes = new ArrayList<>();
-
-        for (Node c : graph.getAdjacentNodes(b)) {
-            if (c == a) {
-                continue;
-            }
-
-            if (reachable(graph, a, b, c, z, ancestorMap)) {
-                passNodes.add(c);
-            }
-        }
-
-        return passNodes;
-    }
-
-    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        boolean collider = graph.isDefCollider(a, b, c);
-
-        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
-            return true;
-        }
-
-        if (ancestors == null) {
-            return collider && graph.paths().isAncestor(b, z);
-        } else {
-            boolean ancestor = false;
-
-            for (Node _z : ancestors.get(b)) {
-                if (z.contains(_z)) {
-                    ancestor = true;
-                    break;
-                }
-            }
-
-            return collider && ancestor;
-        }
-    }
-
     public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
@@ -173,13 +33,8 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        // remove latents.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-//        if (adjx.size() > 8 || adjy.size() > 8) {
-//            System.out.println("Warning: Greedy sepset finding may be slow for large graphs.");
-//        }
 
         List<List<Integer>> choices = getChoices(adjx, depth);
         List<Integer> sepset = choices.parallelStream().filter(_choice -> separates(x, y, combination(_choice, adjx), test)).findFirst().orElse(null);
@@ -199,21 +54,19 @@ public class SepsetFinder {
         return null;
     }
 
-    private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
-        List<List<Integer>> choices = new ArrayList<>();
-
-        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
-
-        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
-        int[] choice;
-
-        while ((choice = cg.next()) != null) {
-            choices.add(GraphUtils.asList(choice));
-        }
-
-        return choices;
-    }
-
+    /**
+     * Returns the set of nodes that act as a separating set between two given nodes (x and y) in a graph.
+     * The method calculates the p-value for each possible separating set and returns the set that has the maximum p-value
+     * above the specified alpha threshold.
+     *
+     * @param graph      the graph containing the nodes
+     * @param x          the first node
+     * @param y          the second node
+     * @param containing the set of nodes that must be included in the separating set (optional, can be null)
+     * @param test       the independence test used to calculate the p-values
+     * @param depth      the maximum depth to explore for each separating set
+     * @return the set of nodes that act as a separating set, or null if such set is not found
+     */
     public static Set<Node> getSepsetContainingMaxP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
@@ -257,6 +110,17 @@ public class SepsetFinder {
         return null;
     }
 
+    /**
+     * Returns the sepset containing the minimum p-value for the given variables x and y.
+     *
+     * @param graph      the graph representing the network
+     * @param x          the first node
+     * @param y          the second node
+     * @param containing the set of nodes to be excluded from the sepset
+     * @param test       the independence test to use for calculating the p-value
+     * @param depth      the depth of the search for the sepset
+     * @return the sepset containing the minimum p-value, or null if no sepset is found
+     */
     public static Set<Node> getSepsetContainingMinP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
@@ -268,14 +132,12 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        // remove latents.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
         List<List<Integer>> choices = getChoices(adjx, depth);
         Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
-        // Find the object that maximizes the function in parallel
         List<Integer> minObject = choices.parallelStream()
                 .min(Comparator.comparing(function))
                 .orElse(null);
@@ -284,11 +146,9 @@ public class SepsetFinder {
             return combination(minObject, adjx);
         }
 
-        // Do the same for adjy.
         choices = getChoices(adjx, depth);
         function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
-        // Find the object that maximizes the function in parallel
         minObject = choices.parallelStream()
                 .min(Comparator.comparing(function))
                 .orElse(null);
@@ -300,24 +160,179 @@ public class SepsetFinder {
         return null;
     }
 
-    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
-        // Create a set of nodes from the subset of adjx represented by choice.
-        Set<Node> combination = new HashSet<>();
+    /**
+     * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
+     * to be conditioned on to render two nodes conditionally independent.
+     *
+     * @param graph      the graph to analyze
+     * @param x          the first node
+     * @param y          the second node
+     * @param containing the set of nodes that must be in the sepset
+     * @param test       the independence test to use
+     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
+     * {@code null} if no sepset can be found.
+     */
+    public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
+    }
 
-        for (int i : choice) {
-            combination.add(adj.get(i));
+    /**
+     * Retrieves the parents of nodes X and Y that also share in their parents based on the given DAG graph and the
+     * provided independence test.
+     *
+     * @param dag  the DAG graph to analyze
+     * @param x    the first node
+     * @param y    the second node
+     * @param test the independence test to use
+     * @return the set of nodes that are parents of both X and Y, excluding X and Y themselves, and excluding any latent
+     * nodes. Returns {@code null} if no common parents can be found or if the given graph is not a legal DAG.
+     * @throws IllegalArgumentException if the given graph is not a legal DAG
+     */
+    public static Set<Node> getSepsetParentsOfXorY(Graph dag, Node x, Node y, IndependenceTest test) {
+        if (!dag.paths().isLegalDag()) {
+            throw new IllegalArgumentException("Graph is not a legal DAG; can't use this method.");
         }
 
-        return combination;
+        Set<Node> parentsX = new HashSet<>(dag.getParents(x));
+        Set<Node> parentsY = new HashSet<>(dag.getParents(y));
+        parentsX.remove(y);
+        parentsY.remove(x);
+
+        // Remove latents.
+        parentsX.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        parentsY.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        if (test.checkIndependence(x, y, parentsX).isIndependent()) {
+            return parentsX;
+        } else if (test.checkIndependence(x, y, parentsY).isIndependent()) {
+            return parentsY;
+        }
+
+        return null;
     }
 
-    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) {
-        return test.checkIndependence(x, y, combination).isIndependent();
+
+    /**
+     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
+     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
+     * noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The
+     * length of the paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can
+     * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
+     * search is terminated early.
+     *
+     * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
+     * @param x          The first node in the pair.
+     * @param y          The second node in the pair.
+     * @param test       The independence test object to use for checking independence.
+     * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
+     *                   the number of nodes minus one, it is adjusted accordingly.
+     * @param depth      The maximum depth of the final sepset. If set to a negative value, no limit is applied.
+     * @param printTrace A boolean flag indicating whether to print trace information.
+     * @return The sepset if independence holds, otherwise null.
+     */
+    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
+                                                        int maxLength, int depth, boolean printTrace) {
+
+        if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
+            maxLength = mpdag.getNumNodes() - 1;
+        }
+
+        Set<List<Node>> lastPaths;
+        Set<List<Node>> paths = new HashSet<>();
+
+        Set<Node> conditioningSet = new HashSet<>();
+        Set<Node> couldBeColliders = new HashSet<>();
+        Set<Node> blacklist = new HashSet<>();
+
+        for (int length = 1; length < maxLength; length++) {
+            lastPaths = new HashSet<>(paths);
+
+            paths = tryToBlockPaths(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, length, printTrace);
+
+            if (paths.equals(lastPaths)) {
+                break;
+            }
+        }
+
+        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
+        conditioningSet.removeAll(couldBeColliders);
+
+        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Node> sepset = new HashSet<>();
+
+            for (int k : choice) {
+                sepset.add(couldBeCollidersList.get(k));
+            }
+
+            sepset.addAll(conditioningSet);
+
+            if (depth != -1 && sepset.size() > depth) {
+                continue;
+            }
+
+            sepset.remove(y);
+
+            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+                Set<Node> _z = new HashSet<>(sepset);
+                boolean removed;
+
+                do {
+                    removed = false;
+
+                    for (Node w : new HashSet<>(_z)) {
+                        Set<Node> __z = new HashSet<>(_z);
+
+                        __z.remove(w);
+
+                        if (test.checkIndependence(x, y, __z).isIndependent()) {
+                            removed = true;
+                            _z = __z;
+                        }
+                    }
+                } while (removed);
+
+                sepset = new HashSet<>(_z);
+
+                if (!test.checkIndependence(x, y, sepset).isIndependent()) {
+                    throw new IllegalArgumentException("Independence does not hold.");
+                }
+
+                if (printTrace) {
+                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+                }
+
+                return sepset;
+            }
+        }
+
+        return null;
     }
 
-    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
-        return test.checkIndependence(x, y, combination).getPValue();
+    /**
+     * Computes the sepset path blocking out of either node X or Y in the given MPDAG graph.
+     *
+     * @param mpdag      the directed acyclic graph (MPDAG) representing the variables and their dependencies
+     * @param x          the first node
+     * @param y          the second node
+     * @param test       the independence test used to determine conditional independence of variables
+     * @param maxLength  the maximum length of the path to search for in the MPDAG
+     * @param depth      the depth of recursion to be used in the algorithm
+     * @param printTrace a flag indicating whether to print the trace of the execution
+     * @return a set of nodes representing the sepset path blocking out of either node X or Y
+     */
+    public static Set<Node> getSepsetPathBlockingOutOfXOrY(Graph mpdag, Node x, Node y, IndependenceTest test,
+                                                           int maxLength, int depth, boolean printTrace) {
+
+        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
+            return getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
+        } else {
+            return getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
+        }
     }
+
 
     /**
      * Searches for sets, by following paths from x to y in the given MPDAG, that could possibly block all paths from x
@@ -458,114 +473,176 @@ public class SepsetFinder {
         return null;
     }
 
-    public static Set<Node> getSepsetPathBlockingOutOfXOrY(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                           int maxLength, int depth, boolean printTrace) {
 
-        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
-            return getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
+    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
+        if (x == y) {
+            return null;
+        }
+
+        Set<Node> z = new HashSet<>(containing);
+
+        Set<Node> _z;
+
+        do {
+            _z = new HashSet<>(z);
+
+            Set<Node> path = new HashSet<>();
+            path.add(x);
+            Set<Triple> colliders = new HashSet<>();
+
+            for (Node b : graph.getAdjacentNodes(x)) {
+                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap, test)) {
+                    return null;
+                }
+            }
+        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
+
+        if (test.checkIndependence(x, y, z).isIndependent()) {
+            return z;
         } else {
-            return getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
+            return null;
         }
     }
 
-    /**
-     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
-     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
-     * noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The
-     * length of the paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can
-     * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
-     * search is terminated early.
-     *
-     * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
-     * @param x          The first node in the pair.
-     * @param y          The second node in the pair.
-     * @param test       The independence test object to use for checking independence.
-     * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
-     *                   the number of nodes minus one, it is adjusted accordingly.
-     * @param depth      The maximum depth of the final sepset. If set to a negative value, no limit is applied.
-     * @param printTrace A boolean flag indicating whether to print trace information.
-     * @return The sepset if independence holds, otherwise null.
-     */
-    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean printTrace) {
-
-        if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
-            maxLength = mpdag.getNumNodes() - 1;
+    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
+            Set<Node>> ancestorMap, IndependenceTest test) {
+        if (b == y) {
+            return true;
         }
 
-        Set<List<Node>> lastPaths;
-        Set<List<Node>> paths = new HashSet<>();
-
-        Set<Node> conditioningSet = new HashSet<>();
-        Set<Node> couldBeColliders = new HashSet<>();
-        Set<Node> blacklist = new HashSet<>();
-
-        for (int length = 1; length < maxLength; length++) {
-            lastPaths = new HashSet<>(paths);
-
-            paths = tryToBlockPaths(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, length, printTrace);
-
-            if (paths.equals(lastPaths)) {
-                break;
-            }
+        if (path.contains(b)) {
+            return false;
         }
 
-        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        conditioningSet.removeAll(couldBeColliders);
+        if (path.size() > (bound == -1 ? 1000 : bound)) {
+            return false;
+        }
 
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
-        int[] choice;
+        path.add(b);
 
-        while ((choice = generator.next()) != null) {
-            Set<Node> sepset = new HashSet<>();
+        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
+            List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
 
-            for (int k : choice) {
-                sepset.add(couldBeCollidersList.get(k));
+            for (Node c : passNodes) {
+                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap, test)) {
+                    return true;
+                }
             }
 
-            sepset.addAll(conditioningSet);
+            path.remove(b);
+            return false;
+        } else {
+            boolean found1 = false;
+            Set<Triple> _colliders1 = new HashSet<>();
 
-            if (depth != -1 && sepset.size() > depth) {
+            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap, test)) {
+                    found1 = true;
+                    break;
+                }
+            }
+
+            if (!found1) {
+                path.remove(b);
+                colliders.addAll(_colliders1);
+                return false;
+            }
+
+            z.add(b);
+            boolean found2 = false;
+            Set<Triple> _colliders2 = new HashSet<>();
+
+            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap, test)) {
+                    found2 = true;
+                    break;
+                }
+            }
+
+            if (!found2) {
+                path.remove(b);
+                colliders.addAll(_colliders2);
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    private static List<Node> getPassNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
+        List<Node> passNodes = new ArrayList<>();
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) {
                 continue;
             }
 
-            sepset.remove(y);
-
-            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                Set<Node> _z = new HashSet<>(sepset);
-                boolean removed;
-
-                do {
-                    removed = false;
-
-                    for (Node w : new HashSet<>(_z)) {
-                        Set<Node> __z = new HashSet<>(_z);
-
-                        __z.remove(w);
-
-                        if (test.checkIndependence(x, y, __z).isIndependent()) {
-                            removed = true;
-                            _z = __z;
-                        }
-                    }
-                } while (removed);
-
-                sepset = new HashSet<>(_z);
-
-                if (!test.checkIndependence(x, y, sepset).isIndependent()) {
-                    throw new IllegalArgumentException("Independence does not hold.");
-                }
-
-                if (printTrace) {
-                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-                }
-
-                return sepset;
+            if (reachable(graph, a, b, c, z, ancestorMap)) {
+                passNodes.add(c);
             }
         }
 
-        return null;
+        return passNodes;
     }
+
+    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        boolean collider = graph.isDefCollider(a, b, c);
+
+        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+            return true;
+        }
+
+        if (ancestors == null) {
+            return collider && graph.paths().isAncestor(b, z);
+        } else {
+            boolean ancestor = false;
+
+            for (Node _z : ancestors.get(b)) {
+                if (z.contains(_z)) {
+                    ancestor = true;
+                    break;
+                }
+            }
+
+            return collider && ancestor;
+        }
+    }
+
+    private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
+        List<List<Integer>> choices = new ArrayList<>();
+
+        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
+
+        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
+        int[] choice;
+
+        while ((choice = cg.next()) != null) {
+            choices.add(GraphUtils.asList(choice));
+        }
+
+        return choices;
+    }
+
+    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
+
+        // Create a set of nodes from the subset of adjx represented by choice.
+        Set<Node> combination = new HashSet<>();
+
+        for (int i : choice) {
+            combination.add(adj.get(i));
+        }
+
+        return combination;
+    }
+
+    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+        return test.checkIndependence(x, y, combination).isIndependent();
+    }
+
+    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+        return test.checkIndependence(x, y, combination).getPValue();
+    }
+
 
     /**
      * Attempts to block all paths from x to y by conditioning on definite noncollider nodes. If all paths are blocked,
@@ -668,26 +745,4 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getSepsetParentsOfXorY(Graph dag, Node x, Node y, IndependenceTest test) {
-        if (!dag.paths().isLegalDag()) {
-            throw new IllegalArgumentException("Graph is not a legal DAG; can't use this method.");
-        }
-
-        Set<Node> parentsX = new HashSet<>(dag.getParents(x));
-        Set<Node> parentsY = new HashSet<>(dag.getParents(y));
-        parentsX.remove(y);
-        parentsY.remove(x);
-
-        // Remove latents.
-        parentsX.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-        parentsY.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        if (test.checkIndependence(x, y, parentsX).isIndependent()) {
-            return parentsX;
-        } else if (test.checkIndependence(x, y, parentsY).isIndependent()) {
-            return parentsY;
-        }
-
-        return null;
-    }
 }
