@@ -6,9 +6,7 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Transformations that transform one graph into another.
@@ -388,5 +386,28 @@ public class GraphTransforms {
         Edge after = Edges.directedEdge(a, c);
         graph.removeEdge(before);
         graph.addEdge(after);
+    }
+
+    public static @NotNull Graph dagToMag(Graph dag) {
+        Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
+        Graph graph = DagToPag.calcAdjacencyGraph(dag);
+
+        graph.reorientAllWith(Endpoint.TAIL);
+
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
+            if (!ancestorMap.get(y).contains(x)) {
+                graph.setEndpoint(x, y, Endpoint.ARROW);
+            }
+
+            if (!ancestorMap.get(x).contains(y)) {
+                graph.setEndpoint(y, x, Endpoint.ARROW);
+            }
+        }
+
+        return graph;
     }
 }

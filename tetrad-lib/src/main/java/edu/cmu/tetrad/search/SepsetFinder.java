@@ -483,6 +483,20 @@ public class SepsetFinder {
     }
 
 
+    public static Set<Node> getDsepSepset(Graph mag, Node x, Node y, IndependenceTest test) {
+        Set<Node> sepset1 = mag.paths().dsep(x, y);
+        Set<Node> sepset2 = mag.paths().dsep(y, x);
+
+        if (test.checkIndependence(x, y, sepset1).isIndependent()) {
+            return sepset1;
+        } else if (test.checkIndependence(x, y, sepset2).isIndependent()) {
+            return sepset2;
+        } else {
+            return null;
+        }
+    }
+
+
     private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
         if (x == y) {
             return null;

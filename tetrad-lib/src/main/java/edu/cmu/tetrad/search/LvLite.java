@@ -184,7 +184,7 @@ public final class LvLite implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             var permutationSearch = getBossSearch();
-            cpdag = permutationSearch.search();
+            cpdag = permutationSearch.search(false);
             best = permutationSearch.getOrder();
             best = cpdag.paths().getValidOrder(best, true);
 
@@ -207,7 +207,7 @@ public final class LvLite implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
-            cpdag = grasp.getGraph(true);
+            cpdag = grasp.getGraph(false);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -231,6 +231,9 @@ public final class LvLite implements IGraphSearch {
         scorer.setKnowledge(knowledge);
         double bestScore = scorer.score(best);
         scorer.bookmark();
+
+//        Graph mag = GraphTransforms.dagToMag(GraphTransforms.dagFromCpdag(cpdag));
+//        Graph dag = GraphTransforms.dagFromCpdag(cpdag);
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
         Graph pag = new EdgeListGraph(cpdag);
@@ -277,27 +280,27 @@ public final class LvLite implements IGraphSearch {
         doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-        if (!ablationLeaveOutTuckingStep) {
-            do {
-                _unshieldedColliders = new HashSet<>(unshieldedColliders);
-
-                for (Node b : best) {
-                    var adj = pag.getAdjacentNodes(b);
-
-                    for (Node x : adj) {
-                        for (Node y : adj) {
-                            if (distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-                                checkTucked(x, b, y, pag, scorer, bestScore, unshieldedColliders, checked);
-                            }
-                        }
-                    }
-                }
-
-                reorientWithCircles(pag, verbose);
-                doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-                recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-            } while (!unshieldedColliders.equals(_unshieldedColliders));
-        }
+//        if (!ablationLeaveOutTuckingStep) {
+//            do {
+//                _unshieldedColliders = new HashSet<>(unshieldedColliders);
+//
+//                for (Node b : best) {
+//                    var adj = pag.getAdjacentNodes(b);
+//
+//                    for (Node x : adj) {
+//                        for (Node y : adj) {
+//                            if (distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
+//                                checkTucked(x, b, y, pag, scorer, bestScore, unshieldedColliders, checked);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                reorientWithCircles(pag, verbose);
+//                doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+//                recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+//            } while (!unshieldedColliders.equals(_unshieldedColliders));
+//        }
 
         Map<Edge, Set<Node>> extraSepsets = null;
 
@@ -616,35 +619,35 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
-        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
+        //        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
 
-        for (int length = 1; length <= 6; length += 2) {
-            int _length = length;
-            Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
+//        for (int length = 1; length <= 6; length += 2) {
+//            int _length = length;
+        Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
 
-            dag.getEdges().forEach(edge -> {
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, edge.getNode1(), edge.getNode2(), test,
-                        _length, depth, false);
+        dag.getEdges().forEach(edge -> {
+//                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, edge.getNode1(), edge.getNode2(), test,
+//                        _length, depth, false);
 
-                if (sepset != null) {
-                    _extraSepsets.put(edge, sepset);
-                }
-            });
+            Set<Node> sepset = SepsetFinder.getDsepSepset(dag, edge.getNode1(), edge.getNode2(), test);
 
-            for (Edge _edge : _extraSepsets.keySet()) {
-                pag.removeEdge(_edge.getNode1(), _edge.getNode2());
-                orientCommonAdjacents(_edge, pag, unshieldedColliders, _extraSepsets);
+            if (sepset != null) {
+                _extraSepsets.put(edge, sepset);
             }
+        });
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Done checking for additional sepsets length = " + length + ".");
-            }
-
-            extraSepsets.putAll(_extraSepsets);
+        for (Edge _edge : _extraSepsets.keySet()) {
+            pag.removeEdge(_edge.getNode1(), _edge.getNode2());
+            orientCommonAdjacents(_edge, pag, unshieldedColliders, _extraSepsets);
         }
 
-        return extraSepsets;
+        if (verbose) {
+            TetradLogger.getInstance().log("Done checking for additional sepsets");// length = " + length + ".");
+        }
+
+        //        }
+
+        return new ConcurrentHashMap<>(_extraSepsets);
     }
 
     /**

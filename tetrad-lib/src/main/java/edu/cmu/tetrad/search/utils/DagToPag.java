@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -114,30 +113,6 @@ public final class DagToPag {
         return false;
     }
 
-    public static @NotNull Graph dagToMag(Graph dag) {
-        Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
-
-        Graph graph = calcAdjacencyGraph(dag);
-
-        graph.reorientAllWith(Endpoint.TAIL);
-
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
-            if (!ancestorMap.get(y).contains(x)) {
-                graph.setEndpoint(x, y, Endpoint.ARROW);
-            }
-
-            if (!ancestorMap.get(x).contains(y)) {
-                graph.setEndpoint(y, x, Endpoint.ARROW);
-            }
-        }
-
-        return graph;
-    }
-
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
@@ -175,7 +150,7 @@ public final class DagToPag {
         // 1. Find if there is an inducing path between each pair of observed variables. If yes, add adjacency.
         // 2. Find all ancestor relations.
         // 3. Use ancestor relations to put in heads and tails.
-        Graph mag = dagToMag(dag);
+        Graph mag = GraphTransforms.dagToMag(dag);
 
         // B. Form PAG
         // 1. copy all adjacencies from MAG, but put "o" endpoints on all edges.
@@ -255,8 +230,8 @@ public final class DagToPag {
                 // Could copy the unshielded colliders from the mag but we will use D-SEP.
 //                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
 
-                Set<Node> dsepi = GraphUtils.dsep(i, k, mag);
-                Set<Node> dsepk = GraphUtils.dsep(k, i, mag);
+                Set<Node> dsepi = mag.paths().dsep(i, k);
+                Set<Node> dsepk = mag.paths().dsep(k, i);
 
                 if (test.checkIndependence(i, k, dsepi).isIndependent()) {
                     return !dsepi.contains(j);

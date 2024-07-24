@@ -1546,6 +1546,16 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * Returns D-SEP(x, y) for a MAG G.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public Set<Node> dsep(Node x, Node y) {
+        return GraphUtils.dsep(x, y, graph);
+    }
 
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (author
