@@ -58,25 +58,30 @@ import java.util.*;
  * @see GFci
  * @see Rfci
  */
-public final class FciOrient {
-    private final TetradLogger logger = TetradLogger.getInstance();
-    private IndependenceTest test;
+public class FciOrient {
+
+    // Protected fields.
+    IndependenceTest test;
+    Knowledge knowledge = new Knowledge();
+    final TetradLogger logger = TetradLogger.getInstance();
+    int depth = -1;
+    boolean verbose;
+
+    // Private fields
     private TeyssierScorer scorer;
-    private Knowledge knowledge = new Knowledge();
-    private boolean changeFlag = true;
+    boolean changeFlag = true;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
-    private boolean verbose;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
-    private int depth = -1;
+    private boolean useMsepDag = false;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
      * @param test The independence test to use.
      */
-    private FciOrient(IndependenceTest test) {
+    public FciOrient(IndependenceTest test) {
         this.test = test;
     }
 
@@ -391,7 +396,7 @@ public final class FciOrient {
      * @param graph the graph representation
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private static void doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+    protected static void doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
             throw new IllegalArgumentException("This is not a discriminating path construct.");
         }
@@ -444,7 +449,7 @@ public final class FciOrient {
             logger.log("R0");
         }
 
-        // Step CI D. (Zhang's step F4.)
+        // Step CI D. (Zhang's step R4.)
         finalOrientation(graph);
 
         if (this.verbose) {
@@ -562,6 +567,16 @@ public final class FciOrient {
         }
     }
 
+    /**
+     * Checks if a collider is unshielded or not.
+     *
+     * @param graph  the graph containing the nodes
+     * @param i      the first node of the collider
+     * @param j      the second node of the collider
+     * @param k      the third node of the collider
+     * @param depth  the depth of the search for the sepset
+     * @return true if the collider is unshielded, false otherwise
+     */
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
         Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
@@ -614,9 +629,6 @@ public final class FciOrient {
             }
         }
     }
-
-    /// R1, away from collider
-    // If a*->bo-*c and a, c not adjacent then a*->b->c
 
     /**
      * <p>zhangFinalOrientation.</p>
@@ -835,7 +847,8 @@ public final class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR4(Graph graph) {
+    public void
+    ruleR4(Graph graph) {
         if (test == null && scorer == null) {
             throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
                                            "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
@@ -897,7 +910,7 @@ public final class FciOrient {
      * @param graph a {@link Graph} object
      */
     private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph) {
-        Queue<Node> Q = new ArrayDeque<>(20);
+        Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();
 
@@ -1000,7 +1013,7 @@ public final class FciOrient {
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    private boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph, int depth) {
+    public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph, int depth) {
         doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
 
         if (scorer != null) {
@@ -1016,20 +1029,21 @@ public final class FciOrient {
 
         System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
-        //        Set<Node> sepset = SepsetFinder.getSepsetContainingMaxP(graph, e, c, new HashSet<>(path), test, -1);
-//        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-//        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingXtoY(graph, e, c, test, -1, -1, false);
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+        Set<Node> sepset;
+
+        if (test instanceof MsepTest && useMsepDag) {
+            Graph dag = ((MsepTest) test).getGraph();
+            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
+        } else {
+//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
+            sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+        }
 
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
         if (sepset == null) {
             return false;
         }
-
-//        if (!sepset.containsAll(path)) {
-//            throw new IllegalArgumentException("Sepset does not contain all nodes on the path.");
-//        }
 
         if (this.verbose) {
             logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
@@ -1617,7 +1631,21 @@ public final class FciOrient {
 
     }
 
+    /**
+     * Sets the depth of the object.
+     *
+     * @param depth the new depth value to be set
+     */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets whether to use the MSEP DAG.
+     *
+     * @param useMsepDag true to use the MSEP DAG, false otherwise
+     */
+    public void setUseMsepDag(boolean useMsepDag) {
+        this.useMsepDag = useMsepDag;
     }
 }

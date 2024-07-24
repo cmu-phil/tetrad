@@ -1608,7 +1608,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Detemrmines whether x and y are d-connected given z.
+     * Determmines whether x and y are d-connected given z.
      *
      * @param x                  a {@link Node} object
      * @param y                  a {@link Node} object

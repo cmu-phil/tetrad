@@ -704,7 +704,7 @@ public class SepsetFinder {
             if (z2.getNodeType() == NodeType.LATENT) {
                 continue;
             }
-
+//
             if (z1.getNodeType().equals(NodeType.LATENT) || z3.getNodeType().equals(NodeType.LATENT)) {
                 continue;
             }
