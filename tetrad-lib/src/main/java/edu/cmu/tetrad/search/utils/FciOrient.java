@@ -578,7 +578,8 @@ public class FciOrient {
      * @return true if the collider is unshielded, false otherwise
      */
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
-        Set<Node> sepset = SepsetFinder.getDsepSepset(graph, i, k, test);
+//        Set<Node> sepset = SepsetFinder.getDsepSepset(graph, i, k, test);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -1036,8 +1037,8 @@ public class FciOrient {
             sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
         } else {
 //            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-//            sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
-            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
+            sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+//            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
         }
 
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);

@@ -619,35 +619,30 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        //        Map<Node, Set<Node>> ancestors = dag.paths().getAncestorMap();
+        // Note that we can use the MAG here instead of the DAG.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-//        for (int length = 1; length <= 6; length += 2) {
-//            int _length = length;
-        Map<Edge, Set<Node>> _extraSepsets = new ConcurrentHashMap<>();
+        Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
-        dag.getEdges().forEach(edge -> {
-//                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, edge.getNode1(), edge.getNode2(), test,
-//                        _length, depth, false);
-
-            Set<Node> sepset = SepsetFinder.getDsepSepset(dag, edge.getNode1(), edge.getNode2(), test);
+        mag.getEdges().forEach(edge -> {
+            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(mag, edge.getNode1(), edge.getNode2(), test,
+                    maxBlockingPathLength, depth, false);
 
             if (sepset != null) {
-                _extraSepsets.put(edge, sepset);
+                extraSepsets.put(edge, sepset);
             }
         });
 
-        for (Edge _edge : _extraSepsets.keySet()) {
+        for (Edge _edge : extraSepsets.keySet()) {
             pag.removeEdge(_edge.getNode1(), _edge.getNode2());
-            orientCommonAdjacents(_edge, pag, unshieldedColliders, _extraSepsets);
+            orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Done checking for additional sepsets");// length = " + length + ".");
+            TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
         }
 
-        //        }
-
-        return new ConcurrentHashMap<>(_extraSepsets);
+        return extraSepsets;
     }
 
     /**
@@ -659,7 +654,8 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
      * @param extraSepsets        The map of edges to sepsets used to remove them.
      */
-    private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
+    private void orientCommonAdjacents(Edge edge, Graph
+            pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
@@ -695,7 +691,8 @@ public final class LvLite implements IGraphSearch {
      * @param knowledge           The knowledge object.
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
-    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, boolean tucked, TeyssierScorer scorer,
+    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, boolean tucked, TeyssierScorer
+            scorer,
                                    double newScore, double bestScore, Set<Triple> unshieldedColliders,
                                    Set<Triple> checked, Knowledge knowledge, boolean verbose) {
         if (cpdag != null) {
@@ -760,7 +757,8 @@ public final class LvLite implements IGraphSearch {
      * @param pag       The Graph representing the PAG.
      * @param best      The list of Node objects representing the best nodes.
      */
-    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge,
+                                        boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Orient required edges in PAG:");
         }
