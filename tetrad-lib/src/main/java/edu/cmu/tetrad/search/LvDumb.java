@@ -65,20 +65,9 @@ public final class LvDumb implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
-     * If set to true, the search algorithm will use the Discriminating Path Tail Rule.
-     * If set to false, the search algorithm will not use the Discriminating Path Tail Rule.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * This variable determines whether the Discriminating Path Collider Rule should be used during the search algorithm.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
      * Score object.
@@ -129,8 +118,6 @@ public final class LvDumb implements IGraphSearch {
         DagToPag dagToPag = new DagToPag(cpdag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        dagToPag.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         return dagToPag.convert();
     }
 
@@ -187,23 +174,5 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

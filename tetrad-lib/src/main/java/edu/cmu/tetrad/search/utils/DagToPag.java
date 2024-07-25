@@ -39,24 +39,9 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class DagToPag {
+
     /**
-     * The variable 'dag' represents a directed acyclic graph (DAG) that is stored in a private final field. A DAG is a
-     * finite directed graph with no directed cycles. This means that there is no way to start at some vertex and follow
-     * a sequence of directed edges that eventually loops back to the same vertex. In other words, there are no cyclic
-     * dependencies in the graph.
-     * <p>
-     * The 'dag' variable is used within the containing class 'DagToPag' for various purposes related to the conversion
-     * of a DAG to a partially directed acyclic graph (PAG). The methods in 'DagToPag' utilize this variable to perform
-     * operations such as checking for inducing paths between nodes, converting the DAG to a PAG, and orienting
-     * unshielded colliders in the graph.
-     * <p>
-     * The 'dag' variable has private access, meaning it can only be accessed and modified within the 'DagToPag' class.
-     * It is declared as 'final', indicating that its value cannot be changed after it is assigned in the constructor or
-     * initialization block. This ensures that the reference to the DAG remains consistent throughout the lifetime of
-     * the 'DagToPag' object.
-     *
-     * @see DagToPag2
-     * @see Graph
+     * The DAG to be converted.
      */
     private final Graph dag;
     /*
@@ -64,16 +49,13 @@ public final class DagToPag {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Glag for complete rule set, true if should use complete rule set, false otherwise.
+     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int maxPathLength = -1;
-    private boolean doDiscriminatingPathTailRule = true;
-    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -83,34 +65,6 @@ public final class DagToPag {
      */
     public DagToPag(Graph dag) {
         this.dag = new EdgeListGraph(dag);
-    }
-
-
-    /**
-     * <p>existsInducingPathInto.</p>
-     *
-     * @param x     a {@link Node} object
-     * @param y     a {@link Node} object
-     * @param graph a {@link Graph} object
-     * @return a boolean
-     */
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
-
-            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public static Graph calcAdjacencyGraph(Graph dag) {
@@ -141,7 +95,7 @@ public final class DagToPag {
     }
 
     /**
-     * This method does the convertion of DAG to PAG.
+     * This method does the conversion of DAG to PAG.
      *
      * @return Returns the converted PAG.
      */
@@ -153,13 +107,14 @@ public final class DagToPag {
         Graph mag = GraphTransforms.dagToMag(dag);
 
         // B. Form PAG
-        // 1. copy all adjacencies from MAG, but put "o" endpoints on all edges.
-        // 2. apply FCI orientation rules
-        //      a. for every orientation rule that requires looking at a d-separating set between A and B
-        //          (i.e. unshielded triples, and discriminating paths), find a d-separating set between A and B
+        // 1. Copy all adjacencies from MAG, but put "o" endpoints on all edges.
+        // 2. Apply FCI orientation rules.
+        //      a. For every orientation rule that requires looking at a d-separating set between A and B
+        //          (i.e., unshielded triples, and discriminating paths), find a d-separating set between A and B
         //          by forming D-SEP(A,B) or D-SEP(B,A).
         //      b. V is in D-SEP(A,B) iff there is a collider path from A to V, in which every vertex except
         //         for the endpoints is an ancestor of A or of V.
+
         Graph pag = new EdgeListGraph(mag);
 
         // copy all adjacencies from MAG, but put "o" endpoints on all edges.
@@ -227,9 +182,7 @@ public final class DagToPag {
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
                 Graph mag = ((MsepTest) test).getGraph();
 
-                // Could copy the unshielded colliders from the mag but we will use D-SEP.
-//                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
-
+                // Could copy the unshielded colliders from the mag, but we will use D-SEP.
                 Set<Node> dsepi = mag.paths().dsep(i, k);
                 Set<Node> dsepk = mag.paths().dsep(k, i);
 
@@ -277,70 +230,29 @@ public final class DagToPag {
                 boolean collider = !sepset.contains(b);
 
                 if (collider) {
-                    if (doDiscriminatingPathColliderRule) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                        if (this.verbose) {
-                            TetradLogger.getInstance().log(
-                                    "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                        }
-
-                        this.changeFlag = true;
-                        return true;
-                    }
-                } else {
-                    if (doDiscriminatingPathTailRule) {
-                        graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                        if (this.verbose) {
-                            TetradLogger.getInstance().log(
-                                    "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                        }
-
-                        this.changeFlag = true;
-                        return true;
-                    }
-                }
-
-                if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-                    if (!isArrowheadAllowed(a, b, graph, knowledge)) {
-                        return false;
-                    }
-
-                    if (!isArrowheadAllowed(c, b, graph, knowledge)) {
-                        return false;
-                    }
-
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
 
                     if (this.verbose) {
-                        this.logger.log(
-                                "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        TetradLogger.getInstance().log(
+                                "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                     }
 
-                    this.changeFlag = true;
-                } else if (doDiscriminatingPathTailRule) {
+                } else {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
                     if (this.verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg(
-                                "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
+                        TetradLogger.getInstance().log(
+                                "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                     }
 
-                    this.changeFlag = true;
-                    return true;
                 }
-
-                return false;
+                this.changeFlag = true;
+                return true;
             }
         };
 
         fciOrient.setVerbose(verbose);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         fciOrient.orient(pag);
 
         return pag;
@@ -395,37 +307,6 @@ public final class DagToPag {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
 

@@ -629,7 +629,7 @@ public final class LvLite implements IGraphSearch {
                     maxBlockingPathLength, depth, false);
 
             if (sepset != null) {
-                extraSepsets.put(edge, sepset);
+                extraSepsets.put(edge, sepset); 
             }
         });
 

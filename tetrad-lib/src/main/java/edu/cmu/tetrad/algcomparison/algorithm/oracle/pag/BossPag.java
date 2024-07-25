@@ -67,7 +67,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see Algorithm
      */
     public BossPag() {
-        // Used for reflection; do not delete.
+        // Used for reflection; do not delete this.
     }
 
     /**
@@ -121,10 +121,6 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
 
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-        // DAG to PAG
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -181,8 +177,6 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // General
         params.add(Params.TIME_LAG);
