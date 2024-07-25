@@ -48,6 +48,12 @@ import java.util.*;
  * <p>
  * We've made the methods for each of the separate rules publicly accessible in case someone wants to use the individual
  * rules in the context of their own algorithms.
+ * <p>
+ * Note: This class is a modified version of the original FciOrient class, in that we allow the R0 and R4 rules to be be
+ * overridden by subclasses. This is useful for the TeyssierScorer class, which needs to override these rules in order
+ * to calculate the score of the graph. It is also useful for DAG to PAG, which needs to override these rules in order
+ * using D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
+ * which require additional analysis of the underlying distribution or graph.
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
@@ -60,16 +66,15 @@ import java.util.*;
  */
 public class FciOrient {
 
+    final TetradLogger logger = TetradLogger.getInstance();
     // Protected fields.
     IndependenceTest test;
     Knowledge knowledge = new Knowledge();
-    final TetradLogger logger = TetradLogger.getInstance();
     int depth = -1;
     boolean verbose;
-
+    boolean changeFlag = true;
     // Private fields
     private TeyssierScorer scorer;
-    boolean changeFlag = true;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private boolean doDiscriminatingPathColliderRule = true;
@@ -570,11 +575,11 @@ public class FciOrient {
     /**
      * Checks if a collider is unshielded or not.
      *
-     * @param graph  the graph containing the nodes
-     * @param i      the first node of the collider
-     * @param j      the second node of the collider
-     * @param k      the third node of the collider
-     * @param depth  the depth of the search for the sepset
+     * @param graph the graph containing the nodes
+     * @param i     the first node of the collider
+     * @param j     the second node of the collider
+     * @param k     the third node of the collider
+     * @param depth the depth of the search for the sepset
      * @return true if the collider is unshielded, false otherwise
      */
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {

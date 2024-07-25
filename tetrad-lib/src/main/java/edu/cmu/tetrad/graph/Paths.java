@@ -1547,11 +1547,14 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Returns D-SEP(x, y) for a MAG G.
+     * Returns D-SEP(x, y) for a maximal ancestral graph G (or inducing path graph G, as in Causation, Prediction and
+     * Search).
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
      *
      * @param x The one endpoint.
      * @param y The other endpoint.
-     * @return D-SEP(x, y) for MAG G.
+     * @return D-SEP(x, y) for MAG/IPG G.
      */
     public Set<Node> dsep(Node x, Node y) {
         return GraphUtils.dsep(x, y, graph);

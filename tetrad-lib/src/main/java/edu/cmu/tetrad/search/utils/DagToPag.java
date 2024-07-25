@@ -27,7 +27,9 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -122,6 +124,9 @@ public final class DagToPag {
 
         // apply FCI orientation rules but with some changes. for r0 and discriminating path, we're going to use
         // D-SEP(A,B) or D-SEP(B,A) to find the d-separating set between A and B.
+
+        // Note that we will re-use FCIOrient but overrise the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
+        // to find the d-separating set between A and B.
         FciOrient fciOrient = new FciOrient(new MsepTest(mag)) {
 
             @Override

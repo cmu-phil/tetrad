@@ -3201,7 +3201,10 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns D-SEP(x, y) for a MAG G.
+     * Returns D-SEP(x, y) for a MAG G (or inducing path graph G, as in Causation, Prediction and Search). This method
+     * implements a reachability style.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
      *
      * @param x The one endpoint.
      * @param y The other endpoint.
@@ -3213,7 +3216,31 @@ public final class GraphUtils {
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();
 
-        dsepFollowPath(x, x, y, dsep, path, G);
+        for (Node a : G.getAdjacentNodes(x)) {
+            if (path.contains(a)) continue;
+            path.add(a);
+
+            if (G.getEdge(x, a).getDistalEndpoint(x) != Endpoint.ARROW) {
+                dsep.add(a);
+            }
+
+            for (Node b : G.getAdjacentNodes(a)) {
+                if (path.contains(b)) continue;
+                path.add(b);
+
+                if (G.isDefCollider(x, a, b)) {
+                    if (G.paths().isAncestorOf(a, y)) {
+                        dsep.add(a);
+                        dsep.add(b);
+                        dsepFollowPath(a, b, x, y, dsep, path, G);
+                    }
+                }
+
+                path.remove(b);
+            }
+
+            path.remove(a);
+        }
 
         dsep.remove(x);
         dsep.remove(y);
@@ -3222,7 +3249,8 @@ public final class GraphUtils {
     }
 
     /**
-     * This method follows a path in a MAG to determine the D-SEP(a, y) set.
+     * This method follows a path in a MAG (or inducing path graph G, as in Causation, Prediction and Search),
+     * reachability style, to determine the D-SEP(a, y) set.
      *
      * @param a    The current node.
      * @param x    The starting node.
@@ -3231,7 +3259,58 @@ public final class GraphUtils {
      * @param path The current path.
      * @param G    The MAG.
      */
-    private static void dsepFollowPath(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+    private static void dsepFollowPath(Node a, Node b, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+        for (Node c : G.getAdjacentNodes(b)) {
+            if (path.contains(c)) continue;
+            path.add(c);
+
+            if (G.isDefCollider(a, b, c)) {
+                if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
+                    dsep.add(b);
+                    dsep.add(c);
+                    dsepFollowPath(b, c, x, y, dsep, path, G);
+                }
+            }
+
+            path.remove(c);
+        }
+    }
+
+    /**
+     * Returns D-SEP(x, y) for a MAG G. This method implements a non-reachability stle.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsep2(Node x, Node y, Graph G) {
+
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> path = new HashSet<>();
+
+        dsepFollowPath2(x, x, y, dsep, path, G);
+
+        dsep.remove(x);
+        dsep.remove(y);
+
+        return dsep;
+    }
+
+    /**
+     * This method follows a path in a MAG to determine the D-SEP(a, y) set. This method implements a non-reachability
+     * style.
+     *
+     * @param a    The current node.
+     * @param x    The starting node.
+     * @param y    The ending node.
+     * @param dsep The D-SEP(a, y) set being built.
+     * @param path The current path.
+     * @param G    The MAG.
+     */
+    private static void dsepFollowPath2(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
 
         if (path.contains(a)) return;
         path.add(a);
@@ -3252,7 +3331,7 @@ public final class GraphUtils {
                     if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
                         dsep.add(b);
                         dsep.add(c);
-                        dsepFollowPath(b, x, y, dsep, path, G);
+                        dsepFollowPath2(b, x, y, dsep, path, G);
                     }
                 }
 
