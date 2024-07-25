@@ -3211,7 +3211,7 @@ public final class GraphUtils {
      * @param G The MAG.
      * @return D-SEP(x, y) for MAG G.
      */
-    public static Set<Node> dsep(Node x, Node y, Graph G) {
+    public static Set<Node> dsep0(Node x, Node y, Graph G) {
 
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();
@@ -3286,7 +3286,7 @@ public final class GraphUtils {
      * @param G The MAG.
      * @return D-SEP(x, y) for MAG G.
      */
-    public static Set<Node> dsep2(Node x, Node y, Graph G) {
+    public static Set<Node> dsep(Node x, Node y, Graph G) {
 
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();

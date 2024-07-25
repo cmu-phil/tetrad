@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -243,8 +244,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = FciOrient.specialConfiguration(test, knowledge, completeRuleSetUsed,
-                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, maxDdpPathLength, verbose, depth);
+        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
+                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -629,7 +630,7 @@ public final class LvLite implements IGraphSearch {
                     maxBlockingPathLength, depth, false);
 
             if (sepset != null) {
-                extraSepsets.put(edge, sepset); 
+                extraSepsets.put(edge, sepset);
             }
         });
 

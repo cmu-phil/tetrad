@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -76,7 +77,7 @@ public class ApplyFinalFciRules extends AbstractAction implements ClipboardOwner
         }
 
         Graph __g = new EdgeListGraph(graph);
-        FciOrient finalFciRules = FciOrient.defaultConfiguration(graph, new Knowledge(), false);
+        FciOrient finalFciRules = new FciOrient(FciOrientDataExaminationStrategyTestBased.defaultConfiguration(graph, new Knowledge(), false));
         finalFciRules.finalOrientation(__g);
         workbench.setGraph(__g);
     }

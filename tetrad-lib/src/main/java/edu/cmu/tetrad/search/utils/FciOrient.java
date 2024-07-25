@@ -23,8 +23,9 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -66,97 +67,32 @@ import java.util.*;
  */
 public class FciOrient {
 
+    // TODO Replace this class hierarchy with a Strategy pattern. 2024-7-25 jdramsey
+    // We can do this by creating an interface for the R0 and and R4 rules, which can can be implemented
+    // differently for the TeyssierScorer and DAG to PAG classes. 2024-7-25 jdramsey
+    // R0 and R4 are the only rules that cannot be carried out by an examination of the graph but which require
+    // additional analysis of the underlying distribution or graph. 2024-7-25 jdramsey
+
     final TetradLogger logger = TetradLogger.getInstance();
+    private final FciOrientDataExaminationStrategy strategy;
     // Protected fields.
-    IndependenceTest test;
-    Knowledge knowledge = new Knowledge();
-    int depth = -1;
-    boolean verbose;
+
+    private boolean verbose = false;
     boolean changeFlag = true;
     // Private fields
-    private TeyssierScorer scorer;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
-    private boolean useMsepDag = false;
+    private Knowledge knowledge = new Knowledge();
 
-    /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
-     *
-     * @param test The independence test to use.
-     */
-    public FciOrient(IndependenceTest test) {
-        this.test = test;
-    }
-
-    /**
-     * Constructs a new FciOrient object. This constructor is used when the discriminating path rule calculated
-     *
-     * @param scorer the TeyssierScorer object to be used for scoring
-     */
-    private FciOrient(TeyssierScorer scorer) {
-        this.scorer = scorer;
-    }
-
-    public static FciOrient defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
-        return FciOrient.specialConfiguration(new MsepTest(dag), true, true,
-                true, -1, knowledge, verbose, 5);
-    }
-
-    public static FciOrient defaultConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
-        if (test instanceof MsepTest) {
-            return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
-        } else {
-            return FciOrient.specialConfiguration(test, true, true,
-                    true, -1, knowledge, verbose, 5);
+    public FciOrient(FciOrientDataExaminationStrategy strategy) {
+        if (strategy == null) {
+            throw new NullPointerException();
         }
-    }
 
-    public static FciOrient specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean completeRuleSetUsed,
-                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, boolean verbose, int depth) {
-        if (test instanceof MsepTest) {
-            return FciOrient.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
-        } else {
-            return FciOrient.specialConfiguration(test, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                    doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose, depth);
-        }
-    }
-
-    public static FciOrient specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
-                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, boolean verbose, int depth) {
-        return FciOrient.specialConfiguration(scorer, completeRuleSetUsed, doDiscriminatingPathTailRule,
-                doDiscriminatingPathColliderRule, maxPathLength, knowledge, verbose, depth);
-    }
-
-    public static FciOrient specialConfiguration(IndependenceTest test, boolean completeRuleSetUsed,
-                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, Knowledge knowledge, boolean verbose, int depth) {
-        FciOrient fciOrient = new FciOrient(test);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.setDepth(depth);
-        return fciOrient;
-    }
-
-    public static FciOrient specialConfiguration(TeyssierScorer scorer, boolean completeRuleSetUsed,
-                                                 boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                 int maxPathLength, Knowledge knowledge, boolean verbose, int depth) {
-        FciOrient fciOrient = new FciOrient(scorer);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.setDepth(depth);
-        return fciOrient;
+        this.strategy = strategy;
+        this.knowledge = strategy.getknowledge();
     }
 
     /**
@@ -268,176 +204,6 @@ public class FciOrient {
     }
 
     /**
-     * <p>isArrowheadAllowed.</p>
-     *
-     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @return a boolean
-     */
-    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
-        if (!graph.isAdjacentTo(x, y)) return false;
-
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
-            }
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            }
-        }
-
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
-    }
-
-    /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *      <pre>
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that if we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
-     *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
-     * @return true if the orientation is determined, false otherwise
-     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     */
-    private static boolean doDiscriminatingPathOrientationScoreBased(Node e, Node a, Node b, Node c, List<Node> path, Graph graph,
-                                                                     TeyssierScorer scorer, boolean doDiscriminatingPathTailRule,
-                                                                     boolean doDiscriminatingPathColliderRule, boolean verbose) {
-
-
-        System.out.println("For discriminating path rule, tucking");
-        scorer.goToBookmark();
-        scorer.tuck(c, b);
-        scorer.tuck(e, b);
-        scorer.tuck(a, c);
-        boolean collider = !scorer.adjacent(e, c);
-        System.out.println("For discriminating path rule, found collider = " + collider);
-
-        if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return true;
-            }
-        } else {
-            if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.
-     * <p>
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *      <pre>
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
-     *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
-     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     */
-    protected static void doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
-        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a dicriminatin path construct.");
-        }
-
-        if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        if (!path.contains(a)) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
-        }
-
-        for (Node n : path) {
-            if (!graph.isParentOf(n, c)) {
-                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
-            }
-        }
-    }
-
-    /**
      * Performs final FCI orientation on the given graph.
      *
      * @param graph The graph to further orient.
@@ -465,15 +231,6 @@ public class FciOrient {
     }
 
     /**
-     * Returns the map from {x,y} to {z1,...,zn} for x _||_ y | z1,..,zn.
-     *
-     * @return Thia map.
-     */
-    public IndependenceTest getTest() {
-        return this.test;
-    }
-
-    /**
      * Sets the knowledge to use for the final orientation.
      *
      * @param knowledge This knowledge.
@@ -484,6 +241,7 @@ public class FciOrient {
         }
 
         this.knowledge = new Knowledge(knowledge);
+        strategy.setKnowledge(knowledge);
     }
 
     /**
@@ -550,12 +308,12 @@ public class FciOrient {
                     continue;
                 }
 
-                if (isUnshieldedCollider(graph, a, b, c, depth)) {
-                    if (!isArrowheadAllowed(a, b, graph, knowledge)) {
+                if (strategy.isUnshieldedCollider(graph, a, b, c)) {
+                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
 
-                    if (!isArrowheadAllowed(c, b, graph, knowledge)) {
+                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         continue;
                     }
 
@@ -572,21 +330,6 @@ public class FciOrient {
         }
     }
 
-    /**
-     * Checks if a collider is unshielded or not.
-     *
-     * @param graph the graph containing the nodes
-     * @param i     the first node of the collider
-     * @param j     the second node of the collider
-     * @param k     the third node of the collider
-     * @param depth the depth of the search for the sepset
-     * @return true if the collider is unshielded, false otherwise
-     */
-    public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
-//        Set<Node> sepset = SepsetFinder.getDsepSepset(graph, i, k, test);
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
-        return sepset != null && !sepset.contains(j);
-    }
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
@@ -738,7 +481,7 @@ public class FciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowheadAllowed(b, c, graph, knowledge)) {
+            if (!FciOrient.isArrowheadAllowed(b, c, graph, knowledge)) {
                 return;
             }
 
@@ -766,7 +509,7 @@ public class FciOrient {
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
                 && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
-                if (!isArrowheadAllowed(a, c, graph, knowledge)) {
+                if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
                 }
 
@@ -819,7 +562,7 @@ public class FciOrient {
                     if (graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
                         if (!graph.isAdjacentTo(a, c)) {
                             if (graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-                                if (!isArrowheadAllowed(d, b, graph, knowledge)) {
+                                if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
                                     return;
                                 }
 
@@ -855,11 +598,6 @@ public class FciOrient {
      */
     public void
     ruleR4(Graph graph) {
-        if (test == null && scorer == null) {
-            throw new NullPointerException("SepsetProducer is null; if you want to use the discriminating path rule " +
-                                           "in FciOrient, you must provide a SepsetProducer or a TeyssierScorer.");
-        }
-
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             List<Node> nodes = graph.getNodes();
 
@@ -976,7 +714,8 @@ public class FciOrient {
                     colliderPath.remove(e);
                     colliderPath.remove(b);
 
-                    if (doDiscriminatingPathOrientation(e, a, b, c, colliderPath, graph, depth)) {
+                    if (strategy.doDiscriminatingPathOrientation(e, a, b, c, colliderPath, graph)) {
+                        changeFlag = true;
                         return;
                     }
                 }
@@ -987,139 +726,6 @@ public class FciOrient {
                 }
             }
         }
-    }
-
-    /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *      <pre>
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
-     *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
-     * @param depth
-     * @return true if the orientation is determined, false otherwise
-     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     */
-    public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph, int depth) {
-        doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
-
-        if (scorer != null) {
-            return doDiscriminatingPathOrientationScoreBased(e, a, b, c, path, graph, scorer, doDiscriminatingPathTailRule,
-                    doDiscriminatingPathColliderRule, verbose);
-        }
-
-        for (Node n : path) {
-            if (!graph.isParentOf(n, c)) {
-                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
-            }
-        }
-
-        System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
-
-        Set<Node> sepset;
-
-        if (test instanceof MsepTest && useMsepDag) {
-            Graph dag = ((MsepTest) test).getGraph();
-            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
-        } else {
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-            sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
-//            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
-        }
-
-        System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
-
-        if (sepset == null) {
-            return false;
-        }
-
-        if (this.verbose) {
-            logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
-        }
-
-        boolean collider = !sepset.contains(b);
-
-        if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                this.changeFlag = true;
-                return true;
-            }
-        } else {
-            if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                this.changeFlag = true;
-                return true;
-            }
-        }
-
-        if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException();
-        }
-
-        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-            if (!isArrowheadAllowed(a, b, graph, knowledge)) {
-                return false;
-            }
-
-            if (!isArrowheadAllowed(c, b, graph, knowledge)) {
-                return false;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (this.verbose) {
-                this.logger.log(
-                        "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-            }
-
-            this.changeFlag = true;
-        } else if (doDiscriminatingPathTailRule) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (this.verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg(
-                        "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
-            }
-
-            this.changeFlag = true;
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -1446,7 +1052,7 @@ public class FciOrient {
                 continue;
             }
 
-            if (!isArrowheadAllowed(to, from, graph, knowledge)) {
+            if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
                 return;
             }
 
@@ -1480,7 +1086,7 @@ public class FciOrient {
                 continue;
             }
 
-            if (!isArrowheadAllowed(from, to, graph, knowledge)) {
+            if (!FciOrient.isArrowheadAllowed(from, to, graph, knowledge)) {
                 return;
             }
 
@@ -1528,15 +1134,6 @@ public class FciOrient {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets the change flag--marks externally that a change has been made.
-     *
-     * @param changeFlag This flag.
-     */
-    public void setChangeFlag(boolean changeFlag) {
-        this.changeFlag = changeFlag;
     }
 
     /**
@@ -1639,20 +1236,41 @@ public class FciOrient {
     }
 
     /**
-     * Sets the depth of the object.
+     * <p>isArrowheadAllowed.</p>
      *
-     * @param depth the new depth value to be set
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a boolean
      */
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (!graph.isAdjacentTo(x, y)) return false;
+
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+            return true;
+        }
+
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return false;
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return true;
+            }
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
+            }
+        }
+
+        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
-    /**
-     * Sets whether to use the MSEP DAG.
-     *
-     * @param useMsepDag true to use the MSEP DAG, false otherwise
-     */
-    public void setUseMsepDag(boolean useMsepDag) {
-        this.useMsepDag = useMsepDag;
+    public boolean isVerbose() {
+        return verbose;
     }
 }

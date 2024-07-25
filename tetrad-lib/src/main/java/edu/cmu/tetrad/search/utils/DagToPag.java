@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -127,80 +126,27 @@ public final class DagToPag {
 
         // Note that we will re-use FCIOrient but overrise the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
         // to find the d-separating set between A and B.
-        FciOrient fciOrient = new FciOrient(new MsepTest(mag)) {
-
+        FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(new MsepTest(mag)) {
             @Override
-            public void ruleR0(Graph graph) {
-                graph.reorientAllWith(Endpoint.CIRCLE);
-                fciOrientbk(super.knowledge, graph, graph.getNodes());
+            public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+                Graph mag = ((MsepTest) getTest()).getGraph();
 
-                List<Node> nodes = graph.getNodes();
+                // Could copy the unshielded colliders from the mag but we will use D-SEP.
+//                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
 
-                for (Node b : nodes) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
-
-                    if (adjacentNodes.size() < 2) {
-                        continue;
-                    }
-
-                    ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-                    int[] combination;
-
-                    while ((combination = cg.next()) != null) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        Node a = adjacentNodes.get(combination[0]);
-                        Node c = adjacentNodes.get(combination[1]);
-
-                        if (graph.isDefCollider(a, b, c)) {
-                            continue;
-                        }
-
-                        if (isUnshieldedCollider(graph, a, b, c, depth)) {
-                            if (!isArrowheadAllowed(a, b, graph, knowledge)) {
-                                continue;
-                            }
-
-                            if (!isArrowheadAllowed(c, b, graph, knowledge)) {
-                                continue;
-                            }
-
-                            graph.setEndpoint(a, b, Endpoint.ARROW);
-                            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                            if (super.verbose) {
-                                super.logger.log(LogUtilsSearch.colliderOrientedMsg(a, b, c));
-                            }
-
-                            super.changeFlag = true;
-                        }
-                    }
-                }
-            }
-
-            public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k, int depth) {
-                Graph mag = ((MsepTest) test).getGraph();
-
-                // Could copy the unshielded colliders from the mag, but we will use D-SEP.
                 Set<Node> dsepi = mag.paths().dsep(i, k);
                 Set<Node> dsepk = mag.paths().dsep(k, i);
 
-                if (test.checkIndependence(i, k, dsepi).isIndependent()) {
+                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
                     return !dsepi.contains(j);
-                } else if (test.checkIndependence(k, i, dsepk).isIndependent()) {
+                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
                     return !dsepk.contains(j);
                 }
 
                 return false;
             }
 
-            public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph, int depth) {
+            public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
                 doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
 
                 if (graph.isAdjacentTo(e, c)) {
@@ -209,16 +155,16 @@ public final class DagToPag {
 
                 System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
-                Graph mag = ((MsepTest) test).getGraph();
+                Graph mag = ((MsepTest) getTest()).getGraph();
 
                 Set<Node> dsepe = GraphUtils.dsep(e, c, mag);
                 Set<Node> dsepc = GraphUtils.dsep(c, e, mag);
 
                 Set<Node> sepset = null;
 
-                if (test.checkIndependence(e, c, dsepe).isIndependent()) {
+                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
                     sepset = dsepe;
-                } else if (test.checkIndependence(c, e, dsepc).isIndependent()) {
+                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
                     sepset = dsepc;
                 }
 
@@ -228,35 +174,71 @@ public final class DagToPag {
                     return false;
                 }
 
-                if (this.verbose) {
-                    logger.log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
+                if (verbose) {
+                    TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
                 }
 
                 boolean collider = !sepset.contains(b);
 
                 if (collider) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                    if (isDoDiscriminatingPathColliderRule()) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log(
-                                "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+
+                        return true;
                     }
-
                 } else {
+                    if (isDoDiscriminatingPathTailRule()) {
+                        graph.setEndpoint(c, b, Endpoint.TAIL);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+
+                        return true;
+                    }
+                }
+
+                if (!sepset.contains(b)) {
+                    if (isDoDiscriminatingPathColliderRule() ) {
+                        if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                            return false;
+                        }
+
+                        if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                            return false;
+                        }
+
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+                    }
+                } else if (isDoDiscriminatingPathTailRule()) {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log(
-                                "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                    if (verbose) {
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg(
+                                "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
                     }
 
+                    return true;
                 }
-                this.changeFlag = true;
-                return true;
+
+                return false;
             }
         };
 
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(verbose);
         fciOrient.orient(pag);
 

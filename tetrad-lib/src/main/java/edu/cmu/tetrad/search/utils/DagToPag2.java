@@ -133,7 +133,7 @@ public final class DagToPag2 {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = FciOrient.defaultConfiguration(dag, knowledge, verbose);
+        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.defaultConfiguration(dag, knowledge, verbose));
         fciOrient.finalOrientation(graph);
 
         if (this.verbose) {

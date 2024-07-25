@@ -216,7 +216,8 @@ public final class GraspFci implements IGraphSearch {
         gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
 
-        var fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
+        FciOrient fciOrient = new FciOrient(
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(pag);

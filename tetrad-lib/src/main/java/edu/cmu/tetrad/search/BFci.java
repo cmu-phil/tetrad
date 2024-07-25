@@ -208,7 +208,8 @@ public final class BFci implements IGraphSearch {
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = FciOrient.defaultConfiguration(this.independenceTest, knowledge, verbose);
+        FciOrient fciOrient = new FciOrient(
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(graph);

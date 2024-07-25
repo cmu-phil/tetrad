@@ -25,6 +25,7 @@
     import edu.cmu.tetrad.data.Knowledge;
     import edu.cmu.tetrad.graph.*;
     import edu.cmu.tetrad.search.utils.FciOrient;
+    import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
     import edu.cmu.tetrad.util.RandomUtil;
     import org.jetbrains.annotations.Nullable;
     import org.junit.Test;
@@ -334,7 +335,7 @@
             Knowledge knowledge = new Knowledge();
             knowledge.setRequired(x.getName(), y.getName());
 
-            FciOrient fciOrientation = FciOrient.defaultConfiguration(graph, knowledge, false);
+            FciOrient fciOrientation = new FciOrient(FciOrientDataExaminationStrategyTestBased.defaultConfiguration(graph, knowledge, false));
             fciOrientation.orient(_graph);
 
             _graph.removeEdge(x, y);
