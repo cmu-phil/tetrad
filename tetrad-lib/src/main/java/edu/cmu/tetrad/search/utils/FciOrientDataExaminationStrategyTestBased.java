@@ -74,11 +74,11 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Provides a special configuration for creating an instance of FciOrientDataExaminationStrategy.
      *
-     * @param test                         the IndependenceTest object used by the strategy
-     * @param knowledge                    the Knowledge object used by the strategy
-     * @param doDiscriminatingPathTailRule boolean indicating whether to use the Discriminating Path Tail Rule
+     * @param test                             the IndependenceTest object used by the strategy
+     * @param knowledge                        the Knowledge object used by the strategy
+     * @param doDiscriminatingPathTailRule     boolean indicating whether to use the Discriminating Path Tail Rule
      * @param doDiscriminatingPathColliderRule boolean indicating whether to use the Discriminating Path Collider Rule
-     * @param verbose                      boolean indicating whether to provide verbose output
+     * @param verbose                          boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
@@ -109,9 +109,9 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Returns a default configuration of the FciOrientDataExaminationStrategy object.
      *
-     * @param dag     the graph representation
+     * @param dag       the graph representation
      * @param knowledge the Knowledge object used by the strategy
-     * @param verbose    boolean indicating whether to provide verbose output
+     * @param verbose   boolean indicating whether to provide verbose output
      * @return a default configured FciOrientDataExaminationStrategy object
      */
     public static FciOrientDataExaminationStrategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
@@ -182,7 +182,9 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      */
     @Override
     public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
-        doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
+        if (!doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph)) {
+            return false;
+        }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
@@ -217,15 +219,19 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                if ((graph.getEndpoint(b, a) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, a))
+                     && (graph.getEndpoint(b, c) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, c))) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (this.verbose) {
+                        TetradLogger.getInstance().log(
+                                "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                    }
+
+                    return true;
                 }
-
-                return true;
             }
         } else {
             if (doDiscriminatingPathTailRule) {
@@ -334,8 +340,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Sets the value indicating whether to use the Discriminating Path Collider Rule.
      *
-     * @param doDiscriminatingPathColliderRule
-     *         boolean value indicating whether to use the Discriminating Path Collider Rule
+     * @param doDiscriminatingPathColliderRule boolean value indicating whether to use the Discriminating Path Collider
+     *                                         Rule
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;

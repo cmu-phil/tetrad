@@ -23,10 +23,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -2597,8 +2594,6 @@ public final class GraphUtils {
      * @return true if the collider is allowed, false otherwise.
      */
     private static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
-        if (true) return true;
-
         return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
                && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
     }
@@ -2908,11 +2903,11 @@ public final class GraphUtils {
      * @param fciOrient                        the FciOrient object used for final orientation
      * @param knowledge                        the knowledge object used for orientation
      * @param verbose                          indicates whether or not to print verbose output
-     * @param ablationLeaveOutFinalOrientation
+     * @param ablationLeaveOutFinalOrientation indicates whether or not to leave out the final orientation
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                       Set<Triple> unshieldedColliders, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
+                                       AlmostCycleRemover almostCycleRemover, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2944,15 +2939,12 @@ public final class GraphUtils {
                         List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
 
                         for (Node _into : into) {
-//                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
                             if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
                                 pag.setEndpoint(_into, x, Endpoint.CIRCLE);
                                 pag.addNondirectedEdge(_into, y);
                             }
 
-                            if (unshieldedColliders != null) {
-                                unshieldedColliders.remove(new Triple(_into, x, y));
-                            }
+                            almostCycleRemover.addTriple(x, _into, y);
                         }
 
                         if (verbose) {
@@ -2968,16 +2960,12 @@ public final class GraphUtils {
                         List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
 
                         for (Node _into : into) {
-//                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
                             if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
                                 pag.setEndpoint(_into, y, Endpoint.CIRCLE);
                                 pag.addNondirectedEdge(_into, x);
                             }
 
-                            if (unshieldedColliders != null) {
-                                unshieldedColliders.remove(new Triple(_into, y, x));
-                            }
-
+                            almostCycleRemover.addTriple(x, _into, y);
                         }
 
                         if (verbose) {
