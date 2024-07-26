@@ -229,7 +229,7 @@ public final class LvLite implements IGraphSearch {
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
         Graph pag = new EdgeListGraph(cpdag);
 
-        AlmostCycleRemover almostCycleRemover = new AlmostCycleRemover(pag);
+        AlmostCycleRemover almostCycleRemover = new AlmostCycleRemover();
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
@@ -285,27 +285,26 @@ public final class LvLite implements IGraphSearch {
         }
 
         {
-            almostCycleRemover.removeAlmostCycles();
+            almostCycleRemover.removeAlmostCycles(pag);
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, false);
             almostCycleRemover.recallUnshieldedTriples(pag);
         }
 
-        // Final FCI orientation.
         if (!ablationLeaveOutFinalOrientation) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing final orientation.");
+
+            }
             fciOrient.finalOrientation(pag);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished final orientation.");
+            }
         }
 
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, almostCycleRemover, verbose, ablationLeaveOutFinalOrientation);
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing final orientation.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished final orientation.");
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -506,11 +505,8 @@ public final class LvLite implements IGraphSearch {
      * @param pag                The graph in which to remove extra edges.
      * @param dag                The BOSS/GRaSP DAG to use for removing extra edges.
      * @param almostCycleRemover The almost cycle remover.
-     * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
-     * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
-     * is not in this sepset.
      */
-    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, AlmostCycleRemover almostCycleRemover) {
+    private void removeExtraEdges(Graph pag, Graph dag, AlmostCycleRemover almostCycleRemover) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
@@ -522,20 +518,14 @@ public final class LvLite implements IGraphSearch {
 
         for (Edge edge : mag.getEdges()) {
             mag = GraphTransforms.zhangMagFromPag(pag);
-//            Set<Node> sepset = SepsetFinder.getDsepSepset(mag, edge.getNode1(), edge.getNode2(), test);
-//
-//            Set<Node> sepset1 = mag.paths().dsep(edge.getNode1(), edge.getNode2());
-//            Set<Node> sepset2 = mag.paths().dsep(edge.getNode2(), edge.getNode1());
-//            sepset1.addAll(sepset2);
-//
-//            if (sepset == null) {
+
             Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(mag, edge.getNode1(), edge.getNode2(), test,
                     maxBlockingPathLength, depth, false);
-//            }
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
-                orientCommonAdjacents(edge, pag, almostCycleRemover, extraSepsets);
+
+                TetradLogger.getInstance().log("Removing adjacency " + edge.getNode1() + " - " + edge.getNode2() + " with sepset " + sepset);
             }
         }
 
@@ -548,7 +538,6 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
         }
 
-        return extraSepsets;
     }
 
     /**
@@ -563,15 +552,13 @@ public final class LvLite implements IGraphSearch {
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
-        pag.removeEdge(edge.getNode1(), edge.getNode2());
-
         for (Node node : common) {
             if (!sepsets.get(edge).contains(node)) {
                 pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
                 pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("Oriented " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2() + " in PAG.");
+                    TetradLogger.getInstance().log("Orienting " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2());
                 }
 
                 almostCycleRemover.addTriple(edge.getNode1(), node, edge.getNode2());

@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,10 +9,18 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * A class for removing almost cycles from a graph. An almost cycle is a path x ~~&gt; y where x &lt;-&gt; y.
+ * A class for heuristically removing almost cycles from a PAG to avoid unfaithfulness in an estimated PAG. An almost
+ * cycle is a path x ~~&gt; y where x &lt;-&gt; y. Bidirected edge semantics for PAGs require that there be no almost
+ * directed cycles, though LV algorithms may produce them.
  * <p>
- * This class is meant to be incorporated into a latent variable algorithms and used to remove almost cycles from the
+ * This class is meant to be incorporated into a latent variable algorithm and used to remove almost cycles from the
  * graph in the final step.
+ * <p>
+ * The method works by identifying almost cyclic paths for x &lt;-&gt; y where there is a semidirected path from x to y
+ * in the estimated PAG and then removing all unshielded collider orientations into x for these. This removes the need
+ * to orient a collider at x for these edges, and so removes the need to orient a path out of x to y. Almost directed
+ * paths are symptomatic of unfaithfulness in the data (implying dependencies that should not exist if the output is a
+ * faithful PAG), so this is a reasonable heuristic.
  *
  * @author jdramsey
  */
@@ -19,10 +28,6 @@ public class AlmostCycleRemover implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The Graph to be reoriented.
-     */
-    private final Graph pag;
     /**
      * A map of nodes to parents oriented by triples for them.
      */
@@ -38,15 +43,8 @@ public class AlmostCycleRemover implements TetradSerializable {
 
     /**
      * Constructs a new instance of the AlmostCycleRemover class with the specified Graph.
-     *
-     * @param pag The Graph to be reoriented.
      */
-    public AlmostCycleRemover(Graph pag) {
-        if (pag == null) {
-            throw new IllegalArgumentException("PAG must not be null.");
-        }
-
-        this.pag = pag;
+    public AlmostCycleRemover() {
     }
 
     /**
@@ -69,6 +67,7 @@ public class AlmostCycleRemover implements TetradSerializable {
                 }
             }
         }
+
         return B;
     }
 
@@ -96,7 +95,9 @@ public class AlmostCycleRemover implements TetradSerializable {
     /**
      * Removes almost cycles from the Graph. An almost cycle is a path x ~~&gt; y where x &lt;-&gt; y.
      */
-    public void removeAlmostCycles() {
+    public void removeAlmostCycles(Graph pag) {
+        TetradLogger.getInstance().log("Removing almost cycles.");
+
         Map<Node, Set<Edge>> B = getBMap(pag);
         List<Node> nodesInOrder = new ArrayList<>(B.keySet());
         nodesInOrder.sort(Comparator.comparingInt(x -> B.get(x).size()));
@@ -104,7 +105,11 @@ public class AlmostCycleRemover implements TetradSerializable {
         for (Node x : nodesInOrder) {
             B.remove(x);
             M.remove(x);
+
+            TetradLogger.getInstance().log("Removing almost cycles for node " + x);
         }
+
+        TetradLogger.getInstance().log("Done removing almost cycles.");
     }
 
     /**
@@ -175,5 +180,4 @@ public class AlmostCycleRemover implements TetradSerializable {
     private boolean distinct(Node x, Node b, Node y) {
         return x != b && y != b && x != y;
     }
-
 }
