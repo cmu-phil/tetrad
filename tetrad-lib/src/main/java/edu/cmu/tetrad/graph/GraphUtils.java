@@ -2474,15 +2474,14 @@ public final class GraphUtils {
      * Applies the GFCI-R0 algorithm to orient edges in a pag based on a reference CPDAG, sepsets, and knowledge. This
      * method modifies the given pag by changing the orientation of edges. Due to Spirtes.
      *
-     * @param pag                The pag to be modified.
-     * @param cpdag              The reference CPDAG to guide the orientation of edges.
-     * @param sepsets            The sepsets used to determine the orientation of edges.
-     * @param knowledge          The knowledge used to determine the orientation of edges.
-     * @param almostCycleRemover The AlmostCycleRemover used to remove almost cycles.
-     * @param verbose            Whether to print verbose output.
+     * @param pag       The pag to be modified.
+     * @param cpdag     The reference CPDAG to guide the orientation of edges.
+     * @param sepsets   The sepsets used to determine the orientation of edges.
+     * @param knowledge The knowledge used to determine the orientation of edges.
+     * @param verbose   Whether to print verbose output.
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
-                              AlmostCycleRemover almostCycleRemover, boolean verbose) {
+                              boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Starting GFCI-R0.");
         }
@@ -2512,10 +2511,6 @@ public final class GraphUtils {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                        if (almostCycleRemover != null) {
-                            almostCycleRemover.addTriple(x, y, z);
-                        }
-
                         if (verbose) {
                             TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
@@ -2538,10 +2533,6 @@ public final class GraphUtils {
                             if (!sepset.contains(y)) {
                                 pag.setEndpoint(x, y, Endpoint.ARROW);
                                 pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                                if (almostCycleRemover != null) {
-                                    almostCycleRemover.addTriple(x, y, z);
-                                }
 
                                 if (verbose) {
                                     double p = sepsets.getPValue(x, z, sepset);
@@ -2916,7 +2907,7 @@ public final class GraphUtils {
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                       boolean verbose, boolean ablationLeaveOutFinalOrientation) {
+                                       AlmostCycleRemover almostCycleRemover, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2952,6 +2943,8 @@ public final class GraphUtils {
                                 pag.setEndpoint(_into, x, Endpoint.CIRCLE);
                                 pag.addNondirectedEdge(_into, y);
                             }
+
+                            almostCycleRemover.addTriple(x, _into, y);
                         }
 
                         if (verbose) {
@@ -2971,6 +2964,8 @@ public final class GraphUtils {
                                 pag.setEndpoint(_into, y, Endpoint.CIRCLE);
                                 pag.addNondirectedEdge(_into, x);
                             }
+
+                            almostCycleRemover.addTriple(x, _into, y);
                         }
 
                         if (verbose) {
@@ -3204,7 +3199,7 @@ public final class GraphUtils {
      * @param G The MAG.
      * @return D-SEP(x, y) for MAG G.
      */
-    public static Set<Node> dsep(Node x, Node y, Graph G) {
+    public static Set<Node> dsep0(Node x, Node y, Graph G) {
 
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();
@@ -3279,7 +3274,7 @@ public final class GraphUtils {
      * @param G The MAG.
      * @return D-SEP(x, y) for MAG G.
      */
-    public static Set<Node> dsep2(Node x, Node y, Graph G) {
+    public static Set<Node> dsep(Node x, Node y, Graph G) {
 
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();

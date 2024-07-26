@@ -181,7 +181,7 @@ public final class SpFci implements IGraphSearch {
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, null, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(
                 FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
@@ -193,7 +193,7 @@ public final class SpFci implements IGraphSearch {
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, verbose, ablationLeaveOutFinalOrientation);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
         }
 
         return graph;

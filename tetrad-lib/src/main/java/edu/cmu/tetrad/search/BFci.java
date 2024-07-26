@@ -21,7 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -203,16 +206,20 @@ public final class BFci implements IGraphSearch {
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-
-        AlmostCycleRemover almostCycleRemover = new AlmostCycleRemover();
-        graph.reorientAllWith(Endpoint.CIRCLE);
-
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, almostCycleRemover, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(
                 FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
 
-        LvLite.finalLvliteOrientation(almostCycleRemover, graph, fciOrient, graph.getNodes(), knowledge, verbose);
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
+
+        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
 
         return graph;
     }

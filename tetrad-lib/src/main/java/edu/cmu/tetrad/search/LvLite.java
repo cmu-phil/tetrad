@@ -24,7 +24,10 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.AlmostCycleRemover;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -151,63 +154,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
-     * Graph following the PAG (Partially Ancestral Graph) structure.
-     *
-     * @param pag     The Graph to be reoriented.
-     * @param verbose A boolean value indicating whether verbose output should be printed.
-     */
-    public static void reorientWithCircles(Graph pag, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
-        }
-        pag.reorientAllWith(Endpoint.CIRCLE);
-    }
-
-    /**
-     * Orient required edges in PAG.
-     *
-     * @param fciOrient The FciOrient object used for orienting the edges.
-     * @param pag       The Graph representing the PAG.
-     * @param best      The list of Node objects representing the best nodes.
-     */
-    public static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge,
-                                              boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient required edges in PAG:");
-        }
-
-        fciOrient.fciOrientbk(knowledge, pag, best);
-    }
-
-    public static void finalLvliteOrientation(AlmostCycleRemover almostCycleRemover, Graph pag, FciOrient fciOrient, List<Node> best, Knowledge knowledge, boolean verbose) {
-        boolean removedCycles = false;
-        boolean removedAlmostCycles = false;
-
-        do {
-            removedAlmostCycles = almostCycleRemover.removeAlmostCycles(pag);
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, best, knowledge, false);
-            almostCycleRemover.recallUnshieldedTriples(pag);
-
-            removedCycles = almostCycleRemover.removeCycles(pag);
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, best, knowledge, false);
-            almostCycleRemover.recallUnshieldedTriples(pag);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Doing final orientation.");
-            }
-
-            fciOrient.finalOrientation(pag);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished final orientation.");
-            }
-        } while (removedCycles || removedAlmostCycles);
-    }
-
-    /**
      * Run the search and return s a PAG.
      *
      * @return The PAG.
@@ -290,10 +236,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrientDataExaminationStrategy strategy = FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
-                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
-        ((FciOrientDataExaminationStrategyTestBased) strategy).setAlmostCycleRemover(almostCycleRemover);
-        FciOrient fciOrient = new FciOrient(strategy);
+        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
+                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -329,24 +273,45 @@ public final class LvLite implements IGraphSearch {
             almostCycleRemover.recallUnshieldedTriples(pag);
         }
 
-        // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
-        // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
-        // per edge.
         if (!ablationLeaveOutTestingStep) {
+
+            // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
+            // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
+            // per edge.
             removeExtraEdges(pag, cpdag, almostCycleRemover);
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, false);
             almostCycleRemover.recallUnshieldedTriples(pag);
         }
 
-        finalLvliteOrientation(almostCycleRemover, pag, fciOrient, best, knowledge, verbose);
+        {
+            almostCycleRemover.removeAlmostCycles(pag);
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, best, knowledge, false);
+            almostCycleRemover.recallUnshieldedTriples(pag);
+        }
 
-//        if (repairFaultyPag) {
-//            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, verbose, ablationLeaveOutFinalOrientation);
-//        }
+
+
+        if (!ablationLeaveOutFinalOrientation) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing final orientation.");
+
+            }
+            fciOrient.finalOrientation(pag);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished final orientation.");
+            }
+        }
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, almostCycleRemover, verbose, ablationLeaveOutFinalOrientation);
+        }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
+
 
     /**
      * Try adding an unshielded collider by checking the BOSS/GRaSP DAG.
@@ -523,13 +488,30 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
+     * Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag     The Graph to be reoriented.
+     * @param verbose A boolean value indicating whether verbose output should be printed.
+     */
+    private void reorientWithCircles(Graph pag, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
+        }
+        pag.reorientAllWith(Endpoint.CIRCLE);
+    }
+
+    /**
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
      * @param pag                The graph in which to remove extra edges.
      * @param dag                The BOSS/GRaSP DAG to use for removing extra edges.
      * @param almostCycleRemover The almost cycle remover.
+     * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
+     * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
+     * is not in this sepset.
      */
-    private void removeExtraEdges(Graph pag, Graph dag, AlmostCycleRemover almostCycleRemover) {
+    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, AlmostCycleRemover almostCycleRemover) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
@@ -541,28 +523,20 @@ public final class LvLite implements IGraphSearch {
 
         for (Edge edge : mag.getEdges()) {
             mag = GraphTransforms.zhangMagFromPag(pag);
-
+//            Set<Node> sepset = SepsetFinder.getDsepSepset(mag, edge.getNode1(), edge.getNode2(), test);
+//
+//            Set<Node> sepset1 = mag.paths().dsep(edge.getNode1(), edge.getNode2());
+//            Set<Node> sepset2 = mag.paths().dsep(edge.getNode2(), edge.getNode1());
+//            sepset1.addAll(sepset2);
+//
+//            if (sepset == null) {
             Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(mag, edge.getNode1(), edge.getNode2(), test,
                     maxBlockingPathLength, depth, false);
-//
-//            Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(mag, edge.getNode1(), edge.getNode2(), null, test, depth);
+//            }
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
-
-                System.out.println("sepset yields independence");
-//
-//                if (test.checkIndependence(edge.getNode1(), edge.getNode2(), sepset1).isIndependent()) {
-//                    System.out.println("sepset1 yields independence");
-//                }
-//
-//                if (test.checkIndependence(edge.getNode1(), edge.getNode2(), sepset2).isIndependent()) {
-//                    System.out.println("sepset2 yields independence");
-//                }
-
-//                System.out.println("Sepset = " + sepset + " sepset1 = " + sepset1 + " sepset2 = " + sepset2);
-
-                TetradLogger.getInstance().log("Removing adjacency " + edge.getNode1() + " - " + edge.getNode2() + " with sepset " + sepset);
+                orientCommonAdjacents(edge, pag, almostCycleRemover, extraSepsets);
             }
         }
 
@@ -575,6 +549,7 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
         }
 
+        return extraSepsets;
     }
 
     /**
@@ -589,13 +564,15 @@ public final class LvLite implements IGraphSearch {
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
+        pag.removeEdge(edge.getNode1(), edge.getNode2());
+
         for (Node node : common) {
             if (!sepsets.get(edge).contains(node)) {
                 pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
                 pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("Orienting " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2());
+                    TetradLogger.getInstance().log("Oriented " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2() + " in PAG.");
                 }
 
                 almostCycleRemover.addTriple(edge.getNode1(), node, edge.getNode2());
@@ -674,6 +651,22 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
         return FciOrient.isArrowheadAllowed(x, b, pag, knowledge) && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
+    }
+
+    /**
+     * Orient required edges in PAG.
+     *
+     * @param fciOrient The FciOrient object used for orienting the edges.
+     * @param pag       The Graph representing the PAG.
+     * @param best      The list of Node objects representing the best nodes.
+     */
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge,
+                                        boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient required edges in PAG:");
+        }
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
     /**

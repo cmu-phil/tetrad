@@ -21,7 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -29,7 +32,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
@@ -195,7 +197,7 @@ public final class GraspFci implements IGraphSearch {
         alg.bestOrder(variables);
         Graph pag = alg.getGraph(true);
 
-        Graph cpdag = new EdgeListGraph(pag);
+        Graph referenceCpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
@@ -211,18 +213,21 @@ public final class GraspFci implements IGraphSearch {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
-
-        AlmostCycleRemover almostCycleRemover = new AlmostCycleRemover();
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, almostCycleRemover, verbose);
+        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(
                 FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
 
-        LvLite.finalLvliteOrientation(almostCycleRemover, pag, fciOrient, pag.getNodes(), knowledge, verbose);
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(pag);
+        }
 
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
+
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
         return pag;
     }
 
