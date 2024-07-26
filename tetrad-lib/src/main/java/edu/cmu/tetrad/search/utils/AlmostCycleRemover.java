@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Serial;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.TetradLogger.getInstance;
+
 /**
  * A class for heuristically removing almost cycles from a PAG to avoid unfaithfulness in an estimated PAG. An almost
  * cycle is a path x ~~&gt; y where x &lt;-&gt; y. Bidirected edge semantics for PAGs require that there be no almost
@@ -95,8 +97,9 @@ public class AlmostCycleRemover implements TetradSerializable {
     /**
      * Removes almost cycles from the Graph. An almost cycle is a path x ~~&gt; y where x &lt;-&gt; y.
      */
-    public void removeAlmostCycles(Graph pag) {
-        TetradLogger.getInstance().log("Removing almost cycles.");
+    public boolean removeAlmostCycles(Graph pag) {
+        getInstance().log("Removing almost cycles.");
+        boolean removed = false;
 
         Map<Node, Set<Edge>> B = getBMap(pag);
         List<Node> nodesInOrder = new ArrayList<>(B.keySet());
@@ -105,11 +108,30 @@ public class AlmostCycleRemover implements TetradSerializable {
         for (Node x : nodesInOrder) {
             B.remove(x);
             M.remove(x);
-
-            TetradLogger.getInstance().log("Removing almost cycles for node " + x);
+            removed = true;
+            getInstance().log("Removing almost cycles for node " + x);
         }
 
-        TetradLogger.getInstance().log("Done removing almost cycles.");
+        getInstance().log("Done removing almost cycles.");
+        return removed;
+    }
+
+    public boolean removeCycles(Graph pag) {
+        getInstance().log("Removing cycles.");
+        boolean removed = false;
+
+        for (Node x : pag.getNodes()) {
+            if (pag.paths().existsDirectedPath(x, x)) {
+                getInstance().log("Removing cycle for node " + x);
+
+                M.remove(x);
+                removed = true;
+            }
+        }
+
+        getInstance().log("Done removing cycles.");
+
+        return removed;
     }
 
     /**

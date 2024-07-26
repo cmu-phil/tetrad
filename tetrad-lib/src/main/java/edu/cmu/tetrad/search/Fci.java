@@ -267,7 +267,7 @@ public final class Fci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, verbose, ablationLeaveOutFinalOrientation);
         }
 
         long stop = MillisecondTimes.timeMillis();

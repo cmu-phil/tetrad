@@ -85,6 +85,7 @@ public class FciOrient {
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
     private Knowledge knowledge = new Knowledge();
+    private AlmostCycleRemover almostCycleRemover = null;
 
     public FciOrient(FciOrientDataExaminationStrategy strategy) {
         if (strategy == null) {
@@ -1272,5 +1273,9 @@ public class FciOrient {
 
     public boolean isVerbose() {
         return verbose;
+    }
+
+    public void setAlmostCycleRemover(AlmostCycleRemover almostCycleRemover) {
+        this.almostCycleRemover = almostCycleRemover;
     }
 }

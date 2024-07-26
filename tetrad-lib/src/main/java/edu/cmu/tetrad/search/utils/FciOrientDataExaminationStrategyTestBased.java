@@ -35,6 +35,11 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     private final IndependenceTest test;
 
     /**
+     * Records collider orientations.
+     */
+    private AlmostCycleRemover almostCycleRemover = null;
+
+    /**
      * Private variable representing the knowledge.
      * <p>
      * This variable holds the knowledge used by the FciOrientDataExaminationStrategyTestBased class. It is an instance
@@ -200,8 +205,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 //            Graph dag = ((MsepTest) test).getGraph();
 //            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
 //        } else {
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
+//        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
 //            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
 //        }
 
@@ -219,19 +224,22 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
-
                 if ((graph.getEndpoint(b, a) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, a))
-                     && (graph.getEndpoint(b, c) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, c))) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                    && (graph.getEndpoint(b, c) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, c))) {
+//                    if (almostCycleRemover != null && almostCycleRemover.tripleAllowed(a, b, c)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log(
-                                "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        almostCycleRemover.addTriple(a, b, c);
+
+                        if (this.verbose) {
+                            TetradLogger.getInstance().log(
+                                    "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+
+                        return true;
                     }
-
-                    return true;
-                }
+//                }
             }
         } else {
             if (doDiscriminatingPathTailRule) {
@@ -363,5 +371,9 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    public void setAlmostCycleRemover(AlmostCycleRemover almostCycleRemover) {
+        this.almostCycleRemover = almostCycleRemover;
     }
 }

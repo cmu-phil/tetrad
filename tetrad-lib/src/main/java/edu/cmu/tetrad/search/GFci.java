@@ -31,6 +31,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
@@ -171,7 +172,7 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        Graph graph = fges.search();
+        Graph pag = fges.search();
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished FGES algorithm.");
@@ -181,41 +182,34 @@ public final class GFci implements IGraphSearch {
             TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
         }
 
-        Graph cpdag = new EdgeListGraph(graph);
+        Graph cpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, verbose);
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting final FCI orientation.");
-        }
+        AlmostCycleRemover almostCycleRemover = new AlmostCycleRemover();
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, almostCycleRemover, verbose);
 
         FciOrient fciOrient = new FciOrient(
                 FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
-        }
+        LvLite.finalLvliteOrientation(almostCycleRemover, pag, fciOrient, pag.getNodes(), knowledge, verbose);
 
-        if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
-        }
 
-        return graph;
+        return pag;
     }
 
     /**
