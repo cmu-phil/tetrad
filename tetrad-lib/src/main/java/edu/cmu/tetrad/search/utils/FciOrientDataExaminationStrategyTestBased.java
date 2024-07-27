@@ -194,16 +194,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
-        Set<Node> sepset;
-
-//        if (test instanceof MsepTest && useMsepDag) {
-//            Graph dag = ((MsepTest) test).getGraph();
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
-//        } else {
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
-//            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
-//        }
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX2(graph, e, c, test, -1, -1, false);
 
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
@@ -219,9 +210,9 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
-
-                if ((graph.getEndpoint(b, a) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, a))
-                     && (graph.getEndpoint(b, c) != Endpoint.ARROW || !graph.paths().existsSemiDirectedPath(b, c))) {
+                if ((graph.getEndpoint(b, a) != Endpoint.ARROW && graph.getEndpoint(b, c) != Endpoint.ARROW)
+                    || (graph.getEndpoint(b, a) == Endpoint.ARROW && !graph.paths().existsSemiDirectedPath(b, a))
+                    || (graph.getEndpoint(b, c) == Endpoint.ARROW && !graph.paths().existsSemiDirectedPath(b, c))) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
 

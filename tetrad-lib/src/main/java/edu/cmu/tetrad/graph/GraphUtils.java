@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.AlmostCycleRemover;
 import edu.cmu.tetrad.util.*;
 import org.jetbrains.annotations.NotNull;
 

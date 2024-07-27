@@ -24,10 +24,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.utils.AlmostCycleRemover;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -236,8 +234,9 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
-                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
+        FciOrientDataExaminationStrategy strategy = FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
+                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
+        FciOrient fciOrient = new FciOrient(strategy);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -284,20 +283,17 @@ public final class LvLite implements IGraphSearch {
             almostCycleRemover.recallUnshieldedTriples(pag);
         }
 
-        {
-            almostCycleRemover.removeAlmostCycles(pag);
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, best, knowledge, false);
-            almostCycleRemover.recallUnshieldedTriples(pag);
-        }
-
-
+        almostCycleRemover.removeAlmostCycles(pag);
+        reorientWithCircles(pag, verbose);
+        doRequiredOrientations(fciOrient, pag, best, knowledge, false);
+        almostCycleRemover.recallUnshieldedTriples(pag);
 
         if (!ablationLeaveOutFinalOrientation) {
             if (verbose) {
                 TetradLogger.getInstance().log("Doing final orientation.");
 
             }
+
             fciOrient.finalOrientation(pag);
 
             if (verbose) {
@@ -522,7 +518,7 @@ public final class LvLite implements IGraphSearch {
         Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
 
         for (Edge edge : mag.getEdges()) {
-            mag = GraphTransforms.zhangMagFromPag(pag);
+//            mag = GraphTransforms.zhangMagFromPag(pag);
 //            Set<Node> sepset = SepsetFinder.getDsepSepset(mag, edge.getNode1(), edge.getNode2(), test);
 //
 //            Set<Node> sepset1 = mag.paths().dsep(edge.getNode1(), edge.getNode2());
@@ -530,7 +526,7 @@ public final class LvLite implements IGraphSearch {
 //            sepset1.addAll(sepset2);
 //
 //            if (sepset == null) {
-            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(mag, edge.getNode1(), edge.getNode2(), test,
+            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX2(mag, edge.getNode1(), edge.getNode2(), test,
                     maxBlockingPathLength, depth, false);
 //            }
 
