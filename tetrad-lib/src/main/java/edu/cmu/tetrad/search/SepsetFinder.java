@@ -363,62 +363,6 @@ public class SepsetFinder {
         }
 
         return null;
-
-//        List<Triple> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-//        conditioningSet.removeAll(couldBeColliders);
-//
-//        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
-//        int[] choice;
-//
-//        while ((choice = generator.next()) != null) {
-//            Set<Node> sepset = new HashSet<>();
-//
-//            for (int k : choice) {
-//                sepset.add(couldBeCollidersList.get(k));
-//            }
-//
-//            sepset.addAll(conditioningSet);
-//
-//            if (depth != -1 && sepset.size() > depth) {
-//                continue;
-//            }
-//
-//            sepset.remove(y);
-//
-//            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-//                Set<Node> _z = new HashSet<>(sepset);
-//                boolean removed;
-//
-//                do {
-//                    removed = false;
-//
-//                    for (Node w : new HashSet<>(_z)) {
-//                        Set<Node> __z = new HashSet<>(_z);
-//
-//                        __z.remove(w);
-//
-//                        if (test.checkIndependence(x, y, __z).isIndependent()) {
-//                            removed = true;
-//                            _z = __z;
-//                        }
-//                    }
-//                } while (removed);
-//
-//                sepset = new HashSet<>(_z);
-//
-//                if (!test.checkIndependence(x, y, sepset).isIndependent()) {
-//                    throw new IllegalArgumentException("Independence does not hold.");
-//                }
-//
-//                if (printTrace) {
-//                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-//                }
-//
-//                return sepset;
-//            }
-//        }
-//
-//        return null;
     }
 
     /**
@@ -820,7 +764,9 @@ public class SepsetFinder {
     private static Set<List<Node>> tryToBlockPaths2(Node x, Node y, Graph mpdag, Set<Node> conditioningSet, Set<Triple> couldBeColliders,
                                                     Set<Node> blacklist, int maxLength, boolean printTrace) {
         Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, maxLength, conditioningSet, false);
+//        Set<List<Node>> paths = allPathsOutOf3(x, y, conditioningSet, maxLength, false, mpdag);
 
+        // Sort paths by increasing size. We want to block the shorter paths first.
         // Sort paths by increasing size. We want to block the shorter paths first.
         List<List<Node>> _paths = new ArrayList<>(paths);
         _paths.sort(Comparator.comparingInt(List::size));
@@ -1001,4 +947,77 @@ public class SepsetFinder {
         return false;
     }
 
+    public static Set<List<Node>> allPathsOutOf3(Node a, Node b, Set<Node> conditioningSet, int maxLength, boolean allowSelectionBias, Graph graph) {
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
+        Map<Node, Node> previous = new HashMap<>();
+        Set<List<Node>> paths = new HashSet<>();
+
+        Q.offer(a);
+        V.add(a);
+        V.add(b);
+
+        previous.put(a, null);
+
+        W:
+        while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node t = Q.poll();
+
+            for (Node e : graph.getAdjacentNodes(t)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break W;
+                }
+
+//                if (e == b) {
+//                    continue;
+//                }
+
+                if (V.contains(e)) {
+                    continue;
+                }
+
+                previous.put(e, t);
+
+                LinkedList<Node> path = new LinkedList<>();
+
+                Node d = e;
+
+                do {
+                    path.addFirst(d);
+                    d = previous.get(d);
+                } while (previous.get(d) != null);
+
+                path.addFirst(a);
+
+                if (path.size() - 1 > maxLength) {
+                    break;
+                }
+
+                // Now we have a path. Check that it's m-connecting.
+                if (path.size() - 1 >= 1 && !graph.paths().isMConnectingPath(path, conditioningSet, allowSelectionBias)) {
+                    continue;
+                }
+
+//                if (path.size() - 1 >= 1) {
+                    paths.add(new ArrayList<>(path));
+                    System.out.println(GraphUtils.pathString(graph, path, conditioningSet, true, allowSelectionBias));
+                    System.out.println();
+
+//                }
+
+                // Now we need to do something with this path... let's look at getSepsetPathBlockingOutOfX2.
+
+                if (!V.contains(e)) {
+                    Q.offer(e);
+                    V.add(e);
+                }
+            }
+        }
+
+        return paths;
+    }
 }

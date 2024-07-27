@@ -283,10 +283,10 @@ public final class LvLite implements IGraphSearch {
             almostCycleRemover.recallUnshieldedTriples(pag);
         }
 
-        almostCycleRemover.removeAlmostCycles(pag);
-        reorientWithCircles(pag, verbose);
-        doRequiredOrientations(fciOrient, pag, best, knowledge, false);
-        almostCycleRemover.recallUnshieldedTriples(pag);
+//        almostCycleRemover.removeAlmostCycles(pag);
+//        reorientWithCircles(pag, verbose);
+//        doRequiredOrientations(fciOrient, pag, best, knowledge, false);
+//        almostCycleRemover.recallUnshieldedTriples(pag);
 
         if (!ablationLeaveOutFinalOrientation) {
             if (verbose) {
@@ -526,7 +526,7 @@ public final class LvLite implements IGraphSearch {
 //            sepset1.addAll(sepset2);
 //
 //            if (sepset == null) {
-            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX2(mag, edge.getNode1(), edge.getNode2(), test,
+            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(mag, edge.getNode1(), edge.getNode2(), test,
                     maxBlockingPathLength, depth, false);
 //            }
 
