@@ -97,40 +97,50 @@ public interface FciOrientDataExaminationStrategy {
      * @param graph the graph representation
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    default void doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+    default boolean doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a dicriminatin path construct.");
+//            throw new IllegalArgumentException("This is not a dicriminatin path construct.");
+            return false;
         }
 
         if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         if (!path.contains(a)) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException("This is not a discriminating path construct.");
+//            throw new IllegalArgumentException("This is not a discriminating path construct.");
+            return false;
         }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
-                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
+//                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
+                return false;
             }
         }
+
+        return true;
     }
 
     /**

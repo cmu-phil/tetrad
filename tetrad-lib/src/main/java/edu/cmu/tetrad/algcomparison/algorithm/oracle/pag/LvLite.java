@@ -148,14 +148,12 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // LV-Lite
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setMaxScoreDrop(parameters.getDouble(Params.MAX_SCORE_DROP));
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
 
         // Ablation
-        search.setAblationLeaveOutTuckingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP));
         search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEP));
         search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
@@ -166,10 +164,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
-        }
-
-        if (parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP)) {
-            search.setAblationLeaveOutTuckingStep(true);
         }
 
         // General
@@ -232,12 +226,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
-        params.add(Params.MAX_SCORE_DROP);
         params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
-//        params.add(Params.ABLATION_LEAVE_OUT_TUCKING_STEP);
         params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEP);
         params.add(Params.MAX_PATH_LENGTH);
 
