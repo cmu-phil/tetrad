@@ -198,8 +198,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 //            Graph dag = ((MsepTest) test).getGraph();
 //            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
 //        } else {
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false);
-        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+            sepset = SepsetFinder.getSepsetPathBlockingXtoY(graph, e, c, test, -1, -1, false);
+//        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
 //            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
 //        }
 

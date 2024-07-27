@@ -134,19 +134,19 @@ public class TestSepsetMethods {
         times[4] = stop5 - start5;
         System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop5 - start5) + " ms");
 
-        long start6 = System.currentTimeMillis();
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXorY(dag, x, y, msepTest, -1, -1,
-                false);
-        long stop6 = System.currentTimeMillis();
-        times[5] = stop6 - start6;
-        System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop6 - start6) + " ms");
+//        long start6 = System.currentTimeMillis();
+//        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXorY(dag, x, y, msepTest, -1, -1,
+//                false);
+//        long stop6 = System.currentTimeMillis();
+//        times[5] = stop6 - start6;
+//        System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop6 - start6) + " ms");
 
         System.out.println("Sepset 1: " + sepset1);
         System.out.println("Sepset 2: " + sepset2);
         System.out.println("Sepset 3: " + sepset3);
         System.out.println("Sepset 4: " + sepset4);
         System.out.println("Sepset 5: " + sepset5);
-        System.out.println("Sepset 6: " + sepset6);
+//        System.out.println("Sepset 6: " + sepset6);
 
         // Note that methods 3 and 4 cannot find null sepsets from Oracle. These need to be tested separately from data.
 
@@ -154,17 +154,17 @@ public class TestSepsetMethods {
             assertNotNull(sepset1);
             assertNotNull(sepset2);
             assertNotNull(sepset5);
-            assertNotNull(sepset6);
+//            assertNotNull(sepset6);
 
             assertTrue(msepTest.checkIndependence(x, y, sepset1).isIndependent());
             assertTrue(msepTest.checkIndependence(x, y, sepset2).isIndependent());
             assertTrue(msepTest.checkIndependence(x, y, sepset5).isIndependent());
-            assertTrue(msepTest.checkIndependence(x, y, sepset6).isIndependent());
+//            assertTrue(msepTest.checkIndependence(x, y, sepset6).isIndependent());
         } else {
             assertNull(sepset1);
             assertNull(sepset2);
             assertNull(sepset5);
-            assertNull(sepset6);
+//            assertNull(sepset6);
         }
 
         return times;
