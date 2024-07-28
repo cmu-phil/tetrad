@@ -74,11 +74,11 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Provides a special configuration for creating an instance of FciOrientDataExaminationStrategy.
      *
-     * @param test                         the IndependenceTest object used by the strategy
-     * @param knowledge                    the Knowledge object used by the strategy
-     * @param doDiscriminatingPathTailRule boolean indicating whether to use the Discriminating Path Tail Rule
+     * @param test                             the IndependenceTest object used by the strategy
+     * @param knowledge                        the Knowledge object used by the strategy
+     * @param doDiscriminatingPathTailRule     boolean indicating whether to use the Discriminating Path Tail Rule
      * @param doDiscriminatingPathColliderRule boolean indicating whether to use the Discriminating Path Collider Rule
-     * @param verbose                      boolean indicating whether to provide verbose output
+     * @param verbose                          boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
@@ -109,9 +109,9 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Returns a default configuration of the FciOrientDataExaminationStrategy object.
      *
-     * @param dag     the graph representation
+     * @param dag       the graph representation
      * @param knowledge the Knowledge object used by the strategy
-     * @param verbose    boolean indicating whether to provide verbose output
+     * @param verbose   boolean indicating whether to provide verbose output
      * @return a default configured FciOrientDataExaminationStrategy object
      */
     public static FciOrientDataExaminationStrategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
@@ -192,16 +192,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
-        Set<Node> sepset;
-
-//        if (test instanceof MsepTest && useMsepDag) {
-//            Graph dag = ((MsepTest) test).getGraph();
-//            sepset = SepsetFinder.getSepsetPathBlockingOutOfX(dag, e, c, test, -1, -1, false);
-//        } else {
-            sepset = SepsetFinder.getSepsetPathBlockingXtoY(graph, e, c, test, -1, -1, false);
-//        sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
-//            sepset = SepsetFinder.getDsepSepset(graph, e, c, test);
-//        }
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false, true);
 
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
@@ -334,8 +325,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     /**
      * Sets the value indicating whether to use the Discriminating Path Collider Rule.
      *
-     * @param doDiscriminatingPathColliderRule
-     *         boolean value indicating whether to use the Discriminating Path Collider Rule
+     * @param doDiscriminatingPathColliderRule boolean value indicating whether to use the Discriminating Path Collider
+     *                                         Rule
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;

@@ -220,39 +220,30 @@ public class SepsetFinder {
      * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
      * search is terminated early.
      *
-     * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
-     * @param x          The first node in the pair.
-     * @param y          The second node in the pair.
-     * @param test       The independence test object to use for checking independence.
-     * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
-     *                   the number of nodes minus one, it is adjusted accordingly.
-     * @param depth      The maximum depth of the final sepset. If set to a negative value, no limit is applied.
-     * @param printTrace A boolean flag indicating whether to print trace information.
+     * @param mpdag              The graph representing the Markov equivalence class that contains the nodes.
+     * @param x                  The first node in the pair.
+     * @param y                  The second node in the pair.
+     * @param test               The independence test object to use for checking independence.
+     * @param maxLength          The maximum length of the paths to consider. If set to a negative value or a value
+     *                           greater than the number of nodes minus one, it is adjusted accordingly.
+     * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
+     *                           applied.
+     * @param printTrace         A boolean flag indicating whether to print trace information.
+     * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean printTrace) {
+                                                        int maxLength, int depth, boolean printTrace, boolean allowSelectionBias) {
 
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
         }
 
-        Set<List<Node>> lastPaths;
-        Set<List<Node>> paths = new HashSet<>();
-
         Set<Node> conditioningSet = new HashSet<>();
         Set<Node> couldBeColliders = new HashSet<>();
         Set<Node> blacklist = new HashSet<>();
 
-        for (int length = 1; length < maxLength; length++) {
-            lastPaths = new HashSet<>(paths);
-
-            paths = tryToBlockPaths(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, length, printTrace);
-
-            if (paths.equals(lastPaths)) {
-                break;
-            }
-        }
+        tryToBlockPaths(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, printTrace, allowSelectionBias);
 
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
         conditioningSet.removeAll(couldBeColliders);
@@ -320,39 +311,30 @@ public class SepsetFinder {
      * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
      * search is terminated early.
      *
-     * @param mpdag      The graph representing the Markov equivalence class that contains the nodes.
-     * @param x          The first node in the pair.
-     * @param y          The second node in the pair.
-     * @param test       The independence test object to use for checking independence.
-     * @param maxLength  The maximum length of the paths to consider. If set to a negative value or a value greater than
-     *                   the number of nodes minus one, it is adjusted accordingly.
-     * @param depth      The maximum depth of the final sepset. If set to a negative value, no limit is applied.
-     * @param printTrace A boolean flag indicating whether to print trace information.
+     * @param mpdag              The graph representing the Markov equivalence class that contains the nodes.
+     * @param x                  The first node in the pair.
+     * @param y                  The second node in the pair.
+     * @param test               The independence test object to use for checking independence.
+     * @param maxLength          The maximum length of the paths to consider. If set to a negative value or a value
+     *                           greater than the number of nodes minus one, it is adjusted accordingly.
+     * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
+     *                           applied.
+     * @param printTrace         A boolean flag indicating whether to print trace information.
+     * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingOutOfX2(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                         int maxLength, int depth, boolean printTrace) {
+                                                         int maxLength, int depth, boolean printTrace, boolean allowSelectionBias) {
 
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
         }
 
-        Set<List<Node>> lastPaths;
-        Set<List<Node>> paths = new HashSet<>();
-
         Set<Node> conditioningSet = new HashSet<>();
         Set<Triple> couldBeColliders = new HashSet<>();
         Set<Node> blacklist = new HashSet<>();
 
-        for (int length = 1; length < maxLength; length++) {
-            lastPaths = new HashSet<>(paths);
-
-            paths = tryToBlockPaths2(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, length, printTrace);
-
-            if (paths.equals(lastPaths)) {
-                break;
-            }
-        }
+        tryToBlockPaths2(x, y, mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, printTrace, allowSelectionBias);
 
         if (test.checkIndependence(x, y, conditioningSet).isIndependent()) {
             if (printTrace) {
@@ -364,38 +346,6 @@ public class SepsetFinder {
 
         return null;
     }
-
-    /**
-     * Computes the sepset path blocking out of either node X or Y in the given MPDAG graph.
-     *
-     * @param mpdag      the directed acyclic graph (MPDAG) representing the variables and their dependencies
-     * @param x          the first node
-     * @param y          the second node
-     * @param test       the independence test used to determine conditional independence of variables
-     * @param maxLength  the maximum length of the path to search for in the MPDAG
-     * @param depth      the depth of recursion to be used in the algorithm
-     * @param printTrace a flag indicating whether to print the trace of the execution
-     * @return a set of nodes representing the sepset path blocking out of either node X or Y
-     */
-    public static Set<Node> getSepsetPathBlockingOutOfXorY(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                           int maxLength, int depth, boolean printTrace) {
-        Set<Node> sepsetPathBlockingOutOfX = getSepsetPathBlockingOutOfX(mpdag, x, y, test, maxLength, depth, printTrace);
-        Set<Node> sepsetPathBlockingOutOfY = getSepsetPathBlockingOutOfX(mpdag, y, x, test, maxLength, depth, printTrace);
-
-        if (sepsetPathBlockingOutOfX != null) {
-            return sepsetPathBlockingOutOfX;
-        } else {
-            return sepsetPathBlockingOutOfY;
-        }
-
-
-//        if (mpdag.getAdjacentNodes(x).size() < mpdag.getAdjacentNodes(y).size()) {
-//             return sepsetPathBlockingOutOfX;
-//        } else {
-//            return sepsetPathBlockingOutOfX;
-//        }
-    }
-
 
     /**
      * Searches for sets, by following paths from x to y in the given MPDAG, that could possibly block all paths from x
@@ -735,9 +685,13 @@ public class SepsetFinder {
      * @param printTrace       whether to print trace information
      */
     private static Set<List<Node>> tryToBlockPaths(Node x, Node y, Graph mpdag, Set<Node> conditioningSet, Set<Node> couldBeColliders,
-                                                   Set<Node> blacklist, int maxLength, boolean printTrace) {
-//        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, maxLength, conditioningSet, false);
-        Set<List<Node>> paths = allPathsOutOf3(x, y, conditioningSet, maxLength, false, mpdag);
+                                                   Set<Node> blacklist, int maxLength, boolean printTrace, boolean allowSelectionBias) {
+//        Set<List<Node>> paths = allPathsOutOf(mpdag, x, maxLength, conditioningSet, false);
+//        Set<List<Node>> paths = allPathsOutOf3(x, y, conditioningSet, maxLength, false, mpdag);
+        Set<List<Node>> paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y, allowSelectionBias);
+//        paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y);
+//        paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y);
+//        paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y);
 
         // Sort paths by increasing size. We want to block the shorter paths first.
         List<List<Node>> _paths = new ArrayList<>(paths);
@@ -766,9 +720,11 @@ public class SepsetFinder {
      * @param printTrace       whether to print trace information
      */
     private static Set<List<Node>> tryToBlockPaths2(Node x, Node y, Graph mpdag, Set<Node> conditioningSet, Set<Triple> couldBeColliders,
-                                                    Set<Node> blacklist, int maxLength, boolean printTrace) {
-        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, maxLength, conditioningSet, false);
+                                                    Set<Node> blacklist, int maxLength, boolean printTrace, boolean allowSelectionBias) {
+//        Set<List<Node>> paths = mpdag.paths().allPathsOutOf(x, maxLength, conditioningSet, false);
 //        Set<List<Node>> paths = allPathsOutOf3(x, y, conditioningSet, maxLength, false, mpdag);
+        Set<List<Node>> paths = bfsAllPathsOutOfX2(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y, allowSelectionBias);
+
 
         // Sort paths by increasing size. We want to block the shorter paths first.
         // Sort paths by increasing size. We want to block the shorter paths first.
@@ -1025,42 +981,206 @@ public class SepsetFinder {
         return paths;
     }
 
-    public static Set<List<Node>> bfsAllPaths(Graph graph, Set<Node> conditionSet, int maxlength, Node start, Node end) {
+    public static Set<List<Node>> bfsAllPaths(Graph graph, Set<Node> conditionSet, int maxLength, Node x, Node y) {
         Set<List<Node>> allPaths = new HashSet<>();
+//        allPaths.add(Collections.emptyList());
         Queue<List<Node>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(start));
+        queue.add(Collections.singletonList(x));
+
+        if (conditionSet == null) {
+            throw new IllegalArgumentException("Conditioning set cannot be null.");
+        }
 
         while (!queue.isEmpty()) {
             List<Node> path = queue.poll();
+
+            if (maxLength >= 0 && path.size() > maxLength) {
+                continue;
+            }
+
             Node node = path.get(path.size() - 1);
 
-            if (node == end) {
-                if (conditionSet != null) {
-                    if (path.size() > 1) {
-                        if (graph.paths().isMConnectingPath(path, conditionSet, true)) {
-                            List<Node> newPath = new ArrayList<>(path);
-                            allPaths.add(newPath);
-                        }
-                    }
-                } else {
-                    List<Node> newPath = new ArrayList<>(path);
-                    allPaths.add(newPath);
-                }
+            if (node == y) {
+//                List<Node> newPath = new ArrayList<>(path);
+                allPaths.add(path);
             } else {
-                if (path.size() + 1 > maxlength) {
-                    continue;
-                }
-
                 for (Node adjacent : graph.getAdjacentNodes(node)) {
                     if (!path.contains(adjacent)) {
                         List<Node> newPath = new ArrayList<>(path);
                         newPath.add(adjacent);
                         queue.add(newPath);
+
+                        if (newPath.size() - 1 <= 1) {
+                            queue.add(newPath);
+                        } else {
+                            if (graph.paths().isMConnectingPath(path, conditionSet, true)) {
+                                queue.add(newPath);
+                            }
+                        }
                     }
                 }
             }
         }
 
         return allPaths;
+    }
+
+    public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
+                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+        Set<List<Node>> allPaths = new HashSet<>();
+        Queue<List<Node>> queue = new LinkedList<>();
+        queue.add(Collections.singletonList(x));
+
+        if (conditionSet == null) {
+            throw new IllegalArgumentException("Conditioning set cannot be null.");
+        }
+
+        while (!queue.isEmpty()) {
+            List<Node> path = queue.poll();
+
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node node = path.get(path.size() - 1);
+
+//            if (node == x) {
+//                continue;
+//            }
+
+            if (node == y) {
+                continue;
+            }
+
+            allPaths.add(path);
+
+            for (Node adjacent : graph.getAdjacentNodes(node)) {
+                if (!path.contains(adjacent)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(adjacent);
+//                    queue.add(newPath);
+
+//                    if (newPath.size() - 1 == 1) {
+//                        queue.add(newPath);
+//                    } else {
+                    blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, false);
+
+                    if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
+                        queue.add(newPath);
+                    }
+//                    }
+                }
+            }
+        }
+
+        return allPaths;
+    }
+
+    public static Set<List<Node>> bfsAllPathsOutOfX2(Graph graph, Set<Node> conditionSet, Set<Triple> couldBeColliders,
+                                                     Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+        Set<List<Node>> allPaths = new HashSet<>();
+        Queue<List<Node>> queue = new LinkedList<>();
+        queue.add(Collections.singletonList(x));
+
+        if (conditionSet == null) {
+            throw new IllegalArgumentException("Conditioning set cannot be null.");
+        }
+
+        while (!queue.isEmpty()) {
+            List<Node> path = queue.poll();
+
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node node = path.get(path.size() - 1);
+
+//            if (node == x) {
+//                continue;
+//            }
+
+            if (node == y) {
+                continue;
+            }
+
+            allPaths.add(path);
+
+            for (Node adjacent : graph.getAdjacentNodes(node)) {
+                if (!path.contains(adjacent)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(adjacent);
+//                    queue.add(newPath);
+
+//                    if (newPath.size() - 1 == 1) {
+//                        queue.add(newPath);
+//                    } else {
+                    blockPath2(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, false);
+
+                    if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
+                        queue.add(newPath);
+                    }
+//                    }
+                }
+            }
+        }
+
+        return allPaths;
+    }
+
+    public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet,
+                                                boolean allowSelectionBias) {
+        Set<List<Node>> paths = new HashSet<>();
+        allPathsVisitOutOf(graph, null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
+        return paths;
+    }
+
+    private static void allPathsVisitOutOf(Graph graph, Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
+                                           Set<Node> conditionSet, boolean allowSelectionBias) {
+        if (maxLength != -1 && path.size() - 1 > maxLength) {
+            return;
+        }
+
+        if (pathSet.contains(node1)) {
+            return;
+        }
+
+        path.addLast(node1);
+        pathSet.add(node1);
+
+        LinkedList<Node> _path = new LinkedList<>(path);
+        int maxPaths = 500;
+
+        if (path.size() - 1 > 1) {
+            if (paths.size() < maxPaths && graph.paths().isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                paths.add(_path);
+            }
+        }
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node child = Edges.traverse(node1, edge);
+
+            if (child == null) {
+                continue;
+            }
+
+            if (pathSet.contains(child)) {
+                continue;
+            }
+
+//            if (previous != null) {
+//                Edge _previous = graph.getEdge(previous, node1);
+//
+//                if (!reachable(_previous, edge, edge.getDistalNode(node1), conditionSet)) {
+//                    continue;
+//                }
+//            }
+
+            if (paths.size() < maxPaths) {
+                allPathsVisitOutOf(graph, node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
+            }
+        }
+
+        path.removeLast();
+        pathSet.remove(node1);
     }
 }

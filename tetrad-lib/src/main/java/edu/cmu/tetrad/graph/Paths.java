@@ -635,7 +635,23 @@ public class Paths implements TetradSerializable {
         pathSet.add(node1);
 
         if (node1 == node2) {
-            paths.add(new LinkedList<>(path));
+            if (conditionSet != null) {
+                LinkedList<Node> _path = new LinkedList<>(path);
+
+                if (path.size() > 1) {
+                    if (ancestors != null) {
+                        if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
+                            paths.add(_path);
+                        }
+                    } else {
+                        if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                            paths.add(_path);
+                        }
+                    }
+                }
+            } else {
+                paths.add(new LinkedList<Node>(path));
+            }
         }
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -649,15 +665,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (ancestors != null) {
-                if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
-                    allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
-                }
-            } else {
-                if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
-                    allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
-                }
-            }
+            allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
         }
 
         path.removeLast();
@@ -1723,6 +1731,8 @@ public class Paths implements TetradSerializable {
      */
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean allowSelectionBias) {
         Edge edge1, edge2;
+
+        if (path.size() - 1 == 1) return true;
 
         edge2 = graph.getEdge(path.get(0), path.get(1));
 
