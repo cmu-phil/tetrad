@@ -120,10 +120,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * Determines if tucking is allowed. Default value is false.
-     */
-    private boolean ablationLeaveOutTuckingStep = false;
-    /**
      * Determines if testing is allowed. Default value is true.
      */
     private boolean ablationLeaveOutTestingStep = false;
@@ -174,7 +170,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         List<Node> best;
-        Graph cpdag;
+        Graph dag;
 
         if (startWith == START_WITH.BOSS) {
 
@@ -185,9 +181,9 @@ public final class LvLite implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             var permutationSearch = getBossSearch();
-            cpdag = permutationSearch.search(false);
+            dag = permutationSearch.search(false);
             best = permutationSearch.getOrder();
-            best = cpdag.paths().getValidOrder(best, true);
+            best = dag.paths().getValidOrder(best, true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -208,7 +204,7 @@ public final class LvLite implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
-            cpdag = grasp.getGraph(false);
+            dag = grasp.getGraph(false);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -233,11 +229,8 @@ public final class LvLite implements IGraphSearch {
         double bestScore = scorer.score(best);
         scorer.bookmark();
 
-//        Graph mag = GraphTransforms.dagToMag(GraphTransforms.dagFromCpdag(cpdag));
-//        Graph dag = GraphTransforms.dagFromCpdag(cpdag);
-
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
-        Graph pag = new EdgeListGraph(cpdag);
+        Graph pag = new EdgeListGraph(dag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
@@ -246,6 +239,7 @@ public final class LvLite implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
                 doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setMaxPathLength(maxDdpPathLength);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -271,7 +265,7 @@ public final class LvLite implements IGraphSearch {
             for (Node x : adj) {
                 for (Node y : adj) {
                     if (distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-                        checkUntucked(x, b, y, pag, cpdag, scorer, bestScore, unshieldedColliders, checked);
+                        checkUntucked(x, b, y, pag, dag, scorer, bestScore, unshieldedColliders, checked);
                     }
                 }
             }
@@ -281,28 +275,6 @@ public final class LvLite implements IGraphSearch {
         doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-//        if (!ablationLeaveOutTuckingStep) {
-//            do {
-//                _unshieldedColliders = new HashSet<>(unshieldedColliders);
-//
-//                for (Node b : best) {
-//                    var adj = pag.getAdjacentNodes(b);
-//
-//                    for (Node x : adj) {
-//                        for (Node y : adj) {
-//                            if (distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-//                                checkTucked(x, b, y, pag, scorer, bestScore, unshieldedColliders, checked);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                reorientWithCircles(pag, verbose);
-//                doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-//                recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-//            } while (!unshieldedColliders.equals(_unshieldedColliders));
-//        }
-
         Map<Edge, Set<Node>> extraSepsets = null;
 
         if (!ablationLeaveOutTestingStep) {
@@ -310,7 +282,7 @@ public final class LvLite implements IGraphSearch {
             // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
             // per edge.
-            extraSepsets = removeExtraEdges(pag, cpdag, unshieldedColliders);
+            extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
 
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -627,7 +599,9 @@ public final class LvLite implements IGraphSearch {
 
         pag.getEdges().forEach(edge -> {
             Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test,
-                    maxBlockingPathLength, depth, true,true);
+                    maxBlockingPathLength, depth, true, true, new HashSet<>());
+
+            System.out.println("For edge " + edge + " sepset: " + sepset);
 
             if (sepset != null) {
                 extraSepsets.put(edge, sepset);
@@ -786,15 +760,6 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
-    }
-
-    /**
-     * Sets whether or not tucking is allowed.
-     *
-     * @param ablationLeaveOutTuckingStep true if tucking is allowed, false otherwise
-     */
-    public void setAblationLeaveOutTuckingStep(boolean ablationLeaveOutTuckingStep) {
-        this.ablationLeaveOutTuckingStep = ablationLeaveOutTuckingStep;
     }
 
     /**

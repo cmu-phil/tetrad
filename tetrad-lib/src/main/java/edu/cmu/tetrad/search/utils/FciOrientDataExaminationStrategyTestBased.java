@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.awt.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -192,7 +193,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, false, true);
+        Set<Node> blacklist = new HashSet<>();
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, true, true, blacklist);
 
         System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
