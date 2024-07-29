@@ -716,8 +716,6 @@ public class SepsetFinder {
     private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist,
                                   Node x, Node y, boolean verbose) {
 
-        boolean blocked = false;
-
         for (int n = 1; n < path.size() - 1; n++) {
             Node z1 = path.get(n - 1);
             Node z2 = path.get(n);
@@ -749,8 +747,6 @@ public class SepsetFinder {
                 conditioningSet.add(z2);
                 conditioningSet.removeAll(blacklist);
 
-                blocked = true;
-
 //                if (verbose) {
 //                    TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
 //                }
@@ -762,7 +758,6 @@ public class SepsetFinder {
                 break;
             }
         }
-
     }
 
 
