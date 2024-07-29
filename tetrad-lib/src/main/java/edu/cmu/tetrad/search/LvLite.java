@@ -240,6 +240,7 @@ public final class LvLite implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
                 doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
         fciOrient.setMaxPathLength(maxDdpPathLength);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -248,7 +249,6 @@ public final class LvLite implements IGraphSearch {
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> checked = new HashSet<>();
-        Set<Triple> _unshieldedColliders;
 
         reorientWithCircles(pag, verbose);
 
