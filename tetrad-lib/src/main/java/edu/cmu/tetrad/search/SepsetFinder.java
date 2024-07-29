@@ -234,7 +234,7 @@ public class SepsetFinder {
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean printTrace, boolean allowSelectionBias, Set<Node> blacklist) {
+                                                        int maxLength, int depth, boolean verbose, boolean allowSelectionBias, Set<Node> blacklist) {
 
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
@@ -244,8 +244,6 @@ public class SepsetFinder {
         Set<Node> couldBeColliders = new HashSet<>();
 
         Set<List<Node>> paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength, x, y, allowSelectionBias);
-
-        System.out.println("For x = " + x + " y = " + y + ": conditioningSet: " + conditioningSet + " " + couldBeColliders);
 
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
         conditioningSet.removeAll(couldBeColliders);
@@ -268,8 +266,6 @@ public class SepsetFinder {
 
             sepset.remove(y);
 
-            System.out.println("Checking independence: " + x + " and " + y + " with sepset: " + sepset);
-
             if (test.checkIndependence(x, y, sepset).isIndependent()) {
                 Set<Node> _z = new HashSet<>(sepset);
                 boolean removed;
@@ -291,7 +287,10 @@ public class SepsetFinder {
 
                 sepset = new HashSet<>(_z);
 
-                TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+//                }
+
                 return sepset;
             }
         }
@@ -351,20 +350,20 @@ public class SepsetFinder {
      * <p>
      * This is the sepset finding method from LV-lite.
      *
-     * @param mpdag      the MPDAG graph to analyze (can be a DAG or a CPDAG)
-     * @param x          the first node
-     * @param y          the second node
-     * @param test       the independence test to use
-     * @param maxLength  the maximum blocking length for paths, or -1 for no limit
-     * @param depth      the maximum depth of the sepset, or -1 for no limit
-     * @param printTrace whether to print trace information; false by default. This can be quite verbose, so it's
-     *                   recommended to only use this for debugging.
+     * @param mpdag     the MPDAG graph to analyze (can be a DAG or a CPDAG)
+     * @param x         the first node
+     * @param y         the second node
+     * @param test      the independence test to use
+     * @param maxLength the maximum blocking length for paths, or -1 for no limit
+     * @param depth     the maximum depth of the sepset, or -1 for no limit
+     * @param verbose   whether to print trace information; false by default. This can be quite verbose, so it's
+     *                  recommended to only use this for debugging.
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
     public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                      int maxLength, int depth, boolean printTrace) {
-        if (printTrace) {
+                                                      int maxLength, int depth, boolean verbose) {
+        if (verbose) {
             Edge e = mpdag.getEdge(x, y);
             TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
         }
@@ -408,7 +407,7 @@ public class SepsetFinder {
                         if (conditioningSet.contains(z2)) {
                             blocked = true;
 
-                            if (printTrace) {
+                            if (verbose) {
                                 TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
                             }
 
@@ -419,11 +418,11 @@ public class SepsetFinder {
                         blocked = true;
                         _changed = true;
 
-                        if (printTrace) {
-                            TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
-                        }
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
+//                        }
 
-                        addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, printTrace);
+                        addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, verbose);
 
                         if (depth != -1 && conditioningSet.size() > depth) {
                             return null;
@@ -445,10 +444,10 @@ public class SepsetFinder {
             }
         }
 
-        if (printTrace) {
-            TetradLogger.getInstance().log("conditioningSet: " + conditioningSet);
-            TetradLogger.getInstance().log("couldBeColliders: " + couldBeColliders);
-        }
+//        if (verbose) {
+//            TetradLogger.getInstance().log("conditioningSet: " + conditioningSet);
+//            TetradLogger.getInstance().log("couldBeColliders: " + couldBeColliders);
+//        }
 
         // Now, for each conditioning set we identify, where the length-2 conditioningSet are either included or not
         // in the set, we check independence greedily. Hopefully the number of options here is small.
@@ -472,9 +471,9 @@ public class SepsetFinder {
             }
 
             if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                if (printTrace) {
-                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
-                }
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+//                }
 
                 return sepset;
             }
@@ -739,9 +738,9 @@ public class SepsetFinder {
 
             if (!graph.isDefCollider(z1, z2, z3)) {
                 if (conditioningSet.contains(z2)) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
-                    }
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
+//                    }
 
                     conditioningSet.removeAll(blacklist);
                     addCouldBeCollider(z1, z2, z3, path, graph, couldBeColliders, verbose);
@@ -752,9 +751,9 @@ public class SepsetFinder {
 
                 blocked = true;
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
-                }
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
+//                }
 
                 // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
                 // it could be a collider. We will need to either consider this to be a collider or
@@ -850,9 +849,9 @@ public class SepsetFinder {
         if (mpdag.isAdjacentTo(z1, z3)) {
             couldBeColliders.add(z2);
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
-            }
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
+//            }
         }
     }
 
@@ -919,9 +918,6 @@ public class SepsetFinder {
                         paths.add(new ArrayList<>(path));
                     }
                 }
-
-                System.out.println(GraphUtils.pathString(graph, path, conditioningSet, true, allowSelectionBias));
-                System.out.println();
 
                 // Now we need to do something with this path... let's look at getSepsetPathBlockingOutOfX2.
 
@@ -991,8 +987,6 @@ public class SepsetFinder {
         while (!queue.isEmpty()) {
             List<Node> path = queue.poll();
 
-            System.out.println("Path " + path);
-
             if (maxLength != -1 && path.size() > maxLength) {
                 continue;
             }
@@ -1008,8 +1002,6 @@ public class SepsetFinder {
             }
 
             for (Node z3 : graph.getAdjacentNodes(node)) {
-                System.out.println("adjacent node to " + node + ", z3 = " + z3);
-
                 if (!path.contains(z3)) {
                     List<Node> newPath = new ArrayList<>(path);
                     newPath.add(z3);
@@ -1025,8 +1017,6 @@ public class SepsetFinder {
                         Node z2 = newPath.get(newPath.size() - 2);
 
                         if (!graph.isDefCollider(z1, z2, z3)) {
-                            System.out.println("Noncollider: " + z1 + " " + z2 + " " + z3);
-
 //                            if (blacklist.contains(z2)) {
 //                                continue;
 //                            }
@@ -1042,8 +1032,6 @@ public class SepsetFinder {
             }
 
             for (Node z3 : graph.getAdjacentNodes(node)) {
-                System.out.println("adjacent node to " + node + ", z3 = " + z3);
-
                 if (!path.contains(z3)) {
                     List<Node> newPath = new ArrayList<>(path);
                     newPath.add(z3);
@@ -1059,8 +1047,6 @@ public class SepsetFinder {
                         Node z2 = newPath.get(newPath.size() - 2);
 
                         if (graph.isDefCollider(z1, z2, z3)) {
-                            System.out.println("Collider: " + z1 + " " + z2 + " " + z3);
-
                             blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, true);
 
                             if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {

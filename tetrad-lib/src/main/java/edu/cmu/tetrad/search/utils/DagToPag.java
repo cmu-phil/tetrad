@@ -153,7 +153,7 @@ public final class DagToPag {
                     throw new IllegalArgumentException("e and c must not be adjacent");
                 }
 
-                System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
+//                System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
                 Graph mag = ((MsepTest) getTest()).getGraph();
 
@@ -168,7 +168,7 @@ public final class DagToPag {
                     sepset = dsepc;
                 }
 
-                System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
+//                System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
                 if (sepset == null) {
                     return false;
