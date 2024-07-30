@@ -232,7 +232,6 @@ public final class LvLite implements IGraphSearch {
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
         Graph pag = new EdgeListGraph(dag);
 
-
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
