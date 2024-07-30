@@ -131,6 +131,10 @@ public final class LvLite implements IGraphSearch {
      * ABLATION: The flag indicating whether to leave out the final orientation.
      */
     private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The style for removing extra edges.
+     */
+    private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.SERIAL;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -237,8 +241,7 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge,
-                doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
         fciOrient.setMaxPathLength(maxDdpPathLength);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
@@ -325,10 +328,8 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set to store unshielded colliders.
      * @param checked             The set to store already checked nodes.
      */
-    private void checkUntucked(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, double bestScore,
-                               Set<Triple> unshieldedColliders, Set<Triple> checked) {
-        tryAddingCollider(x, b, y, pag, cpdag, false, scorer, bestScore, bestScore, unshieldedColliders,
-                checked, knowledge, verbose);
+    private void checkUntucked(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
+        tryAddingCollider(x, b, y, pag, cpdag, false, scorer, bestScore, bestScore, unshieldedColliders, checked, knowledge, verbose);
     }
 
     /**
@@ -343,14 +344,12 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders
      * @param checked             The set of checked triples
      */
-    private void checkTucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore,
-                             Set<Triple> unshieldedColliders, Set<Triple> checked) {
+    private void checkTucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
         if (!checked.contains(new Triple(x, b, y))) {
             scorer.tuck(y, b);
             scorer.tuck(x, y);
             double newScore = scorer.score();
-            tryAddingCollider(x, b, y, pag, null, true, scorer, newScore, bestScore,
-                    unshieldedColliders, checked, knowledge, verbose);
+            tryAddingCollider(x, b, y, pag, null, true, scorer, newScore, bestScore, unshieldedColliders, checked, knowledge, verbose);
             scorer.goToBookmark();
         }
     }
@@ -596,20 +595,57 @@ public final class LvLite implements IGraphSearch {
 
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
-        pag.getEdges().forEach(edge -> {
-            Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test,
-                    maxBlockingPathLength, depth, true, true, new HashSet<>());
+        // TODO: Explore the speed and accuracy implications for doing the extra edge removal in parallel or
+        //  in serial.
+        if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.PARALLEL) {
+            pag.getEdges().parallelStream().forEach(edge -> {
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>(), -1);
 
-            System.out.println("For edge " + edge + " sepset: " + sepset);
+                System.out.println("For edge " + edge + " sepset: " + sepset);
 
-            if (sepset != null) {
-                extraSepsets.put(edge, sepset);
+                if (sepset != null) {
+                    extraSepsets.put(edge, sepset);
+                }
+            });
+
+            for (Edge _edge : extraSepsets.keySet()) {
+                pag.removeEdge(_edge.getNode1(), _edge.getNode2());
+                orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets);
             }
-        });
+        } else if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.SERIAL) {
 
-        for (Edge _edge : extraSepsets.keySet()) {
-            pag.removeEdge(_edge.getNode1(), _edge.getNode2());
-            orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets);
+            Set<Edge> edges = new HashSet<>(pag.getEdges());
+            Set<Edge> visited = new HashSet<>();
+            Deque<Edge> toVisit = new LinkedList<>(edges);
+
+            while (!toVisit.isEmpty()) {
+                Edge edge = toVisit.removeFirst();
+                visited.add(edge);
+
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>(), -1);
+
+                if (sepset != null) {
+                    extraSepsets.put(edge, sepset);
+                    pag.removeEdge(edge.getNode1(), edge.getNode2());
+                    orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+
+                    for (Node node : pag.getAdjacentNodes(edge.getNode1())) {
+                        Edge adjacentEdge = pag.getEdge(node, edge.getNode1());
+                        if (!visited.contains(adjacentEdge)) {
+                            toVisit.remove(adjacentEdge);
+                            toVisit.addFirst(adjacentEdge);
+                        }
+                    }
+
+                    for (Node node : pag.getAdjacentNodes(edge.getNode2())) {
+                        Edge adjacentEdge = pag.getEdge(node, edge.getNode2());
+                        if (!visited.contains(adjacentEdge)) {
+                            toVisit.remove(adjacentEdge);
+                            toVisit.addFirst(adjacentEdge);
+                        }
+                    }
+                }
+            }
         }
 
         if (verbose) {
@@ -628,8 +664,7 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
      * @param extraSepsets        The map of edges to sepsets used to remove them.
      */
-    private void orientCommonAdjacents(Edge edge, Graph
-            pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
+    private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
@@ -665,10 +700,7 @@ public final class LvLite implements IGraphSearch {
      * @param knowledge           The knowledge object.
      * @param verbose             A boolean flag indicating whether verbose output should be printed.
      */
-    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, boolean tucked, TeyssierScorer
-            scorer,
-                                   double newScore, double bestScore, Set<Triple> unshieldedColliders,
-                                   Set<Triple> checked, Knowledge knowledge, boolean verbose) {
+    private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, boolean tucked, TeyssierScorer scorer, double newScore, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked, Knowledge knowledge, boolean verbose) {
         if (cpdag != null) {
             if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
                 unshieldedColliders.add(new Triple(x, b, y));
@@ -731,8 +763,7 @@ public final class LvLite implements IGraphSearch {
      * @param pag       The Graph representing the PAG.
      * @param best      The list of Node objects representing the best nodes.
      */
-    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge,
-                                        boolean verbose) {
+    private void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Orient required edges in PAG:");
         }
@@ -789,6 +820,15 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
+     * Sets the style for removing extra edges.
+     *
+     * @param extraEdgeRemovalStyle the style for removing extra edges
+     */
+    public void setExtraEdgeRemovalStyle(ExtraEdgeRemovalStyle extraEdgeRemovalStyle) {
+        this.extraEdgeRemovalStyle = extraEdgeRemovalStyle;
+    }
+
+    /**
      * Enumeration representing different start options.
      */
     public enum START_WITH {
@@ -800,5 +840,21 @@ public final class LvLite implements IGraphSearch {
          * Start with GRaSP.
          */
         GRASP
+    }
+
+    /**
+     * The ExtraEdgeRemovalStyle enum specifies the styles for removing extra edges.
+     */
+    public enum ExtraEdgeRemovalStyle {
+
+        /**
+         * Remove extra edges in parallel.
+         */
+        PARALLEL,
+
+        /**
+         * Remove extra edges in serial.
+         */
+        SERIAL,
     }
 }

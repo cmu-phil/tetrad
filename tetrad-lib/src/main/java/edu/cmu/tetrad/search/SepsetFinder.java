@@ -5,11 +5,19 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 public class SepsetFinder {
+
+//    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
 
     /**
      * Returns the sepset that contains the greedy test for variables x and y in the given graph.
@@ -228,14 +236,53 @@ public class SepsetFinder {
      *                           greater than the number of nodes minus one, it is adjusted accordingly.
      * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
      *                           applied.
-     * @param printTrace         A boolean flag indicating whether to print trace information.
      * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
      * @param blacklist          The set of nodes to blacklist.
+     * @param timeout            The timeout for the operation, or -1 if no timeout is set.
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean verbose, boolean allowSelectionBias, Set<Node> blacklist) {
+                                                        int maxLength, int depth, boolean allowSelectionBias,
+                                                        Set<Node> blacklist, long timeout) {
+        if (timeout < 1 && timeout != -1) {
+            throw new IllegalArgumentException("Timeout must be a positive value or -1.");
+        }
 
+        if (timeout > 0) {
+            class MyTask implements Callable<Set<Node>> {
+                @Override
+                public Set<Node> call() {
+                    Set<Node> blockingSet = getBlockingSet(mpdag, x, y, test, maxLength, depth, allowSelectionBias, blacklist);
+
+                    try {
+
+                        // Simulate long-running task
+                        Thread.sleep(timeout);
+                    } catch (InterruptedException e) {
+                        System.out.println("Task was interrupted.");
+                        return null;
+                    }
+
+                    return blockingSet;
+                }
+            }
+
+            MyTask task = new MyTask();
+            Future<Set<Node>> future = ForkJoinPool.commonPool().submit(task);
+
+            try {
+                return future.get();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return getBlockingSet(mpdag, x, y, test, maxLength, depth, allowSelectionBias, blacklist);
+        }
+    }
+
+    private static @Nullable Set<Node> getBlockingSet(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean allowSelectionBias, Set<Node> blacklist) {
         if (maxLength < 0 || maxLength > mpdag.getNumNodes() - 1) {
             maxLength = mpdag.getNumNodes() - 1;
         }
