@@ -282,7 +282,7 @@ public final class LvLite implements IGraphSearch {
             // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
             // per edge.
-            extraSepsets = removeExtraEdges(pag, dag, unshieldedColliders);
+            extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -581,13 +581,12 @@ public final class LvLite implements IGraphSearch {
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
      * @param pag                 The graph in which to remove extra edges.
-     * @param dag                 xx             The BOSS/GRaSP DAG to use for removing extra edges.
      * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
      * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
      * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
      * is not in this sepset.
      */
-    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Graph dag, Set<Triple> unshieldedColliders) {
+    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Set<Triple> unshieldedColliders) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }

@@ -234,7 +234,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
         }
 
         if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("e is adjacent to c");
         }
 
         if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
