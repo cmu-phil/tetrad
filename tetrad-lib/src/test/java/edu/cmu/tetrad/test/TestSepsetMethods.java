@@ -36,7 +36,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 /**
- * The TestSepsetMethods class is responsible for testing various methods for finding a sepset of two nodes in a DAG.
+ * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
  */
 public class TestSepsetMethods {
 
