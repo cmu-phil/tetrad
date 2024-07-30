@@ -757,7 +757,7 @@ public class TimeLagGraph implements Graph {
      *
      * @param n1   The first node
      * @param n2   The second node
-     * @param test
+     * @param test The independence test to use
      * @return The set of nodes that form the sepset of n1 and n2
      */
     @Override

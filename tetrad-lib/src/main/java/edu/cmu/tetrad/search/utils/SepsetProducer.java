@@ -41,7 +41,7 @@ public interface SepsetProducer {
      *
      * @param a     the first node
      * @param b     the second node
-     * @param depth
+     * @param depth the depth of the search
      * @return the set of common neighbors between nodes a and b
      */
     Set<Node> getSepset(Node a, Node b, int depth);
@@ -52,7 +52,7 @@ public interface SepsetProducer {
      * @param a     the first node
      * @param b     the second node
      * @param s     the set of nodes
-     * @param depth
+     * @param depth the depth of the search
      * @return the sepset containing nodes a and b from the given set of nodes
      */
     Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth);
@@ -63,7 +63,7 @@ public interface SepsetProducer {
      * @param i     a {@link Node} object
      * @param j     a {@link Node} object
      * @param k     a {@link Node} object
-     * @param depth
+     * @param depth the depth of the search
      * @return a boolean
      */
     boolean isUnshieldedCollider(Node i, Node j, Node k, int depth);

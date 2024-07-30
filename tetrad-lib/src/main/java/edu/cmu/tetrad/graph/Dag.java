@@ -742,7 +742,7 @@ public final class Dag implements Graph {
      *
      * @param n1   the first node
      * @param n2   the second node
-     * @param test
+     * @param test the independence test to be used
      * @return a set of nodes representing the sepset between n1 and n2
      */
     public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {

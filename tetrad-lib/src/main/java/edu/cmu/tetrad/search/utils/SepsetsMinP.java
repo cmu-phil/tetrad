@@ -94,7 +94,7 @@ public class SepsetsMinP implements SepsetProducer {
      *
      * @param i     The first node
      * @param k     The second node
-     * @param depth
+     * @param depth The depth of the search
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k, int depth) {
@@ -108,7 +108,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param s     The set of nodes that must be contained in the sepset, or null if no such set is required.
-     * @param depth
+     * @param depth The depth of the search
      * @return The sepset between the two nodes
      */
     @Override
@@ -122,7 +122,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @param i     The first node.
      * @param j     The collider node.
      * @param k     The second node.
-     * @param depth
+     * @param depth The depth of the search.
      * @return true if the collider node is unshielded between the two nodes, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {

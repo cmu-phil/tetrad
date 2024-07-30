@@ -529,7 +529,7 @@ public interface Graph extends TetradSerializable {
      *
      * @param n1   the first node
      * @param n2   the second node
-     * @param test
+     * @param test the independence test to use
      * @return the set of nodes that form the separating set between the two given nodes
      */
     Set<Node> getSepset(Node n1, Node n2, IndependenceTest test);

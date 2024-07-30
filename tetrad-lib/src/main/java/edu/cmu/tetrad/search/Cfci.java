@@ -551,6 +551,7 @@ public final class Cfci implements IGraphSearch {
             TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
+
     /**
      * Sets the maximum length of any discriminating path.
      *
@@ -564,10 +565,18 @@ public final class Cfci implements IGraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation True, if the final orientation should be left out; false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
+    /**
+     * The type of an unshielded triple.
+     */
     private enum TripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
     }

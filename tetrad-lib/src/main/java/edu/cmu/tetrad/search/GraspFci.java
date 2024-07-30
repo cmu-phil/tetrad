@@ -382,10 +382,20 @@ public final class GraspFci implements IGraphSearch {
         this.repairFaultyPag = repairFaultyPag;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation true if the final orientation should be left out, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
+    /**
+     * Sets the method for finding sepsets in the GraspFci class.
+     *
+     * @param sepsetFinderMethod the method for finding sepsets
+     */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
     }

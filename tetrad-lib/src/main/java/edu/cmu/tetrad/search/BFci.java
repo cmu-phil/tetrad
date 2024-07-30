@@ -349,10 +349,20 @@ public final class BFci implements IGraphSearch {
         this.repairFaultyPag = repairFaultyPag;
     }
 
+    /**
+     * Sets whether the final orientation should be left out during the search process.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
+    /**
+     * Sets the method to be used for finding the sepset.
+     *
+     * @param sepsetFinderMethod The method to be used for finding the sepset.
+     */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
     }

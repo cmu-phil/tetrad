@@ -362,10 +362,24 @@ public final class GFci implements IGraphSearch {
         this.repairFaultyPag = repairFaultyPag;
     }
 
+    /**
+     * Sets the flag indicating whether to leave out the final orientation during ablation.
+     *
+     * @param ablationLeaveOutFinalOrientation A boolean value indicating whether to leave out the final orientation during ablation.
+     */
     public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
+    /**
+     * Sets the method used to find the sepset in the GFci algorithm.
+     *
+     * @param sepsetFinderMethod The method used to find the sepset.
+     *                           - 0: Default method
+     *                           - 1: Custom method 1
+     *                           - 2: Custom method 2
+     *                           - ...
+     */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
     }

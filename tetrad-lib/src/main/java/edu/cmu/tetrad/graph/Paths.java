@@ -603,6 +603,18 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
+    /**
+     * Finds all paths between two nodes satisfying certain conditions.
+     *
+     * @param node1              the starting node
+     * @param node2              the ending node
+     * @param minLength          the minimum length of paths to consider
+     * @param maxLength          the maximum length of paths to consider
+     * @param conditionSet       a set of nodes that must be present in the paths
+     * @param ancestors          a map representing the ancestry relationships of nodes
+     * @param allowSelectionBias true if selection bias is allowed, false otherwise
+     * @return a set of lists representing all paths between node1 and node2
+     */
     public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
                                     Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
@@ -610,6 +622,15 @@ public class Paths implements TetradSerializable {
         return paths;
     }
 
+    /**
+     * Generates all paths out of a given node within a specified maximum length and conditional set.
+     *
+     * @param node1              The starting node.
+     * @param maxLength          The maximum length of each path.
+     * @param conditionSet       The set of nodes that must be present in each path.
+     * @param allowSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
+     * @return A set containing all generated paths as lists of nodes.
+     */
     public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
                                          boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
@@ -919,10 +940,22 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * Returns the Markov Blanket of a given node in the graph.
+     *
+     * @param node the node for which the Markov Blanket needs to be computed
+     * @return a set of nodes that constitute the Markov Blanket of the given node
+     */
     public Set<Node> markovBlanket(Node node) {
         return GraphUtils.markovBlanket(node, graph);
     }
 
+    /**
+     * Retrieves the set of nodes that belong to the same district as the given node.
+     *
+     * @param node the node from which to start the district search
+     * @return the set of nodes that belong to the same district as the given node
+     */
     public Set<Node> district(Node node) {
         return GraphUtils.district(node, graph);
     }
@@ -1232,7 +1265,9 @@ public class Paths implements TetradSerializable {
         return ancestorsMap;
     }
 
-    // Return true if b is an ancestor of any node in z
+    /**
+     * Return true if b is an ancestor of any node in z
+     */
     public boolean isAncestor(Node b, Set<Node> z) {
         if (z.contains(b)) {
             return true;
@@ -1594,8 +1629,16 @@ public class Paths implements TetradSerializable {
         return dag.paths().isMSeparatedFrom(x, y, z, false);
     }
 
-    // Finds a sepset for x and y, if there is one; otherwise, returns null.
-
+    /**
+     * Finds a sepset for x and y, if there is one; otherwise, returns null.
+     *
+     * @param x                  The first node.
+     * @param y                  The second node.
+     * @param allowSelectionBias Whether to allow selection bias.
+     * @param test               The independence test to use.
+     * @param depth              The maximum depth to search for a sepset.
+     * @return A sepset for x and y, if there is one; otherwise, null.
+     */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
         return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth);
     }
@@ -1604,9 +1647,11 @@ public class Paths implements TetradSerializable {
      * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
      * to be conditioned on in order to render two nodes conditionally independent.
      *
-     * @param x the first node
-     * @param y the second node
-     * @return the sepset between the two nodes as a Set<Node>
+     * @param x          the first node
+     * @param y          the second node
+     * @param containing the set of nodes that the sepset must contain
+     * @param test       the independence test to use
+     * @return the sepset between the two nodes
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, IndependenceTest test) {
         return SepsetFinder.getSepsetContainingRecursive(graph, x, y, containing, test);

@@ -480,6 +480,11 @@ public final class FciMax implements IGraphSearch {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the FCI search.
+     *
+     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }

@@ -389,6 +389,12 @@ public class GraphTransforms {
         graph.addEdge(after);
     }
 
+    /**
+     * Converts a Directed Acyclic Graph (DAG) to a Maximal Ancestral Graph (MAG) by adding arrows to the edges.
+     *
+     * @param dag The input DAG to be converted.
+     * @return The resulting MAG obtained from the input DAG.
+     */
     public static @NotNull Graph dagToMag(Graph dag) {
         Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
         Graph graph = DagToPag.calcAdjacencyGraph(dag);

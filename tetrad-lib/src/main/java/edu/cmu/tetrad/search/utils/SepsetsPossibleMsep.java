@@ -44,7 +44,7 @@ import java.util.Set;
  * @see SepsetMap
  */
 public class SepsetsPossibleMsep implements SepsetProducer {
-    private Graph graph;
+    private final Graph graph;
     private final int maxPathLength;
     private final Knowledge knowledge;
     private final int depth;
@@ -75,7 +75,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      *
      * @param i     The first node
      * @param k     The second node
-     * @param depth
+     * @param depth The depth of the search
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
     public Set<Node> getSepset(Node i, Node k, int depth) {
@@ -95,7 +95,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param s     The set of nodes to be contained in the sepset
-     * @param depth
+     * @param depth The depth of the search
      * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s, or
      * null if no sepset exists
      */

@@ -14,10 +14,17 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+/**
+ * This class provides methods for finding sepsets in a given graph.
+ */
 public class SepsetFinder {
 
-//    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private SepsetFinder() {
+        // Private constructor to prevent instantiation.
+    }
 
     /**
      * Returns the sepset that contains the greedy test for variables x and y in the given graph.
@@ -532,6 +539,15 @@ public class SepsetFinder {
     }
 
 
+    /**
+     * Returns the sepset (separation set) between two nodes in a graph based on the given independence test.
+     *
+     * @param mag   The graph containing the nodes.
+     * @param x     The first node.
+     * @param y     The second node.
+     * @param test  The independence test used to check the independence between the nodes.
+     * @return The sepset between the two nodes, or null if no sepset is found.
+     */
     public static Set<Node> getDsepSepset(Graph mag, Node x, Node y, IndependenceTest test) {
         Set<Node> sepset1 = mag.paths().dsep(x, y);
         Set<Node> sepset2 = mag.paths().dsep(y, x);
@@ -897,6 +913,18 @@ public class SepsetFinder {
         }
     }
 
+    /**
+     * Adds potential colliders to the set of couldBeColliders based on a given condition.
+     *
+     * @param z1              The first Node.
+     * @param z2              The second Node.
+     * @param z3              The third Node.
+     * @param path            The List of Nodes representing the path.
+     * @param mpdag           The Graph representing the Multi-Perturbation Directed Acyclic Graph.
+     * @param couldBeColliders The Set of Triples representing potential colliders.
+     * @param printTrace      A boolean indicating whether to print error traces.
+     * @return true if z2 could be a collider on the given path, false otherwise.
+     */
     private static boolean addCouldBeCollider2(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag,
                                                Set<Triple> couldBeColliders, boolean printTrace) {
         if (mpdag.isAdjacentTo(z1, z3)) {
@@ -912,6 +940,17 @@ public class SepsetFinder {
         return false;
     }
 
+    /**
+     * Finds all paths from node `a` to node `b` in a given `graph` using breadth-first search.
+     *
+     * @param a                 The starting node.
+     * @param b                 The target node.
+     * @param conditioningSet   The set of nodes to condition the paths on.
+     * @param maxLength         The maximum length of the paths. Set to -1 for unlimited length.
+     * @param allowSelectionBias Whether to allow selection bias when calculating the paths.
+     * @param graph             The graph to search for paths in.
+     * @return A set of lists of nodes representing all paths from `a` to `b` satisfying given conditions.
+     */
     public static Set<List<Node>> allPathsOutOf3(Node a, Node b, Set<Node> conditioningSet, int maxLength, boolean allowSelectionBias, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
@@ -973,6 +1012,17 @@ public class SepsetFinder {
         return paths;
     }
 
+    /**
+     * Performs a breadth-first search to find all paths from node x to node y in a given graph.
+     *
+     * @param graph        the graph to perform the search on
+     * @param conditionSet a set of nodes to condition the paths on
+     * @param maxLength    the maximum length of the paths, -1 for no limit
+     * @param x            the starting node
+     * @param y            the target node
+     * @return a set of lists of nodes, representing all found paths from x to y
+     * @throws IllegalArgumentException if the conditionSet is null
+     */
     public static Set<List<Node>> bfsAllPaths(Graph graph, Set<Node> conditionSet, int maxLength, Node x, Node y) {
         Set<List<Node>> allPaths = new HashSet<>();
         Queue<List<Node>> queue = new LinkedList<>();
@@ -1016,6 +1066,21 @@ public class SepsetFinder {
         return allPaths;
     }
 
+    /**
+     * Performs a breadth-first search to find all paths out of a specific node in a graph,
+     * considering certain conditions and constraints.
+     *
+     * @param graph            the graph to search
+     * @param conditionSet     the set of nodes that need to be conditioned on
+     * @param couldBeColliders the set of nodes that could potentially be colliders
+     * @param blacklist        the set of nodes to exclude from the search
+     * @param maxLength        the maximum length of the paths (-1 for unlimited)
+     * @param x                the starting node
+     * @param y                the destination node
+     * @param allowSelectionBias flag to indicate whether to allow selection bias in path selection
+     * @return a set of all paths that satisfy the conditions and constraints
+     * @throws IllegalArgumentException if the conditioning set is null
+     */
     public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
                                                     Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
         Set<List<Node>> allPaths = new HashSet<>();
@@ -1103,6 +1168,23 @@ public class SepsetFinder {
         return allPaths;
     }
 
+    /**
+     * Finds all paths from node 'x' to node 'y' in a given graph using breadth-first search (BFS),
+     * considering a set of conditions and path length limitations.
+     *
+     * @param graph           The graph to search for paths in.
+     * @param conditionSet    The set of conditions to consider when finding paths.
+     * @param couldBeColliders    The set of potential colliders that may affect the paths.
+     * @param blacklist       The set of nodes to exclude from the paths.
+     * @param maxLength       The maximum length of paths to consider. Use -1 for no limit.
+     * @param x               The starting node for the paths.
+     * @param y               The target node for the paths.
+     * @param allowSelectionBias  Indicates whether to allow selection bias in the paths.
+     * @return A set of all paths from node 'x' to node 'y' that satisfy the given conditions.
+     *         Each path is represented as a list of nodes.
+     *
+     * @throws IllegalArgumentException if the conditioning set is null.
+     */
     public static Set<List<Node>> bfsAllPathsOutOfX2(Graph graph, Set<Node> conditionSet, Set<Triple> couldBeColliders,
                                                      Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
         Set<List<Node>> allPaths = new HashSet<>();
@@ -1147,6 +1229,16 @@ public class SepsetFinder {
         return allPaths;
     }
 
+    /**
+     * Finds all paths from a given starting node in a graph, with a maximum length and satisfying a set of conditions.
+     *
+     * @param graph             The input graph.
+     * @param node1             The starting node for finding paths.
+     * @param maxLength         The maximum length of paths to consider.
+     * @param conditionSet      The set of conditions that the paths must satisfy.
+     * @param allowSelectionBias Determines whether to allow biased selection when multiple paths are available.
+     * @return A set of lists, where each list represents a path from the starting node that satisfies the conditions.
+     */
     public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet,
                                                 boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();

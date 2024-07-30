@@ -543,6 +543,11 @@ public final class Rfci implements IGraphSearch {
         }
     }
 
+    /**
+     * Sets the flag to leave out final orientation during the search.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out final orientation, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }

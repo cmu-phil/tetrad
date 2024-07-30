@@ -344,10 +344,20 @@ public final class SpFci implements IGraphSearch {
         this.repairFaultyPag = repairFaultyPag;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
+    /**
+     * Sets the method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     *
+     * @param sepsetFinderMethod the method to use for finding sepsets
+     */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
     }

@@ -64,7 +64,7 @@ public class SepsetsMaxP implements SepsetProducer {
      *
      * @param i     The first node.
      * @param k     The second node.
-     * @param depth
+     * @param depth The depth of the search.
      * @return The sepset between the two nodes containing the specified set of nodes.
      */
     public Set<Node> getSepset(Node i, Node k, int depth) {
@@ -78,7 +78,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param s     The set of nodes that the sepset must contain
-     * @param depth
+     * @param depth The depth of the search
      * @return The sepset between the two nodes containing the specified set of nodes
      */
     @Override
@@ -92,7 +92,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @param i     The first node.
      * @param j     The node to check.
      * @param k     The second node.
-     * @param depth
+     * @param depth The depth of the search.
      * @return true if the node j is an unshielded collider between nodes i and k, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {

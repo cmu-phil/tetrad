@@ -86,6 +86,12 @@ public class FciOrient {
     private boolean doDiscriminatingPathTailRule = true;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Initializes a new instance of the FciOrient class with the specified FciOrientDataExaminationStrategy.
+     *
+     * @param strategy The FciOrientDataExaminationStrategy to use for the examination.
+     * @throws NullPointerException If the strategy parameter is null.
+     */
     public FciOrient(FciOrientDataExaminationStrategy strategy) {
         if (strategy == null) {
             throw new NullPointerException();
@@ -1270,6 +1276,11 @@ public class FciOrient {
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
+    /**
+     * Gets the current value of the verbose flag.
+     *
+     * @return true if the verbose flag is set, false otherwise
+     */
     public boolean isVerbose() {
         return verbose;
     }

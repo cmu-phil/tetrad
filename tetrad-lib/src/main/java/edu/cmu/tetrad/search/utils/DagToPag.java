@@ -68,6 +68,12 @@ public final class DagToPag {
         this.dag = new EdgeListGraph(dag);
     }
 
+    /**
+     * Calculates the adjacency graph for the given Directed Acyclic Graph (DAG).
+     *
+     * @param dag The input Directed Acyclic Graph (DAG).
+     * @return The adjacency graph represented by a Graph object.
+     */
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);

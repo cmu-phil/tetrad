@@ -2907,6 +2907,7 @@ public final class GraphUtils {
      * @param pag                              the faulty PAG to be repaired
      * @param fciOrient                        the FciOrient object used for final orientation
      * @param knowledge                        the knowledge object used for orientation
+     * @param unshieldedColliders              the set of unshielded colliders to be updated
      * @param verbose                          indicates whether or not to print verbose output
      * @param ablationLeaveOutFinalOrientation indicates whether or not to leave out the final orientation
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
@@ -3174,6 +3175,14 @@ public final class GraphUtils {
         return coveringAdjacency;
     }
 
+    /**
+     * Returns an undirected path matrix based on the given graph and power.
+     * The undirected path matrix represents the existence of a path of a specific length between any two nodes in the graph.
+     *
+     * @param graph the graph from which to create the undirected path matrix
+     * @param power the power used to calculate the undirected path matrix
+     * @return the undirected path matrix
+     */
     public static Matrix getUndirectedPathMatrix(Graph graph, int power) {
         List<Node> nodes = graph.getNodes();
         int numNodes = graph.getNumNodes();
@@ -3196,6 +3205,12 @@ public final class GraphUtils {
         return prod;
     }
 
+    /**
+     * Creates a new list containing the elements of the given array.
+     *
+     * @param choice the array of integers to be converted to a list
+     * @return a list of integers containing the elements of the array
+     */
     public static @NotNull List<Integer> asList(int[] choice) {
         return ClusterSignificance.getInts(choice);
     }

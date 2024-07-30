@@ -52,7 +52,7 @@ public interface FciOrientDataExaminationStrategy {
      * </pre>
      * <p>
      * The orientation that is being discriminated here is whether there is a collider at B or a noncollider at B. If a
-     * collider, then A *-> B <-* C is oriented; if a tail, then B --> C is oriented.
+     * collider, then A *-&gt; B &lt;-* C is oriented; if a tail, then B --&gt; C is oriented.
      * <p>
      * So don't screw this up! jdramsey 2024-7-25
      * <p>
@@ -77,7 +77,7 @@ public interface FciOrientDataExaminationStrategy {
      * <pre>
      *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *      <pre>
+     *
      *               B
      *              xo           x is either an arrowhead or a circle
      *             /  \
@@ -94,8 +94,10 @@ public interface FciOrientDataExaminationStrategy {
      * @param a     the 'a' node
      * @param b     the 'b' node
      * @param c     the 'c' node
+     * @param path  the collider path from 'e' to 'b', not including 'e' but including 'a'.
      * @param graph the graph representation
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     * @return  true if the discriminating path construct is valid, false otherwise.
      */
     default boolean doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {

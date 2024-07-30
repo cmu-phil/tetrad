@@ -427,6 +427,11 @@ public final class Fci implements IGraphSearch {
         this.repairFaultyPag = repairFaultyPag;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the search.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }

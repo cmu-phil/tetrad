@@ -66,14 +66,14 @@ public class DagSepsets implements SepsetProducer {
      * @param a     The first node.
      * @param b     The second node.
      * @param s     The set of nodes that must be contained in the sepset.
-     * @param depth
+     * @param depth The depth of the search.
      * @return The sepset containing 'a' and 'b' that also contains all the nodes in 's'.
      * @throws IllegalArgumentException If the sepset of 'a' and 'b' does not contain all the nodes in 's'.
      */
     @Override
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
 //        return dag.getSepset(a, b);
-        return  ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
+        return ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
 //        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
     }
 

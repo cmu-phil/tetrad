@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SepsetFinder;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -97,6 +95,9 @@ public class AlmostCycleRemover implements TetradSerializable {
 
     /**
      * Removes almost cycles from the Graph. An almost cycle is a path x ~~&gt; y where x &lt;-&gt; y.
+     *
+     * @param pag The Graph to be reoriented.
+     * @return true if almost cycles were removed; false otherwise
      */
     public boolean removeAlmostCycles(Graph pag) {
         getInstance().log("Removing almost cycles.");
@@ -120,6 +121,11 @@ public class AlmostCycleRemover implements TetradSerializable {
         return removed;
     }
 
+    /**
+     * Removes cycles from the Graph. A cycle is a path x ~~&gt; x.
+     * @param pag The Graph to be reoriented.
+     * @return true if cycles were removed; false otherwise
+     */
     public boolean removeCycles(Graph pag) {
         getInstance().log("Removing cycles.");
         boolean removed = false;
