@@ -8,10 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 /**
@@ -278,11 +275,13 @@ public class SepsetFinder {
             Future<Set<Node>> future = ForkJoinPool.commonPool().submit(task);
 
             try {
-                return future.get();
+                return future.get(timeout, java.util.concurrent.TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (ExecutionException e) {
                 throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                return null;
             }
         } else {
             return getBlockingSet(mpdag, x, y, test, maxLength, depth, allowSelectionBias, blacklist);

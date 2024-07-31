@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * The LV-Lite algorithm implements a search algorithm for learning the structure of a graphical model from
@@ -134,7 +135,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The style for removing extra edges.
      */
-    private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.SERIAL;
+    private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.PARALLEL;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -599,7 +600,9 @@ public final class LvLite implements IGraphSearch {
         //  in serial.
         if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.PARALLEL) {
             pag.getEdges().parallelStream().forEach(edge -> {
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>(), -1);
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
+                        edge.getNode2(), test, maxBlockingPathLength, depth, true,
+                        new HashSet<>(), 300);
 
                 System.out.println("For edge " + edge + " sepset: " + sepset);
 
@@ -618,11 +621,18 @@ public final class LvLite implements IGraphSearch {
             Set<Edge> visited = new HashSet<>();
             Deque<Edge> toVisit = new LinkedList<>(edges);
 
+            // Sort edges x *-* y in toVisit by |adj(x)| + |adj(y)|.
+            toVisit = toVisit.stream().sorted(Comparator.comparingInt(
+                    edge -> pag.getAdjacentNodes(edge.getNode1()).size() + pag.getAdjacentNodes(
+                            edge.getNode2()).size())).collect(Collectors.toCollection(LinkedList::new));
+
             while (!toVisit.isEmpty()) {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>(), -1);
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
+                        edge.getNode2(), test, maxBlockingPathLength, depth, true,
+                        new HashSet<>(), 300);
 
                 if (sepset != null) {
                     extraSepsets.put(edge, sepset);
