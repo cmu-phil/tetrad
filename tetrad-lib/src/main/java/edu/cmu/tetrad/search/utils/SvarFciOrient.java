@@ -602,7 +602,7 @@ public final class SvarFciOrient {
 
             if (sepset == null) {
                 if (this.verbose) {
-                    System.out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+                    TetradLogger.getInstance().log("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
                 }
                 return false;
             }

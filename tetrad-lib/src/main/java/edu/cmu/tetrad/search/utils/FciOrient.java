@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -31,6 +30,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Performs the final orientation steps of the FCI algorithms, which is a useful tool to use in a variety of FCI-like
@@ -68,24 +68,81 @@ import java.util.*;
  */
 public class FciOrient {
 
-    // TODO Replace this class hierarchy with a Strategy pattern. 2024-7-25 jdramsey
-    // We can do this by creating an interface for the R0 and and R4 rules, which can can be implemented
-    // differently for the TeyssierScorer and DAG to PAG classes. 2024-7-25 jdramsey
-    // R0 and R4 are the only rules that cannot be carried out by an examination of the graph but which require
-    // additional analysis of the underlying distribution or graph. 2024-7-25 jdramsey
-
     final TetradLogger logger = TetradLogger.getInstance();
-    private final FciOrientDataExaminationStrategy strategy;
-    // Protected fields.
 
-    private boolean verbose = false;
+    /**
+     * Represents the FciOrientDataExaminationStrategy.
+     */
+    private final FciOrientDataExaminationStrategy strategy;
+    /**
+     * Represents a flag indicating whether a change has occurred.
+     *
+     * <p>
+     * This flag can be used to indicate if a change has occurred in a system or a variable. It is a boolean variable
+     * that is set to {@code true} when a change occurs, and {@code false} otherwise.
+     * </p>
+     *
+     * <p>
+     * The value of this flag can be accessed and modified by other parts of the program.
+     * </p>
+     *
+     * @since 1.0
+     */
     boolean changeFlag = true;
-    // Private fields
+    /**
+     * A boolean variable that determines whether to output verbose logs or not. By default, it is set to false.
+     */
+    private boolean verbose = false;
+    /**
+     * Indicates whether the complete rule set is being used or not.
+     * <p>
+     * If the value is set to true, it means that the complete rule set is being used. If the value is set to false, it
+     * means that only a subset of the rule set is being used.
+     */
     private boolean completeRuleSetUsed = true;
+    /**
+     * The maximum path length variable.
+     * <p>
+     * This variable represents the maximum length of a path. It is a private variable initialized to -1.
+     * <p>
+     * The value of this variable determines the maximum length that a path can have. Negative values represent an
+     * unlimited maximum length. A value of -1 represents that no maximum length has been set.
+     */
     private int maxPathLength = -1;
+    /**
+     * Indicates whether the Discriminating Path Collider Rule should be applied or not.
+     *
+     * <p>
+     * The Discriminating Path Collider Rule determines whether path collisions should be checked using a discriminating
+     * algorithm.
+     * </p>
+     *
+     * <p>
+     * By default, this variable is set to true, meaning that the rule is applied. If set to false,
+     */
     private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Indicates whether the discriminating path tail rule should be applied.
+     * <p>
+     * If set to true, the discriminating path tail rule will be applied. This rule adjusts the path taken by a process
+     * based on certain criteria. If set to false, the rule will not be applied.
+     */
     private boolean doDiscriminatingPathTailRule = true;
-    private Knowledge knowledge = new Knowledge();
+    /**
+     * Represents a variable for storing knowledge.
+     * <p>
+     * The `Knowledge` class represents a container for storing knowledge. The `knowledge` variable is an instance of
+     * the `Knowledge` class and is marked as private, indicating that it can only be accessed within the class it is
+     * declared in.
+     * <p>
+     * It is important to note that this Javadoc comment does not provide example code or any details about the usage or
+     * implementation of the `knowledge` variable.
+     */
+    private Knowledge knowledge;
+    /**
+     * The timeout value (in milliseconds) for the test. A value of -1 indicates that there is no timeout.
+     */
+    private long testTimeout = -1;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified FciOrientDataExaminationStrategy.
@@ -210,6 +267,59 @@ public class FciOrient {
         return ucCirclePaths;
     }
 
+    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(task);
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true); // Cancel the task if it takes too long
+//            System.out.println("Task timed out and was cancelled.");
+            return null; // Or handle timeout differently
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null; // Or handle exceptions differently
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    /**
+     * <p>isArrowheadAllowed.</p>
+     *
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a boolean
+     */
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (!graph.isAdjacentTo(x, y)) return false;
+
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+            return true;
+        }
+
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return false;
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return true;
+            }
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
+            }
+        }
+
+        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+    }
+
     /**
      * Performs final FCI orientation on the given graph.
      *
@@ -270,6 +380,9 @@ public class FciOrient {
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
+
+    //Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
 
     /**
      * Orients colliders in the graph. (FCI Step C)
@@ -337,7 +450,6 @@ public class FciOrient {
         }
     }
 
-
     /**
      * Orients the graph according to rules in the graph (FCI step D).
      * <p>
@@ -353,8 +465,8 @@ public class FciOrient {
         }
     }
 
-    //Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
+    //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
+    // This is Zhang's rule R2.
 
     /**
      * <p>spirtesFinalOrientation.</p>
@@ -435,9 +547,6 @@ public class FciOrient {
 
         }
     }
-
-    //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
-    // This is Zhang's rule R2.
 
     /**
      * <p>rulesR1R2cycle.</p>
@@ -605,6 +714,45 @@ public class FciOrient {
      */
     public void
     ruleR4(Graph graph) {
+        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
+
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+
+        for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
+            tasks.add(() -> {
+                strategy.doDiscriminatingPathOrientation(discriminatingPath, graph);
+                return true;
+            });
+        }
+
+        List<Boolean> results;
+
+        if (testTimeout == -1) {
+            results = tasks.parallelStream().map(task -> {
+                try {
+                    return task.call();
+                } catch (Exception e) {
+//                    e.printStackTrace();
+                    return false;
+                }
+            }).toList();
+        } else if (testTimeout > 0) {
+            results = tasks.parallelStream()
+                    .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+                    .toList();
+        } else {
+            throw new IllegalArgumentException("testTimeout must be greater than or equal to -1");
+        }
+
+        for (Boolean result : results) {
+            if (result != null && result) {
+                this.changeFlag = true;
+                break;
+            }
+        }
+    }
+
+    private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
@@ -650,6 +798,8 @@ public class FciOrient {
                 }
             }
         }
+
+        return discriminatingPaths;
     }
 
     /**
@@ -724,11 +874,12 @@ public class FciOrient {
                     colliderPath.remove(b);
 
                     DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
+                    discriminatingPaths.add(discriminatingPath);
 
-                    if (strategy.doDiscriminatingPathOrientation(discriminatingPath, graph)) {
-                        changeFlag = true;
-                        return;
-                    }
+//                    if (strategy.doDiscriminatingPathOrientation(discriminatingPath, graph)) {
+//                        changeFlag = true;
+//                        return;
+//                    }
                 }
 
                 if (!V.contains(e)) {
@@ -1139,15 +1290,6 @@ public class FciOrient {
     }
 
     /**
-     * Sets whether verbose output is printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
      * Sets whether the discriminating path tail rule should be used.
      *
      * @param doDiscriminatingPathTailRule True, if so.
@@ -1247,46 +1389,24 @@ public class FciOrient {
     }
 
     /**
-     * <p>isArrowheadAllowed.</p>
-     *
-     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @return a boolean
-     */
-    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
-        if (!graph.isAdjacentTo(x, y)) return false;
-
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
-            }
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            }
-        }
-
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
-    }
-
-    /**
      * Gets the current value of the verbose flag.
      *
      * @return true if the verbose flag is set, false otherwise
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True, if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setTestTimeout(long testTimeout) {
+        this.testTimeout = testTimeout;
     }
 }

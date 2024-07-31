@@ -25,14 +25,16 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategy;
 import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -136,6 +138,10 @@ public final class LvLite implements IGraphSearch {
      * The style for removing extra edges.
      */
     private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.PARALLEL;
+    /**
+     * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
+     */
+    private long testTimeout = 500;
 
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
@@ -242,9 +248,13 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        FciOrient fciOrient = new FciOrient(FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose));
+        FciOrientDataExaminationStrategy strategy = FciOrientDataExaminationStrategyTestBased.specialConfiguration(test, knowledge, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, verbose);
+        ((FciOrientDataExaminationStrategyTestBased) strategy).setTestTimeout(testTimeout);
+
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxPathLength(maxDdpPathLength);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setTestTimeout(testTimeout);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -592,28 +602,56 @@ public final class LvLite implements IGraphSearch {
         }
 
         // Note that we can use the MAG here instead of the DAG.
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
         // TODO: Explore the speed and accuracy implications for doing the extra edge removal in parallel or
         //  in serial.
         if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.PARALLEL) {
-            pag.getEdges().parallelStream().forEach(edge -> {
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
-                        edge.getNode2(), test, maxBlockingPathLength, depth, true,
-                        new HashSet<>(), -1);
+            List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
-                System.out.println("For edge " + edge + " sepset: " + sepset);
+            for (Edge edge : pag.getEdges()) {
+                tasks.add(() -> {
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
+                            edge.getNode2(), test, maxBlockingPathLength, depth, true,
+                            new HashSet<>());
+                    return Pair.of(edge, sepset);
+                });
+            }
 
-                if (sepset != null) {
-                    extraSepsets.put(edge, sepset);
+            List<Pair<Edge, Set<Node>>> results;
+
+            if (testTimeout == -1) {
+                results = tasks.parallelStream()
+                        .map(task -> {
+                            try {
+                                return task.call();
+                            } catch (Exception e) {
+//                                e.printStackTrace();
+                                return null;
+                            }
+                        }).toList();
+            } else if (testTimeout > 0) {
+                results = tasks.parallelStream()
+                        .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+                        .toList();
+            } else {
+                throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
+            }
+
+//            results = tasks.parallelStream()
+//                    .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+//                    .toList();
+
+            for (Pair<Edge, Set<Node>> _edge : results) {
+                if (_edge != null && _edge.getRight() != null) {
+                    extraSepsets.put(_edge.getLeft(), _edge.getRight());
                 }
-            });
+            }
 
-            for (Edge _edge : extraSepsets.keySet()) {
-                pag.removeEdge(_edge.getNode1(), _edge.getNode2());
-                orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets);
+            for (Pair<Edge, Set<Node>> _edge : results) {
+                if (_edge != null && _edge.getRight() != null) {
+                    orientCommonAdjacents(_edge.getLeft(), pag, unshieldedColliders, extraSepsets);
+                }
             }
         } else if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.SERIAL) {
 
@@ -632,7 +670,11 @@ public final class LvLite implements IGraphSearch {
 
                 Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
                         edge.getNode2(), test, maxBlockingPathLength, depth, true,
-                        new HashSet<>(), -1);
+                        new HashSet<>());
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);
+                }
 
                 if (sepset != null) {
                     extraSepsets.put(edge, sepset);
@@ -663,6 +705,24 @@ public final class LvLite implements IGraphSearch {
         }
 
         return extraSepsets;
+    }
+
+    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(task);
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true); // Cancel the task if it takes too long
+//            System.out.println("Task timed out and was cancelled.");
+            return null; // Or handle timeout differently
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null; // Or handle exceptions differently
+        } finally {
+            executor.shutdown();
+        }
     }
 
     /**
@@ -836,6 +896,16 @@ public final class LvLite implements IGraphSearch {
      */
     public void setExtraEdgeRemovalStyle(ExtraEdgeRemovalStyle extraEdgeRemovalStyle) {
         this.extraEdgeRemovalStyle = extraEdgeRemovalStyle;
+    }
+
+    /**
+     * Sets the timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
+     *
+     * @param testTimeout the timeout for the testing steps, for the extra edge removal steps and the discriminating
+     *                    path steps.
+     */
+    public void setTestTimeout(long testTimeout) {
+        this.testTimeout = testTimeout;
     }
 
     /**

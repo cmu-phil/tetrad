@@ -61,6 +61,12 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * Determines whether the Discriminating Path Tail Rule is enabled or not.
      */
     private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * The timeout for the test.
+     */
+    private long testTimeout = -1;
+
+    private SepsetFinder sepsetFinder = new SepsetFinder();
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -159,7 +165,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * <pre>
      *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-
+     *
      *               B
      *              xo           x is either an arrowhead or a circle
      *             /  \
@@ -172,23 +178,22 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      *      at B; otherwise, there should be a noncollider at B.
      * </pre>
      *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param graph the graph representation
+     * @param discriminatingPath the discriminating path
+     * @param graph              the graph representation
      * @return true if the orientation is determined, false otherwise
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     @Override
-    public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+    public synchronized boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
         Node e = discriminatingPath.getE();
         Node a = discriminatingPath.getA();
         Node b = discriminatingPath.getB();
         Node c = discriminatingPath.getC();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        doubleCheckDiscriminatingPathConstruct(e, a, b, c, path, graph);
+        if (!doubleCheckDiscriminatingPathConstruct(e, a, b, c, path, graph)) {
+            return false;
+        }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
@@ -200,7 +205,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         Set<Node> blacklist = new HashSet<>();
         Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
-                true, blacklist, -1);
+                true, blacklist);
 
 //        System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
@@ -216,6 +221,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
+                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                    return false;
+                }
+
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
 
@@ -228,6 +237,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
             }
         } else {
             if (doDiscriminatingPathTailRule) {
+                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                    return false;
+                }
+
                 graph.setEndpoint(c, b, Endpoint.TAIL);
 
                 if (this.verbose) {
@@ -252,6 +265,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
                 return false;
             }
 
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                return false;
+            }
+
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
 
@@ -266,6 +283,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
             if (this.verbose) {
                 TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg(
                         "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
+            }
+
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                return false;
             }
 
             return true;
@@ -356,5 +377,14 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Returns the timeout for the test.
+     *
+     * @param testTimeout the timeout for the test
+     */
+    public void setTestTimeout(long testTimeout) {
+        this.testTimeout = testTimeout;
     }
 }
