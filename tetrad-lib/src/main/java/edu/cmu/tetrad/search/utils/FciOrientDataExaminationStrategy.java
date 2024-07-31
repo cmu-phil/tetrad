@@ -66,7 +66,7 @@ public interface FciOrientDataExaminationStrategy {
      * @param graph the graph to be oriented.
      * @return true if an orientation is done, false otherwise.
      */
-    boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph);
+    boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
 
     /**
      * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.
@@ -99,7 +99,7 @@ public interface FciOrientDataExaminationStrategy {
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      * @return  true if the discriminating path construct is valid, false otherwise.
      */
-    default boolean doubleCheckDiscriminatinPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+    default boolean doubleCheckDiscriminatingPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
 //            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;

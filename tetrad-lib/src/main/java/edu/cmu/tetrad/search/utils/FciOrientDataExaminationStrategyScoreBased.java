@@ -125,7 +125,12 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     @Override
-    public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
+    public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+        Node e = discriminatingPath.getE();
+        Node a = discriminatingPath.getA();
+        Node b = discriminatingPath.getB();
+        Node c = discriminatingPath.getC();
+        List<Node> path = discriminatingPath.getColliderPath();
 
         System.out.println("For discriminating path rule, tucking");
         scorer.goToBookmark();

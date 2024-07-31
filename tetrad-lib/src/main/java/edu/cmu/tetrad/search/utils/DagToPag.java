@@ -152,8 +152,14 @@ public final class DagToPag {
                 return false;
             }
 
-            public boolean doDiscriminatingPathOrientation(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
-                doubleCheckDiscriminatinPathConstruct(e, a, b, c, path, graph);
+            public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+                Node e = discriminatingPath.getE();
+                Node a = discriminatingPath.getA();
+                Node b = discriminatingPath.getB();
+                Node c = discriminatingPath.getC();
+                List<Node> path = discriminatingPath.getColliderPath();
+
+                doubleCheckDiscriminatingPathConstruct(e, a, b, c, path, graph);
 
                 if (graph.isAdjacentTo(e, c)) {
                     throw new IllegalArgumentException("e and c must not be adjacent");

@@ -720,7 +720,9 @@ public class FciOrient {
                     colliderPath.remove(e);
                     colliderPath.remove(b);
 
-                    if (strategy.doDiscriminatingPathOrientation(e, a, b, c, colliderPath, graph)) {
+                    DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
+
+                    if (strategy.doDiscriminatingPathOrientation(discriminatingPath, graph)) {
                         changeFlag = true;
                         return;
                     }
