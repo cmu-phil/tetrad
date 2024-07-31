@@ -602,7 +602,7 @@ public final class LvLite implements IGraphSearch {
             pag.getEdges().parallelStream().forEach(edge -> {
                 Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
                         edge.getNode2(), test, maxBlockingPathLength, depth, true,
-                        new HashSet<>(), 300);
+                        new HashSet<>(), -1);
 
                 System.out.println("For edge " + edge + " sepset: " + sepset);
 
@@ -632,7 +632,7 @@ public final class LvLite implements IGraphSearch {
 
                 Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
                         edge.getNode2(), test, maxBlockingPathLength, depth, true,
-                        new HashSet<>(), 300);
+                        new HashSet<>(), -1);
 
                 if (sepset != null) {
                     extraSepsets.put(edge, sepset);

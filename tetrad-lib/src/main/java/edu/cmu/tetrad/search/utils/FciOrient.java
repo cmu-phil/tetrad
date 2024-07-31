@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -604,6 +605,8 @@ public class FciOrient {
      */
     public void
     ruleR4(Graph graph) {
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             List<Node> nodes = graph.getNodes();
 
@@ -642,7 +645,7 @@ public class FciOrient {
                             continue;
                         }
 
-                        discriminatingPathOrient(a, b, c, graph);
+                        discriminatingPathOrient(a, b, c, graph, discriminatingPaths);
                     }
                 }
             }
@@ -659,7 +662,7 @@ public class FciOrient {
      * @param c     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph) {
+    private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();

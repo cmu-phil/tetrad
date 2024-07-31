@@ -199,7 +199,8 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 //        System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
 
         Set<Node> blacklist = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1, true, blacklist, -1);
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
+                true, blacklist, -1);
 
 //        System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
