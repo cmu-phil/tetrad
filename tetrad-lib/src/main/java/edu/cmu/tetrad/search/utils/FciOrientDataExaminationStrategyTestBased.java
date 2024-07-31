@@ -184,7 +184,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     @Override
-    public synchronized boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+    public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
         Node e = discriminatingPath.getE();
         Node a = discriminatingPath.getA();
         Node b = discriminatingPath.getB();
@@ -201,20 +201,17 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
             }
         }
 
-//        System.out.println("Looking for sepset for " + e + " and " + c + " with path " + path);
-
         Set<Node> blacklist = new HashSet<>();
         Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
                 true, blacklist);
 
-//        System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
+        if (verbose) {
+            TetradLogger.getInstance().log("Discriminating path check--sepset for e = " + e + " and c = "
+                                           + c + " = " + sepset + " path = " + path);
+        }
 
         if (sepset == null) {
             return false;
-        }
-
-        if (this.verbose) {
-            TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
         }
 
         boolean collider = !sepset.contains(b);

@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategy;
-import edu.cmu.tetrad.search.utils.FciOrientDataExaminationStrategyTestBased;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -601,6 +598,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
+        ForkJoinPool executor = new ForkJoinPool();
+
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
@@ -614,6 +613,9 @@ public final class LvLite implements IGraphSearch {
                     Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(),
                             edge.getNode2(), test, maxBlockingPathLength, depth, true,
                             new HashSet<>());
+
+//                    System.out.println("Sepset for edge " + edge + " = " + sepset);
+
                     return Pair.of(edge, sepset);
                 });
             }
@@ -632,15 +634,11 @@ public final class LvLite implements IGraphSearch {
                         }).toList();
             } else if (testTimeout > 0) {
                 results = tasks.parallelStream()
-                        .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+                        .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                         .toList();
             } else {
                 throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
             }
-
-//            results = tasks.parallelStream()
-//                    .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
-//                    .toList();
 
             for (Pair<Edge, Set<Node>> _edge : results) {
                 if (_edge != null && _edge.getRight() != null) {
@@ -705,24 +703,6 @@ public final class LvLite implements IGraphSearch {
         }
 
         return extraSepsets;
-    }
-
-    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<T> future = executor.submit(task);
-
-        try {
-            return future.get(timeout, unit);
-        } catch (TimeoutException e) {
-            future.cancel(true); // Cancel the task if it takes too long
-//            System.out.println("Task timed out and was cancelled.");
-            return null; // Or handle timeout differently
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return null; // Or handle exceptions differently
-        } finally {
-            executor.shutdown();
-        }
     }
 
     /**

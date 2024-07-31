@@ -675,7 +675,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * thrown.)
      */
     @Override
-    public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
+    public synchronized boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
 

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -265,24 +266,6 @@ public class FciOrient {
         }
 
         return ucCirclePaths;
-    }
-
-    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<T> future = executor.submit(task);
-
-        try {
-            return future.get(timeout, unit);
-        } catch (TimeoutException e) {
-            future.cancel(true); // Cancel the task if it takes too long
-//            System.out.println("Task timed out and was cancelled.");
-            return null; // Or handle timeout differently
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return null; // Or handle exceptions differently
-        } finally {
-            executor.shutdown();
-        }
     }
 
     /**
@@ -732,13 +715,13 @@ public class FciOrient {
                 try {
                     return task.call();
                 } catch (Exception e) {
-//                    e.printStackTrace();
                     return false;
                 }
             }).toList();
+
         } else if (testTimeout > 0) {
             results = tasks.parallelStream()
-                    .map(task -> runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+                    .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                     .toList();
         } else {
             throw new IllegalArgumentException("testTimeout must be greater than or equal to -1");
