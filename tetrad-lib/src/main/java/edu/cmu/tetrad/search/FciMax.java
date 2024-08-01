@@ -177,7 +177,7 @@ public final class FciMax implements IGraphSearch {
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
             FciOrient fciOrient = new FciOrient(
-                    FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                    FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -187,7 +187,7 @@ public final class FciMax implements IGraphSearch {
         // Step CI C (Zhang's step F3.)
 
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);

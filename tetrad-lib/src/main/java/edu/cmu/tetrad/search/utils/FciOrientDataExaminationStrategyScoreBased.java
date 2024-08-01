@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -23,8 +24,7 @@ import java.util.List;
 public class FciOrientDataExaminationStrategyScoreBased implements FciOrientDataExaminationStrategy {
 
     /**
-     * The scorer used for scoring the nodes in a Directed Acyclic Graph (DAG).
-     * It is of type TeyssierScorer.
+     * The scorer used for scoring the nodes in a Directed Acyclic Graph (DAG). It is of type TeyssierScorer.
      */
     private final TeyssierScorer scorer;
     /**
@@ -60,14 +60,14 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
     /**
      * Returns a special configuration of FciOrientDataExaminationStrategy.
      *
-     * @param scorer                       the TeyssierScorer object
-     * @param knowledge                    the Knowledge object
-     * @param completeRuleSetUsed          a boolean indicating if the complete rule set is used
-     * @param doDiscriminatingPathTailRule a boolean indicating if the discriminating path tail rule is applied
+     * @param scorer                           the TeyssierScorer object
+     * @param knowledge                        the Knowledge object
+     * @param completeRuleSetUsed              a boolean indicating if the complete rule set is used
+     * @param doDiscriminatingPathTailRule     a boolean indicating if the discriminating path tail rule is applied
      * @param doDiscriminatingPathColliderRule a boolean indicating if the discriminating path collider rule is applied
-     * @param maxPathLength                the maximum path length
-     * @param verbose                      a boolean indicating if verbose mode is enabled
-     * @param depth                        the depth
+     * @param maxPathLength                    the maximum path length
+     * @param verbose                          a boolean indicating if verbose mode is enabled
+     * @param depth                            the depth
      * @return an instance of FciOrientDataExaminationStrategy with the specified configuration
      */
     public static FciOrientDataExaminationStrategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
@@ -85,9 +85,9 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
     /**
      * Returns a default configuration of the FciOrientDataExaminationStrategy.
      *
-     * @param scorer  the TeyssierScorer object
-     * @param knowledge  the Knowledge object
-     * @param verbose  a boolean indicating if verbose mode is enabled
+     * @param scorer    the TeyssierScorer object
+     * @param knowledge the Knowledge object
+     * @param verbose   a boolean indicating if verbose mode is enabled
      * @return an instance of FciOrientDataExaminationStrategy with the default configuration
      */
     public static FciOrientDataExaminationStrategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
@@ -116,16 +116,14 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
      *      at B; otherwise, there should be a noncollider at B.
      * </pre>
      *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
+     * @param discriminatingPath the discriminating path
      * @param graph the graph representation
-     * @return true if the orientation is determined, false otherwise
+     * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
+     * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     @Override
-    public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
         Node e = discriminatingPath.getE();
         Node a = discriminatingPath.getA();
         Node b = discriminatingPath.getB();
@@ -150,7 +148,7 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
                             "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
-                return true;
+                return Pair.of(discriminatingPath, true);
             }
         } else {
             if (doDiscriminatingPathTailRule) {
@@ -161,11 +159,11 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
                             "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
-                return true;
+                return Pair.of(discriminatingPath, true);
             }
         }
 
-        return false;
+        return Pair.of(discriminatingPath, false);
     }
 
     @Override

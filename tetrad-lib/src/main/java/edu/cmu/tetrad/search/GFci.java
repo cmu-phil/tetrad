@@ -205,7 +205,7 @@ public final class GFci implements IGraphSearch {
         }
 
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(graph);

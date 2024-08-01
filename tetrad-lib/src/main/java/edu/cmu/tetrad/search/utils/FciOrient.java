@@ -29,9 +29,11 @@ import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Performs the final orientation steps of the FCI algorithms, which is a useful tool to use in a variety of FCI-like
@@ -695,44 +697,94 @@ public class FciOrient {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void
-    ruleR4(Graph graph) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
+    public void ruleR4(Graph graph) {
 
-        List<Callable<Boolean>> tasks = new ArrayList<>();
-
-        for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> {
-                strategy.doDiscriminatingPathOrientation(discriminatingPath, graph);
-                return true;
-            });
-        }
-
-        List<Boolean> results;
+        List<Pair<DiscriminatingPath, Boolean>> allResults = new ArrayList<>();
 
         if (testTimeout == -1) {
-            results = tasks.parallelStream().map(task -> {
-                try {
-                    return task.call();
-                } catch (Exception e) {
-                    return false;
-                }
-            }).toList();
+            while (true) {
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
+                if (tasks.isEmpty()) break;
 
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
+                    try {
+                        return task.call();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }).toList();
+
+                allResults.addAll(results);
+
+                boolean existsTrue = false;
+
+                for (Pair<DiscriminatingPath, Boolean> result : results) {
+                    if (result != null && result.getRight()) {
+                        existsTrue = true;
+                        break;
+                    }
+                }
+
+                if (!existsTrue) {
+                    break;
+                }
+            }
         } else if (testTimeout > 0) {
-            results = tasks.parallelStream()
-                    .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
-                    .toList();
+            while (true) {
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
+//                if (tasks.isEmpty()) break;
+
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
+                        .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
+                        .toList();
+
+                allResults.addAll(results);
+
+                boolean existsTrue = false;
+
+                for (Pair<DiscriminatingPath, Boolean> result : results) {
+                    if (result != null && result.getRight()) {
+                        existsTrue = true;
+                        break;
+                    }
+                }
+
+                if (!existsTrue) {
+                    break;
+                }
+            }
         } else {
             throw new IllegalArgumentException("testTimeout must be greater than or equal to -1");
         }
 
-        for (Boolean result : results) {
-            if (result != null && result) {
+        for (Pair<DiscriminatingPath, Boolean> result : allResults) {
+            if (result != null && result.getRight()) {
+                if (verbose) {
+                    DiscriminatingPath left = result.getLeft();
+                    TetradLogger.getInstance().log("R4: Discriminating path oriented: " + left);
+
+                    Node a = left.getA();
+                    Node b = left.getB();
+                    Node c = left.getC();
+
+                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
+                }
                 this.changeFlag = true;
-                break;
             }
         }
+    }
+
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {
+        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
+
+        List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
+
+        for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
+            tasks.add(() -> {
+                return strategy.doDiscriminatingPathOrientation(discriminatingPath, graph);
+            });
+        }
+        return tasks;
     }
 
     private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {

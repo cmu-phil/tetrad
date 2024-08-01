@@ -761,7 +761,10 @@ public final class Params {
     /**
      * Constant <code>TIMEOUT="timeout"</code>
      */
-    public static final String TIMEOUT = "timeout";
+    public static final String TIMEOUT = "timeout";    /**
+     * Constant <code>TEST_TIMEOUT="testTimeout"</code>
+     */
+    public static final String TEST_TIMEOUT = "testTimeout";
     /**
      * Constant <code>GRASP_USE_VP_SCORING="graspUseVpScoring"</code>
      */

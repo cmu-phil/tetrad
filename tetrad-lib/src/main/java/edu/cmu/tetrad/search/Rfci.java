@@ -193,7 +193,7 @@ public final class Rfci implements IGraphSearch {
         long start2 = MillisecondTimes.timeMillis();
 
         FciOrient orient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);

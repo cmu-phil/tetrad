@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,7 +154,7 @@ public final class DagToPag {
                 return false;
             }
 
-            public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+            public Pair<DiscriminatingPath ,Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
                 Node e = discriminatingPath.getE();
                 Node a = discriminatingPath.getA();
                 Node b = discriminatingPath.getB();
@@ -183,7 +185,7 @@ public final class DagToPag {
 //                System.out.println("...sepset for " + e + " *-* " + c + " = " + sepset);
 
                 if (sepset == null) {
-                    return false;
+                    return Pair.of(discriminatingPath, false);
                 }
 
                 if (verbose) {
@@ -202,7 +204,7 @@ public final class DagToPag {
                                     "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                         }
 
-                        return true;
+                        return Pair.of(discriminatingPath, true);
                     }
                 } else {
                     if (isDoDiscriminatingPathTailRule()) {
@@ -213,18 +215,18 @@ public final class DagToPag {
                                     "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                         }
 
-                        return true;
+                        return Pair.of(discriminatingPath, true);
                     }
                 }
 
                 if (!sepset.contains(b)) {
                     if (isDoDiscriminatingPathColliderRule() ) {
                         if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                            return false;
+                            return Pair.of(discriminatingPath, false);
                         }
 
                         if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                            return false;
+                            return Pair.of(discriminatingPath, false);
                         }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -243,16 +245,17 @@ public final class DagToPag {
                                 "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
                     }
 
-                    return true;
+                    return Pair.of(discriminatingPath, true);
                 }
 
-                return false;
+                return Pair.of(discriminatingPath, false);
             }
         };
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(verbose);
         fciOrient.orient(pag);
+        fciOrient.setTestTimeout(-1);
 
         return pag;
     }

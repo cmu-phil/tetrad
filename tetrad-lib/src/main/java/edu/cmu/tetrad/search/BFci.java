@@ -209,7 +209,7 @@ public final class BFci implements IGraphSearch {
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(graph);

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -66,7 +67,7 @@ public interface FciOrientDataExaminationStrategy {
      * @param graph the graph to be oriented.
      * @return true if an orientation is done, false otherwise.
      */
-    boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
+    Pair<DiscriminatingPath ,Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
 
     /**
      * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.

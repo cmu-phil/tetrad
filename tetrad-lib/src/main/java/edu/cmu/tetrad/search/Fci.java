@@ -223,7 +223,7 @@ public final class Fci implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, knowledge, verbose));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, knowledge));
 
         if (this.possibleMsepSearchDone) {
             if (verbose) {

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +108,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
             strategy.setKnowledge(knowledge);
             strategy.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
             strategy.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-            strategy.verbose = verbose;
+            strategy.setVerbose(verbose);
             return strategy;
         }
     }
@@ -121,7 +122,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * @return a default configured FciOrientDataExaminationStrategy object
      */
     public static FciOrientDataExaminationStrategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
-        return defaultConfiguration(new MsepTest(dag), knowledge, verbose);
+        return defaultConfiguration(new MsepTest(dag), knowledge);
     }
 
     /**
@@ -129,15 +130,14 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      *
      * @param test      the IndependenceTest object used by the strategy
      * @param knowledge the Knowledge object used by the strategy
-     * @param verbose   boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static FciOrientDataExaminationStrategy defaultConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
+    public static FciOrientDataExaminationStrategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
         FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(test);
         strategy.setDoDiscriminatingPathTailRule(true);
         strategy.setDoDiscriminatingPathColliderRule(true);
-        strategy.setVerbose(verbose);
+        strategy.setVerbose(false);
         strategy.setKnowledge(knowledge);
         return strategy;
     }
@@ -180,11 +180,12 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
-     * @return true if the orientation is determined, false otherwise
+     * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
+     * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
     @Override
-    public boolean doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
         Node e = discriminatingPath.getE();
         Node a = discriminatingPath.getA();
         Node b = discriminatingPath.getB();
@@ -192,7 +193,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
         List<Node> path = discriminatingPath.getColliderPath();
 
         if (!doubleCheckDiscriminatingPathConstruct(e, a, b, c, path, graph)) {
-            return false;
+            return Pair.of(discriminatingPath, false);
         }
 
         for (Node n : path) {
@@ -211,7 +212,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
         }
 
         if (sepset == null) {
-            return false;
+            return Pair.of(discriminatingPath, false);
         }
 
         boolean collider = !sepset.contains(b);
@@ -219,7 +220,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
                 if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                    return false;
+                    return Pair.of(discriminatingPath, false);
                 }
 
                 graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -230,12 +231,12 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
                             "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
-                return true;
+                return Pair.of(discriminatingPath, true);
             }
         } else {
             if (doDiscriminatingPathTailRule) {
                 if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                    return false;
+                    return Pair.of(discriminatingPath, false);
                 }
 
                 graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -245,7 +246,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
                             "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                 }
 
-                return true;
+                return Pair.of(discriminatingPath, true);
             }
         }
 
@@ -255,15 +256,15 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
         if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
             if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                return false;
+                return Pair.of(discriminatingPath, false);
             }
 
             if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                return false;
+                return Pair.of(discriminatingPath, false);
             }
 
             if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                return false;
+                return Pair.of(discriminatingPath, false);
             }
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -283,13 +284,13 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
             }
 
             if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                return false;
+                return Pair.of(discriminatingPath, false);
             }
 
-            return true;
+            return Pair.of(discriminatingPath, true);
         }
 
-        return false;
+        return Pair.of(discriminatingPath, false);
     }
 
     /**

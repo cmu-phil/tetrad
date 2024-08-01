@@ -2,8 +2,6 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,5 +41,15 @@ public class DiscriminatingPath {
 
     public List<Node> getColliderPath() {
         return colliderPath;
+    }
+
+    public String toString() {
+        return "DiscriminatingPath{" +
+               "e=" + e +
+               ", a=" + a +
+               ", b=" + b +
+               ", c=" + c +
+               ", colliderPath=" + colliderPath +
+               '}';
     }
 }

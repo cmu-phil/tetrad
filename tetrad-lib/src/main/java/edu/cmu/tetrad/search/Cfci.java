@@ -173,7 +173,7 @@ public final class Cfci implements IGraphSearch {
 
         // Step CI D. (Zhang's step F4.)
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge(), false));
+                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(this.graph);
