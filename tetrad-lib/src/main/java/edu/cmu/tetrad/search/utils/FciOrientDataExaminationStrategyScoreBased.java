@@ -1,14 +1,12 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The FciOrientDataExaminationStrategyTestBased class implements the FciOrientDataExaminationStrategy interface and
@@ -169,6 +167,11 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
     @Override
     public Knowledge getknowledge() {
         return null;
+    }
+
+    @Override
+    public void setAllowedColliders(Set<Triple> allowedCollders) {
+
     }
 
     /**

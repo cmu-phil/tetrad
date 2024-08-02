@@ -4,9 +4,11 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The FCI orientation rules are almost entirely taken up with an examination of the FCI graph, but there are two rules
@@ -159,4 +161,6 @@ public interface FciOrientDataExaminationStrategy {
      * @return the knowledge object.
      */
     Knowledge getknowledge();
+
+    void setAllowedColliders(Set<Triple> allowedCollders);
 }

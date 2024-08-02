@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -68,6 +65,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     private long testTimeout = -1;
 
     private SepsetFinder sepsetFinder = new SepsetFinder();
+    private Set<Triple> allowedColliders = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -223,6 +221,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
                     return Pair.of(discriminatingPath, false);
                 }
 
+                if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
 
@@ -311,6 +313,11 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
     @Override
     public Knowledge getknowledge() {
         return knowledge;
+    }
+
+    @Override
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
+        this.allowedColliders = allowedColliders;
     }
 
     /**

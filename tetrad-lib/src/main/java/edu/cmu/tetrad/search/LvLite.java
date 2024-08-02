@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -31,7 +32,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -284,18 +288,26 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
+        // These are the unshielded colliders copied from BOSS. BOSS by itself is not the cause of almost
+        // cycles; it's the subsequent testing steps that cause them. So we do not need to remove any
+        // unshielded colliders that are in this set to resolve almost-cycles.
+
+        // These will be the unshielded colldiers that are found in the subsequent steps.
+        Set<Triple> subsequentUnshieldedColliders = new HashSet<>();
+
         reorientWithCircles(pag, verbose);
         doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-        Map<Edge, Set<Node>> extraSepsets = null;
+        Map<Edge, Set<Node>> extraSepsets;
 
         if (!ablationLeaveOutTestingStep) {
 
             // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
             // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
             // per edge.
-            extraSepsets = removeExtraEdges(pag, unshieldedColliders);
+            extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
+            unshieldedColliders.addAll(subsequentUnshieldedColliders);
 
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -311,6 +323,81 @@ public final class LvLite implements IGraphSearch {
             fciOrient.finalOrientation(pag);
         }
 
+        // Find a MAG in the PAG and remove almost cycles from it.
+        TetradLogger.getInstance().log("Removing almost cycles.");
+
+
+        Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
+
+        while (true) {
+            Graph mag = GraphTransforms.zhangMagFromPag(pag);
+
+            // Make a list of all <x, y> where x <-> y and x ~~> y.
+            List<Edge> almostCycles = new ArrayList<>();
+            Edge almostCycle = null;
+
+            for (Edge edge : mag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    if (mag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
+                        Edge e = Edges.directedEdge(edge.getNode1(), edge.getNode2());
+                        almostCycle = e;
+                        break;
+//                        almostCycles.add(e);
+                    } else if (mag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
+                        Edge e = Edges.directedEdge(edge.getNode2(), edge.getNode1());
+                        almostCycle = e;
+//                        almostCycles.add(e);
+                    }
+                }
+            }
+
+            if (almostCycle == null) {
+                break;
+            }
+
+//            if (almostCycles.isEmpty()) {
+//                break;
+//            }
+
+            // Sort the almost cycles x <-> y, x ~~> y by the number of edges into x.
+//            almostCycles.sort(Comparator.comparingInt(edge -> mag.getNodesInTo(edge.getNode1(), Endpoint.ARROW).size()));
+//
+//             Pick the first almost cycle x <-> y, x ~~> y.
+//            Edge almostCycle = almostCycles.get(0);
+
+            TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+
+            Node x = almostCycle.getNode1();
+            Node y = almostCycle.getNode2();
+
+            // Find all unshielded triples z *-> x <-> y in subsequentUnshieldedColliders
+            Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+
+            for (Triple triple : subsequentUnshieldedColliders) {
+                if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+                    unshieldedTriplesIntoX.add(triple);
+                } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+                    unshieldedTriplesIntoX.add(triple);
+                }
+            }
+
+            // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
+            _unshieldedColliders.removeAll(unshieldedTriplesIntoX);
+
+            // Rebuild the PAG with this new unshielded collider set.
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+            recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
+
+            fciOrient.setVerbose(false);
+
+            fciOrient.setAllowedColliders(_unshieldedColliders);
+
+            fciOrient.finalOrientation(pag);
+        }
+
+//        fciOrient.finalOrientation(pag);
+//
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose, ablationLeaveOutFinalOrientation);
         }

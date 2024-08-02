@@ -146,6 +146,7 @@ public class FciOrient {
      * The timeout value (in milliseconds) for the test. A value of -1 indicates that there is no timeout.
      */
     private long testTimeout = -1;
+    private Set<Triple> allowedCollders;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified FciOrientDataExaminationStrategy.
@@ -703,7 +704,7 @@ public class FciOrient {
 
         if (testTimeout == -1) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedCollders);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -731,7 +732,7 @@ public class FciOrient {
             }
         } else if (testTimeout > 0) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedCollders);
 //                if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
@@ -769,15 +770,17 @@ public class FciOrient {
 
                     TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
                 }
+
                 this.changeFlag = true;
             }
         }
     }
 
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
 
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
+        strategy.setAllowedColliders(allowedCollders);
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
             tasks.add(() -> {
@@ -1443,5 +1446,9 @@ public class FciOrient {
 
     public void setTestTimeout(long testTimeout) {
         this.testTimeout = testTimeout;
+    }
+
+    public void setAllowedColliders(Set<Triple> unshieldedColliders) {
+        this.allowedCollders = unshieldedColliders;
     }
 }

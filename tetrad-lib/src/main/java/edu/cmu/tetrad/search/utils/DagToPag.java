@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -113,7 +112,19 @@ public final class DagToPag {
         // 1. Find if there is an inducing path between each pair of observed variables. If yes, add adjacency.
         // 2. Find all ancestor relations.
         // 3. Use ancestor relations to put in heads and tails.
-        Graph mag = GraphTransforms.dagToMag(dag);
+        Graph mag;
+
+        if (dag.paths().isLegalDag()) {
+            mag = GraphTransforms.dagToMag(dag);
+        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
+            mag = GraphTransforms.zhangMagFromPag(dag);
+        } else {
+            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" +
+                                               "but possibly with circle endpoints.");
+        }
+
+//        Graph mag = GraphTransforms.dagToMag(dag);
+//        Graph mag = GraphTransforms.zhangMagFromPag(dag);
 
         // B. Form PAG
         // 1. Copy all adjacencies from MAG, but put "o" endpoints on all edges.
@@ -249,6 +260,11 @@ public final class DagToPag {
                 }
 
                 return Pair.of(discriminatingPath, false);
+            }
+
+            @Override
+            public void setAllowedColliders(Set<Triple> allowedColliders) {
+                // Ignore.
             }
         };
 
