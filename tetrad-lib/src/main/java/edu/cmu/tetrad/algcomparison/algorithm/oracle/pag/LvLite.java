@@ -156,7 +156,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // Ablation
         search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEP));
-        search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+//        search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
@@ -241,7 +241,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.TEST_TIMEOUT);
 
         // Ablation
-        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
+//        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

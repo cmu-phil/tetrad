@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,15 +62,11 @@ public interface FciOrientDataExaminationStrategy {
      * <p>
      * This is Zhang's rule R4, discriminating paths.
      *
-     * @param e     the 'e' node
-     * @param a     the 'a' node
-     * @param b     the 'b' node
-     * @param c     the 'c' node
-     * @param path  the collider path from 'e' to 'b', not including 'e' but including 'a'.
-     * @param graph the graph to be oriented.
+     * @param discriminatingPath the discriminating path construct
+     * @param graph              the graph to be oriented.
      * @return true if an orientation is done, false otherwise.
      */
-    Pair<DiscriminatingPath ,Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
+    Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
 
     /**
      * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.
@@ -99,8 +96,8 @@ public interface FciOrientDataExaminationStrategy {
      * @param c     the 'c' node
      * @param path  the collider path from 'e' to 'b', not including 'e' but including 'a'.
      * @param graph the graph representation
+     * @return true if the discriminating path construct is valid, false otherwise.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     * @return  true if the discriminating path construct is valid, false otherwise.
      */
     default boolean doubleCheckDiscriminatingPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
@@ -163,4 +160,12 @@ public interface FciOrientDataExaminationStrategy {
     Knowledge getknowledge();
 
     void setAllowedColliders(Set<Triple> allowedCollders);
+
+    default Set<Triple> getInitialAllowedColliders() {
+        return null;
+    }
+
+    default void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
+        // no op.
+    }
 }

@@ -146,7 +146,7 @@ public class FciOrient {
      * The timeout value (in milliseconds) for the test. A value of -1 indicates that there is no timeout.
      */
     private long testTimeout = -1;
-    private Set<Triple> allowedCollders;
+    private Set<Triple> allowedColliders;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified FciOrientDataExaminationStrategy.
@@ -582,6 +582,10 @@ public class FciOrient {
             return;
         }
 
+        if (!graph.isDefNoncollider(a, b, c)) {
+            return;
+        }
+
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
             if (!FciOrient.isArrowheadAllowed(b, c, graph, knowledge)) {
                 return;
@@ -612,6 +616,10 @@ public class FciOrient {
                 && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
+                    return;
+                }
+
+                if (!graph.isDefNoncollider(a, b, c)) {
                     return;
                 }
 
@@ -668,6 +676,10 @@ public class FciOrient {
                                     return;
                                 }
 
+//                                if (!graph.isDefNoncollider(a, d, c)) {
+//                                    return;
+//                                }
+
                                 graph.setEndpoint(d, b, Endpoint.ARROW);
 
                                 if (this.verbose) {
@@ -704,7 +716,7 @@ public class FciOrient {
 
         if (testTimeout == -1) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedCollders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -732,7 +744,7 @@ public class FciOrient {
             }
         } else if (testTimeout > 0) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedCollders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 //                if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
@@ -1448,7 +1460,15 @@ public class FciOrient {
         this.testTimeout = testTimeout;
     }
 
-    public void setAllowedColliders(Set<Triple> unshieldedColliders) {
-        this.allowedCollders = unshieldedColliders;
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
+        this.allowedColliders = allowedColliders;
+    }
+
+    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
+        strategy.setInitialAllowedColliders(initialAllowedColliders);
+    }
+
+    public Collection<Triple> getInitialAllowedColliders() {
+        return strategy.getInitialAllowedColliders();
     }
 }

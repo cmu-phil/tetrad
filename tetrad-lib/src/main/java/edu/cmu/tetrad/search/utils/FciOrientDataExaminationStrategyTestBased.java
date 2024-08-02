@@ -66,6 +66,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
 
     private SepsetFinder sepsetFinder = new SepsetFinder();
     private Set<Triple> allowedColliders = null;
+    private HashSet<Triple> initialAllowedColliders = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -221,8 +222,12 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
                     return Pair.of(discriminatingPath, false);
                 }
 
-                if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
-                    return Pair.of(discriminatingPath, false);
+                if (initialAllowedColliders != null) {
+                    initialAllowedColliders.add(new Triple(a, b, c));
+                } else {
+                    if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
+                        return Pair.of(discriminatingPath, false);
+                    }
                 }
 
                 graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -391,5 +396,13 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      */
     public void setTestTimeout(long testTimeout) {
         this.testTimeout = testTimeout;
+    }
+
+    public Set<Triple> getInitialAllowedColliders() {
+        return initialAllowedColliders;
+    }
+
+    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
+        this.initialAllowedColliders = initialAllowedColliders;
     }
 }

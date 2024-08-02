@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -319,85 +318,107 @@ public final class LvLite implements IGraphSearch {
         }
 
         // Final FCI orientation.
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(pag);
-        }
+        fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.finalOrientation(pag);
+        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
+        subsequentUnshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
+        fciOrient.setInitialAllowedColliders(null);
 
-        // Find a MAG in the PAG and remove almost cycles from it.
         TetradLogger.getInstance().log("Removing almost cycles.");
-
-
         Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
 
         while (true) {
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
             // Make a list of all <x, y> where x <-> y and x ~~> y.
-            List<Edge> almostCycles = new ArrayList<>();
-            Edge almostCycle = null;
+            Set<Edge> almostCyclesSet = new HashSet<>();
 
             for (Edge edge : mag.getEdges()) {
                 if (Edges.isBidirectedEdge(edge)) {
                     if (mag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
                         Edge e = Edges.directedEdge(edge.getNode1(), edge.getNode2());
-                        almostCycle = e;
-                        break;
-//                        almostCycles.add(e);
+                        almostCyclesSet.add(e);
                     } else if (mag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
                         Edge e = Edges.directedEdge(edge.getNode2(), edge.getNode1());
-                        almostCycle = e;
-//                        almostCycles.add(e);
+                        almostCyclesSet.add(e);
                     }
                 }
             }
 
-            if (almostCycle == null) {
+            if (almostCyclesSet.isEmpty()) {
                 break;
             }
 
-//            if (almostCycles.isEmpty()) {
-//                break;
-//            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("Almost cycles: ");
 
-            // Sort the almost cycles x <-> y, x ~~> y by the number of edges into x.
-//            almostCycles.sort(Comparator.comparingInt(edge -> mag.getNodesInTo(edge.getNode1(), Endpoint.ARROW).size()));
-//
-//             Pick the first almost cycle x <-> y, x ~~> y.
-//            Edge almostCycle = almostCycles.get(0);
-
-            TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-
-            Node x = almostCycle.getNode1();
-            Node y = almostCycle.getNode2();
-
-            // Find all unshielded triples z *-> x <-> y in subsequentUnshieldedColliders
-            Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
-
-            for (Triple triple : subsequentUnshieldedColliders) {
-                if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-                    unshieldedTriplesIntoX.add(triple);
-                } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-                    unshieldedTriplesIntoX.add(triple);
-                }
+            for (Edge _almostCycle : almostCyclesSet) {
+                sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
             }
 
-            // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
-            _unshieldedColliders.removeAll(unshieldedTriplesIntoX);
+            TetradLogger.getInstance().log(sb.toString());
+
+            TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
+
+            for (Edge almostCycle : almostCyclesSet) {
+                TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+
+                Node x = almostCycle.getNode1();
+                Node y = almostCycle.getNode2();
+
+                // Find all unshielded triples z *-> x <-> y in subsequentUnshieldedColliders
+                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+
+                for (Triple triple : new HashSet<>(_unshieldedColliders)) {
+                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                            _unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                        }
+                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
+                            _unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                        }
+                    }
+                }
+
+                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
+                TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+            }
 
             // Rebuild the PAG with this new unshielded collider set.
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
-
             fciOrient.setVerbose(false);
-
             fciOrient.setAllowedColliders(_unshieldedColliders);
-
             fciOrient.finalOrientation(pag);
         }
 
-//        fciOrient.finalOrientation(pag);
+//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 //
+//
+//        for (Node node : mag.getNodes()) {
+//            if (mag.paths().existsDirectedPath(node, node)) {
+//                for (Triple triple : new HashSet<>(_unshieldedColliders)) {
+//                    List<Node> nodesInTo = mag.getNodesInTo(node, Endpoint.ARROW);
+//
+//                    if (nodesInTo.contains(triple.getX()) && nodesInTo.contains(triple.getZ())) {
+//                        _unshieldedColliders.remove(triple);
+//                    }
+//                }
+//            }
+//        }
+
+        // Rebuild the PAG with this new unshielded collider set.
+        reorientWithCircles(pag, verbose);
+        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
+        fciOrient.setVerbose(false);
+        fciOrient.setAllowedColliders(_unshieldedColliders);
+        fciOrient.finalOrientation(pag);
+
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose, ablationLeaveOutFinalOrientation);
         }
@@ -430,28 +451,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Try adding an unshielded collider by projected DAG after tucking.
-     *
-     * @param x                   The node 'x' of the triple (x, b, y)
-     * @param b                   The node 'b' of the triple (x, b, y)
-     * @param y                   The node 'y' of the triple (x, b, y)
-     * @param pag                 The graph
-     * @param scorer              The scorer object
-     * @param bestScore           The previous best score
-     * @param unshieldedColliders The set of unshielded colliders
-     * @param checked             The set of checked triples
-     */
-    private void checkTucked(Node x, Node b, Node y, Graph pag, TeyssierScorer scorer, double bestScore, Set<Triple> unshieldedColliders, Set<Triple> checked) {
-        if (!checked.contains(new Triple(x, b, y))) {
-            scorer.tuck(y, b);
-            scorer.tuck(x, y);
-            double newScore = scorer.score();
-            tryAddingCollider(x, b, y, pag, null, true, scorer, newScore, bestScore, unshieldedColliders, checked, knowledge, verbose);
-            scorer.goToBookmark();
-        }
-    }
-
-    /**
      * Parameterizes and returns a new BOSS search.
      *
      * @return A new BOSS search.
@@ -464,6 +463,7 @@ public final class LvLite implements IGraphSearch {
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
