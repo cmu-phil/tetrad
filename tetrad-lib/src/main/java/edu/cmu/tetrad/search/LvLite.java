@@ -361,7 +361,6 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
 
             for (Edge almostCycle : almostCyclesSet) {
-                TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
 
                 Node x = almostCycle.getNode1();
                 Node y = almostCycle.getNode2();
@@ -384,7 +383,10 @@ public final class LvLite implements IGraphSearch {
                 }
 
                 // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
-                TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+                if (!unshieldedColliders.isEmpty()) {
+                    TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+                    TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+                }
             }
 
             // Rebuild the PAG with this new unshielded collider set.
@@ -398,7 +400,6 @@ public final class LvLite implements IGraphSearch {
 
 //        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 //
-//
 //        for (Node node : mag.getNodes()) {
 //            if (mag.paths().existsDirectedPath(node, node)) {
 //                for (Triple triple : new HashSet<>(_unshieldedColliders)) {
@@ -410,14 +411,14 @@ public final class LvLite implements IGraphSearch {
 //                }
 //            }
 //        }
-
-        // Rebuild the PAG with this new unshielded collider set.
-        reorientWithCircles(pag, verbose);
-        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
-        fciOrient.setVerbose(false);
-        fciOrient.setAllowedColliders(_unshieldedColliders);
-        fciOrient.finalOrientation(pag);
+//
+//        // Rebuild the PAG with this new unshielded collider set.
+//        reorientWithCircles(pag, verbose);
+//        doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+//        recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
+//        fciOrient.setVerbose(false);
+//        fciOrient.setAllowedColliders(_unshieldedColliders);
+//        fciOrient.finalOrientation(pag);
 
         if (repairFaultyPag) {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose, ablationLeaveOutFinalOrientation);

@@ -712,6 +712,8 @@ public class FciOrient {
      */
     public void ruleR4(Graph graph) {
 
+        TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
+
         List<Pair<DiscriminatingPath, Boolean>> allResults = new ArrayList<>();
 
         if (testTimeout == -1) {
@@ -786,6 +788,8 @@ public class FciOrient {
                 this.changeFlag = true;
             }
         }
+
+        TetradLogger.getInstance().log("R4: Discriminating path orientation finished.");
     }
 
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
