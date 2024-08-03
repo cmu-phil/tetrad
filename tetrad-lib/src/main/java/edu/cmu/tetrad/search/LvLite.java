@@ -308,21 +308,34 @@ public final class LvLite implements IGraphSearch {
             extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
             unshieldedColliders.addAll(subsequentUnshieldedColliders);
 
+            TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
+
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
+            TetradLogger.getInstance().log("Finished implied orientation after extra sepsets found");
+
+            TetradLogger.getInstance().log("Orienting common adjacents");
+
             for (Edge edge : extraSepsets.keySet()) {
                 orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
             }
+
+            TetradLogger.getInstance().log("Done orienting common adjacents");
         }
 
         // Final FCI orientation.
+
+        TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
+
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
         unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
         subsequentUnshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
         fciOrient.setInitialAllowedColliders(null);
+
+        TetradLogger.getInstance().log("Finished implied orientation.");
 
         TetradLogger.getInstance().log("Removing almost cycles.");
         Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
@@ -389,14 +402,27 @@ public final class LvLite implements IGraphSearch {
                 }
             }
 
+            TetradLogger.getInstance().log("Dpne removing almost cycles this round.");
+
             // Rebuild the PAG with this new unshielded collider set.
+
+            TetradLogger.getInstance().log("Rebuilding graph.");
             reorientWithCircles(pag, verbose);
             doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
             recallUnshieldedTriples(pag, _unshieldedColliders, knowledge);
+            TetradLogger.getInstance().log("Finished rebuilding graph.");
+
+            TetradLogger.getInstance().log("Final orientation.");
+
             fciOrient.setVerbose(false);
             fciOrient.setAllowedColliders(_unshieldedColliders);
             fciOrient.finalOrientation(pag);
+
+            TetradLogger.getInstance().log("Finished final orientation.");
         }
+
+        TetradLogger.getInstance().log("All done removing almost cycles.");
+
 
 //        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 //
@@ -424,13 +450,7 @@ public final class LvLite implements IGraphSearch {
             GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose, ablationLeaveOutFinalOrientation);
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing final orientation.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished final orientation.");
-        }
+        TetradLogger.getInstance().log("LV-Lite finished.");
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
     }
@@ -805,6 +825,7 @@ public final class LvLite implements IGraphSearch {
      * @param extraSepsets        The map of edges to sepsets used to remove them.
      */
     private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
+
         List<Node> common = pag.getAdjacentNodes(edge.getNode1());
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
@@ -822,6 +843,7 @@ public final class LvLite implements IGraphSearch {
                 unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
             }
         }
+
     }
 
     /**
