@@ -740,7 +740,7 @@ public class SepsetFinder {
                 break;
             }
 
-            if (mpdag.isDefNoncollider(z1, z2, z3)) {
+            if (!mpdag.isDefCollider(z1, z2, z3)) {
                 if (conditioningSet.contains(z2)) {
                     if (printTrace) {
                         TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);

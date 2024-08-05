@@ -582,10 +582,6 @@ public class FciOrient {
             return;
         }
 
-        if (!graph.isDefNoncollider(a, b, c)) {
-            return;
-        }
-
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
             if (!FciOrient.isArrowheadAllowed(b, c, graph, knowledge)) {
                 return;
@@ -616,10 +612,6 @@ public class FciOrient {
                 && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
-                    return;
-                }
-
-                if (!graph.isDefNoncollider(a, b, c)) {
                     return;
                 }
 

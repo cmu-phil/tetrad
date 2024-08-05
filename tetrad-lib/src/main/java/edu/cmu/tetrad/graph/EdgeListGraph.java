@@ -266,6 +266,14 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         boolean circle12 = false;
         boolean circle32 = false;
 
+        // Sufficient. Check to see if in the middle node either of the edges has a tail.
+
+        // If an unshielded triple and either one is a circle, it's a definitely noncollider.
+
+        // Zhang 2008 other paper, 1446
+
+        // tail out or both circles and covered.
+
         for (Edge edge : edges) {
             boolean _node1 = edge.getDistalNode(node2) == node1;
             boolean _node3 = edge.getDistalNode(node2) == node3;
