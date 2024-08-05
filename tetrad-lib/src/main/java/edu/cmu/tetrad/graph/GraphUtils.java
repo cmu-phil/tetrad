@@ -2994,7 +2994,8 @@ public final class GraphUtils {
             for (Node x : pag.getNodes()) {
                 for (Node y : pag.getNodes()) {
                     if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
-                        pag.addNondirectedEdge(x, y);
+//                        pag.addNondirectedEdge(x, y);
+                        pag.addBidirectedEdge(x, y); // Zhang 2008
 
                         if (verbose) {
                             TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " o-o " + y + ".");

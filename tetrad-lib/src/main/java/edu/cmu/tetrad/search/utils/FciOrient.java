@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Dijkstra;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -937,65 +938,73 @@ public class FciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
-     * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle
+     * path u = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u
+     * undirected.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
-        List<Node> nodes = graph.getNodes();
 
-        for (Node a : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+        // Reimplementing this using a variant of Dijkstra's algorithm so that it doesn't hang on
+        // large graphs. jdramsey 2024-8-5
+        Dijkstra.Graph dijkstraGraph = new Dijkstra.Graph();
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isNondirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                int weight = 1;
+
+                dijkstraGraph.addEdge(x, y, weight);
             }
+        }
 
-            List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isNondirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            for (Node b : adjacents) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+                Map<Node, Node> predecessors = new HashMap<>();
 
-                if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) {
+                // Specifying uncovered = true here guarantees that the entire path is uncovered and that
+                // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
+                // don't be a triangle with x o-o w o-o y and that x o-o y won't be on the path;.
+                boolean uncovered = true;
+
+                Dijkstra.distances(dijkstraGraph, x, y, predecessors, uncovered);
+                List<Node> path = Dijkstra.getPath(predecessors, x, y);
+
+                if (path == null) {
                     continue;
                 }
-                // We know Ao-oB.
 
-                List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
+                Node a = path.get(1);
+                Node b = path.get(path.size() - 2);
 
-                for (List<Node> u : ucCirclePaths) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    if (u.size() < 3) {
-                        continue;
-                    }
-
-                    Node c = u.get(1);
-                    Node d = u.get(u.size() - 2);
-
-                    if (graph.isAdjacentTo(a, d)) {
-                        continue;
-                    }
-                    if (graph.isAdjacentTo(b, c)) {
-                        continue;
-                    }
-                    // We know u is as required: R5 applies!
-
-
-                    graph.setEndpoint(a, b, Endpoint.TAIL);
-                    graph.setEndpoint(b, a, Endpoint.TAIL);
-
-                    if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg(
-                                "R5: Orient circle path", graph.getEdge(a, b)));
-                    }
-
-                    orientTailPath(u, graph);
-                    this.changeFlag = true;
+                if (graph.isAdjacentTo(a, b)) {
+                    continue;
                 }
+
+                // We know u is as required: R5 applies!
+                graph.setEndpoint(x, y, Endpoint.TAIL);
+                graph.setEndpoint(y, x, Endpoint.TAIL);
+
+                for (int i = 0; i < path.size() - 1; i++) {
+                    Node w = path.get(i);
+                    Node z = path.get(i + 1);
+
+                    graph.setEndpoint(w, z, Endpoint.TAIL);
+                    graph.setEndpoint(z, w, Endpoint.TAIL);
+                }
+
+                if (verbose) {
+                    String s = GraphUtils.pathString(graph, path, false);
+                    this.logger.log("R5: Orient circle path, " + edge + " " + s);
+                }
+
+                this.changeFlag = true;
             }
         }
     }
@@ -1033,6 +1042,7 @@ public class FciOrient {
                 if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
                     continue;
                 }
+
                 if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) {
                     continue;
                 }
