@@ -1431,6 +1431,14 @@ public final class GraphUtils {
             return 4;
         }
 
+        if (edgeTop.getEndpoint1() == Endpoint.TAIL && edgeTop.getEndpoint2() == Endpoint.CIRCLE) {
+            return 6;
+        }
+
+        if (edgeTop.getEndpoint1() == Endpoint.CIRCLE && edgeTop.getEndpoint2() == Endpoint.TAIL) {
+            return 7;
+        }
+
         return 5;
     }
 
@@ -1480,6 +1488,14 @@ public final class GraphUtils {
 
         if (Edges.isBidirectedEdge(edgeLeft)) {
             return 6;
+        }
+
+        if (edgeLeft.getEndpoint1() == Endpoint.TAIL && edgeLeft.getEndpoint2() == Endpoint.CIRCLE) {
+            return 7;
+        }
+
+        if (edgeLeft.getEndpoint1() == Endpoint.CIRCLE && edgeLeft.getEndpoint2() == Endpoint.TAIL) {
+            return 8;
         }
 
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
@@ -3414,7 +3430,7 @@ public final class GraphUtils {
          * Constructs a new Counts.
          */
         public Counts() {
-            this.counts = new int[8][6];
+            this.counts = new int[10][8];
         }
 
         /**

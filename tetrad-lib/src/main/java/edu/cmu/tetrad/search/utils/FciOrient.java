@@ -187,8 +187,7 @@ public class FciOrient {
      * @param graph The graph to orient.
      * @return The oriented graph.
      */
-    public Graph orient(Graph graph) {
-        graph = new EdgeListGraph(graph);
+    public void orient(Graph graph) {
 
         if (verbose) {
             this.logger.log("Starting FCI orientation.");
@@ -206,8 +205,6 @@ public class FciOrient {
         if (this.verbose) {
             this.logger.log("Returning graph: " + graph);
         }
-
-        return graph;
     }
 
     /**
