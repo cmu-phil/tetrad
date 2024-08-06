@@ -184,6 +184,24 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>undirectedGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph nondirectedGraph(Graph graph) {
+        Graph graph2 = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : graph.getEdges()) {
+            if (!graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                graph2.addNondirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
+
+        return graph2;
+    }
+
+    /**
      * <p>completeGraph.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object

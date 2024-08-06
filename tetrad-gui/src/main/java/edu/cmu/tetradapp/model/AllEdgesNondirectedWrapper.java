@@ -34,40 +34,38 @@ import edu.cmu.tetradapp.session.DoNotAddOldModel;
  * @author Tyler Gibson
  * @version $Id: $Id
  */
-public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
+public class AllEdgesNondirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
     /**
      * <p>Constructor for AllEdgesUndirectedWrapper.</p>
      *
-     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param source     a {@link GraphSource} object
+     * @param parameters a {@link Parameters} object
      */
-    public AllEdgesUndirectedWrapper(GraphSource source, Parameters parameters) {
+    public AllEdgesNondirectedWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
-
 
     /**
      * <p>Constructor for AllEdgesUndirectedWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph a {@link Graph} object
      */
-    public AllEdgesUndirectedWrapper(Graph graph) {
-        super(GraphUtils.undirectedGraph(graph), "Make all Edges Undirected");
+    public AllEdgesNondirectedWrapper(Graph graph) {
+        super(GraphUtils.nondirectedGraph(graph), "Make All Edges Nondirected");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
 
-
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link edu.cmu.tetradapp.model.AllEdgesUndirectedWrapper} object
+     * @return a {@link AllEdgesNondirectedWrapper} object
      */
-    public static AllEdgesUndirectedWrapper serializableInstance() {
-        return new AllEdgesUndirectedWrapper(EdgeListGraph.serializableInstance());
+    public static AllEdgesNondirectedWrapper serializableInstance() {
+        return new AllEdgesNondirectedWrapper(EdgeListGraph.serializableInstance());
     }
 
 
