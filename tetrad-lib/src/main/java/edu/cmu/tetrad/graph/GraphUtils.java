@@ -2485,6 +2485,12 @@ public final class GraphUtils {
                 graph.addPartiallyOrientedEdge(nodeB, nodeA);
             } else if (edgeSpec.lastIndexOf("o-o") != -1) {
                 graph.addNondirectedEdge(nodeB, nodeA);
+            } else if (edgeSpec.lastIndexOf("o--") != -1) {
+                Edge _edge = new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.TAIL);
+                graph.addEdge(_edge);
+            } else if (edgeSpec.lastIndexOf("--o") != -1) {
+                Edge _edge = new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.CIRCLE);
+                graph.addEdge(_edge);
             }
         }
 
@@ -3195,8 +3201,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns an undirected path matrix based on the given graph and power.
-     * The undirected path matrix represents the existence of a path of a specific length between any two nodes in the graph.
+     * Returns an undirected path matrix based on the given graph and power. The undirected path matrix represents the
+     * existence of a path of a specific length between any two nodes in the graph.
      *
      * @param graph the graph from which to create the undirected path matrix
      * @param power the power used to calculate the undirected path matrix

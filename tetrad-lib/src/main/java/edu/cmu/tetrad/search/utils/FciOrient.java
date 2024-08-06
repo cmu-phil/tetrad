@@ -307,7 +307,7 @@ public class FciOrient {
     }
 
     /**
-     * Orients the graph according to rules in the graph (FCI step D).
+     * Orients the graph (in place) according to rules in the graph (FCI step D).
      * <p>
      * Zhang's rules R1-R10.
      *
@@ -324,7 +324,8 @@ public class FciOrient {
     }
 
     /**
-     * Iteratively applies rules to orient the Spirtes final orientation rules in the graph. These are arrow complete.
+     * Iteratively applies rules (in place) to orient the Spirtes final orientation rules in the graph. These are arrow
+     * complete.
      *
      * @param graph The graph containing the sprites.
      */
@@ -354,8 +355,8 @@ public class FciOrient {
     }
 
     /**
-     * Applies Zhang's final orientation algorithm to the given graph using the rules R1-R10. These are arrow and tail
-     * complete.
+     * Applies Zhang's final orientation algorithm (in place) to the given graph using the rules R1-R10. These are arrow
+     * and tail complete.
      *
      * @param graph the graph to apply the final orientation algorithm to
      */
@@ -487,8 +488,8 @@ public class FciOrient {
      */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
-            if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
-                && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+            if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW) && (graph.getEndpoint(b, a) == Endpoint.TAIL)
+                || (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
@@ -521,42 +522,42 @@ public class FciOrient {
                 break;
             }
 
-            List<Node> intoBArrows = graph.getNodesInTo(b, Endpoint.ARROW);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(b));
 
-            if (intoBArrows.size() < 2) continue;
-
-            ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
+            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 3);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> B = GraphUtils.asList(choice, intoBArrows);
+                List<Node> B = GraphUtils.asList(choice, adj);
 
                 Node a = B.get(0);
                 Node c = B.get(1);
+                Node d = B.get(2);
 
-                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
-                adj.retainAll(graph.getAdjacentNodes(c));
+                if (graph.isAdjacentTo(a, c)) {
+                    continue;
+                }
 
-                for (Node d : adj) {
-                    if (d == a) continue;
+                if (!graph.isAdjacentTo(a, d)) {
+                    continue;
+                }
 
-                    if (graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
-                        if (!graph.isAdjacentTo(a, c)) {
-                            if (graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-                                if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
-                                    return;
-                                }
+                if (!graph.isAdjacentTo(c, d)) {
+                    continue;
+                }
 
-                                graph.setEndpoint(d, b, Endpoint.ARROW);
-
-                                if (this.verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
-                                }
-
-                                this.changeFlag = true;
-                            }
-                        }
+                if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, c) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
+                    if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
+                        continue;
                     }
+
+                    graph.setEndpoint(d, b, Endpoint.ARROW);
+
+                    if (this.verbose) {
+                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                    }
+
+                    this.changeFlag = true;
                 }
             }
         }
@@ -869,63 +870,76 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR6R7(Graph graph) {
-        List<Node> nodes = graph.getNodes();
+        ruleR6(graph);
+        ruleR7(graph);
+    }
 
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
-
-            if (adjacents.size() < 2) {
+    private void ruleR6(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
+            {
+                Node b = edge.getNode2();
 
-            for (int[] choice = cg.next(); choice != null && !Thread.currentThread().isInterrupted(); choice = cg.next()) {
-                Node a = adjacents.get(choice[0]);
-                Node c = adjacents.get(choice[1]);
-
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
-                    continue;
-                }
-
-                if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) {
-                    continue;
-                }
-
-                // We know A--*Bo-*C.
-
-                if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
-
-                    // We know A---Bo-*C: R6 applies!
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                    if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg(
-                                "R6: Single tails (tail)", graph.getEdge(c, b)));
+                for (Node c : graph.getAdjacentNodes(b)) {
+                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                        continue;
                     }
 
-                    this.changeFlag = true;
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
+                    changeFlag = true;
+                }
+            }
+
+            {
+                Node b = edge.getNode1();
+
+                for (Node c : graph.getAdjacentNodes(b)) {
+                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE){
+                        continue;
+                    }
+
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
+                    changeFlag = true;
+
+                    if (verbose) {
+                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
+                    }
+                }
+            }
+        }
+    }
+
+    private void ruleR7(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+
+                if (graph.getEndpoint(a, b) != Endpoint.CIRCLE) {
+                    continue;
                 }
 
-                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE) {
+                for (Node c : graph.getAdjacentNodes(b)) {
+                    if (c == a) continue;
+
+                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                        continue;
+                    }
+
+                    if (graph.isAdjacentTo(a, c)) {
+                        continue;
+                    }
+
                     graph.setEndpoint(c, b, Endpoint.TAIL);
+                    changeFlag = true;
 
                     if (verbose) {
                         this.logger.log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
                     }
-
-                    // We know A--oBo-*C and A,C nonadjacent: R7 applies!
-                    this.changeFlag = true;
                 }
-
             }
         }
     }
@@ -992,39 +1006,31 @@ public class FciOrient {
             return false;
         }
 
-        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+        // Pick b from the common adjacents of a and c.
+        List<Node> common = new ArrayList<>(graph.getAdjacentNodes(a));
+        common.retainAll(graph.getAdjacentNodes(c));
 
-        for (Node b : intoCArrows) {
-            // We have B*-&gt;C.
-            if (!graph.isAdjacentTo(a, b)) {
-                continue;
-            }
-            if (!graph.isAdjacentTo(b, c)) {
-                continue;
-            }
+        for (Node b : common) {
+            boolean orient = false;
 
-            // We have A*-*B*->C.
-            if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
-                continue;
-            }
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
-                continue;
-            }
-            // We have A--*B-->C.
-
-            if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
-                continue;
-            }
-            // We have A-->B-->C or A--oB-->C: R8 applies!
-
-            graph.setEndpoint(c, a, Endpoint.TAIL);
-
-            if (verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
+            if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.ARROW
+                && graph.getEndpoint(c, b) == Endpoint.TAIL && graph.getEndpoint(b, c) == Endpoint.ARROW) {
+                orient = true;
+            } else if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.CIRCLE
+                       && graph.getEndpoint(c, b) == Endpoint.TAIL && graph.getEndpoint(b, c) == Endpoint.ARROW) {
+                orient = true;
             }
 
-            this.changeFlag = true;
-            return true;
+            if (orient) {
+                graph.setEndpoint(c, a, Endpoint.TAIL);
+
+                if (verbose) {
+                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
+                }
+
+                this.changeFlag = true;
+                return true;
+            }
         }
 
         return false;
