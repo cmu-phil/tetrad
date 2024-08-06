@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.util;
 
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
@@ -12,9 +13,9 @@ import java.util.*;
  * will find the shortest path to all nodes in the graph.)
  * <p>
  * Weights should all be positive. We report distances as total weights along the shortest path from the start node to
- * the destination node. We report unreachable nodes as being a distance of Integer.MAX_VALUE. We assume the graph is
- * undirected. An end nodes may be specified, in which case, once the end node is reached, we report all further nodes
- * as being at a distance of Integer.MAX_VALUE.
+ * the y node. We report unreachable nodes as being a distance of Integer.MAX_VALUE. We assume the graph is undirected.
+ * An end nodes may be specified, in which case, once the end node is reached, we report all further nodes as being at a
+ * distance of Integer.MAX_VALUE.
  *
  * @author josephramsey, chat.
  */
@@ -70,37 +71,37 @@ public class Dijkstra {
                 continue;
             }
 
-            for (DijkstraEdge dijkstraEdge : graph.getNeighbors(currentVertex, potentiallyDirected)) {
+            for (DijkstraEdge dijkstraEdge : graph.getNeighbors(currentVertex)) {
                 Node predecessor = getPredecessor(predecessors, currentVertex);
 
                 // Skip x o-o y itself.
-                if (dijkstraEdge.getDestination() == y && currentVertex == x) {
+                if (dijkstraEdge.gety() == y && currentVertex == x) {
                     continue;
                 }
 
-                if (dijkstraEdge.getDestination() == x && currentVertex == y) {
+                if (dijkstraEdge.gety() == x && currentVertex == y) {
                     continue;
                 }
 
                 // If uncovered, skip triangles.
                 if (uncovered) {
-                    if (dijkstraEdge.getDestination() == y && predecessor == x) {
+                    if (dijkstraEdge.gety() == y && predecessor == x) {
                         continue;
                     }
 
-                    if (dijkstraEdge.getDestination() == x && predecessor == y) {
+                    if (dijkstraEdge.gety() == x && predecessor == y) {
                         continue;
                     }
                 }
 
                 // If uncovered, skip covered triples.
                 if (uncovered) {
-                    if (adjacent(graph, dijkstraEdge.getDestination(), predecessor)) {
+                    if (adjacent(graph, dijkstraEdge.gety(), predecessor)) {
                         continue;
                     }
                 }
 
-                Node neighbor = dijkstraEdge.getDestination();
+                Node neighbor = dijkstraEdge.gety();
                 int newDist = distances.get(currentVertex) + dijkstraEdge.getWeight();
 
                 distances.putIfAbsent(neighbor, Integer.MAX_VALUE);
@@ -109,7 +110,7 @@ public class Dijkstra {
                     distances.put(neighbor, newDist);
                     predecessors.put(neighbor, currentVertex);
                     priorityQueue.add(new DijkstraNode(neighbor, newDist));
-                    if (dijkstraEdge.getDestination().equals(y)) { // y can be null.
+                    if (dijkstraEdge.gety().equals(y)) { // y can be null.
                         return distances;
                     }
                 }
@@ -124,10 +125,10 @@ public class Dijkstra {
     }
 
     private static boolean adjacent(Graph graph, Node currentVertex, Node predecessor) {
-        List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(currentVertex, false);
+        List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(currentVertex);
 
         for (DijkstraEdge dijkstraEdge : dijkstraEdges) {
-            if (dijkstraEdge.getDestination().equals(predecessor)) {
+            if (dijkstraEdge.gety().equals(predecessor)) {
                 return true;
             }
         }
@@ -155,24 +156,24 @@ public class Dijkstra {
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        Graph graph = new Graph(null);
+        edu.cmu.tetrad.graph.Graph graph = new edu.cmu.tetrad.graph.EdgeListGraph();
 
-        Map<String, Node> index = new HashMap<>();
+        Map<String, edu.cmu.tetrad.graph.Node> index = new HashMap<>();
 
         for (int i = 1; i <= 10; i++) {
             Node node = new GraphNode(i + "");
             index.put(i + "", node);
         }
 
-        graph.addEdge(index.get("1"), index.get("3"), 1);
+        graph.addNondirectedEdge(index.get("1"), index.get("3"));
 
 
-        graph.addEdge(index.get("1"), index.get("2"), 1);
-        graph.addEdge(index.get("2"), index.get("3"), 1);
+        graph.addNondirectedEdge(index.get("1"), index.get("2"));
+        graph.addNondirectedEdge(index.get("2"), index.get("3"));
 
-        graph.addEdge(index.get("1"), index.get("4"), 1);
-        graph.addEdge(index.get("4"), index.get("5"), 1);
-        graph.addEdge(index.get("5"), index.get("3"), 1);
+        graph.addNondirectedEdge(index.get("1"), index.get("4"));
+        graph.addNondirectedEdge(index.get("4"), index.get("5"));
+        graph.addNondirectedEdge(index.get("5"), index.get("3"));
 
         // Let's cover some edges.
 //        graph.addEdge(index.get("1"), index.get("3"), 1);
@@ -183,7 +184,9 @@ public class Dijkstra {
 
         boolean uncovered = true;
 
-        Map<Node, Integer> distances = Dijkstra.distances(graph, index.get("1"), index.get("3"),
+        Graph _graph = new Graph(graph, false);
+
+        Map<Node, Integer> distances = Dijkstra.distances(_graph, index.get("1"), index.get("3"),
                 predecessors, uncovered, false);
 
         for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
@@ -199,34 +202,23 @@ public class Dijkstra {
      * Represents a graph for Dijkstra's algorithm.
      */
     public static class Graph {
-        private final Map<Node, List<DijkstraEdge>> adjacencyList;
+        private final boolean potentiallyDirected;
         private edu.cmu.tetrad.graph.Graph _graph = null;
 
-        public Graph(edu.cmu.tetrad.graph.Graph graph) {
-            this.adjacencyList = new HashMap<>();
+        public Graph(edu.cmu.tetrad.graph.Graph graph, boolean potentiallyDirected) {
             this._graph = graph;
+            this.potentiallyDirected = potentiallyDirected;
         }
 
-        public void addEdge(Node source, Node destination, int weight) {
-            this.adjacencyList.putIfAbsent(source, new ArrayList<>());
-            this.adjacencyList.get(source).add(new DijkstraEdge(destination, weight));
-
-            // For undirected graph, add the reverse edge as well
-            this.adjacencyList.putIfAbsent(destination, new ArrayList<>());
-            this.adjacencyList.get(destination).add(new DijkstraEdge(source, weight));
-        }
-
-        public List<DijkstraEdge> getNeighbors(Node node, boolean potentiallyDirected) {
+        public List<DijkstraEdge> getNeighbors(Node node) {
             List<DijkstraEdge> filteredNeighbors = new ArrayList<>();
 
             if (potentiallyDirected) {
-                if (_graph == null) {
-                    throw new IllegalArgumentException("Graph is null.");
-                }
+                Set<edu.cmu.tetrad.graph.Edge> edges = _graph.getEdges(node);
 
                 // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
-                for (DijkstraEdge dijkstraEdge : this.adjacencyList.getOrDefault(node, new ArrayList<>())) {
-                    Node other = Edges.traverseSemiDirected(node, _graph.getEdge(node, dijkstraEdge.getDestination()));
+                for (Edge edge : edges) {
+                    Node other = Edges.traverseSemiDirected(node, edge);
 
                     if (other == null) {
                         continue;
@@ -235,15 +227,31 @@ public class Dijkstra {
                     filteredNeighbors.add(new DijkstraEdge(other, 1));
                 }
 
-                adjacencyList.put(node, filteredNeighbors);
                 return filteredNeighbors;
             } else {
-                return this.adjacencyList.getOrDefault(node, new ArrayList<>());
+                Set<edu.cmu.tetrad.graph.Edge> edges = _graph.getEdges(node);
+
+                // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
+                for (Edge edge : edges) {
+                    Node other = Edges.traverseNondirected(node, edge);
+
+                    if (other == null) {
+                        continue;
+                    }
+
+                    filteredNeighbors.add(new DijkstraEdge(other, 1));
+                }
+
+                return filteredNeighbors;
             }
         }
 
         public Set<Node> getNodes() {
-            return this.adjacencyList.keySet();
+//            if (potentiallyDirected) {
+            return new HashSet<>(_graph.getNodes());
+//            } else {
+//                return this.adjacencyList.keySet();
+//            }
         }
     }
 
@@ -252,24 +260,24 @@ public class Dijkstra {
      * field.
      */
     public static class DijkstraEdge {
-        private final Node destination;
+        private final Node y;
         private int weight;
 
-        public DijkstraEdge(Node destination, int weight) {
-            if (destination == null) {
-                throw new IllegalArgumentException("Destination cannot be null.");
+        public DijkstraEdge(Node y, int weight) {
+            if (y == null) {
+                throw new IllegalArgumentException("y cannot be null.");
             }
 
             if (weight <= 0) {
                 throw new IllegalArgumentException("Weight must be positive.");
             }
 
-            this.destination = destination;
+            this.y = y;
             this.weight = weight;
         }
 
-        public Node getDestination() {
-            return destination;
+        public Node gety() {
+            return y;
         }
 
         public int getWeight() {
@@ -281,7 +289,7 @@ public class Dijkstra {
         }
 
         public String toString() {
-            return "DijkstraEdge{" + "destination=" + destination + ", weight=" + weight + '}';
+            return "DijkstraEdge{" + "y=" + y + ", weight=" + weight + '}';
         }
     }
 

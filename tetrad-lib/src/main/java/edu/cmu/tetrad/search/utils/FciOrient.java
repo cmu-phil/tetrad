@@ -148,6 +148,7 @@ public class FciOrient {
      */
     private long testTimeout = -1;
     private Set<Triple> allowedColliders;
+    private Dijkstra.Graph fullDijkstraGraph = null;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified FciOrientDataExaminationStrategy.
@@ -445,6 +446,8 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void finalOrientation(Graph graph) {
+        fullDijkstraGraph = null;
+
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
@@ -938,27 +941,14 @@ public class FciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle
-     * path u = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u
-     * undirected.
+     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
+     * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
-
-        // Reimplementing this using a variant of Dijkstra's algorithm so that it doesn't hang on
-        // large graphs. jdramsey 2024-8-5
-        Dijkstra.Graph dijkstraGraph = new Dijkstra.Graph();
-
-        for (Edge edge : graph.getEdges()) {
-            if (Edges.isNondirectedEdge(edge)) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                int weight = 1;
-
-                dijkstraGraph.addEdge(x, y, weight);
-            }
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new Dijkstra.Graph(graph, true);
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -972,18 +962,12 @@ public class FciOrient {
                 // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
                 // don't be a triangle with x o-o w o-o y and that x o-o y won't be on the path;.
                 boolean uncovered = true;
+                boolean potentiallyDirected = false;
 
-                Dijkstra.distances(dijkstraGraph, x, y, predecessors, uncovered);
+                Dijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
                 List<Node> path = Dijkstra.getPath(predecessors, x, y);
 
                 if (path == null) {
-                    continue;
-                }
-
-                Node a = path.get(1);
-                Node b = path.get(path.size() - 2);
-
-                if (graph.isAdjacentTo(a, b)) {
                     continue;
                 }
 
@@ -1207,35 +1191,52 @@ public class FciOrient {
      * @return Whether R9 was succesfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
-        Edge e = graph.getEdge(a, c);
 
-        if (e == null) return false;
-        if (!e.equals(Edges.partiallyOrientedEdge(a, c))) return false;
+        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // need to make sure we have such an edge.
+        Edge edge = graph.getEdge(a, c);
 
-        List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
-
-        for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1);
-            if (graph.isAdjacentTo(b, c)) {
-                continue;
-            }
-            if (b == c) {
-                continue;
-            }
-            // We know u is as required: R9 applies!
-
-
-            graph.setEndpoint(c, a, Endpoint.TAIL);
-
-            if (verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
-            }
-
-            this.changeFlag = true;
-            return true;
+        if (edge == null) {
+            return false;
         }
 
-        return false;
+        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+            return false;
+        }
+
+        // Now that we know we have one, we need to determine whether there is a partially oriented (i.e.,
+        // semi-directed) path from a to c other than a o-> c itself and with at least one edge out of a.
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new Dijkstra.Graph(graph, true);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Map<Node, Node> predecessors = new HashMap<>();
+
+        // Specifying uncovered = true here guarantees that the entire path is uncovered and that
+        // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
+        // don't be r triangle with x o-o w o-o y and that x o-o y won't be on the path;.
+        boolean uncovered = true;
+        boolean potentiallyDirected = true;
+
+        Dijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+        List<Node> path = Dijkstra.getPath(predecessors, x, y);
+
+        if (path == null) {
+            return false;
+        }
+
+        // We know u is as required: R9 applies!
+        graph.setEndpoint(c, a, Endpoint.TAIL);
+
+        if (verbose) {
+            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+        }
+
+        this.changeFlag = true;
+        return true;
     }
 
     /**
@@ -1250,8 +1251,7 @@ public class FciOrient {
             this.logger.log("Starting BK Orientation.");
         }
 
-        for (Iterator<KnowledgeEdge> it
-             = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -1376,71 +1376,163 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR10(Node a, Node c, Graph graph) {
-        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
-        for (Node b : intoCArrows) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // need to make sure we have such an edge.
+        Edge edge = graph.getEdge(a, c);
 
-            if (b == a) {
-                continue;
-            }
+        if (edge == null) {
+            return;
+        }
 
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
-                continue;
-            }
-            // We know Ao->C and B-->C.
+        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+            return;
+        }
 
-            for (Node d : intoCArrows) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new Dijkstra.Graph(graph, true);
+        }
 
-                if (d == a || d == b) {
+        // Now we need two other directed edges into c--b and d, say.
+        List<Node> intoA = graph.getNodesInTo(c, Endpoint.ARROW);
+
+        for (Node b : intoA) {
+            for (Node d : intoA) {
+                if (b == a) continue;
+                if (d == a) continue;
+                if (b == d) continue;
+                if (!graph.getEdges(b, c).equals(Edges.directedEdge(b, c))) continue;
+                if (!graph.getEdges(d, c).equals(Edges.directedEdge(c, c))) continue;
+
+                boolean uncovered = true;
+                boolean potentiallyDirected = true;
+
+                Map<Node, Node> predecessors1 = new HashMap<>();
+                Dijkstra.distances(fullDijkstraGraph, a, b, predecessors1, uncovered, potentiallyDirected);
+                List<Node> path1 = Dijkstra.getPath(predecessors1, a, b);
+
+                Map<Node, Node> predecessors2 = new HashMap<>();
+                Dijkstra.distances(fullDijkstraGraph, a, b, predecessors2, uncovered, potentiallyDirected);
+                List<Node> path2 = Dijkstra.getPath(predecessors2, a, d);
+
+                if (path1 == null || path2 == null) {
                     continue;
                 }
 
-                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
-                    continue;
+                graph.setEndpoint(c, a, Endpoint.TAIL);
+
+                if (verbose) {
+                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
                 }
-                // We know Ao->C and B-->C&lt;--D.
 
-                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
-                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
-                for (List<Node> u1 : ucPdPsToB) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Node m = u1.get(1);
-                    for (List<Node> u2 : ucPdPsToD) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        Node n = u2.get(1);
-
-                        if (m.equals(n)) {
-                            continue;
-                        }
-                        if (graph.isAdjacentTo(m, n)) {
-                            continue;
-                        }
-                        // We know B,D,u1,u2 as required: R10 applies!
-
-                        graph.setEndpoint(c, a, Endpoint.TAIL);
-
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                        }
-
-                        this.changeFlag = true;
-                        return;
-                    }
-                }
+                this.changeFlag = true;
+                return;
             }
         }
+
+        return;
+
+
+//        // Now that we know we have one, we need to determine whether there is a partially oriented (i.e.,
+//        // semi-directed) path from a to c other than a o-> c itself and with at least one edge out of a.
+//        if (fullDijkstraGraph == null) {
+//            fullDijkstraGraph = new Dijkstra.Graph(graph, true);
+//        }
+//
+//        Node x = edge.getNode1();
+//        Node y = edge.getNode2();
+//
+//        Map<Node, Node> predecessors = new HashMap<>();
+//
+//        // Specifying uncovered = true here guarantees that the entire path is uncovered and that
+//        // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
+//        // don't be r triangle with x o-o w o-o y and that x o-o y won't be on the path;.
+//        boolean uncovered = true;
+//        boolean potentiallyDirected = true;
+//
+//        Dijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+//        List<Node> path = Dijkstra.getPath(predecessors, x, y);
+//
+//        if (path == null) {
+//            return false;
+//        }
+//
+//        // We know u is as required: R9 applies!
+//        graph.setEndpoint(c, a, Endpoint.TAIL);
+//
+//        if (verbose) {
+//            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+//        }
+//
+//        this.changeFlag = true;
+//        return true;
+
+
+//        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+//
+//        for (Node b : intoCArrows) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            if (b == a) {
+//                continue;
+//            }
+//
+//            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+//                continue;
+//            }
+//            // We know Ao->C and B-->C.
+//
+//            for (Node d : intoCArrows) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
+//
+//                if (d == a || d == b) {
+//                    continue;
+//                }
+//
+//                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
+//                    continue;
+//                }
+//                // We know Ao->C and B-->C&lt;--D.
+//
+//                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
+//                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
+//                for (List<Node> u1 : ucPdPsToB) {
+//                    if (Thread.currentThread().isInterrupted()) {
+//                        break;
+//                    }
+//
+//                    Node m = u1.get(1);
+//                    for (List<Node> u2 : ucPdPsToD) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            break;
+//                        }
+//
+//                        Node n = u2.get(1);
+//
+//                        if (m.equals(n)) {
+//                            continue;
+//                        }
+//                        if (graph.isAdjacentTo(m, n)) {
+//                            continue;
+//                        }
+//                        // We know B,D,u1,u2 as required: R10 applies!
+//
+//                        graph.setEndpoint(c, a, Endpoint.TAIL);
+//
+//                        if (verbose) {
+//                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+//                        }
+//
+//                        this.changeFlag = true;
+//                        return;
+//                    }
+//                }
+//            }
+//        }
 
     }
 
@@ -1470,11 +1562,11 @@ public class FciOrient {
         this.allowedColliders = allowedColliders;
     }
 
-    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
-        strategy.setInitialAllowedColliders(initialAllowedColliders);
-    }
-
     public Collection<Triple> getInitialAllowedColliders() {
         return strategy.getInitialAllowedColliders();
+    }
+
+    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
+        strategy.setInitialAllowedColliders(initialAllowedColliders);
     }
 }

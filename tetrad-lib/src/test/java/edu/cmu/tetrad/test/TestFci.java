@@ -58,7 +58,7 @@ public class TestFci {
     @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
-                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge()); // With Jiji's R6.
+                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge()); // With Zhang's R9.
     }
 
     /**

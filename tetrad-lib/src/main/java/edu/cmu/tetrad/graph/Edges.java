@@ -188,6 +188,25 @@ public final class Edges {
         return null;
     }
 
+    public static Node traverseNondirected(Node node, Edge edge) {
+        if (node == null) {
+            return null;
+        }
+
+        if (!Edges.isNondirectedEdge(edge)) {
+            return null;
+        }
+
+        // changed == to equals.
+        if (node.equals(edge.getNode1())) {
+            return edge.getNode2();
+        } else if (node.equals(edge.getNode2())) {
+            return edge.getNode1();
+        }
+
+        return null;
+    }
+
     /**
      * For A -&gt; B, given A, returns B; otherwise returns null.
      *
