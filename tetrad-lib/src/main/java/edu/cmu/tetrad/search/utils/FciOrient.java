@@ -81,7 +81,6 @@ public class FciOrient {
      * this set that require looking at the distribution; all other rules are graphical only.
      */
     private final R0R4Strategy strategy;
-
     /**
      * Represents a flag indicating whether a change has occurred.
      */
