@@ -23,12 +23,11 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.FciOrientDijkstra;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -74,7 +73,7 @@ public final class SvarFciOrient {
      */
     private boolean verbose;
     private Graph truePag;
-
+    private FciOrientDijkstra.Graph fullDijkstraGraph = null;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -666,37 +665,51 @@ public final class SvarFciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
-        List<Node> nodes = graph.getNodes();
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
+        }
 
-        for (Node a : nodes) {
-            List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isNondirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            for (Node b : adjacents) {
-                if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) continue;
-                // We know Ao-oB.
+                Map<Node, Node> predecessors = new HashMap<>();
 
-                List<List<Node>> ucCirclePaths = FciOrient.getUcCirclePaths(a, b, graph);
+                // Specifying uncovered = true here guarantees that the entire path is uncovered and that
+                // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
+                // don't be a triangle with x o-o w o-o y and that x o-o y won't be on the path;.
+                boolean uncovered = true;
+                boolean potentiallyDirected = false;
 
-                for (List<Node> u : ucCirclePaths) {
-                    if (u.size() < 3) continue;
+                FciOrientDijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+                List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
-                    Node c = u.get(1);
-                    Node d = u.get(u.size() - 2);
-
-                    if (graph.isAdjacentTo(a, d)) continue;
-                    if (graph.isAdjacentTo(b, c)) continue;
-                    // We know u is as required: R5 applies!
-
-                    String message = LogUtilsSearch.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b));
-                    TetradLogger.getInstance().log(message);
-
-                    graph.setEndpoint(a, b, Endpoint.TAIL);
-                    this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.TAIL);
-                    graph.setEndpoint(b, a, Endpoint.TAIL);
-                    this.orientSimilarPairs(graph, this.getKnowledge(), b, a, Endpoint.TAIL);
-                    orientTailPath(u, graph);
-                    this.changeFlag = true;
+                if (path == null) {
+                    continue;
                 }
+
+                // We know u is as required: R5 applies!
+                graph.setEndpoint(x, y, Endpoint.TAIL);
+                graph.setEndpoint(y, x, Endpoint.TAIL);
+
+                for (int i = 0; i < path.size() - 1; i++) {
+                    Node w = path.get(i);
+                    Node z = path.get(i + 1);
+
+                    graph.setEndpoint(w, z, Endpoint.TAIL);
+                    graph.setEndpoint(z, w, Endpoint.TAIL);
+
+                    this.orientSimilarPairs(graph, this.getKnowledge(), w, z, Endpoint.TAIL);
+                    this.orientSimilarPairs(graph, this.getKnowledge(), z, w, Endpoint.TAIL);
+                }
+
+                if (verbose) {
+                    String s = GraphUtils.pathString(graph, path, false);
+                    this.logger.log("R5: Orient circle path, " + edge + " " + s);
+                }
+
+                this.changeFlag = true;
             }
         }
     }
@@ -784,30 +797,6 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Orients every edge on a path as undirected (i.e. A---B).
-     * <p>
-     * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
-     * A PATH.
-     *
-     * @param path The path to orient as all tails.
-     */
-    private void orientTailPath(List<Node> path, Graph graph) {
-        for (int i = 0; i < path.size() - 1; i++) {
-            Node n1 = path.get(i);
-            Node n2 = path.get(i + 1);
-
-            graph.setEndpoint(n1, n2, Endpoint.TAIL);
-            this.orientSimilarPairs(graph, this.getKnowledge(), n1, n2, Endpoint.TAIL);
-            graph.setEndpoint(n2, n1, Endpoint.TAIL);
-            this.orientSimilarPairs(graph, this.getKnowledge(), n2, n1, Endpoint.TAIL);
-            this.changeFlag = true;
-
-            String message = LogUtilsSearch.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2));
-            TetradLogger.getInstance().log(message);
-        }
-    }
-
-    /**
      * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
@@ -847,86 +836,131 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Tries to apply Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Applies Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
      * <p>
-     * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p>
-     * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
+     * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
-     * @return Whether R9 was successfully applied.
+     * @param a     The node A.
+     * @param c     The node C.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return Whether R9 was succesfully applied.
      */
-    private boolean ruleR9(Node a, Node c, Graph graph) {
-        List<List<Node>> ucPdPsToC = FciOrient.getUcPdPaths(a, c, graph);
+    public boolean ruleR9(Node a, Node c, Graph graph) {
 
-        for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1);
-            if (graph.isAdjacentTo(b, c)) continue;
-            if (b == c) continue;
-            // We know u is as required: R9 applies!
+        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // need to make sure we have such an edge.
+        Edge edge = graph.getEdge(a, c);
 
-            String message = LogUtilsSearch.edgeOrientedMsg("R9", graph.getEdge(c, a));
-            TetradLogger.getInstance().log(message);
-
-            graph.setEndpoint(c, a, Endpoint.TAIL);
-            this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-            this.changeFlag = true;
-            return true;
+        if (edge == null) {
+            return false;
         }
 
-        return false;
+        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+            return false;
+        }
+
+        // Now that we know we have one, we need to determine whether there is a partially oriented (i.e.,
+        // semi-directed) path from a to c other than a o-> c itself and with at least one edge out of a.
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Map<Node, Node> predecessors = new HashMap<>();
+
+        // Specifying uncovered = true here guarantees that the entire path is uncovered and that
+        // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
+        // don't be r triangle with x o-o w o-o y and that x o-o y won't be on the path;.
+        boolean uncovered = true;
+        boolean potentiallyDirected = true;
+
+        FciOrientDijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+        List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
+
+        if (path == null) {
+            return false;
+        }
+
+        // We know u is as required: R9 applies!
+        graph.setEndpoint(c, a, Endpoint.TAIL);
+        this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
+
+        if (verbose) {
+            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+        }
+
+        this.changeFlag = true;
+        return true;
     }
 
+
     /**
-     * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Applies Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
      * <p>
-     * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p>
-     * R10: If Ao->C, B-->C&lt;--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
-     * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
+     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
+     * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param c     The node C.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    private void ruleR10(Node a, Node c, Graph graph) {
-        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+    public void ruleR10(Node a, Node c, Graph graph) {
 
-        for (Node b : intoCArrows) {
-            if (b == a) continue;
+        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // need to make sure we have such an edge.
+        Edge edge = graph.getEdge(a, c);
 
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) continue;
-            // We know Ao->C and B-->C.
-
-            for (Node d : intoCArrows) {
-                if (d == a || d == b) continue;
-
-                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
-                // We know Ao->C and B-->C<--D.
-
-                List<List<Node>> ucPdPsToB = FciOrient.getUcPdPaths(a, b, graph);
-                List<List<Node>> ucPdPsToD = FciOrient.getUcPdPaths(a, d, graph);
-                for (List<Node> u1 : ucPdPsToB) {
-                    Node m = u1.get(1);
-                    for (List<Node> u2 : ucPdPsToD) {
-                        Node n = u2.get(1);
-
-                        if (m.equals(n)) continue;
-                        if (graph.isAdjacentTo(m, n)) continue;
-                        // We know B,D,u1,u2 as required: R10 applies!
-
-                        String message = LogUtilsSearch.edgeOrientedMsg("R10", graph.getEdge(c, a));
-                        TetradLogger.getInstance().log(message);
-
-                        graph.setEndpoint(c, a, Endpoint.TAIL);
-                        this.changeFlag = true;
-                        this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-                        return;
-                    }
-                }
-            }
+        if (edge == null) {
+            return;
         }
 
+        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+            return;
+        }
+
+        if (fullDijkstraGraph == null) {
+            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
+        }
+
+        // Now we need two other directed edges into c--b and d, say.
+        List<Node> intoA = graph.getNodesInTo(c, Endpoint.ARROW);
+
+        for (Node b : intoA) {
+            for (Node d : intoA) {
+                if (b == a) continue;
+                if (d == a) continue;
+                if (b == d) continue;
+                if (!graph.getEdges(b, c).equals(Edges.directedEdge(b, c))) continue;
+                if (!graph.getEdges(d, c).equals(Edges.directedEdge(c, c))) continue;
+
+                boolean uncovered = true;
+                boolean potentiallyDirected = true;
+
+                Map<Node, Node> predecessors1 = new HashMap<>();
+                FciOrientDijkstra.distances(fullDijkstraGraph, a, b, predecessors1, uncovered, potentiallyDirected);
+                List<Node> path1 = FciOrientDijkstra.getPath(predecessors1, a, b);
+
+                Map<Node, Node> predecessors2 = new HashMap<>();
+                FciOrientDijkstra.distances(fullDijkstraGraph, a, b, predecessors2, uncovered, potentiallyDirected);
+                List<Node> path2 = FciOrientDijkstra.getPath(predecessors2, a, d);
+
+                if (path1 == null || path2 == null) {
+                    continue;
+                }
+
+                graph.setEndpoint(c, a, Endpoint.TAIL);
+                this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
+
+                if (verbose) {
+                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                }
+
+                this.changeFlag = true;
+                return;
+            }
+        }
     }
 
     /**
@@ -1031,24 +1065,6 @@ public final class SvarFciOrient {
         this.verbose = verbose;
     }
 
-    /**
-     * The true PAG if available. Can be null.
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    /**
-     * <p>Setter for the field <code>truePag</code>.</p>
-     *
-     * @param truePag a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
@@ -1120,10 +1136,7 @@ public final class SvarFciOrient {
      * @return a {@link java.lang.String} object
      */
     public String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
-            return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        return TsUtils.getNameNoLag(obj);
     }
 
 
