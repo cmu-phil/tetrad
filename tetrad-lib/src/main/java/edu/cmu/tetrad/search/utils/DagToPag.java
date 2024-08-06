@@ -145,7 +145,7 @@ public final class DagToPag {
 
         // Note that we will re-use FCIOrient but overrise the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
         // to find the d-separating set between A and B.
-        FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(new MsepTest(mag)) {
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(new MsepTest(mag)) {
             @Override
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
                 Graph mag = ((MsepTest) getTest()).getGraph();

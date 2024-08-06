@@ -21,9 +21,9 @@ import java.util.Set;
  * the data.
  *
  * @author jdramsey
- * @see R4Strategy
+ * @see R0R4Strategy
  */
-public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
+public class R0R4StrategyTestBased implements R0R4Strategy {
 
     /**
      * The test variable holds an instance of the IndependenceTest class. It is a final variable, meaning its value
@@ -38,7 +38,7 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      * This variable holds the knowledge used by the FciOrientDataExaminationStrategyTestBased class. It is an instance
      * of the Knowledge class.
      *
-     * @see FciOrientDataExaminationStrategyTestBased
+     * @see R0R4StrategyTestBased
      * @see Knowledge
      */
     private Knowledge knowledge = new Knowledge();
@@ -60,12 +60,33 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      */
     private boolean doDiscriminatingPathTailRule = true;
     /**
-     * The timeout for the test.
+     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
+     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
+     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
      */
-    private long testTimeout = -1;
-
-    private SepsetFinder sepsetFinder = new SepsetFinder();
     private Set<Triple> allowedColliders = null;
+    /**
+     * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
+     * HashSet containing Triples that represent the allowed colliders.
+     * <p>
+     * The value of this variable can be set using the setInitialAllowedColliders() method and retrieved using the
+     * getInitialAllowedColliders() method.
+     * <p>
+     * Example usage:
+     * <p>
+     * FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased();
+     * <p>
+     * // Create a HashSet of Triples representing the allowed colliders HashSet<Triple> allowedColliders = new
+     * HashSet<>(); Triple collider1 = new Triple(node1, node2, node3); Triple collider2 = new Triple(node4, node5,
+     * node6); allowedColliders.add(collider1); allowedColliders.add(collider2);
+     * <p>
+     * // Set the initial allowed colliders for the strategy strategy.setInitialAllowedColliders(allowedColliders);
+     * <p>
+     * // Retrieve the initial allowed colliders HashSet<Triple> initialAllowedColliders =
+     * strategy.getInitialAllowedColliders();
+     * <p>
+     * Note: This is an example and the actual values and implementation may vary depending on the context.
+     */
     private HashSet<Triple> initialAllowedColliders = null;
 
     /**
@@ -73,7 +94,7 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      *
      * @param test the IndependenceTest object used by the strategy
      */
-    public FciOrientDataExaminationStrategyTestBased(IndependenceTest test) {
+    public R0R4StrategyTestBased(IndependenceTest test) {
         this.test = test;
     }
 
@@ -88,10 +109,10 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
-                                                  boolean doDiscriminatingPathTailRule,
-                                                  boolean doDiscriminatingPathColliderRule,
-                                                  boolean verbose) {
+    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
+                                                    boolean doDiscriminatingPathTailRule,
+                                                    boolean doDiscriminatingPathColliderRule,
+                                                    boolean verbose) {
         if (test == null) {
             throw new IllegalArgumentException("Test is null.");
         }
@@ -101,9 +122,9 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
         }
 
         if (test instanceof MsepTest) {
-            return FciOrientDataExaminationStrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge, verbose);
+            return R0R4StrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
         } else {
-            FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(test);
+            R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
             strategy.setKnowledge(knowledge);
             strategy.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
             strategy.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
@@ -117,10 +138,9 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      *
      * @param dag       the graph representation
      * @param knowledge the Knowledge object used by the strategy
-     * @param verbose   boolean indicating whether to provide verbose output
      * @return a default configured FciOrientDataExaminationStrategy object
      */
-    public static R4Strategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
+    public static R0R4Strategy defaultConfiguration(Graph dag, Knowledge knowledge) {
         return defaultConfiguration(new MsepTest(dag), knowledge);
     }
 
@@ -132,8 +152,8 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
-        FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(test);
+    public static R0R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setDoDiscriminatingPathTailRule(true);
         strategy.setDoDiscriminatingPathColliderRule(true);
         strategy.setVerbose(false);
@@ -320,6 +340,11 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
         return knowledge;
     }
 
+    /**
+     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
+     *
+     * @param allowedColliders the Set of Triples representing allowed colliders
+     */
     @Override
     public void setAllowedColliders(Set<Triple> allowedColliders) {
         this.allowedColliders = allowedColliders;
@@ -390,18 +415,19 @@ public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
     }
 
     /**
-     * Returns the timeout for the test.
+     * Retrieves the initial set of allowed colliders.
      *
-     * @param testTimeout the timeout for the test
+     * @return The initial set of allowed colliders.
      */
-    public void setTestTimeout(long testTimeout) {
-        this.testTimeout = testTimeout;
-    }
-
     public Set<Triple> getInitialAllowedColliders() {
         return initialAllowedColliders;
     }
 
+    /**
+     * Sets the initial set of allowed colliders for the FciOrientDataExaminationStrategy.
+     *
+     * @param initialAllowedColliders the HashSet containing the initial allowed colliders
+     */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         this.initialAllowedColliders = initialAllowedColliders;
     }

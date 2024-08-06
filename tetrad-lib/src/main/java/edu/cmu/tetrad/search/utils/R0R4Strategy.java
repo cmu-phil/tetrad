@@ -13,16 +13,19 @@ import java.util.Set;
 
 /**
  * The FCI orientation rules are almost entirely taken up with an examination of the FCI graph, but there are two rules
- * that require looking at the data. The first is the R0 rule, which orients unshielded colliders in the graph. The
- * second is the R4 rule, which orients certain colliders or tails based on an examination of discriminating paths. For
- * the discriminating path rule, we need to know the sepset for two nodes, e and c, which can only be determined by
- * looking at the data.
+ * that require looking at the distribution. The first is the R0 rule, which orients unshielded colliders in the graph.
+ * The second is the R4 rule, which orients certain colliders or tails based on an examination of discriminating paths.
+ * For the discriminating path rule, we need to know the sepset for two nodes, e and c, which can only be determined by
+ * looking at the distribution.
+ * <p>
+ * Note that for searches from Oracle, the distribution is not available, but these rules can be applied using knowledge
+ * of the true DAG (with latents).
  * <p>
  * Since this can be done in various ways, we separate out a Strategy here for this purpose.
  *
  * @author jdramsey
  */
-public interface R4Strategy {
+public interface R0R4Strategy {
 
     /**
      * Determines if a given triple is an unshielded collider based on an examination of the data.
@@ -58,18 +61,18 @@ public interface R4Strategy {
      * The orientation that is being discriminated here is whether there is a collider at B or a noncollider at B. If a
      * collider, then A *-&gt; B &lt;-* C is oriented; if a tail, then B --&gt; C is oriented.
      * <p>
-     * So don't screw this up! jdramsey 2024-7-25
+     * So hey, don't screw this up! jdramsey 2024-7-25
      * <p>
      * This is Zhang's rule R4, discriminating paths.
      *
      * @param discriminatingPath the discriminating path construct
      * @param graph              the graph to be oriented.
-     * @return true if an orientation is done, false otherwise.
+     * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was determined.
      */
     Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph);
 
     /**
-     * Triple-checks a discriminating path construct to make sure it satisfies all of the requirements.
+     * Checks a discriminating path construct to make sure it satisfies all of the requirements.
      * <p>
      * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
      * <p>
@@ -101,43 +104,35 @@ public interface R4Strategy {
      */
     default boolean doubleCheckDiscriminatingPathConstruct(Node e, Node a, Node b, Node c, List<Node> path, Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         if (graph.getEndpoint(a, c) != Endpoint.ARROW) {
-//            throw new IllegalArgumentException("This is not a dicriminatin path construct.");
             return false;
         }
 
         if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         if (graph.getEndpoint(c, a) != Endpoint.TAIL) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         if (!path.contains(a)) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         if (graph.isAdjacentTo(e, c)) {
-//            throw new IllegalArgumentException("This is not a discriminating path construct.");
             return false;
         }
 
         for (Node n : path) {
             if (!graph.isParentOf(n, c)) {
-//                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
                 return false;
             }
         }
@@ -159,7 +154,12 @@ public interface R4Strategy {
      */
     Knowledge getknowledge();
 
-    void setAllowedColliders(Set<Triple> allowedCollders);
+    /**
+     * Sets the allowed colliders for the current strategy.
+     *
+     * @param allowedColliders a Set of Triple objects representing the allowed colliders
+     */
+    void setAllowedColliders(Set<Triple> allowedColliders);
 
     default Set<Triple> getInitialAllowedColliders() {
         return null;

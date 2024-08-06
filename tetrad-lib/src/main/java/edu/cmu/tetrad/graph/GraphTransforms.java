@@ -193,7 +193,7 @@ public class GraphTransforms {
                 }
 
                 FciOrient fciOrient = new FciOrient(
-                        FciOrientDataExaminationStrategyTestBased.defaultConfiguration(pag, new Knowledge(), false));
+                        R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
                 fciOrient.finalOrientation(pag);
             }
         }

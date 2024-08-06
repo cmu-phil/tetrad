@@ -248,9 +248,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R4Strategy strategy = FciOrientDataExaminationStrategyTestBased.specialConfiguration(
+        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(
                 test, knowledge, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, false);
-        ((FciOrientDataExaminationStrategyTestBased) strategy).setTestTimeout(testTimeout);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxPathLength(maxDdpPathLength);

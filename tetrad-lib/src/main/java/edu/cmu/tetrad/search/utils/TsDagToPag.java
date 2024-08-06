@@ -205,7 +205,7 @@ public final class TsDagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(
-                FciOrientDataExaminationStrategyTestBased.defaultConfiguration(dag, new Knowledge(), false));
+                R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.finalOrientation(graph);
 
         if (this.verbose) {

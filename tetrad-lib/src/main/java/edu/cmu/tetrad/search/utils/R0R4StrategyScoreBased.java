@@ -17,9 +17,9 @@ import java.util.Set;
  * determined by looking at the data.
  *
  * @author jdramsey
- * @see R4Strategy
+ * @see R0R4Strategy
  */
-public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
+public class R0R4StrategyScoreBased implements R0R4Strategy {
 
     /**
      * The scorer used for scoring the nodes in a Directed Acyclic Graph (DAG). It is of type TeyssierScorer.
@@ -51,7 +51,7 @@ public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
      *
      * @param scorer the TeyssierScorer object
      */
-    private FciOrientDataExaminationStrategyScoreBased(TeyssierScorer scorer) {
+    private R0R4StrategyScoreBased(TeyssierScorer scorer) {
         this.scorer = scorer;
     }
 
@@ -68,10 +68,10 @@ public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
      * @param depth                            the depth
      * @return an instance of FciOrientDataExaminationStrategy with the specified configuration
      */
-    public static R4Strategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
-                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                  int maxPathLength, boolean verbose, int depth) {
-        FciOrientDataExaminationStrategyScoreBased strategy = new FciOrientDataExaminationStrategyScoreBased(scorer);
+    public static R0R4Strategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
+                                                    boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                    int maxPathLength, boolean verbose, int depth) {
+        R0R4StrategyScoreBased strategy = new R0R4StrategyScoreBased(scorer);
         strategy.knowledge = knowledge;
         strategy.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
         strategy.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
@@ -88,8 +88,8 @@ public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
      * @param verbose   a boolean indicating if verbose mode is enabled
      * @return an instance of FciOrientDataExaminationStrategy with the default configuration
      */
-    public static R4Strategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
-        return FciOrientDataExaminationStrategyScoreBased.specialConfiguration(scorer, knowledge, true,
+    public static R0R4Strategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
+        return R0R4StrategyScoreBased.specialConfiguration(scorer, knowledge, true,
                 true, true, -1, verbose, 5);
     }
 
@@ -170,7 +170,7 @@ public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
     }
 
     @Override
-    public void setAllowedColliders(Set<Triple> allowedCollders) {
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
 
     }
 

@@ -77,10 +77,10 @@ public class FciOrient {
     final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * Represents a strategy for examing the data or true graph for R4. Note that R4 is the only rule in this set that
-     * needs to look at the distribution; all other rules are graphical rules only.
+     * Represents a strategy for examing the data or true graph for R0 and R4. Note that R0 and R4 are the only rulew in
+     * this set that require looking at the distribution; all other rules are graphical only.
      */
-    private final R4Strategy strategy;
+    private final R0R4Strategy strategy;
 
     /**
      * Represents a flag indicating whether a change has occurred.
@@ -135,9 +135,9 @@ public class FciOrient {
      *
      * @param strategy The FciOrientDataExaminationStrategy to use for the examination.
      * @throws NullPointerException If the strategy parameter is null.
-     * @see R4Strategy
+     * @see R0R4Strategy
      */
-    public FciOrient(R4Strategy strategy) {
+    public FciOrient(R0R4Strategy strategy) {
         if (strategy == null) {
             throw new NullPointerException();
         }
