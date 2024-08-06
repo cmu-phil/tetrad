@@ -466,12 +466,18 @@ public class FciOrient {
     }
 
     /**
-     * <p>ruleR1.</p>
+     * Changes the orientation of an edge in the graph according to Rule R1.
+     * If node 'a' is not adjacent to node 'c', then:
+     *  - If the endpoint of edge 'a' -> 'b' is an arrow and the endpoint of edge 'c' -> 'b' is a circle, and
+     *  - Arrowhead is allowed between node 'b' and 'c' in the given graph,
+     *  then changes the endpoint of edge 'c' -> 'b' to tail and the endpoint of edge 'b' -> 'c' to arrow.
+     *  If 'verbose' flag is true, logs a message about the change.
+     *  Sets 'changeFlag' to true.
      *
-     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param a     the first node in the edge
+     * @param b     the second node in the edge
+     * @param c     the third node in the edge
+     * @param graph the graph containing the edges and nodes
      */
     public void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
@@ -495,12 +501,17 @@ public class FciOrient {
     }
 
     /**
-     * <p>ruleR2.</p>
+     * Sets the endpoint of node `a` and node `c` in the given graph to `Endpoint.ARROW` if the following conditions hold:
+     * 1. Node `a` is adjacent to node `c` in the graph.
+     * 2. The endpoint of the edge between node `a` and node `c` is `Endpoint.CIRCLE`.
+     * 3. The endpoints of the edges between node `a` and node `b`, and between node `b` and node `c` are both `Endpoint.ARROW`.
+     * 4. Either the endpoint of the edge between node `b` and node `a` is `Endpoint.TAIL` or the endpoint of the edge between node `c` and node `b` is `Endpoint.TAIL`.
+     * 5. The arrowhead is allowed between node `a` and node `c` in the given graph and knowledge.
      *
-     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param a     the first node
+     * @param b     the intermediate node
+     * @param c     the last node
+     * @param graph the graph in which the nodes exist
      */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
@@ -927,8 +938,6 @@ public class FciOrient {
                 }
 
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE) {
-//                    if (graph.isAdjacentTo(a, c)) continue;
-
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
                     if (verbose) {
