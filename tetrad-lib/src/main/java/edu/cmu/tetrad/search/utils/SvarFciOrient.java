@@ -24,10 +24,11 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.FciOrientDijkstra;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.FciOrientDijkstra;
+import edu.cmu.tetrad.util.R5R9Dijkstra;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -73,7 +74,7 @@ public final class SvarFciOrient {
      */
     private boolean verbose;
     private Graph truePag;
-    private FciOrientDijkstra.Graph fullDijkstraGraph = null;
+    private R5R9Dijkstra.Graph fullDijkstraGraph = null;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -666,7 +667,7 @@ public final class SvarFciOrient {
      */
     public void ruleR5(Graph graph) {
         if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
+            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -674,15 +675,7 @@ public final class SvarFciOrient {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                Map<Node, Node> predecessors = new HashMap<>();
-
-                // Specifying uncovered = true here guarantees that the entire path is uncovered and that
-                // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
-                // don't be a triangle with x o-o w o-o y and that x o-o y won't be on the path;.
-                boolean uncovered = true;
-                boolean potentiallyDirected = false;
-
-                FciOrientDijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
                 if (path == null) {
@@ -797,11 +790,11 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao-&gt;C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
+     * R8: If Ao-&gt;C and A--&gt;B--&gt;C or A--oB--&gt;C, then A--&gt;C.
      *
      * @param a The node A.
      * @param c The node C.
@@ -836,7 +829,7 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Applies Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Applies Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao-&gt;C.
      * <p>
      * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
      *
@@ -862,21 +855,13 @@ public final class SvarFciOrient {
         // Now that we know we have one, we need to determine whether there is a partially oriented (i.e.,
         // semi-directed) path from a to c other than a o-> c itself and with at least one edge out of a.
         if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
+            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
         }
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
-        Map<Node, Node> predecessors = new HashMap<>();
-
-        // Specifying uncovered = true here guarantees that the entire path is uncovered and that
-        // w o-o x o-o y and x o-o y o-o z are both uncovered. It also guarantees that the path
-        // don't be r triangle with x o-o w o-o y and that x o-o y won't be on the path;.
-        boolean uncovered = true;
-        boolean potentiallyDirected = true;
-
-        FciOrientDijkstra.distances(fullDijkstraGraph, x, y, predecessors, uncovered, potentiallyDirected);
+        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
         if (path == null) {
@@ -897,7 +882,7 @@ public final class SvarFciOrient {
 
 
     /**
-     * Applies Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Applies Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao-&gt;C.
      * <p>
      * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
      * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
@@ -908,57 +893,57 @@ public final class SvarFciOrient {
      */
     public void ruleR10(Node a, Node c, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
-        // need to make sure we have such an edge.
-        Edge edge = graph.getEdge(a, c);
+        List<Node> adj1 = graph.getAdjacentNodes(a);
+        List<Node> filtered1 = new ArrayList<>();
 
-        if (edge == null) {
-            return;
+        for (Node n : adj1) {
+            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
+            if (other != null && other.equals(n)) {
+                filtered1.add(n);
+            }
         }
 
-        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
-            return;
-        }
+        for (Node mu : filtered1) {
+            for (Node omega : filtered1) {
+                if (mu.equals(omega)) continue;
+                if (graph.isAdjacentTo(mu, omega)) continue;
 
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new FciOrientDijkstra.Graph(graph, true);
-        }
+                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
+                List<Node> filtered2 = new ArrayList<>();
 
-        // Now we need two other directed edges into c--b and d, say.
-        List<Node> intoA = graph.getNodesInTo(c, Endpoint.ARROW);
+                for (Node n : adj2) {
+                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
+                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
+                        if (other != null && other.equals(n)) {
+                            filtered2.add(n);
+                        }
+                    }
 
-        for (Node b : intoA) {
-            for (Node d : intoA) {
-                if (b == a) continue;
-                if (d == a) continue;
-                if (b == d) continue;
-                if (!graph.getEdges(b, c).equals(Edges.directedEdge(b, c))) continue;
-                if (!graph.getEdges(d, c).equals(Edges.directedEdge(c, c))) continue;
+                    for (Node beta : filtered2) {
+                        for (Node theta : filtered2) {
+                            if (beta.equals(theta)) continue;
+                            if (graph.isAdjacentTo(mu, omega)) continue;
 
-                boolean uncovered = true;
-                boolean potentiallyDirected = true;
+                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
+                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
+                            // p2 starting with <a, omega> and ending with theta.
 
-                Map<Node, Node> predecessors1 = new HashMap<>();
-                FciOrientDijkstra.distances(fullDijkstraGraph, a, b, predecessors1, uncovered, potentiallyDirected);
-                List<Node> path1 = FciOrientDijkstra.getPath(predecessors1, a, b);
+                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
 
-                Map<Node, Node> predecessors2 = new HashMap<>();
-                FciOrientDijkstra.distances(fullDijkstraGraph, a, b, predecessors2, uncovered, potentiallyDirected);
-                List<Node> path2 = FciOrientDijkstra.getPath(predecessors2, a, d);
+                                // We know we have the paths p1 and p2 as required: R10 applies!
+                                graph.setEndpoint(c, a, Endpoint.TAIL);
+                                this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
 
-                if (path1 == null || path2 == null) {
-                    continue;
+                                if (verbose) {
+                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                                }
+
+                                this.changeFlag = true;
+                                return;
+                            }
+                        }
+                    }
                 }
-
-                graph.setEndpoint(c, a, Endpoint.TAIL);
-                this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-
-                if (verbose) {
-                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                }
-
-                this.changeFlag = true;
-                return;
             }
         }
     }

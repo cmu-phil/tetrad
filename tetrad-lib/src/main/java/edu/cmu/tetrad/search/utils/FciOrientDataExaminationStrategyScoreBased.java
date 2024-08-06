@@ -17,9 +17,9 @@ import java.util.Set;
  * determined by looking at the data.
  *
  * @author jdramsey
- * @see FciOrientDataExaminationStrategy
+ * @see R4Strategy
  */
-public class FciOrientDataExaminationStrategyScoreBased implements FciOrientDataExaminationStrategy {
+public class FciOrientDataExaminationStrategyScoreBased implements R4Strategy {
 
     /**
      * The scorer used for scoring the nodes in a Directed Acyclic Graph (DAG). It is of type TeyssierScorer.
@@ -68,9 +68,9 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
      * @param depth                            the depth
      * @return an instance of FciOrientDataExaminationStrategy with the specified configuration
      */
-    public static FciOrientDataExaminationStrategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
-                                                                        boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                                        int maxPathLength, boolean verbose, int depth) {
+    public static R4Strategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
+                                                  boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
+                                                  int maxPathLength, boolean verbose, int depth) {
         FciOrientDataExaminationStrategyScoreBased strategy = new FciOrientDataExaminationStrategyScoreBased(scorer);
         strategy.knowledge = knowledge;
         strategy.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
@@ -88,7 +88,7 @@ public class FciOrientDataExaminationStrategyScoreBased implements FciOrientData
      * @param verbose   a boolean indicating if verbose mode is enabled
      * @return an instance of FciOrientDataExaminationStrategy with the default configuration
      */
-    public static FciOrientDataExaminationStrategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
+    public static R4Strategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
         return FciOrientDataExaminationStrategyScoreBased.specialConfiguration(scorer, knowledge, true,
                 true, true, -1, verbose, 5);
     }

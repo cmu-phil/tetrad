@@ -22,7 +22,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public interface FciOrientDataExaminationStrategy {
+public interface R4Strategy {
 
     /**
      * Determines if a given triple is an unshielded collider based on an examination of the data.

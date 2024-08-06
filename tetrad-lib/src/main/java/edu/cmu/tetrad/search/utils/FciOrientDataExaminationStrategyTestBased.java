@@ -21,9 +21,9 @@ import java.util.Set;
  * the data.
  *
  * @author jdramsey
- * @see FciOrientDataExaminationStrategy
+ * @see R4Strategy
  */
-public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataExaminationStrategy {
+public class FciOrientDataExaminationStrategyTestBased implements R4Strategy {
 
     /**
      * The test variable holds an instance of the IndependenceTest class. It is a final variable, meaning its value
@@ -88,10 +88,10 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static FciOrientDataExaminationStrategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
-                                                                        boolean doDiscriminatingPathTailRule,
-                                                                        boolean doDiscriminatingPathColliderRule,
-                                                                        boolean verbose) {
+    public static R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
+                                                  boolean doDiscriminatingPathTailRule,
+                                                  boolean doDiscriminatingPathColliderRule,
+                                                  boolean verbose) {
         if (test == null) {
             throw new IllegalArgumentException("Test is null.");
         }
@@ -120,7 +120,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * @param verbose   boolean indicating whether to provide verbose output
      * @return a default configured FciOrientDataExaminationStrategy object
      */
-    public static FciOrientDataExaminationStrategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
+    public static R4Strategy defaultConfiguration(Graph dag, Knowledge knowledge, boolean verbose) {
         return defaultConfiguration(new MsepTest(dag), knowledge);
     }
 
@@ -132,7 +132,7 @@ public class FciOrientDataExaminationStrategyTestBased implements FciOrientDataE
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static FciOrientDataExaminationStrategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
+    public static R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
         FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased(test);
         strategy.setDoDiscriminatingPathTailRule(true);
         strategy.setDoDiscriminatingPathColliderRule(true);
