@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.util;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
@@ -9,8 +9,9 @@ import java.util.*;
 
 /**
  * A simple implementation of Dijkstra's algorithm for finding the shortest path in a graph. We are modifying the
- * algorithm to stop when an end node is reached. (The end node may be left unspecified, in which case the algorithm
- * will find the shortest path to all nodes in the graph.)
+ * algorithm to find paths for rules R5, R9, and R10 in FciOrient. We are also modifying the algorithm to stop when an
+ * end node is reached. (The end node may be left unspecified, in which case the algorithm will find the shortest path
+ * to all nodes in the graph.)
  * <p>
  * Weights should all be positive. We report distances as total weights along the shortest path from the start node to
  * the y node. We report unreachable nodes as being a distance of Integer.MAX_VALUE. We assume the graph is undirected.
@@ -19,7 +20,7 @@ import java.util.*;
  *
  * @author josephramsey, chat.
  */
-public class Dijkstra {
+public class FciOrientDijkstra {
 
     /**
      * Finds shortest distances from a start node to all other nodes in a graph. Unreachable nodes are reported as being
@@ -158,7 +159,7 @@ public class Dijkstra {
     public static void main(String[] args) {
         edu.cmu.tetrad.graph.Graph graph = new edu.cmu.tetrad.graph.EdgeListGraph();
 
-        Map<String, edu.cmu.tetrad.graph.Node> index = new HashMap<>();
+        Map<String, Node> index = new HashMap<>();
 
         for (int i = 1; i <= 10; i++) {
             Node node = new GraphNode(i + "");
@@ -186,7 +187,7 @@ public class Dijkstra {
 
         Graph _graph = new Graph(graph, false);
 
-        Map<Node, Integer> distances = Dijkstra.distances(_graph, index.get("1"), index.get("3"),
+        Map<Node, Integer> distances = FciOrientDijkstra.distances(_graph, index.get("1"), index.get("3"),
                 predecessors, uncovered, false);
 
         for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
@@ -214,7 +215,7 @@ public class Dijkstra {
             List<DijkstraEdge> filteredNeighbors = new ArrayList<>();
 
             if (potentiallyDirected) {
-                Set<edu.cmu.tetrad.graph.Edge> edges = _graph.getEdges(node);
+                Set<Edge> edges = _graph.getEdges(node);
 
                 // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
                 for (Edge edge : edges) {
@@ -229,7 +230,7 @@ public class Dijkstra {
 
                 return filteredNeighbors;
             } else {
-                Set<edu.cmu.tetrad.graph.Edge> edges = _graph.getEdges(node);
+                Set<Edge> edges = _graph.getEdges(node);
 
                 // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
                 for (Edge edge : edges) {
@@ -247,11 +248,7 @@ public class Dijkstra {
         }
 
         public Set<Node> getNodes() {
-//            if (potentiallyDirected) {
             return new HashSet<>(_graph.getNodes());
-//            } else {
-//                return this.adjacencyList.keySet();
-//            }
         }
     }
 
