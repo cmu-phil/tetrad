@@ -145,24 +145,9 @@ public class TestFci {
      */
     @Test
     public void testSearch9() {
-
-        // TODO after reimplementing some rules to Jiji's spects I now get:
-
-        //Graph Edges:
-        //1. A <-> B
-        //2. B --> E
-        //3. D --> A
-        //4. E <-> D
-        //5. F o-> B
-        //6. F o-o C
-        //7. H o-- C
-        //8. H --> D
-
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                     "H-->D,D-->A,T2-->D,T2-->E",
-                "A<->B,B-->E,D-->A,E<->D,Fo->B,Fo-oC,Ho--C,H-->D", new Knowledge()); // Left out E<->A.
-//                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
-//                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
+                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
     }
 
     /**

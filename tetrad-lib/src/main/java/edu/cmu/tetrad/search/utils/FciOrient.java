@@ -128,6 +128,10 @@ public class FciOrient {
      * The graph used for R5 and R9 for the modified Dijkstra shortest path algorithm.
      */
     private R5R9Dijkstra.Graph fullDijkstraGraph = null;
+    /**
+     * Indicates whether the discriminating path step should be run in parallel.
+     */
+    private boolean parallel = true;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -185,7 +189,6 @@ public class FciOrient {
      * rules.
      *
      * @param graph The graph to orient.
-     * @return The oriented graph.
      */
     public void orient(Graph graph) {
 
@@ -388,7 +391,8 @@ public class FciOrient {
 
             while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
                 this.changeFlag = false;
-                ruleR6R7(graph);
+                ruleR6(graph);
+                ruleR7(graph);
             }
 
             // Finally, we apply R8-R10 as many times as possible.
@@ -428,7 +432,7 @@ public class FciOrient {
                 Node A = adj.get(combination[0]);
                 Node C = adj.get(combination[1]);
 
-                // choice gen doesn't do diff orders, so must switch A & C around.
+                // choice generator doesn't do different orders, so we must switch A & C around
                 ruleR1(A, B, C, graph);
                 ruleR1(C, B, A, graph);
                 ruleR2(A, B, C, graph);
@@ -543,7 +547,8 @@ public class FciOrient {
                     continue;
                 }
 
-                if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, c) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
+                if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE
+                    && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
                     if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
                         continue;
                     }
@@ -561,17 +566,7 @@ public class FciOrient {
     }
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * E....A --> C
-     * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating paths.
+     * Zhang's rule R4 (discriminating paths).
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -581,35 +576,9 @@ public class FciOrient {
 
         List<Pair<DiscriminatingPath, Boolean>> allResults = new ArrayList<>();
 
-        if (testTimeout == -1) {
-            while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
-                if (tasks.isEmpty()) break;
+        int testTimeout = this.testTimeout == -1 ? Integer.MAX_VALUE : (int) this.testTimeout;
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
-                    try {
-                        return task.call();
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }).toList();
-
-                allResults.addAll(results);
-
-                boolean existsTrue = false;
-
-                for (Pair<DiscriminatingPath, Boolean> result : results) {
-                    if (result != null && result.getRight()) {
-                        existsTrue = true;
-                        break;
-                    }
-                }
-
-                if (!existsTrue) {
-                    break;
-                }
-            }
-        } else if (testTimeout > 0) {
+        if (parallel) {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 
@@ -632,8 +601,36 @@ public class FciOrient {
                     break;
                 }
             }
+
         } else {
-            throw new IllegalArgumentException("testTimeout must be greater than 0 or -1");
+            while (true) {
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
+                if (tasks.isEmpty()) break;
+
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
+                    try {
+                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }).toList();
+
+                allResults.addAll(results);
+
+                boolean existsTrue = false;
+
+                for (Pair<DiscriminatingPath, Boolean> result : results) {
+                    if (result != null && result.getRight()) {
+                        existsTrue = true;
+                        break;
+                    }
+                }
+
+                if (!existsTrue) {
+                    break;
+                }
+            }
+
         }
 
         for (Pair<DiscriminatingPath, Boolean> result : allResults) {
@@ -861,80 +858,89 @@ public class FciOrient {
     }
 
     /**
-     * Implements Zhang's rules R6 and R7, applies them over the graph once. Orient single tails. R6: If A---Bo-*C then
-     * A---B--*C. R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     * R6: If A---Bo-*C then A---B--*C.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR6R7(Graph graph) {
-        ruleR6(graph);
-        ruleR7(graph);
-    }
-
-    private void ruleR6(Graph graph) {
+    public void ruleR6(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
             {
+                Node a = edge.getNode1();
                 Node b = edge.getNode2();
 
                 for (Node c : graph.getAdjacentNodes(b)) {
-                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                        continue;
-                    }
+                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                        graph.setEndpoint(c, b, Endpoint.TAIL);
+                        changeFlag = true;
 
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-                    changeFlag = true;
+                        if (verbose) {
+                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
+                        }
+                    }
                 }
             }
 
             {
+                Node a = edge.getNode2();
                 Node b = edge.getNode1();
 
                 for (Node c : graph.getAdjacentNodes(b)) {
-                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE){
-                        continue;
-                    }
+                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                        graph.setEndpoint(c, b, Endpoint.TAIL);
+                        changeFlag = true;
 
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-                    changeFlag = true;
-
-                    if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
+                        if (verbose) {
+                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
+                        }
                     }
                 }
             }
         }
     }
 
-    private void ruleR7(Graph graph) {
+    /**
+     * R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public void ruleR7(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             {
                 Node a = edge.getNode1();
                 Node b = edge.getNode2();
 
-                if (graph.getEndpoint(a, b) != Endpoint.CIRCLE) {
-                    continue;
+                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
+                    for (Node c : graph.getAdjacentNodes(b)) {
+                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(c, b, Endpoint.TAIL);
+                            changeFlag = true;
+
+                            if (verbose) {
+                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
+                            }
+                        }
+                    }
                 }
+            }
 
-                for (Node c : graph.getAdjacentNodes(b)) {
-                    if (c == a) continue;
+            {
+                Node a = edge.getNode2();
+                Node b = edge.getNode1();
 
-                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                        continue;
-                    }
+                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
+                    for (Node c : graph.getAdjacentNodes(b)) {
+                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(c, b, Endpoint.TAIL);
+                            changeFlag = true;
 
-                    if (graph.isAdjacentTo(a, c)) {
-                        continue;
-                    }
-
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-                    changeFlag = true;
-
-                    if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
+                            if (verbose) {
+                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
+                            }
+                        }
                     }
                 }
             }
@@ -1344,5 +1350,14 @@ public class FciOrient {
      */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         strategy.setInitialAllowedColliders(initialAllowedColliders);
+    }
+
+    /**
+     * Sets whether the discriminating path orientation should be run in parallel.
+     *
+     * @param parallel True, if so.
+     */
+    public void setParallel(boolean parallel) {
+        this.parallel = parallel;
     }
 }

@@ -177,31 +177,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that is we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
+     * Does a discriminating path orientation.
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     * @see DiscriminatingPath
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
@@ -211,7 +194,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Node c = discriminatingPath.getC();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        if (!doubleCheckDiscriminatingPathConstruct(e, a, b, c, path, graph)) {
+        if (!discriminatingPath.isValidForGraph(graph)) {
             return Pair.of(discriminatingPath, false);
         }
 
@@ -239,6 +222,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
                 if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                     return Pair.of(discriminatingPath, false);
                 }
 
@@ -275,46 +266,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
                 return Pair.of(discriminatingPath, true);
             }
-        }
-
-        if (graph.isAdjacentTo(e, c)) {
-            throw new IllegalArgumentException("e is adjacent to c");
-        }
-
-        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-            if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (this.verbose) {
-                TetradLogger.getInstance().log(
-                        "R4: Definite discriminating path collider rule d = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-            }
-
-        } else if (doDiscriminatingPathTailRule) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (this.verbose) {
-                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg(
-                        "R4: Definite discriminating path tail rule d = " + e, graph.getEdge(b, c)));
-            }
-
-            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            return Pair.of(discriminatingPath, true);
         }
 
         return Pair.of(discriminatingPath, false);
