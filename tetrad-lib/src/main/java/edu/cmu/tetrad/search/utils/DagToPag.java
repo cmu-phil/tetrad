@@ -160,7 +160,7 @@ public final class DagToPag {
                 Node b = discriminatingPath.getB();
                 Node c = discriminatingPath.getC();
 
-                if (!discriminatingPath.isValidForGraph(graph)) {
+                if (!discriminatingPath.existsInGraph(graph)) {
                     return Pair.of(discriminatingPath, false);
                 }
 

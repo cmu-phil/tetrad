@@ -204,6 +204,3 @@ public class TestSepsetMethods {
         System.out.println(((!dag.isAdjacentTo(x, y)) == (sepset6 != null)) ? "###OK###" : "###ERROR###");
     }
 }
-
-
-

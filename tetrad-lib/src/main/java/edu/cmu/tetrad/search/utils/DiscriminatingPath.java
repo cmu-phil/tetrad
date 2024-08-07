@@ -46,14 +46,14 @@ public class DiscriminatingPath {
     }
 
     /**
-     * Checks a discriminating path construct to make sure it satisfies all the requirements. See the class
-     * documentation, above.
+     * Checks a discriminating path construct to make sure it satisfies all the requirements in the given graph. See the
+     * class documentation, above, for a description of the requirements.
      *
      * @param graph the graph to check
      * @return true if the discriminating path construct is valid, false otherwise.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    public boolean isValidForGraph(Graph graph) {
+    public boolean existsInGraph(Graph graph) {
         if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
             return false;
         }
