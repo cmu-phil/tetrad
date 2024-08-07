@@ -75,7 +75,7 @@ public class TestFci {
      */
     @Test
     public void testSearch3() {
-        checkSearch("A-->C,B-->C,B-->D,C-->D", "Ao->C,Bo->C,B-->D,C-->D", new Knowledge());
+        checkSearch("X-->W,V-->W,V-->Y,W-->Y", "Xo->W,Vo->W,V-->Y,W-->Y", new Knowledge());
     }
 
     /**

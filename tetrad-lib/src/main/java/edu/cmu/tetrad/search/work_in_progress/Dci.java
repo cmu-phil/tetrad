@@ -718,18 +718,9 @@ public class Dci {
     }
 
     /**
-     * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite
-     * colliders have been oriented.
-     * <p>
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
+     * Calculates the initial discriminating paths.
+     *
+     * @param graph the graph.
      */
     private void initialDiscrimPaths(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -1603,15 +1594,7 @@ public class Dci {
     // triples multiple times per iteration of doFinalOrientation.
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
+     * Finds discriminating paths.
      */
     private boolean discrimPaths(Graph graph) {
         List<Node> nodes = graph.getNodes();
