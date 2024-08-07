@@ -131,6 +131,7 @@ public class FciOrient {
      * Indicates whether the discriminating path step should be run in parallel.
      */
     private boolean parallel = true;
+    private SetEndpointStrategy endpointStrategy = new DefaultSetEndpointStrategy();
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -292,8 +293,9 @@ public class FciOrient {
                         continue;
                     }
 
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    setEndpoint(graph, a, b, Endpoint.ARROW);
+                    setEndpoint(graph, c, b, Endpoint.ARROW);
 
                     if (this.verbose) {
                         this.logger.log(LogUtilsSearch.colliderOrientedMsg(a, b, c));
@@ -462,8 +464,8 @@ public class FciOrient {
                 return;
             }
 
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-            graph.setEndpoint(b, c, Endpoint.ARROW);
+            setEndpoint(graph, c, b, Endpoint.TAIL);
+            setEndpoint(graph, b, c, Endpoint.ARROW);
 
             if (this.verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("R1: Away from collider", graph.getEdge(b, c)));
@@ -495,7 +497,7 @@ public class FciOrient {
                     return;
                 }
 
-                graph.setEndpoint(a, c, Endpoint.ARROW);
+                setEndpoint(graph, a, c, Endpoint.ARROW);
 
                 if (this.verbose) {
                     this.logger.log(LogUtilsSearch.edgeOrientedMsg("R2: Away from ancestor", graph.getEdge(a, c)));
@@ -552,7 +554,7 @@ public class FciOrient {
                         continue;
                     }
 
-                    graph.setEndpoint(d, b, Endpoint.ARROW);
+                    setEndpoint(graph, d, b, Endpoint.ARROW);
 
                     if (this.verbose) {
                         this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
@@ -835,15 +837,15 @@ public class FciOrient {
                 }
 
                 // We know u is as required: R5 applies!
-                graph.setEndpoint(x, y, Endpoint.TAIL);
-                graph.setEndpoint(y, x, Endpoint.TAIL);
+                setEndpoint(graph, x, y, Endpoint.TAIL);
+                setEndpoint(graph, y, x, Endpoint.TAIL);
 
                 for (int i = 0; i < path.size() - 1; i++) {
                     Node w = path.get(i);
                     Node z = path.get(i + 1);
 
-                    graph.setEndpoint(w, z, Endpoint.TAIL);
-                    graph.setEndpoint(z, w, Endpoint.TAIL);
+                    setEndpoint(graph, w, z, Endpoint.TAIL);
+                    setEndpoint(graph, z, w, Endpoint.TAIL);
                 }
 
                 if (verbose) {
@@ -873,7 +875,7 @@ public class FciOrient {
 
                 for (Node c : graph.getAdjacentNodes(b)) {
                     if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        graph.setEndpoint(c, b, Endpoint.TAIL);
+                        setEndpoint(graph, c, b, Endpoint.TAIL);
                         changeFlag = true;
 
                         if (verbose) {
@@ -889,7 +891,7 @@ public class FciOrient {
 
                 for (Node c : graph.getAdjacentNodes(b)) {
                     if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        graph.setEndpoint(c, b, Endpoint.TAIL);
+                        setEndpoint(graph, c, b, Endpoint.TAIL);
                         changeFlag = true;
 
                         if (verbose) {
@@ -915,7 +917,7 @@ public class FciOrient {
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
                     for (Node c : graph.getAdjacentNodes(b)) {
                         if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            graph.setEndpoint(c, b, Endpoint.TAIL);
+                            setEndpoint(graph, c, b, Endpoint.TAIL);
                             changeFlag = true;
 
                             if (verbose) {
@@ -933,7 +935,9 @@ public class FciOrient {
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
                     for (Node c : graph.getAdjacentNodes(b)) {
                         if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            graph.setEndpoint(c, b, Endpoint.TAIL);
+                            Endpoint tail = Endpoint.TAIL;
+
+                            setEndpoint(graph, c, b, tail);
                             changeFlag = true;
 
                             if (verbose) {
@@ -944,6 +948,10 @@ public class FciOrient {
                 }
             }
         }
+    }
+
+    private void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
+        endpointStrategy.setEndpoint(graph, a, b, endpoint);
     }
 
     /**
@@ -1024,7 +1032,7 @@ public class FciOrient {
             }
 
             if (orient) {
-                graph.setEndpoint(c, a, Endpoint.TAIL);
+                setEndpoint(graph, c, a, Endpoint.TAIL);
 
                 if (verbose) {
                     this.logger.log(LogUtilsSearch.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
@@ -1079,7 +1087,7 @@ public class FciOrient {
         }
 
         // We know u is as required: R9 applies!
-        graph.setEndpoint(c, a, Endpoint.TAIL);
+        setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
             this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
@@ -1125,7 +1133,7 @@ public class FciOrient {
             }
 
             // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
+            setEndpoint(graph, to, from, Endpoint.ARROW);
 
             if (verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
@@ -1158,8 +1166,8 @@ public class FciOrient {
                 return;
             }
 
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
+            setEndpoint(graph, to, from, Endpoint.TAIL);
+            setEndpoint(graph, from, to, Endpoint.ARROW);
 
             if (verbose) {
                 this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
@@ -1275,7 +1283,7 @@ public class FciOrient {
                             if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
 
                                 // We know we have the paths p1 and p2 as required: R10 applies!
-                                graph.setEndpoint(c, a, Endpoint.TAIL);
+                                setEndpoint(graph, c, a, Endpoint.TAIL);
 
                                 if (verbose) {
                                     this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
@@ -1358,5 +1366,9 @@ public class FciOrient {
      */
     public void setParallel(boolean parallel) {
         this.parallel = parallel;
+    }
+
+    public void setEndpointStrategy(SetEndpointStrategy endpointStrategy) {
+        this.endpointStrategy = endpointStrategy;
     }
 }

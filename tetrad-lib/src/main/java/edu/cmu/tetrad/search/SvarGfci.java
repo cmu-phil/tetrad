@@ -162,11 +162,14 @@ public final class SvarGfci implements IGraphSearch {
 
         modifiedR0(fgesGraph);
 
-        SvarFciOrient fciOrient = new SvarFciOrient(this.sepsets, this.independenceTest);
+        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
         fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
+
+        fciOrient.finalOrientation(this.graph);
 
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : graph.getEdges()) {

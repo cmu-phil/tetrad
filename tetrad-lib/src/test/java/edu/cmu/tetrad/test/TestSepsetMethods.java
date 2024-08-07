@@ -128,7 +128,7 @@ public class TestSepsetMethods {
         System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
 
         long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, msepTest, 10, -1,
+        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, msepTest, 50, -1,
                 false, new HashSet<>());
         long stop5 = System.currentTimeMillis();
         times[4] = stop5 - start5;
