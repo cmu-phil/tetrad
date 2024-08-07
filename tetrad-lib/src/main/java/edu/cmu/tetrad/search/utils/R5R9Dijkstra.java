@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.util;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;

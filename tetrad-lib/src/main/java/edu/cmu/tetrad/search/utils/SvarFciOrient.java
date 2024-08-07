@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.FciOrientDijkstra;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.R5R9Dijkstra;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
