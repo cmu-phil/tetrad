@@ -74,8 +74,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class FciOrient {
 
-    final TetradLogger logger = TetradLogger.getInstance();
-
     /**
      * Represents a strategy for examing the data or true graph for R0 and R4. Note that R0 and R4 are the only rulew in
      * this set that require looking at the distribution; all other rules are graphical only.
@@ -190,20 +188,20 @@ public class FciOrient {
     public void orient(Graph graph) {
 
         if (verbose) {
-            this.logger.log("Starting FCI orientation.");
+            TetradLogger.getInstance().log("Starting FCI orientation.");
         }
 
         ruleR0(graph);
 
         if (this.verbose) {
-            logger.log("R0");
+            TetradLogger.getInstance().log("R0");
         }
 
         // Step CI D. (Zhang's step R4.)
         finalOrientation(graph);
 
         if (this.verbose) {
-            this.logger.log("Returning graph: " + graph);
+            TetradLogger.getInstance().log("Returning graph: " + graph);
         }
     }
 
@@ -294,7 +292,7 @@ public class FciOrient {
                     graph.setEndpoint(c, b, Endpoint.ARROW);
 
                     if (this.verbose) {
-                        this.logger.log(LogUtilsSearch.colliderOrientedMsg(a, b, c));
+                        TetradLogger.getInstance().log(LogUtilsSearch.colliderOrientedMsg(a, b, c));
                     }
 
                     this.changeFlag = true;
@@ -346,7 +344,7 @@ public class FciOrient {
             }
 
             if (this.verbose) {
-                logger.log("Epoch");
+                TetradLogger.getInstance().log("Epoch");
             }
         }
     }
@@ -373,7 +371,7 @@ public class FciOrient {
             }
 
             if (this.verbose) {
-                logger.log("Epoch");
+                TetradLogger.getInstance().log("Epoch");
             }
         }
 
@@ -463,7 +461,7 @@ public class FciOrient {
             graph.setEndpoint(b, c, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R1: Away from collider", graph.getEdge(b, c)));
+                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R1: Away from collider", graph.getEdge(b, c)));
             }
 
             this.changeFlag = true;
@@ -495,7 +493,7 @@ public class FciOrient {
                 graph.setEndpoint(a, c, Endpoint.ARROW);
 
                 if (this.verbose) {
-                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R2: Away from ancestor", graph.getEdge(a, c)));
+                    TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R2: Away from ancestor", graph.getEdge(a, c)));
                 }
 
                 this.changeFlag = true;
@@ -551,7 +549,7 @@ public class FciOrient {
                     graph.setEndpoint(d, b, Endpoint.ARROW);
 
                     if (this.verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
                     }
 
                     this.changeFlag = true;
@@ -561,19 +559,10 @@ public class FciOrient {
     }
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * E....A --> C
-     * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating paths.
+     * Performs discriminating path orientations.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @see DiscriminatingPath
      */
     public void ruleR4(Graph graph) {
 
@@ -642,11 +631,13 @@ public class FciOrient {
                     DiscriminatingPath left = result.getLeft();
                     TetradLogger.getInstance().log("R4: Discriminating path oriented: " + left);
 
-                    Node a = left.getA();
-                    Node b = left.getB();
-                    Node c = left.getC();
+                    List<Node> path = left.getPath();
 
-                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
+                    Node w = path.get(path.size() - 3);
+                    Node v = path.get(path.size() - 2);
+                    Node y = path.get(path.size() - 1);
+
+                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
                 }
 
                 this.changeFlag = true;
@@ -688,42 +679,42 @@ public class FciOrient {
         if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
             List<Node> nodes = graph.getNodes();
 
-            for (Node b : nodes) {
+            for (Node v : nodes) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                // potential A and C candidate pairs are only those
-                // that look like this:   A<-*Bo-*C
-                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-                List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+                // potential W and Y candidate pairs are only those
+                // that look like this:   W<-*Vo-*Y
+                List<Node> possW = graph.getNodesOutTo(v, Endpoint.ARROW);
+                List<Node> possY = graph.getNodesInTo(v, Endpoint.CIRCLE);
 
-                for (Node a : possA) {
+                for (Node w : possW) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    for (Node c : possC) {
+                    for (Node y : possY) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
-                        if (a == c) continue;
+                        if (w == y) continue;
 
-                        if (!graph.isParentOf(a, c)) {
+                        if (!graph.isParentOf(w, y)) {
                             continue;
                         }
 
                         // Some discriminating path orientation may already have been made.
-                        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                        if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                             continue;
                         }
 
-                        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+                        if (graph.getEndpoint(v, y) != Endpoint.ARROW) {
                             continue;
                         }
 
-                        discriminatingPathOrient(a, b, c, graph, discriminatingPaths);
+                        discriminatingPaths(w, v, y, graph, discriminatingPaths);
                     }
                 }
             }
@@ -735,24 +726,25 @@ public class FciOrient {
     /**
      * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
      * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
-     * The body of a discriminating path consists of colliders that are parents of c.
+     * The body of a discriminating path consists of colliders that are parents of y.
      *
-     * @param a     a {@link Node} object
-     * @param b     a {@link Node} object
-     * @param c     a {@link Node} object
+     * @param w     a {@link Node} object
+     * @param v     a {@link Node} object
+     * @param y     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
+    private void discriminatingPaths(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();
 
-        Q.offer(a);
-        V.add(a);
-        V.add(b);
+        Q.offer(w);
+        V.add(w);
+        V.add(v);
 
-        previous.put(b, null);
-        previous.put(a, b);
+        previous.put(y, v);
+        previous.put(v, w);
+        previous.put(w, null);
 
         while (!Q.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -764,52 +756,49 @@ public class FciOrient {
             List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
             D:
-            for (Node e : nodesInTo) {
+            for (Node x : nodesInTo) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                if (V.contains(e)) {
+                if (V.contains(x)) {
                     continue;
                 }
 
-                previous.put(e, t);
+                previous.put(t, x);
 
                 LinkedList<Node> path = new LinkedList<>();
 
-                Node d = e;
+                Node r = y;
+                path.addFirst(r);
 
-                while (previous.get(d) != null) {
-                    path.addLast(d);
-                    d = previous.get(d);
+                while (previous.get(r) != null) {
+                    r = previous.get(r);
+                    path.addFirst(r);
                 }
 
                 if (maxPathLength != -1 && path.size() - 3 > maxPathLength) {
                     continue;
                 }
 
-                for (int i = 0; i < path.size() - 2; i++) {
-                    Node x = path.get(i);
-                    Node y = path.get(i + 1);
-                    Node z = path.get(i + 2);
+                for (int i = 1; i < path.size() - 2; i++) {
+                    Node p1 = path.get(i - 1);
+                    Node p2 = path.get(i);
+                    Node p3 = path.get(i + 1);
 
-                    if (!graph.isDefCollider(x, y, z) || !graph.isParentOf(y, c)) {
+                    if (!graph.isDefCollider(p1, p2, p3) || !graph.isParentOf(p2, y)) {
                         continue D;
                     }
                 }
 
-                if (!graph.isAdjacentTo(e, c)) {
-                    LinkedList<Node> colliderPath = new LinkedList<>(path);
-                    colliderPath.remove(e);
-                    colliderPath.remove(b);
-
-                    DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
+                if (!graph.isAdjacentTo(x, y)) {
+                    DiscriminatingPath discriminatingPath = new DiscriminatingPath(path);
                     discriminatingPaths.add(discriminatingPath);
                 }
 
-                if (!V.contains(e)) {
-                    Q.offer(e);
-                    V.add(e);
+                if (!V.contains(x)) {
+                    Q.offer(x);
+                    V.add(x);
                 }
             }
         }
@@ -852,7 +841,7 @@ public class FciOrient {
 
                 if (verbose) {
                     String s = GraphUtils.pathString(graph, path, false);
-                    this.logger.log("R5: Orient circle path, " + edge + " " + s);
+                    TetradLogger.getInstance().log("R5: Orient circle path, " + edge + " " + s);
                 }
 
                 this.changeFlag = true;
@@ -902,7 +891,7 @@ public class FciOrient {
                     changeFlag = true;
 
                     if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
                     }
                 }
             }
@@ -934,7 +923,7 @@ public class FciOrient {
                     changeFlag = true;
 
                     if (verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
                     }
                 }
             }
@@ -1022,7 +1011,7 @@ public class FciOrient {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
 
                 if (verbose) {
-                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
+                    TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
                 }
 
                 this.changeFlag = true;
@@ -1077,7 +1066,7 @@ public class FciOrient {
         graph.setEndpoint(c, a, Endpoint.TAIL);
 
         if (verbose) {
-            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+            TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
         }
 
         this.changeFlag = true;
@@ -1093,7 +1082,7 @@ public class FciOrient {
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
-            this.logger.log("Starting BK Orientation.");
+            TetradLogger.getInstance().log("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1123,7 +1112,7 @@ public class FciOrient {
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
+                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
             }
 
             this.changeFlag = true;
@@ -1157,14 +1146,14 @@ public class FciOrient {
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
             if (verbose) {
-                this.logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
 
             this.changeFlag = true;
         }
 
         if (verbose) {
-            this.logger.log("Finishing BK Orientation.");
+            TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
 
@@ -1273,7 +1262,7 @@ public class FciOrient {
                                 graph.setEndpoint(c, a, Endpoint.TAIL);
 
                                 if (verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                                    TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
                                 }
 
                                 this.changeFlag = true;

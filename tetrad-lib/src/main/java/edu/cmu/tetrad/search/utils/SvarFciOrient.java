@@ -471,19 +471,10 @@ public final class SvarFciOrient {
 
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --&gt; C
-     * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating undirectedPaths.
+     * Performs discriminating path orientations.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @see DiscriminatingPath
      */
     public void ruleR4B(Graph graph) {
         List<Node> nodes = graph.getNodes();

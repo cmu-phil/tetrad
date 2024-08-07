@@ -2,54 +2,42 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Represents a discriminating path in a graph.
+ * Represents a discriminating path; the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the
+ * Discriminating Path Rule. The path is &lt;X,...,W, V, Y&gt;, with nodes between X and V colliders along the path and
+ * parents of Y (Zhang 2008). The question is whether there's a sepset S such that X _||_ Y | S, and whether S contains
+ * V or not. If it does, then &lt;X, V, Y&gt; is a noncollider; otherwise, it is a collider. This is Zhang's rule R4,
+ * discriminating paths.
+ * <p>
+ * Pictorially:
+ * <pre>
+ *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+ *      the dots colliders between X and V with each node on the path (except X) a parent of Y.
+ *
+ *               V
+ *              xo           x is either an arrowhead or a circle
+ *             /  \
+ *            v    v
+ *      X.....W--->Y
+ * </pre>
+ * <p>
+ * The reference for this is Zhang, J. (2008), On the completeness of orientation rules for causal discovery in the
+ * presence of latent confounders and selection bias, Artificial Intelligence, 172(16-17), 1873-1896.
  */
 public class DiscriminatingPath {
-    private final Node e;
-    private final Node a;
-    private final Node b;
-    private final Node c;
-    private final List<Node> colliderPath;
+    private final List<Node> path;
 
-    public DiscriminatingPath(Node e, Node a, Node b, Node c, LinkedList<Node> colliderPath) {
-        this.e = e;
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.colliderPath = colliderPath;
+    public DiscriminatingPath(List<Node> path) {
+        this.path = path;
     }
 
-    public Node getE() {
-        return e;
-    }
-
-    public Node getA() {
-        return a;
-    }
-
-    public Node getB() {
-        return b;
-    }
-
-    public Node getC() {
-        return c;
-    }
-
-    public List<Node> getColliderPath() {
-        return colliderPath;
+    public List<Node> getPath() {
+        return path;
     }
 
     public String toString() {
-        return "DiscriminatingPath{" +
-               "e=" + e +
-               ", a=" + a +
-               ", b=" + b +
-               ", c=" + c +
-               ", colliderPath=" + colliderPath +
-               '}';
+        return "DiscriminatingPath{ path=" + path + '}';
     }
 }

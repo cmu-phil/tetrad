@@ -94,67 +94,51 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
     }
 
     /**
-     * Determines the orientation for the nodes in a Directed Acyclic Graph (DAG) based on the Discriminating Path Rule
-     * Here, we insist that the sepset for D and B contain all the nodes along the collider path.
-     * <p>
-     * Reminder:
-     * <pre>
-     *      The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     *      the dots are a collider path from E to A with each node on the path (except E) a parent of C.
-     *
-     *               B
-     *              xo           x is either an arrowhead or a circle
-     *             /  \
-     *            v    v
-     *      E....A --> C
-     *
-     *      This is Zhang's rule R4, discriminating paths. The "collider path" here is all of the collider nodes
-     *      along the E...A path (all parents of C), including A. The idea is that if we know that E is independent
-     *      of C given all of nodes on the collider path plus perhaps some other nodes, then there should be a collider
-     *      at B; otherwise, there should be a noncollider at B.
-     * </pre>
+     * Performand a discriminating path orientation.
      *
      * @param discriminatingPath the discriminating path
-     * @param graph the graph representation
+     * @param graph              the graph representation
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
-     * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     * @throws IllegalArgumentException if 'x' is adjacent to 'y'
+     * @see DiscriminatingPath
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-        Node e = discriminatingPath.getE();
-        Node a = discriminatingPath.getA();
-        Node b = discriminatingPath.getB();
-        Node c = discriminatingPath.getC();
-        List<Node> path = discriminatingPath.getColliderPath();
+        List<Node> path = discriminatingPath.getPath();
+
+        Node x = path.get(0);
+        Node w = path.get(path.size() - 3);
+        Node v = path.get(path.size() - 2);
+        Node y = path.get(path.size() - 1);
 
         System.out.println("For discriminating path rule, tucking");
         scorer.goToBookmark();
-        scorer.tuck(c, b);
-        scorer.tuck(e, b);
-        scorer.tuck(a, c);
-        boolean collider = !scorer.adjacent(e, c);
+        scorer.tuck(y, v);
+        scorer.tuck(x, v);
+        scorer.tuck(w, y);
+        boolean collider = !scorer.adjacent(x, y);
         System.out.println("For discriminating path rule, found collider = " + collider);
 
         if (collider) {
             if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
+                graph.setEndpoint(w, v, Endpoint.ARROW);
+                graph.setEndpoint(y, v, Endpoint.ARROW);
 
                 if (verbose) {
                     TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                            "R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                 }
 
                 return Pair.of(discriminatingPath, true);
             }
         } else {
             if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
+                graph.setEndpoint(y, v, Endpoint.TAIL);
 
                 if (verbose) {
                     TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                            "R4: Definite discriminating path tail rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                 }
 
                 return Pair.of(discriminatingPath, true);
