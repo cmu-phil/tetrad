@@ -573,7 +573,9 @@ public class FciOrient {
      */
     public void ruleR4(Graph graph) {
 
-        TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
+        if (verbose) {
+            TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
+        }
 
         List<Pair<DiscriminatingPath, Boolean>> allResults = new ArrayList<>();
 
@@ -651,7 +653,9 @@ public class FciOrient {
             }
         }
 
-        TetradLogger.getInstance().log("R4: Discriminating path orientation finished.");
+        if (verbose) {
+            TetradLogger.getInstance().log("R4: Discriminating path orientation finished.");
+        }
     }
 
     /**
@@ -721,7 +725,7 @@ public class FciOrient {
                             continue;
                         }
 
-                        discriminatingPathOrient(a, b, c, graph, discriminatingPaths);
+                        discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
                     }
                 }
             }
@@ -740,7 +744,7 @@ public class FciOrient {
      * @param c     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private void discriminatingPathOrient(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
+    private void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();
@@ -749,8 +753,8 @@ public class FciOrient {
         V.add(a);
         V.add(b);
 
-        previous.put(b, null);
-        previous.put(a, b);
+        previous.put(a, null);
+        previous.put(b, a);
 
         while (!Q.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -773,35 +777,23 @@ public class FciOrient {
 
                 previous.put(e, t);
 
-                LinkedList<Node> path = new LinkedList<>();
-
+                // The collider path should be all nodes between E and C.
+                LinkedList<Node> colliderPath = new LinkedList<>();
                 Node d = e;
 
-                while (previous.get(d) != null) {
-                    path.addLast(d);
-                    d = previous.get(d);
-                }
-
-                if (maxPathLength != -1 && path.size() - 3 > maxPathLength) {
-                    continue;
-                }
-
-                for (int i = 0; i < path.size() - 2; i++) {
-                    Node x = path.get(i);
-                    Node y = path.get(i + 1);
-                    Node z = path.get(i + 2);
-
-                    if (!graph.isDefCollider(x, y, z) || !graph.isParentOf(y, c)) {
-                        continue D;
+                while ((d = previous.get(d)) != null) {
+                    if (d != e) {
+                        colliderPath.addFirst(d);
                     }
                 }
 
-                if (!graph.isAdjacentTo(e, c)) {
-                    LinkedList<Node> colliderPath = new LinkedList<>(path);
-                    colliderPath.remove(e);
-                    colliderPath.remove(b);
+                if (maxPathLength != -1 && colliderPath.size() > maxPathLength) {
+                    continue;
+                }
 
-                    DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
+                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
+
+                if (discriminatingPath.existsAndUnorientedIn(graph)) {
                     discriminatingPaths.add(discriminatingPath);
                 }
 

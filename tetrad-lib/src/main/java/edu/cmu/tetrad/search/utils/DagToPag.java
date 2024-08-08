@@ -160,7 +160,7 @@ public final class DagToPag {
                 Node b = discriminatingPath.getB();
                 Node c = discriminatingPath.getC();
 
-                if (!discriminatingPath.existsInGraph(graph)) {
+                if (!discriminatingPath.existsAndUnorientedIn(graph)) {
                     return Pair.of(discriminatingPath, false);
                 }
 

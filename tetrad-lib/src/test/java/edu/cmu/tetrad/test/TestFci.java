@@ -84,7 +84,7 @@ public class TestFci {
     @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "Ho->F,F<->A,A<->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge());
+                "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
     }
 
     /**
@@ -109,24 +109,9 @@ public class TestFci {
      */
     @Test
     public void testSearch7() {
-        // Graph Nodes:
-        //D;L;M;H;I;S;P
-        //
-        //Graph Edges:
-        //1. D <-> H
-        //2. D --> L
-        //3. D --> M
-        //4. H --> M
-        //5. I o-> S
-        //6. L <-> H
-        //7. L --> M
-        //8. P o-> S
-        //9. S --> D
-
-
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,L-->M,Po->S,S-->D", new Knowledge());
+                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
     }
 
     /**
@@ -144,7 +129,7 @@ public class TestFci {
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
-    public void testSearch9() {
+    public void  testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                     "H-->D,D-->A,T2-->D,T2-->E",
                  "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.

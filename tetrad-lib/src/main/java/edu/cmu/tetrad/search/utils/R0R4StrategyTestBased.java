@@ -194,7 +194,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Node c = discriminatingPath.getC();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        if (!discriminatingPath.existsInGraph(graph)) {
+        if (!discriminatingPath.existsAndUnorientedIn(graph)) {
             return Pair.of(discriminatingPath, false);
         }
 
