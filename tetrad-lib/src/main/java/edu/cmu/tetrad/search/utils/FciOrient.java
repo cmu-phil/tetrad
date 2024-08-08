@@ -1270,7 +1270,7 @@ public class FciOrient {
      * @param graph     The graph to be oriented.
      * @param variables The list of nodes in the graph.
      */
-    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
+    public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
             this.logger.log("Starting BK Orientation.");
         }
