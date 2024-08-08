@@ -443,15 +443,11 @@ public class FciOrient {
     }
 
     /**
-     * Changes the orientation of an edge in the graph according to Rule R1. If node 'a' is not adjacent to node 'c',
-     * then: - If the endpoint of edge 'a' -&gt; 'b' is an arrow and the endpoint of edge 'c' -&gt; 'b' is a circle, and
-     * - Arrowhead is allowed between node 'b' and 'c' in the given graph, then changes the endpoint of edge 'c' -&gt;
-     * 'b' to tail and the endpoint of edge 'b' -&gt; 'c' to arrow. If 'verbose' flag is true, logs a message about the
-     * change. Sets 'changeFlag' to true.
+     * R1 If α ∗→ β o−−∗ γ, and α and γ are not adjacent, then orient the triple as α ∗→ β → γ.
      *
-     * @param a     the first node in the edge
-     * @param b     the second node in the edge
-     * @param c     the third node in the edge
+     * @param a     α
+     * @param b     β
+     * @param c     γ
      * @param graph the graph containing the edges and nodes
      */
     public void ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -476,16 +472,11 @@ public class FciOrient {
     }
 
     /**
-     * Sets the endpoint of node `a` and node `c` in the given graph to `Endpoint.ARROW` if the following conditions
-     * hold: 1. Node `a` is adjacent to node `c` in the graph. 2. The endpoint of the edge between node `a` and node `c`
-     * is `Endpoint.CIRCLE`. 3. The endpoints of the edges between node `a` and node `b`, and between node `b` and node
-     * `c` are both `Endpoint.ARROW`. 4. Either the endpoint of the edge between node `b` and node `a` is
-     * `Endpoint.TAIL` or the endpoint of the edge between node `c` and node `b` is `Endpoint.TAIL`. 5. The arrowhead is
-     * allowed between node `a` and node `c` in the given graph and knowledge.
+     * R2 If α → β ∗→ γ or α ∗→ β → γ, and α ∗−o γ, then orient α ∗−o γ as α ∗→ γ.
      *
-     * @param a     the first node
-     * @param b     the intermediate node
-     * @param c     the last node
+     * @param a     α
+     * @param b     β
+     * @param c     γ
      * @param graph the graph in which the nodes exist
      */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -509,14 +500,13 @@ public class FciOrient {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and
-     * !adj(a, c), D*-oB, then D*->B.
-     * <p>
-     * This is Zhang's rule R3.
+     * R3 If α ∗→ β ←∗ γ, α ∗−o θ o−∗ γ, α and γ are not adjacent, and θ ∗−o β, then orient θ ∗−o β as θ ∗→ β.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR3(Graph graph) {
+
+        // a = α, b = β, c = γ, d = θ
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -536,38 +526,29 @@ public class FciOrient {
                 Node c = B.get(1);
                 Node d = B.get(2);
 
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
+                if (!graph.isAdjacentTo(a, c) && graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d)) {
+                    if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE
+                        && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
+                        if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
+                            continue;
+                        }
 
-                if (!graph.isAdjacentTo(a, d)) {
-                    continue;
-                }
+                        setEndpoint(graph, d, b, Endpoint.ARROW);
 
-                if (!graph.isAdjacentTo(c, d)) {
-                    continue;
-                }
+                        if (this.verbose) {
+                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                        }
 
-                if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE
-                    && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-                    if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
-                        continue;
+                        this.changeFlag = true;
                     }
-
-                    setEndpoint(graph, d, b, Endpoint.ARROW);
-
-                    if (this.verbose) {
-                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
-                    }
-
-                    this.changeFlag = true;
                 }
             }
         }
     }
 
     /**
-     * Zhang's rule R4 (discriminating paths).
+     * R4 If u = &lt;θ ,...,α,β,γ&gt; is a discriminating path between θ and γ for β, and β o−−∗ γ; then if β ∈
+     * Sepset(θ,γ), orient β o−−∗ γ as β → γ; otherwise orient the triple &lt;α,β,γ&gt; as α ↔ β ↔ γ.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -581,6 +562,7 @@ public class FciOrient {
 
         int testTimeout = this.testTimeout == -1 ? Integer.MAX_VALUE : (int) this.testTimeout;
 
+        // Parallel is the default.
         if (parallel) {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
@@ -806,12 +788,18 @@ public class FciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
-     * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * R5 For every (remaining) α o−−o β, if there is an uncovered circle path p = &lt;α,γ,...,θ,β&gt; between α and β
+     * s.t. α,θ are not adjacent and β,γ are not adjacent, then orient α o−−o β and every edge on p as undirected edges
+     * (--).
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR5(Graph graph) {
+
+        // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
+        // so that the path must be a circle path, there can be no length 1 or length 2 paths, and all nodes on the path
+        // are uncovered. We add further constraints so that the path taken together with the x o-o y edge forms an
+        // uncovered cyclic circle path.
         if (fullDijkstraGraph == null) {
             fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
         }
@@ -851,11 +839,15 @@ public class FciOrient {
     }
 
     /**
-     * R6: If A---Bo-*C then A---B--*C.
+     * R6 If α —- β o−−∗ γ (α and γ may or may not be adjacent), then orient β o−−∗ γ as β −−∗ γ.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR6(Graph graph) {
+
+        // We first look for undirected edges x —- y and the look for γ adjacent to either the x or the
+        // y endpoint.
+
         for (Edge edge : graph.getEdges()) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
@@ -896,7 +888,7 @@ public class FciOrient {
     }
 
     /**
-     * R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     * R7 If α −−o β o−−∗ γ, and α, γ are not adjacent, then orient β o−−∗ γ as β −−∗ γ.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -942,10 +934,6 @@ public class FciOrient {
         }
     }
 
-    private void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
-        endpointStrategy.setEndpoint(graph, a, b, endpoint);
-    }
-
     /**
      * Implements Zhang's rules R8, R9, R10, applies them over the graph once. Orient arrow tails. I.e., tries R8, R9,
      * and R10 in that sequence on each Ao-&gt;C in the graph.
@@ -985,12 +973,10 @@ public class FciOrient {
     }
 
     /**
-     * Applies Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p>
-     * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
+     * R8 If α → β → γ or α−−◦β → γ, and α o→ γ, orient α o→ γ as α → γ.
      *
-     * @param a     The node A.
-     * @param c     The node C.
+     * @param a     α
+     * @param c     γ
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return Whether R8 was successfully applied.
      */
@@ -1039,9 +1025,8 @@ public class FciOrient {
     }
 
     /**
-     * Applies Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p>
-     * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
+     * R9 If α o→ γ, and p = &lt;α,β,θ,...,γ&gt; is an uncovered potentialy directed path from α to γ such that γ and β
+     * are not adjacent, then orient α o→ γ as α → γ.
      *
      * @param a     The node A.
      * @param c     The node C.
@@ -1050,7 +1035,7 @@ public class FciOrient {
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // We are aiming to orient the tails on certain partially oriented edges α o→ γ, so we first
         // need to make sure we have such an edge.
         Edge edge = graph.getEdge(a, c);
 
@@ -1062,8 +1047,11 @@ public class FciOrient {
             return false;
         }
 
-        // Now that we know we have one, we need to determine whether there is a partially oriented (i.e.,
-        // semi-directed) path from a to c other than a o-> c itself and with at least one edge out of a.
+        // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
+        // so that the path must be potentially directed (i.e., semidirected), there can be no length 1 or length 2
+        // paths, and all nodes on the path are uncovered. We add further constraints so that the path taken together
+        // with the x o-o y edge forms an uncovered cyclic path.
+
         if (fullDijkstraGraph == null) {
             fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
         }
@@ -1078,7 +1066,6 @@ public class FciOrient {
             return false;
         }
 
-        // We know u is as required: R9 applies!
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
@@ -1090,13 +1077,200 @@ public class FciOrient {
     }
 
     /**
+     * R10 Suppose α o→ γ, β → γ ← θ, p1 is an uncovered potentially directed (semidirected) path from α to β, and p2 is
+     * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
+     * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
+     *
+     * @param a     α
+     * @param c     γ
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public void ruleR10(Node a, Node c, Graph graph) {
+
+        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // need to make sure we have such an edge.
+        Edge edge = graph.getEdge(a, c);
+
+        if (edge == null) {
+            return;
+        }
+
+        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+            return;
+        }
+
+        List<Node> adj1 = graph.getAdjacentNodes(a);
+        List<Node> filtered1 = new ArrayList<>();
+
+        for (Node n : adj1) {
+            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
+            if (other != null && other.equals(n)) {
+                filtered1.add(n);
+            }
+        }
+
+        for (Node mu : filtered1) {
+            for (Node omega : filtered1) {
+                if (mu.equals(omega)) continue;
+                if (graph.isAdjacentTo(mu, omega)) continue;
+
+                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
+                List<Node> filtered2 = new ArrayList<>();
+
+                for (Node n : adj2) {
+                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
+                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
+                        if (other != null && other.equals(n)) {
+                            filtered2.add(n);
+                        }
+                    }
+
+                    for (Node beta : filtered2) {
+                        for (Node theta : filtered2) {
+                            if (beta.equals(theta)) continue;
+                            if (graph.isAdjacentTo(mu, omega)) continue;
+
+                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
+                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
+                            // p2 starting with <a, omega> and ending with theta.
+
+                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
+
+                                // We know we have the paths p1 and p2 as required: R10 applies!
+                                setEndpoint(graph, c, a, Endpoint.TAIL);
+
+                                if (verbose) {
+                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                                }
+
+                                this.changeFlag = true;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the maximum path length, or -1 if unlimited.
+     *
+     * @return the maximum path length
+     */
+    public int getMaxPathLength() {
+        return this.maxPathLength;
+    }
+
+    /**
+     * Sets the maximum length of any discriminating path.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets whether the discriminating path tail rule should be used.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True, if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets the timeout for running tests.
+     *
+     * @param testTimeout the timeout value in milliseconds
+     */
+    public void setTestTimeout(long testTimeout) {
+        this.testTimeout = testTimeout;
+    }
+
+    /**
+     * Sets the allowed colliders for this object. These are passed to R4 is the set of unshielded colliders for the
+     * model is to be restricted. TODO Think this through again.
+     *
+     * @param allowedColliders the set of colliders allowed to interact with this object
+     */
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
+        this.allowedColliders = allowedColliders;
+    }
+
+    /**
+     * Returns the initial allowed colliders based on the current strategy. These are the unshielded colliders from R4's
+     * first run.
+     * <p>
+     * TODO think this through again.
+     *
+     * @return a collection of Triple objects representing the initial allowed colliders.
+     */
+    public Collection<Triple> getInitialAllowedColliders() {
+        return strategy.getInitialAllowedColliders();
+    }
+
+    /**
+     * Sets the initial allowed colliders for the strategy.
+     * <p>
+     * TODO: Think this thorugh again.
+     *
+     * @param initialAllowedColliders The set of initial allowed colliders.
+     */
+    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
+        strategy.setInitialAllowedColliders(initialAllowedColliders);
+    }
+
+    /**
+     * Sets whether the discriminating path orientation should be run in parallel.
+     *
+     * @param parallel True, if so.
+     */
+    public void setParallel(boolean parallel) {
+        this.parallel = parallel;
+    }
+
+    /**
+     * Sets the endpoint strategy for this object.
+     *
+     * @param endpointStrategy the endpoint strategy to set
+     * @see SetEndpointStrategy
+     */
+    public void setEndpointStrategy(SetEndpointStrategy endpointStrategy) {
+        this.endpointStrategy = endpointStrategy;
+    }
+
+    /**
      * Orient the edges of a graph based on the given knowledge.
      *
      * @param bk        The knowledge containing forbidden and required edges.
      * @param graph     The graph to be oriented.
      * @param variables The list of nodes in the graph.
      */
-    public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (verbose) {
             this.logger.log("Starting BK Orientation.");
         }
@@ -1173,194 +1347,7 @@ public class FciOrient {
         }
     }
 
-    /**
-     * Returns the maximum path length, or -1 if unlimited.
-     *
-     * @return the maximum path length
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Applies Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p>
-     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
-     * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
-     *
-     * @param a     The node A.
-     * @param c     The node C.
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public void ruleR10(Node a, Node c, Graph graph) {
-
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
-        // need to make sure we have such an edge.
-        Edge edge = graph.getEdge(a, c);
-
-        if (edge == null) {
-            return;
-        }
-
-        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
-            return;
-        }
-
-        List<Node> adj1 = graph.getAdjacentNodes(a);
-        List<Node> filtered1 = new ArrayList<>();
-
-        for (Node n : adj1) {
-            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
-            if (other != null && other.equals(n)) {
-                filtered1.add(n);
-            }
-        }
-
-        for (Node mu : filtered1) {
-            for (Node omega : filtered1) {
-                if (mu.equals(omega)) continue;
-                if (graph.isAdjacentTo(mu, omega)) continue;
-
-                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
-                List<Node> filtered2 = new ArrayList<>();
-
-                for (Node n : adj2) {
-                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
-                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
-                        if (other != null && other.equals(n)) {
-                            filtered2.add(n);
-                        }
-                    }
-
-                    for (Node beta : filtered2) {
-                        for (Node theta : filtered2) {
-                            if (beta.equals(theta)) continue;
-                            if (graph.isAdjacentTo(mu, omega)) continue;
-
-                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
-                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
-                            // p2 starting with <a, omega> and ending with theta.
-
-                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
-
-                                // We know we have the paths p1 and p2 as required: R10 applies!
-                                setEndpoint(graph, c, a, Endpoint.TAIL);
-
-                                if (verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                                }
-
-                                this.changeFlag = true;
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets the current value of the verbose flag.
-     *
-     * @return true if the verbose flag is set, false otherwise
-     */
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * Sets whether verbose output is printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Sets the timeout for running tests.
-     *
-     * @param testTimeout the timeout value in milliseconds
-     */
-    public void setTestTimeout(long testTimeout) {
-        this.testTimeout = testTimeout;
-    }
-
-    /**
-     * Sets the allowed colliders for this object. These are passed to R4 is the set of unshielded colliders for the
-     * model is to be restricted. TODO Think this through again.
-     *
-     * @param allowedColliders the set of colliders allowed to interact with this object
-     */
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
-    }
-
-    /**
-     * Returns the initial allowed colliders based on the current strategy. These are the unshielded colliders from R4's
-     * first run.
-     * <p>
-     * TODO think this through again.
-     *
-     * @return a collection of Triple objects representing the initial allowed colliders.
-     */
-    public Collection<Triple> getInitialAllowedColliders() {
-        return strategy.getInitialAllowedColliders();
-    }
-
-    /**
-     * Sets the initial allowed colliders for the strategy.
-     * <p>
-     * TODO: Think this thorugh again.
-     *
-     * @param initialAllowedColliders The set of initial allowed colliders.
-     */
-    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
-        strategy.setInitialAllowedColliders(initialAllowedColliders);
-    }
-
-    /**
-     * Sets whether the discriminating path orientation should be run in parallel.
-     *
-     * @param parallel True, if so.
-     */
-    public void setParallel(boolean parallel) {
-        this.parallel = parallel;
-    }
-
-    public void setEndpointStrategy(SetEndpointStrategy endpointStrategy) {
-        this.endpointStrategy = endpointStrategy;
+    private void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
+        endpointStrategy.setEndpoint(graph, a, b, endpoint);
     }
 }
