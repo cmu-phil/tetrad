@@ -961,6 +961,7 @@ public class FciOrient {
                 if (!(graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
                     continue;
                 }
+
                 // We know Ao->C.
 
                 // Try each of R8, R9, R10 in that order, stopping ASAP.
