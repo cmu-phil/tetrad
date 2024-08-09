@@ -68,10 +68,20 @@ public interface R0R4Strategy {
      */
     void setAllowedColliders(Set<Triple> allowedColliders);
 
+    /**
+     * Returns the allowed colliders for the current strategy.
+     *
+     * @return a Set of Triple objects representing the allowed colliders
+     */
     default Set<Triple> getInitialAllowedColliders() {
         return null;
     }
 
+    /**
+     * Sets the initial allowed colliders for the current strategy.
+     *
+     * @param initialAllowedColliders a Set of Triple objects representing the allowed colliders
+     */
     default void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         // no op.
     }

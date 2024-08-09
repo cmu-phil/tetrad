@@ -1204,6 +1204,15 @@ public final class GraphSearchUtils {
         return false;
     }
 
+    /**
+     * Runs the given task with the given timeout.
+     *
+     * @param task    The task to run.
+     * @param timeout The timeout.
+     * @param unit    The time unit of the timeout.
+     * @param <T>     The type of the result.
+     * @return The result of the task, or null if the task times out.
+     */
     public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<T> future = executor.submit(task);

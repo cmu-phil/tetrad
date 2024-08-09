@@ -32,6 +32,12 @@ import java.util.*;
 public class R5R9Dijkstra {
 
     /**
+     * Prevents instantiation of this utility class.
+     */
+    private R5R9Dijkstra() {
+    }
+
+    /**
      * Finds shortest distances from a x node to all other nodes in a graph, subject to the following constraints. (1)
      * Length 1 paths are not considered. (2) Length 2 paths are not considered. (3) Covered triples are not considered.
      * (4) The y node is used to stop the algorithm once that node has been visited. (5) The graph is assumed to be
@@ -39,10 +45,11 @@ public class R5R9Dijkstra {
      * <p>
      * Nodes that are not reached by the algorithm are reported as being at a distance of Integer.MAX_VALUE.
      *
-     * @param graph        The graph to search; should include only the relevant edge in the graph.
-     * @param x            The starting node.
-     * @param y            The ending node. The algorithm will stop when this node is reached.
-     * @return A map of distances from the start node to each node in the graph, and a map of predecessors for each node.
+     * @param graph The graph to search; should include only the relevant edge in the graph.
+     * @param x     The starting node.
+     * @param y     The ending node. The algorithm will stop when this node is reached.
+     * @return A map of distances from the start node to each node in the graph, and a map of predecessors for each
+     * node.
      */
     public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph graph, Node x, Node y) {
         if (graph == null) {
@@ -207,6 +214,9 @@ public class R5R9Dijkstra {
          * Represents a graph for Dijkstra's algorithm. This wraps a Tetrad graph and provides methods to get neighbors
          * and nodes. The nodes are just the nodes in the underlying Tetrad graph, and neighbors are determined
          * dynamically based on the edges in the graph.
+         *
+         * @param graph               The Tetrad graph to wrap.
+         * @param potentiallyDirected Whether the graph is potentially directed or not.
          */
         public Graph(edu.cmu.tetrad.graph.Graph graph, boolean potentiallyDirected) {
             this.tetradGraph = graph;
@@ -270,7 +280,13 @@ public class R5R9Dijkstra {
      * and is modified by the algorithm.
      */
     public static class DijkstraEdge {
+        /**
+         * Represents the node to which the edge connects.
+         */
         private final Node toNode;
+        /**
+         * Represents the weight of an edge in Dijkstra's algorithm.
+         */
         private final int weight;
 
         /**
@@ -278,6 +294,9 @@ public class R5R9Dijkstra {
          * cost of traversing from one node to another.
          * <p>
          * Immutable.
+         *
+         * @param y      the to-node.
+         * @param weight the weight of the edge.
          */
         public DijkstraEdge(Node y, int weight) {
             if (y == null) {

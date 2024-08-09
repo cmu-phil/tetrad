@@ -23,6 +23,12 @@ import java.util.*;
 public class FciOrientDijkstra {
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private FciOrientDijkstra() {
+    }
+
+    /**
      * Finds shortest distances from a start node to all other nodes in a graph. Unreachable nodes are reported as being
      * at a distance of Integer.MAX_VALUE. The graph is assumed to be undirected.
      *
@@ -48,6 +54,7 @@ public class FciOrientDijkstra {
      * @param uncovered           If true, the algorithm will not traverse edges y--z where an adjacency exists between
      *                            predecessor(y)  and z.
      * @param potentiallyDirected If true, the algorithm will traverse edges that are potentially directed.
+     * @return A map of nodes to their shortest distances from the start node.
      */
     public static Map<Node, Integer> distances(Graph graph, Node x, Node y,
                                                Map<Node, Node> predecessors, boolean uncovered, boolean potentiallyDirected) {
@@ -137,8 +144,15 @@ public class FciOrientDijkstra {
         return false;
     }
 
-    public static List<Node> getPath(Map<Node, Node> predecessors,
-                                     Node start, Node end) {
+    /**
+     * Returns the shortest path from the start node to the end node. If no path is found, null is returned.
+     *
+     * @param predecessors A map of nodes to their predecessors in the shortest path.
+     * @param start        The start node.
+     * @param end          The end node.
+     * @return The shortest path from the start node to the end node.
+     */
+    public static List<Node> getPath(Map<Node, Node> predecessors, Node start, Node end) {
         List<Node> path = new ArrayList<>();
         for (Node at = end; at != null; at = predecessors.get(at)) {
             path.add(at);
@@ -206,11 +220,23 @@ public class FciOrientDijkstra {
         private final boolean potentiallyDirected;
         private edu.cmu.tetrad.graph.Graph _graph = null;
 
+        /**
+         * Represents a graph used in Dijkstra's algorithm.
+         *
+         * @param graph               The graph.
+         * @param potentiallyDirected If true, the graph is potentially directed.
+         */
         public Graph(edu.cmu.tetrad.graph.Graph graph, boolean potentiallyDirected) {
             this._graph = graph;
             this.potentiallyDirected = potentiallyDirected;
         }
 
+        /**
+         * Returns the neighbors of a node, reachable via DijkstraEdges in the grph.
+         *
+         * @param node The node.
+         * @return The neighbors of the node.
+         */
         public List<DijkstraEdge> getNeighbors(Node node) {
             List<DijkstraEdge> filteredNeighbors = new ArrayList<>();
 
@@ -247,6 +273,11 @@ public class FciOrientDijkstra {
             }
         }
 
+        /**
+         * Returns the nodes in the graph.
+         *
+         * @return The nodes in the graph.
+         */
         public Set<Node> getNodes() {
             return new HashSet<>(_graph.getNodes());
         }
@@ -260,6 +291,12 @@ public class FciOrientDijkstra {
         private final Node y;
         private int weight;
 
+        /**
+         * Creates a new DijkstraEdge.
+         *
+         * @param y      The node.
+         * @param weight The weight of the edge.
+         */
         public DijkstraEdge(Node y, int weight) {
             if (y == null) {
                 throw new IllegalArgumentException("y cannot be null.");
@@ -273,18 +310,38 @@ public class FciOrientDijkstra {
             this.weight = weight;
         }
 
+        /**
+         * Returns the node.
+         *
+         * @return The node.
+         */
         public Node gety() {
             return y;
         }
 
+        /**
+         * Returns the weight of the edge.
+         *
+         * @return The weight of the edge.
+         */
         public int getWeight() {
             return weight;
         }
 
+        /**
+         * Sets the weight of the edge.
+         *
+         * @param weight The weight of the edge.
+         */
         public void setWeight(int weight) {
             this.weight = weight;
         }
 
+        /**
+         * Returns a string representation of the DijkstraEdge.
+         *
+         * @return A string representation of the DijkstraEdge.
+         */
         public String toString() {
             return "DijkstraEdge{" + "y=" + y + ", weight=" + weight + '}';
         }
@@ -295,26 +352,58 @@ public class FciOrientDijkstra {
      * field.
      */
     static class DijkstraNode {
+        /**
+         * The node.
+         */
         private Node vertex;
+        /**
+         * The distance of the node from the start.
+         */
         private int distance;
 
+        /**
+         * Creates a new DijkstraNode.
+         *
+         * @param vertex   The node.
+         * @param distance The distance of the node from the start.
+         */
         public DijkstraNode(Node vertex, int distance) {
             this.vertex = vertex;
             this.distance = distance;
         }
 
+        /**
+         * Returns the node.
+         *
+         * @return The node.
+         */
         public Node getVertex() {
             return vertex;
         }
 
+        /**
+         * Sets the node.
+         *
+         * @param vertex The node.
+         */
         public void setVertex(Node vertex) {
             this.vertex = vertex;
         }
 
+        /**
+         * Returns the distance of the node from the start.
+         *
+         * @return The distance of the node from the start.
+         */
         public int getDistance() {
             return distance;
         }
 
+        /**
+         * Sets the distance of the node from the start.
+         *
+         * @param distance The distance of the node from the start.
+         */
         public void setDistance(int distance) {
             this.distance = distance;
         }

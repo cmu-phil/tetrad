@@ -188,6 +188,13 @@ public final class Edges {
         return null;
     }
 
+    /**
+     * For A o-o B, given A, returns B; otherwise returns null.
+     *
+     * @param node The one endpoint.
+     * @param edge The edge
+     * @return The other endpoint.
+     */
     public static Node traverseNondirected(Node node, Edge edge) {
         if (node == null) {
             return null;

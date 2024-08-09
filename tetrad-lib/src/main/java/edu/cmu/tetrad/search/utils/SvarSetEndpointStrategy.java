@@ -5,16 +5,39 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
+/**
+ * The SvarSetEndpointStrategy class implements the SetEndpointStrategy interface and provides a strategy for setting
+ * the endpoint of an edge in a graph. It uses the IndependenceTest and Knowledge classes for conducting conditional
+ * independence testing and causal discovery.
+ * <p>
+ * The idea is, whenever an endpoint is set by FciOrint, we should check if there are similar pairs in the graph that
+ * should be oriented in the same way.
+ * <p>
+ * {@link SetEndpointStrategy} {@link IndependenceTest} {@link Knowledge}
+ *
+ * @since 1.0
+ */
 public class SvarSetEndpointStrategy implements SetEndpointStrategy {
-
+    /**
+     * The IndependenceTest used for conditional independence testing.
+     */
     private final IndependenceTest independenceTest;
+    /**
+     * The Knowledge used for causal discovery.
+     */
     private final Knowledge knowledge;
 
+    /**
+     * Creates a new instance of SvarSetEndpointStrategy with the given IndependenceTest and Knowledge.
+     *
+     * @param independenceTest the IndependenceTest used for conditional independence testing
+     * @param knowledge        the Knowledge used for causal discovery
+     * @throws IllegalArgumentException if independenceTest is null or knowledge is null
+     */
     public SvarSetEndpointStrategy(IndependenceTest independenceTest, Knowledge knowledge) {
         if (independenceTest == null) {
             throw new IllegalArgumentException("Independence test is null.");
@@ -28,12 +51,30 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Sets the endpoint of a graph given the two nodes and the desired endpoint.
+     *
+     * @param graph the graph in which the endpoint is being set
+     * @param a the starting node of the endpoint
+     * @param b the ending node of the endpoint
+     * @param endpoint the desired endpoint value
+     */
     @Override
     public void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
         graph.setEndpoint(a, b, endpoint);
         orientSimilarPairs(graph, knowledge, a, b, endpoint, independenceTest);
     }
 
+    /**
+     * Orients similar pairs of nodes in a graph based on knowledge about their tier structure.
+     *
+     * @param graph the graph in which the pairs are being oriented
+     * @param knowledge the knowledge used for causal discovery
+     * @param x the first node in the pair
+     * @param y the second node in the pair
+     * @param mark the desired endpoint value
+     * @param independenceTest the independence test used for conditional independence testing
+     */
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark, IndependenceTest independenceTest) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;

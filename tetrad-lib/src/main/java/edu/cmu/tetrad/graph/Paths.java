@@ -1267,6 +1267,10 @@ public class Paths implements TetradSerializable {
 
     /**
      * Return true if b is an ancestor of any node in z
+     *
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return true if b is an ancestor of any node in z
      */
     public boolean isAncestor(Node b, Set<Node> z) {
         if (z.contains(b)) {
