@@ -51,7 +51,7 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private static final String EXP_OPT = "--experimental";
     /**
-     * Whether to enable experimental features
+     * Whether to enable experimental featuresj
      */
     public static boolean enableExperimental;
     /**

@@ -113,12 +113,17 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setSeed(parameters.getLong(Params.SEED));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         search.setKnowledge(knowledge);
 
@@ -172,6 +177,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 
         params.add(Params.USE_BES);
         params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
@@ -179,10 +185,14 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
+        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
 
         // Parameters
         params.add(Params.NUM_STARTS);
+
+        // Ablation
+        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

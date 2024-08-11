@@ -11,6 +11,12 @@ import edu.cmu.tetrad.graph.Graph;
 public class LocalGraphPrecision implements Statistic {
 
     /**
+     * The default constructor of the LocalGraphPrecision class.
+     */
+    public LocalGraphPrecision() {
+    }
+
+    /**
      * This method returns the abbreviation for the statistic.
      *
      * @return The abbreviation for the statistic.

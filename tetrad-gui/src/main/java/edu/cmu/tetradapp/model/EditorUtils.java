@@ -290,7 +290,13 @@ public class EditorUtils {
      * component does not have focus.
      */
     public static class JTextFieldWithPrompt extends JTextField {
+        /**
+         * The prompt text.
+         */
         private final String promptText;
+        /**
+         * The color of the prompt text.
+         */
         private final Color promptColor;
 
         public JTextFieldWithPrompt(String promptText) {

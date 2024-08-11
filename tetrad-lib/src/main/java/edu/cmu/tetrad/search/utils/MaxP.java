@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -269,9 +270,9 @@ public final class MaxP {
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
-        if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
-        if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
+        if (PcCommon.colliderAllowed(graph, a, b, c, knowledge)) {
+            PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
+        }
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.

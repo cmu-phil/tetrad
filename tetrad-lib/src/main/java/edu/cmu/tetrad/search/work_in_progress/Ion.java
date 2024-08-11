@@ -1363,15 +1363,7 @@ public class Ion {
     }
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
+     * Finds discriminating paths.
      */
     private boolean discrimPaths(Graph graph) {
         List<Node> nodes = graph.getNodes();

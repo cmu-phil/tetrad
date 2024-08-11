@@ -102,7 +102,7 @@ public class GeneralAndersonDarlingTest {
         System.out.println(test.getASquared());
         System.out.println(test.getASquaredStar());
         System.out.println(test.getP());
-        System.out.println(test.getProbTail(data.size(), test.getASquaredStar()));
+        System.out.println(test.getProbTail(data.size(), test.getASquared()));
     }
 
     /**

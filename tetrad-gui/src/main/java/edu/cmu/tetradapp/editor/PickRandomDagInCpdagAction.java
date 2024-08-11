@@ -43,6 +43,8 @@ public class PickRandomDagInCpdagAction extends AbstractAction {
     /**
      * This class represents an action to convert a CPDAG (Completed Partially Directed Acyclic Graph) to a random DAG
      * (Directed Acyclic Graph).
+     *
+     * @param  workbench The workbench containing the graph.
      */
     public PickRandomDagInCpdagAction(GraphWorkbench workbench) {
         super("Pick Random DAG in CPDAG");

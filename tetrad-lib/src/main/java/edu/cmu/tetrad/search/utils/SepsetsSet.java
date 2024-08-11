@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -57,26 +58,28 @@ public class SepsetsSet implements SepsetProducer {
     /**
      * Retrieves the sepset between two nodes.
      *
-     * @param a the first node
-     * @param b the second node
+     * @param a     the first node
+     * @param b     the second node
+     * @param depth the depth of the search
      * @return the set of nodes in the sepset between a and b
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b) {
+    public Set<Node> getSepset(Node a, Node b, int depth) {
         return this.sepsets.get(a, b);
     }
 
     /**
      * Retrieves the sepset for a and b, where we are expecting this sepset to contain all the nodes in s.
      *
-     * @param a the first node
-     * @param b the second node
-     * @param s the set of nodes to check in the sepset of a and b
+     * @param a     the first node
+     * @param b     the second node
+     * @param s     the set of nodes to check in the sepset of a and b
+     * @param depth the depth of the search
      * @return the set of nodes that the sepset of a and b is expected to contain.
      * @throws IllegalArgumentException if the sepset of a and b does not contain all the nodes in s
      */
     @Override
-    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
         Set<Node> sepset = this.sepsets.get(a, b);
 
         if (sepset != null && !sepset.containsAll(s)) {
@@ -95,11 +98,16 @@ public class SepsetsSet implements SepsetProducer {
         throw new UnsupportedOperationException("This makes no sense for this subclass.");
     }
 
+    @Override
+    public void setGraph(Graph graph) {
+        // Ignored.
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
         Set<Node> sepset = this.sepsets.get(i, k);
         if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
         else return !sepset.contains(j);

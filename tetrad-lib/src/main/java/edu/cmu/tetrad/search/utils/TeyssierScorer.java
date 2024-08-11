@@ -146,11 +146,11 @@ public class TeyssierScorer {
     /**
      * Moves j to before k and moves all the ancestors of j betwween k and j to before k.
      *
-     * @param k The node to tuck j before.
      * @param j The node to tuck.
+     * @param k The node to tuck j before.
      * @return true if the tuck made a change.
      */
-    public boolean tuck(Node k, Node j) {
+    public boolean tuck(Node j, Node k) {
         int jIndex = index(j);
         int kIndex = index(k);
 
@@ -595,6 +595,18 @@ public class TeyssierScorer {
     }
 
     /**
+     * Returns true iff [a, b, c] is an unshielded triple.
+     *
+     * @param a The first node.
+     * @param b The second node.
+     * @param c The third node.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
+     */
+    public boolean unshieldedTriple(Node a, Node b, Node c) {
+        return adjacent(a, b) && adjacent(b, c) && !adjacent(a, c);
+    }
+
+    /**
      * Returns true iff [a, b, c] is a triangle.
      *
      * @param a The first node.
@@ -789,6 +801,7 @@ public class TeyssierScorer {
                     parents.add(z0);
                     continue;
                 }
+
                 if (this.test.checkIndependence(n, z0, new HashSet<>(parents)).isDependent()) {
                     parents.add(z0);
                     changed1 = true;

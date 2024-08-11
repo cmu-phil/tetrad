@@ -40,6 +40,7 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static java.util.Collections.sort;
 import static org.apache.commons.math3.util.FastMath.max;
@@ -1201,6 +1202,31 @@ public final class GraphSearchUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Runs the given task with the given timeout.
+     *
+     * @param task    The task to run.
+     * @param timeout The timeout.
+     * @param unit    The time unit of the timeout.
+     * @param <T>     The type of the result.
+     * @return The result of the task, or null if the task times out.
+     */
+    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(task);
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            return null;
+        } catch (InterruptedException | ExecutionException e) {
+            return null; // Or handle exceptions differently
+        } finally {
+            executor.shutdown();
+        }
     }
 
     /**

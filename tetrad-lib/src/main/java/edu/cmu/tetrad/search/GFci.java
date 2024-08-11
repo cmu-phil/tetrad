@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
@@ -109,7 +110,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Whether verbose output should be printed.
      */
-    private boolean verbose;
+    private boolean verbose = false;
     /**
      * Whether the discriminating path tail rule should be used.
      */
@@ -118,6 +119,18 @@ public final class GFci implements IGraphSearch {
      * Whether the discriminating path collider rule should be used.
      */
     private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether to repair faulty PAGs.
+     */
+    private boolean repairFaultyPag = false;
+    /**
+     * Whether to leave out the final orientation step in the ablation study.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -140,14 +153,16 @@ public final class GFci implements IGraphSearch {
      */
     public Graph search() {
         this.independenceTest.setVerbose(verbose);
-        List<Node> nodes = getIndependenceTest().getVariables();
+        List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting GFCI algorithm.");
             TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        Graph graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FGES algorithm.");
+        }
 
         Fges fges = new Fges(this.score);
         fges.setKnowledge(getKnowledge());
@@ -156,28 +171,49 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        graph = fges.search();
+        Graph graph = fges.search();
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished FGES algorithm.");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
+        }
+
+        Graph cpdag = new EdgeListGraph(graph);
+
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
+
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
 
         return graph;
     }
@@ -317,4 +353,34 @@ public final class GFci implements IGraphSearch {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
+    /**
+     * Sets the flag indicating whether to repair faulty PAG.
+     *
+     * @param repairFaultyPag A boolean value indicating whether to repair faulty PAG.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
+
+    /**
+     * Sets the flag indicating whether to leave out the final orientation during ablation.
+     *
+     * @param ablationLeaveOutFinalOrientation A boolean value indicating whether to leave out the final orientation during ablation.
+     */
+    public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method used to find the sepset in the GFci algorithm.
+     *
+     * @param sepsetFinderMethod The method used to find the sepset.
+     *                           - 0: Default method
+     *                           - 1: Custom method 1
+     *                           - 2: Custom method 2
+     *                           - ...
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
+    }
 }

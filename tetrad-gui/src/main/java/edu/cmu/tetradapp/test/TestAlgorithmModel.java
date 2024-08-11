@@ -5,9 +5,16 @@ import edu.cmu.tetradapp.model.GridSearchModel;
 
 import java.util.List;
 
+/**
+ * Test the algorithm model.
+ */
 public class TestAlgorithmModel {
 
-
+    /**
+     * Main method.
+     *
+     * @param args the arguments.
+     */
     public static void main(String[] args) {
         new TestAlgorithmModel().test1();
     }

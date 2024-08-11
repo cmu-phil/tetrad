@@ -21,13 +21,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagSepsets;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsMinP;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -133,6 +133,18 @@ public final class BFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether to repair a faulty PAG.
+     */
+    private boolean repairFaultyPag;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -183,22 +195,32 @@ public final class BFci implements IGraphSearch {
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
+
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
+
         return graph;
     }
 
@@ -316,6 +338,33 @@ public final class BFci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
+    }
+
+    /**
+     * Sets whether to repair a faulty PAG.
+     *
+     * @param repairFaultyPag True if a faulty PAG should be repaired, false otherwise.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
+
+    /**
+     * Sets whether the final orientation should be left out during the search process.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method to be used for finding the sepset.
+     *
+     * @param sepsetFinderMethod The method to be used for finding the sepset.
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }
 

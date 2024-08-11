@@ -17,8 +17,8 @@ import java.util.*;
  *
  * <p>This class specifically handles an optimization for tiered knowledge, whereby
  * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
- * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
- * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
+ * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more variables
+ * than otherwise, so long as tiered knowledge is available to organize the search.</p>
  *
  * <p>This class is configured to respect the knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -136,11 +136,21 @@ public class PermutationSearch {
     }
 
     /**
-     * Performe the search and return a CPDAG.
+     * Performs a search for a graph using the default options. Returns the resulting graph.
      *
-     * @return The CPDAG.
+     * @return The constructed CPDAG.
      */
     public Graph search() {
+        return search(true);
+    }
+
+    /**
+     * Performe the search and return a CPDAG.
+     *
+     * @param cpdag True a CPDAG is wanted, if false, a DAG.
+     * @return The CPDAG.
+     */
+    public Graph search(boolean cpdag) {
         if (this.seed != -1) {
             RandomUtil.getInstance().setSeed(this.seed);
         }
@@ -186,7 +196,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag);
     }
 
     /**

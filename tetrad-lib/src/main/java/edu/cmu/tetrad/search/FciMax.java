@@ -25,14 +25,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,13 +102,13 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Determines whether the discriminating path tail rule should be applied during the search.
-     * If set to true, the rule will be applied. If set to false, the rule will not be applied.
+     * Determines whether the discriminating path tail rule should be applied during the search. If set to true, the
+     * rule will be applied. If set to false, the rule will not be applied.
      */
     private boolean doDiscriminatingPathTailRule = true;
     /**
-     * This variable specifies whether the discriminating path collider rule should be applied during the search.
-     * If set to true, the rule will be applied; if set to false, the rule will not be applied.
+     * This variable specifies whether the discriminating path collider rule should be applied during the search. If set
+     * to true, the rule will be applied; if set to false, the rule will not be applied.
      */
     private boolean doDiscriminatingPathColliderRule = true;
     /**
@@ -128,6 +127,10 @@ public final class FciMax implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Whether the final orientation step should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -173,7 +176,8 @@ public final class FciMax implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
-            new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
+            FciOrient fciOrient = new FciOrient(
+                    R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -182,11 +186,15 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = getFciOrient();
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
-        fciOrient.doFinalOrientation(graph);
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -327,24 +335,6 @@ public final class FciMax implements IGraphSearch {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
-
-    /**
-     * Retrieves an instance of FciOrient with all necessary parameters set.
-     *
-     * @return A new instance of FciOrient.
-     */
-    @NotNull
-    private FciOrient getFciOrient() {
-        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
-        return fciOrient;
-    }
 
     /**
      * Adds colliders to the given graph.
@@ -488,6 +478,15 @@ public final class FciMax implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the FCI search.
+     *
+     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -567,7 +569,7 @@ public final class SemGraph implements Graph {
     /**
      * {@inheritDoc}
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
@@ -860,8 +862,8 @@ public final class SemGraph implements Graph {
      * {@inheritDoc}
      */
     @Override
-    public Set<Node> getSepset(Node n1, Node n2) {
-        return this.graph.getSepset(n1, n2);
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
+        return this.graph.getSepset(n1, n2, test);
     }
 
     //========================PRIVATE METHODS===========================//
@@ -918,11 +920,10 @@ public final class SemGraph implements Graph {
         }
 
         Graph graph = getGraph();
-        List<Edge> edges = graph.getEdges(node1);
+        Set<Edge> edges = graph.getEdges(node1);
 
         if (edges == null) {
-            System.out.println();
-            edges = new ArrayList<>();
+            edges = new HashSet<>();
         }
 
         List<Edge> attachedEdges = new LinkedList<>(edges);

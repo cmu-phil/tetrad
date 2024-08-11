@@ -956,7 +956,7 @@ public final class FgesMb implements DagScorer {
      * @param y The second node
      */
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {

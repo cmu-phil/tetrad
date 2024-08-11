@@ -97,8 +97,8 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * Indicates the maximum number of variables that can be conditioned
-     * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
+     * Indicates the maximum number of variables that can be conditioned on during the search. A negative depth value
+     * (-1 in this case) indicates unlimited depth.
      */
     private int depth = -1;
     /**
@@ -113,6 +113,18 @@ public final class SpFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * True iff the search should repair a faulty PAG.
+     */
+    private boolean repairFaultyPag = false;
+    /**
+     * True iff the final orientation should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -153,27 +165,37 @@ public final class SpFci implements IGraphSearch {
         }
 
         Graph referenceDag = new EdgeListGraph(graph);
+
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
         gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathTCollideRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
+
         return graph;
     }
 
@@ -297,6 +319,7 @@ public final class SpFci implements IGraphSearch {
 
     /**
      * Sets whether the discriminating path tail rule is done.
+     *
      * @param doDiscriminatingPathTailRule True, if so.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
@@ -305,9 +328,37 @@ public final class SpFci implements IGraphSearch {
 
     /**
      * Sets whether the discriminating path collider rule is done.
+     *
      * @param doDiscriminatingPathTCollideRule True, if so.
      */
     public void setDoDiscriminatingPathCollideRule(boolean doDiscriminatingPathTCollideRule) {
         this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
+    }
+
+    /**
+     * Sets whether the search should repair a faulty PAG.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     *
+     * @param sepsetFinderMethod the method to use for finding sepsets
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }

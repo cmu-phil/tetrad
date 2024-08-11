@@ -204,16 +204,9 @@ public final class TsDagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        System.out.println("Complete rule set is used? " + this.completeRuleSetUsed);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setChangeFlag(false);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(graph);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
+        fciOrient.finalOrientation(graph);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");
@@ -323,8 +316,7 @@ public final class TsDagToPag {
     }
 
     /**
-     /**
-     * Sets whether the discriminating path tail rule should be used.
+     * /** Sets whether the discriminating path tail rule should be used.
      *
      * @param doDiscriminatingPathTailRule True, if so.
      */

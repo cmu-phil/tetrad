@@ -66,7 +66,6 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
         }
-
         IndependenceTest independenceTest;
 
         if (dataModel.isContinuous()) {
@@ -81,19 +80,8 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
 
-        double sum = 0.0;
-        double count = 0;
-
-        for (int i = 0; i < 2; i++) {
-            markovCheck.generateResults(true);
-            sum += markovCheck.getAndersonDarlingP(true);
-            count++;
-        }
-
-        return sum / count;
-
-//        markovCheck.generateResults(true);
-//        return markovCheck.getAndersonDarlingP(true);
+        markovCheck.generateResults(true);
+        return markovCheck.getAndersonDarlingP(true);
     }
 
     /**

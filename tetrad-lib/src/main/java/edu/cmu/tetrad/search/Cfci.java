@@ -79,6 +79,11 @@ public final class Cfci implements IGraphSearch {
     private int maxPathLength = -1;
 
     /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
+
+    /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
      * @param independenceTest The independence to use as an oracle.
@@ -167,17 +172,12 @@ public final class Cfci implements IGraphSearch {
         }
 
         // Step CI D. (Zhang's step F4.)
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
-        FciOrient fciOrient = new FciOrient(new SepsetsGreedy(this.graph, this.independenceTest,
-                new SepsetMap(), this.depth, knowledge));
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(this.graph);
-        fciOrient.doFinalOrientation(this.graph);
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(this.graph);
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -551,6 +551,7 @@ public final class Cfci implements IGraphSearch {
             TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
+
     /**
      * Sets the maximum length of any discriminating path.
      *
@@ -564,6 +565,18 @@ public final class Cfci implements IGraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation True, if the final orientation should be left out; false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * The type of an unshielded triple.
+     */
     private enum TripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
     }

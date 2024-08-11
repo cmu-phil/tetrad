@@ -219,6 +219,7 @@ public class MarkovCheckEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 600));
 
         conditioningSetTypeJComboBox.addItem("Parents(X) (Local Markov)");
+        conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
@@ -227,6 +228,9 @@ public class MarkovCheckEditor extends JPanel {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
                 case "Parents(X) (Local Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
+                    break;
+                case "Parents(X) and Neighbors(X)":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
                     break;
                 case "Parents(X) for a Valid Order (Ordered Local Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
@@ -393,6 +397,14 @@ public class MarkovCheckEditor extends JPanel {
 
         JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
+        JCheckBox removeExtraneousVariables = new JCheckBox("Remove Extraneous Variables");
+        removeExtraneousVariables.setSelected(false);
+
+        removeExtraneousVariables.addActionListener(e -> {
+            model.getMarkovCheck().setRemoveExtraneousVariables(removeExtraneousVariables.isSelected());
+            refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, true);
+        });
+
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
         testDescTextArea.setLineWrap(true);
@@ -425,7 +437,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         new MyWatchedProcess();
-        initComponents(params, resample, addSample, pane, conditioningSetsLabel, percentSampleLabel);
+        initComponents(params, resample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, percentSampleLabel);
     }
 
     /**
@@ -468,6 +480,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
+        histogram.setNumBins(10);
         HistogramPanel view = new HistogramPanel(histogram, true);
 
         Color fillColor = new Color(113, 165, 210);
@@ -555,7 +568,8 @@ public class MarkovCheckEditor extends JPanel {
         return flipEscapes;
     }
 
-    private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
+    private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
+                                JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables, JLabel percentSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -568,7 +582,10 @@ public class MarkovCheckEditor extends JPanel {
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(conditioningSetsLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                                        .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                )
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(testLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -600,7 +617,9 @@ public class MarkovCheckEditor extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(conditioningSetsLabel))
+                                .addComponent(conditioningSetsLabel)
+                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        )
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                         .addContainerGap())
@@ -948,8 +967,8 @@ public class MarkovCheckEditor extends JPanel {
                 double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
 
                 fractionDepLabelIndep.setText(
-                        "% dependent = " + ((Double.isNaN(fractionDependent)) ?
-                                "NaN" : nf.format(fractionDependent * 100))
+                        "Fraction dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                "NaN" : nf.format(fractionDependent))
                 );
 
                 ksLabelIndep.setText(
@@ -999,8 +1018,8 @@ public class MarkovCheckEditor extends JPanel {
                 double fractionDependent = model.getMarkovCheck().getFractionDependent(visiblePairs);
 
                 fractionDepLabelDep.setText(
-                        "% dependent = " + ((Double.isNaN(fractionDependent)) ?
-                                "NaN" : nf.format(fractionDependent * 100))
+                        "Fraction dependent = " + ((Double.isNaN(fractionDependent)) ?
+                                "NaN" : nf.format(fractionDependent))
                 );
 
                 ksLabelDep.setText(
@@ -1331,11 +1350,11 @@ public class MarkovCheckEditor extends JPanel {
                                   + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
-        fractionDepLabelIndep.setText("% dependent = "
+        fractionDepLabelIndep.setText("Fraction dependent = "
                                       + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(true)))));
-        fractionDepLabelDep.setText("% dependent = "
+        fractionDepLabelDep.setText("Fraction dependent = "
                                     + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));

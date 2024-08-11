@@ -7,15 +7,13 @@ import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.LvDumb;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,13 +31,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-PAG",
-        command = "boss-pag",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "LV-Dumb",
+//        command = "lv-dumb",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
@@ -69,7 +67,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see Algorithm
      */
     public BossPag() {
-        // Used for reflection; do not delete.
+        // Used for reflection; do not delete this.
     }
 
     /**
@@ -114,7 +112,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BossPag search = new edu.cmu.tetrad.search.BossPag(score);
+        LvDumb search = new LvDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -123,10 +121,6 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
 
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-        // DAG to PAG
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -154,7 +148,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "BOSS-PAG (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**
@@ -183,8 +177,6 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // General
         params.add(Params.TIME_LAG);

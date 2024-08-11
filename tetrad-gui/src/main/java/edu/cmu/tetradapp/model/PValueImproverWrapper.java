@@ -411,10 +411,6 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return "BFF";
     }
 
-    private boolean isMeekPreventCycles() {
-        return this.params.getBoolean("MeekPreventCycles", false);
-    }
-
     /**
      * <p>addPropertyChangeListener.</p>
      *

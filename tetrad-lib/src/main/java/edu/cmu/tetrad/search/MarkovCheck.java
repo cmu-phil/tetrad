@@ -3,10 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -152,6 +149,14 @@ public class MarkovCheck {
      * For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
      */
     private List<Node> conditioningNodes;
+    /**
+     * Indicates whether extraneous variables should be removed when d-separation holds.
+     * <p>
+     * Extraneous variables are irrelevant or redundant variables that are not necessary for finding d-separation.
+     * <p>
+     * Default value is false, meaning that extraneous variables are not removed by default.
+     */
+    private boolean removeExtraneousVariables = false;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -514,8 +519,8 @@ public class MarkovCheck {
                         }
                         break;
                     case "lowAHRecallNodes.csv":
-                        for (Node n: lowAHRecallNodes) {
-                            writer.write(n.toString()+"\n");
+                        for (Node n : lowAHRecallNodes) {
+                            writer.write(n.toString() + "\n");
                         }
                         break;
 
@@ -542,6 +547,7 @@ public class MarkovCheck {
      * @param trueGraph        The true graph.
      * @param threshold        The threshold value for classifying nodes.
      * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
+     * @param lowRecallBound   The bound value for recording low recall.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      */
     public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
@@ -585,7 +591,7 @@ public class MarkovCheck {
                 List<Double> flatList = shuffledlocalPValues.stream()
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
-                System.out.println("# p values feed into ADTest: " + flatList.size() );
+                System.out.println("# p values feed into ADTest: " + flatList.size());
                 Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
                 if (ADTestPValue <= threshold) {
                     rejects.add(x);
@@ -639,8 +645,8 @@ public class MarkovCheck {
                         }
                         break;
                     case "lowLGRecallNodes.csv":
-                        for (Node n: lowLGRecallNodes) {
-                            writer.write(n.toString()+"\n");
+                        for (Node n : lowLGRecallNodes) {
+                            writer.write(n.toString() + "\n");
                         }
                         break;
 
@@ -823,7 +829,28 @@ public class MarkovCheck {
 
                     switch (setType) {
                         case LOCAL_MARKOV:
-                            z = new HashSet<>(graph.getParents(x));
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
+                            break;
+                        case PARENTS_AND_NEIGHBORS:
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
+                                if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
+                                    z.add(w);
+                                }
+
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
@@ -849,6 +876,10 @@ public class MarkovCheck {
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
+                    if (removeExtraneousVariables && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                        z = removeExtraneousVariables(z, x, y);
+                    }
+
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
                         continue;
                     }
@@ -868,6 +899,22 @@ public class MarkovCheck {
 
         calcStats(true);
         calcStats(false);
+    }
+
+    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y) {
+        Set<Node> _z = new HashSet<>(z);
+
+        do {
+            for (Node w : new HashSet<>(_z)) {
+                _z.remove(w);
+                if (!graph.paths().isMSeparatedFrom(x, y, _z, false)) {
+                    _z.add(w);
+                }
+            }
+
+            z = new HashSet<>(_z);
+        } while (!_z.equals(z));
+        return z;
     }
 
     /**
@@ -1637,6 +1684,16 @@ public class MarkovCheck {
         for (ModelObserver observer : observers) {
             observer.update();
         }
+    }
+
+    /**
+     * Sets the flag indicating whether to remove extraneous variables when d-separation holds, to form smaller
+     * conditioning sets.
+     *
+     * @param removeExtraneousVariables {@code true} if extraneous variables should be removed, {@code false} otherwise
+     */
+    public void setRemoveExtraneousVariables(boolean removeExtraneousVariables) {
+        this.removeExtraneousVariables = removeExtraneousVariables;
     }
 
     /**

@@ -88,6 +88,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * Represents an action that performs calculations on paths in a graph.
+     *
+     * @param workbench  the workbench
+     * @param parameters the parameters
      */
     public PathsAction(GraphWorkbench workbench, Parameters parameters) {
         super("Paths");
@@ -98,8 +101,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
      *
-     * @param params     the set of parameter names
-     * @param parameters the Parameters object containing the parameter values
+     * @param params            the set of parameter names
+     * @param parameters        the Parameters object containing the parameter values
+     * @param listOptionAllowed whether the option allows for a list of values
+     * @param bothOptionAllowed whether the option allows for both true and false to be selected
      * @return a map of parameter names to corresponding Box components
      */
     public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
@@ -108,7 +113,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, false),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -407,6 +412,16 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return field;
     }
 
+    /**
+     * Creates a ListLongTextField with the specified parameters.
+     *
+     * @param parameter     The parameter name to be set in the Parameters object.
+     * @param parameters    The Parameters object to set the parameter value.
+     * @param defaultValues The default values for the ListLongTextField.
+     * @param lowerBound    The lower bound for valid values.
+     * @param upperBound    The upper bound for valid values.
+     * @return The created ListLongTextField.
+     */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
                                                          Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);
@@ -826,8 +841,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.setCaretPosition(0);
             }
         };
-
-//        new MyWatchedProcess();
     }
 
 
@@ -1085,8 +1098,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> backdoor = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
+                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
 
                 if (mpdag || mag) {
                     backdoor.removeIf(path -> path.size() < 2 ||
@@ -1144,8 +1158,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> _paths = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
+                List<List<Node>> paths = new ArrayList<>(_paths);
 
                 if (paths.isEmpty()) {
                     continue;
@@ -1165,6 +1180,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private void listPaths(Graph graph, JTextArea textArea, List<List<Node>> paths) {
         textArea.append("\n\n    Not Blocked:\n");
+
+        boolean allowSelectionBias = graph.paths().isLegalPag();
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                allowSelectionBias = true;
+                break;
+            }
+        }
 
         boolean found1 = false;
 
@@ -1186,7 +1210,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             if (graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, !mpdag));
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet,
+                        !mpdag, allowSelectionBias));
                 found1 = true;
             }
         }
@@ -1205,7 +1230,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             if (!graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true));
+                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true,
+                        allowSelectionBias));
                 found2 = true;
             }
         }

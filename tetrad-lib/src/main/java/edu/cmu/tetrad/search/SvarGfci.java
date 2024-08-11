@@ -131,7 +131,7 @@ public final class SvarGfci implements IGraphSearch {
 
         // The maxIndegree for the fast adjacency search.
         int maxIndegree = -1;
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, maxIndegree, knowledge);
+        this.sepsets = new SepsetsMinP(fgesGraph, this.independenceTest, maxIndegree);
 
         for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));
@@ -152,7 +152,7 @@ public final class SvarGfci implements IGraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (this.sepsets.getSepset(a, c) != null) {
+                    if (this.sepsets.getSepset(a, c, -1) != null) {
                         this.graph.removeEdge(a, c);
                         removeSimilarEdges(a, c);
                     }
@@ -162,11 +162,14 @@ public final class SvarGfci implements IGraphSearch {
 
         modifiedR0(fgesGraph);
 
-        SvarFciOrient fciOrient = new SvarFciOrient(this.sepsets, this.independenceTest);
+        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
         fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
+
+        fciOrient.finalOrientation(this.graph);
 
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : graph.getEdges()) {
@@ -313,7 +316,7 @@ public final class SvarGfci implements IGraphSearch {
                     //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = this.sepsets.getSepset(a, c);
+                    Set<Node> sepset = this.sepsets.getSepset(a, c, -1);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

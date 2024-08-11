@@ -22,7 +22,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +95,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -105,11 +105,11 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
+        search.setOut(System.out);
 
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream printStream) {
-            search.setOut(printStream);
-        }
+        // Ablation
+        search.setAblationLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
@@ -158,6 +158,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
+        parameters.add(Params.SEPSET_FINDER_METHOD);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
@@ -165,7 +166,11 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.REPAIR_FAULTY_PAG);
         parameters.add(Params.NUM_THREADS);
+
+        // Ablation
+        parameters.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         parameters.add(Params.VERBOSE);
         return parameters;

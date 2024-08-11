@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.work_in_progress.VcPcFast;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
@@ -440,7 +441,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     private boolean isMeekPreventCycles() {
         Parameters params = getParams();
-        return params instanceof Parameters && params.getBoolean("MeekPreventCycles", false);
+        return params instanceof Parameters && params.getBoolean(Params.GUARANTEE_CPDAG, false);
     }
 
     private void setVcpcFastFields(VcPcFast fvcpc) {

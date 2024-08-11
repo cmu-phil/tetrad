@@ -1339,7 +1339,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @return a set of neighbors of node Y that fulfill the specified conditions
      */
     private Set<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = this.graph.getEdges(y);
+        Set<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> tNeighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -1366,7 +1366,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @return a set of neighboring nodes connected to the given node
      */
     private Set<Node> getNeighbors(Node y) {
-        List<Edge> yEdges = this.graph.getEdges(y);
+        Set<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {

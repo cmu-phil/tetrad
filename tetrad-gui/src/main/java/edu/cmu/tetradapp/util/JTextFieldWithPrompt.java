@@ -3,7 +3,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class JTextFieldWithPrompt extends JTextField {
-    private String promptText;
+
+    /**
+     * Stores the prompt text.
+     */
+    private final String promptText;
 
     public JTextFieldWithPrompt(String promptText) {
         this.promptText = promptText;

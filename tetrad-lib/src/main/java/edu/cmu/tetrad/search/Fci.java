@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -124,6 +127,14 @@ public final class Fci implements IGraphSearch {
      * Whether the discriminating path rule should be used.
      */
     private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether the PAG should be repaired.
+     */
+    private boolean repairFaultyPag;
+    /**
+     * Whether the final orientation step should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -195,18 +206,46 @@ public final class Fci implements IGraphSearch {
         fas.setStable(this.stable);
 
         //The PAG being constructed.
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FAS search.");
+        }
+
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Reorienting with o-o.");
+        }
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, knowledge));
+        fciOrient.setVerbose(verbose);
 
         if (this.possibleMsepSearchDone) {
-            new FciOrient(sepsets1).ruleR0(graph);
+            if (verbose) {
+                TetradLogger.getInstance().log("Starting possible msep search.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing R0.");
+            }
+
+            fciOrient.ruleR0(graph);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Removing by possible d-sep.");
+            }
+
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Reorienting all edges as o-o.");
+            }
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -214,17 +253,23 @@ public final class Fci implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = new FciOrient(sepsets1);
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing R0.");
+        }
 
         fciOrient.ruleR0(graph);
-        fciOrient.doFinalOrientation(graph);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing Final Orientation.");
+        }
+
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
 
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
@@ -372,6 +417,24 @@ public final class Fci implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    /**
+     * Sets whether the PAG should be repaired if faulty.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the search.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

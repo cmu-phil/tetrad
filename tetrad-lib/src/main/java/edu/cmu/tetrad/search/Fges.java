@@ -272,7 +272,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, true, verbose), true);
 
         return graph;
     }
@@ -814,7 +814,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @return a list of T-neighbors of the two nodes
      */
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {

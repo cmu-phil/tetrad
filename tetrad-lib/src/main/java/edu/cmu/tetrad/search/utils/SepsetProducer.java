@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -34,67 +35,67 @@ import java.util.Set;
  * @see SepsetMap
  */
 public interface SepsetProducer {
-    /**
-     * <p>getSepset.</p>
-     *
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.Set} object
-     */
-    Set<Node> getSepset(Node a, Node b);
 
     /**
-     * Returns the subset for a and b, where this sepset is expected to contain all the nodes in s. The behavior is
-     * morphed depending on whether sepsets are calculated using an independence test or not. If sepsets are calculated
-     * using an independence test, and a sepset is not found containing all the nodes in s, then the method will return
-     * null. Otherwise, if the discovered sepset does not contain all the nodes in s, the method will throw an
-     * exception.
+     * Retrieves the sepset, which is the set of common neighbors between two given nodes.
      *
-     * @param a the first node
-     * @param b the second node
-     * @param s the set of nodes
-     * @return the set of nodes that sepsets for a and b are expected to contain.
+     * @param a     the first node
+     * @param b     the second node
+     * @param depth the depth of the search
+     * @return the set of common neighbors between nodes a and b
      */
-    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s);
+    Set<Node> getSepset(Node a, Node b, int depth);
+
+    /**
+     * Retrieves a sepset containing nodes in s from the given set of nodes.
+     *
+     * @param a     the first node
+     * @param b     the second node
+     * @param s     the set of nodes
+     * @param depth the depth of the search
+     * @return the sepset containing nodes a and b from the given set of nodes
+     */
+    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth);
 
     /**
      * <p>isUnshieldedCollider.</p>
      *
-     * @param i a {@link edu.cmu.tetrad.graph.Node} object
-     * @param j a {@link edu.cmu.tetrad.graph.Node} object
-     * @param k a {@link edu.cmu.tetrad.graph.Node} object
+     * @param i     a {@link Node} object
+     * @param j     a {@link Node} object
+     * @param k     a {@link Node} object
+     * @param depth the depth of the search
      * @return a boolean
      */
-    boolean isUnshieldedCollider(Node i, Node j, Node k);
+    boolean isUnshieldedCollider(Node i, Node j, Node k, int depth);
 
     /**
-     * <p>getScore.</p>
+     * Returns the score of the object.
      *
-     * @return a double
+     * @return the score value
      */
     double getScore();
 
     /**
-     * <p>getVariables.</p>
+     * Retrieves the list of variables.
      *
-     * @return a {@link java.util.List} object
+     * @return the list of variables as a {@link List} of {@link Node} objects.
      */
     List<Node> getVariables();
 
     /**
-     * <p>setVerbose.</p>
+     * Sets the verbose mode of the SepsetProducer.
      *
-     * @param verbose a boolean
+     * @param verbose true if verbose mode is enabled, false otherwise
      */
     void setVerbose(boolean verbose);
 
     /**
-     * <p>isIndependent.</p>
+     * Checks if node d is independent of node c given the set of nodes in sepset.
      *
-     * @param d      a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c      a {@link edu.cmu.tetrad.graph.Node} object
-     * @param sepset a {@link java.util.Set} object
-     * @return a boolean
+     * @param d      the first node
+     * @param c      the second node
+     * @param sepset the set of common neighbors between d and c
+     * @return true if d is independent of c, false otherwise
      */
     boolean isIndependent(Node d, Node c, Set<Node> sepset);
 
@@ -107,5 +108,12 @@ public interface SepsetProducer {
      * @return the p-value for the statistical test
      */
     double getPValue(Node a, Node b, Set<Node> sepset);
+
+    /**
+     * Sets the graph for the SepsetProducer object.
+     *
+     * @param graph the graph to set
+     */
+    void setGraph(Graph graph);
 }
 

@@ -24,19 +24,18 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
 /**
- * BOSS-PAG is a class that implements the IGraphSearch interface. The BOSS-PAG algorithm finds the BOSS DAG for
+ * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
- * doing any further laten variable reasoning.
+ * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class BossPag implements IGraphSearch {
+public final class LvDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -66,20 +65,9 @@ public final class BossPag implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
-     * If set to true, the search algorithm will use the Discriminating Path Tail Rule.
-     * If set to false, the search algorithm will not use the Discriminating Path Tail Rule.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * This variable determines whether the Discriminating Path Collider Rule should be used during the search algorithm.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-
     /**
      * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
      * Score object.
@@ -87,7 +75,7 @@ public final class BossPag implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public BossPag(Score score) {
+    public LvDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -125,29 +113,11 @@ public final class BossPag implements IGraphSearch {
         suborderSearch.setNumStarts(numStarts);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        var best = permutationSearch.getOrder();
+        var cpdag = permutationSearch.search();
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Best order: " + best);
-        }
-
-        var scorer = new TeyssierScorer(null, score);
-        scorer.score(best);
-        scorer.bookmark();
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
-            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
-        }
-
-        var dag = scorer.getGraph(false);
-
-        DagToPag dagToPag = new DagToPag(dag);
+        DagToPag dagToPag = new DagToPag(cpdag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        dagToPag.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
         return dagToPag.convert();
     }
 
@@ -204,23 +174,5 @@ public final class BossPag implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

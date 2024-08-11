@@ -23,10 +23,12 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -182,6 +184,24 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>undirectedGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph nondirectedGraph(Graph graph) {
+        Graph graph2 = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : graph.getEdges()) {
+            if (!graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                graph2.addNondirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
+
+        return graph2;
+    }
+
+    /**
      * <p>completeGraph.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
@@ -252,7 +272,7 @@ public final class GraphUtils {
      * @return the string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, boolean showBlocked) {
-        return GraphUtils.pathString(graph, path, new HashSet<>(), showBlocked);
+        return pathString(graph, path, new HashSet<>(), showBlocked, false);
     }
 
     /**
@@ -277,27 +297,31 @@ public final class GraphUtils {
      * @return a string representation of the path
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars) {
-        return pathString(graph, path, conditioningVars, false);
+        return pathString(graph, path, conditioningVars, false, false);
     }
 
     /**
      * Returns a string representation of the given path in the graph, with additional information about conditioning
      * variables.
      *
-     * @param graph            the graph containing the path
-     * @param path             the list of nodes representing the path
-     * @param conditioningVars the list of nodes representing the conditioning variables
-     * @param showBlocked      whether to show information about blocked paths
+     * @param graph              the graph containing the path
+     * @param path               the list of nodes representing the path
+     * @param conditioningVars   the list of nodes representing the conditioning variables
+     * @param showBlocked        whether to show information about blocked paths
+     * @param allowSelectionBias whether to allow selection bias. For CPDAGs, this should be false, since undirected
+     *                           edges mean directed in one direction or the other. For PAGs, it should be true, since
+     *                           undirected edges indicate selection bias.
      * @return a string representation of the path with conditioning information
      */
-    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked) {
+    public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked,
+                                    boolean allowSelectionBias) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
         }
 
-        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, false);
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, allowSelectionBias);
 
         if (showBlocked) {
             if (!mConnecting) {
@@ -1407,6 +1431,14 @@ public final class GraphUtils {
             return 4;
         }
 
+        if (edgeTop.getEndpoint1() == Endpoint.TAIL && edgeTop.getEndpoint2() == Endpoint.CIRCLE) {
+            return 6;
+        }
+
+        if (edgeTop.getEndpoint1() == Endpoint.CIRCLE && edgeTop.getEndpoint2() == Endpoint.TAIL) {
+            return 7;
+        }
+
         return 5;
     }
 
@@ -1456,6 +1488,14 @@ public final class GraphUtils {
 
         if (Edges.isBidirectedEdge(edgeLeft)) {
             return 6;
+        }
+
+        if (edgeLeft.getEndpoint1() == Endpoint.TAIL && edgeLeft.getEndpoint2() == Endpoint.CIRCLE) {
+            return 7;
+        }
+
+        if (edgeLeft.getEndpoint1() == Endpoint.CIRCLE && edgeLeft.getEndpoint2() == Endpoint.TAIL) {
+            return 8;
         }
 
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
@@ -1897,6 +1937,10 @@ public final class GraphUtils {
      * @param verbose Whether to print verbose output.
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting extra-edge removal step.");
+        }
+
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1920,7 +1964,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c, -1);
 
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2457,6 +2501,12 @@ public final class GraphUtils {
                 graph.addPartiallyOrientedEdge(nodeB, nodeA);
             } else if (edgeSpec.lastIndexOf("o-o") != -1) {
                 graph.addNondirectedEdge(nodeB, nodeA);
+            } else if (edgeSpec.lastIndexOf("o--") != -1) {
+                Edge _edge = new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.TAIL);
+                graph.addEdge(_edge);
+            } else if (edgeSpec.lastIndexOf("--o") != -1) {
+                Edge _edge = new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.CIRCLE);
+                graph.addEdge(_edge);
             }
         }
 
@@ -2475,6 +2525,10 @@ public final class GraphUtils {
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting GFCI-R0.");
+        }
+
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         fciOrientbk(knowledge, pag, pag.getNodes());
@@ -2514,7 +2568,7 @@ public final class GraphUtils {
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
                     if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsets.getSepset(x, z);
+                        Set<Node> sepset = sepsets.getSepset(x, z, -1);
 
                         if (sepset != null) {
                             pag.removeEdge(x, z);
@@ -2598,7 +2652,7 @@ public final class GraphUtils {
      * @param c     the third node
      * @return true if the nodes are unshielded colliders, false otherwise
      */
-    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+    public static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
         return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
@@ -2861,6 +2915,492 @@ public final class GraphUtils {
     }
 
     /**
+     * Repairs a faulty PAG (Partially Directed Acyclic Graph).
+     * <p>
+     * If the estimated PAG contains a directed cycle, an IllegalArgumentException is thrown, as this type of estimated
+     * PAG cannot be repaired.
+     * <p>
+     * Otherwise, two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y,
+     * then the edge is oriented to x --&gt; y. Such an edge cannot be x &lt;-- y on pain of a cycle. Also, it cannot be
+     * x &lt;-&gt; y because the bidirected-edge semantics prohibits it (the problem we're trying to fix). So it must
+     * actually be x --&gt; y. The basic issue here is that to know the edge is not bidirected, we need to be able to
+     * "peer into the future" of the orientation process, which we can't do. As it turns out, this edge can't have been
+     * bidirected in the first place, because it would have been oriented to x --&gt; y in the first place had we known
+     * that x ~~&gt; y. So it's making a claim about non-causality that can't be supported. So we just fix it in
+     * post-processing.
+     * <p>
+     * Second, if there is an inducing path between two non-adjacent nodes x and y, then a nondirected edge x o-o y is
+     * added between them. In a PAG, x and y are adjacent if and only if there is an inducing path between x and y, so
+     * this is an error that should be fixed. It's possible the final orientation will orient it, but it's also possible
+     * that it will remain nondirected.
+     * <p>
+     * The final orientation is then done using the supplied FciOrient object, which should be configured to have the
+     * desired behavior.
+     * <p>
+     * As changes that are made above may imply further changes, the process is repeated until no further changes are
+     * made.
+     * <p>
+     * The end result of this repair process may not be a legal PAG if additional edges are oriented by knowledge or by
+     * unfaithfulness in the original estimated PAG. However, it will be a PAG for which some knowledge-based
+     * orientation process could have been applied.
+     *
+     * @param pag                              the faulty PAG to be repaired
+     * @param fciOrient                        the FciOrient object used for final orientation
+     * @param knowledge                        the knowledge object used for orientation
+     * @param unshieldedColliders              the set of unshielded colliders to be updated
+     * @param verbose                          indicates whether or not to print verbose output
+     * @param ablationLeaveOutFinalOrientation indicates whether or not to leave out the final orientation
+     * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
+     */
+    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                       Set<Triple> unshieldedColliders, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Repairing faulty PAG...");
+        }
+
+        fciOrient.setKnowledge(knowledge);
+
+        boolean changed;
+        boolean anyChange = false;
+
+        do {
+            changed = false;
+
+            for (Edge edge : pag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
+                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
+                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
+                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
+                    // it turns out, this edge can't have been bidirected in the first place, because it would have
+                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
+                    // about non-causality that can't be supported. So we just fix it in post-processing.
+                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(x, y);
+
+                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
+
+                        for (Node _into : into) {
+//                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+                                pag.addNondirectedEdge(_into, y);
+                            }
+
+                            if (unshieldedColliders != null) {
+                                unshieldedColliders.remove(new Triple(_into, x, y));
+                            }
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
+                        pag.removeEdge(y, x);
+                        pag.addDirectedEdge(y, x);
+
+                        List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
+
+                        for (Node _into : into) {
+//                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
+                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
+                                pag.addNondirectedEdge(_into, x);
+                            }
+
+                            if (unshieldedColliders != null) {
+                                unshieldedColliders.remove(new Triple(_into, y, x));
+                            }
+
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
+                }
+            }
+
+            for (Node x : pag.getNodes()) {
+                for (Node y : pag.getNodes()) {
+                    if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
+//                        pag.addNondirectedEdge(x, y);
+                        pag.addBidirectedEdge(x, y); // Zhang 2008
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " o-o " + y + ".");
+                        }
+
+                        changed = true;
+                        anyChange = true;
+                    }
+                }
+            }
+
+            if (!ablationLeaveOutFinalOrientation) {
+                fciOrient.finalOrientation(pag);
+            }
+        } while (changed);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing final orientation...");
+        }
+
+        if (!anyChange) {
+            if (verbose) {
+                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+            }
+        } else {
+            if (verbose) {
+                TetradLogger.getInstance().log("Faulty PAG repaired.");
+            }
+        }
+    }
+
+
+    private static void adjustAlmostCycle(Graph pag, Set<Triple> unshieldedColliders, Node x, Node y) {
+        pag.setEndpoint(y, x, Endpoint.CIRCLE);
+
+        for (Node z : pag.getNodesInTo(x, Endpoint.ARROW)) {
+            if (z == y) continue;
+            if (!pag.isAdjacentTo(z, y)) {// && pag.getEdge(z, x).pointsTowards(x)) {
+                pag.setEndpoint(z, x, Endpoint.CIRCLE);
+                unshieldedColliders.remove(new Triple(z, x, y));
+            }
+        }
+
+        for (Node w : pag.getNodesInTo(y, Endpoint.ARROW)) {
+            if (w == x) continue;
+            if (!pag.isAdjacentTo(w, x)) {
+                unshieldedColliders.add(new Triple(x, y, w));
+            }
+        }
+    }
+
+    /**
+     * Calculates the number of induced adjacencies in the given estiamted Partial Ancestral (PAG) with respect to the
+     * given true PAG. An induced adjacency in a PAG is an edge that is adjacent in the estimated graph, but not in the
+     * true graph, and is not covering a collider or noncollider in the true graph.
+     *
+     * @param trueGraph the true PAG.
+     * @param estGraph  the estimated PAG.
+     * @return the number of induced adjacencies in the PAG.
+     * @see #edgeInEstInTrue(Graph, Graph, Node, Node)
+     */
+    public static int getNumInducedAdjacenciesInPag(Graph trueGraph, Graph estGraph) {
+
+        // Assume trueGraph and estGraph are PAGs; information may be unhelpful if not.
+        int count = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            boolean isInducedAdjacency = edgeInEstInTrue(trueGraph, estGraph, x, y);
+
+            if (isInducedAdjacency) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Returns the number of covering edges in the given estimated partial ancestral graph (PAG) with respect to the
+     * given true PAG. A covering edge in a PAG connects two nodes such that the edges in the true graph represent the
+     * edges in the estimated graph.
+     *
+     * @param trueGraph The true ancestral graph
+     * @param estGraph  The estimated ancestral graph
+     * @return The count of covering edges in the PAG
+     * @see #isCoveringAdjacency(Graph, Graph, Node, Node)
+     */
+    public static int getNumCoveringAdjacenciesInPag(Graph trueGraph, Graph estGraph) {
+
+        // Assume trueGraph and estGraph are PAGs; information may be unhelpful if not.
+        int count = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            boolean isCoveringAdjacency = isCoveringAdjacency(trueGraph, estGraph, x, y);
+
+            if (isCoveringAdjacency) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Checks if an edge between two nodes is in the estimated graph but is not adjacent in the true graph.
+     *
+     * @param trueGraph The true graph.
+     * @param estGraph  The estimated graph.
+     * @param x         The first node.
+     * @param y         The second node.
+     * @return True if the edge is in the estimated graph but not in the true graph, false otherwise.
+     * @see #isCoveringAdjacency(Graph, Graph, Node, Node)
+     */
+    private static boolean edgeInEstInTrue(Graph trueGraph, Graph estGraph, Node x, Node y) {
+        boolean inEstNotTrue = false;
+
+        if (estGraph.isAdjacentTo(x, y)) {
+//            boolean coveringEdge = isCoveringAdjacency(trueGraph, estGraph, x, y);
+
+            // If the edge is not a covering edge, and it is non-adjacent in the true graph, then it is an
+            // induced edge in the true graph. We count the induced edges.
+            if (trueGraph.isAdjacentTo(x, y)) {// && !coveringEdge) {
+                inEstNotTrue = true;
+            }
+        }
+
+        return inEstNotTrue;
+    }
+
+    /**
+     * Determines whether an edge between two nodes in the estimated graph is covering a collider or noncollider in the
+     * true graph. This is the case if the edge is adjacent in the estimated graph, but not in the true graph, and there
+     * is a common adjacent node in the estimated graph that is also a common adjacent node in the true graph. If the
+     * path through the common adjacent node is a collider in the true graph if and only if it is a noncollider in the
+     * estimated graph, then the edge is covering a collider or noncollider.
+     *
+     * @param trueGraph the true graph
+     * @param estGraph  the estimated graph
+     * @param x         the first node
+     * @param y         the second node
+     * @return true if the edge is covering a collider or noncollider, false otherwise
+     */
+    public static boolean isCoveringAdjacency(Graph trueGraph, Graph estGraph, Node x, Node y) {
+
+        // We need to look at common adjacents of x and y in the estimated graph, which are also common
+        // adjacents of x and y in the true graph.
+        List<Node> commonAdjacents = estGraph.getAdjacentNodes(x);
+        commonAdjacents.retainAll(estGraph.getAdjacentNodes(y));
+
+        boolean coveringAdjacency = false;
+
+        for (Node z : commonAdjacents) {
+
+            // We need to determine if adjacency x *-* y in the estimated graph is covering a collider or
+            // noncollider in the true graph. For this, we first of all need to make sure that x and y are
+            // non-adjacent in the true graph. Then we need to check if some path through a common adjacent z
+            // in both the true and estimated graphs is a collider in the true graph if and only if it is
+            // a noncollider in the estimated graph.
+            if (!trueGraph.isAdjacentTo(x, y)) {
+                if (trueGraph.isAdjacentTo(x, z) && trueGraph.isAdjacentTo(y, z)) {
+                    boolean colliderInTrueGraph = trueGraph.isDefCollider(x, z, y);
+                    boolean colliderInEstGraph = estGraph.isDefCollider(x, z, y);
+
+                    if (colliderInTrueGraph != colliderInEstGraph) {
+                        coveringAdjacency = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return coveringAdjacency;
+    }
+
+    /**
+     * Returns an undirected path matrix based on the given graph and power. The undirected path matrix represents the
+     * existence of a path of a specific length between any two nodes in the graph.
+     *
+     * @param graph the graph from which to create the undirected path matrix
+     * @param power the power used to calculate the undirected path matrix
+     * @return the undirected path matrix
+     */
+    public static Matrix getUndirectedPathMatrix(Graph graph, int power) {
+        List<Node> nodes = graph.getNodes();
+        int numNodes = graph.getNumNodes();
+
+        Matrix m = new Matrix(numNodes, numNodes);
+
+        for (Edge e : new HashSet<>(graph.getEdges())) {
+            int i = nodes.indexOf(e.getNode1());
+            int j = nodes.indexOf(e.getNode2());
+            m.set(i, j, 1);
+            m.set(j, i, 1);
+        }
+
+        Matrix prod = new Matrix(m);
+
+        for (int i = 1; i <= power; i++) {
+            prod = prod.times(m);
+        }
+
+        return prod;
+    }
+
+    /**
+     * Creates a new list containing the elements of the given array.
+     *
+     * @param choice the array of integers to be converted to a list
+     * @return a list of integers containing the elements of the array
+     */
+    public static @NotNull List<Integer> asList(int[] choice) {
+        return ClusterSignificance.getInts(choice);
+    }
+
+    /**
+     * Returns D-SEP(x, y) for a MAG G (or inducing path graph G, as in Causation, Prediction and Search). This method
+     * implements a reachability style.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsep0(Node x, Node y, Graph G) {
+
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> path = new HashSet<>();
+
+        for (Node a : G.getAdjacentNodes(x)) {
+            if (path.contains(a)) continue;
+            path.add(a);
+
+            if (G.getEdge(x, a).getDistalEndpoint(x) != Endpoint.ARROW) {
+                dsep.add(a);
+            }
+
+            for (Node b : G.getAdjacentNodes(a)) {
+                if (path.contains(b)) continue;
+                path.add(b);
+
+                if (G.isDefCollider(x, a, b)) {
+                    if (G.paths().isAncestorOf(a, y)) {
+                        dsep.add(a);
+                        dsep.add(b);
+                        dsepFollowPath(a, b, x, y, dsep, path, G);
+                    }
+                }
+
+                path.remove(b);
+            }
+
+            path.remove(a);
+        }
+
+        dsep.remove(x);
+        dsep.remove(y);
+
+        return dsep;
+    }
+
+    /**
+     * This method follows a path in a MAG (or inducing path graph G, as in Causation, Prediction and Search),
+     * reachability style, to determine the D-SEP(a, y) set.
+     *
+     * @param a    The current node.
+     * @param x    The starting node.
+     * @param y    The ending node.
+     * @param dsep The D-SEP(a, y) set being built.
+     * @param path The current path.
+     * @param G    The MAG.
+     */
+    private static void dsepFollowPath(Node a, Node b, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+        for (Node c : G.getAdjacentNodes(b)) {
+            if (path.contains(c)) continue;
+            path.add(c);
+
+            if (G.isDefCollider(a, b, c)) {
+                if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
+                    dsep.add(b);
+                    dsep.add(c);
+                    dsepFollowPath(b, c, x, y, dsep, path, G);
+                }
+            }
+
+            path.remove(c);
+        }
+    }
+
+    /**
+     * Returns D-SEP(x, y) for a MAG G. This method implements a non-reachability stle.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsep(Node x, Node y, Graph G) {
+
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> path = new HashSet<>();
+
+        dsepFollowPath2(x, x, y, dsep, path, G);
+
+        dsep.remove(x);
+        dsep.remove(y);
+
+        return dsep;
+    }
+
+    /**
+     * This method follows a path in a MAG to determine the D-SEP(a, y) set. This method implements a non-reachability
+     * style.
+     *
+     * @param a    The current node.
+     * @param x    The starting node.
+     * @param y    The ending node.
+     * @param dsep The D-SEP(a, y) set being built.
+     * @param path The current path.
+     * @param G    The MAG.
+     */
+    private static void dsepFollowPath2(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+
+        if (path.contains(a)) return;
+        path.add(a);
+
+        for (Node b : G.getAdjacentNodes(a)) {
+            if (path.contains(b)) continue;
+            path.add(b);
+
+            if (G.getEdge(a, b).getDistalEndpoint(a) != Endpoint.ARROW) {
+                dsep.add(b);
+            }
+
+            for (Node c : G.getAdjacentNodes(b)) {
+                if (path.contains(c)) continue;
+                path.add(c);
+
+                if (G.isDefCollider(a, b, c)) {
+                    if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
+                        dsep.add(b);
+                        dsep.add(c);
+                        dsepFollowPath2(b, x, y, dsep, path, G);
+                    }
+                }
+
+                path.remove(c);
+            }
+
+            path.remove(b);
+        }
+
+        path.remove(a);
+    }
+
+    /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */
     public enum GraphType {
@@ -2890,7 +3430,7 @@ public final class GraphUtils {
          * Constructs a new Counts.
          */
         public Counts() {
-            this.counts = new int[8][6];
+            this.counts = new int[10][8];
         }
 
         /**

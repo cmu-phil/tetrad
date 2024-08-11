@@ -583,10 +583,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
 
-        if (this.dataModelList == null) {
-            System.out.println();
-        }
-
         if (this.dataModelList.size() > 1) {
             paramSettings.put("# Datasets", Integer.toString(this.dataModelList.size()));
         } else {

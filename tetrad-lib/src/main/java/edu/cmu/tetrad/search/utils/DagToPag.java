@@ -23,11 +23,13 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -39,24 +41,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class DagToPag {
+
     /**
-     * The variable 'dag' represents a directed acyclic graph (DAG) that is stored in a private final field.
-     * A DAG is a finite directed graph with no directed cycles. This means that there is no way to start at some vertex and
-     * follow a sequence of directed edges that eventually loops back to the same vertex. In other words, there are no
-     * cyclic dependencies in the graph.
-     *
-     * The 'dag' variable is used within the containing class 'DagToPag' for various purposes related to the conversion of
-     * a DAG to a partially directed acyclic graph (PAG). The methods in 'DagToPag' utilize this variable to perform
-     * operations such as checking for inducing paths between nodes, converting the DAG to a PAG, and orienting
-     * unshielded colliders in the graph.
-     *
-     * The 'dag' variable has private access, meaning it can only be accessed and modified within the 'DagToPag' class.
-     * It is declared as 'final', indicating that its value cannot be changed after it is assigned in the constructor or
-     * initialization block. This ensures that the reference to the DAG remains consistent throughout the lifetime of the
-     * 'DagToPag' object.
-     *
-     * @see DagToPag
-     * @see Graph
+     * The DAG to be converted.
      */
     private final Graph dag;
     /*
@@ -64,98 +51,198 @@ public final class DagToPag {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Glag for complete rule set, true if should use complete rule set, false otherwise.
+     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int maxPathLength = -1;
-    private boolean doDiscriminatingPathTailRule = true;
-    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag a {@link Graph} object
      */
     public DagToPag(Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
-
     /**
-     * <p>existsInducingPathInto.</p>
+     * Calculates the adjacency graph for the given Directed Acyclic Graph (DAG).
      *
-     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a boolean
+     * @param dag The input Directed Acyclic Graph (DAG).
+     * @return The adjacency graph represented by a Graph object.
      */
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+    public static Graph calcAdjacencyGraph(Graph dag) {
+        List<Node> allNodes = dag.getNodes();
+        List<Node> measured = new ArrayList<>(allNodes);
+        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
 
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
+        Graph graph = new EdgeListGraph(measured);
 
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
+        for (int i = 0; i < measured.size(); i++) {
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node n1 = measured.get(i);
+                Node n2 = measured.get(j);
 
-            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
-                return true;
+                if (graph.isAdjacentTo(n1, n2)) continue;
+
+                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
+
+                boolean exists = inducingPath != null;
+
+                if (exists) {
+                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                }
             }
-        }
-
-        return false;
-    }
-
-    /**
-     * This method does the convertion of DAG to PAG.
-     *
-     * @return Returns the converted PAG.
-     */
-    public Graph convert() {
-        if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
-        }
-
-        Graph graph = calcAdjacencyGraph();
-
-        if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
-        }
-
-        orientUnshieldedColliders(graph, this.dag);
-
-        if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
-        }
-
-        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.setVerbose(false);
-        fciOrient.doFinalOrientation(graph);
-
-        if (this.verbose) {
-            System.out.println("Finishing final orientation");
         }
 
         return graph;
     }
 
     /**
+     * This method does the conversion of DAG to PAG.
+     *
+     * @return Returns the converted PAG.
+     */
+    public Graph convert() {
+
+        Graph mag;
+
+        if (dag.paths().isLegalDag()) {
+            mag = GraphTransforms.dagToMag(dag);
+        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
+            mag = GraphTransforms.zhangMagFromPag(dag);
+        } else {
+            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" + "but possibly with circle endpoints.");
+        }
+
+        Graph pag = new EdgeListGraph(mag);
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
+        // Note that we will re-use FCIOrient but override the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
+        // to find the d-separating set between A and B.
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(new MsepTest(mag)) {
+            @Override
+            public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+                Graph mag = ((MsepTest) getTest()).getGraph();
+
+                // Could copy the unshielded colliders from the mag but we will use D-SEP.
+//                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
+
+                Set<Node> dsepi = mag.paths().dsep(i, k);
+                Set<Node> dsepk = mag.paths().dsep(k, i);
+
+                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
+                    return !dsepi.contains(j);
+                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
+                    return !dsepk.contains(j);
+                }
+
+                return false;
+            }
+
+            /**
+             * Does a discriminating path orientation.
+             *
+             * @param discriminatingPath the discriminating path
+             * @param graph              the graph representation
+             * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was determined.
+             * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+             * @see DiscriminatingPath
+             */
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+                Node e = discriminatingPath.getE();
+                Node a = discriminatingPath.getA();
+                Node b = discriminatingPath.getB();
+                Node c = discriminatingPath.getC();
+
+                if (!discriminatingPath.existsAndUnorientedIn(graph)) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                if (graph.isAdjacentTo(e, c)) {
+                    throw new IllegalArgumentException("e and c must not be adjacent");
+                }
+
+                Graph mag = ((MsepTest) getTest()).getGraph();
+
+                Set<Node> dsepe = GraphUtils.dsep(e, c, mag);
+                Set<Node> dsepc = GraphUtils.dsep(c, e, mag);
+
+                Set<Node> sepset = null;
+
+                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
+                    sepset = dsepe;
+                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
+                    sepset = dsepc;
+                }
+
+                if (sepset == null) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
+                }
+
+                boolean collider = !sepset.contains(b);
+
+                if (collider) {
+                    if (isDoDiscriminatingPathColliderRule()) {
+                        if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                            return Pair.of(discriminatingPath, false);
+                        }
+
+                        if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                            return Pair.of(discriminatingPath, false);
+                        }
+
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+
+                        return Pair.of(discriminatingPath, true);
+                    }
+                } else {
+                    if (isDoDiscriminatingPathTailRule()) {
+                        graph.setEndpoint(c, b, Endpoint.TAIL);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        }
+
+                        return Pair.of(discriminatingPath, true);
+                    }
+                }
+
+                return Pair.of(discriminatingPath, false);
+            }
+
+            @Override
+            public void setAllowedColliders(Set<Triple> allowedColliders) {
+                // Ignore.
+            }
+        };
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(verbose);
+        fciOrient.orient(pag);
+        fciOrient.setTestTimeout(-1);
+
+        return pag;
+    }
+
+    /**
      * <p>Getter for the field <code>knowledge</code>.</p>
      *
-     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a {@link Knowledge} object
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -164,7 +251,7 @@ public final class DagToPag {
     /**
      * <p>Setter for the field <code>knowledge</code>.</p>
      *
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param knowledge a {@link Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -201,119 +288,6 @@ public final class DagToPag {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    private Graph calcAdjacencyGraph() {
-        List<Node> allNodes = this.dag.getNodes();
-        List<Node> measured = new ArrayList<>(allNodes);
-        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
-
-        Graph graph = new EdgeListGraph(measured);
-
-        for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
-                Node n2 = measured.get(j);
-
-                if (graph.isAdjacentTo(n1, n2)) continue;
-
-                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
-
-                boolean exists = inducingPath != null;
-
-                if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
-                }
-            }
-        }
-
-        return graph;
-    }
-
-    private void orientUnshieldedColliders(Graph graph, Graph dag) {
-        graph.reorientAllWith(Endpoint.CIRCLE);
-
-        List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<>();
-
-        for (Node node : allNodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                measured.add(node);
-            }
-        }
-
-        for (Node b : measured) {
-            List<Node> adjb = new ArrayList<>(graph.getAdjacentNodes(b));
-
-            if (adjb.size() < 2) continue;
-
-            for (int i = 0; i < adjb.size(); i++) {
-                for (int j = i + 1; j < adjb.size(); j++) {
-                    Node a = adjb.get(i);
-                    Node c = adjb.get(j);
-
-                    if (graph.isDefCollider(a, b, c)) {
-                        continue;
-                    }
-
-                    if (graph.isAdjacentTo(a, c)) {
-                        continue;
-                    }
-
-                    boolean found = foundCollider(dag, a, b, c);
-
-                    if (found) {
-
-                        if (this.verbose) {
-                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
-                        }
-
-                        if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge) && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                            graph.setEndpoint(a, b, Endpoint.ARROW);
-                            graph.setEndpoint(c, b, Endpoint.ARROW);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean foundCollider(Graph dag, Node a, Node b, Node c) {
-        boolean ipba = DagToPag.existsInducingPathInto(b, a, dag);
-        boolean ipbc = DagToPag.existsInducingPathInto(b, c, dag);
-
-        return ipba && ipbc;
     }
 }
 

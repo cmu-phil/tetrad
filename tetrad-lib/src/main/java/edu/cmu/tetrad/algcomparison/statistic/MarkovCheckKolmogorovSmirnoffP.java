@@ -80,18 +80,8 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
         }
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-
-        double sum = 0.0;
-        int count = 0;
-
-        for (int i = 0; i < 2; i++) {
-            markovCheck.generateResults(true);
-            double ksPValue = markovCheck.getKsPValue(true);
-            sum += ksPValue;
-            count++;
-        }
-
-        return sum / count;
+        markovCheck.generateResults(true);
+        return markovCheck.getKsPValue(true);
     }
 
     /**

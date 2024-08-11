@@ -22,7 +22,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        UsesScoreWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -54,16 +53,6 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The external graph.
-     */
-    private Graph externalGraph = null;
-
-    /**
-     * The algorithm.
-     */
-    private Algorithm algorithm = null;
 
     /**
      * <p>Constructor for Fges.</p>
@@ -96,19 +85,10 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        if (this.algorithm != null) {
-            Graph _graph = this.algorithm.search(dataModel, parameters);
-
-            if (_graph != null) {
-                this.externalGraph = _graph;
-            }
-        }
-
         Score myScore = this.score.getScore(dataModel, parameters);
         Graph graph;
 
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
-        search.setBoundGraph(externalGraph);
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -116,12 +96,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
-            search.setOut(ps);
-        }
-
+        search.setOut(System.out);
         graph = search.search();
 
         LogUtilsSearch.stampWithScore(graph, myScore);
@@ -203,13 +178,4 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setExternalGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
 }

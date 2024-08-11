@@ -110,6 +110,10 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setPcHeuristicType(pcHeuristicType);
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
+
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
@@ -163,6 +167,10 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.REPAIR_FAULTY_PAG);
+
+        // Ablation
+        parameters.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         parameters.add(Params.VERBOSE);
 

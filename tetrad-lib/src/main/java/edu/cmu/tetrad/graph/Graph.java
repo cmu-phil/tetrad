@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
@@ -208,10 +209,10 @@ public interface Graph extends TetradSerializable {
      * <p>getEdges.</p>
      *
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
-    List<Edge> getEdges(Node node);
+    Set<Edge> getEdges(Node node);
 
     /**
      * <p>getEdges.</p>
@@ -404,12 +405,11 @@ public interface Graph extends TetradSerializable {
     boolean removeEdge(Edge edge);
 
     /**
-     * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
+     * Removes an edge between two given nodes.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
-     * @throws java.lang.UnsupportedOperationException if multiple edges between node pairs are not supported.
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return true if the edge between node1 and node2 was successfully removed, false otherwise.
      */
     boolean removeEdge(Node node1, Node node2);
 
@@ -524,13 +524,15 @@ public interface Graph extends TetradSerializable {
     TimeLagGraph getTimeLagGraph();
 
     /**
-     * <p>getSepset.</p>
+     * Returns the set of nodes that form the separating set between two given nodes. A separating set is a set of nodes
+     * that, when conditioned on, renders the given nodes d-separated.
      *
-     * @param n1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param n2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.Set} object
+     * @param n1   the first node
+     * @param n2   the second node
+     * @param test the independence test to use
+     * @return the set of nodes that form the separating set between the two given nodes
      */
-    Set<Node> getSepset(Node n1, Node n2);
+    Set<Node> getSepset(Node n1, Node n2, IndependenceTest test);
 
     /**
      * <p>getAllAttributes.</p>

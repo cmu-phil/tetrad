@@ -466,11 +466,22 @@ public final class SemGraphEditor extends JPanel
 
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
+
+        randomGraph.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+
         graph.addSeparator();
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench(), parameters));
-        graph.add(new UnderliningsAction(this.workbench));
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(getWorkbench()));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction(getWorkbench(), parameters));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK));
+
+        graph.add(graphProperties);
+        graph.add(pathsAction);
+        graph.add(new UnderliningsAction(getWorkbench()));
         graph.addSeparator();
 
         JMenuItem errorTerms = new JMenuItem();

@@ -94,7 +94,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Handler for PropertyChangeEvents.
      */
     private final PropertyChangeHandler propChangeHandler = new PropertyChangeHandler(this);
+    /**
+     * This variable represents a stack of Graph objects.
+     */
     private final LinkedList<Graph> graphStack = new LinkedList<>();
+    /**
+     * A stack that holds Graph objects used for redo operations.
+     * This stack is implemented using a LinkedList data structure.
+     * Graph objects can be pushed onto and popped from this stack.
+     * This stack is thread-safe.
+     */
     private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
      * The workbench which this workbench displays.
@@ -1405,19 +1414,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         if (pagEdgeSpecializationMarked) {
 
-            // visible edges.
-            boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
+            // Mark the edge as a specialization if it is one. For directed edges only; the method setting these
+            // properties only sets them for directed edges.
+            if (modelEdge.getProperties().contains(Edge.Property.pl)) {
+                displayEdge.setSolid(false);
+            } else if (modelEdge.getProperties().contains(Edge.Property.nl)) {
+                displayEdge.setSolid(true);
+            }
 
-            // definitely direct edges.
-            boolean thick = modelEdge.getProperties().contains(Edge.Property.dd);
-
-            // definitely direct edges.
-//            Color green = Color.green.darker();
-//            Color lineColor = modelEdge.getProperties().contains(Edge.Property.nl) ? green
-//                    : this.graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
-//            displayEdge.setLineColor(lineColor);
-            displayEdge.setSolid(solid);
-            displayEdge.setThick(thick);
+            if (modelEdge.getProperties().contains(Edge.Property.pd)) {
+                displayEdge.setThick(false);
+            } else if (modelEdge.getProperties().contains(Edge.Property.dd)) {
+                displayEdge.setThick(true);
+            }
         }
 
         // Link the display edge to the model edge.

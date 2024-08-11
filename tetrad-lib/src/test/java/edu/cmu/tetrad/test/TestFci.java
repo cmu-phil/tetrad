@@ -58,7 +58,7 @@ public class TestFci {
     @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
-                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge()); // With Jiji's R6.
+                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge()); // With Zhang's R9.
     }
 
     /**
@@ -75,7 +75,7 @@ public class TestFci {
      */
     @Test
     public void testSearch3() {
-        checkSearch("A-->C,B-->C,B-->D,C-->D", "Ao->C,Bo->C,B-->D,C-->D", new Knowledge());
+        checkSearch("X-->W,V-->W,V-->Y,W-->Y", "Xo->W,Vo->W,V-->Y,W-->Y", new Knowledge());
     }
 
     /**
@@ -84,7 +84,7 @@ public class TestFci {
     @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "Ho->F,F<->A,A<->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge());
+                "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
     }
 
     /**
@@ -111,7 +111,7 @@ public class TestFci {
     public void testSearch7() {
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge());
+                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
     }
 
     /**
@@ -129,11 +129,10 @@ public class TestFci {
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
-    public void testSearch9() {
+    public void  testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                     "H-->D,D-->A,T2-->D,T2-->E",
-                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
-//                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
+                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
     }
 
     /**

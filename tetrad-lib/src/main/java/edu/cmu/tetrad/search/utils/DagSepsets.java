@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.MsepTest;
 
 import java.util.List;
 import java.util.Set;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 public class DagSepsets implements SepsetProducer {
     // The DAG being analyzed.
-    private final EdgeListGraph dag;
+    private Graph dag;
 
     /**
      * Constructs a new DagSepsets object for the given DAG.
@@ -53,32 +54,27 @@ public class DagSepsets implements SepsetProducer {
      * Returns the list of sepset for {a, b}.
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b) {
-        return this.dag.getSepset(a, b);
+    public Set<Node> getSepset(Node a, Node b, int depth) {
+        return this.dag.getSepset(a, b, new MsepTest(dag));
     }
 
     /**
-     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note
-     * that for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
+     * Returns the sepset containing nodes 'a' and 'b' that also contains all the nodes in the given set 's'. Note that
+     * for the DAG case, it is expected that any sepset containing 'a' and 'b' will contain all the nodes in 's';
      * otherwise, an exception is thrown.
      *
-     * @param a The first node.
-     * @param b The second node.
-     * @param s The set of nodes that must be contained in the sepset.
+     * @param a     The first node.
+     * @param b     The second node.
+     * @param s     The set of nodes that must be contained in the sepset.
+     * @param depth The depth of the search.
      * @return The sepset containing 'a' and 'b' that also contains all the nodes in 's'.
      * @throws IllegalArgumentException If the sepset of 'a' and 'b' does not contain all the nodes in 's'.
      */
     @Override
-    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s) {
-        Set<Node> sepset = this.dag.getSepset(a, b);
-        sepset.addAll(s);
-
-//        if (sepset != null && !sepset.containsAll(s)) {
-//            throw new IllegalArgumentException("Was expecting the sepset of " + a + " and " + b + " (" + sepset
-//                                               + ") to contain all the nodes in " + s + ".");
-//        }
-
-        return sepset;
+    public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
+//        return dag.getSepset(a, b);
+        return ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
+//        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
     }
 
     /**
@@ -87,8 +83,8 @@ public class DagSepsets implements SepsetProducer {
      * True iff i*-*j*-*k is an unshielded collider.
      */
     @Override
-    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> sepset = this.dag.getSepset(i, k);
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+        Set<Node> sepset = ((EdgeListGraph) this.dag).getSepset(i, k, false);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -120,6 +116,11 @@ public class DagSepsets implements SepsetProducer {
     @Override
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         return dag.paths().isMSeparatedFrom(a, b, sepset, false) ? 1.0 : 0.0;
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        this.dag = graph;
     }
 
     /**

@@ -4,8 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -16,7 +18,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -40,11 +44,16 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
+    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -81,11 +90,13 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * Algorithm interface.
      * </p>
      *
+     * @param test  The independence test to use.
      * @param score The score to use.
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite(ScoreWrapper score) {
+    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
@@ -113,8 +124,18 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             knowledge = timeSeries.getKnowledge();
         }
 
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
+
+        if (test instanceof MsepTest) {
+            if (parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP)) {
+                if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+                    throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
+                }
+            }
+        }
+
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -127,8 +148,16 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // LV-Lite
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setAllowTucks(parameters.getBoolean(Params.ALLOW_TUCKS));
-        search.setEqualityThreshold(parameters.getDouble(Params.EQUALITY_THRESHOLD));
+        search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
+        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+
+        // Ablation
+        search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEP));
+//        search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
+
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -141,6 +170,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
 
         return search.search();
     }
@@ -197,13 +227,21 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
-        params.add(Params.ALLOW_TUCKS);
-        params.add(Params.EQUALITY_THRESHOLD);
         params.add(Params.LV_LITE_STARTS_WITH);
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
+        params.add(Params.DEPTH);
+        params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEP);
+        params.add(Params.MAX_PATH_LENGTH);
 
         // General
         params.add(Params.TIME_LAG);
+        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
+        params.add(Params.TEST_TIMEOUT);
+
+        // Ablation
+//        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }
@@ -246,5 +284,15 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

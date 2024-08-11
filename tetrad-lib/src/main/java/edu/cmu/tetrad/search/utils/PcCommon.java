@@ -91,7 +91,7 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Whether to prevent cycles using Meek's rules.
      */
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
 
     /**
      * Whether to print verbose output.
@@ -155,27 +155,63 @@ public final class PcCommon implements IGraphSearch {
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
-                forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+                log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
             }
         } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
 
-            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+            log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(z, y);
-            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+            log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
         }
 
     }
 
-    private static void forceLogMessage(String s, boolean verbose) {
+    /**
+     * Logs the given string based on the value of the verbose flag.
+     *
+     * @param s       the string to be logged
+     * @param verbose a boolean flag indicating whether the log message should be printed or not
+     */
+    private static void log(String s, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    /**
+     * Checks if colliders are allowed based on the given knowledge.
+     *
+     * @param graph     The graph containing the nodes.
+     * @param x         The first node.
+     * @param y         The second node.
+     * @param z         The third node.
+     * @param knowledge The knowledge object containing the required and forbidden relationships.
+     * @return True if colliders are allowed based on the given knowledge, false otherwise.
+     */
+    public static boolean colliderAllowed(Graph graph, Node x, Node y, Node z, Knowledge knowledge) {
+        boolean result = true;
+        if (knowledge != null) {
+            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
+                     && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+        }
+        if (!result) return false;
+        if (knowledge == null) {
+            return true;
+        }
+        boolean allowed = !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
+                          && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+
+        if (allowed) {
+            allowed = !(graph.paths().isAncestorOf(y, z) || graph.paths().isAncestorOf(y, z));
+        }
+
+        return allowed;
     }
 
     /**
@@ -208,21 +244,21 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * <p>isMeekPreventCycles.</p>
+     * Checks if the current object guarantees a complete directed acyclic graph (CPDAG).
      *
-     * @return true, just in case edges will not be added if they create cycles.
+     * @return {@code true} if the current object guarantees a CPDAG, {@code false} otherwise.
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
      * Sets to true just in case edges will not be added if they create cycles.
      *
-     * @param meekPreventCycles True, just in case edges will not be added if they create cycles.
+     * @param guaranteeCpdag True, just in the output will guarantee a CPDAG.
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**
@@ -315,16 +351,21 @@ public final class PcCommon implements IGraphSearch {
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(this.knowledge);
-        meekRules.setVerbose(verbose);
-        meekRules.setMeekPreventCycles(this.meekPreventCycles);
-        meekRules.orientImplied(this.graph);
+        if (guaranteeCpdag) {
+            GraphTransforms.dagFromCpdag(this.graph, true);
+            graph = GraphTransforms.dagToCpdag(this.graph);
+        } else {
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(this.knowledge);
+            meekRules.setVerbose(verbose);
+            meekRules.setMeekPreventCycles(false);
+            meekRules.orientImplied(this.graph);
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
-        forceLogMessage((this.elapsedTime) / 1000. + " s", verbose);
+        log((this.elapsedTime) / 1000. + " s", verbose);
 
         logTriples();
 
@@ -471,25 +512,25 @@ public final class PcCommon implements IGraphSearch {
      */
     private void logTriples() {
         if (verbose) {
-            forceLogMessage("\nCollider triples:", verbose);
+            log("\nCollider triples:", verbose);
 
             for (Triple triple : this.colliderTriples) {
-                forceLogMessage("Collider: " + triple, verbose);
+                log("Collider: " + triple, verbose);
             }
 
-            forceLogMessage("\nNoncollider triples:", verbose);
+            log("\nNoncollider triples:", verbose);
 
             for (Triple triple : this.noncolliderTriples) {
-                forceLogMessage("Noncollider: " + triple, verbose);
+                log("Noncollider: " + triple, verbose);
             }
 
-            forceLogMessage("""
+            log("""
 
                     Ambiguous triples (i.e. list of triples for which\s
                     there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
 
             for (Triple triple : getAmbiguousTriples()) {
-                forceLogMessage("Ambiguous: " + triple, verbose);
+                log("Ambiguous: " + triple, verbose);
             }
 
         }
@@ -501,7 +542,7 @@ public final class PcCommon implements IGraphSearch {
      * @param knowledge the knowledge used for orientation
      */
     private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
-        forceLogMessage("Starting Collider Orientation:", verbose);
+        log("Starting Collider Orientation:", verbose);
 
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -533,7 +574,7 @@ public final class PcCommon implements IGraphSearch {
                 Set<Set<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
-                    if (colliderAllowed(x, y, z, knowledge)) {
+                    if (colliderAllowed(graph, x, y, z, knowledge)) {
                         PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
                         this.colliderTriples.add(new Triple(x, y, z));
                     }
@@ -547,7 +588,7 @@ public final class PcCommon implements IGraphSearch {
             }
         }
 
-        forceLogMessage("Finishing Collider Orientation.", verbose);
+        log("Finishing Collider Orientation.", verbose);
     }
 
     /**
@@ -631,29 +672,6 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * Checks if colliders are allowed based on the given knowledge.
-     *
-     * @param x         The first node.
-     * @param y         The second node.
-     * @param z         The third node.
-     * @param knowledge The knowledge object containing the required and forbidden relationships.
-     * @return True if colliders are allowed based on the given knowledge, false otherwise.
-     */
-    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        boolean result = true;
-        if (knowledge != null) {
-            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
-                     && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
-        }
-        if (!result) return false;
-        if (knowledge == null) {
-            return true;
-        }
-        return !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
-               && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
-    }
-
-    /**
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
      * just in case y is in Sepset({x, z}).
      *
@@ -669,7 +687,7 @@ public final class PcCommon implements IGraphSearch {
             System.out.println("FAS Sepset orientation...");
         }
 
-        forceLogMessage("Starting Collider Orientation:", verbose);
+        log("Starting Collider Orientation:", verbose);
 
         List<Node> nodes = graph.getNodes();
 
@@ -713,14 +731,16 @@ public final class PcCommon implements IGraphSearch {
                                      && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                         }
                         if (result) {
-                            PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
+                            if (colliderAllowed(graph, a, b, c, knowledge)) {
+                                PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
 
-                            if (verbose) {
-                                System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                                if (verbose) {
+                                    System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                                }
+
+                                colliderTriples.add(new Triple(a, b, c));
+                                log(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                             }
-
-                            colliderTriples.add(new Triple(a, b, c));
-                            forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                         }
                     }
                 }
@@ -781,16 +801,16 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * <p>Give the options for the collider discovery algorithm to use--FAS with sepsets reasoning, FAS with
-     * conservative reasoning, or FAS with Max P reasoning. See these respective references:</p>
-     *
-     * <p>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
-     *
-     * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
-     * arXiv preprint arXiv:1206.6843.</p>
-     *
-     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
-     * preprint arXiv:1610.00378.</p>
+     * Gives the options for the collider discovery algorithm to use--FAS with sepsets reasoning, FAS with conservative
+     * reasoning, or FAS with Max P reasoning. See these respective references:
+     * <p>
+     * Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.
+     * <p>
+     * Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
+     * arXiv preprint arXiv:1206.6843.
+     * <p>
+     * Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv preprint
+     * arXiv:1610.00378.
      *
      * @see Fas
      * @see Cpc

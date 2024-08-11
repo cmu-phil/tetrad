@@ -8,7 +8,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -64,7 +63,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * Constructs a new Fask object with the given ScoreWrapper.
      *
      * @param score the ScoreWrapper object to use
-     */    public Fask(ScoreWrapper score) {
+     */
+    public Fask(ScoreWrapper score) {
         this.score = score;
     }
 

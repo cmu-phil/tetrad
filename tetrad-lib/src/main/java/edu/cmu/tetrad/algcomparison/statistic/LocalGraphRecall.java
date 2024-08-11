@@ -10,6 +10,14 @@ import edu.cmu.tetrad.graph.Graph;
  * of true positives (TP) to the sum of true positives and false negatives (TP + FN).
  */
 public class LocalGraphRecall implements Statistic {
+
+    /**
+     * The default constructor of the LocalGraphRecall class.
+     */
+    public LocalGraphRecall() {
+
+    }
+
     @Override
     public String getAbbreviation() {
         return "LGR";

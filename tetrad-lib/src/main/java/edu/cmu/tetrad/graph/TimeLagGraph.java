@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serial;
@@ -296,7 +298,7 @@ public class TimeLagGraph implements Graph {
             }
 
             for (Node node : lag0Nodes) {
-                List<Edge> edges = getGraph().getEdges(node);
+                Set<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     boolean b = addEdge(edge);
@@ -305,7 +307,7 @@ public class TimeLagGraph implements Graph {
             }
         } else if (maxLag < this.getMaxLag()) {
             for (Node node : lag0Nodes) {
-                List<Edge> edges = getGraph().getEdges(node);
+                Set<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     Node tail = Edges.getDirectedEdgeTail(edge);
@@ -342,7 +344,7 @@ public class TimeLagGraph implements Graph {
         boolean changed = false;
 
         for (Node node : lag0Nodes) {
-            List<Edge> edges = getGraph().getEdges(node);
+            Set<Edge> edges = getGraph().getEdges(node);
 
             for (Edge edge : new ArrayList<>(edges)) {
                 Node tail = Edges.getDirectedEdgeTail(edge);
@@ -392,7 +394,7 @@ public class TimeLagGraph implements Graph {
 
         for (Node node : lag0Nodes) {
             for (int lag = 0; lag < numInitialLags; lag++) {
-                List<Edge> edges = getGraph().getEdges(node);
+                Set<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     boolean b = addEdge(edge);
@@ -753,13 +755,14 @@ public class TimeLagGraph implements Graph {
     /**
      * Retrieves the sepset of two nodes in the graph.
      *
-     * @param n1 The first node
-     * @param n2 The second node
+     * @param n1   The first node
+     * @param n2   The second node
+     * @param test The independence test to use
      * @return The set of nodes that form the sepset of n1 and n2
      */
     @Override
-    public Set<Node> getSepset(Node n1, Node n2) {
-        return this.graph.getSepset(n1, n2);
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
+        return this.graph.getSepset(n1, n2, false);
     }
 
     /**
@@ -876,7 +879,7 @@ public class TimeLagGraph implements Graph {
      * @return a {@link List} containing the edges connected to the node, or null if the node does not exist in the
      * graph
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         if (getGraph().containsNode(node)) {
             return getGraph().getEdges(node);
         } else {

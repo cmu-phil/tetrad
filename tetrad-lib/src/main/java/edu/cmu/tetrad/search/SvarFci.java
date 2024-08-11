@@ -170,15 +170,17 @@ public final class SvarFci implements IGraphSearch {
         SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
-        SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
-        svarFciOrient.setKnowledge(this.knowledge);
-        svarFciOrient.ruleR0(this.graph);
+        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
+        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
+
+        fciOrient.ruleR0(this.graph);
 
         for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            Set<Node> sepset = sp.getSepset(x, y);
+            Set<Node> sepset = sp.getSepset(x, y, depth);
 
             if (sepset != null) {
                 this.graph.removeEdge(x, y);
@@ -202,13 +204,11 @@ public final class SvarFci implements IGraphSearch {
         long time6 = MillisecondTimes.timeMillis();
         TetradLogger.getInstance().log("Step CI C: " + (time6 - time5) / 1000. + "s");
 
-        SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
-
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.finalOrientation(this.graph);
 
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : graph.getEdges()) {

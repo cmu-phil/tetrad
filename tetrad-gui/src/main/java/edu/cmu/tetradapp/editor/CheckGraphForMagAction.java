@@ -42,6 +42,9 @@ public class CheckGraphForMagAction extends AbstractAction {
      */
     private final GraphWorkbench workbench;
 
+    /**
+     * Stores the result of the legal MAG check.
+     */
     private volatile GraphSearchUtils.LegalMagRet legalMag = null;
 
     /**

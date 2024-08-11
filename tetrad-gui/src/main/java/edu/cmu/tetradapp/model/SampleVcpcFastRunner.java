@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.work_in_progress.SampleVcpcFast;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.IndTestType;
 
 import java.io.Serial;
@@ -251,7 +252,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         SampleVcpcFast sfvcpc = new SampleVcpcFast(getIndependenceTest());
 
         sfvcpc.setKnowledge(knowledge);
-        sfvcpc.setMeekPreventCycles(this.isMeekPreventCycles());
+        sfvcpc.setMeekPreventCycles(isMeekPreventCycles());
         sfvcpc.setDepth(params.getInt("depth", -1));
 
         sfvcpc.setSemIm(this.semIm);
@@ -388,7 +389,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params != null) {
-            return params.getBoolean("MeekPreventCycles", false);
+            return params.getBoolean(Params.GUARANTEE_CPDAG, false);
         }
         return false;
     }

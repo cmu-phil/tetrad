@@ -124,6 +124,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
@@ -131,7 +132,11 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setKnowledge(this.knowledge);
+
+        // Ablation
+        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
@@ -188,6 +193,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.NUM_STARTS);
 
         // FCI
+        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.DEPTH);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
@@ -198,7 +204,11 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
+        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
+
+        // Ablation
+        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

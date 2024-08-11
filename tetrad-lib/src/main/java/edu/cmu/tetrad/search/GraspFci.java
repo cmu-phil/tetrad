@@ -21,7 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -128,7 +131,19 @@ public final class GraspFci implements IGraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose;
+    private boolean verbose = false;
+    /**
+     * The flag for whether to repair a faulty PAG.
+     */
+    private boolean repairFaultyPag = false;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GraspFci object.
@@ -169,42 +184,51 @@ public final class GraspFci implements IGraphSearch {
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(3);
+        alg.setDepth(depth);
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
+        alg.setVerbose(false);
+        alg.setKnowledge(knowledge);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         alg.bestOrder(variables);
-        Graph graph = alg.getGraph(true); // Get the DAG
+        Graph pag = alg.getGraph(true);
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        Graph referenceCpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
+        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
 
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-        return graph;
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(pag);
+        }
+
+        if (repairFaultyPag) {
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+        }
+
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        return pag;
     }
 
     /**
@@ -347,5 +371,32 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets the flag for whether to repair a faulty PAG.
+     *
+     * @param repairFaultyPag True, if so.
+     */
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation true if the final orientation should be left out, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method for finding sepsets in the GraspFci class.
+     *
+     * @param sepsetFinderMethod the method for finding sepsets
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }
