@@ -112,12 +112,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setKnowledge(this.knowledge);
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathCollideRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
-
-        // Ablation
         search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
@@ -168,14 +164,9 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
-
-        // Ablation
-        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         // Flags
         params.add(Params.VERBOSE);

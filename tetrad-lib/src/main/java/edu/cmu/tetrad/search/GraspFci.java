@@ -224,7 +224,7 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose);
         }
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());

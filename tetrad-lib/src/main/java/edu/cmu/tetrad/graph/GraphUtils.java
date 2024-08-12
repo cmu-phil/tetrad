@@ -139,10 +139,7 @@ public final class GraphUtils {
         EdgeListGraph g = new EdgeListGraph(graph);
         Set<Node> mbNodes = GraphUtils.markovBlanket(target, g);
         mbNodes.add(target);
-        Graph res = g.subgraph(new ArrayList<>(mbNodes));
-//        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
-//        System.out.println("Graph result: " + res);
-        return res;
+        return g.subgraph(new ArrayList<>(mbNodes));
     }
 
     /**
@@ -337,7 +334,7 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
-        String conditioningSymbol = "\u2714";
+        String conditioningSymbol = "✔";
 
         if (conditioningVars.contains(path.get(0))) {
             buf.append(conditioningSymbol);
@@ -2944,16 +2941,15 @@ public final class GraphUtils {
      * unfaithfulness in the original estimated PAG. However, it will be a PAG for which some knowledge-based
      * orientation process could have been applied.
      *
-     * @param pag                              the faulty PAG to be repaired
-     * @param fciOrient                        the FciOrient object used for final orientation
-     * @param knowledge                        the knowledge object used for orientation
-     * @param unshieldedColliders              the set of unshielded colliders to be updated
-     * @param verbose                          indicates whether or not to print verbose output
-     * @param ablationLeaveOutFinalOrientation indicates whether or not to leave out the final orientation
+     * @param pag                 the faulty PAG to be repaired
+     * @param fciOrient           the FciOrient object used for final orientation
+     * @param knowledge           the knowledge object used for orientation
+     * @param unshieldedColliders the set of unshielded colliders to be updated
+     * @param verbose             indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                       Set<Triple> unshieldedColliders, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
+                                       Set<Triple> unshieldedColliders, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -3047,9 +3043,7 @@ public final class GraphUtils {
                 }
             }
 
-            if (!ablationLeaveOutFinalOrientation) {
-                fciOrient.finalOrientation(pag);
-            }
+            fciOrient.finalOrientation(pag);
         } while (changed);
 
         if (verbose) {

@@ -102,14 +102,6 @@ public final class SpFci implements IGraphSearch {
      */
     private int depth = -1;
     /**
-     * Determines whether the search algorithm should use the Discriminating Path Tail Rule.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Determines whether the search algorithm should use the Discriminating Path Collider Rule.
-     */
-    private boolean doDiscriminatingPathTCollideRule = true;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
@@ -117,10 +109,6 @@ public final class SpFci implements IGraphSearch {
      * True iff the search should repair a faulty PAG.
      */
     private boolean repairFaultyPag = false;
-    /**
-     * True iff the final orientation should be left out.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
     /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
@@ -186,14 +174,10 @@ public final class SpFci implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
-        }
-
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
         }
 
         return graph;
@@ -318,39 +302,12 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path tail rule is done.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule is done.
-     *
-     * @param doDiscriminatingPathTCollideRule True, if so.
-     */
-    public void setDoDiscriminatingPathCollideRule(boolean doDiscriminatingPathTCollideRule) {
-        this.doDiscriminatingPathTCollideRule = doDiscriminatingPathTCollideRule;
-    }
-
-    /**
      * Sets whether the search should repair a faulty PAG.
      *
      * @param repairFaultyPag True, if so.
      */
     public void setRepairFaultyPag(boolean repairFaultyPag) {
         this.repairFaultyPag = repairFaultyPag;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the search algorithm.
-     *
-     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     /**
