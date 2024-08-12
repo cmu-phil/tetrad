@@ -114,7 +114,6 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
-        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
