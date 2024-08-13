@@ -269,7 +269,7 @@ public final class Fci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, verbose);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();

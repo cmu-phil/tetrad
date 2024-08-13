@@ -369,7 +369,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            pag =  GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, verbose);
+            pag =  GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
         }
 
         if (verbose) {

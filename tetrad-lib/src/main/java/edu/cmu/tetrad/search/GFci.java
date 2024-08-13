@@ -219,7 +219,7 @@ public final class GFci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, verbose);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;

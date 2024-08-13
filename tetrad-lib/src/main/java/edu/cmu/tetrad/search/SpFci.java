@@ -183,7 +183,7 @@ public final class SpFci implements IGraphSearch {
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, verbose);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;

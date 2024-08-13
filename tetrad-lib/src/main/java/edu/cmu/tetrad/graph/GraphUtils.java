@@ -2907,11 +2907,12 @@ public final class GraphUtils {
      * @param fciOrient           the FciOrient object used for final orientation
      * @param knowledge           the knowledge object used for orientation
      * @param unshieldedColliders the set of unshielded colliders to be updated
+     * @param checkCyclicity      indicates whether or not to check for cyclicity
      * @param verbose             indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static Graph repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                        Set<Triple> unshieldedColliders, boolean verbose) {
+                                        Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2921,7 +2922,10 @@ public final class GraphUtils {
 
 //        anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose, anyChange);
         boolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
-        anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
+
+        if (checkCyclicity) {
+            anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
+        }
 
         // This is not necessary if I'm going to follow with the DSEP R0 step.
 //        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;

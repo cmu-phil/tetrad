@@ -198,7 +198,7 @@ public final class FciMax implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedColldiders, verbose);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedColldiders, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();

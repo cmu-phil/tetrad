@@ -213,7 +213,7 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.finalOrientation(this.graph);
 
         if (repairFaultyPag) {
-            this.graph = GraphUtils.repairFaultyPag(this.graph, fciOrient, knowledge, unshieldedTriples, verbose);
+            this.graph = GraphUtils.repairFaultyPag(this.graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         if (resolveAlmostCyclicPaths) {
