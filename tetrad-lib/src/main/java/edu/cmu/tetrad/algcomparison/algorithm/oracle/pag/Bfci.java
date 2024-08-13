@@ -122,9 +122,6 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        // Ablation
-        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
-
         search.setKnowledge(knowledge);
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -190,9 +187,6 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 
         // Parameters
         params.add(Params.NUM_STARTS);
-
-        // Ablation
-        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

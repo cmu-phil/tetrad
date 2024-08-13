@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -123,18 +124,31 @@ public final class DagToPag {
 
         pag.reorientAllWith(Endpoint.CIRCLE);
 
+        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, pag, knowledge, verbose));
+        fciOrient.setVerbose(verbose);
+
+        fciOrient.ruleR0(pag, new HashSet<>());
+        fciOrient.finalOrientation(pag);
+
+//        finalOrientation(mag, pag, knowledge, verbose);
+
+        return pag;
+    }
+
+    public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Graph pag, Knowledge knowledge, boolean verbose) {
+
         // Note that we will re-use FCIOrient but override the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
         // to find the d-separating set between A and B.
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(new MsepTest(mag)) {
+        return new R0R4StrategyTestBased(new MsepTest(mag)) {
             @Override
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-                Graph mag = ((MsepTest) getTest()).getGraph();
+                Graph mag1 = ((MsepTest) getTest()).getGraph();
 
                 // Could copy the unshielded colliders from the mag but we will use D-SEP.
 //                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
 
-                Set<Node> dsepi = mag.paths().dsep(i, k);
-                Set<Node> dsepk = mag.paths().dsep(k, i);
+                Set<Node> dsepi = mag1.paths().dsep(i, k);
+                Set<Node> dsepk = mag1.paths().dsep(k, i);
 
                 if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
                     return !dsepi.contains(j);
@@ -168,10 +182,10 @@ public final class DagToPag {
                     throw new IllegalArgumentException("e and c must not be adjacent");
                 }
 
-                Graph mag = ((MsepTest) getTest()).getGraph();
+                Graph mag1 = ((MsepTest) getTest()).getGraph();
 
-                Set<Node> dsepe = GraphUtils.dsep(e, c, mag);
-                Set<Node> dsepc = GraphUtils.dsep(c, e, mag);
+                Set<Node> dsepe = GraphUtils.dsep(e, c, mag1);
+                Set<Node> dsepc = GraphUtils.dsep(c, e, mag1);
 
                 Set<Node> sepset = null;
 
@@ -230,13 +244,6 @@ public final class DagToPag {
                 // Ignore.
             }
         };
-
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setVerbose(verbose);
-        fciOrient.orient(pag);
-        fciOrient.setTestTimeout(-1);
-
-        return pag;
     }
 
     /**

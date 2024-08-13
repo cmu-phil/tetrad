@@ -29,7 +29,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -197,8 +199,10 @@ public final class GFci implements IGraphSearch {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
+
+        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose, unshieldedTriples);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
@@ -212,7 +216,7 @@ public final class GFci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, verbose);
         }
 
         return graph;

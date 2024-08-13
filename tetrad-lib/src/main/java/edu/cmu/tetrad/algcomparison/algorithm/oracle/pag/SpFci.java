@@ -112,6 +112,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setKnowledge(this.knowledge);
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
 
@@ -122,7 +123,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * Returns the comparison graph created by converting a true directed graph into a partially directed acyclic graph
      * (PAG).
      *
-     * @param graph The true directed graph, if there is one.
+     * @param graph The true, directed graph, if there is one.
      * @return The comparison graph as a partially directed acyclic graph (PAG).
      */
     @Override
@@ -165,6 +166,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
+        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
 
         // Flags

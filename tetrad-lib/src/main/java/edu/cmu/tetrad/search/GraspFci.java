@@ -21,16 +21,15 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -213,8 +212,10 @@ public final class GraspFci implements IGraphSearch {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
+
+        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose, unshieldedTriples);
 
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
@@ -224,7 +225,7 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, null, verbose);
+            pag = GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedTriples, verbose);
         }
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());

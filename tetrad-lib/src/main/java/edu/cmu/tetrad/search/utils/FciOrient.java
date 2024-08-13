@@ -191,15 +191,16 @@ public class FciOrient {
      * Performs FCI orientation on the given graph, including R0 and either the Spirtes or Zhang final orientation
      * rules.
      *
-     * @param graph The graph to orient.
+     * @param graph             The graph to orient.
+     * @param unshieldedTriples The set of unshielded triples oriented by R0. This set is updated with new triples.
      */
-    public void orient(Graph graph) {
+    public void orient(Graph graph, Set<Triple> unshieldedTriples) {
 
         if (verbose) {
             this.logger.log("Starting FCI orientation.");
         }
 
-        ruleR0(graph);
+        ruleR0(graph, unshieldedTriples);
 
         if (this.verbose) {
             logger.log("R0");
@@ -207,10 +208,6 @@ public class FciOrient {
 
         // Step CI D. (Zhang's step R4.)
         finalOrientation(graph);
-
-        if (this.verbose) {
-            this.logger.log("Returning graph: " + graph);
-        }
     }
 
     /**
@@ -248,9 +245,10 @@ public class FciOrient {
     /**
      * Orients unshielded colliders in the graph. (FCI Step C, Zhang's step F3, rule R0.)
      *
-     * @param graph The graph to orient.
+     * @param graph             The graph to orient.
+     * @param unshieldedTriples
      */
-    public void ruleR0(Graph graph) {
+    public void ruleR0(Graph graph, Set<Triple> unshieldedTriples) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, graph, graph.getNodes());
 
@@ -299,6 +297,8 @@ public class FciOrient {
 
                     setEndpoint(graph, a, b, Endpoint.ARROW);
                     setEndpoint(graph, c, b, Endpoint.ARROW);
+
+                    unshieldedTriples.add(new Triple(a, b, c));
 
                     if (this.verbose) {
                         this.logger.log(LogUtilsSearch.colliderOrientedMsg(a, b, c));

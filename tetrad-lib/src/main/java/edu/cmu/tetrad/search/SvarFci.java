@@ -96,6 +96,7 @@ public final class SvarFci implements IGraphSearch {
      * Represents whether to resolve almost cyclic paths during the search.
      */
     private boolean resolveAlmostCyclicPaths;
+    private boolean repairFaultyPag;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -164,6 +165,7 @@ public final class SvarFci implements IGraphSearch {
         fas.setVerbose(this.verbose);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -174,7 +176,7 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
 
-        fciOrient.ruleR0(this.graph);
+        fciOrient.ruleR0(this.graph, unshieldedTriples);
 
         for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
             Node x = edge.getNode1();
@@ -207,8 +209,12 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(this.graph);
+        fciOrient.ruleR0(this.graph, unshieldedTriples);
         fciOrient.finalOrientation(this.graph);
+
+        if (repairFaultyPag) {
+            this.graph = GraphUtils.repairFaultyPag(this.graph, fciOrient, knowledge, unshieldedTriples, verbose);
+        }
 
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : graph.getEdges()) {
@@ -506,6 +512,10 @@ public final class SvarFci implements IGraphSearch {
      */
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    }
+
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }
 

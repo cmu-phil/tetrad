@@ -336,7 +336,7 @@
             knowledge.setRequired(x.getName(), y.getName());
 
             FciOrient fciOrientation = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, knowledge));
-            fciOrientation.orient(_graph);
+            fciOrientation.orient(_graph, unshieldedTriples);
 
             _graph.removeEdge(x, y);
             return _graph;
