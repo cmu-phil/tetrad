@@ -892,9 +892,13 @@ public final class Params {
      */
     public static final String ABLATION_LEAVE_OUT_TUCKING_STEP = "ablationLeaveOutTuckingStep";
     /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEP = "ablationLeaveOutTestingStep""</code>
+     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep""</code>
      */
-    public static final String ABLATION_LEAVE_OUT_TESTING_STEP = "ablationLeaveOutTestingStep";
+    public static final String ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep";
+    /**
+     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps""</code>
+     */
+    public static final String ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps";
     /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
@@ -904,14 +908,9 @@ public final class Params {
      */
     public static final String REPAIR_FAULTY_PAG = "repairFaultyPag";
     /**
-     * Represents the final orientation setting for ablation leave-out.
-     *
-     * <p>
-     * The ABLATATION_LEAVE_OUT_FINAL_ORIENTATION variable is a constant string used to specify the final orientation setting
-     * for ablation leave-out. It is used in the context of a specific application or system.
-     * </p>
+     * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
-    public static final String ABLATATION_LEAVE_OUT_FINAL_ORIENTATION = "ablationLeaveOutFinalOrientation";
+    public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
     /**
      * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
      */

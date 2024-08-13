@@ -33,10 +33,7 @@ import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -131,6 +128,7 @@ public final class FciMax implements IGraphSearch {
      * Whether the final orientation step should be left out.
      */
     private boolean ablationLeaveOutFinalOrientation = false;
+    private boolean repairFaultyPag;
 
     /**
      * Constructor.
@@ -190,10 +188,17 @@ public final class FciMax implements IGraphSearch {
                 R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
-        addColliders(graph);
+
+        Set<Triple> unshieldedColldiders = new HashSet<>();
+
+        addColliders(graph, unshieldedColldiders);
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(graph);
+        }
+
+        if (repairFaultyPag) {
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedColldiders, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -339,9 +344,10 @@ public final class FciMax implements IGraphSearch {
     /**
      * Adds colliders to the given graph.
      *
-     * @param graph The graph to which colliders should be added.
+     * @param graph             The graph to which colliders should be added.
+     * @param unshieldedColliders
      */
-    private void addColliders(Graph graph) {
+    private void addColliders(Graph graph, Set<Triple> unshieldedColliders) {
         Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
@@ -399,6 +405,8 @@ public final class FciMax implements IGraphSearch {
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            unshieldedColliders.add(new Triple(a, b, c));
         }
     }
 
@@ -487,6 +495,10 @@ public final class FciMax implements IGraphSearch {
      */
     public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    public void setRepairFaultyPag(boolean repairFaultyPag) {
+        this.repairFaultyPag = repairFaultyPag;
     }
 }
 

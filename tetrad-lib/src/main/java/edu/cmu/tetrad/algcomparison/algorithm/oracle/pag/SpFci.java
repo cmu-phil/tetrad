@@ -112,13 +112,11 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setKnowledge(this.knowledge);
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathCollideRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
-
-        // Ablation
-        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
@@ -127,7 +125,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * Returns the comparison graph created by converting a true directed graph into a partially directed acyclic graph
      * (PAG).
      *
-     * @param graph The true directed graph, if there is one.
+     * @param graph The true, directed graph, if there is one.
      * @return The comparison graph as a partially directed acyclic graph (PAG).
      */
     @Override
@@ -168,14 +166,12 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
+        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
-
-        // Ablation
-        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         // Flags
         params.add(Params.VERBOSE);

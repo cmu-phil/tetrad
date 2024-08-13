@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -213,6 +210,7 @@ public final class Fci implements IGraphSearch {
 
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
         if (verbose) {
             TetradLogger.getInstance().log("Reorienting with o-o.");
@@ -223,7 +221,10 @@ public final class Fci implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, knowledge));
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.setVerbose(verbose);
 
         if (this.possibleMsepSearchDone) {
@@ -235,7 +236,7 @@ public final class Fci implements IGraphSearch {
                 TetradLogger.getInstance().log("Doing R0.");
             }
 
-            fciOrient.ruleR0(graph);
+            fciOrient.ruleR0(graph, unshieldedTriples);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Removing by possible d-sep.");
@@ -257,7 +258,7 @@ public final class Fci implements IGraphSearch {
             TetradLogger.getInstance().log("Doing R0.");
         }
 
-        fciOrient.ruleR0(graph);
+        fciOrient.ruleR0(graph, unshieldedTriples);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing Final Orientation.");
@@ -268,7 +269,7 @@ public final class Fci implements IGraphSearch {
         }
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();

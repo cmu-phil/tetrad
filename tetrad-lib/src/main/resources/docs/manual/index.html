@@ -6447,28 +6447,53 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="ablationLeaveOutTestingStep">ablationLeaveOutTestingStep</h3>
+            id="ablationLeaveOutScoringStep">ablationLeaveOutScoringStep</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="ablationLeaveOutTestingStep_short_desc">
-                    ABLATION: Yes, if the testing step should be left out for the LV-Lite procedure
+                    id="ablationLeaveOutScoringStep_short_desc">
+                    ABLATION: Yes, if the scoring step should be left out for the LV-Lite procedure
         </span></li>
             <li>Long Description: <span
-                    id="ablationLeaveOutTestingStep_long_desc">
-                    Allowing testing can sometimes lead to lower arrowhead accuracies,
-                    even though it is theoretically correct.
+                    id="ablationLeaveOutScoringStep_long_desc">
+                    If true, this leaves out the scoring steps and being the algorithm with
+                    a complete nondirected graph (which is Markov).
         </span></li>
             <li>Default Value: <span
-                    id="ablationLeaveOutTestingStep_default_value">false</span></li>
+                    id="ablationLeaveOutScoringStep_default_value">false</span></li>
             <li>Lower Bound: <span
-                    id="ablationLeaveOutTestingStep_lower_bound"></span></li>
+                    id="ablationLeaveOutScoringStep_lower_bound"></span></li>
             <li>Upper
                 Bound: <span
-                        id="ablationLeaveOutTestingStep_upper_bound"></span></li>
+                        id="ablationLeaveOutScoringStep_upper_bound"></span></li>
             <li>Value
                 Type: <span
-                        id="ablationLeaveOutTestingStep_value_type">Boolean</span></li>
+                        id="ablationLeaveOutScoringStep_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutTestingSteps">ablationLeaveOutTestingSteps</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutTestingSteps_short_desc">
+                    ABLATION: Yes, if the testing steps should be left out for the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutTestingSteps_long_desc">
+                    If true, this leaves out all testing steps from the algorithm and bases
+                    the result on just the scoring steps.
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutTestingSteps_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutTestingSteps_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutTestingSteps_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutTestingSteps_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6625,10 +6650,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Long Description: <span
                     id="repairFaultyPag_long_desc">
-                    Replaces x <-> y, x ~~> y with x -> y; for ~adj(x, y) with an inducing
-                    path between x and y, adds x o-o y; runs final orientation rules.
-                    This often generates a legal PAG where errors exist in PAG estimated
-                    by the algorithm.
+                    Repairs errors in PAGs due to almost cyclic paths or non-maximalities.
         </span></li>
             <li>Default Value: <span
                     id="repairFaultyPag_default_value">False</span></li>
@@ -6640,6 +6662,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="repairFaultyPag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="removeAlmostCycles">removeAlmostCycles</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="removeAlmostCycles_short_desc">
+                    Yes if almost-cycles should be removed from the PAG.
+        </span></li>
+            <li>Long Description: <span
+                    id="removeAlmostCycles_long_desc">
+                    When x <-> y, x ~~> y, removes any unshielded triples into x and
+                    rebuilds the PAG.
+        </span></li>
+            <li>Default Value: <span
+                    id="removeAlmostCycles_default_value">False</span></li>
+            <li>Lower Bound: <span
+                    id="removeAlmostCycles_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="removeAlmostCycles_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="removeAlmostCycles_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"

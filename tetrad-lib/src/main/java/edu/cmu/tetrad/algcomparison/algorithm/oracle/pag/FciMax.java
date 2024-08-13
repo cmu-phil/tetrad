@@ -108,10 +108,8 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setPcHeuristicType(pcHeuristicType);
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        // Ablation
-        search.setLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
 
         return search.search();
     }
@@ -162,13 +160,11 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
+        parameters.add(Params.REPAIR_FAULTY_PAG);
 //        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
-
-        // Ablation
-        parameters.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return parameters;
     }

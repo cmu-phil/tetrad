@@ -37,6 +37,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 
+import static edu.cmu.tetrad.search.utils.DagToPag.getFinalStrategyUsingDsep;
+
 /**
  * Utility class for working with graphs.
  */
@@ -139,10 +141,7 @@ public final class GraphUtils {
         EdgeListGraph g = new EdgeListGraph(graph);
         Set<Node> mbNodes = GraphUtils.markovBlanket(target, g);
         mbNodes.add(target);
-        Graph res = g.subgraph(new ArrayList<>(mbNodes));
-//        System.out.println( target + " Node's MB Nodes list: " + res.getNodes());
-//        System.out.println("Graph result: " + res);
-        return res;
+        return g.subgraph(new ArrayList<>(mbNodes));
     }
 
     /**
@@ -337,7 +336,7 @@ public final class GraphUtils {
             buf.append(path.get(0).toString());
         }
 
-        String conditioningSymbol = "\u2714";
+        String conditioningSymbol = "✔";
 
         if (conditioningVars.contains(path.get(0))) {
             buf.append(conditioningSymbol);
@@ -1934,9 +1933,11 @@ public final class GraphUtils {
      * @param cpdag   The reference graph, a CPDAG obtained using such an algorithm.
      * @param nodes   The nodes in the graph.
      * @param sepsets A SepsetProducer that will do the sepset search operation described.
+     * @param depth   The depth of the sepset search.
      * @param verbose Whether to print verbose output.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes, SepsetProducer sepsets, boolean verbose) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
+                                                SepsetProducer sepsets, int depth, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Starting extra-edge removal step.");
         }
@@ -1964,7 +1965,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, -1);
+                    Set<Node> sepset = sepsets.getSepset(a, c, depth);
 
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2517,14 +2518,15 @@ public final class GraphUtils {
      * Applies the GFCI-R0 algorithm to orient edges in a pag based on a reference CPDAG, sepsets, and knowledge. This
      * method modifies the given pag by changing the orientation of edges. Due to Spirtes.
      *
-     * @param pag       The pag to be modified.
-     * @param cpdag     The reference CPDAG to guide the orientation of edges.
-     * @param sepsets   The sepsets used to determine the orientation of edges.
-     * @param knowledge The knowledge used to determine the orientation of edges.
-     * @param verbose   Whether to print verbose output.
+     * @param pag               The pag to be modified.
+     * @param cpdag             The reference CPDAG to guide the orientation of edges.
+     * @param sepsets           The sepsets used to determine the orientation of edges.
+     * @param knowledge         The knowledge used to determine the orientation of edges.
+     * @param verbose           Whether to print verbose output.
+     * @param unshieldedTriples
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
-                              boolean verbose) {
+                              boolean verbose, Set<Triple> unshieldedTriples) {
         if (verbose) {
             TetradLogger.getInstance().log("Starting GFCI-R0.");
         }
@@ -2554,6 +2556,8 @@ public final class GraphUtils {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
 
+                        unshieldedTriples.add(new Triple(x, y, z));
+
                         if (verbose) {
                             TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
@@ -2577,6 +2581,8 @@ public final class GraphUtils {
                                 pag.setEndpoint(x, y, Endpoint.ARROW);
                                 pag.setEndpoint(z, y, Endpoint.ARROW);
 
+                                unshieldedTriples.add(new Triple(x, y, z));
+
                                 if (verbose) {
                                     double p = sepsets.getPValue(x, z, sepset);
                                     String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
@@ -2599,20 +2605,6 @@ public final class GraphUtils {
         }
     }
 
-
-    /**
-     * Checks if three nodes are connected in a graph.
-     *
-     * @param graph the graph to check for connectivity
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return {@code true} if all three nodes are connected, {@code false} otherwise
-     */
-    private static boolean triple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
-    }
-
     /**
      * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
      * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
@@ -2625,22 +2617,6 @@ public final class GraphUtils {
      */
     private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
         return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Determines if the collider is allowed.
-     *
-     * @param pag The Graph representing the PAG.
-     * @param x   The Node object representing the first node.
-     * @param b   The Node object representing the second node.
-     * @param y   The Node object representing the third node.
-     * @return true if the collider is allowed, false otherwise.
-     */
-    private static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
-        if (true) return true;
-
-        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge)
-               && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
     }
 
     /**
@@ -2917,51 +2893,74 @@ public final class GraphUtils {
     /**
      * Repairs a faulty PAG (Partially Directed Acyclic Graph).
      * <p>
-     * If the estimated PAG contains a directed cycle, an IllegalArgumentException is thrown, as this type of estimated
-     * PAG cannot be repaired.
+     * Two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y, then the
+     * unshielded colldiers into x are removed and the graph is rebuilt.
      * <p>
-     * Otherwise, two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y,
-     * then the edge is oriented to x --&gt; y. Such an edge cannot be x &lt;-- y on pain of a cycle. Also, it cannot be
-     * x &lt;-&gt; y because the bidirected-edge semantics prohibits it (the problem we're trying to fix). So it must
-     * actually be x --&gt; y. The basic issue here is that to know the edge is not bidirected, we need to be able to
-     * "peer into the future" of the orientation process, which we can't do. As it turns out, this edge can't have been
-     * bidirected in the first place, because it would have been oriented to x --&gt; y in the first place had we known
-     * that x ~~&gt; y. So it's making a claim about non-causality that can't be supported. So we just fix it in
-     * post-processing.
+     * Second, if there is an inducing path between two non-adjacent nodes x and y, then an edge x *-*.y is added.
+     * Arrows are included at x and y if including them prevents almost cycles.
      * <p>
-     * Second, if there is an inducing path between two non-adjacent nodes x and y, then a nondirected edge x o-o y is
-     * added between them. In a PAG, x and y are adjacent if and only if there is an inducing path between x and y, so
-     * this is an error that should be fixed. It's possible the final orientation will orient it, but it's also possible
-     * that it will remain nondirected.
+     * The final orientation is then done using the FCI orient from DAG to PAG (using DSEP).
      * <p>
-     * The final orientation is then done using the supplied FciOrient object, which should be configured to have the
-     * desired behavior.
-     * <p>
-     * As changes that are made above may imply further changes, the process is repeated until no further changes are
-     * made.
-     * <p>
-     * The end result of this repair process may not be a legal PAG if additional edges are oriented by knowledge or by
-     * unfaithfulness in the original estimated PAG. However, it will be a PAG for which some knowledge-based
-     * orientation process could have been applied.
+     * TODO: this method is in a bit of a state of flux as various ideas are tried for repairing PAGs
      *
-     * @param pag                              the faulty PAG to be repaired
-     * @param fciOrient                        the FciOrient object used for final orientation
-     * @param knowledge                        the knowledge object used for orientation
-     * @param unshieldedColliders              the set of unshielded colliders to be updated
-     * @param verbose                          indicates whether or not to print verbose output
-     * @param ablationLeaveOutFinalOrientation indicates whether or not to leave out the final orientation
+     * @param pag                 the faulty PAG to be repaired
+     * @param fciOrient           the FciOrient object used for final orientation
+     * @param knowledge           the knowledge object used for orientation
+     * @param unshieldedColliders the set of unshielded colliders to be updated
+     * @param checkCyclicity      indicates whether or not to check for cyclicity
+     * @param verbose             indicates whether or not to print verbose output
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static void repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                       Set<Triple> unshieldedColliders, boolean verbose, boolean ablationLeaveOutFinalOrientation) {
+    public static Graph repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                        Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
+        pag = new EdgeListGraph(pag);
         fciOrient.setKnowledge(knowledge);
 
+//        anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose, anyChange);
+        boolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+
+        if (checkCyclicity) {
+            anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
+        }
+
+        // This is not necessary if I'm going to follow with the DSEP R0 step.
+//        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing final orientation...");
+        }
+
+        // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
+        // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, pag, knowledge, verbose));
+        _fciOrient.setVerbose(verbose);
+
+        // This is R0 using DSEP
+        _fciOrient.ruleR0(pag, new HashSet<>());
+
+        // This uses the discriminating pth rule using DSEP.
+        _fciOrient.finalOrientation(pag);
+
+        if (!anyChange) {
+            if (verbose) {
+                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+            }
+        } else {
+            if (verbose) {
+                TetradLogger.getInstance().log("Faulty PAG repaired.");
+            }
+        }
+
+        return pag;
+    }
+
+    private static boolean resolveAlmostCycles1(Graph pag, Knowledge knowledge, Set<Triple> unshieldedColliders, boolean verbose, boolean anyChange) {
         boolean changed;
-        boolean anyChange = false;
 
         do {
             changed = false;
@@ -3030,41 +3029,36 @@ public final class GraphUtils {
                     }
                 }
             }
+        } while (changed);
+        return anyChange;
+    }
 
-            for (Node x : pag.getNodes()) {
-                for (Node y : pag.getNodes()) {
-                    if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
+    private static boolean repairMaximality(Graph pag, boolean verbose, boolean anyChange) {
+        // Repair maximality.
+        for (Node x : pag.getNodes()) {
+            for (Node y : pag.getNodes()) {
+                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
 //                        pag.addNondirectedEdge(x, y);
-                        pag.addBidirectedEdge(x, y); // Zhang 2008
+                    pag.addNondirectedEdge(x, y); // Zhang 2008
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " o-o " + y + ".");
-                        }
-
-                        changed = true;
-                        anyChange = true;
+                    if (!pag.paths().existsDirectedPath(x, y)) {
+                        pag.setEndpoint(y, x, Endpoint.ARROW);
                     }
+
+                    if (!pag.paths().existsDirectedPath(y, x)) {
+                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                    }
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added bidirected edge " + x + " <-> " + y + ".");
+                    }
+
+//                        changed = true;
+                    anyChange = true;
                 }
             }
-
-            if (!ablationLeaveOutFinalOrientation) {
-                fciOrient.finalOrientation(pag);
-            }
-        } while (changed);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing final orientation...");
         }
-
-        if (!anyChange) {
-            if (verbose) {
-                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-            }
-        } else {
-            if (verbose) {
-                TetradLogger.getInstance().log("Faulty PAG repaired.");
-            }
-        }
+        return anyChange;
     }
 
 
@@ -3398,6 +3392,324 @@ public final class GraphUtils {
         }
 
         path.remove(a);
+    }
+
+    public static boolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+                                              Graph pag, Knowledge knowledge, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing almost cycles.");
+        }
+
+        boolean anyChange = false;
+
+        fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.finalOrientation(pag);
+        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
+        fciOrient.setInitialAllowedColliders(null);
+
+        while (true) {
+            Graph mag = GraphTransforms.zhangMagFromPag(pag);
+
+            // Make a list of all <x, y> where x ↔ y and x ~~> y.
+            Set<Edge> almostCyclesSet = new HashSet<>();
+
+            for (Edge edge : mag.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    if (mag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
+                        Edge e = Edges.directedEdge(edge.getNode1(), edge.getNode2());
+                        almostCyclesSet.add(e);
+                    } else if (mag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
+                        Edge e = Edges.directedEdge(edge.getNode2(), edge.getNode1());
+                        almostCyclesSet.add(e);
+                    }
+                }
+            }
+
+            if (almostCyclesSet.isEmpty()) {
+                break;
+            }
+
+            if (verbose) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Almost cycles: ");
+
+                for (Edge _almostCycle : almostCyclesSet) {
+                    sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
+                }
+
+                TetradLogger.getInstance().log(sb.toString());
+
+                TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
+            }
+
+            for (Edge almostCycle : almostCyclesSet) {
+
+                Node x = almostCycle.getNode1();
+                Node y = almostCycle.getNode2();
+
+                // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
+                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+
+                for (Triple triple : new HashSet<>(unshieldedColliders)) {
+                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                            unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                            anyChange = true;
+                        }
+                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
+                            unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                            anyChange = true;
+                        }
+                    }
+                }
+
+                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
+                if (!unshieldedColliders.isEmpty()) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+                    }
+                }
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Done removing almost cycles this round.");
+            }
+
+            // Rebuild the PAG with this new unshielded collider set.
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Rebuilding graph.");
+            }
+
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished rebuilding graph.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Final orientation.");
+            }
+
+            fciOrient.setVerbose(false);
+            fciOrient.setAllowedColliders(unshieldedColliders);
+            fciOrient.finalOrientation(pag);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished final orientation.");
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("All done removing almost cycles.");
+        }
+
+        return anyChange;
+    }
+
+    public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+                                       Graph pag, Knowledge knowledge, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing cycles.");
+        }
+
+        boolean anyChange = false;
+
+        fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.finalOrientation(pag);
+        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
+        fciOrient.setInitialAllowedColliders(null);
+
+        boolean removedCycle = true;
+
+        while (removedCycle) {
+            removedCycle = false;
+            Map<Node, Set<Triple>> cycleTriples = new HashMap<>();
+
+            for (Node x : pag.getNodes()) {
+                if (pag.paths().existsDirectedPath(x, x)) {
+                    Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+
+                    for (Triple triple : new HashSet<>(unshieldedColliders)) {
+                        if (triple.getY().equals(x) || triple.getZ().equals(x)) {
+                            if (pag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                                unshieldedColliders.remove(triple);
+                                unshieldedTriplesIntoX.add(triple);
+                                anyChange = true;
+                            }
+                        }
+                    }
+
+                    cycleTriples.put(x, unshieldedTriplesIntoX);
+                }
+            }
+
+            // Find the element of cycleTriples that is mapped to the fewest triples.
+            Node x = null;
+            int min = Integer.MAX_VALUE;
+
+            for (Map.Entry<Node, Set<Triple>> entry : cycleTriples.entrySet()) {
+                if (entry.getValue().size() < min) {
+                    x = entry.getKey();
+                    min = entry.getValue().size();
+                }
+            }
+
+            if (x != null) {
+                Set<Triple> unshieldedTriplesIntoX = cycleTriples.get(x);
+
+                if (!unshieldedTriplesIntoX.isEmpty()) {
+                    unshieldedColliders.removeAll(unshieldedTriplesIntoX);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Removing cycle at " + x);
+                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+                    }
+
+                    removedCycle = true;
+                }
+            }
+
+            // Rebuild the PAG with this new unshielded collider set.
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Rebuilding graph.");
+            }
+
+            reorientWithCircles(pag, verbose);
+            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
+            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished rebuilding graph.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Final orientation.");
+            }
+
+            fciOrient.setVerbose(false);
+            fciOrient.setAllowedColliders(unshieldedColliders);
+            fciOrient.finalOrientation(pag);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Finished final orientation.");
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("All done removing cycles.");
+        }
+
+        return anyChange;
+    }
+
+    /**
+     * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
+     * Graph following the PAG (Partially Ancestral Graph) structure.
+     *
+     * @param pag     The Graph to be reoriented.
+     * @param verbose A boolean value indicating whether verbose output should be printed.
+     */
+    public static void reorientWithCircles(Graph pag, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
+        }
+        pag.reorientAllWith(Endpoint.CIRCLE);
+    }
+
+    /**
+     * Recall unshielded triples in a given graph.
+     *
+     * @param pag                 The graph to recall unshielded triples from.
+     * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
+     * @param knowledge           the knowledge object.
+     */
+    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
+        for (Triple triple : unshieldedColliders) {
+            Node x = triple.getX();
+            Node b = triple.getY();
+            Node y = triple.getZ();
+
+            // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
+            // creat almost cycles in final orientation.
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !couldCreateAlmostCycle(pag, x, y)) {
+                pag.setEndpoint(x, b, Endpoint.ARROW);
+                pag.setEndpoint(y, b, Endpoint.ARROW);
+                pag.removeEdge(x, y);
+            }
+        }
+    }
+
+    /**
+     * Checks if creating an almost cycle between nodes x, b, and y is possible in a given graph.
+     *
+     * @param pag The graph to check if the almost cycle can be created.
+     * @param x   The first node of the almost cycle.
+     * @param y   The third node of the almost cycle.
+     * @return True if creating the almost cycle is possible, false otherwise.
+     */
+    public static boolean couldCreateAlmostCycle(Graph pag, Node x, Node y) {
+        return pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x);
+    }
+
+    /**
+     * Checks if three nodes are connected in a graph.
+     *
+     * @param graph the graph to check for connectivity
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return {@code true} if all three nodes are connected, {@code false} otherwise
+     */
+    public static boolean triple(Graph graph, Node a, Node b, Node c) {
+        return distinct(a, b, c) && graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c);
+    }
+
+    /**
+     * Determines if the collider is allowed.
+     *
+     * @param pag The Graph representing the PAG.
+     * @param x   The Node object representing the first node.
+     * @param b   The Node object representing the second node.
+     * @param y   The Node object representing the third node.
+     * @return true if the collider is allowed, false otherwise.
+     */
+    public static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
+        return FciOrient.isArrowheadAllowed(x, b, pag, knowledge) && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
+    }
+
+    /**
+     * Orient required edges in PAG.
+     *
+     * @param fciOrient The FciOrient object used for orienting the edges.
+     * @param pag       The Graph representing the PAG.
+     * @param best      The list of Node objects representing the best nodes.
+     */
+    public static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Orient required edges in PAG:");
+        }
+
+        fciOrient.fciOrientbk(knowledge, pag, best);
+    }
+
+    /**
+     * Determines whether three {@link Node} objects are distinct.
+     *
+     * @param x the first Node object
+     * @param b the second Node object
+     * @param y the third Node object
+     * @return true if x, b, and y are distinct; false otherwise
+     */
+    public static boolean distinct(Node x, Node b, Node y) {
+        return x != b && y != b && x != y;
     }
 
     /**

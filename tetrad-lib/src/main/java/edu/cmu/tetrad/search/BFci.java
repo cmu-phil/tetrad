@@ -21,17 +21,16 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -185,6 +184,7 @@ public final class BFci implements IGraphSearch {
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         subAlg.setNumThreads(numThreads);
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
@@ -205,11 +205,16 @@ public final class BFci implements IGraphSearch {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
+
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
 
         FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(graph);
@@ -218,7 +223,7 @@ public final class BFci implements IGraphSearch {
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         if (repairFaultyPag) {
-            GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, null, verbose, ablationLeaveOutFinalOrientation);
+            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;

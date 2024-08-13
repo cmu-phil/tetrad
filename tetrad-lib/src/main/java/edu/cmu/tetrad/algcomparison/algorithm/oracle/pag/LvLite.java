@@ -153,11 +153,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
 
         // Ablation
-        search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEP));
-//        search.ablationSetLeaveOutFinalOrientation(parameters.getBoolean(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION));
-
+        search.setAblationLeaveOutScoringStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_SCORING_STEP));
+        search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEPS));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -170,7 +170,6 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
 
         return search.search();
     }
@@ -231,12 +230,13 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
-        params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEP);
+        params.add(Params.ABLATION_LEAVE_OUT_SCORING_STEP);
+        params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEPS);
         params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.REPAIR_FAULTY_PAG);
 
         // General
         params.add(Params.TIME_LAG);
-        params.add(Params.REPAIR_FAULTY_PAG);
         params.add(Params.VERBOSE);
         params.add(Params.TEST_TIMEOUT);
 
