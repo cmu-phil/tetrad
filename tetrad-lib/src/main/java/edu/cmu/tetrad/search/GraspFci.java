@@ -218,7 +218,10 @@ public final class GraspFci implements IGraphSearch {
         GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose, unshieldedTriples);
 
         FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
 
         if (!ablationLeaveOutFinalOrientation) {
             fciOrient.finalOrientation(pag);

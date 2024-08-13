@@ -112,6 +112,8 @@ public final class SpFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -173,7 +175,10 @@ public final class SpFci implements IGraphSearch {
         GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
 
         FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
@@ -318,5 +323,23 @@ public final class SpFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Sets whether the discriminating path tail rule should be used.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }
