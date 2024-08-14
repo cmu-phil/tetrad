@@ -374,4 +374,22 @@ public final class GFci implements IGraphSearch {
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
     }
+
+    /**
+     * Sets whether the discriminating path tail rule should be used.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
 }

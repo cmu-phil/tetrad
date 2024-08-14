@@ -2920,7 +2920,7 @@ public final class GraphUtils {
         pag = new EdgeListGraph(pag);
         fciOrient.setKnowledge(knowledge);
 
-//        anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose, anyChange);
+//        boolean anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose);
         boolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
 
         if (checkCyclicity) {
@@ -2959,8 +2959,9 @@ public final class GraphUtils {
         return pag;
     }
 
-    private static boolean resolveAlmostCycles1(Graph pag, Knowledge knowledge, Set<Triple> unshieldedColliders, boolean verbose, boolean anyChange) {
+    private static boolean resolveAlmostCycles1(Graph pag, Knowledge knowledge, Set<Triple> unshieldedColliders, boolean verbose) {
         boolean changed;
+        boolean anyChange = false;
 
         do {
             changed = false;
@@ -2981,19 +2982,20 @@ public final class GraphUtils {
                         pag.removeEdge(x, y);
                         pag.addDirectedEdge(x, y);
 
-                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
-
-                        for (Node _into : into) {
-//                            pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
-                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-                                pag.addNondirectedEdge(_into, y);
-                            }
-
-                            if (unshieldedColliders != null) {
-                                unshieldedColliders.remove(new Triple(_into, x, y));
-                            }
-                        }
+//                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
+//
+//                        for (Node _into : into) {
+////                          pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//
+//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
+//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
+//                                pag.addNondirectedEdge(_into, y);
+//                            }
+//
+//                            if (unshieldedColliders != null) {
+//                                unshieldedColliders.remove(new Triple(_into, x, y));
+//                            }
+//                        }
 
                         if (verbose) {
                             TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
@@ -3030,6 +3032,7 @@ public final class GraphUtils {
                 }
             }
         } while (changed);
+
         return anyChange;
     }
 
