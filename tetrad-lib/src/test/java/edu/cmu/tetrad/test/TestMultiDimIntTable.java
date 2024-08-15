@@ -46,8 +46,9 @@ public class TestMultiDimIntTable {
     @Test
     public void testIndexCalculation1() {
         setUp();
+        int[] dims = {2, 3, 4, 5};
         int[] coords = {0, 0, 1, 0};
-        int index = this.table.getCellIndex(coords);
+        int index = this.table.getCellIndex(dims, coords);
 
         assertEquals(5, index);
     }
@@ -55,8 +56,9 @@ public class TestMultiDimIntTable {
     @Test
     public void testIndexCalculation2() {
         setUp();
+        int[] dims = {2, 3, 4, 5};
         int[] coords = {0, 1, 2, 0};
-        int index = this.table.getCellIndex(coords);
+        int index = this.table.getCellIndex(dims, coords);
 
         assertEquals(30, index);
     }
@@ -72,9 +74,10 @@ public class TestMultiDimIntTable {
     @Test
     public void testCellIncrement() {
         setUp();
+        int[] dims = {2, 3, 4, 5};
         int[] coords = this.table.getCoordinates(30);
 
-        this.table.increment(coords, 1);
+        this.table.increment(dims, coords, 1);
         assertEquals(1, this.table.getValue(coords));
     }
 
