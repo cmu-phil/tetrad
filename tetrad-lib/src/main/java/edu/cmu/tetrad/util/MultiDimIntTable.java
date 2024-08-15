@@ -140,11 +140,12 @@ public class MultiDimIntTable {
      */
     public long getValue(int[] coords) {
         int cellIndex = getCellIndex(coords);
+        Long l = this.cells.get(cellIndex);
 
-        if (this.cells == null || !this.cells.containsKey(cellIndex)) {
+        if (this.cells == null || l == null) {
             return 0L;
         } else {
-            return this.cells.get(cellIndex);
+            return l;
         }
     }
 
